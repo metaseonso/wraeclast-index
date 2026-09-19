@@ -8,7 +8,8 @@ export function mountSuggest(){
   b.id = 'suggestbtn'; b.type = 'button'; b.className = 'suggestbtn';
   b.textContent = 'Suggest'; b.title = 'Send an idea or report a problem';
   b.addEventListener('click', open);
-  document.body.appendChild(b);
+  const keys = document.getElementById('keysbtn');   // top bar, just left of the keybind button
+  if(keys) keys.before(b); else document.body.appendChild(b);
 }
 
 function open(){
