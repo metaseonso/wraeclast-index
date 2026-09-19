@@ -662,7 +662,7 @@ function route(){ const m = location.hash.match(/^#\/(\w+)/); return m ? m[1] : 
 export function params(){ const i = location.hash.indexOf('?'); return new URLSearchParams(i >= 0 ? location.hash.slice(i + 1) : ''); }
 const loaded = {};
 async function show(){
-  const r = ['home', 'build', 'currency', 'trade', 'farms', 'atlas'].includes(route()) ? route() : 'home';
+  const r = ['home', 'build', 'currency', 'trade', 'farms', 'atlas', 'craft'].includes(route()) ? route() : 'home';
   document.body.dataset.route = r;
   document.querySelectorAll('.view').forEach(v => v.hidden = v.dataset.view !== r);
   document.querySelectorAll('.tabs a[data-route]').forEach(a => { if(a.dataset.route === r) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current'); });
