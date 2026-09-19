@@ -175,9 +175,8 @@ export async function tradePanel(it){
   const box = document.createElement('section');
   box.className = 'trade';
 
-  if(it.k === 'c'){   // currency: the bulk exchange
-    const want = T.exchange[it.n];
-    if(!want){ box.innerHTML = '<p class="note">Not on the currency exchange.</p>'; return box; }
+  const want = (/^[ca]$/.test(it.k) || it.li) && T.exchange[it.n];   // it.li: a lineage gem trades there too
+  if(want){   // currency and exchange items (waystones, fragments): the bulk exchange
     let have = want === 'divine' ? 'exalted' : 'divine';
     const paint = () => {
       box.innerHTML = '<h4>Buy on the exchange</h4><div class="trow"><span>Pay with</span><div class="seg tpay">' +
@@ -197,7 +196,7 @@ export async function tradePanel(it){
   } else {
     (it.ls || []).forEach((line, i) => {
       const r = range(line);
-      rows.push({label: line, id: statId(line, i < (it.ni || 0), onGear), r, v: r ? r.lo : null, op: 'min', on: false});
+      rows.push({label: line, id: statId(line.replace(/^or /, ''), i < (it.ni || 0), onGear), r, v: r ? r.lo : null, op: 'min', on: false});
     });
   }
   const searchable = () => rows.filter(r => r.misc || r.id);
@@ -205,7 +204,9 @@ export async function tradePanel(it){
   const stateName = Object.fromEntries(T.states);
   let online = false;   // any seller by default; tick for online only
 
-  const base = it.base || (it.s || '').split(' · ')[0];   // it.base: a card whose sub line is not its base type
+  // a card of the thing itself (an index base, atlas item or bulk item): its own type, any rarity
+  const own = it.k === 'a' || it.k === 'c' || (it.k === 'b' && D.byKey.get('b:' + it.id) === it);
+  const base = it.base || (own ? it.n : (it.s || '').split(' · ')[0]);   // it.base: a card whose sub line is not its base type
   const build = () => {
     const stats = rows.filter(r => r.on && r.id).map(r => ({id: r.id, value: r.v === null ? {} : valueFor(r.op, r.v), disabled: false}));
     const misc = {};
@@ -217,9 +218,9 @@ export async function tradePanel(it){
     }
     if(Object.keys(misc).length) (filters.misc_filters = filters.misc_filters || {filters: {}}).filters = {...filters.misc_filters.filters, ...misc};
     const q = {status: {option: online ? 'online' : 'any'}};
-    if(it.k === 'u'){ q.name = it.n; if(base) q.type = base; }
+    if(it.k === 'u' || (it.k === 'a' && it.base)){ q.name = it.n; if(base) q.type = base; }   // a unique (tablet)
     else if(it.k === 'g') q.type = it.n;
-    else if(base){ q.type = base; (filters.type_filters = {filters: {rarity: {option: 'nonunique'}}}); }
+    else if(base){ q.type = base; if(!own) filters.type_filters = {filters: {rarity: {option: 'nonunique'}}}; }
     if(stats.length) q.stats = [{type: 'and', filters: stats}];
     if(Object.keys(filters).length) q.filters = filters;
     return {query: q, sort: {price: 'asc'}};

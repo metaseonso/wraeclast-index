@@ -198,6 +198,8 @@ function render(fresh){
   const grid = $('#atcards', EL);
   if(fresh) grid.replaceChildren();
   let list = S.sec === 'tree' ? [] : CARDS[S.sec].filter(c => has(c.h, q));
+  const exact = list.filter(c => c.it.n.toLowerCase() === q);   // a card's own name (a search card's gold link): just that one
+  if(exact.length) list = exact;
   if(sorted) list = [...list].sort(SORTER[S.sort]);
   grid.hidden = S.sec === 'tree';
   flow(grid, list, make);

@@ -1,15 +1,15 @@
 /* Wraeclast Index: pages for search engines and AI search.
    Plain, fast HTML built from the site's own data files, so crawlers that do not run scripts
-   still find every gem, unique, passive, currency and keyword.
+   still find every gem, unique, passive, base item, atlas thing, currency and keyword.
      /item/<slug>        one thing: requirements, official lines, price, a gold link into the app
-     /gems /uniques /passives /currency /keywords      the lists
+     /gems /uniques /passives /bases /atlas /currency /keywords      the lists
      /sitemap.xml  /llms.txt  /llms-full.txt
      /search?q=...       the app's search (the SearchAction target in the home page's JSON-LD)
    Data: data/index.json (the game files, via tools/sync.py) and the live price file (/data/market.json: the in-game
    Currency Exchange for currency, live trade site listings for everything else).
    Slugs: the name in lowercase with hyphens. Unique variants add the base ("name-base"; the bare name
    redirects to the plain base). A name used by two kinds goes to the first of unique, gem, passive,
-   keyword, currency; the others add their kind ("fulmination-passive"). Same name, same kind: "-2". */
+   keyword, currency, base, atlas; the others add their kind ("fulmination-passive"). Same name, same kind: "-2". */
 
 const SITE = 'https://wraeclastindex.fyi';
 const AGE = 3600;                 // pages and files: an hour (prices refresh hourly)
@@ -21,16 +21,20 @@ const KIND = {
   g: {one: 'Gem', word: 'gem', list: 'gems', rank: 1},
   p: {one: 'Passive', word: 'passive', list: 'passives', rank: 2},
   w: {one: 'Keyword', word: 'keyword', list: 'keywords', rank: 3},
-  c: {one: 'Currency', word: 'currency', list: 'currency', rank: 4},   // last: it comes from the market, which changes
+  c: {one: 'Currency', word: 'currency', list: 'currency', rank: 4},   // the market's own come last: it changes
+  b: {one: 'Base', word: 'base', list: 'bases', rank: 5},
+  a: {one: 'Atlas', word: 'atlas', list: 'atlas', rank: 6},
 };
 const LISTS = {
   gems: {k: 'g', h1: 'Gems', title: 'PoE2 Gems: every skill, spirit and support gem', app: '/explore#gems'},
   uniques: {k: 'u', h1: 'Uniques', title: 'PoE2 Uniques: mod lines, requirements and prices', app: '/explore#uniques'},
   passives: {k: 'p', h1: 'Passives', title: 'PoE2 Passives: keystones, notables and ascendancies', app: '/explore#tree'},
+  bases: {k: 'b', h1: 'Bases', title: 'PoE2 Base Items: every weapon, armour, jewellery, jewel and flask base', app: '/#/craft'},
+  atlas: {k: 'a', h1: 'Atlas', title: 'PoE2 Atlas: atlas passives, waystones, tablets and keys', app: '/#/atlas'},
   currency: {k: 'c', h1: 'Currency', title: 'PoE2 Currency Prices', app: '/#/currency'},
   keywords: {k: 'w', h1: 'Keywords', title: 'PoE2 Keywords', app: '/#/'},
 };
-const ORDER = ['gems', 'uniques', 'passives', 'currency', 'keywords'];
+const ORDER = ['gems', 'uniques', 'passives', 'bases', 'atlas', 'currency', 'keywords'];
 
 export function handles(path){
   return path.startsWith('/item/') || path === '/sitemap.xml' || path === '/llms.txt' || path === '/llms-full.txt' ||
@@ -122,9 +126,11 @@ function claim(bySlug, slug, kind){   // the slug a name gets, given what is tak
 }
 
 function indexModel(index){
-  const entries = [], variants = new Map();
+  const entries = [], variants = new Map(), named = new Map(), IMGS = index.imgs || {};
   for(const it of index.items){
     if(!KIND[it.k] || /^\[DNT/.test(it.n)) continue;
+    if(it.img && !/^https?:/.test(it.img)){ const i = it.img.indexOf(':'), pre = IMGS[it.img.slice(0, i)]; if(pre) it.img = pre + it.img.slice(i + 1); }
+    if(it.k === 'c' || it.k === 'a') named.set(it.n, it);   // the market must not repeat these
     const e = {it, k: it.k, sort: slugify(it.n)};
     if(it.k === 'u' && it.id.includes(' | ')){
       e.base = it.id.split(' | ')[1];
@@ -155,7 +161,7 @@ function indexModel(index){
   }
   const gemsByName = new Map();
   for(const e of entries) if(e.k === 'g' && !gemsByName.has(e.sort)) gemsByName.set(e.sort, e);
-  return {v: index.v, gen: index.gen, sprites: index.sprites, entries, bySlug, gemsByName};
+  return {v: index.v, gen: index.gen, sprites: index.sprites, entries, bySlug, gemsByName, named};
 }
 
 function withMarket(base, market){
@@ -169,6 +175,7 @@ function withMarket(base, market){
       if(!key.startsWith('c:') || !x.n) continue;
       const sort = slugify(x.n), gem = x.cat === 'Lineage Supports' && base.gemsByName.get(sort);
       if(gem){ m.lineage.set(gem, key); continue; }   // one page per thing: the gem page carries the price
+      if(base.named.has(x.n)) continue;               // the index has its card (a bulk item or an atlas thing)
       const it = {k: 'c', id: key.slice(2), n: x.n, s: x.cat || 'Currency', t: x.u || '', img: x.ic, dl: x.dl};
       const e = {it, k: 'c', sort};
       e.slug = claim(m.bySlug, e.sort, 'c');
@@ -188,6 +195,7 @@ function withMarket(base, market){
 function priceOf(m, e){
   if(!m.M) return null;
   if(e.k === 'g'){ const key = m.lineage.get(e); return key ? m.M[key] : null; }
+  if(e.k === 'a') return m.M['c:' + e.it.n] || null;
   if(e.k !== 'u' && e.k !== 'c') return null;
   return m.M[e.k + ':' + e.it.id] || m.M[e.k + ':' + e.it.n] || null;
 }
@@ -226,10 +234,12 @@ const when = iso => iso ? iso.slice(0, 16).replace('T', ' ') + ' UTC' : '';
 
 /* The same rules as the app (assets/app.js). */
 const SECTION = {g: 'gems', u: 'uniques', p: 'tree'};
-function appHref(it){
+function appHref(m, it){
   if(SECTION[it.k]) return '/explore#' + SECTION[it.k] + '=' + encodeURIComponent(it.n);
-  if(it.k === 'c') return '/#/currency?c=' + encodeURIComponent(it.id);
-  return '/#/?q=' + encodeURIComponent(it.n);   // keywords: the search, with the keyword's own card on top
+  if(it.k === 'c' && m.M && m.M['c:' + it.id]) return '/#/currency?c=' + encodeURIComponent(it.id);   // the tab lists the catalogue
+  if(it.k === 'b' && it.cr) return '/#/craft?s=' + encodeURIComponent(btoa(unescape(encodeURIComponent(JSON.stringify({c: it.cr, b: it.n, l: 0, m: []})))));
+  if(it.k === 'a' && it.at) return '/#/atlas?s=' + it.at + '&q=' + encodeURIComponent(it.n);
+  return '/#/?q=' + encodeURIComponent(it.n);   // keywords and the rest: the search, with the thing's own card on top
 }
 function buildsHref(m, it){
   const lg = m.market && m.market.builds;
@@ -272,7 +282,7 @@ function factsOf(it){
     if(it.cost) f.push(costText(it.cost));
     if(it.sp !== undefined) f.push(it.sp + ' Spirit');
   }
-  if(it.k === 'u' && it.pr) f.push(...it.pr);
+  if((it.k === 'u' || it.k === 'b') && it.pr) f.push(...it.pr);
   if(it.k === 'w' && it.use){
     const parts = [];
     for(const [k, one, many] of [['gems', 'gem', 'gems'], ['uniques', 'unique', 'uniques'], ['passives', 'passive', 'passives']])
@@ -289,6 +299,8 @@ function groupOf(e){
   if(e.k === 'u') return parts.length > 1 ? parts[parts.length - 1] : 'Other';
   if(e.k === 'p') return it.asc ? it.asc + ' ascendancy' : parts[0] + 's' + (it.reg && parts[0] === 'Notable' ? ' · ' + it.reg + ' region' : '');
   if(e.k === 'c') return it.s || 'Currency';
+  if(e.k === 'b') return parts[0];
+  if(e.k === 'a') return it.at === 'tree' ? 'Atlas passives' + (parts[1] ? ' · ' + parts[1] : '') : parts[0];
   const c = e.sort.charAt(0).toUpperCase();
   return /[A-Z]/.test(c) ? c : '#';
 }
@@ -311,6 +323,8 @@ function otherTitle(e, g){
   if(e.k === 'u') return 'Other ' + g + ' uniques';
   if(e.k === 'p') return e.it.asc ? 'Other ' + e.it.asc + ' passives' : 'Other ' + g.replace(' · ', ', ').replace(/^\w/, c => c.toLowerCase());
   if(e.k === 'c') return g === 'Currency' ? 'More currency' : 'Other ' + g.toLowerCase();
+  if(e.k === 'b') return 'Other ' + g.toLowerCase() + ' bases';
+  if(e.k === 'a') return 'More from the Atlas';
   return 'Other keywords';
 }
 
@@ -359,14 +373,18 @@ function lead(m, e){
   if(e.k === 'u') return it.n + ': unique ' + parts[0] + ' in Path of Exile 2.';
   if(e.k === 'p') return it.n + ': ' + (it.asc ? it.asc + ' ' : '') + parts[0].toLowerCase() + ' passive in Path of Exile 2.';
   if(e.k === 'c') return it.n + ': ' + singular(it.s).toLowerCase() + ' in Path of Exile 2.';
+  if(e.k === 'b') return it.n + ': ' + parts[0].toLowerCase() + ' base in Path of Exile 2.';
+  if(e.k === 'a') return it.n + ': ' + parts[0].toLowerCase() + ' in Path of Exile 2.';
   return it.n + ': Path of Exile 2 keyword.';
 }
 function titleOf(e, px){
   const it = e.it, parts = (it.s || '').split(' · ');
-  if(e.k === 'g') return it.n + ' – PoE2 ' + (parts[1] ? parts[1] + ' ' : '') + parts[0].replace(/ gem$/, ' Gem');
+  if(e.k === 'g') return it.n + ' – PoE2 ' + (parts[1] ? parts[1] + ' ' : '') + parts[0].replace(/\b\w/g, c => c.toUpperCase());   // "Lineage Support Gem"
   if(e.k === 'u') return it.n + ' – PoE2 Unique ' + parts[0];
   if(e.k === 'p') return it.n + ' – PoE2 ' + (it.asc ? it.asc + ' ' : '') + parts[0];
   if(e.k === 'c') return it.n + ' – PoE2 ' + singular(it.s) + (px && px.v !== undefined ? ' Price' : '');
+  if(e.k === 'b') return it.n + ' – PoE2 ' + parts[0] + ' Base';
+  if(e.k === 'a') return it.n + ' – PoE2 ' + parts[0].replace(/\b\w/g, c => c.toUpperCase());
   return it.n + ' – PoE2 Keyword';
 }
 
@@ -390,12 +408,19 @@ function itemPage(m, e){
     if(it.asc) req = '<span class="pill">' + esc(it.asc) + ' ascendancy</span>';
     else if(it.reg) req = '<span class="pill">' + esc(it.reg) + ' region</span>';
   } else if(e.k === 'c' && it.dl) req = '<span class="pill">Drops from area level ' + it.dl + '</span>';
+  else if(e.k === 'b' && it.rq) req = reqPills(it.rq);
+  else if(e.k === 'a'){
+    if(it.ty) req = '<span class="pill">' + ({c: 'Choice', n: 'Notable', s: 'Small'}[it.ty] || '') + '</span>';
+    if(it.x > 1) req += '<span class="pill">' + it.x + ' on the tree</span>';
+    if(it.nt) req += '<span class="pill warn">' + esc(it.nt) + '</span>';
+  }
   const facts = factsOf(it);
   let body = '';
   if(lines.length){
     if(ni) body += '<ul class="card-ls imp">' + lines.slice(0, ni).map(x => '<li>' + esc(x) + '</li>').join('') + '</ul>';
     if(lines.length > ni) body += '<ul class="card-ls">' + lines.slice(ni).map(x => '<li>' + esc(x) + '</li>').join('') + '</ul>';
   } else if(it.t) body = '<p class="card-tx">' + esc(it.t) + '</p>';
+  if(it.o && it.o.length) body += '<p class="card-facts">Choose one:</p><ul class="card-ls">' + it.o.map(x => '<li>' + esc(x) + '</li>').join('') + '</ul>';
   let price = '';
   if(px){
     if(px.h && px.h.length > 3){
@@ -431,7 +456,7 @@ function itemPage(m, e){
         (bh ? '<a class="card-ext" href="' + esc(bh) + '" rel="noopener" title="Characters' + (m.league ? ' in ' + esc(m.league) : '') + ' that use this, on poe.ninja">Builds ↗</a>' : '') +
         '<span class="kind">' + K.one + '</span></div>' +
     '</article>' +
-    '<div class="seo-go"><a class="btn gold" href="' + esc(appHref(it)) + '">Open in Wraeclast Index →</a></div>';
+    '<div class="seo-go"><a class="btn gold" href="' + esc(appHref(m, it)) + '">Open in Wraeclast Index →</a></div>';
 
   // related: other versions, what mentions a keyword, the neighbours in its list
   let more = '';
@@ -469,7 +494,7 @@ function itemPage(m, e){
 
 function entryHTML(m, x, withKind){
   const px = priceOf(m, x), it = x.it, parts = (it.s || '').split(' · ');
-  const sub = withKind ? KIND[x.k].one : x.k === 'g' ? parts[1] : x.k === 'u' ? parts[0] : '';
+  const sub = withKind ? KIND[x.k].one : x.k === 'g' ? parts[1] : x.k === 'u' ? parts[0] : x.k === 'b' ? parts[1] : '';
   return '<li class="k-' + x.k + '">' + link(x) + (sub ? '<span class="sub">' + esc(sub) + '</span>' : '') +
     (px && px.v !== undefined ? '<b class="px">' + moneyHTML(m, px.v) + '</b>' : '') + '</li>';
 }
@@ -492,6 +517,8 @@ function intro(m, name){
     gems: 'All ' + n + ' skill, spirit and support gems in Path of Exile 2' + patch + '. Requirements, use times, costs and tags from the game files.',
     uniques: 'All ' + n + ' uniques in Path of Exile 2' + patch + '. Official mod lines, requirements' + (m.league ? ' and ' + m.league + ' prices' : '') + '.',
     passives: 'All ' + n + ' keystones, notables and ascendancy passives in Path of Exile 2' + patch + ', with what they do.',
+    bases: 'All ' + n + ' base items in Path of Exile 2' + patch + ': weapons, armour, jewellery, jewels, flasks and charms, with requirements, properties and implicits from the game files.',
+    atlas: 'The Atlas in Path of Exile 2' + patch + ': ' + n + ' atlas passives, waystone tiers, tablets, keys and atlas items, from the game files.',
     currency: n + ' currency items in Path of Exile 2' + (m.league ? ' with ' + m.league + ' prices from the in-game Currency Exchange' : '') + '. Updated every hour.',
     keywords: 'All ' + n + ' Path of Exile 2 keywords, in the game\'s own words.',
   }[name];
@@ -624,7 +651,7 @@ function text(body, type){
 function sitemap(m){
   const urls = [['/', m.day], ['/explore', m.gen]];
   for(const l of ORDER) urls.push(['/' + l, l === 'currency' || l === 'uniques' ? m.day : m.gen]);
-  for(const k of ['u', 'g', 'p', 'c', 'w']) for(const e of m.kinds[k]) urls.push(['/item/' + e.slug, priceOf(m, e) ? m.day : m.gen]);
+  for(const k of ['u', 'g', 'p', 'b', 'a', 'c', 'w']) for(const e of m.kinds[k]) urls.push(['/item/' + e.slug, priceOf(m, e) ? m.day : m.gen]);
   return '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' +
     urls.map(([p, d]) => '<url><loc>' + SITE + p + '</loc>' + (d ? '<lastmod>' + d + '</lastmod>' : '') + '</url>').join('\n') + '\n</urlset>\n';
 }
@@ -644,6 +671,8 @@ Every item has its own plain page at ${SITE}/item/<name>, for example ${SITE}/it
 - [Gems](${SITE}/gems): ${n('g')} skill, spirit and support gems, with requirements, use times and tags
 - [Uniques](${SITE}/uniques): ${n('u')} uniques, with official mod lines, requirements and prices
 - [Passives](${SITE}/passives): ${n('p')} keystones, notables and ascendancy passives, with anoint recipes and costs
+- [Bases](${SITE}/bases): ${n('b')} base items (weapons, armour, jewellery, jewels, flasks), with requirements, properties and implicits
+- [Atlas](${SITE}/atlas): ${n('a')} atlas passives, waystone tiers, tablets, keys and atlas items
 - [Currency](${SITE}/currency): ${n('c')} currency items, essences, runes, omens and more, with prices
 - [Keywords](${SITE}/keywords): ${n('w')} game keywords, in the game's own words
 
@@ -657,7 +686,7 @@ Every item has its own plain page at ${SITE}/item/<name>, for example ${SITE}/it
 
 ## Data
 
-- [Item index](${SITE}/data/index.json): every gem, unique, passive and keyword, as JSON
+- [Item index](${SITE}/data/index.json): every gem, unique, passive, base item, atlas thing and keyword, as JSON
 - [Prices](${SITE}/data/market.json): real prices (Currency Exchange and live trade listings) and trends, as JSON, every hour
 - [Sitemap](${SITE}/sitemap.xml): every page
 
@@ -674,10 +703,12 @@ function itemText(m, e){
   if(e.k === 'p' && it.asc) out.push(it.asc + ' ascendancy');
   else if(e.k === 'p' && it.reg) out.push(it.reg + ' region');
   if(e.k === 'c' && it.dl) out.push('Drops from area level ' + it.dl);
+  if(e.k === 'b' && it.rq) out.push('Requires: ' + reqText(it.rq));
   const f = factsOf(it);
   if(f.length) out.push(f.join(' · '));
   if(it.ls) out.push(...it.ls);
   else if(it.t) out.push(it.t);
+  if(it.o) out.push('Choose one: ' + it.o.join(' / '));
   if(it.tags) out.push('Tags: ' + it.tags.join(', '));
   const an = e.k === 'p' ? anoint(m, it) : null;
   if(an) out.push('Anoint with ' + an.parts.map(p => p.n).join(' + ') + (an.div !== null ? ': ' + moneyText(m, an.div) : ''));
