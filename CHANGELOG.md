@@ -3,6 +3,15 @@
 The full list of changes. The public patch notes (data/changelog.json, shown on the site) stay short.
 Add the details here first, then a short public line there.
 
+## v0.23 — The whole game in one search (19 Sep 2026)
+- #37 (helper): tools/morecards.py (called from tools/sync.py build_index): 1,554 base cards (kind b; RePoE bases that are
+  also on the trade site's list; requirements, implicits, properties, keywords, official art), 368 atlas cards (kind a:
+  333 atlas passives, 16 waystone tiers, tablets, keys/items), 96 extra currency cards (no price). Lineage gems labelled.
+  kwuse.py: Bases and Essences groups. Update order after a patch: atlas.py, craft.py, sync.py, kwuse.py.
+  seo.js: /bases and /atlas lists, image-code fix (item pages printed short image codes). Sitemap ~6,000 URLs.
+- Owner dashboard: Cloudflare section (worker/cfstats.js, secret CF_ANALYTICS_TOKEN, read-only).
+- GGG readiness: exact third-party notice in every footer, privacy.html, request tags name a contact (repo issues).
+
 ## v0.22 — Real prices only (19 Sep 2026)
 - Standard (owner): every price on the site comes from real trade data; if we don't have it, it isn't shown.
 - Currency: tools/exchange.py reads GGG's public Currency Exchange feed (web.poecdn.com/api/currency-exchange/poe2,
