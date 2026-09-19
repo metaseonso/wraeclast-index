@@ -113,8 +113,7 @@ input[type=range], input[type=checkbox]{accent-color:#4E7A28}
 .emblem-logo{position:absolute; left:50%; top:50%; translate:-50% -50%; z-index:2; height:200px; width:auto; pointer-events:none;
   filter:drop-shadow(0 0 24px rgba(140,203,63,.09)) drop-shadow(0 10px 30px rgba(0,0,0,.8))}
 .fog{position:absolute; inset:0; pointer-events:none}
-.fog.back{z-index:1}
-.fog.front{z-index:3}
+.fog.back, .fog.front{z-index:3}   /* all fog drifts in front of the crest */
 .fog img{position:absolute; left:50%; height:auto; mix-blend-mode:screen; opacity:0; will-change:transform, opacity}
 
 /* Horizontal fog only, centred on the crest: every layer has a mirrored twin (.m) that drifts
@@ -122,12 +121,12 @@ input[type=range], input[type=checkbox]{accent-color:#4E7A28}
 .fog .haze{top:14%; width:640px; translate:-50% 0; animation:wi-haze 36s ease-in-out infinite}
 .fog .haze.m{animation-name:wi-haze-m; animation-delay:-18s}
 @keyframes wi-haze{
-  0%,100%{transform:translateX(-4%) scale(1); opacity:.6}
-  50%{transform:translateX(4%) scale(1.06); opacity:.9}
+  0%,100%{transform:translateX(-4%) scale(1); opacity:.35}
+  50%{transform:translateX(4%) scale(1.06); opacity:.55}
 }
 @keyframes wi-haze-m{
-  0%,100%{transform:scaleX(-1) translateX(-4%) scale(1); opacity:.6}
-  50%{transform:scaleX(-1) translateX(4%) scale(1.06); opacity:.9}
+  0%,100%{transform:scaleX(-1) translateX(-4%) scale(1); opacity:.35}
+  50%{transform:scaleX(-1) translateX(4%) scale(1.06); opacity:.55}
 }
 /* the bank: pools at the base, spreads outward, hangs, fades */
 .fog .bank{bottom:-2%; width:560px; translate:-50% 0}
