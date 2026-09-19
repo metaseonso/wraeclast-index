@@ -1,6 +1,7 @@
 /* Wraeclast Index on Cloudflare.
    Static files are served straight from the edge. This worker only answers:
      /data/market.json   live prices: the hourly GitHub job publishes them; cached here for 5 minutes
+     /data/leagues.json  league dates (poe2db), from the same hourly job
      /api/pob?url=...    the build code behind a pobb.in, poe.ninja, maxroll, mobalytics, poe2db or pastebin link
                          (browsers cannot fetch those sites themselves)
      /item/*, /gems, /uniques, /passives, /currency, /keywords, /sitemap.xml, /llms.txt, /search
@@ -20,6 +21,7 @@ export default {
   async fetch(request, env, ctx){
     const url = new URL(request.url);
     if(url.pathname === '/data/market.json') return market(request, env);
+    if(url.pathname === '/data/leagues.json') return published(request, env, 'leagues.json');
     if(url.pathname === '/api/pob') return pob(url);
     if(url.pathname === '/api/trade/searches') return tradeSearches(request, env, ctx, url);
     if(url.pathname === '/api/suggest') return suggest(request, env, url);
@@ -31,9 +33,11 @@ export default {
   },
 };
 
-async function market(request, env){
+const market = (request, env) => published(request, env, 'market.json');
+/* a file the hourly GitHub job publishes (prices, league dates): cached here for 5 minutes */
+async function published(request, env, name){
   try {
-    const r = await fetch(MARKET_SOURCE, {headers: {'User-Agent': UA}, cf: {cacheTtl: 300, cacheEverything: true}});
+    const r = await fetch(MARKET_SOURCE.replace('market.json', name), {headers: {'User-Agent': UA}, cf: {cacheTtl: 300, cacheEverything: true}});
     if(r.ok) return new Response(r.body, {headers: {
       'Content-Type': 'application/json; charset=utf-8',
       'Cache-Control': 'public, max-age=300',
@@ -64,7 +68,7 @@ async function pob(url){
   if(!r.ok) return reply(502, "Couldn't open that link.");
   const text = await r.text();
   const code = (host[3] ? host[3](text) : text).trim();
-  if(host[3] && !code) return reply(404, "That build page has no Path of Building code.");
+  if(host[3] && !code) return reply(404, "The author of this build did not add a Path of Building code, so it can't be read. Try another build or paste a code.");
   if(code.length > 400000 || !/^[A-Za-z0-9+/=_-]+$/.test(code)) return reply(502, "That link doesn't hold a build code.");
   return reply(200, code);
 }

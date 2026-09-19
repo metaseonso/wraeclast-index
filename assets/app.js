@@ -572,6 +572,7 @@ ready.then(() => {
   const st = $('#stamp');
   if(D.market) st.innerHTML = 'Prices: <b>' + esc(D.market.league) + '</b> · ' + ago(D.market.updated);
   else st.textContent = 'Prices not loaded yet';
+  import('./league.js').then(m => m.mountLeague($('#leaguebar'))).catch(() => {});   // the league clock
 }).catch(err => {
   $('#status').innerHTML = '<span class="err">Could not load the index: ' + esc(err.message) + '</span>';
 });

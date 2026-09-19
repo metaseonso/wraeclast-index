@@ -32,6 +32,8 @@ jobs:
       - name: Fetch live prices from poe.ninja
         # if poe.ninja is down, the last committed prices go out instead
         run: python tools/market.py || echo "::warning::Price fetch failed; publishing the committed prices."
+      - name: League dates from poe2db
+        run: python tools/leagues.py || echo "::warning::League dates fetch failed; publishing the committed ones."
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
