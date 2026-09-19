@@ -73,7 +73,9 @@ h1,h2,h3{margin:0; text-wrap:balance}
 .hero-title{font-family:var(--disp); font-weight:600; font-size:clamp(34px, 6vw, 54px); letter-spacing:-.02em;
   transition:opacity .3s, transform .45s cubic-bezier(.2,.8,.2,1), max-height .45s; max-height:80px; overflow:hidden}
 .hero-title em{font-style:normal; color:var(--accent)}
-.hero-sub{color:var(--muted); margin:6px 0 22px; font-size:14px; transition:opacity .3s, max-height .45s, margin .45s; max-height:60px; overflow:hidden}
+.hero-sub{color:var(--muted); margin:6px 0 22px; font-size:14px; transition:opacity .3s, max-height .45s, margin .45s; max-height:90px; overflow:hidden}
+.hero-tag{display:block; font-family:var(--disp); font-size:17px; color:var(--text); letter-spacing:.02em}
+.hero-more{display:block; margin-top:4px; font-size:13px}
 .hero.docked .hero-title,.hero.docked .hero-sub{opacity:0; max-height:0; margin:0; transform:translateY(-8px)}
 
 .searchbox{position:relative; width:min(720px, 100%)}
