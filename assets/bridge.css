@@ -3,3 +3,6 @@
 .applinks{display:flex; gap:2px; background:var(--sunken); border:1px solid var(--line); border-radius:7px; padding:2px}
 .applinks a{padding:5px 12px; border-radius:5px; font-size:13px; font-weight:500; color:var(--muted); text-decoration:none; white-space:nowrap}
 .applinks a:hover{color:var(--text); background:var(--surface)}
+/* flying rows (bridge.js): a row that leaves fades out over the list, clipped to it */
+.tablewrap{position:relative; overflow-y:hidden}
+.flyghost{position:absolute; min-width:0; margin:0; table-layout:fixed; pointer-events:none; z-index:0}

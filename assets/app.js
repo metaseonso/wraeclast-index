@@ -3,6 +3,7 @@
      data/index.json   search index built from the game data (tools/sync.py)
      data/market.json  poe.ninja prices and 7-day trends (refreshed hourly by a GitHub Action)
    Build usage links to poe.ninja's own builds page: their builds API is not open to other sites. */
+import {initKeys} from './keys.js';
 
 export const $ = (s, el = document) => el.querySelector(s);
 export const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -513,15 +514,8 @@ export function mountTopSearch(host){
   q.addEventListener('focus', () => { if(q.value.trim() && rows.length) paint(); });
   q.addEventListener('blur', () => setTimeout(close, 120));
 }
-// "/" jumps into search from anywhere: the big box on home, the top box everywhere else
-document.addEventListener('keydown', e => {
-  if(e.key !== '/' || e.ctrlKey || e.metaKey || e.altKey) return;
-  const a = document.activeElement;
-  if(a && (/INPUT|TEXTAREA|SELECT/.test(a.tagName) || a.isContentEditable)) return;
-  const home = document.getElementById('q');
-  const target = (IS_APP && route() === 'home' && home) ? home : TOPQ;
-  if(target){ e.preventDefault(); e.stopImmediatePropagation(); target.focus(); target.select(); }
-}, true);   // capture: the drill-down page has its own "/" shortcut, and this one comes first
+// every keyboard shortcut lives in keys.js; "Search everything" jumps into the big box on home, the top box everywhere else
+initKeys(() => (IS_APP && route() === 'home' && document.getElementById('q')) || TOPQ);
 
 /* ---------- router ---------- */
 function route(){ const m = location.hash.match(/^#\/(\w+)/); return m ? m[1] : 'home'; }
