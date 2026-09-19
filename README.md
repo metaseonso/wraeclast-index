@@ -8,7 +8,7 @@ A searchable index for Path of Exile 2: skill gems, uniques, the passive tree an
 
 - **Gems** — every skill and support gem, with stats at any level (1–40) and quality.
 - **Uniques** — every unique item with its modifiers and a price from poe.ninja.
-- **Passive tree** — every passive node, with duplicates merged, filterable by ascendancy.
+- **Passive tree** — every passive node, with duplicates merged, filterable by ascendancy and attribute region, with the divine cost to anoint each notable.
 - **Timeless jewels** — every conqueror and its seed range.
 
 Game data comes from the RePoE PoE2 dump (build 4.5.5.2).
