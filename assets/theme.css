@@ -63,7 +63,7 @@ html:root:not([data-theme="none"]){scrollbar-color:#2A3627 #070907}
 .card-why{background:var(--accent-soft); border-left:3px solid var(--accent); border-radius:0 6px 6px 0}
 .pill{background:#0A0E0A}
 .pill.warn{color:#F08A82; border-color:rgba(179,38,30,.6); background:var(--blood-soft)}
-.card-ls li::before{background:var(--accent); box-shadow:0 0 6px rgba(140,203,63,.3)}
+.card-ls li::before{background:var(--accent); box-shadow:none; opacity:.45}
 
 /* controls */
 .searchbox input{background:#0B0F0B; border-color:#2C3A29}
@@ -75,6 +75,16 @@ html:root:not([data-theme="none"]){scrollbar-color:#2A3627 #070907}
 .top, .mast{border-bottom-color:#1E281C; box-shadow:0 1px 0 rgba(168,132,74,.12)}
 .up, .pos{color:var(--pos)}
 .down, .neg{color:var(--neg)}
+
+/* hotfix: the last green fills go dark, with the colour kept on the edge and the text */
+input[type=range], input[type=checkbox]{accent-color:#4E7A28}
+.chip.c-r[aria-pressed="true"], .chip.c-g[aria-pressed="true"], .chip.c-b[aria-pressed="true"], .chip.c-w[aria-pressed="true"]{
+  background:var(--raised); font-weight:500}
+.chip.c-r[aria-pressed="true"]{color:var(--str); border-color:var(--str)}
+.chip.c-g[aria-pressed="true"]{color:var(--dex); border-color:var(--dex)}
+.chip.c-b[aria-pressed="true"]{color:var(--int); border-color:var(--int)}
+.chip.c-w[aria-pressed="true"]{color:var(--any); border-color:var(--any)}
+.filtbtn:hover{background:var(--raised); color:var(--accent); border-color:var(--accent)}
 
 /* ---------- borders: thick enough not to break or clip at any screen scaling ---------- */
 .card, .searchbox input, .tsearch input, .field, .tabs, .seg, .nav, .applinks, .chip, .btn, .pill, .panel,
