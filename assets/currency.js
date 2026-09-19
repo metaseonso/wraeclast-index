@@ -82,8 +82,8 @@ function currencyCard(r){
   const on = S.watch.has(it.id);
   const star = '<button type="button" class="star" aria-pressed="' + on + '" title="' + (on ? 'Stop watching' : 'Watch this') +
     '" data-id="' + esc(it.id) + '">' + (on ? '★' : '☆') + '</button>';
-  const extra = '<p class="card-facts">Traded ' + compact(m.vol || 0) + ' div in the last day' +
-    (r.sw >= 12 ? ' · swings ' + Math.round(r.sw) + '% in a day' : '') + '</p>' + leagueLine(r);
+  const extra = '<p class="card-facts">' + compact(m.vol || 0) + ' div traded today' +
+    (r.sw >= 12 ? ' · swings ' + Math.round(r.sw) + '% a day' : '') + '</p>' + leagueLine(r);
   return card(it, {href: null, builds: false, action: star, extra});
 }
 function routeCard(r){
@@ -93,8 +93,8 @@ function routeCard(r){
   const why = 'Buy ' + it.n + ' with ' + PAIR[a.buy] + ' (about ' + b.v + ' ' + b.u + ' each), then sell it for ' +
     PAIR[a.sell] + ' (about ' + s.v + ' ' + s.u + ' each).';
   return card(it, {href: null, builds: false, why,
-    invest: {label: 'Gap before fees', note: '+' + Math.round(a.gain * 10) / 10 + '%'},
-    extra: '<p class="card-facts">Smaller side trades ' + compact(a.thin) + ' div a day</p>'});
+    invest: {label: 'Profit before fees', note: '+' + Math.round(a.gain * 10) / 10 + '%'},
+    extra: '<p class="card-facts">' + compact(a.thin) + ' div traded a day</p>'});
 }
 
 /* ---------- view ---------- */
@@ -104,10 +104,8 @@ export function mount(el){
   ALL = rows();
   const cats = ['all', ...new Set(ALL.map(r => r.m.cat))];
   el.innerHTML =
-    '<div class="pagehd"><h2>Currency</h2><p>Every currency-type item in <b>' + esc(D.market.league) + '</b>: what it does, where its price is going, ' +
-    'and where the same orb is cheaper in one currency than it sells for in another. Prices come from poe.ninja every hour.</p></div>' +
-    '<div class="sect"><h3>Trading routes</h3><p>The same item can cost less in one currency than it sells for in another. ' +
-    'These are daily average rates, not live orders, so check the in-game exchange first.</p></div>' +
+    '<div class="pagehd"><h2>Currency</h2><p>' + esc(D.market.league) + ' prices, updated every hour.</p></div>' +
+    '<div class="sect"><h3>Flips</h3><p>Buy in one currency, sell in another. Daily averages: check the exchange first.</p></div>' +
     '<div class="cards" id="routes"></div>' +
     '<div class="sect"><h3>Watch list</h3><p id="cxcount"></p></div>' +
     '<div class="controls cx">' +
@@ -117,12 +115,11 @@ export function mount(el){
         '<div class="kinds" id="cxtrend" style="margin:0;justify-content:flex-start">' + TRENDS.map(([k, l]) =>
           '<button type="button" class="chip" data-v="' + k + '" aria-pressed="' + (k === S.trend) + '">' + l + '</button>').join('') + '</div>' +
         '<span class="grow"></span>' +
-        '<label class="note"><input type="checkbox" id="cxliq" checked> Hide thin markets</label>' +
+        '<label class="note"><input type="checkbox" id="cxliq" checked> Hide low volume</label>' +
         '<select class="field" id="cxsort">' + SORTS.map(([k, l]) => '<option value="' + k + '">' + l + '</option>').join('') + '</select></div>' +
     '</div>' +
     '<div class="cards" id="cxcards"></div><div class="more" id="cxmore" hidden><button type="button" class="btn">Show more</button></div>' +
-    '<p class="note" style="margin-top:18px">Rising or falling means more than 10% over 7 days. Swinging means a single day moved 12% or more. ' +
-    'Below league average compares today with the average since the league began. Hide thin markets drops items with under ' + MIN_VOL + ' divine traded a day.</p>';
+    '<p class="note" style="margin-top:18px">Rising or falling: 10%+ this week. Swinging: 12%+ in one day. Low volume: under ' + MIN_VOL + ' div a day.</p>';
 
   const seg = (id, key) => $('#' + id, el).addEventListener('click', e => {
     const b = e.target.closest('button'); if(!b) return;
@@ -150,7 +147,7 @@ export function mount(el){
     .sort((a, b) => b.m.arb.gain - a.m.arb.gain);
   const rg = $('#routes', el);
   if(routes.length) flow(rg, routes.map(r => ({key: 'r:' + r.it.id, r})), x => routeCard(x.r));
-  else rg.innerHTML = '<p class="note">No route shows a gap of ' + ROUTE_MIN + '% or more with real volume on both sides right now.</p>';
+  else rg.innerHTML = '<p class="note">No good flips right now.</p>';
   return {update};
 }
 
@@ -170,6 +167,6 @@ function render(){
   const grid = $('#cxcards', EL);
   flow(grid, list.slice(0, S.shown).map(r => ({key: 'c:' + r.it.id, r})), x => currencyCard(x.r));
   if(!list.length) grid.innerHTML = '<div class="empty" style="grid-column:1/-1"><h3>Nothing here</h3><p>' +
-    (S.trend === 'watch' ? 'Tap the star on any card to watch it.' : 'Loosen a filter.') + '</p></div>';
+    (S.trend === 'watch' ? 'Tap the star on a card to watch it.' : 'Try fewer filters.') + '</p></div>';
   $('#cxmore', EL).hidden = list.length <= S.shown;
 }

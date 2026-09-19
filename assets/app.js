@@ -228,7 +228,7 @@ export function card(it, opts = {}){
     (opts.extra || '') +
     '<div class="card-ft">' + (opts.action || '') + (px ? spark(px.sp, px.ch) : '') +
       (use !== null ? '<span class="use">in ' + (use >= 10 ? Math.round(use) : trim(use, 1)) + '% of builds</span>' : '') +
-      (px && px.ls !== undefined && px.ls < 3 ? '<span class="use" title="Few listings: this is one asking price, not a market">thin market</span>' : '') +
+      (px && px.ls !== undefined && px.ls < 3 ? '<span class="use" title="Only a few listed">few listed</span>' : '') +
       (bh ? '<a class="card-ext" href="' + esc(bh) + '" target="_blank" rel="noopener" title="Characters in ' +
         esc(D.market.league) + ' that use this, on poe.ninja">Builds ↗</a>' : '') +
       '<span class="kind">' + (opts.kind || KIND[it.k] || '') + '</span></div>';
@@ -268,8 +268,8 @@ function detailExtras(it, px){
     out += bigLine(px.h.map(x => x[1]), 'This league, ' + px.h[0][0] + ' to today \u00b7 low ' + lo.v + ' ' + lo.u + ', high ' + hi.v + ' ' + hi.u);
   } else if(px.sp) out += bigLine(px.sp, 'Last 7 days');
   const facts = [];
-  if(px.ls !== undefined) facts.push('Listed ' + px.ls.toLocaleString() + ' times right now');
-  if(px.vol) facts.push('Traded ' + Math.round(px.vol).toLocaleString() + ' divine in the last day');
+  if(px.ls !== undefined) facts.push(px.ls.toLocaleString() + ' listed');
+  if(px.vol) facts.push(Math.round(px.vol).toLocaleString() + ' div traded today');
   if(px.routes) facts.push('Price by currency: ' + px.routes.map(r => { const m = money(r.v); return {divine: 'Divine', exalted: 'Exalted', chaos: 'Chaos'}[r.via] + ' ' + m.v + ' ' + m.u; }).join(', '));
   if(facts.length) out += '<p class="card-facts">' + facts.map(esc).join(' \u00b7 ') + '</p>';
   return out;
@@ -449,7 +449,7 @@ function homeRender(){
   flow($('#cards'), shown.map(it => ({key: it.k + ':' + it.id, it})), x => card(x.it));
   more.hidden = list.length <= H.shown;
   if(has && !list.length){
-    $('#cards').innerHTML = '<div class="empty" style="grid-column:1/-1"><h3>Nothing matches</h3><p>Try fewer words, or another spelling.</p></div>';
+    $('#cards').innerHTML = '<div class="empty" style="grid-column:1/-1"><h3>Nothing matches</h3><p>Try fewer words.</p></div>';
   }
 }
 
@@ -473,7 +473,7 @@ export function mountTopSearch(host){
       return '<button type="button" class="tsearch-row k-' + it.k + '" role="option" data-i="' + i + '" aria-selected="' + (i === sel) + '">' +
         '<span class="card-ic">' + iconHTML(it) + '</span><span class="t"><b>' + esc(it.n) + '</b><span>' + esc(it.s || '') + '</span></span>' +
         (px && px.v !== undefined ? '<span class="p">' + moneyHTML(px.v) + '</span>' : '') + '</button>';
-    }).join('') + (total > rows.length ? '<div class="tsearch-none">Top ' + rows.length + ' of ' + total.toLocaleString() + '. Type more to narrow it down.</div>' : '')
+    }).join('') + (total > rows.length ? '<div class="tsearch-none">Top ' + rows.length + ' of ' + total.toLocaleString() + '.</div>' : '')
     : '<div class="tsearch-none">Nothing matches.</div>';
     drop.hidden = false; q.setAttribute('aria-expanded', 'true');
   };

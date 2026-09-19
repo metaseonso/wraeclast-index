@@ -1,5 +1,5 @@
 /* Build tab: paste a Path of Building code, get offense-or-defense priority and a ranked list of
-   investments priced with live poe.ninja data. Everything runs in the browser; nothing is sent anywhere.
+   investments priced with live poe.ninja data. Runs in the browser.
    PoB is used only to READ the code. Item data and prices come from the game files and poe.ninja. */
 import { D, $, esc, card, flow } from './app.js';
 
@@ -7,21 +7,21 @@ import { D, $, esc, card, flow } from './app.js';
    PoB: base64url( zlib( xml ) ). DecompressionStream('deflate') reads zlib. */
 async function decode(code){
   let s = code.trim();
-  if(/^https?:\/\//i.test(s)) throw new Error('That is a link. This page cannot open links from other sites. Open the link, copy the build code itself, and paste that here.');
+  if(/^https?:\/\//i.test(s)) throw new Error("That's a link. Open it and copy the build code instead.");
   s = s.replace(/\s+/g, '').replace(/-/g, '+').replace(/_/g, '/').replace(/[^A-Za-z0-9+/=]/g, '').replace(/=+$/, '');
-  if(s.length < 100) throw new Error('That is too short to be a build code.');
+  if(s.length < 100) throw new Error("That doesn't look like a build code.");
   s += '='.repeat((4 - s.length % 4) % 4);
   let bytes;
   try { const bin = atob(s); bytes = Uint8Array.from(bin, c => c.charCodeAt(0)); }
-  catch { throw new Error('That is not a Path of Building code.'); }
+  catch { throw new Error("That doesn't look like a build code."); }
   const fmt = bytes[0] === 0x1f && bytes[1] === 0x8b ? 'gzip' : 'deflate';
   let xml;
   try { xml = await new Response(new Blob([bytes]).stream().pipeThrough(new DecompressionStream(fmt))).text(); }
-  catch { throw new Error('The code could not be unpacked. Copy it again from Path of Building.'); }
-  if(xml.length > 5e6) throw new Error('That build is too large to read.');
+  catch { throw new Error("Couldn't read that code. Copy it again from Path of Building."); }
+  if(xml.length > 5e6) throw new Error('That build is too big to read.');
   const doc = new DOMParser().parseFromString(xml, 'application/xml');
-  if(doc.querySelector('parsererror') || !doc.querySelector('Build')) throw new Error('The code unpacked, but it is not a Path of Building build.');
-  if(doc.documentElement.nodeName !== 'PathOfBuilding2') throw new Error('This is a Path of Exile 1 build. This page reads Path of Exile 2 builds.');
+  if(doc.querySelector('parsererror') || !doc.querySelector('Build')) throw new Error("That code isn't a Path of Building build.");
+  if(doc.documentElement.nodeName !== 'PathOfBuilding2') throw new Error("That's a Path of Exile 1 build. This page is for Path of Exile 2.");
   return doc;
 }
 
@@ -124,16 +124,16 @@ function assess(b){
   for(const [k, name] of ELEM){
     const v = p[k];
     if(v !== null && v !== undefined && v < 75) out.issues.push({side: 'def', kind: 'res', el: name, gap: 75 - v, sev: 100 + (75 - v),
-      text: name + ' resistance is ' + v + '%, ' + (75 - v) + '% under the 75% cap'});
+      text: name + ' resistance is ' + v + '%. Cap is 75%'});
   }
   if(p.ChaosResist !== null && p.ChaosResist !== undefined && p.ChaosResist < (b.level >= 80 ? 20 : 0)){
     const goal = b.level >= 80 ? 20 : 0;
     out.issues.push({side: 'def', kind: 'res', el: 'Chaos', gap: goal - p.ChaosResist, sev: 70 + (goal - p.ChaosResist) / 2,
-      text: 'Chaos resistance is ' + p.ChaosResist + '%' + (goal ? ', under the ' + goal + '% worth having at this level' : '')});
+      text: 'Chaos resistance is ' + p.ChaosResist + '%' + (goal ? '. Aim for ' + goal + '%+' : '')});
   }
   for(const [a, r, name] of [['Str', 'ReqStr', 'Strength'], ['Dex', 'ReqDex', 'Dexterity'], ['Int', 'ReqInt', 'Intelligence']]){
     if(p[a] !== undefined && p[r] !== undefined && p[a] !== null && p[r] !== null && p[a] < p[r])
-      out.issues.push({side: 'def', kind: 'attr', sev: 96, text: 'You need ' + (p[r] - p[a]) + ' more ' + name + ' to use all your gear and gems'});
+      out.issues.push({side: 'def', kind: 'attr', sev: 96, text: 'You need ' + (p[r] - p[a]) + ' more ' + name + ' for your gear and gems'});
   }
   const hits = ['Physical', 'Fire', 'Cold', 'Lightning'].map(e => [e, p[e + 'MaximumHitTaken']]).filter(x => x[1] !== null && x[1] !== undefined && isFinite(x[1]));
   if(hits.length){
@@ -141,7 +141,7 @@ function assess(b){
     out.hit = {el, v: hit};
     out.defRatio = hit / t.hit;
     if(out.defRatio < 1) out.issues.push({side: 'def', kind: 'hit', el, sev: 40 + 70 * (1 - out.defRatio),
-      text: 'The biggest ' + el.toLowerCase() + ' hit you survive is ' + Math.round(hit).toLocaleString() + '; aim for ' + t.hit.toLocaleString() + '+ at level ' + b.level});
+      text: 'Biggest ' + el.toLowerCase() + ' hit you can take: ' + Math.round(hit).toLocaleString() + '. Aim for ' + t.hit.toLocaleString() + '+'});
   }
   const pool = (p.Life || 0) + (p.EnergyShield || 0);
   out.pool = pool;
@@ -149,14 +149,14 @@ function assess(b){
   if(!hits.length && pool){
     out.defRatio = pool / t.pool;
     if(out.defRatio < 1) out.issues.push({side: 'def', kind: 'hit', el: 'Physical', sev: 40 + 70 * (1 - out.defRatio),
-      text: 'Life and Energy Shield total ' + pool.toLocaleString() + '; aim for ' + t.pool.toLocaleString() + '+ at level ' + b.level});
+      text: 'Life plus Energy Shield: ' + pool.toLocaleString() + '. Aim for ' + t.pool.toLocaleString() + '+'});
   }
   const d = dpsOf(b);
   out.dps = d.dps; out.minionDps = d.minion;
   if(d.dps > 0){
     out.offRatio = d.dps / t.dps;
     if(out.offRatio < 1) out.issues.push({side: 'off', kind: 'dps', sev: 40 + 70 * (1 - out.offRatio),
-      text: 'Damage is ' + short(d.dps) + ' per second; aim for ' + short(t.dps) + '+ at level ' + b.level});
+      text: 'Damage: ' + short(d.dps) + ' per second. Aim for ' + short(t.dps) + '+'});
   }
   const resGap = out.issues.some(x => x.kind === 'res' && x.el !== 'Chaos');
   const dr = out.defRatio ?? 1, or = out.offRatio ?? 1;
@@ -222,8 +222,7 @@ function recommend(b, A){
     if(x.kind === 'hit'){
       const r = A.es ? bestRune(ARMOUR_SLOTS, /(\d+)% increased maximum Energy Shield/, 1) || bestRune(ARMOUR_SLOTS, /\+(\d+) to maximum Energy Shield/, 1)
                      : bestRune(ARMOUR_SLOTS, /\+(\d+) to maximum Life/, 1);
-      if(r) recs.push({sev: x.sev + bonus('def'), it: r.a.it, why: x.text + '. A bigger ' + (A.es ? 'Energy Shield' : 'Life') +
-        ' pool raises that number. Each ' + slotWord(r.slot) + ' socket with this adds ' + r.line + '.', invest: {label: 'Cost each', div: r.a.m.v}});
+      if(r) recs.push({sev: x.sev + bonus('def'), it: r.a.it, why: x.text + '. More ' + (A.es ? 'Energy Shield' : 'Life') + ' helps. Each ' + slotWord(r.slot) + ' socket with this adds ' + r.line + '.', invest: {label: 'Cost each', div: r.a.m.v}});
     }
     if(x.kind === 'dps'){
       const tags = (gemEntry(b.gems[0]) || {}).tags || [];
@@ -243,11 +242,11 @@ function recommend(b, A){
   if(g && !(gemEntry(g) || {}).sup && g.level < 20){
     const ug = c(/Spirit/.test(((gemEntry(g) || {}).s) || '') ? 'Uncut Spirit Gem (Level 20)' : 'Uncut Skill Gem (Level 20)');
     if(ug) recs.push({sev: 55 + (20 - g.level) * 2 + bonus('off'), it: ug.it,
-      why: g.name + ' is level ' + g.level + '. A level 20 copy is more damage for one purchase.', invest: {label: 'Cost', div: ug.m.v}});
+      why: g.name + ' is level ' + g.level + '. Level 20 hits harder.', invest: {label: 'Cost', div: ug.m.v}});
   }
   if(g && g.quality < 20){
     const pr = c("Gemcutter's Prism");
-    if(pr) recs.push({sev: 25 + bonus('off'), it: pr.it, why: g.name + ' has ' + g.quality + '% quality. Quality adds to what the gem does.',
+    if(pr) recs.push({sev: 25 + bonus('off'), it: pr.it, why: g.name + ' has ' + g.quality + '% quality. Quality makes it stronger.',
       invest: {label: 'Cost each', div: pr.m.v}});
   }
   // timing: the crafting orbs that moved most this week
@@ -255,8 +254,8 @@ function recommend(b, A){
   const moves = CRAFT.map(c).filter(x => x && (x.m.vol ?? 0) >= 50 && Math.abs(x.m.ch ?? 0) >= 10)
     .sort((p, q) => Math.abs(q.m.ch) - Math.abs(p.m.ch)).slice(0, 2);
   for(const x of moves) recs.push({sev: 15, it: x.it, timing: true,
-    why: x.m.ch < 0 ? 'Down ' + Math.round(-x.m.ch) + '% this week: a cheap time to stock up for crafting upgrades.'
-                    : 'Up ' + Math.round(x.m.ch) + '% this week: buy what you need soon, or sell spares.',
+    why: x.m.ch < 0 ? 'Down ' + Math.round(-x.m.ch) + '% this week. Good time to stock up for crafting.'
+                    : 'Up ' + Math.round(x.m.ch) + '% this week. Buy soon, or sell spares.',
     invest: {label: 'Price now', div: x.m.v}});
   recs.sort((p, q) => q.sev - p.sev);
   return recs;
@@ -273,12 +272,11 @@ let EL;
 export function mount(el){
   EL = el;
   el.innerHTML =
-    '<div class="pagehd"><h2>Build</h2><p>Paste a Path of Building code. You get what to fix first, offense or defense, and what to buy next, ' +
-    'priced with live ' + esc(D.market ? D.market.league : '') + ' prices. The code is read in your browser; nothing is sent anywhere.</p></div>' +
+    '<div class="pagehd"><h2>Build</h2><p>Paste your Path of Building code. See what to fix first and what to buy next, at today\'s prices.</p></div>' +
     '<div class="panel"><label class="lbl" for="pob">Path of Building code</label>' +
       '<textarea class="field" id="pob" spellcheck="false" placeholder="In Path of Building: Import/Export Build → Generate → Copy, then paste here"></textarea>' +
       '<div class="row" style="margin-top:10px"><button type="button" class="btn primary" id="pobgo">Read build</button>' +
-      '<span class="note" id="pobmsg">Links from pobb.in or poe.ninja cannot be opened from here. Open the link and copy the code itself.</span></div></div>' +
+      '<span class="note" id="pobmsg">Paste the code, not a pobb.in or poe.ninja link.</span></div></div>' +
     '<div id="pobout"></div>';
   const go = () => run($('#pob', el).value);
   $('#pobgo', el).addEventListener('click', go);
@@ -295,24 +293,23 @@ async function run(code){
   try { b = read(await decode(code)); }
   catch(e){ msg.textContent = e.message; msg.className = 'err'; out.innerHTML = ''; return; }
   try { sessionStorage.setItem('wi.pob', code.trim()); } catch {}
-  msg.textContent = 'Read. Prices: ' + (D.market ? D.market.league : 'not loaded') + '.'; msg.className = 'note';
+  msg.textContent = ''; msg.className = 'note';
   const A = assess(b);
   const recs = D.market ? recommend(b, A) : [];
   out.innerHTML = summaryHTML(b, A) +
-    '<div class="sect"><h3>Invest next</h3><p>Ranked. ' + (A.priority === 'def' ? 'Defense' : 'Offense') + ' comes first for this build. Costs are live.</p></div>' +
+    '<div class="sect"><h3>Buy next</h3><p>Best first. Prices are live.</p></div>' +
     '<div class="cards" id="recs"></div>' +
-    '<div class="sect"><h3>Your gear</h3><p>What each piece is worth today and where its price is going.</p></div><div class="cards" id="gear"></div>' +
-    '<div class="sect"><h3>Your main skill</h3><p>The skill Path of Building marks as main, and its supports.</p></div><div class="cards" id="gems"></div>' +
-    '<p class="note" style="margin-top:18px">How this works: the numbers are the ones Path of Building saved into the code, and Path of Building can lag behind a new patch. ' +
-    'Targets are rules of thumb for the endgame at your level: ' + short(A.t.dps) + ' damage per second, and surviving a ' + A.t.hit.toLocaleString() +
-    ' hit. Rare items have no single market price, because each one is priced by its own mods.</p>';
+    '<div class="sect"><h3>Your gear</h3><p>What it\'s worth today.</p></div><div class="cards" id="gear"></div>' +
+    '<div class="sect"><h3>Main skill</h3><p>And its supports.</p></div><div class="cards" id="gems"></div>' +
+    '<p class="note" style="margin-top:18px">Stats come from Path of Building. Goals at level ' + b.level + ': ' + short(A.t.dps) +
+    ' damage per second, and surviving a ' + A.t.hit.toLocaleString() + ' hit.</p>';
 
   const recCards = recs.filter(r => r.it).map((r, i) => ({key: 'rec:' + i + ':' + r.it.id, r}));
   const info = recs.filter(r => r.info);
   const rg = $('#recs', out);
   flow(rg, recCards, x => card(x.r.it, {rank: recCards.indexOf(x) + 1, why: x.r.why, invest: x.r.invest, href: hrefFor(x.r.it), builds: false}));
   info.forEach(r => rg.insertAdjacentHTML('afterbegin', '<article class="card k-b"><span class="card-rank">!</span><p class="card-why">' + esc(r.info) +
-    '</p><p class="note">Fix this on the passive tree or with attribute rolls on gear: it has no market item.</p></article>'));
+    '</p><p class="note">Fix it with passives or gear.</p></article>'));
   if(!recs.length) rg.innerHTML = '<p class="note">Nothing stands out. This build meets every target for its level.</p>';
 
   flow($('#gear', out), b.items.map((x, i) => ({key: 'gear:' + i, x})), g => gearCard(g.x));
@@ -323,8 +320,8 @@ function hrefFor(it){ return it.k === 'c' ? '#/currency?c=' + encodeURIComponent
 function summaryHTML(b, A){
   const p = b.player, fmt = v => v === null || v === undefined ? '—' : Math.round(v).toLocaleString();
   const res = ELEM.map(([k, n]) => [n, p[k]]).concat([['Chaos', p.ChaosResist]]);
-  const verdict = A.noStats ? 'This code has no saved stats. Open it in Path of Building once, then export it again.'
-    : A.onTrack ? 'On track for level ' + b.level + '. More damage farms faster, so offense is the better next spend.'
+  const verdict = A.noStats ? 'No stats in this code. Open it in Path of Building, then export it again.'
+    : A.onTrack ? 'Looking good for level ' + b.level + '. Spend on damage next.'
     : (A.priority === 'def' ? 'Defense first.' : 'Offense first.') + ' ' + A.issues.filter(x => x.side === A.priority).slice(0, 2).map(x => x.text).join('. ') + '.';
   return '<div class="panel buildsum">' +
     '<div class="bs-hd"><h3>' + esc(b.asc || b.cls || 'Build') + '</h3><span class="card-sub">' + esc(b.cls) + ' · level ' + b.level +
@@ -333,7 +330,7 @@ function summaryHTML(b, A){
     '<dl class="bs-grid">' +
       '<div><dt>Damage per second' + (A.minionDps ? ' (minions)' : '') + '</dt><dd>' + (A.dps ? short(A.dps) : '—') + '</dd></div>' +
       '<div><dt>Life</dt><dd>' + fmt(p.Life) + '</dd></div><div><dt>Energy Shield</dt><dd>' + fmt(p.EnergyShield) + '</dd></div>' +
-      '<div><dt>Biggest hit you survive</dt><dd>' + (A.hit ? fmt(A.hit.v) + ' <small>' + A.hit.el.toLowerCase() + '</small>' : '—') + '</dd></div>' +
+      '<div><dt>Biggest hit you can take</dt><dd>' + (A.hit ? fmt(A.hit.v) + ' <small>' + A.hit.el.toLowerCase() + '</small>' : '—') + '</dd></div>' +
       res.map(([n, v]) => '<div><dt>' + n + ' res</dt><dd class="' + (v !== undefined && v !== null && v < (n === 'Chaos' ? 0 : 75) ? 'down' : '') + '">' +
         (v === undefined || v === null ? '—' : v + '%') + '</dd></div>').join('') +
       (p.SpiritUnreserved !== undefined && p.SpiritUnreserved !== null && p.SpiritUnreserved < 0
@@ -351,8 +348,8 @@ function gearCard(x){
     const it = uniqueEntry(x);
     if(it){
       const px = D.market && (D.market.items['u:' + it.id] || D.market.items['u:' + x.name + ' | ' + x.base] || D.market.items['u:' + it.n]);
-      const why = !px ? 'No market price this hour.' : (px.ch ?? 0) <= -15 ? 'Falling ' + Math.round(-px.ch) + '% this week. If you plan to replace it, sell soon.'
-        : (px.ch ?? 0) >= 15 ? 'Rising ' + Math.round(px.ch) + '% this week. It is gaining value while you wear it.' : 'Steady this week.';
+      const why = !px ? 'No price right now.' : (px.ch ?? 0) <= -15 ? 'Down ' + Math.round(-px.ch) + '% this week. Sell soon if you\'re swapping it.'
+        : (px.ch ?? 0) >= 15 ? 'Up ' + Math.round(px.ch) + '% this week.' : 'Steady this week.';
       return card(it, {price: px || null, why, kind: x.slot, invest: px ? {label: 'Worth now', div: px.v} : undefined});
     }
   }
@@ -360,7 +357,7 @@ function gearCard(x){
     ls: x.mods, rq: x.lv ? [x.lv, 0, 0, 0] : undefined, cor: x.flags.some(f => /Corrupt/.test(f)) ? 1 : 0};
   const runes = x.runes.length ? '<p class="card-facts">Sockets: ' + esc(x.runes.join(', ')) + '</p>' : '';
   return card(it, {href: null, builds: false, kind: x.slot, extra: runes,
-    invest: {label: 'Market price', note: x.rarity === 'RARE' ? 'priced by its mods' : x.rarity.toLowerCase()}});
+    invest: {label: 'Market price', note: x.rarity === 'RARE' ? 'check trade' : x.rarity.toLowerCase()}});
 }
 function gemCard(g, main){
   const it = gemEntry(g);
