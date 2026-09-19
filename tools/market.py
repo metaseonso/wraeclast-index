@@ -192,6 +192,19 @@ def main():
     out = {'league': league, 'updated': dt.datetime.now(dt.timezone.utc).isoformat(timespec='minutes'),
            'primary': 'divine', 'rates': rates or {}, 'source': 'poe.ninja', 'builds': slug, 'items': items}
     (ROOT / 'data' / 'market.json').write_text(json.dumps(out, ensure_ascii=False, separators=(',', ':')), encoding='utf-8')
+    # what each currency the trade site prices things in is worth, in divines (the worker turns trade listings
+    # into divine prices with this; see worker/prices.js)
+    try:
+        exchange = json.loads((ROOT / 'data' / 'trade.json').read_text(encoding='utf-8'))['exchange']
+        worth = {'divine': 1}
+        for name, cid in exchange.items():
+            it = items.get('c:' + name)
+            if it and it.get('v'):
+                worth[cid] = it['v']
+        (ROOT / 'data' / 'worth.json').write_text(json.dumps({'league': league, 'updated': out['updated'], 'worth': worth},
+                                                             separators=(',', ':')), encoding='utf-8')
+    except (OSError, KeyError, ValueError) as e:
+        print('worth.json skipped:', e)
     kinds = {}
     for k in items:
         kinds[k[0]] = kinds.get(k[0], 0) + 1
