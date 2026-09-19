@@ -7,7 +7,7 @@ const URL_T = 'api/t';
 const APP = ['home', 'build', 'currency', 'trade', 'farms', 'atlas'];
 const KIND = {g: 'gem', u: 'unique', p: 'passive', w: 'keyword', c: 'currency', b: 'build item', f: 'farm'};
 const CAP = {v: 50, c: 200, h: 200};
-const SEP = '';
+const SEP = '\u0001';
 
 function off(){
   const n = navigator;
@@ -40,7 +40,7 @@ function arrival(){
 }
 
 /* ---------- what was clicked: a fixed label, never typed text ---------- */
-const clip = s => String(s || '').replace(/[←-⇿☀-➿×]/g, '').replace(/\s+/g, ' ').trim().slice(0, 30).trim();
+const clip = s => String(s || '').replace(/[\u2190-\u21ff\u2600-\u27bf\u00d7]/g, '').replace(/\s+/g, ' ').trim().slice(0, 30).trim();
 function words(el){   // the element's own words, without counts, icons or key hints
   const c = el.cloneNode(true);
   c.querySelectorAll('.ct, svg, kbd, img, small, .card-ic').forEach(x => x.remove());
