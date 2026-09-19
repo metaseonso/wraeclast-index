@@ -192,6 +192,15 @@ textarea.field{width:100%; min-height:92px; resize:vertical; font:12px/1.4 var(-
 .star:hover{color:var(--text)}
 .star[aria-pressed="true"]{color:var(--accent)}
 label.note{display:inline-flex; gap:6px; align-items:center; cursor:pointer}
+.buildsum{margin-top:18px; display:grid; gap:12px}
+.bs-hd{display:flex; align-items:baseline; gap:12px; flex-wrap:wrap}
+.bs-hd h3{font-family:var(--disp); font-size:22px}
+.verdict{margin:0; font-size:15px; line-height:1.5; padding:10px 12px; border-radius:8px; background:var(--raised); border-left:3px solid var(--accent)}
+.verdict.def{border-left-color:var(--neg)}
+.bs-grid{display:grid; grid-template-columns:repeat(auto-fill, minmax(150px, 1fr)); gap:8px 16px; margin:0}
+.bs-grid dt{font-size:10.5px; text-transform:uppercase; letter-spacing:.08em; color:var(--faint)}
+.bs-grid dd{margin:2px 0 0; font:600 16px var(--mono); font-variant-numeric:tabular-nums}
+.bs-grid dd small{font-size:11px; font-weight:500; color:var(--faint)}
 
 .foot{border-top:1px solid var(--line); margin-top:30px}
 .foot p{max-width:1400px; margin:0 auto; padding:18px 16px 30px; color:var(--faint); font-size:11.5px; line-height:1.6}
