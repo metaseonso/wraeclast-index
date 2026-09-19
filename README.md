@@ -17,6 +17,7 @@ Search every Path of Exile 2 gem, unique, passive, currency and keyword, with li
 | Gems, uniques, passives, keywords | The official game files (RePoE export), checked against poe2db | Each game patch |
 | Item requirements, currency text | The official game files (RePoE `base_items`, `augments`) | Each game patch |
 | Prices and trends | poe.ninja public economy API, current league | Every hour |
+| Card images | Official game art only: the game's image server (links from poe.ninja and the official trade site), poe.ninja's passive icons, and RePoE's export of the game's art | Each sync |
 
 Standards every page follows:
 - No raw game code in the default view (see issue #12).
@@ -38,6 +39,7 @@ The site is static. GitHub Pages serves it; a GitHub Action (`.github/workflows/
 
 1. After a game patch: `python tools/gameinfo.py`
 2. After the Wraeclast Index artifact changes: save it, then `python tools/sync.py path/to/artifact.html`
+   (the first run checks each new image link once, a few minutes; lists are cached a day in `tools/cache/`)
 3. Commit and push to `main`. The site republishes in about a minute.
 
 Path of Exile is a trademark of Grinding Gear Games. This is a fan project and is not affiliated with them.

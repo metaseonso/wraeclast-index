@@ -5,12 +5,17 @@ The artifact page (gems, uniques, passive tree) is the drill-down. This script:
      keeping the keyword links wherever the wording matches
   2. copies the page to explore.html and adds the small bridge script that links it to the home page
   3. builds data/index.json, the compact search index the home page loads
+  4. gives every card without a sprite an official game image (see "card images" below)
 
 Usage:  python tools/sync.py path/to/artifact.html
 """
+import gzip
 import json
 import re
 import sys
+import time
+import urllib.parse
+import urllib.request
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -139,6 +144,124 @@ def first_sentence(t, limit=150):
     return out if len(out) <= limit else out[:limit - 1].rstrip() + '…'
 
 
+# ---- card images ----
+# Gems and most uniques show a sprite ("ic"). Every other card gets "img": a short code "<key>:<path>"
+# that the page expands with the index's "imgs" table. All of it is official game art, best source first:
+#   p  web.poecdn.com, the game's own image server: unique icons from poe.ninja's price lists, lineage
+#      support gems from the official trade site's static list. Those links are signed: copied, never built.
+#   n  assets.poe.ninja: passive skill icons, at the node's icon path in the official passive tree,
+#      in lower case as webp (the names poe.ninja's own tree uses). A node with no icon gets the blank socket.
+#   r  repoe-fork.github.io: the 2D art exported from the game files, for items the two above lack,
+#      and the one book (the in-game Book of Skill) on every keyword card.
+# Each list is fetched at most once per run (cached for a day in tools/cache/). Each link built from a
+# path is checked once (it must answer with an image) and remembered in tools/cache/checked.json.
+REPOE = 'https://repoe-fork.github.io/poe2/'
+IMGS = {'p': 'https://web.poecdn.com/gen/image/', 'n': 'https://assets.poe.ninja/poe2/tree/', 'r': REPOE}
+KEYWORD_IMG = 'r:Art/2DItems/QuestItems/SkillBook.webp'
+BLANK_NODE = 'n:passives/masteryblank.webp'   # the tree's own art for a node with no picture (a jewel socket)
+UA = 'wraeclast-index/1.0 (+https://wraeclastindex.fyi)'
+CACHE = ROOT / 'tools' / 'cache'
+NINJA = 'https://poe.ninja/poe2/api/economy/stash/current/item/overview?'
+STASH = ['UniqueWeapons', 'UniqueArmours', 'UniqueAccessories', 'UniqueFlasks', 'UniqueCharms',
+         'UniqueJewels', 'UniqueSanctumRelics', 'UniqueTablets', 'PrecursorTablets']
+TRADE_STATIC = 'https://www.pathofexile.com/api/trade2/data/static'
+
+
+def remote(name, url):
+    """A remote JSON list, kept a day in tools/cache/<name>. On failure the last copy, else None."""
+    f = CACHE / name
+    if f.exists() and time.time() - f.stat().st_mtime < 86400:
+        return json.loads(f.read_bytes())
+    time.sleep(1)   # one request a second at most
+    req = urllib.request.Request(url, headers={'User-Agent': UA, 'Accept': 'application/json', 'Accept-Encoding': 'gzip'})
+    try:
+        with urllib.request.urlopen(req, timeout=90) as r:
+            body = r.read()
+            if r.headers.get('Content-Encoding') == 'gzip':
+                body = gzip.decompress(body)
+        json.loads(body)
+        CACHE.mkdir(parents=True, exist_ok=True)
+        f.write_bytes(body)
+    except Exception as e:
+        print('  could not fetch', url, e, file=sys.stderr)
+        if not f.exists():
+            return None
+    return json.loads(f.read_bytes())
+
+
+CHECKED = CACHE / 'checked.json'
+_checked = set(json.loads(CHECKED.read_text(encoding='utf-8'))) if CHECKED.exists() else set()
+
+
+def shows(code):
+    """True if the image code's link answers with an image. Good links are remembered."""
+    key, path = code.split(':', 1)
+    url = IMGS[key] + path
+    if url in _checked:
+        return True
+    time.sleep(0.25)
+    try:
+        with urllib.request.urlopen(urllib.request.Request(url, method='HEAD', headers={'User-Agent': UA}), timeout=30) as r:
+            ok = r.status == 200 and r.headers.get_content_type().startswith('image/')
+    except Exception:
+        ok = False
+    if ok:
+        _checked.add(url)
+    return ok
+
+
+def game_art(dds):
+    """A game file's art path (Art/.../X.dds) -> its image code on RePoE."""
+    return 'r:' + urllib.parse.quote(dds[:-4]) + '.webp' if dds and dds.lower().endswith('.dds') else None
+
+
+def image_sources():
+    """Name -> image code tables for each kind of card, from the lists above."""
+    src = {'unique': {}, 'gem': {}, 'art': {}, 'unique_art': {}, 'node': {}}
+    market = ROOT / 'data' / 'market.json'
+    league = json.loads(market.read_text(encoding='utf-8')).get('league') if market.exists() else None
+    for typ in STASH if league else []:
+        d = remote('ninja-%s.json' % typ, NINJA + urllib.parse.urlencode({'league': league, 'type': typ})) or {}
+        for l in d.get('lines') or []:
+            if l.get('name') and (l.get('icon') or '').startswith(IMGS['p']):
+                code = 'p:' + l['icon'][len(IMGS['p']):]
+                src['unique'].setdefault((l['name'], l.get('baseType')), code)
+                src['unique'].setdefault((l['name'], None), code)
+    for g in (remote('trade-static.json', TRADE_STATIC) or {}).get('result') or []:
+        for e in g.get('entries') or []:
+            if g.get('id') == 'LineageSupportGems' and (e.get('image') or '').startswith('/gen/image/'):
+                src['gem'][e['text']] = 'p:' + e['image'][len('/gen/image/'):]
+    for path, b in (remote('repoe-base_items.json', REPOE + 'base_items.min.json') or {}).items():
+        code = game_art((b.get('visual_identity') or {}).get('dds_file'))
+        if code and b.get('release_state') == 'released' and 'Gem' in (b.get('item_class') or ''):
+            src['art'].setdefault(path.rsplit('/', 1)[-1], code)   # by gem id
+            src['art'].setdefault(b['name'], code)
+    for u in (remote('repoe-uniques.json', REPOE + 'uniques.min.json') or {}).values():
+        code = game_art((u.get('visual_identity') or {}).get('dds_file'))
+        if code and not u.get('is_alternate_art'):
+            src['unique_art'].setdefault(u['name'], code)
+    tree = remote('repoe-tree.json', REPOE + 'passive_skill_trees/Default.min.json') or {}
+    for p in (tree.get('passives') or {}).values():
+        icon = re.sub(r'^Art/2DArt/SkillIcons/', '', p.get('icon') or '', flags=re.I)
+        if icon.lower().endswith('.dds') and not icon.startswith('Art/'):
+            src['node'][p['id']] = 'n:' + urllib.parse.quote(icon[:-4].lower()) + '.webp'
+    return src
+
+
+def card_image(it, src, base=None):
+    """The first image code that shows, for a card without a sprite."""
+    if it['k'] == 'w':
+        tries = [KEYWORD_IMG]
+    elif it['k'] == 'p':
+        tries = [src['node'].get(it['id']), BLANK_NODE]
+    elif it['k'] == 'u':
+        tries = [src['unique'].get((it['n'], base)), src['unique'].get((it['n'], None)), src['unique_art'].get(it['n'])]
+    else:
+        tries = [src['gem'].get(it['n']), src['art'].get(it['id']), src['art'].get(it['n'])]
+    # signed links came straight from the game's server; links built from a path are checked
+    return next((c for c in tries if c and (c.startswith('p:') or shows(c))), None)
+
+
 def build_index(html):
     gems = block(html, 'gemdata')
     uq = block(html, 'uqdata')
@@ -177,12 +300,13 @@ def build_index(html):
         if sig not in seen_u:
             seen_u.add(sig)
             uniq.append(u)
-    names = {}
+    names, ubase = {}, {}
     for u in uniq:
         names[u['n']] = names.get(u['n'], 0) + 1
     for u in uniq:
         text = u.get('ex') or u.get('im') or []
         uid = u['n'] if names[u['n']] == 1 else u['n'] + ' | ' + (u.get('b') or '')   # variants share a name
+        ubase[uid] = u.get('b')
         it = {'k': 'u', 'id': uid, 'n': u['n'], 's': ' · '.join(x for x in (u.get('b'), plain(u.get('c', ''))) if x),
               'ic': u.get('ic'), 'q': u.get('g', ''),
               'ls': [plain(y) for x in (u.get('im') or []) + (u.get('ex') or []) for y in x.split('\n') if y.strip()]}
@@ -228,6 +352,15 @@ def build_index(html):
         items.append({'k': 'w', 'id': k, 'n': v['t'], 's': 'Keyword', 't': plain(v['d']),
                       'use': v.get('n') or {}})
 
+    src = image_sources()
+    for it in items:   # every card shows a picture: its sprite, else official game art
+        if not it.get('ic'):
+            img = card_image(it, src, ubase.get(it['id']) if it['k'] == 'u' else None)
+            if img:
+                it['img'] = img
+    CACHE.mkdir(parents=True, exist_ok=True)
+    CHECKED.write_text(json.dumps(sorted(_checked), indent=0), encoding='utf-8')
+
     for it in items:  # the standard: nothing in the search index may read as game code
         for f in ('n', 's', 't', 'ls', 'pr', 'tags', 'rec'):
             for x in (it.get(f) if isinstance(it.get(f), list) else [it.get(f)]):
@@ -246,7 +379,7 @@ def build_index(html):
     if dup:
         sys.exit('duplicate card keys: %s' % sorted(dup)[:10])
     return {'v': gems['meta'].get('game_version'), 'gen': gems['meta'].get('generated'),
-            'sprites': gems.get('sprites'), 'items': items}
+            'sprites': gems.get('sprites'), 'imgs': IMGS, 'items': items}
 
 
 def main():
@@ -269,10 +402,14 @@ def main():
                 sys.exit('the drill-down header changed; update MAST_OLD / CL_OLD in tools/sync.py')
             html = html.replace(a, b, 1)
     (ROOT / 'explore.html').write_text(html, encoding='utf-8', newline='')
-    counts = {}
+    counts, bare = {}, {}
     for it in index['items']:
         counts[it['k']] = counts.get(it['k'], 0) + 1
+        if not it.get('ic') and not it.get('img'):
+            bare.setdefault(it['k'], []).append(it['n'])
     print('explore.html written; index.json:', counts)
+    for k, v in bare.items():
+        print('  no image for %d %s cards:' % (len(v), k), ', '.join(v[:12]), file=sys.stderr)
 
 
 if __name__ == '__main__':

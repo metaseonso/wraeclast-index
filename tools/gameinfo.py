@@ -1,5 +1,5 @@
-"""Build data/info.json (what each tradeable non-equipment item does, in the game's own words)
-and data/reqs.json (level and attribute requirements of every base item).
+"""Build data/info.json (what each tradeable non-equipment item does, in the game's own words, and
+its picture) and data/reqs.json (level and attribute requirements of every base item).
 
 Covers currency, omens, fragments, breachstones and every augment (runes, soul cores, idols).
 Run once per game patch:   python tools/gameinfo.py
@@ -77,9 +77,17 @@ def main():
         entry = {'t': text, 'cls': b['item_class']}
         if b.get('drop_level', 0) > 1:
             entry['dl'] = b['drop_level']
+        art = (b.get('visual_identity') or {}).get('dds_file') or ''
+        if art.endswith('.dds'):   # the item's art in the game files; tools/market.py uses it when poe.ninja has none
+            entry['a'] = art[:-4]
         if b['name'] in info and info[b['name']] != entry:
             continue  # keep the first of several same-named bases
         info[b['name']] = entry
+    for b in bases.values():   # lineage supports trade on the currency exchange too: their picture only
+        art = (b.get('visual_identity') or {}).get('dds_file') or ''
+        if (b.get('release_state') == 'released' and '/Lineage/' in art and art.endswith('.dds')
+                and b['name'] not in info and not b['name'].startswith('[')):
+            info[b['name']] = {'cls': b['item_class'], 'a': art[:-4]}
     out = ROOT / 'data' / 'info.json'
     out.write_text(json.dumps(info, ensure_ascii=False, separators=(',', ':')), encoding='utf-8')
     print(len(info), 'items described ->', out.relative_to(ROOT))
