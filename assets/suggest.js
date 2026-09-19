@@ -34,6 +34,7 @@ function open(){
     } catch { msg.textContent = 'Could not send. Try again later.'; }
     send.disabled = false;
   });
+  import('./support.js').then(async s => { if(await s.support()) box.insertAdjacentHTML('beforeend', '<p class="note">' + s.supportLink() + '</p>'); }).catch(() => {});
   openBox(box, 'Suggest');
   setTimeout(() => ta.focus(), 50);
 }
