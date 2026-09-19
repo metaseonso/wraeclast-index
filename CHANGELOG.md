@@ -14,6 +14,9 @@ Add the details here first, then a short public line there.
 - Drill-down (bridge.js): row and keyword clicks open the site's card popup (window capture, stops the page's own
   handlers); "Full stats" opens the page's own panel; deep links mark the row instead of opening it;
   explore#<section>?kw=<id> filters with the page's keyword picker.
+- Owner dashboard (#26, helper): /admin (noindex) behind the dashboard password (Worker secret DASH_HASH, PBKDF2);
+  first-party tracking (assets/track.js: views, click labels, heat buckets; off for DNT/GPC/bots/frames/the owner);
+  worker/dash.js; D1 tables views, clicks, heat (0005). Plan headroom meter vs Workers Free limits.
 - Craft tab (#30, helper): tools/craft.py -> data/craft.json + data/craft/*.json per kind.
 
 ## v0.20 — Live prices on trade sliders, Farms and Atlas (19 Sep 2026)
