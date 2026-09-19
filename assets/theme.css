@@ -93,28 +93,81 @@ input[type=range], input[type=checkbox]{accent-color:#4E7A28}
 .verdict{border-radius:0 8px 8px 0}
 .ov-box{border-radius:var(--r)}   /* same rounding as the card inside, so its corners are not cut */
 
-/* ---------- the W.I. crest and its poison cloud ----------
-   Art from the image API (OpenRouter); the cloud is 8 API frames eased into a 24-frame loop. */
+/* ---------- the W.I. crest and its miasma ----------
+   Crest and fog textures come from the image API (OpenRouter). The motion is CSS only: each layer
+   drifts, spills and fades on its own slow loop, so the fog moves smoothly and never flips frames.
+   Three depths: haze behind, wisps rising off the badge, and a bank that pools and spills in front
+   of its base, the way fog rolls out of a chemist's cellar. */
 .mark{position:relative; display:inline-grid; place-items:center; width:28px; height:34px; margin-right:9px; vertical-align:middle; translate:0 -2px}
 .mark-logo{position:relative; z-index:1; height:34px; width:auto; filter:drop-shadow(0 0 6px rgba(140,203,63,.14))}
-.mark-cloud{position:absolute; left:50%; top:55%; width:78px; height:78px; translate:-50% -50%; opacity:.5;
-  mix-blend-mode:screen; pointer-events:none; animation:wi-drift 14s ease-in-out infinite}
-.emblem{position:relative; width:220px; height:210px; margin:0 auto 4px;
-  transition:height .45s cubic-bezier(.2,.8,.2,1), opacity .3s, margin .45s}
-.emblem img{position:absolute; left:50%; top:50%; translate:-50% -50%; pointer-events:none}
-.emblem-logo{z-index:1; height:200px; width:auto; filter:drop-shadow(0 0 24px rgba(140,203,63,.09)) drop-shadow(0 10px 30px rgba(0,0,0,.8))}
-.emblem-cloud{width:380px; height:380px; top:58%; opacity:.6; mix-blend-mode:screen; animation:wi-drift 16s ease-in-out infinite}
-.emblem-cloud.two{width:300px; height:300px; top:40%; opacity:.38; animation:wi-drift2 23s ease-in-out infinite}
-@keyframes wi-drift{
-  0%,100%{transform:translate(-14px, 6px) rotate(0deg) scale(1)}
-  50%{transform:translate(16px, -10px) rotate(9deg) scale(1.1)}
+.mark-wisp{position:absolute; left:50%; bottom:2px; width:44px; height:auto; translate:-50% 0; opacity:0;
+  mix-blend-mode:screen; pointer-events:none; animation:wi-mark 9s ease-in-out infinite}
+@keyframes wi-mark{
+  0%{transform:translate(0, 6px) scale(.7); opacity:0}
+  30%{opacity:.55}
+  100%{transform:translate(6px, -18px) scale(1.25); opacity:0}
 }
-@keyframes wi-drift2{
-  0%,100%{transform:scaleX(-1) translate(18px, -4px) rotate(0deg)}
-  50%{transform:scaleX(-1) translate(-20px, 12px) rotate(-12deg) scale(1.12)}
+
+.emblem{position:relative; width:260px; height:230px; margin:0 auto 4px;
+  transition:height .45s cubic-bezier(.2,.8,.2,1), opacity .3s, margin .45s}
+.emblem-logo{position:absolute; left:50%; top:50%; translate:-50% -50%; z-index:2; height:200px; width:auto; pointer-events:none;
+  filter:drop-shadow(0 0 24px rgba(140,203,63,.09)) drop-shadow(0 10px 30px rgba(0,0,0,.8))}
+.fog{position:absolute; inset:0; pointer-events:none}
+.fog.back{z-index:1}
+.fog.front{z-index:3}
+.fog img{position:absolute; left:50%; height:auto; mix-blend-mode:screen; opacity:0; will-change:transform, opacity}
+
+/* haze: a thin sheet behind the badge, breathing and sliding very slowly */
+.fog .haze{top:6%; width:620px; translate:-50% 0; animation:wi-haze 38s ease-in-out infinite}
+@keyframes wi-haze{
+  0%,100%{transform:translateX(-5%) scale(1); opacity:.7}
+  50%{transform:translateX(5%) scale(1.08); opacity:1}
+}
+/* wisps: curl up off the badge, drift out and thin away */
+.fog .wisp{bottom:26%; width:170px; translate:-50% 0}
+.fog .w1{animation:wi-rise-l 16s ease-out infinite}
+.fog .w2{animation:wi-rise-r 19s ease-out infinite; animation-delay:-6s}
+.fog .w3{animation:wi-rise-c 22s ease-out infinite; animation-delay:-13s}
+@keyframes wi-rise-l{
+  0%{transform:translate(10px, 30px) scale(.6) rotate(0deg); opacity:0}
+  25%{opacity:.5}
+  100%{transform:translate(-120px, -70px) scale(1.5) rotate(-14deg); opacity:0}
+}
+@keyframes wi-rise-r{
+  0%{transform:translate(-10px, 30px) scale(.6) rotate(0deg); opacity:0}
+  25%{opacity:.45}
+  100%{transform:translate(125px, -60px) scale(1.55) rotate(12deg); opacity:0}
+}
+@keyframes wi-rise-c{
+  0%{transform:translate(0, 40px) scale(.55); opacity:0}
+  30%{opacity:.4}
+  100%{transform:translate(8px, -95px) scale(1.4); opacity:0}
+}
+/* the bank: pools at the base, spills outward and down, then hangs and fades */
+.fog .bank{bottom:-4%; width:560px; translate:-50% 0}
+.fog .b1{animation:wi-spill 24s ease-in-out infinite}
+.fog .b2{animation:wi-spill-front 28s ease-in-out infinite; animation-delay:-9s}
+.fog .b3{animation:wi-spill-front 28s ease-in-out infinite reverse; animation-delay:-21s}
+@keyframes wi-spill{
+  0%{transform:translate(-3%, -10px) scaleX(.75) scaleY(.8); opacity:0}
+  30%{opacity:.42}
+  70%{opacity:.32}
+  100%{transform:translate(4%, 18px) scaleX(1.3) scaleY(1.05); opacity:0}
+}
+@keyframes wi-spill-front{
+  0%{transform:translate(4%, -6px) scaleX(-.8) scaleY(.7); opacity:0}
+  35%{opacity:.26}
+  75%{opacity:.18}
+  100%{transform:translate(-5%, 22px) scaleX(-1.35) scaleY(1); opacity:0}
 }
 .hero-title{font-size:clamp(28px, 4.6vw, 42px)}
 .hero.docked .emblem{height:0; opacity:0; margin:0}
-@media (prefers-reduced-motion: reduce){ .mark-cloud, .emblem-cloud{display:none} }
-html:root:not([data-theme="none"]) body{overflow-x:clip}   /* the drifting gas may reach past the edge */
-@media (max-width:640px){ .emblem{width:170px; height:160px} .emblem-logo{height:150px} .emblem-cloud{width:280px; height:280px} }
+@media (prefers-reduced-motion: reduce){
+  .fog img, .mark-wisp{animation:none !important; opacity:.3}
+  .fog .wisp, .mark-wisp{display:none}
+}
+@media (max-width:640px){
+  .emblem{width:200px; height:170px} .emblem-logo{height:150px}
+  .fog .bank{width:420px} .fog .haze{width:460px} .fog .wisp{width:130px}
+}
+html:root:not([data-theme="none"]) body{overflow-x:clip}   /* the fog may drift past the edge */
