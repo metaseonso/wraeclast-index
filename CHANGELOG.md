@@ -28,8 +28,11 @@ Add the details here first, then a short public line there.
 - Fonts self-hosted (assets/fonts, woff2 from Google Fonts, OFL files alongside): Cinzel (variable 500-700), IBM Plex
   Sans (variable 400-600), IBM Plex Mono 400/500/600; latin, latin-ext and the other subsets by unicode-range.
   Fraunces dropped (unused: theme.css sets --disp to Cinzel). Removed from index, explore, privacy, admin and seo.js.
+  Until they load, text uses Georgia / Arial sized to their width ('Cinzel fallback', 'Plex fallback' in theme.css:
+  size-adjust measured on the site's own titles and UI text), so the swap moves nothing (CLS on 1.6 Mbps: 0.11 -> 0).
 - Layout shift on home: kind chips, Patch notes / Suggest buttons and the top search box in the HTML; the league clock
-  and price stamp keep their space; the card grid keeps the footer out of view until the first cards. Fog and wisps load
+  and price stamp keep their space; the card grid keeps the footer out of view until the first cards; a search in the
+  address (#/?q=) starts with the hero docked. Fog and wisps load
   after the first cards (data-src; each fog layer fades in, a wisp's loop starts when loaded).
 
 ## v0.23 — The whole game in one search (19 Sep 2026)
