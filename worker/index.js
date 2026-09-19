@@ -20,8 +20,8 @@ const UA = 'wraeclast-index/1.0 (+https://wraeclastindex.fyi)';
 export default {
   async fetch(request, env, ctx){
     const url = new URL(request.url);
-    if(url.pathname === '/data/market.json') return market(request, env);
-    if(url.pathname === '/data/leagues.json') return published(request, env, 'leagues.json');
+    if(url.pathname === '/data/market.json') return market(request, env, ctx);
+    if(url.pathname === '/data/leagues.json') return published(request, env, 'leagues.json', ctx);
     if(url.pathname === '/api/pob') return pob(url);
     if(url.pathname === '/api/trade/searches') return tradeSearches(request, env, ctx, url);
     if(url.pathname === '/api/suggest') return suggest(request, env, url);
@@ -33,15 +33,22 @@ export default {
   },
 };
 
-const market = (request, env) => published(request, env, 'market.json');
+const market = (request, env, ctx) => published(request, env, 'market.json', ctx);
 /* a file the hourly GitHub job publishes (prices, league dates): cached here for 5 minutes */
-async function published(request, env, name){
+async function published(request, env, name, ctx){
+  const key = new Request(new URL(request.url).origin + '/data/' + name);
+  const hit = await caches.default.match(key);   // this data centre's copy: no trip to GitHub
+  if(hit) return hit;
   try {
     const r = await fetch(MARKET_SOURCE.replace('market.json', name), {headers: {'User-Agent': UA}, cf: {cacheTtl: 300, cacheEverything: true}});
-    if(r.ok) return new Response(r.body, {headers: {
-      'Content-Type': 'application/json; charset=utf-8',
-      'Cache-Control': 'public, max-age=300',
-    }});
+    if(r.ok){
+      const res = new Response(r.body, {headers: {
+        'Content-Type': 'application/json; charset=utf-8',
+        'Cache-Control': 'public, max-age=300, stale-while-revalidate=600',
+      }});
+      if(ctx) ctx.waitUntil(caches.default.put(key, res.clone()));
+      return res;
+    }
   } catch {}
   return env.ASSETS.fetch(request);   // the copy that shipped with the site
 }

@@ -9,9 +9,9 @@ let T = null;
 export async function tradeData(){
   if(T) return T;
   const [raw, roll] = await Promise.all([
-    fetch('data/trade.json', {cache: 'no-cache'}).then(r => r.json()),
+    fetch('data/trade.json').then(r => r.json()),
     // live roll prices: the worker checks the trade site through the hour (worker/prices.js)
-    fetch('data/rollprices.json', {cache: 'no-cache'}).then(r => r.ok ? r.json() : null).catch(() => null)]);
+    fetch('data/rollprices.json').then(r => r.ok ? r.json() : null).catch(() => null)]);
   // index every mod by its wording with the numbers taken out, per kind; "(Local)" versions kept apart
   const by = {}, local = {};
   for(const [id, text] of raw.mods){

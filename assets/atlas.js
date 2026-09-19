@@ -121,7 +121,7 @@ export async function mount(el){
   el.innerHTML = '<div class="pagehd"><h2>Atlas</h2><p>Waystones, tablets, keys and the Atlas tree.' +
     (D.market ? ' Prices: ' + esc(D.market.league) + ', every hour.' : '') + '</p></div><p class="note">Loading…</p>';
   try {
-    const r = await fetch('data/atlas.json', {cache: 'no-cache'});
+    const r = await fetch('data/atlas.json');
     if(!r.ok) throw new Error(r.status);
     A = await r.json();
   } catch(e){

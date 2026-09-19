@@ -12,7 +12,7 @@ const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
 /* ---------- data ---------- */
 export const D = { index: null, market: null, usage: null, byKey: new Map() };   // usage stays empty: see buildsHref
 async function getJSON(url){
-  const r = await fetch(url, {cache: 'no-cache'});
+  const r = await fetch(url);   // the browser keeps it for 2 minutes (_headers), then checks for a new one
   if(!r.ok) throw new Error(url + ' ' + r.status);
   return r.json();
 }
@@ -573,6 +573,10 @@ ready.then(() => {
   if(D.market) st.innerHTML = 'Prices: <b>' + esc(D.market.league) + '</b> · ' + ago(D.market.updated);
   else st.textContent = 'Prices not loaded yet';
   import('./league.js').then(m => m.mountLeague($('#leaguebar'))).catch(() => {});   // the league clock
+  // fetch the drill-down page in the background once this page is idle, so Gems / Uniques / Passive tree open fast
+  (window.requestIdleCallback || (f => setTimeout(f, 2500)))(() => {
+    const l = document.createElement('link'); l.rel = 'prefetch'; l.href = 'explore'; document.head.appendChild(l);
+  });
 }).catch(err => {
   $('#status').innerHTML = '<span class="err">Could not load the index: ' + esc(err.message) + '</span>';
 });

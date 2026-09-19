@@ -153,7 +153,7 @@ function popHTML(){
 }
 async function loadPop(){
   try {
-    const r = await fetch('api/trade/searches', {cache: 'no-cache'});
+    const r = await fetch('api/trade/searches');
     POP = r.ok ? ((await r.json()).popular || []) : [];
   } catch { POP = []; }
   const host = EL && EL.querySelector('.tp-pop');

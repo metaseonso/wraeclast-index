@@ -8,7 +8,7 @@ const nice = iso => when(iso).toLocaleDateString('en-GB', {day: 'numeric', month
 
 export async function mountLeague(el){
   let data;
-  try { data = await (await fetch('data/leagues.json', {cache: 'no-cache'})).json(); } catch { return; }
+  try { data = await (await fetch('data/leagues.json')).json(); } catch { return; }
   const list = (data && data.leagues) || [];
   const now = Date.now();
   const started = list.filter(l => when(l.start) <= now).sort((a, b) => b.start.localeCompare(a.start));

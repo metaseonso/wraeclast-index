@@ -14,7 +14,7 @@ let EL, SRC = null, ROWS = [], QUERY = {}, FP = null;
 
 async function getJSON(url){
   try {
-    const r = await fetch(url, {cache: 'no-cache'});
+    const r = await fetch(url);
     return r.ok ? await r.json() : null;
   } catch { return null; }
 }

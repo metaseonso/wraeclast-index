@@ -6,7 +6,7 @@ const GAME = 'https://www.pathofexile.com/forum/view-forum/2212';
 let LOG = null;
 async function load(){
   if(!LOG){
-    try { LOG = await (await fetch('data/changelog.json', {cache: 'no-cache'})).json(); } catch { LOG = []; }
+    try { LOG = await (await fetch('data/changelog.json')).json(); } catch { LOG = []; }
   }
   return LOG;
 }
