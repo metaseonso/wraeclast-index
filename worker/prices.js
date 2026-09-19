@@ -38,7 +38,7 @@ async function jobs(env){
       stats: [{type: 'and', filters: [{id: stat, value: {min: v}}]}],
       filters: {type_filters: {filters: {rarity: {option: 'nonunique'}}}}}, sort: {price: 'asc'}}});
   const farm = await asset(env, 'data/farmqueries.json');
-  for(const f of (Array.isArray(farm) ? farm : (farm && farm.items)) || []){
+  for(const f of (Array.isArray(farm) ? farm : (farm && (farm.queries || farm.items))) || []){
     if(!f || !f.key || !f.query) continue;
     const body = f.query.query ? {...f.query} : {query: f.query};
     body.query = {...body.query, status: {option: 'online'}};

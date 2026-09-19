@@ -1,0 +1,38 @@
+/* Suggest: a small button on every page. Players send a short note, no sign-in.
+   Notes go to the site's database (worker/community.js) and show on the owner's dashboard only. */
+import { openBox } from './app.js';
+
+export function mountSuggest(){
+  if(document.getElementById('suggestbtn')) return;
+  const b = document.createElement('button');
+  b.id = 'suggestbtn'; b.type = 'button'; b.className = 'suggestbtn';
+  b.textContent = 'Suggest'; b.title = 'Send an idea or report a problem';
+  b.addEventListener('click', open);
+  document.body.appendChild(b);
+}
+
+function open(){
+  const box = document.createElement('section');
+  box.className = 'suggest';
+  box.innerHTML = '<h3>Got an idea or found a problem?</h3>' +
+    '<p class="note">Keep it short. No sign-in, no name needed.</p>' +
+    '<textarea class="field" maxlength="500" rows="5" placeholder="What should we add or fix?" aria-label="Your note"></textarea>' +
+    '<div class="sug-row"><span class="note sug-count">0 / 500</span><button type="button" class="btn gold sug-send">Send</button></div>' +
+    '<p class="note sug-msg" aria-live="polite"></p>';
+  const ta = box.querySelector('textarea'), send = box.querySelector('.sug-send'), msg = box.querySelector('.sug-msg');
+  ta.addEventListener('input', () => { box.querySelector('.sug-count').textContent = ta.value.length + ' / 500'; });
+  send.addEventListener('click', async () => {
+    const text = ta.value.trim();
+    if(text.length < 3){ msg.textContent = 'Write a little more.'; return; }
+    send.disabled = true; msg.textContent = 'Sending…';
+    try {
+      const r = await fetch('api/suggest', {method: 'POST', headers: {'Content-Type': 'application/json', 'X-WI': '1'},
+        body: JSON.stringify({text, page: location.pathname + location.hash.split('?')[0]})});
+      if(r.ok){ box.innerHTML = '<h3>Thanks!</h3><p class="note">Got it. We read every note.</p>'; return; }
+      msg.textContent = r.status === 429 ? 'That is a lot of notes. Try again later.' : 'Could not send. Try again later.';
+    } catch { msg.textContent = 'Could not send. Try again later.'; }
+    send.disabled = false;
+  });
+  openBox(box, 'Suggest');
+  setTimeout(() => ta.focus(), 50);
+}

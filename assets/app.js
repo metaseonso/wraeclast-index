@@ -277,7 +277,7 @@ function detailExtras(it, px){
   if(facts.length) out += '<p class="card-facts">' + facts.map(esc).join(' \u00b7 ') + '</p>';
   return out;
 }
-export function openDetail(it, opts = {}, href){
+function ensureOV(){
   if(!OV){
     OV = document.createElement('div');
     OV.className = 'ov'; OV.hidden = true;
@@ -287,11 +287,22 @@ export function openDetail(it, opts = {}, href){
     document.body.appendChild(OV);
     OV.addEventListener('click', e => {
       if(e.target.closest('[data-close]')) closeDetail();
-      else if(e.target.closest('.btn.gold')) hideDetail();   // leaving the page: nothing to undo
+      else if(e.target.closest('a.btn.gold')) hideDetail();   // leaving the page: nothing to undo
     });
     addEventListener('keydown', e => { if(e.key === 'Escape' && !OV.hidden) closeDetail(); });
     addEventListener('popstate', () => { if(!OV.hidden) hideDetail(); });
   }
+}
+/* the same popup for anything else (e.g. the Suggest box) */
+export function openBox(node, label = 'Details'){
+  ensureOV();
+  OV.querySelector('.ov-box').setAttribute('aria-label', label);
+  OV.querySelector('.ov-body').replaceChildren(node);
+  showOV();
+}
+export function openDetail(it, opts = {}, href){
+  ensureOV();
+  OV.querySelector('.ov-box').setAttribute('aria-label', 'Details');
   const px = opts.price !== undefined ? opts.price : priceOf(it);
   const body = OV.querySelector('.ov-body');
   const c = card(it, {...opts, href: null, rank: undefined, full: true, detail: true, extra: (opts.extra || '') + detailExtras(it, px)});
@@ -316,6 +327,9 @@ export function openDetail(it, opts = {}, href){
       } finally { tb.disabled = false; }
     });
   }
+  showOV();
+}
+function showOV(){
   lastFocus = document.activeElement;
   OV.hidden = false;
   document.body.classList.add('ov-open');
@@ -519,6 +533,7 @@ export function mountTopSearch(host){
 }
 // every keyboard shortcut lives in keys.js; "Search everything" jumps into the big box on home, the top box everywhere else
 initKeys(() => (IS_APP && route() === 'home' && document.getElementById('q')) || TOPQ);
+import('./suggest.js').then(m => m.mountSuggest()).catch(() => {});   // the Suggest button, on every page
 
 /* ---------- router ---------- */
 function route(){ const m = location.hash.match(/^#\/(\w+)/); return m ? m[1] : 'home'; }

@@ -35,6 +35,19 @@ export async function allowed(env, request, action, max){
   return true;
 }
 
+/* ---------- the Suggest button: short notes from players ---------- */
+export async function suggest(request, env, url){
+  if(request.method !== 'POST' || !sameSite(request, url)) return json(403, {error: 'Not allowed.'});
+  let body = {};
+  try { body = await request.json(); } catch {}
+  const note = (typeof body.text === 'string' ? body.text : '').trim().slice(0, 500);
+  if(note.length < 3) return json(400, {error: 'Write a little more.'});
+  if(!(await allowed(env, request, 'suggest', 5))) return json(429, {error: 'Too many notes for now.'});
+  await env.DB.prepare('INSERT INTO suggestions (text, page, at) VALUES (?, ?, ?)')
+    .bind(note, text(body.page, 120), new Date().toISOString()).run();
+  return json(200, {ok: true});
+}
+
 /* ---------- popular trade searches ---------- */
 const ID = /^[a-z]+\.[a-z0-9_]+$/;
 const num = v => v === '' || v === undefined || v === null ? '' : (isFinite(+v) ? +v : '');
