@@ -1,113 +1,68 @@
-/* Live trade prices, pulled slowly.
-   Every minute (the Cron Trigger in wrangler.jsonc) the worker runs one or two official trade searches and
-   keeps the 10 cheapest listings in D1. It works through every job once an hour, spread evenly over the hour:
-   the mod tiers in data/pricejobs.json (tools/rollprices.py) and the farm inputs in data/farmqueries.json.
-   Pages read the results at /data/rollprices.json and /data/farmprices.json, priced in divines with
-   data/worth.json (published hourly by tools/market.py).
-   The trade site allows about 100 searches an hour from one address. This stays under 90, and pauses when
-   the site's X-Rate-Limit headers say it is close to a limit. */
+/* Live trade prices.
+   The searches run on GitHub, not here: the trade site blocks Cloudflare's shared addresses. Once an hour
+   .github/workflows/prices.yml runs tools/pricepull.py, which spreads its searches over the hour and sends the
+   10 cheapest listings of each to POST /api/prices/ingest. It signs in with GitHub's own short-lived token
+   (OpenID Connect): this checks GitHub's signature and that the token is for this repo's prices workflow on main.
+   No password or key is stored anywhere.
+   Pages read /data/rollprices.json and /data/farmprices.json, priced in divines with data/worth.json
+   (published hourly by tools/market.py). */
 
-const API = 'https://www.pathofexile.com/api/trade2/';
 const PAGES = 'https://metaseonso.github.io/wraeclast-index/data/';
 const UA = 'wraeclast-index/1.0 (+https://wraeclastindex.fyi)';
-const MAX_HOUR = 90;      // searches an hour, at most
-const GAP_MS = 11000;     // between two searches in the same minute
+const ISSUER = 'https://token.actions.githubusercontent.com';
+const REPO = 'metaseonso/wraeclast-index';
+const WORKFLOW = /^metaseonso\/wraeclast-index\/\.github\/workflows\/prices\.yml@refs\/heads\/main$/;
 
-const sleep = ms => new Promise(r => setTimeout(r, ms));
-class Limited extends Error { constructor(wait){ super('trade site limit'); this.wait = wait; } }
-
-async function asset(env, path){   // a file shipped with the site
-  const r = await env.ASSETS.fetch(new Request('https://assets.local/' + path));
-  return r.ok ? r.json() : null;
-}
 async function published(name){   // a file the hourly GitHub job publishes
   const r = await fetch(PAGES + name, {headers: {'User-Agent': UA}, cf: {cacheTtl: 300, cacheEverything: true}});
   return r.ok ? r.json() : null;
 }
-async function meta(env, k){ const r = await env.DB.prepare('SELECT v FROM meta WHERE k = ?').bind(k).first(); return r && r.v; }
-const setMeta = (env, k, v) => env.DB.prepare('INSERT INTO meta (k, v) VALUES (?, ?) ON CONFLICT(k) DO UPDATE SET v = excluded.v').bind(k, v).run();
 export const tally = (env, kind, n = 1) => env.DB.prepare(
   'INSERT INTO load (hour, kind, n) VALUES (?, ?, ?) ON CONFLICT(hour, kind) DO UPDATE SET n = n + excluded.n')
   .bind(new Date().toISOString().slice(0, 13), kind, n).run();
+const json = (status, body) => new Response(JSON.stringify(body), {status, headers: {'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store'}});
 
-async function jobs(env){
-  const out = [];
-  const roll = await asset(env, 'data/pricejobs.json');
-  for(const [stat, values] of (roll && roll.roll) || []) for(const v of values)
-    out.push({key: 'roll:' + stat + '@' + v, body: {query: {status: {option: 'online'},
-      stats: [{type: 'and', filters: [{id: stat, value: {min: v}}]}],
-      filters: {type_filters: {filters: {rarity: {option: 'nonunique'}}}}}, sort: {price: 'asc'}}});
-  const farm = await asset(env, 'data/farmqueries.json');
-  for(const f of (Array.isArray(farm) ? farm : (farm && (farm.queries || farm.items))) || []){
-    if(!f || !f.key || !f.query) continue;
-    const body = f.query.query ? {...f.query} : {query: f.query};
-    body.query = {...body.query, status: {option: 'online'}};
-    body.sort = {price: 'asc'};
-    out.push({key: 'farm:' + f.key, body});
-  }
-  return out;
+/* ---------- GitHub's signed token ---------- */
+const unb64 = s => Uint8Array.from(atob(s.replace(/-/g, '+').replace(/_/g, '/') + '==='.slice((s.length + 3) % 4)), c => c.charCodeAt(0));
+async function fromGitHub(request, url){
+  const m = (request.headers.get('Authorization') || '').match(/^Bearer ([\w-]+)\.([\w-]+)\.([\w-]+)$/);
+  if(!m) return null;
+  let head, claims;
+  try { head = JSON.parse(new TextDecoder().decode(unb64(m[1]))); claims = JSON.parse(new TextDecoder().decode(unb64(m[2]))); } catch { return null; }
+  if(head.alg !== 'RS256') return null;
+  const keys = await (await fetch(ISSUER + '/.well-known/jwks', {cf: {cacheTtl: 3600, cacheEverything: true}})).json();
+  const jwk = (keys.keys || []).find(k => k.kid === head.kid);
+  if(!jwk) return null;
+  const key = await crypto.subtle.importKey('jwk', {kty: jwk.kty, n: jwk.n, e: jwk.e, alg: 'RS256', ext: true},
+    {name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256'}, false, ['verify']);
+  const ok = await crypto.subtle.verify('RSASSA-PKCS1-v1_5', key, unb64(m[3]), new TextEncoder().encode(m[1] + '.' + m[2]));
+  const now = Date.now() / 1000;
+  if(!ok || claims.iss !== ISSUER || claims.aud !== url.origin || !(claims.exp > now) || (claims.nbf && claims.nbf > now + 60)) return null;
+  if(claims.repository !== REPO || claims.ref !== 'refs/heads/main' || !WORKFLOW.test(claims.workflow_ref || '')) return null;
+  return claims;
 }
 
-/* one trade call; returns [data, seconds to pause (0 = fine)] */
-async function call(path, body){
-  const r = await fetch(API + path, {method: body ? 'POST' : 'GET', body: body ? JSON.stringify(body) : undefined,
-    headers: {'User-Agent': UA, 'Content-Type': 'application/json'}});
-  if(r.status === 429) throw new Limited(+(r.headers.get('Retry-After') || 600));
-  if(!r.ok) throw new Error('trade ' + r.status);
-  let wait = 0;
-  const rules = r.headers.get('X-Rate-Limit-Ip'), state = r.headers.get('X-Rate-Limit-Ip-State');
-  if(rules && state){
-    const st = state.split(',');
-    rules.split(',').forEach((rule, i) => {
-      const [max, per] = rule.split(':').map(Number), [hits, , locked] = (st[i] || '0:0:0').split(':').map(Number);
-      if(locked) wait = Math.max(wait, locked);
-      else if(hits >= max - 1) wait = Math.max(wait, per);   // sit out the rest of that window
-    });
-  }
-  return [await r.json(), wait];
-}
-
-async function priceJob(env, job, league){
-  const [found, w1] = await call('search/poe2/' + encodeURIComponent(league), job.body);
-  await tally(env, 'trade_search');
-  const ids = (found.result || []).slice(0, 10);
-  let p = [], w2 = 0;
-  if(ids.length && !w1){
-    const [got, w] = await call('fetch/' + ids.join(',') + '?query=' + found.id + '&realm=poe2');
-    await tally(env, 'trade_fetch');
-    w2 = w;
-    p = (got.result || []).map(x => x && x.listing && x.listing.price).filter(x => x && x.amount).map(x => [x.amount, x.currency]);
-  }
-  if(ids.length && !p.length) return Math.max(w1, w2);   // could not read prices this time: keep the last ones
-  await env.DB.prepare(`INSERT INTO trade_prices (key, league, p, total, at) VALUES (?, ?, ?, ?, ?)
+/* ---------- POST /api/prices/ingest ---------- */
+const KEY = /^(roll:[a-z]+\.[a-z0-9_]+@-?\d+(\.\d+)?|farm:[a-z0-9-]{1,80})$/;
+export async function ingest(request, env, url){
+  if(request.method !== 'POST') return json(405, {error: 'POST only.'});
+  if(!(await fromGitHub(request, url))) return json(401, {error: 'Not signed by the prices workflow.'});
+  let body;
+  try { body = await request.json(); } catch { return json(400, {error: 'Bad body.'}); }
+  const league = typeof body.league === 'string' ? body.league.slice(0, 60) : '';
+  const rows = (Array.isArray(body.rows) ? body.rows : []).slice(0, 50).filter(r => r && KEY.test(r.key || '') && Array.isArray(r.p));
+  const now = new Date().toISOString();
+  const stmts = rows.map(r => env.DB.prepare(`INSERT INTO trade_prices (key, league, p, total, at) VALUES (?, ?, ?, ?, ?)
     ON CONFLICT(key) DO UPDATE SET league = excluded.league, p = excluded.p, total = excluded.total, at = excluded.at`)
-    .bind(job.key, league, JSON.stringify(p), found.total || 0, new Date().toISOString()).run();
-  return Math.max(w1, w2);
+    .bind(r.key, league, JSON.stringify(r.p.slice(0, 10).filter(x => Array.isArray(x) && isFinite(+x[0]) && typeof x[1] === 'string')
+      .map(x => [+x[0], x[1].slice(0, 30)])), Math.max(0, Math.floor(+r.total || 0)), now));
+  if(stmts.length) await env.DB.batch(stmts);
+  for(const [k, n] of Object.entries(body.load || {}))
+    if(/^trade_(search|fetch|limited|error)$/.test(k) && +n > 0) await tally(env, k, Math.min(1000, Math.floor(+n)));
+  return json(200, {ok: true, saved: stmts.length});
 }
 
-/* the once-a-minute job: this minute's share of the list */
-export async function runPrices(env, when){
-  const pause = await meta(env, 'trade_pause_until');
-  if(pause && Date.parse(pause) > when.getTime()) return;
-  const all = await jobs(env);
-  const worth = await published('worth.json');
-  if(!all.length || !worth || !worth.league) return;
-  const cycles = Math.ceil(all.length / MAX_HOUR), slots = cycles * 60;   // more jobs than an hour allows: spread over more hours
-  const slot = (when.getUTCHours() % cycles) * 60 + when.getUTCMinutes();
-  const mine = all.slice(Math.floor(slot * all.length / slots), Math.floor((slot + 1) * all.length / slots));
-  for(let i = 0; i < mine.length; i++){
-    if(i) await sleep(GAP_MS);
-    let wait = 0;
-    try { wait = await priceJob(env, mine[i], worth.league); }
-    catch(e){
-      if(e instanceof Limited){ wait = e.wait; await tally(env, 'trade_limited'); }
-      else { await tally(env, 'trade_error'); continue; }
-    }
-    if(wait){ await setMeta(env, 'trade_pause_until', new Date(Date.now() + wait * 1000).toISOString()); return; }
-  }
-}
-
-/* /data/rollprices.json and /data/farmprices.json */
+/* ---------- /data/rollprices.json and /data/farmprices.json ---------- */
 export async function servePrices(request, env, ctx, kind){
   const url = new URL(request.url), key = new Request(url.origin + url.pathname);
   const hit = await caches.default.match(key);

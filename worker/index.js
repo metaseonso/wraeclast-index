@@ -6,11 +6,11 @@
      /item/*, /gems, /uniques, /passives, /currency, /keywords, /sitemap.xml, /llms.txt, /search
                          plain pages for search engines and AI search: worker/seo.js
      /data/rollprices.json, /data/farmprices.json
-                         live trade prices, pulled a little every minute by the scheduled job: worker/prices.js
+                         live trade prices (sent in through the hour by GitHub: /api/prices/ingest): worker/prices.js
      /api/trade/searches popular Trade page searches (GET), and counting one (POST): worker/community.js
      /api/suggest        notes from the Suggest button: worker/community.js */
 import * as seo from './seo.js';
-import { runPrices, servePrices } from './prices.js';
+import { servePrices, ingest } from './prices.js';
 import { tradeSearches, suggest } from './community.js';
 
 const MARKET_SOURCE = 'https://metaseonso.github.io/wraeclast-index/data/market.json';
@@ -23,14 +23,11 @@ export default {
     if(url.pathname === '/api/pob') return pob(url);
     if(url.pathname === '/api/trade/searches') return tradeSearches(request, env, ctx, url);
     if(url.pathname === '/api/suggest') return suggest(request, env, url);
+    if(url.pathname === '/api/prices/ingest') return ingest(request, env, url);
     if(url.pathname === '/data/rollprices.json') return servePrices(request, env, ctx, 'roll');
     if(url.pathname === '/data/farmprices.json') return servePrices(request, env, ctx, 'farm');
     if(seo.handles(url.pathname)) return seo.respond(request, env, ctx, () => market(new Request(url.origin + '/data/market.json'), env));
     return env.ASSETS.fetch(request);
-  },
-  // every minute (wrangler.jsonc "triggers"): a few trade searches for the live roll and farm prices
-  async scheduled(event, env, ctx){
-    ctx.waitUntil(runPrices(env, new Date(event.scheduledTime)));
   },
 };
 

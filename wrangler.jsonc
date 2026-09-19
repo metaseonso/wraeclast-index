@@ -2,7 +2,7 @@
 // The site itself is static files (served straight from the edge); the worker only answers
 // /data/market.json (live prices), /api/* (things a browser cannot fetch on its own) and the
 // plain pages for search engines and AI search (worker/seo.js: item pages, lists, sitemap, llms.txt).
-// Every minute a scheduled run pulls a few live trade prices (worker/prices.js), all of them once an hour.
+// Live trade prices are pulled on GitHub (tools/pricepull.py) and sent in through the hour (worker/prices.js).
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "wraeclast-index",
@@ -17,6 +17,6 @@
   "d1_databases": [
     { "binding": "DB", "database_name": "wraeclast", "database_id": "d1c4d101-dce9-4f19-9dc3-4525eca2f17e", "migrations_dir": "worker/migrations" }
   ],
-  "triggers": { "crons": ["* * * * *"] },
+  "triggers": { "crons": [] },
   "observability": { "enabled": true }
 }

@@ -1,0 +1,26 @@
+# Live trade prices for the trade sliders and the Farms tab.
+# Once an hour, tools/pricepull.py spreads its official trade searches over ~55 minutes (never a burst)
+# and sends the results to the site. It signs in with GitHub's own short-lived token (id-token), so no
+# password or key is stored anywhere.
+name: Trade prices
+on:
+  schedule:
+    - cron: '2 * * * *'
+  workflow_dispatch:
+permissions:
+  contents: read
+  id-token: write
+concurrency:
+  group: trade-prices
+  cancel-in-progress: false
+jobs:
+  pull:
+    runs-on: ubuntu-latest
+    timeout-minutes: 58
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Pull prices through the hour
+        run: python tools/pricepull.py
