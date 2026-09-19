@@ -22,6 +22,7 @@ ROOT = Path(__file__).resolve().parent.parent
 API = 'https://poe.ninja/poe2/api/economy/'
 UA = 'wraeclast-index/1.0 (+https://github.com/metaseonso/wraeclast-index)'
 CDN = 'https://web.poecdn.com'
+ART = 'https://repoe-fork.github.io/poe2/'   # the game's own item art, as RePoE exports it
 
 EXCHANGE = {  # type -> label on the Currency tab
     'Currency': 'Currency', 'Fragments': 'Fragments', 'Abyss': 'Abyssal Bones', 'UncutGems': 'Uncut Gems',
@@ -108,8 +109,11 @@ def main():
             v = l['primaryValue'] * f
             e = {'n': name, 'cat': label, 'v': rnd(v), 'ch': rnd((l.get('sparkline') or {}).get('totalChange'), 3),
                  'sp': line(l.get('sparkline')), 'vol': rnd((l.get('volumePrimaryValue') or 0) * f, 3)}
+            gi = info.get(name)
             if m.get('image'):
                 e['ic'] = CDN + m['image'] if m['image'].startswith('/') else m['image']
+            elif gi and gi.get('a'):   # poe.ninja has no picture for a few: the game's own art
+                e['ic'] = ART + urllib.parse.quote(gi['a']) + '.webp'
             if m.get('detailsId'):
                 e['did'] = m['detailsId']
             # the busiest trading pair implies its own price; a gap against the index price is a route to check
@@ -120,8 +124,7 @@ def main():
             if pair and rate and pv and v:
                 e['pair'] = pair
                 e['gap'] = rnd((pv / rate / v - 1) * 100, 3)
-            gi = info.get(name)
-            if gi:
+            if gi and gi.get('t'):
                 e['u'] = gi['t']
                 if gi.get('dl'):
                     e['dl'] = gi['dl']

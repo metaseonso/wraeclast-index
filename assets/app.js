@@ -21,7 +21,9 @@ export const ready = (async () => {
     getJSON('data/market.json').catch(() => null),
   ]);
   D.index = index; D.market = market;
+  const IMGS = index.imgs || {};   // images are stored short, "<key>:<path>"; the key names the image server
   for(const it of index.items){
+    if(it.img){ const i = it.img.indexOf(':'), pre = IMGS[it.img.slice(0, i)]; if(pre) it.img = pre + it.img.slice(i + 1); }
     it._nl = it.n.toLowerCase();
     it._hay = [it.n, it.s, it.t, it.q, it.asc, it.reg, (it.ls || []).join(' '), (it.tags || []).join(' ')]
       .filter(Boolean).join(' ').toLowerCase();
