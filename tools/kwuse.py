@@ -8,9 +8,11 @@ A keyword's card lists what uses it ("Found on"). A use is found two ways:
 Sources: every gem (description, stat lines, per-level and quality text), every unique (all variants), every
 passive (keystones, notables and anoints as cards; small passives grouped: the same name and text is one row
 with how many are on the tree), the Atlas (waystone mods with their tiers, desecrated waystone mods, liquid
-emotions, tablets, unique tablets, tablet mods, keys, atlas items, atlas tree nodes and their choices),
-currency and other bulk items (their game text), crafting mods (each mod line once, with the item kinds it
-rolls on) and other keywords' descriptions.
+emotions, tablets, unique tablets, tablet mods, keys, atlas items, atlas tree nodes and their choices; a row
+names the card it opens when the index or the currency catalogue has one), base items (implicit lines and
+properties, and the keywords tools/sync.py marked on the card), essences (the mod each one guarantees, per kind
+of item, from data/craft), currency and other bulk items (their game text), crafting mods (each mod line once,
+with the item kinds it rolls on) and other keywords' descriptions.
 
 Which markup forms count as a keyword's words: a form that holds every word of the keyword's name or id
 (Ignites, Critically Hit, Power Charges), or a form only this keyword is ever shown as that the markup links
@@ -26,8 +28,11 @@ these lists' lengths. Checked against the artifact's own counts (kwdata "n"): ev
 unique and passive it counts is here, except the ones the site leaves out (unreleased [DNT] gems and passives,
 and repeated copies of a unique); the report says which.
 
+Output groups per keyword: u uniques, g gems, p passives, b bases, e essences (rows of "es"), a atlas (rows of "at"),
+m crafting (rows of "cr"), c currency (rows of "cu"), w keywords.
+
 Usage:  python tools/kwuse.py [explore.html]
-Run after tools/sync.py, tools/atlas.py and tools/craft.py (it reads explore.html, data/index.json,
+Run last: after tools/atlas.py, tools/craft.py and tools/sync.py (it reads explore.html, data/index.json,
 data/atlas.json, data/info.json, data/market.json and data/craft/).
 """
 import json
@@ -334,16 +339,22 @@ def main():
             it = cards['p:' + x]
             use[k]['p'].append(((sort_key(it['n']), KIND_ORDER.get(it['s'].split(' ')[0].lower(), 1), it['s']), x))
 
-    # the Atlas: [section, name, what it is, the line that shows the keyword]
+    # the Atlas: [section, name, what it is, the line that shows the keyword, the card it opens]
     at, at_by = [], {}
+    card_for = {}   # an atlas thing's card: its own atlas card, else a unique tablet, else a currency card
+    for key in [k for k in cards if k[0] in 'cu'] + ['c:' + m['n'] for k, m in market.items() if k.startswith('c:') and m.get('n')]:
+        card_for.setdefault(key.split(':', 1)[1], key)
+    for key, it in cards.items():
+        if it['k'] == 'a':
+            card_for[it['n']] = key
 
-    def add_atlas(sec, name, what, texts):
+    def add_atlas(sec, name, what, texts, own=False):
         texts = [y for x in texts if x for y in lines(x)]
         for k in found(texts):
             key = (sec, name, what)
             if key not in at_by:
                 at_by[key] = len(at)
-                at.append([sec, name, what, {}])
+                at.append([sec, name, what, {}, card_for.get(name) if own else None])
             at[at_by[key]][3].setdefault(k, first_line(texts, k))
 
     for m in atlas.get('wmods') or []:
@@ -357,33 +368,33 @@ def main():
             key = ('ways', m['a'], side + (' · ' + AT_TIER(min(x[0] for x in w), max(x[1] for x in w)) if w else ''))
             if key not in at_by:
                 at_by[key] = len(at)
-                at.append(['ways', m['a'], key[2], {}])
+                at.append(['ways', m['a'], key[2], {}, None])
             texts = [y for x in (rs[0].get('ls') or []) + (rs[0].get('b') or []) for y in lines(x)]
             at[at_by[key]][3].setdefault(k, first_line(texts, k))
     for m in atlas.get('wdes') or []:
         add_atlas('ways', m['a'], 'Desecrated waystone mod', (m.get('ls') or []) + (m.get('b') or []))
     for m in atlas.get('wemo') or []:
-        add_atlas('ways', m['n'], 'Liquid Emotion', m.get('ls') or [])
+        add_atlas('ways', m['n'], 'Liquid Emotion', m.get('ls') or [], True)
     for t in atlas.get('tabs') or []:
-        add_atlas('tabs', t['n'], 'Tablet', t.get('ls') or [])
+        add_atlas('tabs', t['n'], 'Tablet', t.get('ls') or [], True)
     for t in atlas.get('tuniq') or []:
-        add_atlas('tabs', t['n'], 'Unique tablet', t.get('ls') or [])
+        add_atlas('tabs', t['n'], 'Unique tablet', t.get('ls') or [], True)
     for m in atlas.get('tmods') or []:
         add_atlas('tabs', m['a'], 'Tablet mod', m.get('ls') or [])
     for x in atlas.get('keys') or []:
-        add_atlas('keys', x['n'], x.get('kind') or x.get('s') or 'Key', [x.get('t')] + (x.get('ls') or []))
+        add_atlas('keys', x['n'], x.get('kind') or x.get('s') or 'Key', [x.get('t')] + (x.get('ls') or []), True)
     for x in atlas.get('items') or []:
-        add_atlas('items', x['n'], x.get('kind') or x.get('s') or 'Atlas item', (x.get('ls') or []) + [x.get('t')])
+        add_atlas('items', x['n'], x.get('kind') or x.get('s') or 'Atlas item', (x.get('ls') or []) + [x.get('t')], True)
     for g in atlas.get('tree') or []:
         for nd in g.get('nodes') or []:
             what = g['n'] + ' · ' + TREE_TY.get(nd.get('ty'), 'Node') + (' ×' + str(nd['x']) if nd.get('x') else '')
-            add_atlas('tree', nd['n'], what, (nd.get('ls') or []) + (nd.get('o') or []))
+            add_atlas('tree', nd['n'], what, (nd.get('ls') or []) + (nd.get('o') or []), True)
     order = sorted(range(len(at)), key=lambda i: (sort_key(at[i][1]), at[i][2]))
     at = [at[i] for i in order]
     for i, a in enumerate(at):
         for k in a[3]:
             use[k]['a'].append(((i,), i))
-    at_out = [[a[0], a[1], a[2]] for a in at]
+    at_out = [[a[0], a[1], a[2]] + ([a[4]] if a[4] else []) for a in at]
     at_line = {(i, k): line for i, a in enumerate(at) for k, line in a[3].items()}
 
     # currency and other bulk items: their game text. The market name finds the card ("c:<name>").
@@ -426,6 +437,31 @@ def main():
         for k in ks:
             use[k]['m'].append(((len(cr),), len(cr) - 1))
 
+    # base items: their implicit lines and properties, and the keywords sync.py marked on the card
+    #   (it names the property ones: "Armour: 25" is the defence, which the plain-text rules leave to the markup)
+    for key, it in cards.items():
+        if it['k'] == 'b':
+            for k in found((it.get('ls') or []) + (it.get('pr') or []), None, it.get('kw') or ()):
+                use[k]['b'].append((sort_key(it['n']), it['id']))
+
+    # essences: the mod each one guarantees, per kind of item (data/craft: the essence tables from poe2db)
+    ess = defaultdict(set)   # (essence, line) -> kinds
+    for cid in kinds:
+        f = ROOT / 'data' / 'craft' / (cid + '.json')
+        if not f.exists():
+            continue
+        d = json.loads(f.read_text(encoding='utf-8'))
+        for name, _, i, _ in d.get('ess') or []:
+            ess[(name, ' / '.join(y for x in d['mods'][i][3] for y in lines(x)))].add(cid)
+    es = []
+    for (name, line) in sorted(ess, key=lambda x: (sort_key(x[0]), x[1])):
+        ks = found([line])
+        if not ks:
+            continue
+        es.append([name, line, sorted(ess[(name, line)], key=lambda c: list(kinds).index(c))])
+        for k in ks:
+            use[k]['e'].append(((len(es),), len(es) - 1))
+
     # other keywords whose description shows this one
     has_card = lambda k: ('w:' + k) in cards or k in kwx
     for k2 in live:
@@ -448,7 +484,7 @@ def main():
                         continue
                     merged[grp].setdefault(x, sk)
         entry = {}
-        for grp in 'ugpamcw':
+        for grp in 'ugpbeamcw':
             rows = sorted(merged.get(grp, {}).items(), key=lambda r: (r[1], str(r[0])))
             if rows:
                 entry[grp] = [[x, card_n[x]] if grp == 'p' and card_n[x] > 1 else x for x, _ in rows]
@@ -458,10 +494,10 @@ def main():
             out_k[k] = entry
 
     kn = {k: kw[k]['t'] for k in live if not has_card(k)}   # keywords with no card of their own: just the name
-    out = {'v': index.get('v'), 'sp': sp, 'at': at_out, 'cu': cu, 'cr': cr, 'ck': kinds, 'kn': kn, 'k': out_k}
+    out = {'v': index.get('v'), 'sp': sp, 'at': at_out, 'cu': cu, 'cr': cr, 'es': es, 'ck': kinds, 'kn': kn, 'k': out_k}
 
     # the standard: nothing visible may read as game code
-    for s in strings({x: out[x] for x in ('sp', 'at', 'cu', 'cr', 'ck', 'kn')}):
+    for s in strings({x: out[x] for x in ('sp', 'at', 'cu', 'cr', 'es', 'ck', 'kn')}):
         if RAW.search(s):
             sys.exit('raw game code in kwuse: %r' % s)
     for k, e in out_k.items():
@@ -471,8 +507,11 @@ def main():
 
     raw = json.dumps(out, ensure_ascii=False, separators=(',', ':'))
     OUT.write_text(raw, encoding='utf-8')
-    print('data/kwuse.json: %d keywords, %d KB (small passive groups %d, atlas %d, currency %d, crafting %d)'
-          % (len(out_k), len(raw.encode('utf-8')) // 1024, len(sp), len(at_out), len(cu), len(cr)))
+    print('data/kwuse.json: %d keywords, %d KB (small passive groups %d, atlas %d (%d with a card), currency %d, crafting %d, '
+          'essence lines %d)' % (len(out_k), len(raw.encode('utf-8')) // 1024, len(sp), len(at_out), sum(len(a) > 3 for a in at_out),
+                                  len(cu), len(cr), len(es)))
+    print('  keywords used by bases: %d, by essences: %d' % (sum(1 for e in out_k.values() if e.get('b')),
+                                                            sum(1 for e in out_k.values() if e.get('e'))))
     if missing:
         print('  not in the index (skipped):', ', '.join(missing[:20]), file=sys.stderr)
 

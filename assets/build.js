@@ -213,7 +213,7 @@ function bestRune(slotRe, lineRe, want = 1){
   }
   return best;
 }
-function c(name){ const it = D.byKey.get('c:' + name); return it ? {it, m: D.market.items['c:' + name]} : null; }
+function c(name){ const it = D.byKey.get('c:' + name), m = D.market.items['c:' + name]; return it && m ? {it, m} : null; }
 
 function recommend(b, A){
   const recs = [];

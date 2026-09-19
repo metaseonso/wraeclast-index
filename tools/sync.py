@@ -4,7 +4,8 @@ The artifact page (gems, uniques, passive tree) is the drill-down. This script:
   1. rewrites each unique's mod lines to the official ones (data/uniques.json, from tools/uniques.py),
      keeping the keyword links wherever the wording matches
   2. copies the page to explore.html and adds the small bridge script that links it to the home page
-  3. builds data/index.json, the compact search index the home page loads
+  3. builds data/index.json, the compact search index the home page loads (with the base items, the Atlas and the
+     currency the catalogue lacks, from tools/morecards.py; lineage support gems are marked "li")
   4. gives every card without a sprite an official game image (see "card images" below)
 
 Usage:  python tools/sync.py path/to/artifact.html
@@ -74,6 +75,11 @@ def plain(t):
     t = re.sub(r'\[([^\]|]+)\|([^\]]+)\]', r'\2', t or '')
     t = re.sub(r'\[([^\]]+)\]', r'\1', t)
     return re.sub(r'\s+', ' ', t).strip()
+
+
+def plain_lines(t):
+    """Game text over several lines to plain lines."""
+    return [plain(x) for x in (t or '').split('\n') if x.strip()]
 
 
 # ---- official unique lines (data/uniques.json, from tools/uniques.py) ----
@@ -166,11 +172,12 @@ def first_sentence(t, limit=150):
 # Gems and most uniques show a sprite ("ic"). Every other card gets "img": a short code "<key>:<path>"
 # that the page expands with the index's "imgs" table. All of it is official game art, best source first:
 #   p  web.poecdn.com, the game's own image server: unique icons from poe.ninja's price lists, lineage
-#      support gems from the official trade site's static list. Those links are signed: copied, never built.
-#   n  assets.poe.ninja: passive skill icons, at the node's icon path in the official passive tree,
-#      in lower case as webp (the names poe.ninja's own tree uses). A node with no icon gets the blank socket.
-#   r  repoe-fork.github.io: the 2D art exported from the game files, for items the two above lack,
-#      and the one book (the in-game Book of Skill) on every keyword card.
+#      support gems from the official trade site's static list, and the Atlas items' icons in data/atlas.json.
+#      Those links are signed: copied, never built.
+#   n  assets.poe.ninja: passive skill icons, at the node's icon path in the official passive tree (and the
+#      Atlas tree), in lower case as webp (the names poe.ninja's own tree uses). A node with no icon gets the blank socket.
+#   r  repoe-fork.github.io: the 2D art exported from the game files, for items the two above lack (every base
+#      item, the extra currency cards), and the one book (the in-game Book of Skill) on every keyword card.
 # Each list is fetched at most once per run (cached for a day in tools/cache/). Each link built from a
 # path is checked once (it must answer with an image) and remembered in tools/cache/checked.json.
 REPOE = 'https://repoe-fork.github.io/poe2/'
@@ -268,7 +275,9 @@ def image_sources():
 
 def card_image(it, src, base=None):
     """The first image code that shows, for a card without a sprite."""
-    if it['k'] == 'w':
+    if '_try' in it:   # the new kinds (tools/morecards.py) bring their own candidates
+        tries = it.pop('_try') + ([BLANK_NODE] if it['k'] == 'a' and it.get('at') == 'tree' else [])
+    elif it['k'] == 'w':
         tries = [KEYWORD_IMG]
     elif it['k'] == 'p':
         tries = [src['node'].get(it['id']), BLANK_NODE]
@@ -308,7 +317,8 @@ def build_index(html):
     for g in gems['gems']:
         if re.match(r'^\[DNT|^Removed Skill$', g['n']):
             continue
-        sub = kind.get(g['t'], 'Gem') + (' · ' + colour[g['c']] if colour.get(g.get('c')) else '')
+        what = 'Lineage support gem' if g.get('lin') and g['t'] == 'support' else kind.get(g['t'], 'Gem')   # the game files mark lineage gems
+        sub = what + (' · ' + colour[g['c']] if colour.get(g.get('c')) else '')
         tags = [plain(gems['gem_tags'][t]) for t in g.get('tg', []) if gems['gem_tags'].get(t)]
         it = {'k': 'g', 'id': g['id'], 'n': g['n'], 's': sub, 't': plain(g.get('txt', '')), 'ic': g.get('ic'),
               'q': ' '.join(g.get('tg', [])), 'tags': tags}
@@ -326,6 +336,8 @@ def build_index(html):
             it['sp'] = sp[19] if isinstance(sp, list) and len(sp) >= 20 else sp
         if refs(g):
             it['kw'] = refs(g)
+        if what.startswith('Lineage'):
+            it['li'] = 1
         items.append(it)
 
     uniq, seen_u = [], set()
@@ -399,6 +411,11 @@ def build_index(html):
             it['kw'] = [x for x in refs(v.get('d', '')) if x != k]
         items.append(it)
 
+    # base items, the Atlas, and the currency the catalogue lacks (tools/morecards.py)
+    import morecards
+    items += morecards.build(items, {'remote': remote, 'plain': plain, 'refs': refs, 'game_art': game_art, 'kw': kw,
+                                     'REPOE': REPOE, 'IMGS': IMGS, 'plain_lines': plain_lines})
+
     src = image_sources()
     for it in items:   # every card shows a picture: its sprite, else official game art
         if not it.get('ic'):
@@ -409,11 +426,12 @@ def build_index(html):
     CHECKED.write_text(json.dumps(sorted(_checked), indent=0), encoding='utf-8')
 
     for it in items:  # the standard: nothing in the search index may read as game code
-        for f in ('n', 's', 't', 'ls', 'pr', 'tags', 'rec'):
+        it.pop('_try', None)
+        for f in ('n', 's', 't', 'ls', 'pr', 'tags', 'rec', 'o', 'nt'):
             for x in (it.get(f) if isinstance(it.get(f), list) else [it.get(f)]):
                 if x and RAW.search(x):
                     sys.exit('raw game code in %s %r: %r' % (f, it['n'], x))
-        for f in ('ls', 'pr', 'tags'):
+        for f in ('ls', 'pr', 'tags', 'o'):
             if f in it and not it[f]:
                 del it[f]
         if not it.get('ic'):

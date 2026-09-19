@@ -24,18 +24,26 @@ export const ready = (async () => {
   ]);
   D.index = index; D.market = market;
   const IMGS = index.imgs || {};   // images are stored short, "<key>:<path>"; the key names the image server
+  const named = new Map();   // atlas and bulk item cards of the index, by name (the market must not repeat them)
+  const lineage = new Set();  // lineage support gems: the market lists them too (the gem card shows that price)
   for(const it of index.items){
     if(it.img){ const i = it.img.indexOf(':'), pre = IMGS[it.img.slice(0, i)]; if(pre) it.img = pre + it.img.slice(i + 1); }
     it._nl = it.n.toLowerCase();
-    it._hay = [it.n, it.s, it.t, it.q, it.asc, it.reg, (it.ls || []).join(' '), (it.tags || []).join(' ')]
+    it._hay = [it.n, it.s, it.t, it.q, it.asc, it.reg, (it.ls || []).join(' '), (it.tags || []).join(' '), (it.o || []).join(' ')]
       .filter(Boolean).join(' ').toLowerCase();
     D.byKey.set(it.k + ':' + it.id, it);
+    if(it.k === 'b'){ it.base = it.n; if(it.ls) it.ni = it.ls.length; }   // a base: every line is an implicit
+    if(it.k === 'a' || it.k === 'c'){ named.set(it.n, it); if(it.k === 'c') it.nx = true; }   // nx: not in the catalogue (yet)
+    if(it.k === 'g' && it.li) lineage.add(it.n);
   }
-  // currencies live only in the market file; they join the search as their own kind
+  // currencies live in the market file; they join the search as their own kind
   if(market && market.items){
     for(const [key, m] of Object.entries(market.items)){
       if(!key.startsWith('c:')) continue;
+      const own = named.get(m.n);
+      if(own){ own.nx = false; if(!own.img) own.img = m.ic; continue; }   // the index has it: its card, with the market's price
       const it = {k:'c', id:key.slice(2), n:m.n, s:m.cat || 'Currency', t:m.u || '', img:m.ic, dl:m.dl};
+      if(lineage.has(m.n)) it.dup = true;   // kept for the Currency tab; the search shows the gem card
       it._nl = it.n.toLowerCase(); it._hay = (it.n + ' ' + it.s + ' ' + it.t).toLowerCase();
       index.items.push(it); D.byKey.set('c:' + it.id, it);
     }
@@ -47,7 +55,7 @@ export const ready = (async () => {
 export function priceOf(it){
   const M = D.market && D.market.items;
   if(!M) return null;
-  return M[it.k + ':' + it.id] || M[it.k + ':' + it.n] || null;
+  return M[it.k + ':' + it.id] || M[it.k + ':' + it.n] || (it.k === 'a' || it.li ? M['c:' + it.n] : null) || null;
 }
 export function usageOf(it){
   const U = D.usage && D.usage[{g:'gems', u:'uniques', p:'passives'}[it.k]];
@@ -110,11 +118,15 @@ function iconHTML(it){
 }
 
 /* ---------- the live card ---------- */
-const KIND = {g:'Gem', u:'Unique', p:'Passive', w:'Keyword', c:'Currency', b:'Build item'};
+const KIND = {g:'Gem', u:'Unique', p:'Passive', w:'Keyword', c:'Currency', b:'Base', a:'Atlas'};
 const SECTION = {g:'gems', u:'uniques', p:'tree'};
+/* the Craft tab, opened on this base (its plan lives in the address, see craft.js) */
+export const craftHref = (c, b = '') => './#/craft?s=' + encodeURIComponent(btoa(unescape(encodeURIComponent(JSON.stringify({c, b, l: 0, m: []})))));
 export function hrefOf(it){
   if(SECTION[it.k]) return 'explore#' + SECTION[it.k] + '=' + encodeURIComponent(it.n);
-  if(it.k === 'c') return './#/currency?c=' + encodeURIComponent(it.id);
+  if(it.k === 'c') return it.nx ? null : './#/currency?c=' + encodeURIComponent(it.id);   // the Currency tab lists the catalogue
+  if(it.k === 'b' && it.cr && D.byKey.get('b:' + it.id) === it) return craftHref(it.cr, it.n);
+  if(it.k === 'a' && it.at) return './#/atlas?s=' + it.at + '&q=' + encodeURIComponent(it.n);
   return null;
 }
 /* ---------- requirements ----------
@@ -138,12 +150,16 @@ function reqPills(rq, note){
 }
 function reqsOf(it){
   if(it.k === 'g'){
-    if(!it.w) return '<span class="pill">No requirements</span>';
+    const lin = it.li ? '<span class="pill lin">Lineage</span>' : '';
+    if(!it.w) return lin + '<span class="pill">No requirements</span>';
     const r20 = gemReq(it.w, 20), r1 = gemReq(it.w, 1);
     const one = 'At gem level 1: ' + (r1[0] ? 'level ' + r1[0] + ', ' : '') + ATTR.map((a, i) => r1[i + 1] ? r1[i + 1] + ' ' + a[0] : '').filter(Boolean).join(', ');
-    return reqPills(r20, '<span title="' + esc(one) + '">at gem level 20</span>');
+    return lin + reqPills(r20, '<span title="' + esc(one) + '">at gem level 20</span>');
   }
   if(it.k === 'u') return reqPills(it.rq) + (it.cor ? '<span class="pill warn">Corrupted</span>' : '');
+  if(it.k === 'b') return reqPills(it.rq);
+  if(it.k === 'a') return (it.ty ? '<span class="pill">' + ({c: 'Choice', n: 'Notable', s: 'Small'}[it.ty] || '') + '</span>' : '') +
+    (it.x > 1 ? '<span class="pill">' + it.x + ' on the tree</span>' : '') + (it.nt ? '<span class="pill warn">' + esc(it.nt) + '</span>' : '');
   if(it.k === 'p'){
     const out = [];
     if(it.asc) out.push('<span class="pill">' + esc(it.asc) + ' ascendancy</span>');
@@ -160,7 +176,7 @@ function factsOf(it){
     if(it.cost) f.push(it.cost[0] + ' ' + it.cost[1] + ' at gem level 20');
     if(it.sp !== undefined) f.push(it.sp + ' Spirit');
   }
-  if(it.k === 'u' && it.pr) f.push(...it.pr);
+  if((it.k === 'u' || it.k === 'b') && it.pr) f.push(...it.pr);
   if(it.k === 'w' && it.use){
     const u = it.use, parts = [];
     for(const [k, one, many] of [['gems','gem','gems'], ['uniques','unique','uniques'], ['passives','passive','passives']])
@@ -177,6 +193,11 @@ function linesOf(it, max = 4){
       (more > 1 ? '<li class="more-n">+' + more + ' more</li>' : '') + '</ul>';
   }
   return it.t ? '<p class="card-tx">' + esc(it.t) + '</p>' : '';
+}
+function optionsOf(it, full){   // an atlas choice passive: what it lets you pick (in full in the popup)
+  if(!it.o || !it.o.length) return '';
+  return '<p class="card-facts">' + (full ? 'Choose one:' : it.o.length + ' options to choose from') + '</p>' +
+    (full ? '<ul class="card-ls">' + it.o.map(x => '<li>' + esc(x) + '</li>').join('') + '</ul>' : '');
 }
 function anointOf(it){
   if(!it.rec || !it.rec.length) return '';
@@ -224,7 +245,7 @@ export function card(it, opts = {}){
     (opts.why ? '<p class="card-why">' + esc(opts.why) + '</p>' : '') +
     (req ? '<div class="card-req">' + req + '</div>' : '') +
     factsOf(it) +
-    linesOf(it, opts.full ? Infinity : 4) +
+    linesOf(it, opts.full ? Infinity : 4) + optionsOf(it, opts.full) +
     (it.tags ? '<p class="card-tags">' + it.tags.map(esc).join(' · ') + '</p>' : '') +
     anointOf(it) +
     (opts.invest ? '<div class="card-inv"><span>' + esc(opts.invest.label) + '</span><b>' +
@@ -253,7 +274,7 @@ export function card(it, opts = {}){
 
 /* ---------- the popup ----------
    Every card opens here first. The gold button is the one way on to the drill-down page. */
-const PLACE = {g: 'Gems', u: 'Uniques', p: 'Passive tree', c: 'Currency'};
+const PLACE = {g: 'Gems', u: 'Uniques', p: 'Passive tree', c: 'Currency', b: 'Craft', a: 'Atlas'};
 let OV = null, lastFocus = null;
 let CUR = null, STACK = [], CLOSING = false;   // the card on show, and the cards under it (Back returns to them)
 function bigLine(vals, label){
@@ -345,7 +366,7 @@ function paintDetail(){
   if(chips) body.insertAdjacentHTML('beforeend', chips);
   const uses = usesSection(it);
   if(uses) body.appendChild(uses);
-  const tradeable = /^[ugcb]$/.test(it.k);
+  const tradeable = /^[ugcb]$/.test(it.k) || (it.k === 'a' && it.at !== 'tree');   // atlas passives are not items
   if((href && PLACE[it.k]) || tradeable || opts.onFull){
     const row = document.createElement('div');
     row.className = 'ov-go';
@@ -389,8 +410,9 @@ function closeDetail(){
    Every gem, unique, passive and keyword lists the keywords its game text marks (data/index.json "kw": the chips).
    A keyword's card turns that around with data/kwuse.json (tools/kwuse.py, loaded the first time a keyword opens):
    everything that uses it, from every source (the game's markup and the keyword's words in plain text), each
-   list in alphabetical order and in full. Gems, uniques, passives, currency and keywords that have a card open it;
-   small passives and crafting mods are plain rows; atlas rows and item kinds link to their tab. */
+   list in alphabetical order and in full. Anything with a card opens it (gems, uniques, passives, bases, essences,
+   atlas things, currency, keywords); small passives and crafting mods are plain rows; other atlas rows and item kinds
+   link to their tab. */
 let KWUSE = null;
 const SEC = {g: 'gems', u: 'uniques', p: 'tree'};
 function kwUse(){
@@ -413,7 +435,8 @@ function kwChips(it){
   return '<div class="kwchips"><span class="lbl">Keywords</span>' + ids.map(k =>
     '<button type="button" class="chip kwlink" data-kw="' + esc(k) + '">' + esc(keywordCard(k).n) + '</button>').join('') + '</div>';
 }
-const USE_KINDS = [['u', 'Uniques'], ['g', 'Gems'], ['p', 'Passives'], ['a', 'Atlas'], ['m', 'Crafting'], ['c', 'Currency'], ['w', 'Keywords']];
+const USE_KINDS = [['u', 'Uniques'], ['g', 'Gems'], ['p', 'Passives'], ['b', 'Bases'], ['e', 'Essences'], ['a', 'Atlas'],
+  ['m', 'Crafting'], ['c', 'Currency'], ['w', 'Keywords']];
 const USE_FILTER = 30;   // a list longer than this gets a filter box
 const USE_TAB = new Map();   // keyword -> the tab last shown
 function usesSection(it){
@@ -434,13 +457,13 @@ function usesSection(it){
 /* the rows of each group, in the file's order: {html, h: the words the filter box searches} */
 function useGroups(U, e){
   const card = key => D.byKey.get(key);
-  const craftHref = c => './#/craft?s=' + encodeURIComponent(btoa(unescape(encodeURIComponent(JSON.stringify({c, b: '', l: 0, m: []})))));
   const times = n => n > 1 ? ' <span class="uses-x">\u00d7' + n + '</span>' : '';   // how many of it are on the tree
-  const cardRow = (x, sub, n) => { const p = priceOf(x);
-    return '<button type="button" class="uses-row" data-key="' + esc(x.k + ':' + x.id) + '"><span class="uses-ic">' + iconHTML(x) + '</span>' +
-      '<span class="uses-t"><b>' + esc(x.n) + times(n) + '</b><span>' + esc(sub) + '</span></span>' +
+  const cardRow = (x, sub, n, more = '') => { const p = priceOf(x);   // more: extra lines under the sub line (they wrap)
+    return '<button type="button" class="uses-row' + (more ? ' uses-wrap' : '') + '" data-key="' + esc(x.k + ':' + x.id) + '">' +
+      '<span class="uses-ic">' + iconHTML(x) + '</span>' +
+      '<span class="uses-t"><b>' + esc(x.n) + times(n) + '</b><span>' + esc(sub) + '</span>' + more + '</span>' +
       (p && p.v !== undefined ? '<span class="uses-px">' + moneyHTML(p.v) + '</span>' : '') + '</button>'; };
-  const plainRow = (name, sub, o = {}) => '<div class="uses-row uses-plain" title="' + esc(o.title || sub) + '">' +
+  const plainRow = (name, sub, o = {}) => '<div class="uses-row uses-plain' + (o.wrap ? ' uses-wrap' : '') + '" title="' + esc(o.title || sub) + '">' +
     (o.ic ? '<span class="uses-ic"></span>' : '') + '<span class="uses-t"><b>' + esc(name) + times(o.n) + '</b><span>' + esc(sub) + '</span>' +
     (o.more || '') + '</span></div>';
   const row = (html, ...h) => ({html, h: h.filter(Boolean).join(' ').toLowerCase()});
@@ -459,7 +482,14 @@ function useGroups(U, e){
     if(r) r.n = k;
     return r;
   }).filter(Boolean);
-  G.a = (e.a || []).map(([i, line]) => { const [s, n, what] = U.at[i] || [];
+  G.b = (e.b || []).map(id => card('b:' + id)).filter(Boolean).map(x => row(cardRow(x, x.s || ''), x._hay));
+  G.e = (e.e || []).map(i => { const [n, line, kinds] = (U.es || [])[i] || [];   // an essence and the mod it guarantees
+    const c = n && card('c:' + n), names = (kinds || []).map(k => U.ck[k] || k).join(', ');
+    return n && row(c ? cardRow(c, line, 0, '<span class="uses-kinds">' + esc(names) + '</span>')
+      : plainRow(n, line, {ic: 1, wrap: 1, title: line + ' \u00b7 ' + names, more: '<span class="uses-kinds">' + esc(names) + '</span>'}), n, line, names); }).filter(Boolean);
+  G.a = (e.a || []).map(([i, line]) => { const [s, n, what, key] = U.at[i] || [];
+    const c = key && card(key);   // an atlas thing with a card opens it; the rest open the Atlas tab
+    if(c) return row(cardRow(c, what + ' \u00b7 ' + line), n, what, line);
     return n && row('<a class="uses-row uses-go" href="./#/atlas?s=' + esc(s) + '&q=' + encodeURIComponent(n) + '" title="' + esc(line) + '">' +
       '<span class="uses-t"><b>' + esc(n) + '</b><span>' + esc(what) + ' \u00b7 ' + esc(line) + '</span></span></a>', n, what, line); }).filter(Boolean);
   G.m = (e.m || []).map(i => { const [line, what, kinds] = U.cr[i] || [];
@@ -487,7 +517,7 @@ function paintUses(sec){
   else if(!list) rows = '<p class="note">Looking\u2026</p>';
   else if(!list.length) rows = '<p class="note">Nothing here uses it.</p>';
   else rows = list.map(x => x.html).join('');
-  const kind = {u: 'uniques', g: 'gems', p: 'passives', a: 'atlas entries', m: 'mods', c: 'items', w: 'keywords'}[on] || '';
+  const kind = {u: 'uniques', g: 'gems', p: 'passives', b: 'bases', e: 'essences', a: 'atlas entries', m: 'mods', c: 'items', w: 'keywords'}[on] || '';
   const filter = list && list.length > USE_FILTER ? '<input class="uses-q" type="search" autocomplete="off" spellcheck="false" placeholder="Filter ' +
     kind + '\u2026" aria-label="Filter the ' + kind + '">' : '';
   const here = /explore/.test(location.pathname) ? '' : 'explore';   // on the drill-down already: stay on the page
@@ -547,7 +577,7 @@ export function flow(grid, list, make){
 }
 
 /* ---------- search ---------- */
-const KINDS = [['all','All'], ['g','Gems'], ['u','Uniques'], ['p','Passives'], ['c','Currency'], ['w','Keywords']];
+const KINDS = [['all','All'], ['g','Gems'], ['u','Uniques'], ['p','Passives'], ['b','Bases'], ['a','Atlas'], ['c','Currency'], ['w','Keywords']];
 export function search(q, kind = 'all'){
   const qs = q.trim().toLowerCase();
   const toks = qs.split(/\s+/).filter(Boolean);
@@ -555,7 +585,7 @@ export function search(q, kind = 'all'){
   if(!toks.length) return out;
   const wordStart = new RegExp('(^|[^a-z0-9])' + qs.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
   for(const it of D.index.items){
-    if(kind !== 'all' && it.k !== kind) continue;
+    if((kind !== 'all' && it.k !== kind) || it.dup) continue;
     let s = 0, ok = true;
     for(const t of toks){
       if(it._nl.includes(t)) s += 40;

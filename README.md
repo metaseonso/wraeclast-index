@@ -1,6 +1,6 @@
 # Wraeclast Index
 
-Search every Path of Exile 2 gem, unique, passive, currency and keyword, with live prices and trends.
+Search every Path of Exile 2 gem, unique, passive, base item, atlas passive and item, currency and keyword, with live prices and trends.
 
 **Live site:** https://metaseonso.github.io/wraeclast-index/
 **Roadmap:** [issue #13](https://github.com/metaseonso/wraeclast-index/issues/13)
@@ -8,6 +8,7 @@ Search every Path of Exile 2 gem, unique, passive, currency and keyword, with li
 ## What is in it
 
 - **Search** (home page): one search bar. Results show as live cards: requirements, stats, every mod line, live price, 7-day trend, and a link to the builds on poe.ninja that use the item.
+  Kinds: gems (lineage supports marked), uniques, passives, bases (every weapon, armour piece, shield, buckler, focus, quiver, ring, amulet, belt, jewel, flask, charm, relic and wombgift; the gold button opens the Craft tab on that base), Atlas (atlas passives, waystone tiers, tablets, keys and atlas items; the gold button opens the Atlas tab there), currency and keywords.
 - **Gems, Uniques, Passive tree** (`explore.html`): the full tables and detail panels, for drilling down.
 
 ## Where the data comes from
@@ -16,6 +17,8 @@ Search every Path of Exile 2 gem, unique, passive, currency and keyword, with li
 |---|---|---|
 | Gems, uniques, passives, keywords | The official game files (RePoE export), checked against poe2db | Each game patch |
 | Item requirements, currency text | The official game files (RePoE `base_items`, `augments`) | Each game patch |
+| Base items | The official game files (RePoE `base_items`, `mods`), only the bases on the official trade site's list (what exists in the game today) | Each game patch |
+| Atlas cards | `data/atlas.json` (the game files, see below) | Each game patch |
 | Prices and trends | poe.ninja public economy API, current league | Every hour |
 | Card images | Official game art only: the game's image server (links from poe.ninja and the official trade site), poe.ninja's passive icons, and RePoE's export of the game's art | Each sync |
 
@@ -31,7 +34,7 @@ The site is static. GitHub Pages serves it; a GitHub Action (`.github/workflows/
 |---|---|
 | `index.html`, `assets/app.js`, `assets/app.css` | The app: search home page and the live card |
 | `explore.html` | The drill-down page (built from the Wraeclast Index artifact) |
-| `data/index.json` | Search index, built by `tools/sync.py` |
+| `data/index.json` | Search index, built by `tools/sync.py`; the base item, Atlas and extra currency cards come from `tools/morecards.py` (kinds `b`, `a`, `c`) |
 | `data/kwuse.json` | What uses each keyword (the "Found on" lists on keyword cards), built by `tools/kwuse.py` |
 | `data/info.json`, `data/reqs.json` | Item text and requirements, built by `tools/gameinfo.py` |
 | `data/market.json` | Prices, rebuilt every hour by `tools/market.py` |
@@ -45,8 +48,8 @@ The app runs on scripts, so the worker also serves plain pages that any crawler 
 
 | Address | What it is |
 |---|---|
-| `/item/<name>` | One page per gem, unique, passive, currency and keyword: requirements, official lines, price and 7-day change, and a gold link into the app. Unique variants add the base (`/item/runeseekers-call-runic-fork`) |
-| `/gems`, `/uniques`, `/passives`, `/currency`, `/keywords` | The lists, grouped |
+| `/item/<name>` | One page per gem, unique, passive, base item, atlas thing, currency and keyword: requirements, official lines, price and 7-day change, and a gold link into the app. Unique variants add the base (`/item/runeseekers-call-runic-fork`) |
+| `/gems`, `/uniques`, `/passives`, `/bases`, `/atlas`, `/currency`, `/keywords` | The lists, grouped |
 | `/sitemap.xml` | Every page, with dates |
 | `/llms.txt`, `/llms-full.txt` | The site in plain words for AI search; the full one has every item |
 | `/search?q=...` | Opens the app's search (for the search box in Google results) |
@@ -75,12 +78,18 @@ The counts live in the site's D1 database, per day (tables `views`, `clicks`, `h
 
 ## Update the game data
 
-1. After a game patch: `python tools/gameinfo.py`
-2. After the Wraeclast Index artifact changes: save it, then `python tools/sync.py path/to/artifact.html`
-   (the first run checks each new image link once, a few minutes; lists are cached a day in `tools/cache/`)
-3. Then, and after any run of `tools/atlas.py` or `tools/craft.py`: `python tools/kwuse.py`
-   (every keyword's "Found on" lists in `data/kwuse.json`, and the "Used by" counts in `data/index.json`;
-   it prints its counts against the artifact's own, lower only for things the site leaves out)
-4. Commit and push to `main`. The site republishes in about a minute.
+In this order (each step reads what the one before wrote):
+
+1. After a game patch: `python tools/gameinfo.py`, then `python tools/tradedata.py`
+2. `python tools/sync.py path/to/artifact.html` (after the Wraeclast Index artifact changes; `explore.html` works too, it holds the same data)
+   (builds `data/index.json`: the artifact's gems, uniques, passives and keywords, plus base items, the Atlas and the currency the
+   catalogue lacks; the first run checks each new image link once, up to 20 minutes; lists are cached a day in `tools/cache/`)
+3. After a game patch: `python tools/atlas.py` and `python tools/craft.py`, then `python tools/sync.py` again
+   (the Atlas cards come from `data/atlas.json`, and a base's Craft link only where the Craft tab has that base)
+4. Last, after any of the above: `python tools/kwuse.py`
+   (every keyword's "Found on" lists in `data/kwuse.json`: uniques, gems, passives, bases, essences, atlas, crafting, currency,
+   keywords; and the "Used by" counts in `data/index.json`; it prints its counts against the artifact's own, lower only for
+   things the site leaves out)
+5. Commit and push to `main`. The site republishes in about a minute.
 
 Path of Exile is a trademark of Grinding Gear Games. This is a fan project and is not affiliated with them.

@@ -39,7 +39,7 @@ function trendOf(m){
 
 function rows(){
   const M = D.market.items;
-  return D.index.items.filter(it => it.k === 'c').map(it => {
+  return D.index.items.filter(it => it.k === 'c' && M['c:' + it.id]).map(it => {   // the catalogue's items (the index has a few more)
     const m = M['c:' + it.id];
     return {it, m, sw: swing(m.sp), vl: vsLeague(m)};
   });

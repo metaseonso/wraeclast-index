@@ -34,6 +34,7 @@
 .pill.a-g{color:var(--dex); border-color:color-mix(in srgb, var(--dex) 40%, var(--line))}
 .pill.a-b{color:var(--int); border-color:color-mix(in srgb, var(--int) 40%, var(--line))}
 .pill.warn{color:var(--neg)}
+.pill.lin{color:var(--c-keystone, #D9B566)}   /* a lineage support gem */
 .pill-note{font-size:10.5px; color:var(--faint); margin-left:2px}
 .pill-note span{cursor:help; border-bottom:1px dotted var(--faint)}
 .card-facts{margin:0; font:11.5px/1.45 var(--mono); color:var(--muted)}
@@ -259,6 +260,7 @@ header.top .notesbtn ~ .suggestbtn{margin-left:0}
 .uses-plain:hover{border-color:var(--line)}
 .uses-t .uses-x{display:inline; font:500 11px var(--mono, ui-monospace, monospace); color:var(--accent); overflow:visible}
 .uses-t .uses-kinds{white-space:normal; overflow:visible; line-height:1.5}
+.uses-wrap .uses-t span{white-space:normal; overflow:visible}   /* an essence's mod line: shown whole */
 .uses-kinds a{color:var(--accent); text-decoration:none}
 .uses-kinds a:hover, .uses-kinds a:focus-visible{text-decoration:underline}
 .uses-none{margin:6px 2px 0}
