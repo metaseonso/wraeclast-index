@@ -27,20 +27,88 @@ const NUM = /[+-]?\(?[+-]?\d+(?:\.\d+)?(?:-[+-]?\d+(?:\.\d+)?)?\)?/g;
 export function key(t){
   return t.replace(NUM, '#').replace(/\+#/g, '#').replace(/-#/g, '#').replace(/\s+/g, ' ').trim().toLowerCase();
 }
-/* the numbers on a line as one searchable range: "Adds (4-6) to (7-10)" searches the average, like the site */
-function range(line){
-  const toks = line.match(NUM) || [];
-  if(!toks.length) return null;
-  const parts = toks.map(tok => {
-    const neg = /^-/.test(tok) && /\(/.test(tok);
-    const n = tok.replace(/^\+/, '').replace(/[()]/g, '').match(/-?\d+(?:\.\d+)?/g).map(Number);
-    let lo = n[0], hi = n.length > 1 ? n[1] : n[0];
-    if(neg){ lo = -Math.abs(lo); hi = -Math.abs(hi); }
-    return [Math.min(lo, hi), Math.max(lo, hi)];
-  });
-  const avg = i => parts.reduce((a, p) => a + p[i], 0) / parts.length;
-  return toks.length > 1 && /to/.test(line) ? {lo: avg(0), hi: avg(1), avg: true} : {lo: parts[0][0], hi: parts[0][1]};
+/* the numbers on a line as one searchable range: "Adds (4-6) to (7-10)" searches the average, like the site.
+   Same rules as line_range() in tools/tradedata.py. */
+const PAIR = /^([+-]?\d+(?:\.\d+)?)(?:-([+-]?\d+(?:\.\d+)?))?$/;
+function span(tok){
+  const paren = tok.includes('(');
+  const neg = tok[0] === '-' && paren;
+  const body = (paren && tok[0] !== '(' ? tok.replace(/^[+-]+/, '') : tok.replace(/^\+/, '')).replace(/[()]/g, '');
+  const m = body.match(PAIR);
+  if(!m) return null;
+  let a = +m[1], b = m[2] !== undefined ? +m[2] : a;
+  if(neg){ a = -a; b = -b; }
+  return [Math.min(a, b), Math.max(a, b)];
 }
+function range(line){
+  const parts = (line.match(NUM) || []).map(span).filter(Boolean);
+  if(!parts.length) return null;
+  const avg = i => parts.reduce((a, p) => a + p[i], 0) / parts.length;
+  return parts.length > 1 && /\badds\b.*\bto\b/i.test(line) ? {lo: avg(0), hi: avg(1), avg: true} : {lo: parts[0][0], hi: parts[0][1]};
+}
+
+/* ---------- sliders ----------
+   Every number box can have a slider beside it. A mod with tiers shows them as bands on the track
+   (T1 is the best roll) with a divider between each, shaded from cool to hot as the price climbs. */
+const HEAT = [[28, 38, 26], [74, 72, 34], [168, 132, 74], [179, 38, 30]];
+function heat(t){
+  t = Math.pow(Math.max(0, Math.min(1, t)), 1.4);
+  const x = t * (HEAT.length - 1), i = Math.min(HEAT.length - 2, Math.floor(x)), f = x - i;
+  return 'rgb(' + HEAT[i].map((a, j) => Math.round(a + (HEAT[i + 1][j] - a) * f)).join(',') + ')';
+}
+export function tierOf(v, tiers){
+  if(!tiers || v === '' || v === null || v === undefined || isNaN(+v)) return null;
+  let i = -1;
+  tiers.forEach((t, j) => { if(+v >= t[0]) i = j; });
+  return i < 0 ? null : {n: tiers.length - i, lo: tiers[i][0], hi: tiers[i][1], lvl: tiers[i][2]};
+}
+export function tierText(v, tiers){
+  const t = tierOf(v, tiers);
+  return t ? 'T' + t.n + ' · ' + t.lo + (t.hi !== t.lo ? '–' + t.hi : '') + (t.lvl > 1 ? ' · item level ' + t.lvl + '+' : '') : '';
+}
+export const stepOf = (lo, hi, tiers) => [lo, hi, ...(tiers || []).flat()].every(Number.isInteger) ? 1 : 0.1;
+/* o: {k, lo, hi, step, v, tiers, heat:false for plain counts} */
+export function slideHTML(o){
+  const lo = +o.lo, hi = +o.hi, w = hi - lo, step = o.step || 1;
+  if(!(w > 0)) return '';
+  const at = x => ((x - lo) / w * 100).toFixed(2) + '%';
+  let bg, marks = '';
+  if(o.tiers && o.tiers.length > 1){
+    const t = o.tiers, n = t.length, edges = [lo];
+    for(let i = 1; i < n; i++) edges.push(Math.min(hi, Math.max(lo, (t[i - 1][1] + t[i][0]) / 2)));
+    edges.push(hi);
+    const stops = [];
+    for(let i = 0; i < n; i++){
+      const c = heat(i / (n - 1));
+      stops.push(c + ' ' + at(edges[i]), c + ' ' + at(edges[i + 1]));
+      if(i) marks += '<i class="tdiv" style="left:' + at(edges[i]) + '"></i>';
+      if((edges[i + 1] - edges[i]) / w >= 0.075) marks += '<b class="ttag" style="left:' + at((edges[i] + edges[i + 1]) / 2) + '">T' + (n - i) + '</b>';
+    }
+    bg = 'linear-gradient(90deg,' + stops.join(',') + ')';
+  } else {
+    bg = o.heat === false ? 'var(--raised)' : 'linear-gradient(90deg,' + [0, .4, .7, .88, 1].map(x => heat(x) + ' ' + x * 100 + '%').join(',') + ')';
+    if(Number.isInteger(step) && w / step <= 12) for(let x = lo + step; x < hi; x += step) marks += '<i class="tdiv" style="left:' + at(x) + '"></i>';
+  }
+  const unset = o.v === '' || o.v === null || o.v === undefined;
+  return '<span class="tslide' + (unset ? ' unset' : '') + '"><span class="ttrack" style="background:' + bg + '">' + marks + '</span>' +
+    '<input type="range" data-k="' + o.k + '" min="' + lo + '" max="' + hi + '" step="' + step + '" value="' + (unset ? lo : o.v) + '"></span>';
+}
+/* a number box with its slider (and the tier it lands in); keep them in step with syncVal() */
+export function valHTML(o, box){
+  return '<span class="tval"' + (o.tiers ? ' data-tiers="' + esc(JSON.stringify(o.tiers)) + '"' : '') + '>' + slideHTML(o) + box +
+    (o.tiers ? '<span class="ttier">' + esc(tierText(o.v, o.tiers)) + '</span>' : '') + '</span>';
+}
+export function syncVal(src){
+  const box = src.closest('.tval'); if(!box) return;
+  const num = box.querySelector('input[type=number]'), rng = box.querySelector('input[type=range]'), sl = box.querySelector('.tslide');
+  if(src === rng && num) num.value = fmt(+rng.value);
+  if(src === num && rng && num.value !== '' && !isNaN(+num.value)) rng.value = num.value;
+  const v = num ? num.value : rng.value;
+  if(sl) sl.classList.toggle('unset', v === '');
+  const tt = box.querySelector('.ttier');
+  if(tt) tt.textContent = tierText(v, JSON.parse(box.dataset.tiers || 'null'));
+}
+export const HEAT_NOTE = '<p class="note theat"><span class="theat-bar"></span> T1 is the best roll. Redder costs more.</p>';
 const ITEM_KINDS = /Weapon|Armour|Shield|Buckler|Focus|Quiver|Sword|Axe|Mace|Bow|Crossbow|Spear|Staff|Wand|Sceptre|Dagger|Claw|Flail|Talisman|Helmet|Gloves|Boots|Body/;
 function statId(line, implicit, onGear){
   const k = key(line);
@@ -133,14 +201,14 @@ export async function tradePanel(it){
       '<label class="tcheck"><input type="checkbox" data-k="on"' + (r.on ? ' checked' : '') + '><span>' + esc(r.label) + '</span></label>' +
       (r.on && r.v !== null ? '<div class="tctl"><div class="seg" data-k="op">' + OPS.map(([o, l]) =>
           '<button type="button" data-v="' + o + '" aria-pressed="' + (o === r.op) + '">' + l + '</button>').join('') + '</div>' +
-        (slider ? '<input type="range" data-k="v" min="' + r.r.lo + '" max="' + r.r.hi + '" step="' + step(r.r) + '" value="' + r.v + '">' : '') +
-        '<input class="field tnum" type="number" data-k="v" step="' + step(r.r || {lo: 0, hi: 0}) + '" value="' + fmt(r.v) + '">' +
+        valHTML(slider ? {k: 'v', lo: r.r.lo, hi: r.r.hi, step: step(r.r), v: r.v} : {k: 'v', lo: 0, hi: 0, v: r.v},
+          '<input class="field tnum" type="number" data-k="v" step="' + step(r.r || {lo: 0, hi: 0}) + '" value="' + fmt(r.v) + '">') +
         (r.r && r.r.avg ? '<span class="note">average</span>' : '') + '</div>' : '') + '</div>';
   };
   const paint = () => {
     const url = searchURL(league, build());
     box.innerHTML = '<h4>Find it on trade <span class="note">' + esc(league) + '</span></h4>' +
-      (rows.length ? '<p class="note">Tick the mods you care about.</p><div class="tmods">' + rows.map(rowHTML).join('') + '</div>' : '') +
+      (rows.length ? '<p class="note">Tick the mods you care about.</p>' + HEAT_NOTE + '<div class="tmods">' + rows.map(rowHTML).join('') + '</div>' : '') +
       '<div class="tstates">' + STATES.filter(s => stateName[s]).map(s =>
         '<div class="trow"><span>' + esc(stateName[s]) + '</span><div class="seg" data-state="' + s + '">' +
         ['any', 'yes', 'no'].map(v => '<button type="button" data-v="' + v + '" aria-pressed="' + (states[s] === v) + '">' + v[0].toUpperCase() + v.slice(1) + '</button>').join('') +
@@ -156,7 +224,7 @@ export async function tradePanel(it){
     const t = e.target, row = t.closest('.tmod');
     if(t.dataset.k === 'v' && row){
       const r = rows[+row.dataset.i], v = parseFloat(t.value);
-      if(!isNaN(v)){ r.v = v; row.querySelectorAll('[data-k="v"]').forEach(x => { if(x !== t) x.value = t.type === 'range' ? fmt(v) : v; }); }
+      if(!isNaN(v)){ r.v = v; syncVal(t); }
       relink();
     }
   });

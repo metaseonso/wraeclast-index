@@ -2,7 +2,7 @@
    Pick the item, add groups of mods ("must have", "at least N of these", "add these up", "must not have"),
    set details and price, then open the search. The whole search lives in the address, so it can be shared. */
 import { D, $, esc } from './app.js';
-import { tradeData, searchURL, valueFor } from './trade.js';
+import { tradeData, searchURL, valueFor, valHTML, syncVal, stepOf, HEAT_NOTE } from './trade.js';
 
 const GROUPS = {
   and:    {label: 'Must have', hint: 'Every mod here must be on the item.'},
@@ -23,7 +23,7 @@ const EXAMPLES = [
     groups: [{t: 'and', mods: [{id: 'explicit.stat_2250533757', op: 'min', v: 25}]}]}],
   ['Cheapest Headhunter, not corrupted', {item: {k: 'unique', v: 'Headhunter', n: 'Headhunter'}, states: {corrupted: 'no'}}],
 ];
-const blank = () => ({item: null, rarity: '', groups: [], ilvl: '', quality: '', lvl: '', sockets: '', states: {},
+const blank = () => ({item: null, rarity: '', types: [], groups: [], ilvl: '', quality: '', lvl: '', sockets: '', states: {},
   price: '', cur: 'divine', indexed: '', online: true});
 
 let T, EL, S = blank(), MOD = new Map();
@@ -39,6 +39,22 @@ function save(){
   const packed = encodeURIComponent(btoa(unescape(encodeURIComponent(JSON.stringify(S)))));
   history.replaceState(null, '', '#/trade?s=' + packed);
   try { localStorage.setItem('wi.trade', JSON.stringify(S)); } catch {}
+}
+
+/* ---------- defence types (gear kinds only) ----------
+   Each ticked type is a mix like "Evasion + Energy Shield". A defence every ticked type has must be there,
+   one that none of them has must be missing, the rest are free. */
+const DEF = {ar: 'Armour', ev: 'Evasion', es: 'Energy Shield'};
+const typeName = t => t.split('+').map(d => DEF[d]).join(' + ');
+const typesFor = () => (S.item && S.item.k === 'category' && T.typings && T.typings[S.item.v]) || null;
+function defenceFilters(){
+  const all = typesFor(); if(!all || !S.types || !S.types.length) return {};
+  const picked = S.types.map(t => t.split('+')), out = {};
+  for(const d of Object.keys(DEF)){
+    if(picked.every(p => p.includes(d))) out[d] = {min: 1};
+    else if(!picked.some(p => p.includes(d))) out[d] = {max: 0};
+  }
+  return out;
 }
 
 /* ---------- the query the trade site reads ---------- */
@@ -67,6 +83,7 @@ function query(){
   if(S.quality !== '') put('type_filters', 'quality', {min: +S.quality});
   if(S.lvl !== '') put('req_filters', 'lvl', {max: +S.lvl});
   if(S.sockets !== '') put('equipment_filters', 'rune_sockets', {min: +S.sockets});
+  for(const [d, v] of Object.entries(defenceFilters())) put('equipment_filters', d, v);
   for(const [k, v] of Object.entries(S.states)) if(v === 'yes' || v === 'no') put('misc_filters', k, {option: v === 'yes' ? 'true' : 'false'});
   if(S.price !== '') put('trade_filters', 'price', {max: +S.price, option: S.cur});
   if(S.indexed) put('trade_filters', 'indexed', {option: S.indexed});
@@ -80,6 +97,7 @@ function summary(){
   const bits = [];
   const rar = S.rarity ? (T.options.rarity.find(o => o[0] === S.rarity) || [, ''])[1] : '';
   bits.push((rar ? rar + ' ' : '') + (S.item ? S.item.n : 'item'));
+  if(typesFor() && S.types && S.types.length) bits.push(S.types.map(typeName).join(' or '));
   for(const g of S.groups.filter(g => g.mods.length)){
     const names = g.mods.map(m => {
       const t = modText(m.id).replace(/#/g, '#');
@@ -153,9 +171,10 @@ export async function mount(el){
   EL = el;
   el.innerHTML = '<div class="pagehd"><h2>Trade</h2><p>Build any trade search in plain words, then open it on the official site.</p></div><p class="note">Loading…</p>';
   T = await tradeData();
-  for(const [id, t] of T.mods){
+  for(const [id, t, lo, hi, tk] of T.mods){   // lo/hi: the slider's ends; tk: its tiers
     const k = id.split('.')[0];
-    MOD.set(id, {t: t.replace(/\s*\n\s*/g, ' / '), k, l: t.toLowerCase()});
+    MOD.set(id, {t: t.replace(/\s*\n\s*/g, ' / '), k, l: t.toLowerCase(),
+      r: lo === undefined ? null : [lo, hi], tiers: tk ? T.tiers[tk] : null});
   }
   S = load();
   draw();
@@ -168,21 +187,29 @@ function sel(name, opts, val, first){
     opts.map(([id, t]) => '<option value="' + esc(id) + '"' + (id === val ? ' selected' : '') + '>' + esc(t) + '</option>').join('') + '</select>';
 }
 function num(name, val, ph){ return '<input class="field tp-num" type="number" data-k="' + name + '" value="' + esc(val) + '" placeholder="' + esc(ph || '') + '">'; }
+/* a number box, with a slider beside it when the range is known (o: slider ends, step, tiers) */
+function vnum(name, val, ph, o){ return o ? valHTML({...o, k: name, v: val}, num(name, val, ph)) : num(name, val, ph); }
+function modSlide(info){ return info.r ? {lo: info.r[0], hi: info.r[1], step: stepOf(info.r[0], info.r[1], info.tiers), tiers: info.tiers} : null; }
+function totalSlide(g){   // the most the mods in an 'add these up' group can reach
+  if(!g.mods.length || !g.mods.every(m => (MOD.get(m.id) || {}).r)) return null;
+  const hi = g.mods.reduce((a, m) => a + (+m.w || 1) * MOD.get(m.id).r[1], 0);
+  return hi > 0 ? {lo: 0, hi: Math.ceil(hi), step: 1} : null;
+}
 
 function groupHTML(g, gi){
   const G = GROUPS[g.t];
   return '<section class="tp-group" data-g="' + gi + '"><div class="tp-ghd"><h4>' + G.label + '</h4><span class="note">' + G.hint + '</span>' +
     '<button type="button" class="btn tp-del" data-act="delgroup" title="Remove this group">Remove</button></div>' +
-    (g.t === 'count' ? '<div class="trow"><span>How many</span>' + num('n', g.n ?? 1) + '</div>' : '') +
+    (g.t === 'count' ? '<div class="trow"><span>How many</span>' + vnum('n', g.n ?? 1, '', g.mods.length > 1 ? {lo: 1, hi: g.mods.length, step: 1, heat: false} : null) + '</div>' : '') +
     g.mods.map((m, mi) => {
       const info = MOD.get(m.id) || {t: m.id, k: ''};
       return '<div class="tp-mod" data-m="' + mi + '"><span class="tp-mtext">' + esc(info.t) + ' <span class="pill">' + (KIND[info.k] || '') + '</span></span>' +
         (g.t === 'and' || g.t === 'count' || g.t === 'or' ? '<div class="seg" data-k="op">' + OPS.map(([o, l]) =>
-          '<button type="button" data-v="' + o + '" aria-pressed="' + ((m.op || 'min') === o) + '">' + l + '</button>').join('') + '</div>' + num('v', m.v ?? '', 'any') : '') +
-        (g.t === 'weight' ? '<span class="note">counts ×</span>' + num('w', m.w ?? 1) : '') +
+          '<button type="button" data-v="' + o + '" aria-pressed="' + ((m.op || 'min') === o) + '">' + l + '</button>').join('') + '</div>' + vnum('v', m.v ?? '', 'any', modSlide(info)) : '') +
+        (g.t === 'weight' ? '<span class="note">counts ×</span>' + vnum('w', m.w ?? 1, '', {lo: 1, hi: 10, step: 1, heat: false}) : '') +
         '<button type="button" class="btn tp-x" data-act="delmod" title="Remove">Remove</button></div>';
     }).join('') +
-    (g.t === 'weight' ? '<div class="trow"><span>Total at least</span>' + num('min', g.min ?? '', 'any') + '</div>' : '') +
+    (g.t === 'weight' ? '<div class="trow"><span>Total at least</span>' + vnum('min', g.min ?? '', 'any', totalSlide(g)) + '</div>' : '') +
     '<div class="tp-add" data-picker="mod"></div></section>';
 }
 
@@ -199,14 +226,16 @@ function draw(){
           '</span> <button type="button" class="btn" data-act="clearitem">Change</button></span>'
         : '<div class="tp-pick" data-picker="item"></div>') +
         '<label class="lbl">Rarity</label>' + sel('rarity', T.options.rarity, S.rarity, 'Any') + '</div>' +
-      '<h3 class="tp-h">Mods</h3>' +
+      (typesFor() ? '<div class="tp-types"><span class="lbl">Type</span>' + typesFor().map(t => { const v = t.join('+');
+        return '<label class="tp-type"><input type="checkbox" data-type="' + v + '"' + ((S.types || []).includes(v) ? ' checked' : '') + '> ' + esc(typeName(v)) + '</label>'; }).join('') + '</div>' : '') +
+      '<h3 class="tp-h">Mods</h3>' + (S.groups.some(g => g.mods.length) ? HEAT_NOTE : '') +
       (S.groups.length ? S.groups.map(groupHTML).join('') : '<p class="note">No mods yet. Add a group below.</p>') +
       '<div class="row tp-addg">' + Object.entries(GROUPS).map(([t, g]) => '<button type="button" class="btn" data-addg="' + t + '">+ ' + g.label + '</button>').join('') + '</div>' +
       '<h3 class="tp-h">Item details</h3>' +
       '<div class="tp-grid">' +
-        '<label>Item level at least' + num('ilvl', S.ilvl, 'any') + '</label>' +
-        '<label>Quality at least' + num('quality', S.quality, 'any') + '</label>' +
-        '<label>I can use it at level' + num('lvl', S.lvl, 'any') + '</label>' +
+        '<label>Item level at least' + vnum('ilvl', S.ilvl, 'any', {lo: 1, hi: T.limits.ilvl, step: 1}) + '</label>' +
+        '<label>Quality at least' + vnum('quality', S.quality, 'any', {lo: 0, hi: T.limits.quality, step: 1}) + '</label>' +
+        '<label>I can use it at level' + vnum('lvl', S.lvl, 'any', {lo: 1, hi: T.limits.level, step: 1, heat: false}) + '</label>' +
         '<label>Augment sockets at least' + num('sockets', S.sockets, 'any') + '</label>' +
       '</div>' +
       '<div class="tstates">' + STATES.map(k => { const name = (T.states.find(s => s[0] === k) || [, k])[1]; const v = S.states[k] || 'any';
@@ -221,7 +250,7 @@ function draw(){
       '<div class="tgo"><button type="button" class="btn tcopy">Copy link</button><a class="btn gold" target="_blank" rel="noopener" href="' + esc(url) + '">Open on trade ↗</a></div></div>';
 
   const ip = EL.querySelector('[data-picker="item"]');
-  if(ip) picker(ip, 'An item, a unique or a kind (e.g. ring, Headhunter, boots)', itemMatches, it => { S.item = it; commit(); });
+  if(ip) picker(ip, 'An item, a unique or a kind (e.g. ring, Headhunter, boots)', itemMatches, it => { S.item = it; S.types = []; commit(); });
   EL.querySelectorAll('[data-picker="mod"]').forEach(h => {
     const gi = +h.closest('.tp-group').dataset.g;
     picker(h, 'Add a mod: type any words (e.g. life, fire res, total)', modMatches, m => {
@@ -249,10 +278,13 @@ function wire(){
     if(m) S.groups[+g.dataset.g].mods[+m.dataset.m][k] = t.value;
     else if(g) S.groups[+g.dataset.g][k] = t.value;
     else S[k] = t.value;
+    syncVal(t);
     refresh();
   });
   EL.addEventListener('change', e => {
-    const t = e.target, k = t.dataset.k; if(!k) return;
+    const t = e.target, k = t.dataset.k;
+    if(t.dataset.type){ const v = t.dataset.type; S.types = (S.types || []).filter(x => x !== v).concat(t.checked ? [v] : []); return refresh(); }
+    if(!k) return;
     if(t.type === 'checkbox'){ S[k] = t.checked; refresh(); }
     else if(t.tagName === 'SELECT'){ S[k] = t.value; refresh(); }
   });
@@ -262,7 +294,7 @@ function wire(){
     if(b.dataset.ex !== undefined){ S = {...blank(), ...JSON.parse(JSON.stringify(EXAMPLES[+b.dataset.ex][1]))}; return commit(); }
     if(b.dataset.addg){ S.groups.push(b.dataset.addg === 'count' ? {t: 'count', n: 1, mods: []} : {t: b.dataset.addg, mods: []}); return commit(); }
     if(b.dataset.act === 'reset'){ S = blank(); return commit(); }
-    if(b.dataset.act === 'clearitem'){ S.item = null; return commit(); }
+    if(b.dataset.act === 'clearitem'){ S.item = null; S.types = []; return commit(); }
     if(b.dataset.act === 'delgroup'){ S.groups.splice(+g.dataset.g, 1); return commit(); }
     if(b.dataset.act === 'delmod'){ S.groups[+g.dataset.g].mods.splice(+m.dataset.m, 1); return commit(); }
     if(seg && seg.dataset.k === 'op'){ S.groups[+g.dataset.g].mods[+m.dataset.m].op = b.dataset.v; return commit(); }
