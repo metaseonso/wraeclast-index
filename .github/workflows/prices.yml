@@ -1,7 +1,8 @@
-# Live trade prices for the trade sliders and the Farms tab.
-# Once an hour, tools/pricepull.py spreads its official trade searches over ~55 minutes (never a burst)
-# and sends the results to the site. It signs in with GitHub's own short-lived token (id-token), so no
-# password or key is stored anywhere.
+# Live prices from the official trade site (uniques, trade slider tiers, farm inputs).
+# tools/pricepull.py spreads its checks over ~55 minutes (never a burst) and sends the results to the site,
+# signed with GitHub's own short-lived token (id-token), so no password or key is stored anywhere.
+# GitHub's hourly timer is unreliable, so each run also starts the next one when it ends (and refreshes the
+# site's currency prices from the Currency Exchange via the Publish site workflow). The timer stays as a backup.
 name: Trade prices
 on:
   schedule:
@@ -10,6 +11,7 @@ on:
 permissions:
   contents: read
   id-token: write
+  actions: write
 concurrency:
   group: trade-prices
   cancel-in-progress: false
@@ -24,3 +26,15 @@ jobs:
           python-version: '3.12'
       - name: Pull prices through the hour
         run: python tools/pricepull.py
+        continue-on-error: true
+      - name: Keep to one run an hour, then start the next run and refresh currency prices
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # never faster than one run every 50 minutes, even if the pull stopped early
+          started=$(date -d "$(gh run view ${{ github.run_id }} --json startedAt -q .startedAt)" +%s)
+          left=$(( started + 3000 - $(date +%s) ))
+          if [ "$left" -gt 0 ]; then sleep "$left"; fi
+          gh workflow run pages.yml --ref main || echo "::warning::could not start Publish site"
+          gh workflow run prices.yml --ref main || echo "::warning::could not start the next price run"
