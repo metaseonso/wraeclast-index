@@ -140,9 +140,10 @@ body[data-route="home"] .top .topsearch{display:none}
 .tgo{display:flex; justify-content:flex-end; gap:8px}
 
 /* ---------- keybindings: the keyboard button in the top bar and its popup (assets/keys.js) ---------- */
-.keysbtn{flex:none; align-self:center; display:grid; place-items:center; width:34px; height:34px; padding:0; cursor:pointer;
+.keysbtn{order:99; flex:none; align-self:center; display:grid; place-items:center; width:34px; height:34px; padding:0; cursor:pointer;
   border:2px solid var(--line); border-radius:8px; background:var(--surface); color:var(--faint); transition:color .15s, border-color .15s}
 .keysbtn:hover{color:var(--text); border-color:var(--accent)}
+header.top .keysbtn{margin-left:auto}   /* far right, even when the header wraps */
 .keysbtn svg{width:18px; height:18px}
 .keys-box{width:min(400px, 100%)}
 .keys-card{position:relative; background:var(--surface); border:2px solid var(--line); border-radius:var(--r);
