@@ -1,4 +1,4 @@
-<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style><link rel="icon" type="image/png" sizes="64x64" href="assets/brand/favicon-64.png"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&display=swap"><link rel="stylesheet" href="assets/cards.css"><link rel="stylesheet" href="assets/theme.css"><link rel="stylesheet" href="assets/bridge.css"></head><body>
 <title>Wraeclast Index</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -299,10 +299,12 @@ details.tech>summary{color:var(--faint)}
 
 <div class="mast">
   <div class="wrap mast-in">
-    <h1 class="brand">Wraeclast <em>Index</em></h1>
+    <a href="./" class="brand-link"><h1 class="brand"><span class="mark" aria-hidden="true"><img class="mark-wisp" src="assets/brand/wisp-b.webp" alt="" decoding="async" fetchpriority="low"><img class="mark-logo" src="assets/brand/logo-64.webp" alt="" width="51" height="64"></span>Wraeclast <em>Index</em></h1></a>
+    <nav class="applinks" aria-label="App"><a href="./#/">Search</a><a href="./#/build">Build</a><a href="./#/currency">Currency</a></nav>
     <nav class="nav" id="nav" aria-label="Sections"></nav>
     <span class="sub">Patch <b id="patch">&hellip;</b> &middot; <b id="total">0</b> <span id="totalnoun">gems</span></span>
     <span class="mast-spacer"></span>
+    <div class="topsearch" id="topsearch"></div>
     <button class="clbtn" id="clbtn" type="button">Patch notes</button>
   </div>
 </div>
@@ -1967,5 +1969,5 @@ go('gems');
 
 </script>
 
-<link rel="stylesheet" href="assets/bridge.css"><script src="assets/bridge.js" defer></script>
+<script src="assets/bridge.js" defer></script>
 </body></html>

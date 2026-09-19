@@ -7,7 +7,15 @@ import { D, $, esc, card, flow } from './app.js';
    PoB: base64url( zlib( xml ) ). DecompressionStream('deflate') reads zlib. */
 async function decode(code){
   let s = code.trim();
-  if(/^https?:\/\//i.test(s)) throw new Error("That's a link. Open it and copy the build code instead.");
+  if(/^https?:\/\//i.test(s)){   // a build link: the site's worker fetches the code behind it
+    let r = null;
+    try { r = await fetch('api/pob?url=' + encodeURIComponent(s)); } catch {}
+    if(!r || !r.ok || !/text\/plain/.test(r.headers.get('content-type') || '')){
+      const msg = r && r.ok === false && /text\/plain/.test(r.headers.get('content-type') || '') ? await r.text() : '';
+      throw new Error(msg || "Couldn't open that link. Open it and copy the build code instead.");
+    }
+    s = (await r.text()).trim();
+  }
   s = s.replace(/\s+/g, '').replace(/-/g, '+').replace(/_/g, '/').replace(/[^A-Za-z0-9+/=]/g, '').replace(/=+$/, '');
   if(s.length < 100) throw new Error("That doesn't look like a build code.");
   s += '='.repeat((4 - s.length % 4) % 4);
@@ -274,9 +282,9 @@ export function mount(el){
   el.innerHTML =
     '<div class="pagehd"><h2>Build</h2><p>Paste your Path of Building code. See what to fix first and what to buy next, at today\'s prices.</p></div>' +
     '<div class="panel"><label class="lbl" for="pob">Path of Building code</label>' +
-      '<textarea class="field" id="pob" spellcheck="false" placeholder="In Path of Building: Import/Export Build → Generate → Copy, then paste here"></textarea>' +
+      '<textarea class="field" id="pob" spellcheck="false" placeholder="Paste a Path of Building code or a build link"></textarea>' +
       '<div class="row" style="margin-top:10px"><button type="button" class="btn primary" id="pobgo">Read build</button>' +
-      '<span class="note" id="pobmsg">Paste the code, not a pobb.in or poe.ninja link.</span></div></div>' +
+      '<span class="note" id="pobmsg">A code, or a pobb.in / poe.ninja / maxroll link.</span></div></div>' +
     '<div id="pobout"></div>';
   const go = () => run($('#pob', el).value);
   $('#pobgo', el).addEventListener('click', go);

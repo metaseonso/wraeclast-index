@@ -1,0 +1,16 @@
+// Cloudflare Worker for wraeclastindex.fyi. Cloudflare builds and publishes this on every push to main.
+// The site itself is static files (served straight from the edge); the worker only answers
+// /data/market.json (live prices) and /api/* (things a browser cannot fetch on its own).
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "wraeclast-index",
+  "main": "worker/index.js",
+  "compatibility_date": "2026-08-01",
+  "assets": {
+    "directory": ".",
+    "binding": "ASSETS",
+    "html_handling": "none",
+    "run_worker_first": ["/data/market.json", "/api/*"]
+  },
+  "observability": { "enabled": true }
+}

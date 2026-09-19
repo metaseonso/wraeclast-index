@@ -1,5 +1,5 @@
 /* Bridge between the home page and the drill-down page (explore.html).
-   - adds Search / Build / Currency links to the drill-down's top bar
+   - mounts the top search (the header itself is written into the page by tools/sync.py)
    - opens a deep link: explore.html#gems=Untether, #uniques=Headhunter, #tree=Zealot's Oath   */
 (function(){
   'use strict';
@@ -7,30 +7,18 @@
   const INPUT = {gems:'#q', uniques:'#uq', tree:'#tq'};
   const BODY = {gems:'#tbody', uniques:'#utbody', tree:'#ttbody'};
 
-  // top bar: the brand goes home, and the app's own routes sit before the section tabs
-  const mast = document.querySelector('.mast-in');
+  // the header (crest, app tabs, search box) is written into the page by tools/sync.py,
+  // so nothing here changes how the page first looks
   const nav = document.getElementById('nav');
-  if(mast && nav){
-    const brand = mast.querySelector('.brand');
-    if(brand && !brand.closest('a')){
-      const a = document.createElement('a'); a.href = './'; a.className = 'brand-link';
-      brand.replaceWith(a); a.appendChild(brand);
-    }
-    if(!brand.querySelector('.mark')) brand.insertAdjacentHTML('afterbegin', '<span class="mark" aria-hidden="true"><img class="mark-wisp" src="assets/brand/wisp-b.webp" alt="" decoding="async" fetchpriority="low"><img class="mark-logo" src="assets/brand/logo-64.webp" alt="" width="51" height="64"></span>');
-    if(!document.querySelector('link[rel=icon]')) document.head.insertAdjacentHTML('beforeend',
-      '<link rel="icon" type="image/png" sizes="64x64" href="assets/brand/favicon-64.png">');
-    const links = document.createElement('nav');
-    links.className = 'applinks'; links.setAttribute('aria-label', 'App');
-    // app routes that are live; a route joins this list when it ships
-    links.innerHTML = [['./#/', 'Search'], ['./#/build', 'Build'], ['./#/currency', 'Currency']].map(([h, l]) => '<a href="' + h + '">' + l + '</a>').join('');
-    nav.before(links);
-    // keep the address bar in step with the section tab, so links and reloads land in the same place
+  if(nav){   // keep the address bar in step with the section tab, so links and reloads land in the same place
     nav.addEventListener('click', e => {
       const b = e.target.closest('button'); if(!b) return;
       const key = Object.keys(SECTIONS).find(k => SECTIONS[k] === b.textContent.trim().replace(/\d+$/, '').trim());
-      if(key) history.replaceState(null, '', '#' + key);
+      if(key && !location.hash.startsWith('#' + key)) history.replaceState(null, '', '#' + key);   // keep #uniques=Name
     });
   }
+  const host = document.getElementById('topsearch');   // the same top search as the app, with the same popups
+  if(host) import('./app.js').then(m => m.mountTopSearch(host)).catch(() => host.remove());
 
   const sleep = ms => new Promise(r => setTimeout(r, ms));
   function navTo(label){
@@ -57,14 +45,6 @@
     const rows = [...document.querySelectorAll(BODY[sec] + ' tr')];
     const hit = rows.find(r => rowName(r) === name) || rows.find(r => rowName(r).startsWith(name)) || rows[0];
     if(hit){ hit.scrollIntoView({block:'center'}); hit.click(); }
-  }
-  // the same top search as the app, with the same popups
-  if(mast){
-    const host = document.createElement('div');
-    host.className = 'topsearch';
-    const cl = document.getElementById('clbtn');
-    cl ? cl.before(host) : mast.appendChild(host);
-    import('./app.js').then(m => m.mountTopSearch(host)).catch(() => host.remove());
   }
   addEventListener('hashchange', open);
   if(document.readyState === 'complete') open(); else addEventListener('load', open);

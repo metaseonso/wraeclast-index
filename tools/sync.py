@@ -14,7 +14,23 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-BRIDGE = '<link rel="stylesheet" href="assets/bridge.css"><script src="assets/bridge.js" defer></script>'
+BRIDGE = '<script src="assets/bridge.js" defer></script>'
+# In <head>, so the drill-down never paints in its old look first: the fonts, the shared card and
+# theme styles, the drill-down's own additions, and the icon.
+HEAD = ('<link rel="icon" type="image/png" sizes="64x64" href="assets/brand/favicon-64.png">'
+        '<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>'
+        '<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&display=swap">'
+        '<link rel="stylesheet" href="assets/cards.css"><link rel="stylesheet" href="assets/theme.css">'
+        '<link rel="stylesheet" href="assets/bridge.css">')
+# The header as the app draws it: the brand is a link home with the crest, then the app's own tabs.
+MAST_OLD = '<h1 class="brand">Wraeclast <em>Index</em></h1>\n    <nav class="nav" id="nav" aria-label="Sections"></nav>'
+MAST_NEW = ('<a href="./" class="brand-link"><h1 class="brand"><span class="mark" aria-hidden="true">'
+            '<img class="mark-wisp" src="assets/brand/wisp-b.webp" alt="" decoding="async" fetchpriority="low">'
+            '<img class="mark-logo" src="assets/brand/logo-64.webp" alt="" width="51" height="64"></span>Wraeclast <em>Index</em></h1></a>\n'
+            '    <nav class="applinks" aria-label="App"><a href="./#/">Search</a><a href="./#/build">Build</a><a href="./#/currency">Currency</a></nav>\n'
+            '    <nav class="nav" id="nav" aria-label="Sections"></nav>')
+CL_OLD = '<button class="clbtn" id="clbtn" type="button">Patch notes</button>'
+CL_NEW = '<div class="topsearch" id="topsearch"></div>\n    ' + CL_OLD
 
 RAW = re.compile(r'(?<![\w\[./-])[a-z][a-z0-9]*(?:_[a-z0-9%+]+){2,}(?:\s*=\s*-?\d+)?|\{[^}\s]{1,80}\}')
 
@@ -241,6 +257,13 @@ def main():
         json.dumps(index, ensure_ascii=False, separators=(',', ':')), encoding='utf-8')
     if BRIDGE not in html:
         html = html.replace('</body>', BRIDGE + '\n</body>', 1)
+    if HEAD not in html:
+        html = html.replace('</head>', HEAD + '</head>', 1)
+    for a, b in ((MAST_OLD, MAST_NEW), (CL_OLD, CL_NEW)):
+        if b not in html:
+            if a not in html:
+                sys.exit('the drill-down header changed; update MAST_OLD / CL_OLD in tools/sync.py')
+            html = html.replace(a, b, 1)
     (ROOT / 'explore.html').write_text(html, encoding='utf-8', newline='')
     counts = {}
     for it in index['items']:
