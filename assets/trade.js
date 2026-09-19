@@ -49,7 +49,7 @@ function range(line){
 
 /* ---------- sliders ----------
    Every number box can have a slider beside it. A mod with tiers shows them as bands on the track
-   (T1 is the best roll) with a divider between each, shaded from cool to hot as the price climbs. */
+   (T1 is the best roll) with a divider between each, shaded from cool to hot by tier (not live prices yet). */
 const HEAT = [[28, 38, 26], [74, 72, 34], [168, 132, 74], [179, 38, 30]];
 function heat(t){
   t = Math.pow(Math.max(0, Math.min(1, t)), 1.4);
@@ -108,7 +108,7 @@ export function syncVal(src){
   const tt = box.querySelector('.ttier');
   if(tt) tt.textContent = tierText(v, JSON.parse(box.dataset.tiers || 'null'));
 }
-export const HEAT_NOTE = '<p class="note theat"><span class="theat-bar"></span> T1 is the best roll. Redder costs more.</p>';
+export const HEAT_NOTE = '<p class="note theat"><span class="theat-bar"></span> T1 is the best roll. Redder is a higher tier.</p>';
 const ITEM_KINDS = /Weapon|Armour|Shield|Buckler|Focus|Quiver|Sword|Axe|Mace|Bow|Crossbow|Spear|Staff|Wand|Sceptre|Dagger|Claw|Flail|Talisman|Helmet|Gloves|Boots|Body/;
 function statId(line, implicit, onGear){
   const k = key(line);
