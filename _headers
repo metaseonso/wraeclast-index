@@ -1,13 +1,14 @@
 # How long browsers keep each file (Cloudflare reads this on deploy; it is not served).
-# Art never changes under the same name: keep it a month. Code and data change on deploy: keep 2 minutes,
-# then use the kept copy while fetching the new one in the background.
-/assets/brand/*
-  Cache-Control: public, max-age=2592000, stale-while-revalidate=86400
-/sprites/*
-  Cache-Control: public, max-age=604800, stale-while-revalidate=86400
+# Code and data change on deploy: keep 2 minutes, then use the kept copy while fetching the new one.
+# Art never changes under the same name: keep it a month ("! Cache-Control" drops the general rule first).
 /assets/*
   Cache-Control: public, max-age=120, stale-while-revalidate=600
 /data/*
   Cache-Control: public, max-age=120, stale-while-revalidate=3600
 /explore
   Cache-Control: public, max-age=120, stale-while-revalidate=3600
+/assets/brand/*
+  ! Cache-Control
+  Cache-Control: public, max-age=2592000, stale-while-revalidate=86400
+/sprites/*
+  Cache-Control: public, max-age=604800, stale-while-revalidate=86400

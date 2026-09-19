@@ -295,13 +295,11 @@ small.at-bonus{display:block}
 .tp-pop{display:flex; flex-wrap:wrap; align-items:center; gap:6px; margin:0 0 10px}
 .tp-pop:empty{display:none}
 .tp-pop .chip{max-width:340px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
-/* the league clock in the home page's top bar (assets/league.js) */
-.leagueclock{font-size:11.5px; color:var(--faint); white-space:nowrap; font-variant-numeric:tabular-nums}
+/* the league clock just below the header on home (assets/league.js) */
+.leagueclock{margin:10px auto 0; text-align:center; font-size:12px; color:var(--faint); font-variant-numeric:tabular-nums}
 .leagueclock b{color:var(--muted); font-weight:600}
 .leagueclock .lc-up, .leagueclock .lc-down{font-family:var(--mono); color:var(--text)}
 .leagueclock .lc-down{color:var(--accent)}
 .leagueclock .lc-sep{margin:0 8px; color:var(--line)}
-body:not([data-route="home"]) .leagueclock{display:none}
-@media (max-width:640px){ .leagueclock{flex-basis:100%; order:100; text-align:center; white-space:normal} }
 /* phones: the fog drifts past the crest but never makes the page wider than the screen */
 @media (max-width:760px){ .hero{overflow-x:clip} }
