@@ -1,8 +1,10 @@
-"""Build data/info.json: what each tradeable non-equipment item does, in the game's own words.
+"""Build data/info.json (what each tradeable non-equipment item does, in the game's own words)
+and data/reqs.json (level and attribute requirements of every base item).
 
 Covers currency, omens, fragments, breachstones and every augment (runes, soul cores, idols).
 Run once per game patch:   python tools/gameinfo.py
-Source: RePoE PoE2 export (https://repoe-fork.github.io/poe2/).
+Source: the official game files, as exported by RePoE (https://repoe-fork.github.io/poe2/).
+Gem requirements need no file: see GEM_LEVELS in assets/app.js.
 """
 import json
 import re
@@ -47,6 +49,13 @@ def plain(t):
 def main():
     bases = get('base_items.min.json')
     augments = get('augments.min.json')
+    reqs = {'bases': {}}
+    for b in bases.values():
+        r = b.get('requirements')
+        if b.get('release_state') == 'released' and r and b['name'] not in reqs['bases']:
+            reqs['bases'][b['name']] = [r.get('level', 0), r.get('strength', 0), r.get('dexterity', 0), r.get('intelligence', 0)]
+    (ROOT / 'data' / 'reqs.json').write_text(json.dumps(reqs, separators=(',', ':')), encoding='utf-8')
+    print(len(reqs['bases']), 'bases with requirements -> data/reqs.json')
     info = {}
     for path, b in bases.items():
         if b.get('release_state') != 'released' or b.get('item_class') not in CLASSES:
@@ -66,6 +75,8 @@ def main():
         if not text or RAW.search(text):
             continue
         entry = {'t': text, 'cls': b['item_class']}
+        if b.get('drop_level', 0) > 1:
+            entry['dl'] = b['drop_level']
         if b['name'] in info and info[b['name']] != entry:
             continue  # keep the first of several same-named bases
         info[b['name']] = entry

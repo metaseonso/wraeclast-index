@@ -1,0 +1,40 @@
+name: Publish site
+
+# Publishes the site on every push to main, and refreshes poe.ninja prices every hour.
+# Prices are fetched here, not in the browser: poe.ninja's API does not allow browser requests.
+on:
+  push:
+    branches: [main]
+  schedule:
+    - cron: '17 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Fetch live prices from poe.ninja
+        # if poe.ninja is down, the last committed prices go out instead
+        run: python tools/market.py || echo "::warning::Price fetch failed; publishing the committed prices."
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: .
+      - id: deployment
+        uses: actions/deploy-pages@v4

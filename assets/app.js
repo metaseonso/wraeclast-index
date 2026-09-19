@@ -2,36 +2,36 @@
    Data files (all static, served by GitHub Pages):
      data/index.json   search index built from the game data (tools/sync.py)
      data/market.json  poe.ninja prices and 7-day trends (refreshed hourly by a GitHub Action)
-     data/usage.json   poe.ninja build usage for the current league (same Action)            */
+   Build usage links to poe.ninja's own builds page: their builds API is not open to other sites. */
 
 export const $ = (s, el = document) => el.querySelector(s);
 export const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 /* ---------- data ---------- */
-export const D = { index: null, market: null, usage: null, byKey: new Map() };
+export const D = { index: null, market: null, usage: null, byKey: new Map() };   // usage stays empty: see buildsHref
 async function getJSON(url){
   const r = await fetch(url, {cache: 'no-cache'});
   if(!r.ok) throw new Error(url + ' ' + r.status);
   return r.json();
 }
 export const ready = (async () => {
-  const [index, market, usage] = await Promise.all([
+  const [index, market] = await Promise.all([
     getJSON('data/index.json'),
     getJSON('data/market.json').catch(() => null),
-    getJSON('data/usage.json').catch(() => null),
   ]);
-  D.index = index; D.market = market; D.usage = usage;
+  D.index = index; D.market = market;
   for(const it of index.items){
     it._nl = it.n.toLowerCase();
-    it._hay = (it.n + ' ' + (it.s||'') + ' ' + (it.t||'') + ' ' + (it.q||'')).toLowerCase();
+    it._hay = [it.n, it.s, it.t, it.q, it.asc, it.reg, (it.ls || []).join(' '), (it.tags || []).join(' ')]
+      .filter(Boolean).join(' ').toLowerCase();
     D.byKey.set(it.k + ':' + it.id, it);
   }
   // currencies live only in the market file; they join the search as their own kind
   if(market && market.items){
     for(const [key, m] of Object.entries(market.items)){
       if(!key.startsWith('c:')) continue;
-      const it = {k:'c', id:key.slice(2), n:m.n, s:m.cat || 'Currency', t:m.u || '', img:m.ic};
+      const it = {k:'c', id:key.slice(2), n:m.n, s:m.cat || 'Currency', t:m.u || '', img:m.ic, dl:m.dl};
       it._nl = it.n.toLowerCase(); it._hay = (it.n + ' ' + it.s + ' ' + it.t).toLowerCase();
       index.items.push(it); D.byKey.set('c:' + it.id, it);
     }
@@ -113,31 +113,127 @@ export function hrefOf(it){
   if(it.k === 'c') return '#/currency?c=' + encodeURIComponent(it.id);
   return null;
 }
-/* opts.invest: {label, div, note} for build cards; opts.rank: number badge */
+/* ---------- requirements ----------
+   Gem level -> character level, and the attribute formula, from the official game data.
+   Checked against poe2db on 48 random skill and spirit gems: every value matched.
+   Support gems have no requirements. */
+export const GEM_LEVELS = [0,3,6,10,14,18,22,26,31,36,41,46,52,58,64,66,72,78,84,90];
+export function gemReq(w, gemLevel = 20){
+  const lv = GEM_LEVELS[Math.min(gemLevel, 20) - 1];
+  const attr = x => x ? Math.floor((5 + (lv - 3) * 1.7) * Math.pow(x / 100, 0.9) + 0.5) + 4 : 0;
+  return [lv, attr(w[0]), attr(w[1]), attr(w[2])];
+}
+const ATTR = [['Str','r'], ['Dex','g'], ['Int','b']];
+function reqPills(rq, note){
+  if(!rq) return '';
+  const out = [];
+  if(rq[0] > 1) out.push('<span class="pill">Lv ' + rq[0] + '</span>');
+  ATTR.forEach(([a, c], i) => { if(rq[i + 1]) out.push('<span class="pill a-' + c + '">' + rq[i + 1] + ' ' + a + '</span>'); });
+  if(!out.length) out.push('<span class="pill">No requirements</span>');
+  return out.join('') + (note ? '<span class="pill-note">' + note + '</span>' : '');
+}
+function reqsOf(it){
+  if(it.k === 'g'){
+    if(!it.w) return '<span class="pill">No requirements</span>';
+    const r20 = gemReq(it.w, 20), r1 = gemReq(it.w, 1);
+    const one = 'At gem level 1: ' + (r1[0] ? 'level ' + r1[0] + ', ' : '') + ATTR.map((a, i) => r1[i + 1] ? r1[i + 1] + ' ' + a[0] : '').filter(Boolean).join(', ');
+    return reqPills(r20, '<span title="' + esc(one) + '">at gem level 20</span>');
+  }
+  if(it.k === 'u') return reqPills(it.rq) + (it.cor ? '<span class="pill warn">Corrupted</span>' : '');
+  if(it.k === 'p'){
+    const out = [];
+    if(it.asc) out.push('<span class="pill">' + esc(it.asc) + ' ascendancy</span>');
+    else if(it.reg) out.push('<span class="pill">' + esc(it.reg) + ' region</span>');
+    return out.join('');
+  }
+  if(it.k === 'c' && it.dl) return '<span class="pill">Drops from area level ' + it.dl + '</span>';
+  return '';
+}
+function factsOf(it){
+  const f = [];
+  if(it.k === 'g'){
+    if(it.ct) f.push(trim(it.ct / 1000, 2) + ' s use time');
+    if(it.cost) f.push(it.cost[0] + ' ' + it.cost[1] + ' at gem level 20');
+    if(it.sp !== undefined) f.push(it.sp + ' Spirit');
+  }
+  if(it.k === 'u' && it.pr) f.push(...it.pr);
+  if(it.k === 'w' && it.use){
+    const u = it.use, parts = [];
+    for(const [k, one, many] of [['gems','gem','gems'], ['uniques','unique','uniques'], ['passives','passive','passives']])
+      if(u[k]) parts.push(u[k] + ' ' + (u[k] === 1 ? one : many));
+    if(parts.length) f.push('Used by ' + parts.join(', '));
+  }
+  return f.length ? '<p class="card-facts">' + f.map(esc).join(' · ') + '</p>' : '';
+}
+function linesOf(it, max = 4){
+  if(it.ls && it.ls.length){
+    const more = it.ls.length - max;
+    return '<ul class="card-ls">' + it.ls.slice(0, more > 1 ? max : it.ls.length).map(x => '<li>' + esc(x) + '</li>').join('') +
+      (more > 1 ? '<li class="more-n">+' + more + ' more</li>' : '') + '</ul>';
+  }
+  return it.t ? '<p class="card-tx">' + esc(it.t) + '</p>' : '';
+}
+function anointOf(it){
+  if(!it.rec || !it.rec.length) return '';
+  let div = null;
+  const M = D.market && D.market.items;
+  if(M){   // live: the three Distilled emotions at today's price
+    const vals = it.rec.map(n => (M['c:' + n] || M['c:' + n.toLowerCase().replace(/[^a-z]+/g, '-')] || {}).v);
+    if(vals.every(v => v !== undefined)) div = vals.reduce((a, b) => a + b, 0);
+  }
+  if(div === null && it.ac) div = it.ac;
+  return '<div class="card-inv"><span title="' + esc(it.rec.join(' + ')) + '">Anoint with 3 emotions</span><b>' +
+    (div !== null ? moneyHTML(div) : '') + '</b></div>';
+}
+
+/* poe.ninja's builds page, filtered to characters that use this thing (its own link format) */
+export function buildsHref(it){
+  const lg = D.market && D.market.builds;
+  if(!lg) return null;
+  const q = v => encodeURIComponent(v).replaceAll('%20', '+');
+  let key = null;
+  if(it.k === 'g') key = it.w ? 'skills' : 'allskills';
+  else if(it.k === 'u') key = 'items';
+  else if(it.k === 'p') key = /^Keystone/.test(it.s) || it.asc ? 'keypassives' : (it.rec ? 'anointed' : null);
+  return key ? 'https://poe.ninja/poe2/builds/' + lg + '?' + key + '=' + q(it.n) : null;
+}
+
+/* The live card. One layout for every object on the site.
+   opts.invest {label, div, note}: the cost line on build cards; opts.rank: the order badge */
 export function card(it, opts = {}){
   const px = opts.price !== undefined ? opts.price : priceOf(it);
   const use = usageOf(it);
   const href = opts.href !== undefined ? opts.href : hrefOf(it);
-  const el = document.createElement(href ? 'a' : 'article');
-  if(href) el.href = href; else el.tabIndex = 0;
-  el.className = 'card k-' + it.k;
-  const tx = it.k === 'w' ? (it.d || it.t) : it.t;
+  const bh = opts.builds === false ? null : buildsHref(it);
+  const el = document.createElement('article');
+  el.className = 'card k-' + it.k + (href ? ' linked' : '');
+  if(!href) el.tabIndex = 0;
+  const req = reqsOf(it);
+  const title = href ? '<a class="card-link" href="' + esc(href) + '">' + esc(it.n) + '</a>' : esc(it.n);
   el.innerHTML =
     (opts.rank ? '<span class="card-rank">' + opts.rank + '</span>' : '') +
     '<div class="card-hd"><span class="card-ic">' + iconHTML(it) + '</span>' +
-      '<div class="card-id"><h3>' + esc(it.n) + '</h3><p class="card-sub">' + esc(it.s || '') + '</p></div>' +
+      '<div class="card-id"><h3>' + title + '</h3><p class="card-sub">' + esc(it.s || '') + '</p></div>' +
       (px && px.v !== undefined ? '<div class="card-px"><b>' + moneyHTML(px.v) + '</b>' + change(px.ch) + '</div>' : '') +
     '</div>' +
-    (tx ? '<p class="card-tx">' + esc(tx) + '</p>' : '') +
+    (opts.why ? '<p class="card-why">' + esc(opts.why) + '</p>' : '') +
+    (req ? '<div class="card-req">' + req + '</div>' : '') +
+    factsOf(it) +
+    linesOf(it) +
+    (it.tags ? '<p class="card-tags">' + it.tags.map(esc).join(' · ') + '</p>' : '') +
+    anointOf(it) +
     (opts.invest ? '<div class="card-inv"><span>' + esc(opts.invest.label) + '</span><b>' +
-      (opts.invest.div !== undefined ? moneyHTML(opts.invest.div) : esc(opts.invest.note || '')) + '</b></div>' : '') +
+      (opts.invest.div !== undefined && opts.invest.div !== null ? moneyHTML(opts.invest.div) : esc(opts.invest.note || '')) + '</b></div>' : '') +
     '<div class="card-ft">' + (px ? spark(px.sp, px.ch) : '') +
-      (use !== null ? '<span class="use" title="Share of poe.ninja builds in ' + esc(D.usage && D.usage.league || 'the current league') +
-        ' that use this">in ' + (use >= 10 ? Math.round(use) : trim(use, 1)) + '% of builds</span>' : '') +
+      (use !== null ? '<span class="use">in ' + (use >= 10 ? Math.round(use) : trim(use, 1)) + '% of builds</span>' : '') +
       (px && px.ls !== undefined && px.ls < 3 ? '<span class="use" title="Few listings: this is one asking price, not a market">thin market</span>' : '') +
+      (bh ? '<a class="card-ext" href="' + esc(bh) + '" target="_blank" rel="noopener" title="Characters in ' +
+        esc(D.market.league) + ' that use this, on poe.ninja">Builds ↗</a>' : '') +
       '<span class="kind">' + (opts.kind || KIND[it.k] || '') + '</span></div>';
-  if(!href) el.addEventListener('click', () => el.classList.toggle('open'));
-  if(!href) el.addEventListener('keydown', e => { if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); el.classList.toggle('open'); } });
+  if(!href){
+    el.addEventListener('click', e => { if(!e.target.closest('a')) el.classList.toggle('open'); });
+    el.addEventListener('keydown', e => { if(e.target === el && (e.key === 'Enter' || e.key === ' ')){ e.preventDefault(); el.classList.toggle('open'); } });
+  }
   return el;
 }
 
@@ -240,11 +336,10 @@ function homeInit(){
     [...kinds.children].forEach(c => c.setAttribute('aria-pressed', String(c === b)));
     homeRender(); q.focus();
   });
-  let raf = 0;
-  q.addEventListener('input', () => { cancelAnimationFrame(raf); raf = requestAnimationFrame(() => { H.q = q.value; H.shown = 36; homeRender(); syncHash(); }); });
+  q.addEventListener('input', () => { H.q = q.value; H.shown = 36; homeRender(); syncHash(); });
   q.addEventListener('keydown', e => {
     if(e.key === 'Escape'){ q.value = ''; H.q = ''; homeRender(); syncHash(); }
-    if(e.key === 'Enter'){ const first = $('#cards .card'); if(first) first.click(); }
+    if(e.key === 'Enter'){ const first = $('#cards .card .card-link'); if(first) first.click(); }
   });
   $('#more button').addEventListener('click', () => { H.shown += 36; homeRender(); });
   document.addEventListener('keydown', e => {
