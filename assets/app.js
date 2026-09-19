@@ -415,26 +415,32 @@ function movers(){
     list.push({it, s: Math.abs(m.ch) * Math.log10(10 + (m.ls ?? m.vol ?? 10))});
   }
   list.sort((a, b) => b.s - a.s);
-  return list.slice(0, 24).map(x => x.it);
+  return list.map(x => x.it);
 }
 
 /* ---------- home view ---------- */
-const H = {q:'', kind:'all', shown:36, list:[]};
+const PAGE = 30;   // cards added each time the list reaches the bottom of the screen
+const H = {q:'', kind:'all', shown:PAGE, list:[]};
 function homeInit(){
   const q = $('#q'), kinds = $('#kinds');
   kinds.innerHTML = KINDS.map(([k, l]) => '<button type="button" class="chip" data-k="' + k + '" aria-pressed="' + (k === 'all') + '">' + l + '<span class="ct"></span></button>').join('');
   kinds.addEventListener('click', e => {
     const b = e.target.closest('button'); if(!b) return;
-    H.kind = b.dataset.k; H.shown = 36;
+    H.kind = b.dataset.k; H.shown = PAGE;
     [...kinds.children].forEach(c => c.setAttribute('aria-pressed', String(c === b)));
     homeRender(); q.focus();
   });
-  q.addEventListener('input', () => { H.q = q.value; H.shown = 36; homeRender(); syncHash(); });
+  q.addEventListener('input', () => { H.q = q.value; H.shown = PAGE; homeRender(); syncHash(); });
   q.addEventListener('keydown', e => {
     if(e.key === 'Escape'){ q.value = ''; H.q = ''; homeRender(); syncHash(); }
     if(e.key === 'Enter'){ const first = $('#cards .card .card-link'); if(first) first.click(); }
   });
-  $('#more button').addEventListener('click', () => { H.shown += 36; homeRender(); });
+  // endless list: when the bottom comes into view, the next 30 cards fly in
+  const more = $('#more');
+  more.addEventListener('click', () => { H.shown += PAGE; homeRender(); });
+  new IntersectionObserver(es => {
+    if(es.some(e => e.isIntersecting) && !more.hidden && route() === 'home'){ H.shown += PAGE; homeRender(); }
+  }, {rootMargin: '600px 0px'}).observe(more);
 }
 function syncHash(){
   const h = H.q ? '#/?q=' + encodeURIComponent(H.q) : '#/';
