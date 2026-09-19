@@ -30,6 +30,10 @@
     '<p class="ggg-note">This product isn’t affiliated with or endorsed by Grinding Gear Games in any way. <a href="privacy">Privacy</a></p>');
 
   const sleep = ms => new Promise(r => setTimeout(r, ms));
+  // the page builds its section buttons only once live prices have loaded (tools/sync.py LIVE): wait for them
+  async function navReady(){
+    for(let i = 0; i < 100 && !document.querySelector('#nav button'); i++) await sleep(50);
+  }
   function navTo(label){
     const b = [...document.querySelectorAll('#nav button')].find(x => x.textContent.trim().startsWith(label));
     if(b && b.getAttribute('aria-pressed') !== 'true') b.click();
@@ -39,6 +43,7 @@
     return (n ? n.textContent : (tr.cells[0] ? tr.cells[0].innerText.split('\n')[0] : '')).trim();
   }
   async function open(){
+    await navReady();
     const f = location.hash.match(/^#(gems|uniques|tree)\?kw=(.+)$/);
     if(f) return filterBy(f[1], decodeURIComponent(f[2]));
     const m = location.hash.match(/^#(gems|uniques|tree)(?:=(.*))?$/);
