@@ -26,5 +26,6 @@ User-agent: Bytespider
 Allow: /
 Disallow: /api/
 Disallow: /search
+Disallow: /admin
 
 Sitemap: https://wraeclastindex.fyi/sitemap.xml

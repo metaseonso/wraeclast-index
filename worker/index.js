@@ -9,10 +9,12 @@
      /data/rollprices.json, /data/farmprices.json
                          live trade prices (sent in through the hour by GitHub: /api/prices/ingest): worker/prices.js
      /api/trade/searches popular Trade page searches (GET), and counting one (POST): worker/community.js
-     /api/suggest        notes from the Suggest button: worker/community.js */
+     /api/suggest        notes from the Suggest button: worker/community.js
+     /api/t, /api/admin/* page views and clicks, and the owner's dashboard (admin.html): worker/dash.js */
 import * as seo from './seo.js';
 import { servePrices, ingest } from './prices.js';
 import { tradeSearches, suggest } from './community.js';
+import { track, admin } from './dash.js';
 
 const MARKET_SOURCE = 'https://metaseonso.github.io/wraeclast-index/data/market.json';
 const UA = 'wraeclast-index/1.0 (+https://wraeclastindex.fyi)';
@@ -25,6 +27,8 @@ export default {
     if(url.pathname === '/api/pob') return pob(url);
     if(url.pathname === '/api/trade/searches') return tradeSearches(request, env, ctx, url);
     if(url.pathname === '/api/suggest') return suggest(request, env, url);
+    if(url.pathname === '/api/t') return track(request, env, url);
+    if(url.pathname.startsWith('/api/admin/')) return admin(request, env, url);
     if(url.pathname === '/api/prices/ingest') return ingest(request, env, url);
     if(url.pathname === '/data/rollprices.json') return servePrices(request, env, ctx, 'roll');
     if(url.pathname === '/data/farmprices.json') return servePrices(request, env, ctx, 'farm');

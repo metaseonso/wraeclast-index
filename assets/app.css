@@ -390,3 +390,92 @@ small.at-bonus{display:block}
   .cr-vers{padding-left:0}
 }
 /* end Craft tab */
+/* Admin: the owner's dashboard (admin.html, assets/admin.js) */
+.ad-tag{font:600 10px var(--sans); text-transform:uppercase; letter-spacing:.14em; color:var(--faint); border:2px solid var(--line); border-radius:5px; padding:2px 7px}
+.ad-range{display:flex; gap:6px; flex-wrap:wrap}
+.ad-out{padding:5px 12px; font-size:12px}
+.ad{padding-top:18px; display:grid; gap:14px; grid-template-columns:minmax(0, 1fr)}
+.ad-signin{width:min(360px, 100%); margin:12vh auto 0; display:grid; gap:12px}
+.ad-signin h2{font-family:var(--disp); font-size:19px; letter-spacing:.03em}
+.ad-signin .btn{justify-self:start}
+.ad-msg{margin:0; min-height:18px; color:var(--muted)}
+.ad-tiles{display:grid; grid-template-columns:repeat(auto-fit, minmax(150px, 1fr)); gap:12px}
+.ad-tile{display:grid; gap:1px; padding:14px 16px}
+.ad-tile b{font:600 26px/1.15 var(--mono); font-variant-numeric:tabular-nums}
+.ad-tile span{font-size:10.5px; text-transform:uppercase; letter-spacing:.09em; color:var(--muted)}
+.ad-tile small{font-size:11.5px; color:var(--faint)}
+.ad-box{display:grid; gap:10px; min-width:0; grid-template-columns:minmax(0, 1fr); align-content:start}
+.view.ad > .panel{scroll-margin-top:84px}
+.ad-hd{display:flex; align-items:baseline; gap:4px 10px; flex-wrap:wrap}
+.ad-hd h3{font-family:var(--disp); font-size:16px; letter-spacing:.03em}
+.ad-hd p{margin:0; font-size:12px; color:var(--faint)}
+.ad-h4{margin:6px 0 0; font-size:10.5px; font-weight:500; text-transform:uppercase; letter-spacing:.09em; color:var(--faint)}
+.ad-grid{display:grid; grid-template-columns:repeat(auto-fit, minmax(min(100%, 400px), 1fr)); gap:14px}
+.ad-chips{display:flex; flex-wrap:wrap; gap:6px}
+.ad-row{display:flex; flex-wrap:wrap; gap:8px 16px; align-items:center}
+.ad-none{margin:0}
+.ad-tw{overflow-x:auto}
+.ad-t{width:100%; border-collapse:collapse; font-size:13px}
+.ad-t th{text-align:left; padding:7px 10px; font-size:10.5px; font-weight:500; text-transform:uppercase; letter-spacing:.08em; color:var(--faint)}
+.ad-t td{padding:6px 10px; border-top:1px solid var(--line-soft); vertical-align:top; overflow-wrap:anywhere}
+.ad-t .n{text-align:right; width:1%; white-space:nowrap}
+.ad-t td.n{position:relative; min-width:92px; font:500 12.5px var(--mono); font-variant-numeric:tabular-nums}
+.ad-t td.n b{position:relative; font-weight:500}
+.ad-share{position:absolute; right:0; top:4px; bottom:4px; background:linear-gradient(90deg, rgba(140,203,63,.05), rgba(140,203,63,.2)); border-radius:3px 0 0 3px}
+.ad-sub{display:block; font-size:11px; color:var(--faint)}
+.ad-link{cursor:pointer}
+.ad-link:hover td, .ad-link:focus-visible td{background:var(--raised)}
+.ad-bars{display:block; max-width:100%; overflow:visible}
+.ad-bars rect{fill:var(--accent); opacity:.85}
+.ad-bars rect.over{fill:var(--blood, var(--neg))}
+.ad-bars rect:hover{opacity:1}
+.ad-bars text{fill:var(--faint); font:10px var(--mono)}
+.ad-bars .ad-grid-l{stroke:var(--line-soft); stroke-width:1}
+.ad-bars .ad-limit{stroke:var(--blood, var(--neg)); stroke-width:1.5; stroke-dasharray:5 4}
+.ad-bars .ad-limit-t{fill:var(--blood, var(--neg))}
+.ad-heat{max-height:78vh; overflow:auto; border-radius:8px; padding:1px; background:var(--sunken); box-shadow:inset 0 2px 8px rgba(0,0,0,.7)}
+.ad-heat-sz{position:relative; margin:0 auto; overflow:hidden}
+.ad-heat-in{position:absolute; left:0; top:0; transform-origin:0 0}
+.ad-heat iframe{display:block; border:0; pointer-events:none; background:var(--ground)}
+.ad-heat canvas{position:absolute; left:0; top:0; width:100%; height:100%; pointer-events:none}
+.ad-legend{display:inline-flex; align-items:center; gap:6px; font-size:11px; color:var(--faint)}
+.ad-legend i{width:110px; height:8px; border-radius:4px; background:linear-gradient(90deg, rgb(40,90,255), rgb(0,200,220) 35%, rgb(140,203,63) 60%, rgb(245,207,102) 80%, rgb(234,57,67))}
+.ad-notes{list-style:none; margin:0; padding:0; display:grid; gap:8px}
+.ad-note{display:grid; gap:6px; padding:10px 12px; border-radius:8px; background:var(--sunken); box-shadow:inset 0 0 0 1px var(--line-soft)}
+.ad-note.s-new{box-shadow:inset 3px 0 0 var(--accent), inset 0 0 0 1px var(--line-soft)}
+.ad-note.s-done .ad-note-t{color:var(--muted)}
+.ad-note-t{margin:0; font-size:13.5px; line-height:1.5; cursor:pointer; white-space:pre-wrap; overflow-wrap:anywhere;
+  display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:4; overflow:hidden}
+.ad-note-ft{display:flex; flex-wrap:wrap; gap:6px; align-items:center}
+.ad-note-ft .btn, .ad-pop .ov-go .btn:not(.gold){padding:3px 10px; font-size:12px}
+.ad-pop{display:grid; gap:10px; padding:18px; border:2px solid transparent; border-radius:var(--r);
+  background:var(--fa-face, var(--surface)) padding-box, var(--fa-rim, var(--line)) border-box; box-shadow:var(--fa-lip, none), var(--fa-drop, var(--shadow))}
+.ad-pop h3{font-family:var(--disp); font-size:17px; letter-spacing:.03em}
+.ad-pop .note{margin:0}
+.ad-pop .ov-go{gap:8px}
+.ad-note-full{margin:0; font-size:14px; line-height:1.55; white-space:pre-wrap; overflow-wrap:anywhere}
+.ad-verdict{margin:0; font-size:14px; padding:8px 12px; border-radius:8px; background:var(--raised); border-left:3px solid var(--accent)}
+.ad-verdict.v-watch{border-left-color:#D9B04A}
+.ad-verdict.v-upgrade{border-left-color:var(--blood, var(--neg)); color:var(--text)}
+#plan{display:grid; gap:12px}
+.ad-meter-row{display:grid; gap:5px}
+.ad-meter-row .note{margin:0}
+.ad-meter-hd{display:flex; flex-wrap:wrap; justify-content:space-between; gap:4px 12px; font-size:12.5px; color:var(--muted)}
+.ad-meter-hd b{font:500 12.5px var(--mono); color:var(--text)}
+.ad-meter-hd small{color:var(--faint); margin-left:4px}
+.ad-meter{height:10px; border-radius:6px; overflow:hidden; background:var(--sunken); box-shadow:inset 0 1px 3px rgba(0,0,0,.8), 0 0 0 1px var(--line-soft)}
+.ad-meter i{display:block; height:100%; background:var(--fa-poison, var(--accent))}
+.ad-meter.warn i{background:#D9B04A}
+.ad-meter.bad i{background:var(--blood, var(--neg))}
+.ad-links a{color:var(--accent)}
+.ad-foot{margin:0}
+.ad-foot input{accent-color:var(--accent)}
+@media (max-width:640px){
+  .ad-page .top .grow{flex-basis:100%; height:0}   /* range and Sign out drop to a second row */
+  .ad-range{order:5}
+  .ad-out{order:6; margin-left:auto}
+  .view.ad > .panel{scroll-margin-top:124px}
+  .ad-tile b{font-size:22px}
+  .view.ad .panel{padding:12px}
+}
+/* end Admin */
