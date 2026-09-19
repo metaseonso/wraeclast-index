@@ -1,3 +1,4 @@
+@import url(cards.css);
 /* Drill-down page additions: app links beside the section tabs */
 .brand-link{text-decoration:none; color:inherit}
 .applinks{display:flex; gap:2px; background:var(--sunken); border:1px solid var(--line); border-radius:7px; padding:2px}

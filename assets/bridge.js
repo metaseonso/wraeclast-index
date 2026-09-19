@@ -55,6 +55,14 @@
     const hit = rows.find(r => rowName(r) === name) || rows.find(r => rowName(r).startsWith(name)) || rows[0];
     if(hit){ hit.scrollIntoView({block:'center'}); hit.click(); }
   }
+  // the same top search as the app, with the same popups
+  if(mast){
+    const host = document.createElement('div');
+    host.className = 'topsearch';
+    const cl = document.getElementById('clbtn');
+    cl ? cl.before(host) : mast.appendChild(host);
+    import('./app.js').then(m => m.mountTopSearch(host)).catch(() => host.remove());
+  }
   addEventListener('hashchange', open);
   if(document.readyState === 'complete') open(); else addEventListener('load', open);
 })();

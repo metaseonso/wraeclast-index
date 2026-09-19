@@ -110,7 +110,7 @@ const KIND = {g:'Gem', u:'Unique', p:'Passive', w:'Keyword', c:'Currency', b:'Bu
 const SECTION = {g:'gems', u:'uniques', p:'tree'};
 export function hrefOf(it){
   if(SECTION[it.k]) return 'explore.html#' + SECTION[it.k] + '=' + encodeURIComponent(it.n);
-  if(it.k === 'c') return '#/currency?c=' + encodeURIComponent(it.id);
+  if(it.k === 'c') return './#/currency?c=' + encodeURIComponent(it.id);
   return null;
 }
 /* ---------- requirements ----------
@@ -421,11 +421,6 @@ function homeInit(){
     if(e.key === 'Enter'){ const first = $('#cards .card .card-link'); if(first) first.click(); }
   });
   $('#more button').addEventListener('click', () => { H.shown += 36; homeRender(); });
-  document.addEventListener('keydown', e => {
-    if(e.key === '/' && document.activeElement !== q && !/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName) && route() === 'home'){
-      e.preventDefault(); q.focus();
-    }
-  });
 }
 function syncHash(){
   const h = H.q ? '#/?q=' + encodeURIComponent(H.q) : '#/';
@@ -457,12 +452,64 @@ function homeRender(){
   }
 }
 
+/* ---------- top search ----------
+   On every page but home. Results drop down under the bar; each opens the popup. */
+let TOPQ = null;
+export function mountTopSearch(host){
+  host.innerHTML = '<div class="tsearch"><svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="8.5" cy="8.5" r="5.5" fill="none" stroke="currentColor" stroke-width="1.8"/>' +
+    '<path d="M13 13l4.5 4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>' +
+    '<input type="search" placeholder="Search the index" autocomplete="off" spellcheck="false" aria-label="Search the index" ' +
+    'role="combobox" aria-expanded="false" aria-autocomplete="list"><kbd aria-hidden="true">/</kbd>' +
+    '<div class="tsearch-drop" role="listbox" hidden></div></div>';
+  const q = host.querySelector('input'), drop = host.querySelector('.tsearch-drop');
+  TOPQ = q;
+  let rows = [], sel = 0, total = 0;
+  const close = () => { drop.hidden = true; q.setAttribute('aria-expanded', 'false'); };
+  const pick = i => { const it = rows[i]; if(!it) return; close(); openDetail(it, {}, hrefOf(it)); };
+  const paint = () => {
+    drop.innerHTML = rows.length ? rows.map((it, i) => {
+      const px = priceOf(it);
+      return '<button type="button" class="tsearch-row k-' + it.k + '" role="option" data-i="' + i + '" aria-selected="' + (i === sel) + '">' +
+        '<span class="card-ic">' + iconHTML(it) + '</span><span class="t"><b>' + esc(it.n) + '</b><span>' + esc(it.s || '') + '</span></span>' +
+        (px && px.v !== undefined ? '<span class="p">' + moneyHTML(px.v) + '</span>' : '') + '</button>';
+    }).join('') + (total > rows.length ? '<div class="tsearch-none">Top ' + rows.length + ' of ' + total.toLocaleString() + '. Type more to narrow it down.</div>' : '')
+    : '<div class="tsearch-none">Nothing matches.</div>';
+    drop.hidden = false; q.setAttribute('aria-expanded', 'true');
+  };
+  q.addEventListener('input', async () => {
+    await ready;
+    if(!q.value.trim()){ close(); return; }
+    const all = search(q.value);
+    total = all.length; rows = all.slice(0, 10); sel = 0; paint();
+  });
+  q.addEventListener('keydown', e => {
+    if(e.key === 'ArrowDown' && rows.length){ e.preventDefault(); sel = (sel + 1) % rows.length; paint(); }
+    else if(e.key === 'ArrowUp' && rows.length){ e.preventDefault(); sel = (sel - 1 + rows.length) % rows.length; paint(); }
+    else if(e.key === 'Enter'){ e.preventDefault(); pick(sel); }
+    else if(e.key === 'Escape'){ if(!drop.hidden) close(); else { q.value = ''; q.blur(); } }
+  });
+  drop.addEventListener('mousedown', e => e.preventDefault());   // keep focus in the box while clicking a row
+  drop.addEventListener('click', e => { const b = e.target.closest('.tsearch-row'); if(b) pick(+b.dataset.i); });
+  q.addEventListener('focus', () => { if(q.value.trim() && rows.length) paint(); });
+  q.addEventListener('blur', () => setTimeout(close, 120));
+}
+// "/" jumps into search from anywhere: the big box on home, the top box everywhere else
+document.addEventListener('keydown', e => {
+  if(e.key !== '/' || e.ctrlKey || e.metaKey || e.altKey) return;
+  const a = document.activeElement;
+  if(a && (/INPUT|TEXTAREA|SELECT/.test(a.tagName) || a.isContentEditable)) return;
+  const home = document.getElementById('q');
+  const target = (IS_APP && route() === 'home' && home) ? home : TOPQ;
+  if(target){ e.preventDefault(); e.stopImmediatePropagation(); target.focus(); target.select(); }
+}, true);   // capture: the drill-down page has its own "/" shortcut, and this one comes first
+
 /* ---------- router ---------- */
 function route(){ const m = location.hash.match(/^#\/(\w+)/); return m ? m[1] : 'home'; }
 export function params(){ const i = location.hash.indexOf('?'); return new URLSearchParams(i >= 0 ? location.hash.slice(i + 1) : ''); }
 const loaded = {};
 async function show(){
   const r = ['home', 'build', 'currency'].includes(route()) ? route() : 'home';
+  document.body.dataset.route = r;
   document.querySelectorAll('.view').forEach(v => v.hidden = v.dataset.view !== r);
   document.querySelectorAll('.tabs a[data-route]').forEach(a => { if(a.dataset.route === r) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current'); });
   await ready;
@@ -478,8 +525,12 @@ async function show(){
   }
 }
 
-/* ---------- boot ---------- */
+/* ---------- boot ----------
+   The drill-down page imports this module for the top search and the popup only. */
+const IS_APP = !!document.getElementById('view-home');
+if(IS_APP){
 homeInit();
+mountTopSearch(document.getElementById('topsearch'));
 addEventListener('hashchange', show);
 show();
 ready.then(() => {
@@ -490,3 +541,4 @@ ready.then(() => {
 }).catch(err => {
   $('#status').innerHTML = '<span class="err">Could not load the index: ' + esc(err.message) + '</span>';
 });
+}
