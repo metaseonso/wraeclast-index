@@ -1,0 +1,167 @@
+/* Wraeclast Index — the "Forged Bronze" look, on every page (index.html, and explore.html via tools/sync.py).
+   The badge's metal: every card and control sits in a bevelled bronze-and-iron frame (lit top-left,
+   dark in the middle, lit again bottom-right) around a darker face, with a black lip between the two.
+   A small bronze clasp with a blood-red gem holds each card at the top. Poison green only appears
+   when something is hovered, focused or switched on: it lights the inner lip or takes over the rim.
+   Loaded after theme.css. Every rule starts with html:not(#_), an id-level boost, so it outranks the
+   theme and the drill-down page's own inline styles without !important. Text colours are not touched.
+   Frames are painted as two backgrounds (face in the padding box, metal in the border box) under a
+   transparent border, so a hover can fade a green border-color in over the bronze. */
+
+html:not(#_){
+  --fa-rim:linear-gradient(160deg, #C9A86A 0%, #8C6E40 20%, #3E3427 48%, #2B251C 62%, #6B5636 84%, #AD8C52 100%);
+  --fa-rim-dim:linear-gradient(165deg, #8E7247 0%, #54452F 30%, #2C261D 62%, #4A3D2A 85%, #7A6240 100%);
+  --fa-well:linear-gradient(180deg, #221D16 0%, #3A3124 45%, #7D6443 100%);   /* sunken: the lower lip catches the light */
+  --fa-poison:linear-gradient(180deg, #B4E07A 0%, #7DB23C 45%, #4A7526 100%);
+  --fa-face:linear-gradient(180deg, #121310 0%, #0C0D0B 55%, #090A08 100%);
+  --fa-plate:linear-gradient(180deg, #1C1D19 0%, #121310 100%);
+  --fa-plate-hi:linear-gradient(180deg, #262620 0%, #171814 100%);
+  --fa-sunk:linear-gradient(180deg, #050605 0%, #0A0B09 100%);
+  --fa-lip:inset 0 0 0 1px rgba(0,0,0,.9), inset 0 2px 0 1px rgba(214,178,110,.06);
+  --fa-drop:0 2px 3px rgba(0,0,0,.7), 0 10px 24px rgba(0,0,0,.5);
+}
+
+/* ---------- the card ---------- */
+html:not(#_) .card{
+  border:3px solid transparent;   /* a heavier rim than the theme's 2px: the frame is the point */
+  background:var(--fa-face) padding-box, var(--fa-rim) border-box;
+  box-shadow:var(--fa-lip), inset 0 0 26px rgba(0,0,0,.55), var(--fa-drop);
+}
+html:not(#_) .card:hover{
+  border-color:transparent;
+  box-shadow:inset 0 0 0 2px rgba(140,203,63,.42), inset 0 2px 0 1px rgba(214,178,110,.06), inset 0 0 26px rgba(140,203,63,.045),
+    0 2px 3px rgba(0,0,0,.7), 0 14px 30px rgba(0,0,0,.6);
+}
+/* the clasp: a bronze stud with a red gem, like the badge's gems */
+html:not(#_) .card::before{
+  left:calc(50% - 5px); right:auto; top:-7px; width:10px; height:10px; opacity:1; rotate:45deg; border-radius:2px;
+  background:radial-gradient(circle, #E0443A 0 1.3px, #7A1812 2.1px, rgba(40,8,6,.9) 2.8px, transparent 3.3px),
+    linear-gradient(135deg, #EACD92 0%, #A8844A 40%, #4A3B26 100%);
+  box-shadow:0 0 0 1px #0A0806, 0 2px 4px rgba(0,0,0,.8);
+}
+html:not(#_) .card-ic{
+  background:radial-gradient(circle at 50% 38%, #1A1B17, #060706);
+  box-shadow:0 0 0 2px #4A3B26, 0 0 0 3px #0A0806, inset 0 0 12px rgba(0,0,0,.85);
+}
+html:not(#_) .card-rank{box-shadow:0 0 0 2px #2A2016, 0 0 0 3px #8C6E40, 0 0 10px rgba(179,38,30,.35)}
+html:not(#_) .pill{border-color:#3E3427; background:#080907}
+html:not(#_) .pill.a-r{border-color:color-mix(in srgb, var(--str) 45%, #3E3427)}
+html:not(#_) .pill.a-g{border-color:color-mix(in srgb, var(--dex) 45%, #3E3427)}
+html:not(#_) .pill.a-b{border-color:color-mix(in srgb, var(--int) 45%, #3E3427)}
+html:not(#_) .pill.warn{border-color:rgba(179,38,30,.6); background:var(--blood-soft)}
+html:not(#_) .card-ft .kind{border-color:#3E3427; background:#080907}
+html:not(#_) .card-inv{border-top-color:#2E271C}
+html:not(#_) .chart svg{box-shadow:inset 0 0 0 1px #2B251C, inset 0 2px 8px rgba(0,0,0,.7)}
+
+/* ---------- the popup: a heavier frame with a second rim ---------- */
+html:not(#_) .ov-box{padding:12px 6px}   /* room for the outer rim and clasp inside the scroll box */
+html:not(#_) .card.detail, html:not(#_) .card.detail:hover{
+  box-shadow:var(--fa-lip), inset 0 0 40px rgba(0,0,0,.5), 0 0 0 2px #050505, 0 0 0 4px #5C4A2E, 0 20px 50px rgba(0,0,0,.6);
+}
+html:not(#_) .card.detail::before{left:calc(50% - 7px); top:-9px; width:14px; height:14px;
+  background:radial-gradient(circle, #E0443A 0 2px, #7A1812 3px, rgba(40,8,6,.9) 3.8px, transparent 4.4px),
+    linear-gradient(135deg, #EACD92 0%, #A8844A 40%, #4A3B26 100%)}
+
+/* ---------- buttons: bronze-rimmed plates ---------- */
+html:not(#_) .btn, html:not(#_) .clbtn, html:not(#_) .lvlquick button, html:not(#_) .closebtn, html:not(#_) .more button{
+  border:2px solid transparent;
+  background:var(--fa-plate) padding-box, var(--fa-rim-dim) border-box;
+  box-shadow:inset 0 1px 0 rgba(230,200,140,.08), 0 1px 2px rgba(0,0,0,.7);
+  transition:border-color .15s, box-shadow .15s;
+}
+html:not(#_) .btn:hover, html:not(#_) .clbtn:hover, html:not(#_) .lvlquick button:hover, html:not(#_) .closebtn:hover, html:not(#_) .more button:hover{
+  border-color:rgba(140,203,63,.7); filter:none;
+  box-shadow:inset 0 1px 0 rgba(230,200,140,.08), 0 0 14px rgba(140,203,63,.07), 0 1px 2px rgba(0,0,0,.7);
+}
+html:not(#_) .btn.primary, html:not(#_) .btn.ttoggle[aria-expanded="true"], html:not(#_) .filtbtn{
+  border:2px solid transparent;
+  background:linear-gradient(180deg, rgba(140,203,63,.05), transparent 70%) padding-box, var(--fa-plate) padding-box, var(--fa-poison) border-box;
+}
+html:not(#_) .btn.primary:hover, html:not(#_) .filtbtn:hover{border-color:transparent; color:var(--accent);
+  box-shadow:inset 0 1px 0 rgba(230,200,140,.08), 0 0 16px rgba(140,203,63,.1), 0 1px 2px rgba(0,0,0,.7)}
+html:not(#_) .filtbtn{color:var(--text)}
+html:not(#_) .btn.gold{
+  border:2px solid transparent;
+  background:linear-gradient(180deg, #15120C, #0A0907) padding-box, linear-gradient(170deg, #E6C46C 0%, #9C7A2C 40%, #4A3A16 75%, #8A6A28 100%) border-box;
+}
+html:not(#_) .btn.gold:hover, html:not(#_) .btn.gold:focus-visible{border-color:rgba(245,207,102,.55);
+  box-shadow:0 0 0 1px rgba(217,176,74,.25), 0 0 16px rgba(217,176,74,.28)}
+
+/* ---------- chips: bronze-rimmed; switched on = poison rim ---------- */
+html:not(#_) .chip{
+  border:2px solid transparent;
+  background:linear-gradient(180deg, #151612, #0C0D0B) padding-box, var(--fa-rim-dim) border-box;
+  box-shadow:inset 0 1px 0 rgba(230,200,140,.06), 0 1px 2px rgba(0,0,0,.6);
+}
+html:not(#_) .chip:hover{border-color:rgba(140,203,63,.6)}
+html:not(#_) .chip[aria-pressed="true"]{
+  border-color:transparent; color:var(--accent);
+  background:linear-gradient(180deg, rgba(140,203,63,.06), transparent) padding-box, linear-gradient(180deg, #151612, #0C0D0B) padding-box, var(--fa-poison) border-box;
+  box-shadow:inset 0 1px 0 rgba(230,200,140,.06), 0 0 12px rgba(140,203,63,.06);
+}
+html:not(#_) .chip.c-r[aria-pressed="true"]{color:var(--str); background:linear-gradient(180deg, #151612, #0C0D0B) padding-box, linear-gradient(var(--str), var(--str)) border-box; box-shadow:none}
+html:not(#_) .chip.c-g[aria-pressed="true"]{color:var(--dex); background:linear-gradient(180deg, #151612, #0C0D0B) padding-box, linear-gradient(var(--dex), var(--dex)) border-box; box-shadow:none}
+html:not(#_) .chip.c-b[aria-pressed="true"]{color:var(--int); background:linear-gradient(180deg, #151612, #0C0D0B) padding-box, linear-gradient(var(--int), var(--int)) border-box; box-shadow:none}
+html:not(#_) .chip.c-w[aria-pressed="true"]{color:var(--any); background:linear-gradient(180deg, #151612, #0C0D0B) padding-box, linear-gradient(var(--any), var(--any)) border-box; box-shadow:none}
+
+/* ---------- trays: nav tabs, segmented toggles — an iron channel, the active one a raised plate ---------- */
+html:not(#_) .tabs, html:not(#_) .seg, html:not(#_) .nav, html:not(#_) .applinks{
+  border:2px solid transparent;
+  background:var(--fa-sunk) padding-box, var(--fa-rim-dim) border-box;
+  box-shadow:inset 0 2px 6px rgba(0,0,0,.75), 0 1px 2px rgba(0,0,0,.6);
+}
+html:not(#_) .tabs a[aria-current="page"], html:not(#_) .seg button[aria-pressed="true"], html:not(#_) .nav button[aria-pressed="true"]{
+  background:var(--fa-plate-hi);
+  box-shadow:inset 0 1px 0 rgba(230,200,140,.14), inset 0 -2px 0 var(--accent), 0 1px 3px rgba(0,0,0,.85);
+}
+html:not(#_) .applinks a:hover{background:var(--fa-plate)}
+html:not(#_) .tabs-sep{background:linear-gradient(180deg, transparent, #6B5636, transparent)}
+
+/* ---------- inputs: sunken wells, the rim lights green on focus ---------- */
+html:not(#_) .searchbox input, html:not(#_) .tsearch input, html:not(#_) .field, html:not(#_) .search, html:not(#_) .kwq, html:not(#_) .lvlbox{
+  border:2px solid transparent;
+  background:var(--fa-sunk) padding-box, var(--fa-well) border-box;
+  box-shadow:inset 0 2px 8px rgba(0,0,0,.75);
+  transition:border-color .2s, box-shadow .2s;
+}
+html:not(#_) .searchbox input{box-shadow:inset 0 2px 10px rgba(0,0,0,.8), var(--fa-drop)}
+html:not(#_) .searchbox input:focus, html:not(#_) .tsearch input:focus, html:not(#_) .field:focus, html:not(#_) .search:focus,
+html:not(#_) .kwq:focus, html:not(#_) .lvlbox:focus-within{
+  border-color:transparent; background:var(--fa-sunk) padding-box, var(--fa-poison) border-box;
+  box-shadow:inset 0 2px 8px rgba(0,0,0,.75), 0 0 0 3px rgba(140,203,63,.06), 0 0 30px rgba(140,203,63,.04);
+}
+html:not(#_) .searchbox-kbd, html:not(#_) .tsearch kbd, html:not(#_) .hint kbd{border-color:#4A3D2A; background:#12130F}
+
+/* ---------- panels and boxes: the card's frame, larger ---------- */
+html:not(#_) .view .panel, html:not(#_) .trade, html:not(#_) .tablewrap, html:not(#_) .tsearch-drop{
+  border:2px solid transparent;
+  background:var(--fa-face) padding-box, var(--fa-rim) border-box;
+  box-shadow:var(--fa-lip), inset 0 0 40px rgba(0,0,0,.45), var(--fa-drop);
+}
+html:not(#_) .view .panel.tp-out{box-shadow:var(--fa-lip), 0 10px 30px rgba(0,0,0,.6)}
+html:not(#_) .tp-group{
+  border:2px solid transparent;
+  background:var(--fa-sunk) padding-box, var(--fa-rim-dim) border-box;
+  box-shadow:inset 0 2px 8px rgba(0,0,0,.6);
+}
+html:not(#_) .tp-mod{background:linear-gradient(180deg, #141511, #0E0F0C); box-shadow:inset 0 0 0 1px #221D16}
+html:not(#_) .tmod{border-color:#2A241B}
+html:not(#_) .tmod.on{border-color:color-mix(in srgb, var(--accent) 45%, #3E3427)}
+html:not(#_) .tmod.off{border-color:#1E1A14}
+html:not(#_) thead th{background:linear-gradient(180deg, #1A1B17, #121310); border-bottom:2px solid #3E3427}
+/* the drill-down's side panel */
+html:not(#_) aside.panel{border-left:2px solid #6B5636; background:#0C0D0B; box-shadow:inset 2px 0 0 #050505, -12px 0 34px rgba(0,0,0,.6)}
+html:not(#_) aside.panel .panel-hd{background:#0C0D0B; border-bottom:2px solid #3E3427}
+
+/* ---------- header rail: a forged bar under the top bar ---------- */
+html:not(#_) .top, html:not(#_) .mast{
+  border-bottom:2px solid transparent;
+  border-image:linear-gradient(90deg, rgba(107,86,54,0), #6B5636 14%, #C3A266 50%, #6B5636 86%, rgba(107,86,54,0)) 1;
+  box-shadow:0 4px 14px rgba(0,0,0,.55);
+}
+html:not(#_) footer.foot{border-top:2px solid transparent;
+  border-image:linear-gradient(90deg, rgba(62,52,39,0), #3E3427 20%, #6B5636 50%, #3E3427 80%, rgba(62,52,39,0)) 1}
+
+@media (max-width:640px){
+  html:not(#_) aside.panel{border-left:0}
+}

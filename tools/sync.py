@@ -16,12 +16,12 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 BRIDGE = '<script src="assets/bridge.js" defer></script>'
 # In <head>, so the drill-down never paints in its old look first: the fonts, the shared card and
-# theme styles, the drill-down's own additions, and the icon.
+# theme styles, the drill-down's own additions, the forged-bronze look, and the icon.
 HEAD = ('<link rel="icon" type="image/png" sizes="64x64" href="assets/brand/favicon-64.png">'
         '<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>'
         '<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&display=swap">'
         '<link rel="stylesheet" href="assets/cards.css"><link rel="stylesheet" href="assets/theme.css">'
-        '<link rel="stylesheet" href="assets/bridge.css">')
+        '<link rel="stylesheet" href="assets/bridge.css"><link rel="stylesheet" href="assets/look.css">')
 # The header as the app draws it: the brand is a link home with the crest, then the app's own tabs.
 MAST_OLD = '<h1 class="brand">Wraeclast <em>Index</em></h1>\n    <nav class="nav" id="nav" aria-label="Sections"></nav>'
 MAST_NEW = ('<a href="./" class="brand-link"><h1 class="brand"><span class="mark" aria-hidden="true">'
