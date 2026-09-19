@@ -32,6 +32,7 @@ The site is static. GitHub Pages serves it; a GitHub Action (`.github/workflows/
 | `index.html`, `assets/app.js`, `assets/app.css` | The app: search home page and the live card |
 | `explore.html` | The drill-down page (built from the Wraeclast Index artifact) |
 | `data/index.json` | Search index, built by `tools/sync.py` |
+| `data/kwuse.json` | What uses each keyword (the "Found on" lists on keyword cards), built by `tools/kwuse.py` |
 | `data/info.json`, `data/reqs.json` | Item text and requirements, built by `tools/gameinfo.py` |
 | `data/market.json` | Prices, rebuilt every hour by `tools/market.py` |
 | `data/atlas.json` | Atlas tab: waystones, tablets, keys, atlas items and the Atlas tree, built by `tools/atlas.py` (run after a game patch) |
@@ -77,6 +78,9 @@ The counts live in the site's D1 database, per day (tables `views`, `clicks`, `h
 1. After a game patch: `python tools/gameinfo.py`
 2. After the Wraeclast Index artifact changes: save it, then `python tools/sync.py path/to/artifact.html`
    (the first run checks each new image link once, a few minutes; lists are cached a day in `tools/cache/`)
-3. Commit and push to `main`. The site republishes in about a minute.
+3. Then, and after any run of `tools/atlas.py` or `tools/craft.py`: `python tools/kwuse.py`
+   (every keyword's "Found on" lists in `data/kwuse.json`, and the "Used by" counts in `data/index.json`;
+   it prints its counts against the artifact's own, lower only for things the site leaves out)
+4. Commit and push to `main`. The site republishes in about a minute.
 
 Path of Exile is a trademark of Grinding Gear Games. This is a fan project and is not affiliated with them.
