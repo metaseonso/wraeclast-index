@@ -16,6 +16,10 @@ Add the details here first, then a short public line there.
   player listings, not the in-game exchange).
 - explore.html (tools/sync.py LIVE): baked poe.ninja prices removed; the page waits up to 3 s for /data/market.json
   and fills unique prices and emotion (anoint) costs before it draws. Tooltips reworded.
+- Keywords (#36, helper): tools/kwuse.py -> data/kwuse.json (448 keywords; markup + plain-text word matches with
+  NOT_THIS / ONLY_WITH rules; all gems, every unique variant, all passives incl. small ones (xN), atlas, craft mods,
+  currency, keywords; alphabetical; no cap; filter box over 30 rows). Also sets the keyword cards' "Used by" counts in
+  data/index.json: rerun `python tools/kwuse.py` after tools/sync.py.
 - Farms: Cost to run removed (no amounts per map in the sheet; the sum was partial and guessed).
 - Currency tab: Flips removed (built on daily averages); Busiest exchange markets added. Footer names the sources.
 
