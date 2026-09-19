@@ -183,3 +183,37 @@ label.note{display:inline-flex; gap:6px; align-items:center; cursor:pointer}
 .tp-grid .tp-num{width:100%}
 .tp-out{position:sticky; bottom:10px; margin-top:12px; display:flex; gap:12px; align-items:center; flex-wrap:wrap; z-index:5; box-shadow:0 10px 30px rgba(0,0,0,.45)}
 .tp-sum{margin:0; flex:1 1 320px; font-size:13px; line-height:1.5}
+
+/* Atlas tab */
+.at-secs{justify-content:flex-start; margin:0 0 12px}
+.at-bar{display:flex; gap:10px; flex-wrap:wrap; align-items:center}
+.at-bar .field{flex:1 1 240px; max-width:440px}
+.at-status{text-align:left; margin:10px 0 12px}
+.at-list{border:2px solid var(--line); border-radius:var(--r); background:var(--surface); box-shadow:var(--shadow); overflow:hidden}
+.at-list .empty{padding:26px 16px}
+.at-row{display:grid; gap:5px; padding:9px 12px; border-bottom:1px solid var(--line-soft)}
+.at-row:last-child{border-bottom:0}
+.at-row:hover{background:var(--raised)}
+.at-hd{display:flex; gap:8px; align-items:center; min-width:0}
+.at-hd b{font-weight:600; font-size:13.5px; overflow-wrap:anywhere}
+.at-tag{margin-left:auto; flex:none; font-size:9.5px; text-transform:uppercase; letter-spacing:.08em; color:var(--faint);
+  border:1px solid var(--line); border-radius:4px; padding:1px 5px; white-space:nowrap}
+.at-x{font:500 11px var(--mono); color:var(--accent)}
+.at-ls{margin:0; padding:0; list-style:none; font-size:12.5px; line-height:1.45; display:grid; gap:3px}
+.at-ls li{display:flex; gap:10px; align-items:baseline}
+.at-t{flex:none; width:74px; font:500 11px var(--mono); color:var(--muted); white-space:nowrap}
+.at-bonus, .at-on{margin:0; font-size:11.5px; color:var(--faint); line-height:1.4}
+small.at-bonus{display:block}
+.at-grp{margin:0; padding:9px 12px 7px; font-family:var(--disp); font-size:14px; letter-spacing:.03em; color:var(--accent);
+  background:var(--sunken); border-bottom:1px solid var(--line); display:flex; gap:8px; align-items:baseline}
+.at-grp span{font:500 11px var(--mono); color:var(--faint)}
+.at-opts{display:grid; gap:4px; margin-left:10px; padding-left:10px; border-left:2px solid var(--line)}
+.at-opts > span{font-size:10px; text-transform:uppercase; letter-spacing:.09em; color:var(--faint)}
+.dot.t-c{background:var(--accent)} .dot.t-n{background:var(--text)} .dot.t-s{background:var(--faint)}
+.card:not(.detail) .at-pop{display:none}
+.at-pop{display:grid; gap:6px}
+.at-pop h4{margin:4px 0 0; font-size:10.5px; font-weight:500; text-transform:uppercase; letter-spacing:.09em; color:var(--faint)}
+@media (max-width:640px){
+  .at-t{width:62px}
+  .at-bar .seg{width:100%}
+}

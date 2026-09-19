@@ -33,7 +33,9 @@ function range(line){
   if(!toks.length) return null;
   const parts = toks.map(tok => {
     const neg = /^-/.test(tok) && /\(/.test(tok);
-    const n = tok.replace(/^\+/, '').replace(/[()]/g, '').match(/-?\d+(?:\.\d+)?/g).map(Number);
+    // "(30-60)": the dash between two numbers is "to", not a minus sign
+    const s = tok.replace(/^\+/, '').replace(/[()]/g, ''), m = s.match(/^([+-]?\d+(?:\.\d+)?)(?:-([+-]?\d+(?:\.\d+)?))?$/);
+    const n = (m ? [m[1], m[2]].filter(x => x !== undefined) : s.match(/-?\d+(?:\.\d+)?/g)).map(Number);
     let lo = n[0], hi = n.length > 1 ? n[1] : n[0];
     if(neg){ lo = -Math.abs(lo); hi = -Math.abs(hi); }
     return [Math.min(lo, hi), Math.max(lo, hi)];
@@ -106,7 +108,7 @@ export async function tradePanel(it){
   const stateName = Object.fromEntries(T.states);
   let online = true;
 
-  const base = (it.s || '').split(' · ')[0];
+  const base = it.base || (it.s || '').split(' · ')[0];   // it.base: a card whose sub line is not its base type
   const build = () => {
     const stats = rows.filter(r => r.on && r.id).map(r => ({id: r.id, value: r.v === null ? {} : valueFor(r.op, r.v), disabled: false}));
     const misc = {};

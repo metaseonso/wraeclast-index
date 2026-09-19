@@ -33,6 +33,7 @@ The site is static. GitHub Pages serves it; a GitHub Action (`.github/workflows/
 | `data/index.json` | Search index, built by `tools/sync.py` |
 | `data/info.json`, `data/reqs.json` | Item text and requirements, built by `tools/gameinfo.py` |
 | `data/market.json` | Prices, rebuilt every hour by `tools/market.py` |
+| `data/atlas.json` | Atlas tab: waystones, tablets, keys, atlas items and the Atlas tree, built by `tools/atlas.py` (run after a game patch) |
 
 ## Update the game data
 
