@@ -1,5 +1,5 @@
 /* Atlas tab: waystones, tablets, keys and invitations, other atlas items, and the Atlas passive tree.
-   Game data: data/atlas.json (tools/atlas.py, from the game files). Prices: data/market.json (poe.ninja, hourly).
+   Game data: data/atlas.json (tools/atlas.py, from the game files). Prices: data/market.json (Currency Exchange / trade listings).
    Every item is a live card: price and 7-day trend where poe.ninja has one, the popup, and the Trade button
    (the bulk exchange for exchange items, a trade search by base type with mod rows for tablets). */
 import { D, $, esc, card, flow, params } from './app.js';

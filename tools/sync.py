@@ -429,6 +429,59 @@ def build_index(html):
             'sprites': gems.get('sprites'), 'imgs': IMGS, 'kwx': kwx, 'items': items}
 
 
+# Prices on the drill-down page: never the snapshot baked into the artifact (poe.ninja), only the site's live file
+# (/data/market.json: uniques from real trade listings, emotions from the Currency Exchange). The baked numbers are
+# removed; the page's own script waits (at most 3 s) for the live file and fills them in before it draws, so its
+# price sorting and filters work on real prices.
+LIVE = ('<script>window.WI_MARKET=fetch("data/market.json").then(function(r){return r.ok?r.json():null}).catch(function(){return null});'
+        'window.wiLive=async function(UQ,TR){var m=await Promise.race([window.WI_MARKET,new Promise(function(r){setTimeout(function(){r(null)},3000)})]);'
+        'if(!m||!m.items)return;var I=m.items;(UQ.items||[]).forEach(function(u){var p=I["u:"+u.n+" | "+u.b]||I["u:"+u.n];'
+        'if(p&&p.v!=null){u.v=p.v;u.ls=p.ls;if(p.ch!=null)u.ch=p.ch;}});var E=(TR&&TR.emotions)||{};Object.keys(E).forEach(function(k){'
+        'var p=I["c:"+E[k].name];if(p&&p.v!=null){E[k].v=p.v;if(p.ch!=null)E[k].ch=p.ch;}});};</script>')
+UQ_OLD = """(function(){\n"use strict";\nconst UQ = JSON.parse(document.getElementById('uqdata').textContent);"""
+UQ_NEW = """(async function(){\n"use strict";\nconst UQ = JSON.parse(document.getElementById('uqdata').textContent);"""
+TR_OLD = "const TR = JSON.parse(document.getElementById('trdata').textContent);\n"
+TR_NEW = TR_OLD + "await wiLive(UQ, TR);   // live prices first (tools/sync.py LIVE)\n"
+TEXT = [
+    ('Prices are divine, from poe.ninja, Forbidden Rites', 'Prices in divine, from live trade listings'),
+    ('Modifier text and prices come from poe.ninja\u2019s Forbidden Rites stash snapshot; the item list itself comes from the ',
+     'Modifier text comes from the official game data and prices from live trade listings; the item list itself comes from the '),
+    ('Prices are a snapshot in divine, roughly an hour behind the market.',
+     'Prices are in divine: the middle of the 5 cheapest online listings on the trade site, checked through the day.'),
+    ("title:'poe.ninja primary value, in divine. A snapshot, not a live price.'",
+     "title:'The middle of the 5 cheapest online trade listings, in divine.'"),
+    ("title:'How many were listed when the snapshot was taken. One or two means the price is one person’s asking price, not a market.'",
+     "title:'How many are listed on the trade site right now. One or two means the price is one person’s asking price, not a market.'"),
+    ('cost together, in divine, at the poe.ninja snapshot. Blank means', 'cost together, in divine, at today’s Currency Exchange prices. Blank means'),
+    ('Prices are a poe.ninja snapshot for Forbidden Rites, so treat the total as the shape of the cost rather than a quote.',
+     'Prices are today’s Currency Exchange prices.'),
+    ('column totals what those three cost in divine at the poe.ninja snapshot. The spread runs from 0.0008 to 7.5 divine, a factor of about ten thousand, so the column sorts straight into cheap power.',
+     'column totals what those three cost in divine at today’s Currency Exchange prices, so the column sorts straight into cheap power.'),
+]
+
+
+def live_prices(html):
+    uq = block(html, 'uqdata')
+    for u in uq['items']:
+        for f in ('v', 'ls', 'ch'):
+            u.pop(f, None)
+    uq['meta']['src'] = 'RePoE ' + str(uq['meta'].get('src', '')).split('RePoE ')[-1]
+    html = put(html, 'uqdata', uq)
+    tr = block(html, 'trdata')
+    for e in (tr.get('emotions') or {}).values():
+        e.pop('v', None)
+        e.pop('ch', None)
+    tr['rates'] = {}
+    html = put(html, 'trdata', tr)
+    if UQ_NEW not in html:
+        if UQ_OLD not in html or TR_OLD not in html:
+            sys.exit('the drill-down script changed; update UQ_OLD / TR_OLD in tools/sync.py')
+        html = html.replace(UQ_OLD, UQ_NEW, 1).replace(TR_OLD, TR_NEW, 1)
+    for a, b in TEXT:
+        html = html.replace(a, b)
+    return html
+
+
 def main():
     if len(sys.argv) != 2:
         sys.exit(__doc__)
@@ -443,6 +496,9 @@ def main():
         html = html.replace('</body>', BRIDGE + '\n</body>', 1)
     if HEAD not in html:
         html = html.replace(TITLE, '', 1).replace('</head>', HEAD + '</head>', 1)
+    if LIVE not in html:
+        html = html.replace('</head>', LIVE + '</head>', 1)
+    html = live_prices(html)
     for a, b in ((MAST_OLD, MAST_NEW), (CL_OLD, CL_NEW)):
         if b not in html:
             if a not in html:

@@ -12,3 +12,4 @@ __pycache__
 *.md
 node_modules
 .wrangler
+data/exchange-state.json

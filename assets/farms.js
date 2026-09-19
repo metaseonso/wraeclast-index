@@ -1,9 +1,9 @@
 /* Farms tab: money-making strategies from BawLoch's public tier list sheet (data/farms.json, built by
    tools/farms.py). The sheet has no profit numbers and no amounts per map, so there is no cost or profit total:
    only each item's own price, and only when it comes from real listings.
-   Prices: plain items from data/market.json (poe.ninja). Rolled tablets and waystones from
+   Prices: plain items from data/market.json (the Currency Exchange or trade listings). Rolled tablets and waystones from
    data/farmprices.json: the site's worker runs the trade searches in data/farmqueries.json through the
-   hour and keeps the middle price of the 10 cheapest listings. Every item opens the normal card popup. */
+   hour and keeps the middle price of the 5 cheapest listings. Every item opens the normal card popup. */
 import { D, $, esc, card, flow, openDetail, priceOf, hrefOf, moneyHTML, change, spark, ago } from './app.js';
 import { searchURL } from './trade.js';
 
@@ -119,7 +119,7 @@ function links(f){
   return '<div class="fm-links">' + L.map(l => '<a class="btn gold" href="' + esc(l.k === 'trade' ? tradeLeague(l.u) : l.u) +
     '" target="_blank" rel="noopener">' + esc(l.k === 'trade' ? 'Trade: ' + l.t : l.t) + ' ↗</a>').join('') + '</div>';
 }
-const HOURLY = 'Rolled tablets and waystones: middle of the 10 cheapest trade listings. Prices update every hour.';
+const HOURLY = 'Currency: the in-game Currency Exchange. Rolled tablets and waystones: middle of the 5 cheapest trade listings. Prices update every hour.';
 
 /* ---------- the farm card, in the grid ---------- */
 function farmCard(r){

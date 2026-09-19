@@ -3,6 +3,22 @@
 The full list of changes. The public patch notes (data/changelog.json, shown on the site) stay short.
 Add the details here first, then a short public line there.
 
+## v0.22 — Real prices only (19 Sep 2026)
+- Standard (owner): every price on the site comes from real trade data; if we don't have it, it isn't shown.
+- Currency: tools/exchange.py reads GGG's public Currency Exchange feed (web.poecdn.com/api/currency-exchange/poe2,
+  hourly digests of real trades per market pair). Price = divines paid / amount bought over 24 h (exalted and chaos
+  converted at that hour's own rate). 14-day backfill, then incremental via data/exchange-state.json (on Pages).
+  Output data/exchange.json: v, v1h, vol (div traded 24 h), h/ch (daily, 7-day move), pairs, markets.
+- Uniques: tools/pricepull.py checks the trade site (online sellers, 10 cheapest) ~58 an hour, oldest first
+  (GET /api/prices/state); price = middle of the 5 cheapest, converted at Currency Exchange rates.
+- worker/prices.js serveMarket builds /data/market.json from those only (poe.ninja file used for names/icons/text).
+  Migration 0006: trade_prices v, h (daily history). Trade-site bulk offers were NOT used for currency (they are
+  player listings, not the in-game exchange).
+- explore.html (tools/sync.py LIVE): baked poe.ninja prices removed; the page waits up to 3 s for /data/market.json
+  and fills unique prices and emotion (anoint) costs before it draws. Tooltips reworded.
+- Farms: Cost to run removed (no amounts per map in the sheet; the sum was partial and guessed).
+- Currency tab: Flips removed (built on daily averages); Busiest exchange markets added. Footer names the sources.
+
 ## v0.21 — Keywords and Crafting (19 Sep 2026)
 - tools/sync.py: every gem/unique/passive/keyword in data/index.json lists the keyword ids its game text marks ("kw");
   keywords list the words they show as ("f"); keystones stand for their own keyword (index "kwx"). Keyword cards

@@ -1,17 +1,29 @@
-/* Live trade prices.
-   The searches run on GitHub, not here: the trade site blocks Cloudflare's shared addresses. Once an hour
-   .github/workflows/prices.yml runs tools/pricepull.py, which spreads its searches over the hour and sends the
-   10 cheapest listings of each to POST /api/prices/ingest. It signs in with GitHub's own short-lived token
-   (OpenID Connect): this checks GitHub's signature and that the token is for this repo's prices workflow on main.
-   No password or key is stored anywhere.
-   Pages read /data/rollprices.json and /data/farmprices.json, priced in divines with data/worth.json
-   (published hourly by tools/market.py). */
+/* Real prices. Currency: the in-game Currency Exchange, from GGG's public hourly feed (tools/exchange.py ->
+   data/exchange.json). Everything else: real listings on the official trade site, checked as below.
+   The checks run on GitHub, not here (the trade site blocks Cloudflare's shared addresses): once an hour
+   .github/workflows/prices.yml runs tools/pricepull.py, which asks GET /api/prices/state what is oldest, spreads
+   its checks over the hour, and sends the results to POST /api/prices/ingest. It signs in with GitHub's own
+   short-lived token (OpenID Connect): this checks GitHub's signature and that the token is for this repo's prices
+   workflow on main. No password or key is stored anywhere.
+
+   What is checked (the key in the trade_prices table):
+     uniq:<index id>            uniques: the 10 cheapest listings (online sellers)
+     roll:<stat>@<value>        trade sliders: the 10 cheapest items with at least that roll
+     farm:<key>                 rolled tablets and waystones for the Farms tab
+   A price is the middle of the 5 cheapest of those listings, in divines, worked out when it arrives (v), plus one
+   price per day (h).
+   Listings priced in any currency are turned into divines at the Currency Exchange's own rates.
+
+   /data/market.json   every item's price (the shape the pages read), only from these checks. Names, pictures
+                       and descriptions come from the hourly GitHub job's catalogue; its prices are dropped.
+   /data/rollprices.json, /data/farmprices.json   the slider and farm prices */
 
 const PAGES = 'https://metaseonso.github.io/wraeclast-index/data/';
 const UA = 'wraeclast-index/1.0 (+https://wraeclastindex.fyi)';
 const ISSUER = 'https://token.actions.githubusercontent.com';
 const REPO = 'metaseonso/wraeclast-index';
 const WORKFLOW = /^metaseonso\/wraeclast-index\/\.github\/workflows\/prices\.yml@refs\/heads\/main$/;
+const DAYS = 45;
 
 async function published(name){   // a file the hourly GitHub job publishes
   const r = await fetch(PAGES + name, {headers: {'User-Agent': UA}, cf: {cacheTtl: 300, cacheEverything: true}});
@@ -21,6 +33,10 @@ export const tally = (env, kind, n = 1) => env.DB.prepare(
   'INSERT INTO load (hour, kind, n) VALUES (?, ?, ?) ON CONFLICT(hour, kind) DO UPDATE SET n = n + excluded.n')
   .bind(new Date().toISOString().slice(0, 13), kind, n).run();
 const json = (status, body) => new Response(JSON.stringify(body), {status, headers: {'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store'}});
+async function meta(env, k){ const r = await env.DB.prepare('SELECT v FROM meta WHERE k = ?').bind(k).first(); return r && r.v; }
+const setMeta = (env, k, v) => env.DB.prepare('INSERT INTO meta (k, v) VALUES (?, ?) ON CONFLICT(k) DO UPDATE SET v = excluded.v').bind(k, String(v)).run();
+const median = a => { if(!a.length) return null; const s = [...a].sort((x, y) => x - y), m = s.length >> 1; return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2; };
+const round = v => v === null || !isFinite(v) ? null : +v.toPrecision(4);
 
 /* ---------- GitHub's signed token ---------- */
 const unb64 = s => Uint8Array.from(atob(s.replace(/-/g, '+').replace(/_/g, '/') + '==='.slice((s.length + 3) % 4)), c => c.charCodeAt(0));
@@ -42,24 +58,120 @@ async function fromGitHub(request, url){
   return claims;
 }
 
+/* ---------- GET /api/prices/state: when each price was last checked, so the job does the oldest first ---------- */
+export async function state(request, env, url){
+  if(!(await fromGitHub(request, url))) return json(401, {error: 'Not signed by the prices workflow.'});
+  const league = url.searchParams.get('league') || '';
+  const rows = await env.DB.prepare('SELECT key, at FROM trade_prices WHERE league = ?').bind(league).all();
+  return json(200, {at: Object.fromEntries((rows.results || []).map(r => [r.key, r.at]))});
+}
+
 /* ---------- POST /api/prices/ingest ---------- */
-const KEY = /^(roll:[a-z]+\.[a-z0-9_]+@-?\d+(\.\d+)?|farm:[a-z0-9-]{1,80})$/;
+const KEY = /^(roll:[a-z]+\.[a-z0-9_]+@-?\d+(\.\d+)?|farm:[a-z0-9-]{1,80}|uniq:[^\n|][^\n]{0,119}|cur:[^\s|]{1,60}\|[^\n|]{1,80})$/;
 export async function ingest(request, env, url){
   if(request.method !== 'POST') return json(405, {error: 'POST only.'});
   if(!(await fromGitHub(request, url))) return json(401, {error: 'Not signed by the prices workflow.'});
   let body;
   try { body = await request.json(); } catch { return json(400, {error: 'Bad body.'}); }
   const league = typeof body.league === 'string' ? body.league.slice(0, 60) : '';
-  const rows = (Array.isArray(body.rows) ? body.rows : []).slice(0, 50).filter(r => r && KEY.test(r.key || '') && Array.isArray(r.p));
-  const now = new Date().toISOString();
-  const stmts = rows.map(r => env.DB.prepare(`INSERT INTO trade_prices (key, league, p, total, at) VALUES (?, ?, ?, ?, ?)
-    ON CONFLICT(key) DO UPDATE SET league = excluded.league, p = excluded.p, total = excluded.total, at = excluded.at`)
-    .bind(r.key, league, JSON.stringify(r.p.slice(0, 10).filter(x => Array.isArray(x) && isFinite(+x[0]) && typeof x[1] === 'string')
-      .map(x => [+x[0], x[1].slice(0, 30)])), Math.max(0, Math.floor(+r.total || 0)), now));
+  const rows = (Array.isArray(body.rows) ? body.rows : []).slice(0, 60).filter(r => r && KEY.test(r.key || '') && Array.isArray(r.p))
+    .map(r => ({key: r.key, total: Math.max(0, Math.floor(+r.total || 0)),
+      p: r.p.slice(0, 10).filter(x => Array.isArray(x) && isFinite(+x[0]) && +x[0] > 0 && typeof x[1] === 'string').map(x => [+x[0], x[1].slice(0, 30)])}));
+  const now = new Date().toISOString(), day = now.slice(0, 10);
+  // what each currency is worth in divines (the Currency Exchange), for listings priced in any of them
+  const worth = await exchangeWorth();
+  const valueOf = r => {
+    // the middle of the 5 cheapest: what you actually pay, without one bait listing or a few silly asks deciding it
+    return round(median(r.p.map(([a, c]) => worth[c] ? a * worth[c] : null).filter(x => x !== null).sort((x, y) => x - y).slice(0, 5)));
+  };
+  const old = {};
+  if(rows.length){
+    const got = await env.DB.prepare('SELECT key, h FROM trade_prices WHERE key IN (' + rows.map(() => '?').join(',') + ')').bind(...rows.map(r => r.key)).all();
+    for(const r of got.results || []) old[r.key] = r.h;
+  }
+  const stmts = rows.map(r => {
+    const v = valueOf(r);
+    let h = [];
+    try { h = JSON.parse(old[r.key] || '[]'); } catch {}
+    h = h.filter(x => x[0] !== day);
+    if(v !== null) h.push([day, v]);
+    h = h.slice(-DAYS);
+    return env.DB.prepare(`INSERT INTO trade_prices (key, league, p, total, at, v, h) VALUES (?, ?, ?, ?, ?, ?, ?)
+      ON CONFLICT(key) DO UPDATE SET league = excluded.league, p = excluded.p, total = excluded.total, at = excluded.at, v = excluded.v, h = excluded.h`)
+      .bind(r.key, league, JSON.stringify(r.p), r.total, now, v, JSON.stringify(h));
+  });
   if(stmts.length) await env.DB.batch(stmts);
   for(const [k, n] of Object.entries(body.load || {}))
-    if(/^trade_(search|fetch|limited|error)$/.test(k) && +n > 0) await tally(env, k, Math.min(1000, Math.floor(+n)));
-  return json(200, {ok: true, saved: stmts.length});
+    if(/^trade_(search|fetch|exchange|limited|error)$/.test(k) && +n > 0) await tally(env, k, Math.min(1000, Math.floor(+n)));
+  return json(200, {ok: true, saved: stmts.length, rate});
+}
+
+async function exchangeWorth(){
+  const x = (await published('exchange.json')) || {};
+  const worth = {divine: 1};
+  for(const it of Object.values(x.items || {})) if(it.tid && it.v) worth[it.tid] = it.v;
+  worth.divine = 1;
+  return worth;
+}
+
+/* one price's fields as the pages read them: v, ls (listings), at, and from our own daily prices:
+   h (every day), sp (the last 7 days) and ch (the % move over 7 days, only once there are 7 days) */
+const MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+function fields(r){
+  const out = {ls: r.total, at: r.at};
+  if(r.v !== null && r.v !== undefined) out.v = r.v;
+  let h = [];
+  try { h = JSON.parse(r.h || '[]'); } catch {}
+  if(h.length >= 2){
+    out.h = h.map(([d, v]) => [MON[+d.slice(5, 7) - 1] + ' ' + +d.slice(8, 10), v]);
+    out.sp = h.slice(-7).map(x => x[1]);
+    const today = Date.parse(h[h.length - 1][0]), weekAgo = h.find(x => today - Date.parse(x[0]) <= 7 * 864e5);
+    if(weekAgo && today - Date.parse(weekAgo[0]) >= 6 * 864e5 && weekAgo[1] > 0)
+      out.ch = +(((h[h.length - 1][1] / weekAgo[1]) - 1) * 100).toFixed(1);
+  }
+  return out;
+}
+
+/* ---------- /data/market.json ---------- */
+const DROP = ['v', 'ch', 'sp', 'vol', 'pair', 'gap', 'routes', 'arb', 'h', 'ls'];   // the catalogue's own prices: never shown
+export async function serveMarket(request, env, ctx){
+  const url = new URL(request.url), ck = new Request(url.origin + '/data/market.json?from=trade');
+  const hit = await caches.default.match(ck);
+  if(hit) return hit;
+  const cat = (await published('market.json')) || {items: {}};
+  const cx = (await published('exchange.json')) || {items: {}};
+  const league = cat.league || '';
+  const rows = await env.DB.prepare("SELECT key, v, total, at, h FROM trade_prices WHERE league = ? AND key LIKE 'uniq:%'").bind(league).all();
+  const rate = cx.league === league ? cx.rate : null;
+  const items = {};
+  for(const [k, it] of Object.entries(cat.items || {})){
+    if(!k.startsWith('c:')) continue;   // uniques come only from our own checks
+    const o = {};
+    for(const [f, v] of Object.entries(it)) if(!DROP.includes(f)) o[f] = v;
+    items[k] = o;
+  }
+  let updated = cx.league === league ? cx.updated : null;
+  // currency: what it traded for on the Currency Exchange over the last 24 hours
+  if(cx.league === league) for(const [name, x] of Object.entries(cx.items || {})){
+    const o = {v: x.v, vol: x.vol, at: cx.updated, src: 'cx'};
+    if(x.v1h) o.v1h = x.v1h;
+    if(x.pairs) o.pairs = x.pairs;
+    if(x.h && x.h.length >= 2){
+      o.h = x.h.map(([d, v]) => [MON[+d.slice(5, 7) - 1] + ' ' + +d.slice(8, 10), v]);
+      o.sp = x.h.slice(-7).map(p => p[1]);
+    }
+    if(x.ch !== undefined) o.ch = x.ch;
+    items['c:' + name] = {...(items['c:' + name] || {n: name}), ...o};
+  }
+  // uniques: real listings on the trade site
+  for(const r of rows.results || []) items['u:' + r.key.slice(5)] = {...fields(r), src: 'trade'};
+  const out = {league, updated, primary: 'divine', rates: rate ? {exalted: rate} : {},
+    source: 'Currency Exchange and trade site listings', builds: cat.builds,
+    markets: cx.league === league ? (cx.markets || []).slice(0, 40) : [], items};
+  const res = new Response(JSON.stringify(out), {headers: {'Content-Type': 'application/json; charset=utf-8',
+    'Cache-Control': 'public, max-age=300, stale-while-revalidate=600'}});
+  ctx.waitUntil(caches.default.put(ck, res.clone()));
+  return res;
 }
 
 /* ---------- /data/rollprices.json and /data/farmprices.json ---------- */
@@ -67,19 +179,13 @@ export async function servePrices(request, env, ctx, kind){
   const url = new URL(request.url), key = new Request(url.origin + url.pathname);
   const hit = await caches.default.match(key);
   if(hit) return hit;
-  const w = (await published('worth.json')) || {}, worth = w.worth || {};
-  const rows = await env.DB.prepare('SELECT key, p, total, at FROM trade_prices WHERE key LIKE ? AND league = ?')
-    .bind(kind + ':%', w.league || '').all();
-  const median = p => {   // the middle of the 10 cheapest, in divines
-    const v = p.map(([a, c]) => worth[c] ? a * worth[c] : null).filter(x => x !== null).sort((a, b) => a - b);
-    if(!v.length) return null;
-    const m = v.length >> 1;
-    return +(v.length % 2 ? v[m] : (v[m - 1] + v[m]) / 2).toPrecision(4);
-  };
-  const out = {updated: null, league: w.league || null, every: 'hour'};
+  const cat = (await published('market.json')) || {};
+  const rows = await env.DB.prepare('SELECT key, v, total, at FROM trade_prices WHERE key LIKE ? AND league = ?')
+    .bind(kind + ':%', cat.league || '').all();
+  const out = {updated: null, league: cat.league || null, every: 'hour'};
   if(kind === 'roll') out.mods = {}; else out.items = {};
   for(const r of rows.results || []){
-    const name = r.key.slice(kind.length + 1), price = median(JSON.parse(r.p));
+    const name = r.key.slice(kind.length + 1), price = r.v === undefined ? null : r.v;
     if(!out.updated || r.at > out.updated) out.updated = r.at;
     if(kind === 'roll'){
       const at = name.lastIndexOf('@'), stat = name.slice(0, at);

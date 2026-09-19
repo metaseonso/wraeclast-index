@@ -1,7 +1,8 @@
 /* Wraeclast Index — app shell, live cards, and the search-first home page.
    Data files (all static, served by GitHub Pages):
      data/index.json   search index built from the game data (tools/sync.py)
-     data/market.json  poe.ninja prices and 7-day trends (refreshed hourly by a GitHub Action)
+     data/market.json  real prices only: currency from the in-game Currency Exchange, everything else from live
+                       trade site listings (worker/prices.js); trends from the site's own daily prices
    Build usage links to poe.ninja's own builds page: their builds API is not open to other sites. */
 import {initKeys} from './keys.js';
 
@@ -269,12 +270,16 @@ function detailExtras(it, px){
   let out = '';
   if(px.h && px.h.length > 3){
     const lo = money(Math.min(...px.h.map(x => x[1]))), hi = money(Math.max(...px.h.map(x => x[1])));
-    out += bigLine(px.h.map(x => x[1]), 'This league, ' + px.h[0][0] + ' to today \u00b7 low ' + lo.v + ' ' + lo.u + ', high ' + hi.v + ' ' + hi.u);
+    out += bigLine(px.h.map(x => x[1]), 'Since ' + px.h[0][0] + ' \u00b7 low ' + lo.v + ' ' + lo.u + ', high ' + hi.v + ' ' + hi.u);
   } else if(px.sp) out += bigLine(px.sp, 'Last 7 days');
   const facts = [];
-  if(px.ls !== undefined) facts.push(px.ls.toLocaleString() + ' listed');
-  if(px.vol) facts.push(Math.round(px.vol).toLocaleString() + ' div traded today');
-  if(px.routes) facts.push('Price by currency: ' + px.routes.map(r => { const m = money(r.v); return {divine: 'Divine', exalted: 'Exalted', chaos: 'Chaos'}[r.via] + ' ' + m.v + ' ' + m.u; }).join(', '));
+  // where the price comes from, and when it was checked
+  if(px.src === 'trade') facts.push((px.ls || 0).toLocaleString() + ' listed on the trade site' + (px.at ? ' \u00b7 checked ' + ago(px.at) : ''));
+  if(px.src === 'cx'){
+    facts.push(Math.round(px.vol || 0).toLocaleString() + ' div traded on the Currency Exchange in 24 h');
+    if(px.pairs && px.pairs.length) facts.push('Trades for: ' + px.pairs.slice(0, 3).map(([o, r]) =>
+      (r >= 100 ? Math.round(r).toLocaleString() : +(+r).toPrecision(3)) + ' ' + o).join(', ') + ' each');
+  }
   if(facts.length) out += '<p class="card-facts">' + facts.map(esc).join(' \u00b7 ') + '</p>';
   return out;
 }

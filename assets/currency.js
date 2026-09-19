@@ -1,6 +1,7 @@
 /* Currency tab: every currency-type item, what it does, how its price moves, trading routes,
-   and a watch list. Prices: data/market.json (poe.ninja, hourly). */
-import { D, $, esc, card, flow, money, moneyHTML, params } from './app.js';
+   and a watch list. Prices: data/market.json: what each currency traded for on the in-game Currency Exchange
+   (GGG's public hourly feed, tools/exchange.py). */
+import { D, $, esc, card, flow, money, moneyHTML, params, openDetail } from './app.js';
 
 const WATCH_KEY = 'wi.watch';
 function loadWatch(){ try { return new Set(JSON.parse(localStorage.getItem(WATCH_KEY) || '[]')); } catch { return new Set(); } }
@@ -82,9 +83,18 @@ function currencyCard(r){
   const on = S.watch.has(it.id);
   const star = '<button type="button" class="star" aria-pressed="' + on + '" title="' + (on ? 'Stop watching' : 'Watch this') +
     '" data-id="' + esc(it.id) + '">' + (on ? '★' : '☆') + '</button>';
-  const extra = '<p class="card-facts">' + compact(m.vol || 0) + ' div traded today' +
+  const extra = '<p class="card-facts">' + compact(m.vol || 0) + ' div traded in 24 h' +
     (r.sw >= 12 ? ' · swings ' + Math.round(r.sw) + '% a day' : '') + '</p>' + leagueLine(r);
   return card(it, {href: null, builds: false, action: star, extra});
+}
+/* the busiest pairs on the Currency Exchange: each opens its currency's card */
+function markets(host){
+  const M = (D.market.markets || []).filter(x => D.byKey.get('c:' + x[0])).slice(0, 24);
+  if(!M.length){ host.innerHTML = '<p class="note">No exchange data yet.</p>'; return; }
+  host.innerHTML = M.map(([a, b, r, vol]) => '<button type="button" class="cxm-row" data-k="' + esc(a) + '">' +
+    '<b>' + esc(a) + '</b><span class="cxm-for">1 = ' + (r >= 100 ? Math.round(r).toLocaleString() : +r.toPrecision(3)) + ' ' + esc(b) + '</span>' +
+    '<span class="cxm-vol">' + compact(vol) + ' div traded</span></button>').join('');
+  host.addEventListener('click', e => { const b = e.target.closest('.cxm-row'); const it = b && D.byKey.get('c:' + b.dataset.k); if(it) openDetail(it, {}, null); });
 }
 function routeCard(r){
   const {it, m} = r, a = m.arb;
@@ -104,9 +114,10 @@ export function mount(el){
   ALL = rows();
   const cats = ['all', ...new Set(ALL.map(r => r.m.cat))];
   el.innerHTML =
-    '<div class="pagehd"><h2>Currency</h2><p>' + esc(D.market.league) + ' prices, updated every hour.</p></div>' +
-    '<div class="sect"><h3>Flips</h3><p>Buy in one currency, sell in another. Daily averages: check the exchange first.</p></div>' +
-    '<div class="cards" id="routes"></div>' +
+    '<div class="pagehd"><h2>Currency</h2><p>' + esc(D.market.league) + ': what each currency really traded for on the in-game Currency Exchange ' +
+      'over the last 24 hours. Updated every hour.</p></div>' +
+    '<div class="sect"><h3>Busiest exchange markets</h3><p>Last 24 hours. What one buys, and how much traded.</p></div>' +
+    '<div class="cxm" id="cxmarkets"></div>' +
     '<div class="sect"><h3>Watch list</h3><p id="cxcount"></p></div>' +
     '<div class="controls cx">' +
       '<div class="row"><div class="seg" id="cxcat">' + cats.map(c => '<button type="button" data-v="' + esc(c) + '" aria-pressed="' + (c === S.cat) + '">' +
@@ -119,7 +130,8 @@ export function mount(el){
         '<select class="field" id="cxsort">' + SORTS.map(([k, l]) => '<option value="' + k + '">' + l + '</option>').join('') + '</select></div>' +
     '</div>' +
     '<div class="cards" id="cxcards"></div><div class="more" id="cxmore" hidden><button type="button" class="btn">Show more</button></div>' +
-    '<p class="note" style="margin-top:18px">Rising or falling: 10%+ this week. Swinging: 12%+ in one day. Low volume: under ' + MIN_VOL + ' div a day.</p>';
+    '<p class="note" style="margin-top:18px">Rising or falling: 10%+ this week. Swinging: 12%+ in one day. Low volume: under ' + MIN_VOL + ' div a day. ' +
+      'Source: the in-game Currency Exchange (GGG\u2019s hourly feed of real trades).</p>';
 
   const seg = (id, key) => $('#' + id, el).addEventListener('click', e => {
     const b = e.target.closest('button'); if(!b) return;
@@ -143,11 +155,7 @@ export function mount(el){
     if(S.trend === 'watch') render();
   });
 
-  const routes = ALL.filter(r => r.m.arb && r.m.routes && r.m.arb.gain >= ROUTE_MIN && r.m.arb.gain <= ROUTE_MAX && r.m.arb.thin >= ROUTE_VOL)
-    .sort((a, b) => b.m.arb.gain - a.m.arb.gain);
-  const rg = $('#routes', el);
-  if(routes.length) flow(rg, routes.map(r => ({key: 'r:' + r.it.id, r})), x => routeCard(x.r));
-  else rg.innerHTML = '<p class="note">No good flips right now.</p>';
+  markets($('#cxmarkets', el));
   return {update};
 }
 
