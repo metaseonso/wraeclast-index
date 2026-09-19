@@ -1,8 +1,10 @@
 """Sync the Wraeclast Index artifact into the site.
 
 The artifact page (gems, uniques, passive tree) is the drill-down. This script:
-  1. copies it to explore.html and adds the small bridge script that links it to the home page
-  2. builds data/index.json, the compact search index the home page loads
+  1. rewrites each unique's mod lines to the official ones (data/uniques.json, from tools/uniques.py),
+     keeping the keyword links wherever the wording matches
+  2. copies the page to explore.html and adds the small bridge script that links it to the home page
+  3. builds data/index.json, the compact search index the home page loads
 
 Usage:  python tools/sync.py path/to/artifact.html
 """
@@ -29,6 +31,85 @@ def plain(t):
     t = re.sub(r'\[([^\]|]+)\|([^\]]+)\]', r'\2', t or '')
     t = re.sub(r'\[([^\]]+)\]', r'\1', t)
     return re.sub(r'\s+', ' ', t).strip()
+
+
+# ---- official unique lines (data/uniques.json, from tools/uniques.py) ----
+# A number, a range, or a signed range: 5, +(40-60), -(5-1), (4.01-5.48)
+NUM = re.compile(r'[+-]?\(?[+-]?\d+(?:\.\d+)?(?:-[+-]?\d+(?:\.\d+)?)?\)?')
+
+
+def skeleton(line):
+    """A mod line with every number replaced, so a rolled line and its official range compare equal."""
+    return NUM.sub('#', plain(line))
+
+
+def transfer(marked, official):
+    """The official numbers, written into the line that already carries the keyword links."""
+    nums = iter(NUM.findall(official))
+    parts = re.split(r'(\[[^\]]*\])', marked)
+    return ''.join(p if p.startswith('[') else NUM.sub(lambda m: next(nums, m.group(0)), p) for p in parts)
+
+
+def load_official():
+    f = ROOT / 'data' / 'uniques.json'
+    if not f.exists():
+        return {}, {}
+    o = json.loads(f.read_text(encoding='utf-8'))
+    by_name = {}
+    for k, v in o.items():
+        by_name.setdefault(k.split(' | ')[0], []).append(v)
+    return o, by_name
+
+
+def official_for(u, o, by_name):
+    """The official entry for a unique: same name and base, else the base variant it was forged from."""
+    key = u['n'] + ' | ' + (u.get('b') or '')
+    if key in o:
+        return o[key], True
+    b = re.sub(r'^(Runeforged|Runemastered) ', '', u.get('b') or '')
+    if u['n'] + ' | ' + b in o:
+        return o[u['n'] + ' | ' + b], False
+    c = by_name.get(u['n'])
+    return (c[0], False) if c and len(c) == 1 else (None, False)
+
+
+def officialize(uq):
+    """Rewrite each unique's mod lines to the official ones, in place. Returns how many changed."""
+    o, by_name = load_official()
+    changed = 0
+    for u in uq['items']:
+        off, exact = official_for(u, o, by_name)
+        if not off:
+            continue
+        old = (u.get('im') or []) + (u.get('ex') or [])
+        used, lines = set(), []
+        for ol in off['ls']:
+            sk = skeleton(ol)
+            hit = next((i for i, a in enumerate(old) if i not in used and skeleton(a) == sk), None)
+            if hit is None:
+                lines.append(ol)
+            else:
+                used.add(hit)
+                lines.append(transfer(old[hit], ol))
+        ni = off.get('ni', 0)
+        im, ex = lines[:ni], lines[ni:]
+        if im != (u.get('im') or []) or ex != (u.get('ex') or []):
+            changed += 1
+        u['im'], u['ex'] = im, ex
+        if exact and off.get('rq') and off['rq'][0]:
+            u['lv'] = off['rq'][0]
+    return changed
+
+
+def put(html, bid, obj):
+    m = re.search(r'(<script id="%s" type="application/json">)(.*?)(</script>)' % bid, html, re.S)
+    return html[:m.start(2)] + json.dumps(obj, ensure_ascii=False, separators=(',', ':')) + html[m.end(2):]
+
+
+def with_official_uniques(html):
+    uq = block(html, 'uqdata')
+    n = officialize(uq)
+    return put(html, 'uqdata', uq), n
 
 
 def first_sentence(t, limit=150):
@@ -149,6 +230,8 @@ def main():
     if len(sys.argv) != 2:
         sys.exit(__doc__)
     html = Path(sys.argv[1]).read_text(encoding='utf-8')
+    html, n = with_official_uniques(html)
+    print('uniques with official lines:', n, 'changed')
     index = build_index(html)
     (ROOT / 'data').mkdir(exist_ok=True)
     (ROOT / 'data' / 'index.json').write_text(
