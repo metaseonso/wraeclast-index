@@ -58,7 +58,7 @@ html:root:not([data-theme="none"]){scrollbar-color:#2A3627 #070907}
   background:linear-gradient(90deg, transparent, var(--bronze) 20%, var(--bronze) 80%, transparent); opacity:.45;
 }
 .card:hover{border-color:rgba(140,203,63,.45)}
-.card-ic{background:radial-gradient(circle at 50% 40%, #181A17, #080908); box-shadow:inset 0 0 0 1.5px var(--line)}
+.card-ic{background:radial-gradient(circle at 50% 40%, #181A17, #080908); box-shadow:inset 0 0 0 2px var(--line)}
 .card-rank{background:var(--blood); color:#F3E6E4; box-shadow:0 0 12px rgba(179,38,30,.5)}
 .card-why{background:var(--accent-soft); border-left:3px solid var(--accent); border-radius:0 6px 6px 0}
 .pill{background:#0A0E0A}
@@ -87,8 +87,10 @@ input[type=range], input[type=checkbox]{accent-color:#4E7A28}
 .filtbtn:hover{background:var(--raised); color:var(--accent); border-color:var(--accent)}
 
 /* ---------- borders: thick enough not to break or clip at any screen scaling ---------- */
-.card, .searchbox input, .tsearch input, .field, .tabs, .seg, .nav, .applinks, .chip, .btn, .pill, .panel,
-.tablewrap, .lvlbox, .search, .clbtn, .kwq{border-width:1.5px}
+/* whole pixels: 1.5px rounds down to 1px on a normal screen, which is what looked clipped */
+.card, .searchbox input, .tsearch input, .field, .tabs, .seg, .nav, .applinks, .chip, .btn, .panel,
+.tablewrap, .lvlbox, .search, .clbtn, .kwq, .trade, .tmod{border-width:2px}
+.pill{border-width:1px}
 .card-ft .kind{border-width:1px}
 .verdict{border-radius:0 8px 8px 0}
 .ov-box{border-radius:var(--r)}   /* same rounding as the card inside, so its corners are not cut */
