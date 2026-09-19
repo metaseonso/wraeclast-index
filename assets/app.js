@@ -294,10 +294,10 @@ export function openDetail(it, opts = {}, href){
   c.classList.add('detail');
   body.replaceChildren(c);
   if(href && PLACE[it.k]){
-    const a = document.createElement('a');
-    a.className = 'btn gold'; a.href = href;
-    a.textContent = 'Open in ' + PLACE[it.k] + ' \u2192';
-    body.appendChild(a);
+    const row = document.createElement('div');
+    row.className = 'ov-go';
+    row.innerHTML = '<a class="btn gold" href="' + esc(href) + '">Open in ' + PLACE[it.k] + ' \u2192</a>';
+    body.appendChild(row);
   }
   lastFocus = document.activeElement;
   OV.hidden = false;
