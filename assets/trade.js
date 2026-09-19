@@ -2,13 +2,16 @@
    The Trade button in a card's popup opens this panel. Each mod gets "at least / at most / exactly"
    and a slider; item states (corrupted, cultivated Vaal, sanctified, ...) are yes / no / any.
    Data: data/trade.json, the trade site's own lists (tools/tradedata.py). */
-import { D, esc } from './app.js';
+import { D, esc, money, ago } from './app.js';
 
 const SITE = 'https://www.pathofexile.com/trade2';
 let T = null;
 export async function tradeData(){
   if(T) return T;
-  const raw = await (await fetch('data/trade.json', {cache: 'no-cache'})).json();
+  const [raw, roll] = await Promise.all([
+    fetch('data/trade.json', {cache: 'no-cache'}).then(r => r.json()),
+    // live roll prices: the worker checks the trade site through the hour (worker/prices.js)
+    fetch('data/rollprices.json', {cache: 'no-cache'}).then(r => r.ok ? r.json() : null).catch(() => null)]);
   // index every mod by its wording with the numbers taken out, per kind; "(Local)" versions kept apart
   const by = {}, local = {};
   for(const [id, text] of raw.mods){
@@ -19,7 +22,7 @@ export async function tradeData(){
     (into[kind] = into[kind] || {});
     if(!(k in into[kind])) into[kind][k] = id;
   }
-  T = {...raw, by, local};
+  T = {...raw, by, local, roll: roll && roll.mods && Object.keys(roll.mods).length ? roll : null};
   return T;
 }
 
@@ -66,8 +69,23 @@ export function tierText(v, tiers){
   const t = tierOf(v, tiers);
   return t ? 'T' + t.n + ' · ' + t.lo + (t.hi !== t.lo ? '–' + t.hi : '') + (t.lvl > 1 ? ' · item level ' + t.lvl + '+' : '') : '';
 }
+export function rollFor(stat){
+  const m = T && T.roll && T.roll.mods[stat];
+  const pts = m ? m.pts.filter(p => p[1] > 0) : [];
+  return pts.length >= 2 ? pts : null;
+}
+function priceAt(v, pts){   // the cheapest items with at least this roll: the nearest checked value at or below it
+  let best = null;
+  if(pts && v !== '' && v !== null && v !== undefined && !isNaN(+v)) for(const p of pts) if(+v >= p[0]) best = p;
+  return best;
+}
+export function readout(v, tiers, pts){
+  const bits = [tierText(v, tiers)].filter(Boolean), p = priceAt(v, pts), m = p && money(p[1]);
+  if(m) bits.push('from ~' + m.v + ' ' + m.u);
+  return bits.join(' · ');
+}
 export const stepOf = (lo, hi, tiers) => [lo, hi, ...(tiers || []).flat()].every(Number.isInteger) ? 1 : 0.1;
-/* o: {k, lo, hi, step, v, tiers, heat:false for plain counts} */
+/* o: {k, lo, hi, step, v, tiers, prices, heat:false for plain counts} */
 export function slideHTML(o){
   const lo = +o.lo, hi = +o.hi, w = hi - lo, step = o.step || 1;
   if(!(w > 0)) return '';
@@ -89,14 +107,20 @@ export function slideHTML(o){
     bg = o.heat === false ? 'var(--raised)' : 'linear-gradient(90deg,' + [0, .4, .7, .88, 1].map(x => heat(x) + ' ' + x * 100 + '%').join(',') + ')';
     if(Number.isInteger(step) && w / step <= 12) for(let x = lo + step; x < hi; x += step) marks += '<i class="tdiv" style="left:' + at(x) + '"></i>';
   }
+  if(o.prices && o.prices.length >= 2){
+    const L = o.prices.map(p => Math.log(p[1])), a = Math.min(...L), b = Math.max(...L);
+    bg = 'linear-gradient(90deg,' + o.prices.map((p, i) => heat(b > a ? (L[i] - a) / (b - a) : 0) + ' ' + at(Math.max(lo, Math.min(hi, p[0])))).join(',') + ')';
+  }
   const unset = o.v === '' || o.v === null || o.v === undefined;
   return '<span class="tslide' + (unset ? ' unset' : '') + '"><span class="ttrack" style="background:' + bg + '">' + marks + '</span>' +
     '<input type="range" data-k="' + o.k + '" min="' + lo + '" max="' + hi + '" step="' + step + '" value="' + (unset ? lo : o.v) + '"></span>';
 }
 /* a number box with its slider (and the tier it lands in); keep them in step with syncVal() */
 export function valHTML(o, box){
-  return '<span class="tval"' + (o.tiers ? ' data-tiers="' + esc(JSON.stringify(o.tiers)) + '"' : '') + '>' + slideHTML(o) + box +
-    (o.tiers ? '<span class="ttier">' + esc(tierText(o.v, o.tiers)) + '</span>' : '') + '</span>';
+  const info = o.tiers || o.prices;
+  return '<span class="tval"' + (o.tiers ? ' data-tiers="' + esc(JSON.stringify(o.tiers)) + '"' : '') +
+    (o.prices ? ' data-prices="' + esc(JSON.stringify(o.prices)) + '"' : '') + '>' + slideHTML(o) + box +
+    (info ? '<span class="ttier">' + esc(readout(o.v, o.tiers, o.prices)) + '</span>' : '') + '</span>';
 }
 export function syncVal(src){
   const box = src.closest('.tval'); if(!box) return;
@@ -106,9 +130,15 @@ export function syncVal(src){
   const v = num ? num.value : rng.value;
   if(sl) sl.classList.toggle('unset', v === '');
   const tt = box.querySelector('.ttier');
-  if(tt) tt.textContent = tierText(v, JSON.parse(box.dataset.tiers || 'null'));
+  if(tt) tt.textContent = readout(v, JSON.parse(box.dataset.tiers || 'null'), JSON.parse(box.dataset.prices || 'null'));
 }
-export const HEAT_NOTE = '<p class="note theat"><span class="theat-bar"></span> T1 is the best roll. Redder is a higher tier.</p>';
+/* the line above the sliders: live prices (and when they were checked), or what the colours mean without them */
+export function heatNote(priced, tiered = true){
+  const when = T && T.roll && T.roll.updated ? ' Last check ' + ago(T.roll.updated) + '.' : '';
+  return '<p class="note theat"><span class="theat-bar"></span> ' + (priced
+    ? 'Colour and price: the cheapest items with at least that roll, from the trade site. Updated every hour.' + when
+    : tiered ? 'T1 is the best roll. Redder is a higher tier.' : 'Redder is a better roll.') + '</p>';
+}
 const ITEM_KINDS = /Weapon|Armour|Shield|Buckler|Focus|Quiver|Sword|Axe|Mace|Bow|Crossbow|Spear|Staff|Wand|Sceptre|Dagger|Claw|Flail|Talisman|Helmet|Gloves|Boots|Body/;
 function statId(line, implicit, onGear){
   const k = key(line);
@@ -208,7 +238,7 @@ export async function tradePanel(it){
   const paint = () => {
     const url = searchURL(league, build());
     box.innerHTML = '<h4>Find it on trade <span class="note">' + esc(league) + '</span></h4>' +
-      (rows.length ? '<p class="note">Tick the mods you care about.</p>' + HEAT_NOTE + '<div class="tmods">' + rows.map(rowHTML).join('') + '</div>' : '') +
+      (rows.length ? '<p class="note">Tick the mods you care about.</p>' + heatNote(false, false) + '<div class="tmods">' + rows.map(rowHTML).join('') + '</div>' : '') +
       '<div class="tstates">' + STATES.filter(s => stateName[s]).map(s =>
         '<div class="trow"><span>' + esc(stateName[s]) + '</span><div class="seg" data-state="' + s + '">' +
         ['any', 'yes', 'no'].map(v => '<button type="button" data-v="' + v + '" aria-pressed="' + (states[s] === v) + '">' + v[0].toUpperCase() + v.slice(1) + '</button>').join('') +

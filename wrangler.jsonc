@@ -2,6 +2,7 @@
 // The site itself is static files (served straight from the edge); the worker only answers
 // /data/market.json (live prices), /api/* (things a browser cannot fetch on its own) and the
 // plain pages for search engines and AI search (worker/seo.js: item pages, lists, sitemap, llms.txt).
+// Every minute a scheduled run pulls a few live trade prices (worker/prices.js), all of them once an hour.
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "wraeclast-index",
@@ -10,11 +11,12 @@
   "assets": {
     "directory": ".",
     "binding": "ASSETS",
-    "run_worker_first": ["/data/market.json", "/api/*", "/item/*", "/gems", "/uniques", "/passives", "/currency",
+    "run_worker_first": ["/data/market.json", "/data/rollprices.json", "/data/farmprices.json", "/api/*", "/item/*", "/gems", "/uniques", "/passives", "/currency",
                          "/keywords", "/sitemap.xml", "/llms.txt", "/llms-full.txt", "/search"]
   },
   "d1_databases": [
     { "binding": "DB", "database_name": "wraeclast", "database_id": "d1c4d101-dce9-4f19-9dc3-4525eca2f17e", "migrations_dir": "worker/migrations" }
   ],
+  "triggers": { "crons": ["* * * * *"] },
   "observability": { "enabled": true }
 }

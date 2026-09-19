@@ -2,7 +2,7 @@
    Pick the item, add groups of mods ("must have", "at least N of these", "add these up", "must not have"),
    set details and price, then open the search. The whole search lives in the address, so it can be shared. */
 import { D, $, esc } from './app.js';
-import { tradeData, searchURL, valueFor, valHTML, syncVal, stepOf, HEAT_NOTE } from './trade.js';
+import { tradeData, searchURL, valueFor, valHTML, syncVal, stepOf, heatNote, rollFor } from './trade.js';
 
 const GROUPS = {
   and:    {label: 'Must have', hint: 'Every mod here must be on the item.'},
@@ -189,7 +189,7 @@ function sel(name, opts, val, first){
 function num(name, val, ph){ return '<input class="field tp-num" type="number" data-k="' + name + '" value="' + esc(val) + '" placeholder="' + esc(ph || '') + '">'; }
 /* a number box, with a slider beside it when the range is known (o: slider ends, step, tiers) */
 function vnum(name, val, ph, o){ return o ? valHTML({...o, k: name, v: val}, num(name, val, ph)) : num(name, val, ph); }
-function modSlide(info){ return info.r ? {lo: info.r[0], hi: info.r[1], step: stepOf(info.r[0], info.r[1], info.tiers), tiers: info.tiers} : null; }
+function modSlide(id, info){ return info.r ? {lo: info.r[0], hi: info.r[1], step: stepOf(info.r[0], info.r[1], info.tiers), tiers: info.tiers, prices: rollFor(id)} : null; }
 function totalSlide(g){   // the most the mods in an 'add these up' group can reach
   if(!g.mods.length || !g.mods.every(m => (MOD.get(m.id) || {}).r)) return null;
   const hi = g.mods.reduce((a, m) => a + (+m.w || 1) * MOD.get(m.id).r[1], 0);
@@ -205,7 +205,7 @@ function groupHTML(g, gi){
       const info = MOD.get(m.id) || {t: m.id, k: ''};
       return '<div class="tp-mod" data-m="' + mi + '"><span class="tp-mtext">' + esc(info.t) + ' <span class="pill">' + (KIND[info.k] || '') + '</span></span>' +
         (g.t === 'and' || g.t === 'count' || g.t === 'or' ? '<div class="seg" data-k="op">' + OPS.map(([o, l]) =>
-          '<button type="button" data-v="' + o + '" aria-pressed="' + ((m.op || 'min') === o) + '">' + l + '</button>').join('') + '</div>' + vnum('v', m.v ?? '', 'any', modSlide(info)) : '') +
+          '<button type="button" data-v="' + o + '" aria-pressed="' + ((m.op || 'min') === o) + '">' + l + '</button>').join('') + '</div>' + vnum('v', m.v ?? '', 'any', modSlide(m.id, info)) : '') +
         (g.t === 'weight' ? '<span class="note">counts ×</span>' + vnum('w', m.w ?? 1, '', {lo: 1, hi: 10, step: 1, heat: false}) : '') +
         '<button type="button" class="btn tp-x" data-act="delmod" title="Remove">Remove</button></div>';
     }).join('') +
@@ -228,7 +228,7 @@ function draw(){
         '<label class="lbl">Rarity</label>' + sel('rarity', T.options.rarity, S.rarity, 'Any') + '</div>' +
       (typesFor() ? '<div class="tp-types"><span class="lbl">Type</span>' + typesFor().map(t => { const v = t.join('+');
         return '<label class="tp-type"><input type="checkbox" data-type="' + v + '"' + ((S.types || []).includes(v) ? ' checked' : '') + '> ' + esc(typeName(v)) + '</label>'; }).join('') + '</div>' : '') +
-      '<h3 class="tp-h">Mods</h3>' + (S.groups.some(g => g.mods.length) ? HEAT_NOTE : '') +
+      '<h3 class="tp-h">Mods</h3>' + (S.groups.some(g => g.mods.length) ? heatNote(S.groups.some(g => g.t !== 'weight' && g.t !== 'not' && g.mods.some(m => rollFor(m.id)))) : '') +
       (S.groups.length ? S.groups.map(groupHTML).join('') : '<p class="note">No mods yet. Add a group below.</p>') +
       '<div class="row tp-addg">' + Object.entries(GROUPS).map(([t, g]) => '<button type="button" class="btn" data-addg="' + t + '">+ ' + g.label + '</button>').join('') + '</div>' +
       '<h3 class="tp-h">Item details</h3>' +
