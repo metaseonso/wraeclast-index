@@ -4,7 +4,7 @@
      POST /api/t                     a batch from assets/track.js
      POST /api/admin/login           {password}: checked against the DASH_HASH secret; sets a 12-hour cookie
      POST /api/admin/logout
-     GET  /api/admin/stats?days=1|7|30
+     GET  /api/admin/stats?days=1|7|30   (with the data jobs: when each file and each kind of price last came in)
      GET  /api/admin/heat?route=&device=&days=
      GET  /api/admin/cloudflare?days=1|7|30   Cloudflare's own numbers (worker/cfstats.js)
      POST /api/admin/suggestion      {id, status: new|read|done}
@@ -116,7 +116,7 @@ export function parseHash(s){
   if(iterations < 1 || iterations > 100000) return null;   // the Workers limit for PBKDF2
   try { return {iterations, salt: unb64(m[2].replace(/=+$/, '')), hash: unb64(m[3].replace(/=+$/, ''))}; } catch { return null; }
 }
-function same(a, b){   // constant time
+export function same(a, b){   // constant time
   let d = a.length ^ b.length;
   for(let i = 0; i < Math.max(a.length, b.length); i++) d |= (a[i] | 0) ^ (b[i] | 0);
   return d === 0;
@@ -267,7 +267,20 @@ export async function stats(env, url){
     searches: ts.map(r => ({...searchName(r.state), n: r.n, last: r.last})),
     plan: {free: FREE, today: {views: todayLoad.site_view, batches: todayLoad.site_batch, requests, trackingWrites, priceWrites, writes},
       pct: Math.round(pct * 10) / 10, verdict: pct >= 80 ? 'upgrade' : pct >= 50 ? 'watch' : 'fine', links: LINKS},
+    jobs: await jobs(env),
   };
+}
+
+/* the data jobs: when each file (worker/files.js) and each kind of trade price last came in */
+async function jobs(env){
+  const out = {files: {}, prices: {}};
+  try {
+    const r = await env.DB.prepare('SELECT name, at FROM files').all();
+    for(const x of r.results || []) out.files[x.name] = new Date(x.at * 1000).toISOString();
+  } catch {}   // no table yet
+  const r = await env.DB.prepare("SELECT substr(key, 1, instr(key, ':') - 1) AS kind, MAX(at) AS at FROM trade_prices GROUP BY kind").all();
+  for(const x of r.results || []) if(['uniq', 'roll', 'farm', 'cur'].includes(x.kind)) out.prices[x.kind] = x.at;
+  return out;
 }
 
 /* ---------- GET /api/admin/heat ---------- */

@@ -4,9 +4,11 @@
 what it actually traded for: divines (or exalted or chaos, turned into divines at that hour's own rate) paid,
 divided by the amount bought, over the last 24 hours.
 
-Runs every hour in .github/workflows/pages.yml after tools/market.py (which gives the league). It keeps its
-running totals in data/exchange-state.json (published with the site, so the next run continues from it); a
-first run fills in the last 14 days, so trends show at once.
+Runs every hour on the data server (tools/vm/; until the move is done, also in .github/workflows/pages.yml
+after tools/market.py, which gives the league). It keeps its running totals in exchange-state.json: on the data
+server in WI_DATA_DIR; in GitHub Actions, published with the site so the next run continues from it. With no
+totals yet it takes that published copy once, else a first run fills in the last 14 days, so trends show at once.
+Where files go and how they reach the site: tools/sitedata.py.
 
 Output data/exchange.json:
   league, updated (end of the last hour read), rate (exalted per divine, last 24 h)
@@ -23,13 +25,13 @@ import sys
 import time
 import urllib.error
 import urllib.request
-from pathlib import Path
 
-ROOT = Path(__file__).resolve().parent.parent
+import sitedata
+
 FEED = 'https://web.poecdn.com/api/currency-exchange/poe2/'
 LAST = 'https://metaseonso.github.io/wraeclast-index/data/exchange-state.json'
 REPOE = 'https://repoe-fork.github.io/poe2/base_items.json'
-UA = 'wraeclast-index/1.0 (contact: https://github.com/metaseonso/wraeclast-index/issues)'
+UA = 'wraeclast-index/1.0 (contact: https://wraeclastindex.fyi/)'
 DIV, EX, CHAOS = 'Metadata/Items/Currency/CurrencyModValues', 'Metadata/Items/Currency/CurrencyAddModToRare', 'Metadata/Items/Currency/CurrencyRerollRare'
 BACKFILL_DAYS, KEEP_DAYS = 14, 45
 
@@ -83,15 +85,19 @@ def hour_totals(markets, league):
 
 
 def main():
-    cat = json.loads((ROOT / 'data' / 'market.json').read_text(encoding='utf-8'))
+    cat = sitedata.latest('market.json')
     league = cat['league']
     names = {k: v.get('name') for k, v in (get(REPOE) or {}).items() if v.get('name')}
     names[DIV], names[EX], names[CHAOS] = 'Divine Orb', 'Exalted Orb', 'Chaos Orb'
-    tids = json.loads((ROOT / 'data' / 'trade.json').read_text(encoding='utf-8'))['exchange']
-    try:
-        st = get(LAST) or {}
-    except RuntimeError:
-        st = {}
+    tids = sitedata.site_file('trade.json')['exchange']
+    kept = sitedata.DATA / 'exchange-state.json'
+    if sitedata.SERVER and kept.exists():
+        st = json.loads(kept.read_text(encoding='utf-8'))
+    else:   # GitHub Actions, or the data server's first run: the copy published with the site
+        try:
+            st = get(LAST) or {}
+        except RuntimeError:
+            st = {}
     if st.get('league') != league:
         st = {}
     now_hour = int(time.time()) // 3600 * 3600
@@ -132,7 +138,7 @@ def main():
         sys.exit('no Currency Exchange data for %s; keeping the last file' % league)
     state = {'league': league, 'next': nxt, 'hours': {str(k): v for k, v in hours.items()}, 'days': days,
              'rates': {str(k): v for k, v in rates.items()}, 'pairs': {str(k): v for k, v in pairs24.items()}}
-    (ROOT / 'data' / 'exchange-state.json').write_text(json.dumps(state, separators=(',', ':')), encoding='utf-8')
+    sitedata.save(kept, json.dumps(state, separators=(',', ':')))
 
     # ---------- the summary the site reads ----------
     last = max(hours)
@@ -184,7 +190,7 @@ def main():
            'rate': float('%.4g' % (sum(r24) / len(r24))) if r24 else None, 'items': items, 'markets': markets[:80]}
     if items.get('Exalted Orb') and items['Exalted Orb'].get('v'):
         out['rate'] = float('%.4g' % (1 / items['Exalted Orb']['v']))
-    (ROOT / 'data' / 'exchange.json').write_text(json.dumps(out, ensure_ascii=False, separators=(',', ':')), encoding='utf-8')
+    sitedata.publish('exchange.json', out)
     print(league, 'hours read:', read, 'currencies:', len(items), 'rate:', out['rate'], 'ex/div')
 
 

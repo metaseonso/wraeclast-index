@@ -3,7 +3,8 @@ when it has been announced. The home page shows how long the current league has 
 one starts.
 
 Source: poe2db's league list (https://poe2db.tw/us/League; their robots.txt allows it; credited on the page).
-One request, once an hour, in .github/workflows/pages.yml.
+One request, every 6 hours on the data server (tools/vm/; until the move is done, also hourly in
+.github/workflows/pages.yml). Where the file goes and how it reaches the site: tools/sitedata.py.
 
     python tools/leagues.py
 """
@@ -13,11 +14,11 @@ import json
 import re
 import sys
 import urllib.request
-from pathlib import Path
 
-ROOT = Path(__file__).resolve().parent.parent
+import sitedata
+
 URL = 'https://poe2db.tw/us/League'
-UA = 'wraeclast-index/1.0 (contact: https://github.com/metaseonso/wraeclast-index/issues)'
+UA = 'wraeclast-index/1.0 (contact: https://wraeclastindex.fyi/)'
 
 
 def main():
@@ -42,7 +43,7 @@ def main():
     leagues.sort(key=lambda x: x['start'], reverse=True)
     out = {'source': 'poe2db', 'url': URL, 'updated': dt.datetime.now(dt.timezone.utc).isoformat(timespec='minutes'),
            'leagues': leagues}
-    (ROOT / 'data' / 'leagues.json').write_text(json.dumps(out, ensure_ascii=False, separators=(',', ':')), encoding='utf-8')
+    sitedata.publish('leagues.json', out)
     print(len(leagues), 'leagues; newest:', leagues[0])
 
 

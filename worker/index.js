@@ -1,29 +1,30 @@
 /* Wraeclast Index on Cloudflare.
    Static files are served straight from the edge. This worker only answers:
      /data/market.json   every price, from real trade listings only (worker/prices.js serveMarket)
-     /data/leagues.json  league dates (poe2db), from the same hourly job
+     /data/leagues.json  league dates (poe2db), sent in by the data server: worker/files.js
      /api/pob?url=...    the build code behind a pobb.in, poe.ninja, maxroll, mobalytics, poe2db or pastebin link
                          (browsers cannot fetch those sites themselves)
      /item/*, /gems, /uniques, /passives, /currency, /keywords, /sitemap.xml, /llms.txt, /search
                          plain pages for search engines and AI search: worker/seo.js
      /data/rollprices.json, /data/farmprices.json
-                         live trade prices (sent in through the hour by GitHub: /api/prices/ingest): worker/prices.js
+                         live trade prices (sent in through the hour: /api/prices/ingest): worker/prices.js
+     /api/data/put       the data server's hourly files (Currency Exchange, catalogue, league dates): worker/files.js
      /api/trade/searches popular Trade page searches (GET), and counting one (POST): worker/community.js
      /api/suggest        notes from the Suggest button: worker/community.js
      /api/t, /api/admin/* page views and clicks, and the owner's dashboard (admin.html): worker/dash.js */
 import * as seo from './seo.js';
 import { servePrices, ingest, state, serveMarket } from './prices.js';
+import { fileText, putFile } from './files.js';
 import { tradeSearches, suggest } from './community.js';
 import { track, admin } from './dash.js';
 
-const MARKET_SOURCE = 'https://metaseonso.github.io/wraeclast-index/data/market.json';
-const UA = 'wraeclast-index/1.0 (contact: https://github.com/metaseonso/wraeclast-index/issues)';
+const UA = 'wraeclast-index/1.0 (contact: https://wraeclastindex.fyi/)';
 
 export default {
   async fetch(request, env, ctx){
     const url = new URL(request.url);
     if(url.pathname === '/data/market.json') return serveMarket(request, env, ctx);
-    if(url.pathname === '/data/leagues.json') return published(request, env, 'leagues.json', ctx);
+    if(url.pathname === '/data/leagues.json') return leagues(request, env, url, ctx);
     if(url.pathname === '/api/pob') return pob(url);
     if(url.pathname === '/api/trade/searches') return tradeSearches(request, env, ctx, url);
     if(url.pathname === '/api/suggest') return suggest(request, env, url);
@@ -31,6 +32,7 @@ export default {
     if(url.pathname.startsWith('/api/admin/')) return admin(request, env, url);
     if(url.pathname === '/api/prices/ingest') return ingest(request, env, url);
     if(url.pathname === '/api/prices/state') return state(request, env, url);
+    if(url.pathname === '/api/data/put') return putFile(request, env, url, ctx);
     if(url.pathname === '/data/rollprices.json') return servePrices(request, env, ctx, 'roll');
     if(url.pathname === '/data/farmprices.json') return servePrices(request, env, ctx, 'farm');
     if(seo.handles(url.pathname)) return seo.respond(request, env, ctx, () => serveMarket(new Request(url.origin + '/data/market.json'), env, ctx));
@@ -38,23 +40,14 @@ export default {
   },
 };
 
-/* a file the hourly GitHub job publishes (league dates): cached here for 5 minutes */
-async function published(request, env, name, ctx){
-  const key = new Request(new URL(request.url).origin + '/data/' + name);
-  const hit = await caches.default.match(key);   // this data centre's copy: no trip to GitHub
-  if(hit) return hit;
-  try {
-    const r = await fetch(MARKET_SOURCE.replace('market.json', name), {headers: {'User-Agent': UA}, cf: {cacheTtl: 300, cacheEverything: true}});
-    if(r.ok){
-      const res = new Response(r.body, {headers: {
-        'Content-Type': 'application/json; charset=utf-8',
-        'Cache-Control': 'public, max-age=300, stale-while-revalidate=600',
-      }});
-      if(ctx) ctx.waitUntil(caches.default.put(key, res.clone()));
-      return res;
-    }
-  } catch {}
-  return env.ASSETS.fetch(request);   // the copy that shipped with the site
+/* league dates: each data centre keeps its copy for 5 minutes (worker/files.js) */
+async function leagues(request, env, url, ctx){
+  const body = await fileText(env, url.origin, 'leagues.json', ctx);
+  if(body === null) return env.ASSETS.fetch(request);   // the copy that shipped with the site
+  return new Response(body, {headers: {
+    'Content-Type': 'application/json; charset=utf-8',
+    'Cache-Control': 'public, max-age=300, stale-while-revalidate=600',
+  }});
 }
 
 /* A build link -> the raw code, from the sites that host Path of Building codes. */

@@ -1,5 +1,6 @@
-"""Real prices from the official trade site, for every price on the site. Runs once an hour in
-.github/workflows/prices.yml and spreads its checks over about 55 minutes, never in a burst.
+"""Real prices from the official trade site, for every price on the site. Runs once an hour on the data server
+(tools/vm/; until the move is done, also in .github/workflows/prices.yml) and spreads its checks over about
+55 minutes, never in a burst.
 
 Currency prices come from the in-game Currency Exchange instead (tools/exchange.py).
 What it checks, oldest first (it asks the site, GET /api/prices/state, when each was last checked):
@@ -8,13 +9,14 @@ What it checks, oldest first (it asks the site, GET /api/prices/state, when each
 Results go to POST /api/prices/ingest a few at a time. The site works out each price (the middle of those
 listings, in divines) and keeps one price per day for trends.
 
-Signing in to the site: GitHub gives this job a short-lived signed token (OpenID Connect); the site checks it.
-No password or key is stored anywhere.
+Signing in to the site: on the data server, the key in WI_INGEST_KEY (the site keeps only its SHA-256).
+In GitHub Actions, GitHub gives this job a short-lived signed token (OpenID Connect); the site checks it.
+Where the input files come from (data/ or WI_DATA_DIR): tools/sitedata.py.
 
 The trade site's limits come back in the X-Rate-Limit headers: searches about 100 an hour (this makes 88),
 It slows down near a limit and stops if one is hit.
 
-    python tools/pricepull.py                 # in GitHub Actions
+    python tools/pricepull.py                 # on the data server, or in GitHub Actions
     python tools/pricepull.py --dry 2 0       # locally: 2 searches, printed, not sent
 """
 import json
@@ -25,13 +27,13 @@ import time
 import urllib.error
 import urllib.parse
 import urllib.request
-from pathlib import Path
 
-ROOT = Path(__file__).resolve().parent.parent
-SITE = 'https://wraeclastindex.fyi'
+import sitedata
+
+SITE = sitedata.SITE
 CATALOGUE = 'https://metaseonso.github.io/wraeclast-index/data/market.json'
 API = 'https://www.pathofexile.com/api/trade2/'
-UA = 'wraeclast-index/1.0 (contact: https://github.com/metaseonso/wraeclast-index/issues)'
+UA = 'wraeclast-index/1.0 (contact: https://wraeclastindex.fyi/)'
 SPAN = 55 * 60
 SEARCH = {'uniq': 58, 'roll': 18, 'farm': 12}   # searches per run
 EXCHANGE = 0                                    # currency comes from the Currency Exchange feed now
@@ -81,9 +83,9 @@ def oidc():
 
 
 def site(path, body=None):
-    token = oidc()
+    token = sitedata.KEY or oidc()
     if not token:
-        sys.exit('no GitHub sign-in token (this runs in GitHub Actions with id-token: write)')
+        sys.exit('no sign-in: set WI_INGEST_KEY, or run in GitHub Actions with id-token: write')
     data, _ = http(SITE + path, body, {'Authorization': 'Bearer ' + token})
     return data
 
@@ -91,7 +93,7 @@ def site(path, body=None):
 # ---------- what there is to check ----------
 def jobs(catalogue):
     out = {'roll': [], 'farm': [], 'uniq': [], 'cur': []}
-    roll = json.loads((ROOT / 'data' / 'pricejobs.json').read_text(encoding='utf-8'))
+    roll = sitedata.site_file('pricejobs.json')
     for stat, values in roll.get('roll', []):
         for v in values:
             out['roll'].append(('roll:%s@%s' % (stat, v), {
@@ -99,16 +101,15 @@ def jobs(catalogue):
                           'stats': [{'type': 'and', 'filters': [{'id': stat, 'value': {'min': v}}]}],
                           'filters': {'type_filters': {'filters': {'rarity': {'option': 'nonunique'}}}}},
                 'sort': {'price': 'asc'}}))
-    fq = ROOT / 'data' / 'farmqueries.json'
-    if fq.exists():
-        farm = json.loads(fq.read_text(encoding='utf-8'))
+    farm = sitedata.site_file('farmqueries.json', required=False)
+    if farm is not None:
         for f in (farm if isinstance(farm, list) else farm.get('queries') or farm.get('items') or []):
             if f.get('key') and f.get('query'):
                 body = dict(f['query']) if 'query' in f['query'] else {'query': f['query']}
                 body['query'] = {**body['query'], 'status': {'option': 'online'}}
                 body['sort'] = {'price': 'asc'}
                 out['farm'].append(('farm:' + f['key'], body))
-    index = json.loads((ROOT / 'data' / 'index.json').read_text(encoding='utf-8'))
+    index = sitedata.site_file('index.json')
     for it in index['items']:
         if it['k'] != 'u':
             continue
@@ -118,7 +119,7 @@ def jobs(catalogue):
         if base:
             q['type'] = base
         out['uniq'].append(('uniq:' + it['id'], {'query': q, 'sort': {'price': 'asc'}}))
-    exchange = json.loads((ROOT / 'data' / 'trade.json').read_text(encoding='utf-8'))['exchange']
+    exchange = sitedata.site_file('trade.json')['exchange']
     for key in catalogue.get('items', {}):
         name = key[2:]
         if key.startswith('c:') and name in exchange and exchange[name] != 'exalted':
@@ -164,7 +165,8 @@ def exchange_offers(league, want, have, rate, counts):
 
 def main():
     dry = [int(x) for x in sys.argv[sys.argv.index('--dry') + 1:sys.argv.index('--dry') + 3]] if '--dry' in sys.argv else None
-    catalogue, _ = http(CATALOGUE)
+    # the catalogue: on the data server, the one market.py last wrote there
+    catalogue = sitedata.latest('market.json') if sitedata.SERVER else http(CATALOGUE)[0]
     league = catalogue['league']
     todo = jobs(catalogue)
     at = {} if dry else site('/api/prices/state?league=' + urllib.parse.quote(league)).get('at', {})

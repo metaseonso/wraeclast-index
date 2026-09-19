@@ -2,7 +2,7 @@
 
 Search every Path of Exile 2 gem, unique, passive, base item, atlas passive and item, currency and keyword, with live prices and trends.
 
-**Live site:** https://metaseonso.github.io/wraeclast-index/
+**Live site:** https://wraeclastindex.fyi
 **Roadmap:** [issue #13](https://github.com/metaseonso/wraeclast-index/issues/13)
 
 ## What is in it

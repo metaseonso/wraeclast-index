@@ -1,10 +1,11 @@
 /* Real prices. Currency: the in-game Currency Exchange, from GGG's public hourly feed (tools/exchange.py ->
-   data/exchange.json). Everything else: real listings on the official trade site, checked as below.
-   The checks run on GitHub, not here (the trade site blocks Cloudflare's shared addresses): once an hour
-   .github/workflows/prices.yml runs tools/pricepull.py, which asks GET /api/prices/state what is oldest, spreads
-   its checks over the hour, and sends the results to POST /api/prices/ingest. It signs in with GitHub's own
-   short-lived token (OpenID Connect): this checks GitHub's signature and that the token is for this repo's prices
-   workflow on main. No password or key is stored anywhere.
+   exchange.json, sent in by the data server: worker/files.js). Everything else: real listings on the official
+   trade site, checked as below.
+   The checks run on the data server (tools/vm/), not here (the trade site blocks Cloudflare's shared addresses):
+   once an hour tools/pricepull.py asks GET /api/prices/state what is oldest, spreads its checks over the hour,
+   and sends the results to POST /api/prices/ingest. It signs in with the data server's key (worker/files.js
+   fromServer). Until the move is done, GitHub's own short-lived token (OpenID Connect) from this repo's prices
+   workflow on main works too: this checks GitHub's signature and that the token is for that workflow.
 
    What is checked (the key in the trade_prices table):
      uniq:<index id>            uniques: the 10 cheapest listings (online sellers)
@@ -15,20 +16,16 @@
    Listings priced in any currency are turned into divines at the Currency Exchange's own rates.
 
    /data/market.json   every item's price (the shape the pages read), only from these checks. Names, pictures
-                       and descriptions come from the hourly GitHub job's catalogue; its prices are dropped.
+                       and descriptions come from the hourly catalogue (market.json); its prices are dropped.
    /data/rollprices.json, /data/farmprices.json   the slider and farm prices */
 
-const PAGES = 'https://metaseonso.github.io/wraeclast-index/data/';
-const UA = 'wraeclast-index/1.0 (contact: https://github.com/metaseonso/wraeclast-index/issues)';
+import { published, fromServer } from './files.js';
+
 const ISSUER = 'https://token.actions.githubusercontent.com';
 const REPO = 'metaseonso/wraeclast-index';
 const WORKFLOW = /^metaseonso\/wraeclast-index\/\.github\/workflows\/prices\.yml@refs\/heads\/main$/;
 const DAYS = 45;
 
-async function published(name){   // a file the hourly GitHub job publishes
-  const r = await fetch(PAGES + name, {headers: {'User-Agent': UA}, cf: {cacheTtl: 300, cacheEverything: true}});
-  return r.ok ? r.json() : null;
-}
 export const tally = (env, kind, n = 1) => env.DB.prepare(
   'INSERT INTO load (hour, kind, n) VALUES (?, ?, ?) ON CONFLICT(hour, kind) DO UPDATE SET n = n + excluded.n')
   .bind(new Date().toISOString().slice(0, 13), kind, n).run();
@@ -57,10 +54,11 @@ async function fromGitHub(request, url){
   if(claims.repository !== REPO || claims.ref !== 'refs/heads/main' || !WORKFLOW.test(claims.workflow_ref || '')) return null;
   return claims;
 }
+const signed = async (request, env, url) => (await fromServer(request, env)) || !!(await fromGitHub(request, url));
 
 /* ---------- GET /api/prices/state: when each price was last checked, so the job does the oldest first ---------- */
 export async function state(request, env, url){
-  if(!(await fromGitHub(request, url))) return json(401, {error: 'Not signed by the prices workflow.'});
+  if(!(await signed(request, env, url))) return json(401, {error: 'Not signed in.'});
   const league = url.searchParams.get('league') || '';
   const rows = await env.DB.prepare('SELECT key, at FROM trade_prices WHERE league = ?').bind(league).all();
   return json(200, {at: Object.fromEntries((rows.results || []).map(r => [r.key, r.at]))});
@@ -70,7 +68,7 @@ export async function state(request, env, url){
 const KEY = /^(roll:[a-z]+\.[a-z0-9_]+@-?\d+(\.\d+)?|farm:[a-z0-9-]{1,80}|uniq:[^\n|][^\n]{0,119}|cur:[^\s|]{1,60}\|[^\n|]{1,80})$/;
 export async function ingest(request, env, url){
   if(request.method !== 'POST') return json(405, {error: 'POST only.'});
-  if(!(await fromGitHub(request, url))) return json(401, {error: 'Not signed by the prices workflow.'});
+  if(!(await signed(request, env, url))) return json(401, {error: 'Not signed in.'});
   let body;
   try { body = await request.json(); } catch { return json(400, {error: 'Bad body.'}); }
   const league = typeof body.league === 'string' ? body.league.slice(0, 60) : '';
@@ -79,7 +77,7 @@ export async function ingest(request, env, url){
       p: r.p.slice(0, 10).filter(x => Array.isArray(x) && isFinite(+x[0]) && +x[0] > 0 && typeof x[1] === 'string').map(x => [+x[0], x[1].slice(0, 30)])}));
   const now = new Date().toISOString(), day = now.slice(0, 10);
   // what each currency is worth in divines (the Currency Exchange), for listings priced in any of them
-  const worth = await exchangeWorth();
+  const worth = await exchangeWorth(env, url.origin);
   const valueOf = r => {
     // the middle of the 5 cheapest: what you actually pay, without one bait listing or a few silly asks deciding it
     return round(median(r.p.map(([a, c]) => worth[c] ? a * worth[c] : null).filter(x => x !== null).sort((x, y) => x - y).slice(0, 5)));
@@ -103,11 +101,11 @@ export async function ingest(request, env, url){
   if(stmts.length) await env.DB.batch(stmts);
   for(const [k, n] of Object.entries(body.load || {}))
     if(/^trade_(search|fetch|exchange|limited|error)$/.test(k) && +n > 0) await tally(env, k, Math.min(1000, Math.floor(+n)));
-  return json(200, {ok: true, saved: stmts.length, rate});
+  return json(200, {ok: true, saved: stmts.length});
 }
 
-async function exchangeWorth(){
-  const x = (await published('exchange.json')) || {};
+async function exchangeWorth(env, origin){
+  const x = (await published(env, origin, 'exchange.json')) || {};
   const worth = {divine: 1};
   for(const it of Object.values(x.items || {})) if(it.tid && it.v) worth[it.tid] = it.v;
   worth.divine = 1;
@@ -138,8 +136,8 @@ export async function serveMarket(request, env, ctx){
   const url = new URL(request.url), ck = new Request(url.origin + '/data/market.json?from=trade');
   const hit = await caches.default.match(ck);
   if(hit) return hit;
-  const cat = (await published('market.json')) || {items: {}};
-  const cx = (await published('exchange.json')) || {items: {}};
+  const cat = (await published(env, url.origin, 'market.json', ctx)) || {items: {}};
+  const cx = (await published(env, url.origin, 'exchange.json', ctx)) || {items: {}};
   const league = cat.league || '';
   const rows = await env.DB.prepare("SELECT key, v, total, at, h FROM trade_prices WHERE league = ? AND key LIKE 'uniq:%'").bind(league).all();
   const rate = cx.league === league ? cx.rate : null;
@@ -179,7 +177,7 @@ export async function servePrices(request, env, ctx, kind){
   const url = new URL(request.url), key = new Request(url.origin + url.pathname);
   const hit = await caches.default.match(key);
   if(hit) return hit;
-  const cat = (await published('market.json')) || {};
+  const cat = (await published(env, url.origin, 'market.json', ctx)) || {};
   const rows = await env.DB.prepare('SELECT key, v, total, at FROM trade_prices WHERE key LIKE ? AND league = ?')
     .bind(kind + ':%', cat.league || '').all();
   const out = {updated: null, league: cat.league || null, every: 'hour'};

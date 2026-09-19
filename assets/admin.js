@@ -193,6 +193,7 @@ function render(){
 
   notes();
   plan();
+  jobs();
   const q = d.searches;
   $('#searches').innerHTML = table(q.map(s => ({n: s.n, html: esc(s.name || 'An item type') + (s.mods ? '<span class="ad-sub">' + s.mods +
     ' mod' + (s.mods === 1 ? '' : 's') + '</span>' : '') + '<span class="ad-sub">' + esc(ago(s.last)) + '</span>'})), 'Search');
@@ -412,6 +413,21 @@ function plan(){
     '<p class="note ad-links">Exact numbers on Cloudflare: <a href="' + esc(p.links.traffic) + '" target="_blank" rel="noopener">Traffic</a> · ' +
       '<a href="' + esc(p.links.workers) + '" target="_blank" rel="noopener">Workers &amp; Pages</a> · ' +
       '<a href="' + esc(p.links.d1) + '" target="_blank" rel="noopener">Database</a></p>';
+}
+
+/* ---------- data jobs: when each file and each kind of trade price last came in ---------- */
+const JOBS = [   // [where, what, label, hours before it counts as late]
+  ['files', 'exchange.json', 'Currency prices', 2], ['files', 'market.json', 'Currency list', 2], ['files', 'leagues.json', 'League dates', 7],
+  ['prices', 'uniq', 'Unique prices', 2], ['prices', 'roll', 'Mod roll prices', 2], ['prices', 'farm', 'Farm prices', 2], ['prices', 'cur', 'Currency listings', 2],
+];
+function jobs(){
+  const j = S.data.jobs || {};
+  $('#jobs').innerHTML = '<div class="tablewrap ad-tw"><table class="ad-t"><thead><tr><th>What</th><th class="n">Last in</th></tr></thead><tbody>' +
+    JOBS.map(([k, name, l, late]) => {
+      const at = (j[k] || {})[name], h = at ? (Date.now() - Date.parse(at)) / 3600e3 : null;
+      return '<tr><td>' + l + '</td><td class="n">' + (h === null ? '—' : '<span class="ad-g g-' + (h <= late ? 'good' : h <= late * 3 ? 'ok' : 'poor') +
+        '" title="' + esc(new Date(at).toUTCString()) + '">' + esc(ago(at)) + '</span>') + '</td></tr>';
+    }).join('') + '</tbody></table></div>';
 }
 
 /* ---------- Cloudflare's own numbers (worker/cfstats.js) ---------- */

@@ -3,7 +3,8 @@ the league name, from poe.ninja's public economy API. NO PRICES: the site shows 
 the in-game Currency Exchange (tools/exchange.py) and live trade listings (tools/pricepull.py); the site's worker
 (worker/prices.js) builds the /data/market.json that pages read. poe.ninja's prices are dropped here.
 
-Runs every hour in the GitHub Action (.github/workflows/pages.yml), and by hand:  python tools/market.py
+Runs every hour on the data server (tools/vm/; until the move is done, also in .github/workflows/pages.yml),
+and by hand:  python tools/market.py    (where files go and how they reach the site: tools/sitedata.py)
 poe.ninja's API guidelines (https://poe.ninja/docs/api): public economy endpoints only, a descriptive
 User-Agent, at most hourly, low concurrency. This script makes about 24 requests, one after another.
 
@@ -19,11 +20,11 @@ import sys
 import time
 import urllib.parse
 import urllib.request
-from pathlib import Path
 
-ROOT = Path(__file__).resolve().parent.parent
+import sitedata
+
 API = 'https://poe.ninja/poe2/api/economy/'
-UA = 'wraeclast-index/1.0 (contact: https://github.com/metaseonso/wraeclast-index/issues)'
+UA = 'wraeclast-index/1.0 (contact: https://wraeclastindex.fyi/)'
 CDN = 'https://web.poecdn.com'
 ART = 'https://repoe-fork.github.io/poe2/'   # the game's own item art, as RePoE exports it
 
@@ -91,7 +92,7 @@ def main():
     league = next((l['id'] for l in leagues if l.get('id') and 'Standard' not in l['id'] and not l['id'].startswith('HC ')), None)
     if not league:
         sys.exit('could not find the current league')
-    info = json.loads((ROOT / 'data' / 'info.json').read_text(encoding='utf-8'))
+    info = sitedata.site_file('info.json')
     items, rates = {}, None
 
     for typ, label in EXCHANGE.items():
@@ -198,7 +199,7 @@ def main():
     out = {'league': league, 'updated': dt.datetime.now(dt.timezone.utc).isoformat(timespec='minutes'),
            'source': 'catalogue (names and pictures); prices come from the Currency Exchange and trade listings',
            'builds': slug, 'items': catalogue}
-    (ROOT / 'data' / 'market.json').write_text(json.dumps(out, ensure_ascii=False, separators=(',', ':')), encoding='utf-8')
+    sitedata.publish('market.json', out)
     kinds = {}
     for k in items:
         kinds[k[0]] = kinds.get(k[0], 0) + 1
