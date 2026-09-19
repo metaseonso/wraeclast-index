@@ -302,3 +302,5 @@ small.at-bonus{display:block}
 .leaguebar .lb-sep{color:var(--faint); margin:0 6px}
 .leaguebar .lb-src{margin-left:8px; font-size:11px; color:var(--faint)}
 .leaguebar .lb-src:hover{color:var(--muted)}
+/* phones: the fog drifts past the crest but never makes the page wider than the screen */
+@media (max-width:760px){ .hero{overflow-x:clip} }

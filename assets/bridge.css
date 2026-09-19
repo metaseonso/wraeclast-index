@@ -6,3 +6,10 @@
 /* flying rows (bridge.js): a row that leaves fades out over the list, clipped to it */
 .tablewrap{position:relative; overflow-y:hidden}
 .flyghost{position:absolute; min-width:0; margin:0; table-layout:fixed; pointer-events:none; z-index:0}
+/* phones: the drill-down's category tabs and filter rows wrap, the app links scroll sideways (no page overflow) */
+@media (max-width:760px){
+  .seg, .row{flex-wrap:wrap}
+  .row > *{min-width:0}
+  .applinks{overflow-x:auto; max-width:100%; scrollbar-width:none; flex-wrap:nowrap}
+  .applinks::-webkit-scrollbar{display:none}
+}
