@@ -294,11 +294,24 @@ export function openDetail(it, opts = {}, href){
   const c = card(it, {...opts, href: null, rank: undefined, full: true, detail: true, extra: (opts.extra || '') + detailExtras(it, px)});
   c.classList.add('detail');
   body.replaceChildren(c);
-  if(href && PLACE[it.k]){
+  const tradeable = /^[ugcb]$/.test(it.k);
+  if((href && PLACE[it.k]) || tradeable){
     const row = document.createElement('div');
     row.className = 'ov-go';
-    row.innerHTML = '<a class="btn gold" href="' + esc(href) + '">Open in ' + PLACE[it.k] + ' \u2192</a>';
+    row.innerHTML = (tradeable ? '<button type="button" class="btn ttoggle" aria-expanded="false">Trade</button>' : '') +
+      (href && PLACE[it.k] ? '<a class="btn gold" href="' + esc(href) + '">Open in ' + PLACE[it.k] + ' \u2192</a>' : '');
     body.appendChild(row);
+    const tb = row.querySelector('.ttoggle');
+    if(tb) tb.addEventListener('click', async () => {
+      const open = body.querySelector('.trade');
+      if(open){ open.remove(); tb.setAttribute('aria-expanded', 'false'); return; }
+      tb.disabled = true;
+      try {
+        const {tradePanel} = await import('./trade.js');
+        body.appendChild(await tradePanel(it));
+        tb.setAttribute('aria-expanded', 'true');
+      } finally { tb.disabled = false; }
+    });
   }
   lastFocus = document.activeElement;
   OV.hidden = false;

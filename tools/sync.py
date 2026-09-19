@@ -170,6 +170,9 @@ def build_index(html):
         lv = u.get('lv') or (base[0] if base else 0)
         if base or lv:
             it['rq'] = [lv] + (base[1:] if base else [0, 0, 0])
+        ni = len([y for x in (u.get('im') or []) for y in x.split('\n') if y.strip()])
+        if ni:
+            it['ni'] = ni   # the first ni lines are implicit mods (the Trade button needs to know)
         if u.get('pr'):
             it['pr'] = [plain(x) for x in u['pr']]
         if u.get('cor'):

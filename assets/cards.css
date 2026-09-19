@@ -117,3 +117,24 @@ body.ov-open{overflow:hidden}
 .tsearch-none{padding:12px; font-size:12.5px; color:var(--faint)}
 body[data-route="home"] .top .topsearch{display:none}
 @media (max-width:640px){ .topsearch{flex:1 1 100%; order:5} .tsearch-drop{min-width:0} }
+
+/* ---------- trade panel, inside the popup ---------- */
+.ov-go{gap:8px}
+.btn.ttoggle[aria-expanded="true"]{border-color:var(--accent); color:var(--accent)}
+.trade{margin-top:10px; padding:14px 16px; background:var(--surface); border:1.5px solid var(--line); border-radius:var(--r); display:grid; gap:10px}
+.trade h4{margin:0; font-family:var(--disp); font-size:15px; display:flex; gap:10px; align-items:baseline}
+.trade .note{margin:0}
+.tmods{display:grid; gap:6px}
+.tmod{border:1px solid var(--line-soft); border-radius:8px; padding:7px 10px; background:var(--sunken)}
+.tmod.on{border-color:color-mix(in srgb, var(--accent) 45%, var(--line))}
+.tmod.off{color:var(--faint); font-size:12.5px; background:transparent}
+.tcheck{display:flex; gap:9px; align-items:flex-start; cursor:pointer; font-size:13px; line-height:1.4}
+.tcheck input{margin-top:3px; accent-color:var(--accent)}
+.tctl{display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin:8px 0 2px 24px}
+.tctl input[type=range]{flex:1 1 160px; accent-color:var(--accent)}
+.tnum{width:82px; padding:4px 8px; font:500 13px var(--mono)}
+.tctl .seg button, .tstates .seg button, .tpay button{padding:3px 9px; font-size:12px}
+.tstates{display:grid; grid-template-columns:repeat(auto-fill, minmax(250px, 1fr)); gap:6px 14px}
+.trow{display:flex; justify-content:space-between; align-items:center; gap:10px; font-size:12.5px; color:var(--muted)}
+.tonline{display:inline-flex; gap:6px; align-items:center; cursor:pointer}
+.tgo{display:flex; justify-content:flex-end; gap:8px}
