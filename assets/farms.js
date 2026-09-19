@@ -1,6 +1,6 @@
 /* Farms tab: money-making strategies from BawLoch's public tier list sheet (data/farms.json, built by
-   tools/farms.py). The sheet has no profit numbers and none are made up here: "Cost to run" is today's
-   price of the items a strategy spends, and each drop shows its own price and 7-day move.
+   tools/farms.py). The sheet has no profit numbers and no amounts per map, so there is no cost or profit total:
+   only each item's own price, and only when it comes from real listings.
    Prices: plain items from data/market.json (poe.ninja). Rolled tablets and waystones from
    data/farmprices.json: the site's worker runs the trade searches in data/farmqueries.json through the
    hour and keeps the middle price of the 10 cheapest listings. Every item opens the normal card popup. */
@@ -8,7 +8,7 @@ import { D, $, esc, card, flow, openDetail, priceOf, hrefOf, moneyHTML, change, 
 import { searchURL } from './trade.js';
 
 const TIER_ORDER = ['S', 'A', 'B', 'C', 'D', 'F'];
-const SORTS = [['tier', 'Tier'], ['cost', 'Cheapest to run'], ['rise', 'Outputs rising most']];
+const SORTS = [['tier', 'Tier'], ['rise', 'Outputs rising most']];
 const S = {tier: 'all', mech: 'all', sort: 'tier'};
 let EL, SRC = null, ROWS = [], QUERY = {}, FP = null;
 
@@ -55,7 +55,6 @@ function row(f, i){
   const ins = (f.in || []).map(resolve), outs = (f.out || []).map(resolve);
   const priced = ins.filter(x => x.px);
   return {f, i, ins, outs,
-    cost: priced.length ? priced.reduce((a, x) => a + x.px.v * x.q, 0) : null,
     missing: [...new Set(ins.filter(x => !x.px).map(x => x.n))],
     traded: ins.some(x => x.trade)};
 }
@@ -80,11 +79,8 @@ function ratings(f){
   const h = dots('Difficulty', f.d) + dots('Investment', f.i);
   return h ? '<div class="fm-rates">' + h + '</div>' : '';
 }
-function costHTML(r){
-  if(!r.ins.length) return '';
-  return '<div class="card-inv fm-cost" title="One of each item, tablets per slot"><span>Cost to run</span><b>' +
-    (r.cost !== null ? moneyHTML(r.cost) : '—') + '</b></div>' +
-    (r.missing.length ? '<p class="fm-miss">No price yet: ' + r.missing.map(esc).join(', ') + '</p>' : '');
+function costHTML(r){   // no total: the sheet gives no amounts per map. Just what has no real price yet.
+  return r.missing.length ? '<p class="fm-miss">No price yet: ' + r.missing.map(esc).join(', ') + '</p>' : '';
 }
 /* the trade line on a rolled tablet or waystone: listings, when it was checked, and the search itself */
 function tradeLine(x){
@@ -244,7 +240,7 @@ export async function mount(el){
         '<select class="field" id="fmsort">' + SORTS.map(([k, l]) => '<option value="' + k + '"' + (k === S.sort ? ' selected' : '') + '>' + l + '</option>').join('') + '</select></div>' +
     '</div>' +
     '<div class="cards fm-grid" id="fmcards"></div>' +
-    '<p class="note fm-foot">Cost to run: one of each item, tablets per slot, at today\'s prices. ' + HOURLY +
+    '<p class="note fm-foot">' + HOURLY +
       (FP && FP.updated ? ' Last check ' + esc(ago(FP.updated)) + '.' : '') +
       ' Tiers, setups and notes: <a href="' + esc(SRC.url) + '" target="_blank" rel="noopener">' + esc(SRC.author) + '\'s sheet</a>.</p>';
 
@@ -274,7 +270,6 @@ const last = (a, b, v, dir) => {   // farms with nothing priced go last in any p
 };
 const SORTER = {
   tier: byTier,
-  cost: (a, b) => last(a, b, r => r.cost, 1),
   rise: (a, b) => last(a, b, rise, -1),
 };
 function match(r){
