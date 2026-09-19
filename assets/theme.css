@@ -6,27 +6,27 @@
 
 html:root:not([data-theme="none"]){
   color-scheme:dark;
-  --ground:#070907; --surface:#0D110D; --raised:#141A13; --sunken:#050605;
+  --ground:#070807; --surface:#0D0F0D; --raised:#141614; --sunken:#050605;
   --line:#243022; --line-soft:#182017;
   --text:#DCE3D2; --muted:#98A48E; --faint:#66725E;
   --accent:#8CCB3F;            /* poison green: links, focus, active state */
-  --accent-soft:#16210F;
+  --accent-soft:#11160E;
   --blood:#B3261E;             /* red accent: warnings, falls, the rank badge */
   --blood-soft:#2A0F0C;
   --bronze:#A8844A;            /* forged-metal hairlines */
   --str:#C9463B; --dex:#79B94A; --int:#5B8FD1; --any:#A89F8C;
-  --pos:#8CCB3F; --neg:#D2483E;
+  --pos:#16C784; --neg:#EA3943;   /* market green and red: price moves read as market data, not as the poison theme */
   /* the game's item colours, for names */
   --c-unique:#C06A2B; --c-gem:#2BB5AA; --c-currency:#B8AC8C; --c-keystone:#D9B566; --c-rare:#E3D36B;
   --shadow:0 1px 2px rgba(0,0,0,.6), 0 8px 24px rgba(0,0,0,.5);
-  --shadow-hi:0 0 0 1px rgba(140,203,63,.28), 0 10px 34px rgba(0,0,0,.6), 0 0 28px rgba(140,203,63,.07);
+  --shadow-hi:0 0 0 1px rgba(140,203,63,.28), 0 10px 34px rgba(0,0,0,.6), 0 0 28px rgba(140,203,63,.03);
   --disp:'Cinzel', 'Fraunces', Georgia, serif;
 }
 
 /* miasma: a faint green haze pooled at the top of every page */
 html:root:not([data-theme="none"]) body{
   background:
-    radial-gradient(1100px 520px at 50% -140px, rgba(120,190,50,.10), transparent 70%),
+    radial-gradient(1100px 520px at 50% -140px, rgba(120,190,50,.04), transparent 70%),
     radial-gradient(700px 400px at 100% 0, rgba(179,38,30,.05), transparent 70%),
     var(--ground);
   background-attachment:fixed;
@@ -50,7 +50,7 @@ html:root:not([data-theme="none"]){scrollbar-color:#2A3627 #070907}
 
 /* the card as a tooltip: dark glass, a bronze hairline, a lit header */
 .card{
-  background:linear-gradient(180deg, rgba(140,203,63,.045), transparent 64px), var(--surface);
+  background:linear-gradient(180deg, rgba(140,203,63,.018), transparent 64px), var(--surface);
   border-color:var(--line);
 }
 .card::before{   /* forged edge along the top */
@@ -58,32 +58,41 @@ html:root:not([data-theme="none"]){scrollbar-color:#2A3627 #070907}
   background:linear-gradient(90deg, transparent, var(--bronze) 20%, var(--bronze) 80%, transparent); opacity:.45;
 }
 .card:hover{border-color:rgba(140,203,63,.45)}
-.card-ic{background:radial-gradient(circle at 50% 40%, #1A2317, #080A08); box-shadow:inset 0 0 0 1px var(--line)}
+.card-ic{background:radial-gradient(circle at 50% 40%, #181A17, #080908); box-shadow:inset 0 0 0 1.5px var(--line)}
 .card-rank{background:var(--blood); color:#F3E6E4; box-shadow:0 0 12px rgba(179,38,30,.5)}
-.card-why{background:var(--accent-soft); border-left:2px solid var(--accent)}
+.card-why{background:var(--accent-soft); border-left:3px solid var(--accent); border-radius:0 6px 6px 0}
 .pill{background:#0A0E0A}
 .pill.warn{color:#F08A82; border-color:rgba(179,38,30,.6); background:var(--blood-soft)}
-.card-ls li::before{background:var(--accent); box-shadow:0 0 6px rgba(140,203,63,.8)}
+.card-ls li::before{background:var(--accent); box-shadow:0 0 6px rgba(140,203,63,.3)}
 
 /* controls */
 .searchbox input{background:#0B0F0B; border-color:#2C3A29}
-.searchbox input:focus{border-color:var(--accent); box-shadow:0 0 0 3px rgba(140,203,63,.14), 0 0 34px rgba(140,203,63,.10)}
-.chip[aria-pressed="true"], .btn.primary{background:var(--accent); border-color:var(--accent); color:#071006}
+.searchbox input:focus{border-color:var(--accent); box-shadow:0 0 0 3px rgba(140,203,63,.06), 0 0 34px rgba(140,203,63,.04)}
+.chip[aria-pressed="true"], .btn.primary{background:var(--accent-soft); border-color:var(--accent); color:var(--accent)}
+.btn.primary:hover{background:#161D12; filter:none}
 .tabs a[aria-current="page"], .seg button[aria-pressed="true"], .nav button[aria-pressed="true"]{
   background:var(--raised); color:var(--text); box-shadow:inset 0 -2px 0 var(--accent)}
 .top, .mast{border-bottom-color:#1E281C; box-shadow:0 1px 0 rgba(168,132,74,.12)}
+.up, .pos{color:var(--pos)}
 .down, .neg{color:var(--neg)}
+
+/* ---------- borders: thick enough not to break or clip at any screen scaling ---------- */
+.card, .searchbox input, .tsearch input, .field, .tabs, .seg, .nav, .applinks, .chip, .btn, .pill, .panel,
+.tablewrap, .lvlbox, .search, .clbtn, .kwq{border-width:1.5px}
+.card-ft .kind{border-width:1px}
+.verdict{border-radius:0 8px 8px 0}
+.ov-box{border-radius:var(--r)}   /* same rounding as the card inside, so its corners are not cut */
 
 /* ---------- the W.I. crest and its poison cloud ----------
    Art from the image API (OpenRouter); the cloud is 8 API frames eased into a 24-frame loop. */
 .mark{position:relative; display:inline-grid; place-items:center; width:28px; height:34px; margin-right:9px; vertical-align:middle; translate:0 -2px}
-.mark-logo{position:relative; z-index:1; height:34px; width:auto; filter:drop-shadow(0 0 6px rgba(140,203,63,.35))}
+.mark-logo{position:relative; z-index:1; height:34px; width:auto; filter:drop-shadow(0 0 6px rgba(140,203,63,.14))}
 .mark-cloud{position:absolute; left:50%; top:55%; width:78px; height:78px; translate:-50% -50%; opacity:.5;
   mix-blend-mode:screen; pointer-events:none; animation:wi-drift 14s ease-in-out infinite}
 .emblem{position:relative; width:220px; height:210px; margin:0 auto 4px;
   transition:height .45s cubic-bezier(.2,.8,.2,1), opacity .3s, margin .45s}
 .emblem img{position:absolute; left:50%; top:50%; translate:-50% -50%; pointer-events:none}
-.emblem-logo{z-index:1; height:200px; width:auto; filter:drop-shadow(0 0 24px rgba(140,203,63,.22)) drop-shadow(0 10px 30px rgba(0,0,0,.8))}
+.emblem-logo{z-index:1; height:200px; width:auto; filter:drop-shadow(0 0 24px rgba(140,203,63,.09)) drop-shadow(0 10px 30px rgba(0,0,0,.8))}
 .emblem-cloud{width:380px; height:380px; top:58%; opacity:.6; mix-blend-mode:screen; animation:wi-drift 16s ease-in-out infinite}
 .emblem-cloud.two{width:300px; height:300px; top:40%; opacity:.38; animation:wi-drift2 23s ease-in-out infinite}
 @keyframes wi-drift{
