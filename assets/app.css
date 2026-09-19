@@ -213,3 +213,28 @@ label.note{display:inline-flex; gap:6px; align-items:center; cursor:pointer}
   .searchbox-kbd{display:none}
   .hero{padding-top:36px}
 }
+
+/* ---------- popup ---------- */
+.ov{position:fixed; inset:0; z-index:100; display:grid; place-items:center; padding:16px}
+.ov-scrim{position:absolute; inset:0; background:rgba(0,0,0,.62); -webkit-backdrop-filter:blur(3px); backdrop-filter:blur(3px)}
+.ov-box{position:relative; width:min(640px, 100%); max-height:calc(100vh - 32px); overflow:auto; border-radius:14px;
+  animation:ovpop .24s cubic-bezier(.2,.8,.2,1); overscroll-behavior:contain}
+@keyframes ovpop{from{opacity:0; transform:translateY(12px) scale(.98)} to{opacity:1; transform:none}}
+.ov-x{position:absolute; top:10px; right:10px; z-index:3; width:32px; height:32px; border-radius:8px; border:1px solid var(--line);
+  background:var(--raised); color:var(--muted); font-size:20px; line-height:1; cursor:pointer}
+.ov-x:hover{color:var(--text); border-color:var(--accent)}
+body.ov-open{overflow:hidden}
+.card.detail{cursor:default; padding:22px 24px 18px; gap:12px; box-shadow:0 20px 60px rgba(0,0,0,.5)}
+.card.detail:hover{translate:none}
+.card.detail h3{font-size:20px; padding-right:36px}
+.card.detail .card-ic{width:56px; height:56px}
+.card.detail .card-tx{-webkit-line-clamp:unset; font-size:13.5px}
+.card.detail .card-ls{font-size:13.5px}
+.chart{margin:4px 0 0}
+.chart figcaption{font-size:11px; color:var(--faint); margin-bottom:4px}
+.chart svg{display:block; width:100%; height:64px; background:var(--sunken); border-radius:6px}
+/* the one way on to the drill-down page: gold on black */
+.btn.gold{display:block; text-align:center; margin-top:12px; padding:12px 16px; border-radius:10px; text-decoration:none;
+  background:#0A0907; color:#E3B94C; border:1px solid #C9A03A; font-weight:600; letter-spacing:.05em; font-size:14px;
+  box-shadow:inset 0 0 0 1px rgba(227,185,76,.12), 0 8px 24px rgba(0,0,0,.4)}
+.btn.gold:hover{background:#14110A; color:#F5CF66; border-color:#E3B94C}

@@ -167,6 +167,7 @@ function factsOf(it){
 }
 function linesOf(it, max = 4){
   if(it.ls && it.ls.length){
+    if(max === Infinity) return '<ul class="card-ls">' + it.ls.map(x => '<li>' + esc(x) + '</li>').join('') + '</ul>';
     const more = it.ls.length - max;
     return '<ul class="card-ls">' + it.ls.slice(0, more > 1 ? max : it.ls.length).map(x => '<li>' + esc(x) + '</li>').join('') +
       (more > 1 ? '<li class="more-n">+' + more + ' more</li>' : '') + '</ul>';
@@ -219,7 +220,7 @@ export function card(it, opts = {}){
     (opts.why ? '<p class="card-why">' + esc(opts.why) + '</p>' : '') +
     (req ? '<div class="card-req">' + req + '</div>' : '') +
     factsOf(it) +
-    linesOf(it) +
+    linesOf(it, opts.full ? Infinity : 4) +
     (it.tags ? '<p class="card-tags">' + it.tags.map(esc).join(' · ') + '</p>' : '') +
     anointOf(it) +
     (opts.invest ? '<div class="card-inv"><span>' + esc(opts.invest.label) + '</span><b>' +
@@ -231,11 +232,88 @@ export function card(it, opts = {}){
       (bh ? '<a class="card-ext" href="' + esc(bh) + '" target="_blank" rel="noopener" title="Characters in ' +
         esc(D.market.league) + ' that use this, on poe.ninja">Builds ↗</a>' : '') +
       '<span class="kind">' + (opts.kind || KIND[it.k] || '') + '</span></div>';
-  if(!href){
-    el.addEventListener('click', e => { if(!e.target.closest('a')) el.classList.toggle('open'); });
-    el.addEventListener('keydown', e => { if(e.target === el && (e.key === 'Enter' || e.key === ' ')){ e.preventDefault(); el.classList.toggle('open'); } });
-  }
+  if(opts.detail) return el;
+  // a card opens its popup; only the gold button in the popup leaves the page
+  el.addEventListener('click', e => {
+    if(e.target.closest('.card-ext, .star, button')) return;
+    const link = e.target.closest('.card-link');
+    if(link && (e.ctrlKey || e.metaKey || e.shiftKey || e.button === 1)) return;   // new tab still works
+    e.preventDefault();
+    openDetail(it, opts, href);
+  });
+  if(!href) el.addEventListener('keydown', e => {
+    if(e.target === el && (e.key === 'Enter' || e.key === ' ')){ e.preventDefault(); openDetail(it, opts, href); }
+  });
   return el;
+}
+
+/* ---------- the popup ----------
+   Every card opens here first. The gold button is the one way on to the drill-down page. */
+const PLACE = {g: 'Gems', u: 'Uniques', p: 'Passive tree', c: 'Currency'};
+let OV = null, lastFocus = null;
+function bigLine(vals, label){
+  const p = vals.filter(v => v !== null && isFinite(v));
+  if(p.length < 2) return '';
+  const lo = Math.min(...p), hi = Math.max(...p), span = hi - lo || 1, w = 300, h = 64;
+  const d = p.map((v, i) => (i ? 'L' : 'M') + ((i / (p.length - 1)) * (w - 4) + 2).toFixed(1) + ' ' + (h - 4 - ((v - lo) / span) * (h - 8)).toFixed(1)).join('');
+  const up = p[p.length - 1] >= p[0];
+  return '<figure class="chart"><figcaption>' + label + '</figcaption><svg viewBox="0 0 ' + w + ' ' + h + '" preserveAspectRatio="none" aria-hidden="true">' +
+    '<path d="' + d + '" fill="none" stroke="' + (up ? 'var(--pos)' : 'var(--neg)') + '" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linejoin="round"/></svg></figure>';
+}
+function detailExtras(it, px){
+  if(!px) return '';
+  let out = '';
+  if(px.h && px.h.length > 3){
+    const lo = money(Math.min(...px.h.map(x => x[1]))), hi = money(Math.max(...px.h.map(x => x[1])));
+    out += bigLine(px.h.map(x => x[1]), 'This league, ' + px.h[0][0] + ' to today \u00b7 low ' + lo.v + ' ' + lo.u + ', high ' + hi.v + ' ' + hi.u);
+  } else if(px.sp) out += bigLine(px.sp, 'Last 7 days');
+  const facts = [];
+  if(px.ls !== undefined) facts.push('Listed ' + px.ls.toLocaleString() + ' times right now');
+  if(px.vol) facts.push('Traded ' + Math.round(px.vol).toLocaleString() + ' divine in the last day');
+  if(px.routes) facts.push('Price by currency: ' + px.routes.map(r => { const m = money(r.v); return {divine: 'Divine', exalted: 'Exalted', chaos: 'Chaos'}[r.via] + ' ' + m.v + ' ' + m.u; }).join(', '));
+  if(facts.length) out += '<p class="card-facts">' + facts.map(esc).join(' \u00b7 ') + '</p>';
+  return out;
+}
+export function openDetail(it, opts = {}, href){
+  if(!OV){
+    OV = document.createElement('div');
+    OV.className = 'ov'; OV.hidden = true;
+    OV.innerHTML = '<div class="ov-scrim" data-close></div><div class="ov-box" role="dialog" aria-modal="true" aria-label="Details">' +
+      '<button type="button" class="ov-x" data-close aria-label="Close">\u00d7</button><div class="ov-body"></div></div>';
+    document.body.appendChild(OV);
+    OV.addEventListener('click', e => {
+      if(e.target.closest('[data-close]')) closeDetail();
+      else if(e.target.closest('.btn.gold')) hideDetail();   // leaving the page: nothing to undo
+    });
+    addEventListener('keydown', e => { if(e.key === 'Escape' && !OV.hidden) closeDetail(); });
+    addEventListener('popstate', () => { if(!OV.hidden) hideDetail(); });
+  }
+  const px = opts.price !== undefined ? opts.price : priceOf(it);
+  const body = OV.querySelector('.ov-body');
+  const c = card(it, {...opts, href: null, rank: undefined, full: true, detail: true, extra: (opts.extra || '') + detailExtras(it, px)});
+  c.classList.add('detail');
+  body.replaceChildren(c);
+  if(href && PLACE[it.k]){
+    const a = document.createElement('a');
+    a.className = 'btn gold'; a.href = href;
+    a.textContent = 'Open in ' + PLACE[it.k] + ' \u2192';
+    body.appendChild(a);
+  }
+  lastFocus = document.activeElement;
+  OV.hidden = false;
+  document.body.classList.add('ov-open');
+  history.pushState({ov: 1}, '', location.href);   // the back button closes the popup
+  OV.querySelector('.ov-x').focus();
+}
+function hideDetail(){
+  if(!OV || OV.hidden) return;
+  OV.hidden = true;
+  document.body.classList.remove('ov-open');
+  if(lastFocus && lastFocus.focus) lastFocus.focus({preventScroll: true});
+}
+function closeDetail(){
+  if(history.state && history.state.ov) history.back();   // popstate hides it
+  else hideDetail();
 }
 
 /* Render a list of cards into a grid. Cards that stay glide to their new place, new cards fly in,
