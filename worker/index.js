@@ -2,16 +2,20 @@
    Static files are served straight from the edge. This worker only answers:
      /data/market.json   live prices: the hourly GitHub job publishes them; cached here for 5 minutes
      /api/pob?url=...    the build code behind a pobb.in, poe.ninja, maxroll, poe2db or pastebin link
-                         (browsers cannot fetch those sites themselves) */
+                         (browsers cannot fetch those sites themselves)
+     /item/*, /gems, /uniques, /passives, /currency, /keywords, /sitemap.xml, /llms.txt, /search
+                         plain pages for search engines and AI search: worker/seo.js */
+import * as seo from './seo.js';
 
 const MARKET_SOURCE = 'https://metaseonso.github.io/wraeclast-index/data/market.json';
 const UA = 'wraeclast-index/1.0 (+https://wraeclastindex.fyi)';
 
 export default {
-  async fetch(request, env){
+  async fetch(request, env, ctx){
     const url = new URL(request.url);
     if(url.pathname === '/data/market.json') return market(request, env);
     if(url.pathname === '/api/pob') return pob(url);
+    if(seo.handles(url.pathname)) return seo.respond(request, env, ctx, () => market(new Request(url.origin + '/data/market.json'), env));
     return env.ASSETS.fetch(request);
   },
 };

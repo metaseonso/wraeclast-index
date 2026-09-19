@@ -20,9 +20,27 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 BRIDGE = '<script src="assets/bridge.js" defer></script>'
+# For search engines and link previews: the page's own title (the artifact's sits in <body>, see TITLE),
+# description, canonical address, preview card and structured data.
+SEO = ('<title>PoE2 gems, uniques and passive tree · Wraeclast Index</title>'
+       '<meta name="description" content="Full tables of every Path of Exile 2 gem, unique and passive: requirements, official mod lines, tags and the passive tree.">'
+       '<link rel="canonical" href="https://wraeclastindex.fyi/explore"><meta name="theme-color" content="#070807">'
+       '<meta property="og:type" content="website"><meta property="og:site_name" content="Wraeclast Index">'
+       '<meta property="og:title" content="PoE2 gems, uniques and passive tree · Wraeclast Index">'
+       '<meta property="og:description" content="Full tables of every Path of Exile 2 gem, unique and passive, from the game files.">'
+       '<meta property="og:url" content="https://wraeclastindex.fyi/explore">'
+       '<meta property="og:image" content="https://wraeclastindex.fyi/assets/brand/social.png">'
+       '<meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">'
+       '<meta property="og:image:alt" content="Wraeclast Index"><meta name="twitter:card" content="summary_large_image">'
+       '<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebPage",'
+       '"@id":"https://wraeclastindex.fyi/explore","url":"https://wraeclastindex.fyi/explore",'
+       '"name":"PoE2 gems, uniques and passive tree","inLanguage":"en",'
+       '"isPartOf":{"@type":"WebSite","@id":"https://wraeclastindex.fyi/#website","name":"Wraeclast Index","url":"https://wraeclastindex.fyi/"},'
+       '"about":{"@type":"VideoGame","@id":"https://wraeclastindex.fyi/#game","name":"Path of Exile 2"}}</script>')
+TITLE = '<title>Wraeclast Index</title>\n'   # the artifact's own title, in <body>: SEO's title takes its place
 # In <head>, so the drill-down never paints in its old look first: the fonts, the shared card and
 # theme styles, the drill-down's own additions, the forged-bronze look, and the icon.
-HEAD = ('<link rel="icon" type="image/png" sizes="64x64" href="assets/brand/favicon-64.png">'
+HEAD = SEO + ('<link rel="icon" type="image/png" sizes="64x64" href="assets/brand/favicon-64.png">'
         '<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>'
         '<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&display=swap">'
         '<link rel="stylesheet" href="assets/cards.css"><link rel="stylesheet" href="assets/theme.css">'
@@ -395,7 +413,7 @@ def main():
     if BRIDGE not in html:
         html = html.replace('</body>', BRIDGE + '\n</body>', 1)
     if HEAD not in html:
-        html = html.replace('</head>', HEAD + '</head>', 1)
+        html = html.replace(TITLE, '', 1).replace('</head>', HEAD + '</head>', 1)
     for a, b in ((MAST_OLD, MAST_NEW), (CL_OLD, CL_NEW)):
         if b not in html:
             if a not in html:

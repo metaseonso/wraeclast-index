@@ -36,6 +36,25 @@ The site is static. GitHub Pages serves it; a GitHub Action (`.github/workflows/
 | `data/market.json` | Prices, rebuilt every hour by `tools/market.py` |
 | `data/atlas.json` | Atlas tab: waystones, tablets, keys, atlas items and the Atlas tree, built by `tools/atlas.py` (run after a game patch) |
 
+## Findable (search engines and AI search)
+
+The app runs on scripts, so the worker also serves plain pages that any crawler can read (`worker/seo.js`, built live from `data/index.json` and the market file, cached for an hour):
+
+| Address | What it is |
+|---|---|
+| `/item/<name>` | One page per gem, unique, passive, currency and keyword: requirements, official lines, price and 7-day change, and a gold link into the app. Unique variants add the base (`/item/runeseekers-call-runic-fork`) |
+| `/gems`, `/uniques`, `/passives`, `/currency`, `/keywords` | The lists, grouped |
+| `/sitemap.xml` | Every page, with dates |
+| `/llms.txt`, `/llms-full.txt` | The site in plain words for AI search; the full one has every item |
+| `/search?q=...` | Opens the app's search (for the search box in Google results) |
+| `robots.txt` | Everyone welcome, AI crawlers named one by one |
+
+`index.html` and `explore.html` carry the title, description, canonical address, link preview (`assets/brand/social.png`, made by `tools/social.py` from the brand files) and structured data. The explore page's head comes from `SEO` in `tools/sync.py`.
+
+Two things to do by hand, once:
+1. Add `https://wraeclastindex.fyi` in [Google Search Console](https://search.google.com/search-console) and [Bing Webmaster Tools](https://www.bing.com/webmasters) (Bing can import from Google). Verify with a DNS TXT record in Cloudflare, or paste the meta tag where the comment in `index.html` says. Then submit `https://wraeclastindex.fyi/sitemap.xml` in both.
+2. In the Cloudflare dashboard, for the domain: **AI Crawl Control** (also under Security > Bots): turn off "Block AI bots" and set the AI crawlers to allow, and turn off the "managed robots.txt" option (it adds its own blocks for AI crawlers in front of ours). Cloudflare can block AI crawlers by default.
+
 ## Update the game data
 
 1. After a game patch: `python tools/gameinfo.py`
