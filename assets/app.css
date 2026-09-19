@@ -94,6 +94,12 @@ h1,h2,h3{margin:0; text-wrap:balance}
 .chip[aria-pressed="true"]{background:var(--accent); border-color:var(--accent); color:var(--ground); font-weight:500}
 .chip .ct{font-family:var(--mono); font-size:11px; opacity:.75; margin-left:5px}
 
+.quote{margin:4px auto 2px; text-align:center; font-family:var(--disp, serif); color:var(--muted)}
+.quote blockquote{margin:0; font-style:italic; font-size:15px; letter-spacing:.02em}
+.quote blockquote::before{content:'\201C'} .quote blockquote::after{content:'\201D'}
+.quote figcaption{font-size:12px; color:var(--faint); margin-top:2px}
+.quote figcaption::before{content:'\2014\00a0'}
+.quote[hidden]{display:none}
 .status{text-align:center; color:var(--faint); font-size:12.5px; min-height:18px; margin:6px 0 14px}
 .status b{color:var(--muted); font-weight:500}
 

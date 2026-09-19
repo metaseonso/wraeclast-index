@@ -464,6 +464,7 @@ function homeRender(){
     label = list.length ? 'Biggest price moves this week' + (D.market ? ' · ' + esc(D.market.league) : '') : 'Start typing to search.';
   }
   status.innerHTML = label;
+  $('#quote').hidden = has || !list.length;
   const shown = list.slice(0, H.shown);
   flow($('#cards'), shown.map(it => ({key: it.k + ':' + it.id, it})), x => card(x.it));
   more.hidden = list.length <= H.shown;
