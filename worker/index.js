@@ -17,7 +17,7 @@ import { tradeSearches, suggest } from './community.js';
 import { track, admin } from './dash.js';
 
 const MARKET_SOURCE = 'https://metaseonso.github.io/wraeclast-index/data/market.json';
-const UA = 'wraeclast-index/1.0 (+https://wraeclastindex.fyi)';
+const UA = 'wraeclast-index/1.0 (contact: https://github.com/metaseonso/wraeclast-index/issues)';
 
 export default {
   async fetch(request, env, ctx){

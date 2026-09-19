@@ -487,3 +487,9 @@ small.at-bonus{display:block}
 .cxm-row b{font-weight:600; font-size:13px}
 .cxm-for{font-family:var(--mono); font-size:12px; color:var(--text)}
 .cxm-vol{grid-column:1/-1; font-size:11.5px; color:var(--muted)}
+/* Admin: Cloudflare section */
+.ad-sect{margin:26px 0 6px; font-family:var(--disp); font-size:20px}
+.ad-g{display:inline-block; padding:1px 7px; border-radius:6px; font-family:var(--mono); font-size:12px; border:1px solid var(--line)}
+.ad-g.g-good{color:#16C784; border-color:rgba(22,199,132,.45)}
+.ad-g.g-ok{color:#E0B84A; border-color:rgba(224,184,74,.45)}
+.ad-g.g-poor{color:#EA3943; border-color:rgba(234,57,67,.45)}

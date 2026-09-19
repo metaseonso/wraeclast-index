@@ -29,7 +29,7 @@ ROOT = Path(__file__).resolve().parent.parent
 FEED = 'https://web.poecdn.com/api/currency-exchange/poe2/'
 LAST = 'https://metaseonso.github.io/wraeclast-index/data/exchange-state.json'
 REPOE = 'https://repoe-fork.github.io/poe2/base_items.json'
-UA = 'wraeclast-index/1.0 (+https://wraeclastindex.fyi)'
+UA = 'wraeclast-index/1.0 (contact: https://github.com/metaseonso/wraeclast-index/issues)'
 DIV, EX, CHAOS = 'Metadata/Items/Currency/CurrencyModValues', 'Metadata/Items/Currency/CurrencyAddModToRare', 'Metadata/Items/Currency/CurrencyRerollRare'
 BACKFILL_DAYS, KEEP_DAYS = 14, 45
 

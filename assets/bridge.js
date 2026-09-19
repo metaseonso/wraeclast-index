@@ -25,6 +25,10 @@
   let M = null;   // the app module, once loaded: its cards and popup
   import('./app.js').then(m => { M = m; if(host) m.mountTopSearch(host); }).catch(() => host && host.remove());
 
+  // GGG's own wording for fan sites, and the privacy page, at the foot of the drill-down too
+  if(!document.querySelector('.ggg-note')) document.body.insertAdjacentHTML('beforeend',
+    '<p class="ggg-note">This product isn’t affiliated with or endorsed by Grinding Gear Games in any way. <a href="privacy">Privacy</a></p>');
+
   const sleep = ms => new Promise(r => setTimeout(r, ms));
   function navTo(label){
     const b = [...document.querySelectorAll('#nav button')].find(x => x.textContent.trim().startsWith(label));

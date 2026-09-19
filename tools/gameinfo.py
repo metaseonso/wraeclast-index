@@ -21,7 +21,7 @@ RAW = re.compile(r'(?<![\w\[./-])[a-z][a-z0-9]*(?:_[a-z0-9%+]+){2,}|\{[^}\s]{1,8
 
 
 def get(name):
-    req = urllib.request.Request(REPOE + name, headers={'User-Agent': 'wraeclast-index (github.com/metaseonso/wraeclast-index)'})
+    req = urllib.request.Request(REPOE + name, headers={'User-Agent': 'wraeclast-index/1.0 (contact: https://github.com/metaseonso/wraeclast-index/issues)'})
     with urllib.request.urlopen(req, timeout=60) as r:
         return json.load(r)
 

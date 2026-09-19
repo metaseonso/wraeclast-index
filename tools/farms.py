@@ -48,7 +48,7 @@ import openpyxl
 ROOT = Path(__file__).resolve().parent.parent
 SHEET_ID = '1slfzZiehPZLnR7ADk6LouuTMb8KRZDVTAUmWdjMc2Dk'
 BASE = 'https://docs.google.com/spreadsheets/d/' + SHEET_ID
-UA = 'wraeclast-index/1.0 (+https://github.com/metaseonso/wraeclast-index)'
+UA = 'wraeclast-index/1.0 (contact: https://github.com/metaseonso/wraeclast-index/issues)'
 OUT = ROOT / 'data' / 'farms.json'
 QUERIES = ROOT / 'data' / 'farmqueries.json'
 

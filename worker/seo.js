@@ -5,7 +5,8 @@
      /gems /uniques /passives /currency /keywords      the lists
      /sitemap.xml  /llms.txt  /llms-full.txt
      /search?q=...       the app's search (the SearchAction target in the home page's JSON-LD)
-   Data: data/index.json (the game files, via tools/sync.py) and the live market file (poe.ninja, hourly).
+   Data: data/index.json (the game files, via tools/sync.py) and the live price file (/data/market.json: the in-game
+   Currency Exchange for currency, live trade site listings for everything else).
    Slugs: the name in lowercase with hyphens. Unique variants add the base ("name-base"; the bare name
    redirects to the plain base). A name used by two kinds goes to the first of unique, gem, passive,
    keyword, currency; the others add their kind ("fulmination-passive"). Same name, same kind: "-2". */
@@ -399,12 +400,16 @@ function itemPage(m, e){
   if(px){
     if(px.h && px.h.length > 3){
       const vals = px.h.map(x => x[1]);
-      price += chart(vals, 'This league, ' + px.h[0][0] + ' to today · low ' + moneyText(m, Math.min(...vals)) + ', high ' + moneyText(m, Math.max(...vals)));
+      price += chart(vals, 'Since ' + px.h[0][0] · low ' + moneyText(m, Math.min(...vals)) + ', high ' + moneyText(m, Math.max(...vals)));
     } else if(px.sp) price += chart(px.sp, 'Last 7 days');
     const pf = [];
-    if(px.ls !== undefined) pf.push(fmt(px.ls) + ' listed');
-    if(px.vol) pf.push(fmt(Math.round(px.vol)) + ' div traded today');
-    pf.push((m.league ? m.league + ' league' : 'Current league') + ' price from poe.ninja, ' + when(m.updated));
+    if(px.src === 'cx'){
+      if(px.vol) pf.push(fmt(Math.round(px.vol)) + ' div traded in 24 h');
+      pf.push((m.league ? m.league + ': ' : '') + 'what it traded for on the in-game Currency Exchange, ' + when(px.at || m.updated));
+    } else {
+      if(px.ls !== undefined) pf.push(fmt(px.ls) + ' listed');
+      pf.push((m.league ? m.league + ': ' : '') + 'live trade site listings, checked ' + when(px.at || m.updated));
+    }
     price += '<p class="card-facts">' + pf.map(esc).join(' · ') + '</p>';
   }
   const bh = buildsHref(m, it);
@@ -487,7 +492,7 @@ function intro(m, name){
     gems: 'All ' + n + ' skill, spirit and support gems in Path of Exile 2' + patch + '. Requirements, use times, costs and tags from the game files.',
     uniques: 'All ' + n + ' uniques in Path of Exile 2' + patch + '. Official mod lines, requirements' + (m.league ? ' and ' + m.league + ' prices' : '') + '.',
     passives: 'All ' + n + ' keystones, notables and ascendancy passives in Path of Exile 2' + patch + ', with what they do.',
-    currency: n + ' currency items in Path of Exile 2' + (m.league ? ' with ' + m.league + ' prices and 7-day change from poe.ninja' : '') + '. Updated every hour.',
+    currency: n + ' currency items in Path of Exile 2' + (m.league ? ' with ' + m.league + ' prices from the in-game Currency Exchange' : '') + '. Updated every hour.',
     keywords: 'All ' + n + ' Path of Exile 2 keywords, in the game\'s own words.',
   }[name];
 }
@@ -586,8 +591,8 @@ ${data ? '<script type="application/ld+json">' + JSON.stringify(data).replace(/<
 ${body}
 </main>
 <footer class="foot">
-  <p>Game data: patch <b>${esc(m.patch || '')}</b>. Prices: <a href="https://poe.ninja/poe2" rel="noopener">poe.ninja</a>, every hour.
-  Fan project. Not affiliated with Grinding Gear Games.</p>
+  <p>Game data: patch <b>${esc(m.patch || '')}</b>. Prices: the in-game Currency Exchange (currency) and live trade site listings (everything else), every hour.
+  This product isn't affiliated with or endorsed by Grinding Gear Games in any way. <a href="/privacy">Privacy</a></p>
 </footer>
 </body>
 </html>
@@ -628,9 +633,9 @@ function llms(m){
   const n = k => fmt(m.kinds[k].length);
   return `# Wraeclast Index
 
-> Path of Exile 2, made easier for every kind of player. Live prices, build checks, trade search in plain words, and every gem, unique, passive, currency and keyword. Game data from the official game files, prices from poe.ninja.
+> Path of Exile 2, made easier for every kind of player. Live prices, build checks, trade search in plain words, and every gem, unique, passive, currency and keyword. Game data from the official game files; prices from the in-game Currency Exchange and live trade site listings.
 
-Game data: patch ${m.patch} (${m.gen}). Prices: ${m.league || 'current'} league, from poe.ninja, every hour (last ${when(m.updated)}). Prices are in divine orbs (div), or exalted orbs (ex) below one divine. Fan project, not affiliated with Grinding Gear Games.
+Game data: patch ${m.patch} (${m.gen}). Prices: ${m.league || 'current'} league, the in-game Currency Exchange (currency) and live trade site listings (everything else), every hour (last ${when(m.updated)}). Prices are in divine orbs (div), or exalted orbs (ex) below one divine. This product isn\'t affiliated with or endorsed by Grinding Gear Games in any way.
 
 Every item has its own plain page at ${SITE}/item/<name>, for example ${SITE}/item/divine-orb: requirements, the official mod lines, price and 7-day change, and a link into the app.
 
@@ -653,7 +658,7 @@ Every item has its own plain page at ${SITE}/item/<name>, for example ${SITE}/it
 ## Data
 
 - [Item index](${SITE}/data/index.json): every gem, unique, passive and keyword, as JSON
-- [Prices](${SITE}/data/market.json): poe.ninja prices and 7-day trends, as JSON, every hour
+- [Prices](${SITE}/data/market.json): real prices (Currency Exchange and live trade listings) and trends, as JSON, every hour
 - [Sitemap](${SITE}/sitemap.xml): every page
 
 ## Optional
@@ -682,7 +687,7 @@ function itemText(m, e){
 function llmsFull(m){
   let out = `# Wraeclast Index: everything in plain text
 
-> Every Path of Exile 2 gem, unique, passive, currency and keyword, from the game files (patch ${m.patch}). Prices: ${m.league || 'current'} league, poe.ninja, ${when(m.updated)}. Prices are in divine orbs (div), or exalted orbs (ex) below one divine.
+> Every Path of Exile 2 gem, unique, passive, currency and keyword, from the game files (patch ${m.patch}). Prices: ${m.league || 'current'} league, the Currency Exchange and live trade listings, ${when(m.updated)}. Prices are in divine orbs (div), or exalted orbs (ex) below one divine.
 `;
   for(const l of ORDER){
     const k = LISTS[l].k;

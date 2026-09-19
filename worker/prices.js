@@ -19,7 +19,7 @@
    /data/rollprices.json, /data/farmprices.json   the slider and farm prices */
 
 const PAGES = 'https://metaseonso.github.io/wraeclast-index/data/';
-const UA = 'wraeclast-index/1.0 (+https://wraeclastindex.fyi)';
+const UA = 'wraeclast-index/1.0 (contact: https://github.com/metaseonso/wraeclast-index/issues)';
 const ISSUER = 'https://token.actions.githubusercontent.com';
 const REPO = 'metaseonso/wraeclast-index';
 const WORKFLOW = /^metaseonso\/wraeclast-index\/\.github\/workflows\/prices\.yml@refs\/heads\/main$/;

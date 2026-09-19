@@ -26,7 +26,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 API = 'https://www.pathofexile.com/api/trade2/data/'
-UA = 'wraeclast-index/1.0 (+https://github.com/metaseonso/wraeclast-index)'
+UA = 'wraeclast-index/1.0 (contact: https://github.com/metaseonso/wraeclast-index/issues)'
 KINDS = ('explicit', 'implicit', 'rune', 'desecrated', 'fractured', 'enchant', 'crafted')
 
 

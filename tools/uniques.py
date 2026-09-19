@@ -17,7 +17,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 LIST = 'https://poe2db.tw/us/Unique_item'
-UA = 'Mozilla/5.0 (compatible; wraeclast-index; +https://github.com/metaseonso/wraeclast-index)'
+UA = 'Mozilla/5.0 (compatible; wraeclast-index/1.0; contact: https://github.com/metaseonso/wraeclast-index/issues)'
 RAW = re.compile(r'(?<![\w\[./-])[a-z][a-z0-9]*(?:_[a-z0-9%+]+){2,}|\{[^}\s]{1,80}\}')
 
 

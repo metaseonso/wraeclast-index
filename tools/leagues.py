@@ -17,7 +17,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 URL = 'https://poe2db.tw/us/League'
-UA = 'wraeclast-index/1.0 (+https://wraeclastindex.fyi)'
+UA = 'wraeclast-index/1.0 (contact: https://github.com/metaseonso/wraeclast-index/issues)'
 
 
 def main():

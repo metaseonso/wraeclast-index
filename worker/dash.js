@@ -6,10 +6,12 @@
      POST /api/admin/logout
      GET  /api/admin/stats?days=1|7|30
      GET  /api/admin/heat?route=&device=&days=
+     GET  /api/admin/cloudflare?days=1|7|30   Cloudflare's own numbers (worker/cfstats.js)
      POST /api/admin/suggestion      {id, status: new|read|done}
    admin.html itself holds no data: everything comes from here, behind the cookie.
    DASH_HASH is "pbkdf2$<iterations>$<salt base64>$<hash base64>" (PBKDF2-SHA256 of the password). */
 import { sameSite, allowed } from './community.js';
+import { cloudflare } from './cfstats.js';
 
 export const ROUTES = ['home', 'build', 'currency', 'trade', 'farms', 'atlas', 'explore-gems', 'explore-uniques', 'explore-tree'];
 const ROUTE = new Set(ROUTES), DEVICE = new Set(['phone', 'tablet', 'desktop']), STATUS = new Set(['new', 'read', 'done']);
@@ -165,6 +167,9 @@ export async function admin(request, env, url){
   if(path === 'logout' && request.method === 'POST') return json(200, {ok: true}, {'Set-Cookie': setCookie('', 0)});
   if(path === 'stats' && request.method === 'GET') return json(200, await stats(env, url));
   if(path === 'heat' && request.method === 'GET') return heatmap(env, url);
+  if(path === 'cloudflare' && request.method === 'GET'){
+    try { return json(200, await cloudflare(env, url)); } catch(e){ return json(502, {error: String(e.message || e).slice(0, 200)}); }
+  }
   if(path === 'suggestion' && request.method === 'POST') return setSuggestion(request, env);
   return json(404, {error: 'Not found.'});
 }

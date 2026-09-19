@@ -23,7 +23,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 API = 'https://poe.ninja/poe2/api/economy/'
-UA = 'wraeclast-index/1.0 (+https://github.com/metaseonso/wraeclast-index)'
+UA = 'wraeclast-index/1.0 (contact: https://github.com/metaseonso/wraeclast-index/issues)'
 CDN = 'https://web.poecdn.com'
 ART = 'https://repoe-fork.github.io/poe2/'   # the game's own item art, as RePoE exports it
 

@@ -44,7 +44,7 @@ REPOE = 'https://repoe-fork.github.io/poe2/'
 TRADE = 'https://www.pathofexile.com/api/trade2/data/'
 CDN = 'https://web.poecdn.com'
 NINJA = 'https://poe.ninja/poe2/api/economy/'
-UA = 'wraeclast-index/1.0 (+https://github.com/metaseonso/wraeclast-index)'
+UA = 'wraeclast-index/1.0 (contact: https://github.com/metaseonso/wraeclast-index/issues)'
 CACHE = None
 
 # ---------------------------------------------------------------- hand-kept facts

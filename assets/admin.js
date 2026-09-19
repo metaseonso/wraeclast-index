@@ -59,6 +59,7 @@ async function load(){
   $('#signin').hidden = true; $('#dash').hidden = false; $('#range').hidden = false; $('#signout').hidden = false;
   render();
   heat();
+  cloudflare();
 }
 $('#range').addEventListener('click', e => {
   const b = e.target.closest('button[data-days]');
@@ -413,8 +414,71 @@ function plan(){
       '<a href="' + esc(p.links.d1) + '" target="_blank" rel="noopener">Database</a></p>';
 }
 
+/* ---------- Cloudflare's own numbers (worker/cfstats.js) ---------- */
+const COUNTRY = code => { try { return new Intl.DisplayNames(['en'], {type: 'region'}).of(code) || code; } catch { return code; } };
+const bytes = b => b >= 1e9 ? (b / 1e9).toFixed(2) + ' GB' : b >= 1e6 ? (b / 1e6).toFixed(1) + ' MB' : Math.round(b / 1e3) + ' kB';
+const rows = (list, label, max) => table((list || []).filter(x => x.n).slice(0, max || 15).map(x => ({n: x.n, html: esc(label ? label(x) : x.k || '(none)')})), '');
+async function cloudflare(){
+  let r;
+  try { r = await api('cloudflare?days=' + S.days); } catch { r = null; }
+  const c = r && r.ok ? r.j : null;
+  if(!c || c.error){ $('#cfnotes').textContent = 'Cloudflare numbers are not available right now' + (c && c.error ? ': ' + c.error : '.'); return; }
+  S.cf = c;
+  const t = c.totals, range = {1: 'today', 7: 'last 7 days', 30: 'last 30 days'}[c.days];
+  $('#cfnotes').textContent = (c.notes || []).join(' ') || 'Straight from Cloudflare, refreshed every 5 minutes.';
+  $('#cftiles').innerHTML = [
+    [num(t.visits ?? 0), 'Real visits', 'people in browsers, ' + range],
+    [num(t.pageLoads ?? 0), 'Real page loads', range],
+    [num(t.uniques), 'Unique visitors', 'per day, added up'],
+    [num(t.pageViews), 'Page views', 'people and bots'],
+    [num(t.requests), 'Requests', range],
+    [bytes(t.bytes), 'Data served', Math.round(t.cachedBytes / Math.max(1, t.bytes) * 100) + '% from cache'],
+    [num(t.threats), 'Threats', 'stopped by Cloudflare'],
+    [num(c.workers.errors), 'Server errors', num(c.workers.requests) + ' server requests'],
+  ].map(([n, l, sub]) => '<div class="panel ad-tile"><b>' + n + '</b><span>' + l + '</span><small>' + sub + '</small></div>').join('');
+  cfChart();
+  const R = c.rum || {};
+  const REF = k => !k ? 'Direct (typed or bookmarked)' : k === location.hostname ? 'Within the site' : k;
+  $('#cfpages').innerHTML = rows(R.pages, x => x.k === '/' ? 'Home (/)' : x.k);
+  $('#cfrefs').innerHTML = rows(R.refs, x => REF(x.k));
+  $('#cfrcountries').innerHTML = rows(R.countries, x => COUNTRY(x.k));
+  $('#cfrdev').innerHTML = rows([...(R.devices || []).map(x => ({...x, k: 'Device: ' + x.k})), ...(R.browsers || []).map(x => ({...x, k: 'Browser: ' + x.k})),
+    ...(R.systems || []).map(x => ({...x, k: 'System: ' + x.k}))], null, 30);
+  $('#cfaskers').innerHTML = rows(c.askers);
+  $('#cfcrawlers').innerHTML = rows(c.crawlers, x => x.k + ' · ' + x.kind, 30);
+  $('#cfcountries').innerHTML = rows(c.countries, x => COUNTRY(x.k));
+  $('#cfdevices').innerHTML = rows(c.devices);
+  $('#cfpaths').innerHTML = rows(c.paths, null, 25);
+  $('#cfstatus').innerHTML = rows([...c.status.map(x => ({...x, k: 'Status ' + x.k})), ...c.types.map(x => ({...x, k: 'Type: ' + x.k}))], null, 25);
+  const grade = (v, good, poor) => v === null || v === undefined ? '' : v <= good ? 'good' : v <= poor ? 'ok' : 'poor';
+  const cell = (v, unit, good, poor) => v === null || v === undefined ? '<td class="n">\u2014</td>' :
+    '<td class="n"><span class="ad-g g-' + grade(v, good, poor) + '">' + (unit === 's' ? (v / 1000).toFixed(2) + ' s' : unit === 'ms' ? num(v) + ' ms' : (+v).toFixed(2)) + '</span></td>';
+  $('#cfspeed').innerHTML = R.vitals && R.vitals.length ? '<div class="tablewrap ad-tw"><table class="ad-t"><thead><tr><th>Page</th><th class="n">Loads</th>' +
+    '<th class="n" title="Biggest thing on screen shown">Main content</th><th class="n" title="Reaction to a click or key">Reaction</th>' +
+    '<th class="n" title="Things jumping around while loading">Jumpiness</th><th class="n" title="First thing on screen">First paint</th>' +
+    '<th class="n">Full load (half / 90%)</th></tr></thead><tbody>' +
+    R.vitals.map(v => '<tr><td>' + esc(v.path === '/' ? 'Home (/)' : v.path) + '</td><td class="n">' + num(v.n) + '</td>' +
+      cell(v.lcp, 's', 2500, 4000) + cell(v.inp, 'ms', 200, 500) + cell(v.cls, '', 0.1, 0.25) + cell(v.fcp, 's', 1800, 3000) +
+      '<td class="n">' + (v.load50 !== null ? (v.load50 / 1000).toFixed(2) + ' s / ' + (v.load90 / 1000).toFixed(2) + ' s' : '\u2014') + '</td></tr>').join('') +
+    '</tbody></table></div><p class="note">Green is good, amber needs work, red is poor (Google\u2019s own lines).</p>' : '<p class="note ad-none">Nothing yet.</p>';
+  const W = c.workers, lastD1 = (c.d1 || []).slice(-1)[0] || {rowsRead: 0, rowsWritten: 0}, days1 = Math.max(1, (c.daily || []).length);
+  $('#cfserver').innerHTML =
+    meter('Server requests, per day (average)', Math.round(W.requests / days1), c.free.requests, 'Errors: ' + num(W.errors) + ' · ' +
+      W.byStatus.map(s => esc(s.k) + ' ' + num(s.n)).join(' · ') + ' · CPU per request: half under ' + W.cpu50 + ' ms, 99% under ' + W.cpu99 + ' ms') +
+    meter('Database rows read today', lastD1.rowsRead, c.free.d1Reads) +
+    meter('Database rows written today', lastD1.rowsWritten, c.free.d1Writes, num(lastD1.reads) + ' read queries, ' + num(lastD1.writes) + ' write queries today');
+}
+function cfChart(){
+  const c = S.cf;
+  if(!c || !$('#cfchart')) return;
+  const d = c.daily || [];
+  if(d.length < 2){ $('#cfchart').innerHTML = '<p class="note">' + (d[0] ? day(d[0].date) + ': ' + num(d[0].requests) + ' requests, ' + num(d[0].pageViews) +
+    ' page views, ' + num(d[0].uniques) + ' unique visitors. The chart fills in day by day.' : 'Nothing yet.') + '</p>'; return; }
+  bars($('#cfchart'), d.map(x => x.requests), d.map(x => day(x.date)), {label: 'Requests per day'});
+}
+
 /* charts and the heatmap follow the window's width */
 let rs = 0;
-addEventListener('resize', () => { clearTimeout(rs); rs = setTimeout(() => { if(S.data && !$('#dash').hidden){ charts(); fit(); } }, 150); });
+addEventListener('resize', () => { clearTimeout(rs); rs = setTimeout(() => { if(S.data && !$('#dash').hidden){ charts(); fit(); cfChart(); } }, 150); });
 
 load();

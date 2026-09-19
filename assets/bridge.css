@@ -13,3 +13,5 @@
   .applinks{overflow-x:auto; max-width:100%; scrollbar-width:none; flex-wrap:nowrap}
   .applinks::-webkit-scrollbar{display:none}
 }
+.ggg-note{max-width:1200px; margin:24px auto 32px; padding:0 16px; text-align:center; font-size:12px; color:var(--faint)}
+.ggg-note a{color:var(--muted)}

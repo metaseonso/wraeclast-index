@@ -50,7 +50,7 @@ OUT = ROOT / 'data' / 'craft.json'
 OUT_DIR = ROOT / 'data' / 'craft'
 REPOE = 'https://repoe-fork.github.io/poe2/'
 POE2DB = 'https://poe2db.tw/us/'
-UA = 'wraeclast-index/1.0 (+https://github.com/metaseonso/wraeclast-index)'
+UA = 'wraeclast-index/1.0 (contact: https://github.com/metaseonso/wraeclast-index/issues)'
 CACHE = None
 
 # ---------------------------------------------------------------- the kinds of item
