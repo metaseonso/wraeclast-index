@@ -154,6 +154,78 @@ label.note{display:inline-flex; gap:6px; align-items:center; cursor:pointer}
 }
 
 
+/* Farms tab */
+.fm-ver{display:grid; gap:8px; margin-bottom:16px; padding:12px 14px; background:var(--surface); border:2px solid var(--line); border-radius:var(--r)}
+.fm-label{margin:0; font-size:14px; line-height:1.5; color:var(--muted)}
+.fm-label b{color:var(--text); font-weight:600}
+.fm-label a{color:var(--accent); font-weight:600; text-underline-offset:2px}
+.fm-warn{margin:0; font-size:13px; line-height:1.45; color:var(--text); background:var(--blood-soft, color-mix(in srgb, var(--neg) 14%, var(--surface)));
+  border-left:3px solid var(--blood, var(--neg)); border-radius:0 6px 6px 0; padding:6px 10px}
+.fm-src{display:flex; flex-wrap:wrap; gap:6px 14px; align-items:center; font-size:12.5px}
+.fm-chips{margin:0; justify-content:flex-start}
+.fm-ctl .field{min-width:0}
+.fm-foot{margin-top:18px}
+.fm-foot a{color:var(--muted)}
+.card.fm{--fm-t:var(--muted)}
+.card.fm.t-s{--fm-t:var(--accent)}
+.card.fm.t-a{--fm-t:var(--c-rare, #D9B566)}
+.card.fm.t-b{--fm-t:var(--c-unique, #C06A2B)}
+.card.fm.t-c{--fm-t:var(--str)}
+.card.fm.t-f{--fm-t:var(--faint)}
+.card.fm > .card-hd .card-ic{box-shadow:inset 0 0 0 2px color-mix(in srgb, var(--fm-t) 60%, transparent)}
+.fm-tier{font:700 21px/1 var(--disp); color:var(--fm-t)}
+.card.fm > .card-ft .kind{color:var(--fm-t)}
+.fm-rates{display:flex; flex-wrap:wrap; gap:4px 16px; font-size:11.5px; color:var(--muted)}
+.fm-rate{display:inline-flex; align-items:center; gap:6px}
+.fm-dots{display:inline-flex; gap:3px}
+.fm-dots i{width:7px; height:7px; border-radius:50%; background:var(--line)}
+.fm-dots i.on{background:var(--accent)}
+.fm-miss{margin:0; font-size:11.5px; line-height:1.45; color:var(--faint)}
+.fm-out{display:grid; grid-template-columns:minmax(0, 1fr); gap:4px; container-type:inline-size}
+.fm-out .lbl, .fm-sec .lbl{margin:0}
+.fm-row{position:relative; z-index:1; display:flex; align-items:center; gap:8px; width:100%; min-width:0; padding:4px 7px 4px 4px;
+  border:0; border-radius:6px; background:var(--sunken); color:inherit; cursor:pointer; text-align:left; font-size:12.5px}
+.fm-row:hover, .fm-row:focus-visible{background:var(--raised)}
+.fm-row .card-ic{width:24px; height:24px; border-radius:5px}
+.fm-row .card-ic img{width:22px; height:22px}
+.fm-row .card-ic .ic{zoom:.6}
+.fm-row .card-ic .glyph{font-size:12px}
+.fm-n{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-weight:500}
+.fm-row .spark{flex:none; width:44px; height:16px}
+.fm-p{font:600 12px var(--mono); font-variant-numeric:tabular-nums; white-space:nowrap}
+.fm-p small{margin-left:2px; font-size:10.5px; font-weight:500; color:var(--faint)}
+.fm-p.none{font:11px var(--sans); color:var(--faint)}
+.fm-row .chg{font:500 11px var(--mono); white-space:nowrap}
+.fm-grp{display:flex; flex-wrap:wrap; gap:4px}
+.fm-grp .pill{white-space:normal; min-width:0; overflow-wrap:anywhere}
+.fm-master{color:var(--muted); white-space:nowrap}
+.fm-sec{display:grid; grid-template-columns:minmax(0, 1fr); gap:8px; border-top:1px dashed var(--line); padding-top:10px}
+.fm-dl{display:grid; grid-template-columns:max-content 1fr; gap:7px 14px; margin:0; font-size:13px; line-height:1.45}
+.fm-dl dt{padding-top:2px; font-size:10.5px; text-transform:uppercase; letter-spacing:.08em; color:var(--faint)}
+.fm-dl dd{margin:0; min-width:0; overflow-wrap:anywhere}
+.fm-tabs{margin:0; padding:0; list-style:none; display:grid; gap:5px}
+.fm-tabs span{display:block; font-size:12px; color:var(--muted)}
+.cards.fm-items{grid-template-columns:repeat(auto-fill, minmax(min(100%, 240px), 1fr)); gap:8px}
+.card.detail .fm-items .card{padding:11px 12px 9px; gap:6px; box-shadow:var(--shadow)}   /* item cards in a farm popup keep the grid size */
+.card.detail .fm-items .card h3{font-size:14px}
+.card.detail .fm-items .card-ic{width:40px; height:40px}
+.card.detail .fm-items .card-tx{-webkit-line-clamp:3; font-size:12.5px}
+.card.detail .fm-items .card-ls{font-size:12.5px}
+.fm-links{display:flex; flex-wrap:wrap; gap:8px; margin-top:4px}
+.fm-mods{margin:0; font-size:12px; line-height:1.45; color:var(--muted)}
+.fm-tline{display:flex; flex-wrap:wrap; align-items:center; gap:4px 8px}
+.fm-tag{font:600 9.5px var(--sans); text-transform:uppercase; letter-spacing:.08em; color:var(--accent);
+  border:1px solid color-mix(in srgb, var(--accent) 45%, var(--line)); border-radius:4px; padding:0 5px}
+a.pill.fm-tq{color:var(--text); text-decoration:none; border-color:color-mix(in srgb, var(--accent) 45%, var(--line))}
+a.pill.fm-tq:hover{border-color:var(--accent)}
+a.pill.fm-tq small{margin-left:2px; color:var(--faint)}
+@container (max-width:300px){ .fm-row .spark{display:none} }
+@media (max-width:480px){
+  .fm-dl{grid-template-columns:1fr; gap:2px}
+  .fm-dl dd{margin-bottom:6px}
+}
+/* end Farms tab */
+
 /* ---------- trade page ---------- */
 .linkbtn{background:none; border:0; color:var(--accent); cursor:pointer; font-size:12.5px; text-decoration:underline; text-underline-offset:2px; padding:3px 0}
 .tp-ex{display:flex; gap:6px; flex-wrap:wrap; align-items:center; margin-bottom:12px}

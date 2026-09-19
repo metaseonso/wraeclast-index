@@ -33,6 +33,7 @@ The site is static. GitHub Pages serves it; a GitHub Action (`.github/workflows/
 | `data/index.json` | Search index, built by `tools/sync.py` |
 | `data/info.json`, `data/reqs.json` | Item text and requirements, built by `tools/gameinfo.py` |
 | `data/market.json` | Prices, rebuilt every hour by `tools/market.py` |
+| `data/farms.json`, `data/farmqueries.json` | Farms tab: strategies from BawLoch's public tier list sheet and the trade searches for their rolled tablets and waystones, by hand with `python tools/farms.py` (`data/farmprices.json` holds those searches' prices) |
 
 ## Update the game data
 
