@@ -425,7 +425,7 @@ function itemPage(m, e){
   if(px){
     if(px.h && px.h.length > 3){
       const vals = px.h.map(x => x[1]);
-      price += chart(vals, 'Since ' + px.h[0][0] · low ' + moneyText(m, Math.min(...vals)) + ', high ' + moneyText(m, Math.max(...vals)));
+      price += chart(vals, 'Since ' + px.h[0][0] + ' · low ' + moneyText(m, Math.min(...vals)) + ', high ' + moneyText(m, Math.max(...vals)));
     } else if(px.sp) price += chart(px.sp, 'Last 7 days');
     const pf = [];
     if(px.src === 'cx'){
