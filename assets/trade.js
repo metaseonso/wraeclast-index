@@ -174,7 +174,7 @@ export async function tradePanel(it){
   const stateName = Object.fromEntries(T.states);
   let online = true;
 
-  const base = (it.s || '').split(' · ')[0];
+  const base = it.base || (it.s || '').split(' · ')[0];   // it.base: a card whose sub line is not its base type
   const build = () => {
     const stats = rows.filter(r => r.on && r.id).map(r => ({id: r.id, value: r.v === null ? {} : valueFor(r.op, r.v), disabled: false}));
     const misc = {};
