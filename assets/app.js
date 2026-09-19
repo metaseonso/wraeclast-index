@@ -109,7 +109,7 @@ function iconHTML(it){
 const KIND = {g:'Gem', u:'Unique', p:'Passive', w:'Keyword', c:'Currency', b:'Build item'};
 const SECTION = {g:'gems', u:'uniques', p:'tree'};
 export function hrefOf(it){
-  if(SECTION[it.k]) return 'explore.html#' + SECTION[it.k] + '=' + encodeURIComponent(it.n);
+  if(SECTION[it.k]) return 'explore#' + SECTION[it.k] + '=' + encodeURIComponent(it.n);
   if(it.k === 'c') return './#/currency?c=' + encodeURIComponent(it.id);
   return null;
 }

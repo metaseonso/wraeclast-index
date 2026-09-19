@@ -9,7 +9,6 @@
   "assets": {
     "directory": ".",
     "binding": "ASSETS",
-    "html_handling": "none",
     "run_worker_first": ["/data/market.json", "/api/*"]
   },
   "observability": { "enabled": true }

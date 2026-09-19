@@ -1,6 +1,6 @@
 /* Bridge between the home page and the drill-down page (explore.html).
    - mounts the top search (the header itself is written into the page by tools/sync.py)
-   - opens a deep link: explore.html#gems=Untether, #uniques=Headhunter, #tree=Zealot's Oath   */
+   - opens a deep link: explore#gems=Untether, #uniques=Headhunter, #tree=Zealot's Oath   */
 (function(){
   'use strict';
   const SECTIONS = {gems:'Gems', uniques:'Uniques', tree:'Passive tree'};
