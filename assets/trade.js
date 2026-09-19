@@ -203,7 +203,7 @@ export async function tradePanel(it){
   const searchable = () => rows.filter(r => r.misc || r.id);
   const states = Object.fromEntries(STATES.map(s => [s, 'any']));
   const stateName = Object.fromEntries(T.states);
-  let online = true;
+  let online = false;   // any seller by default; tick for online only
 
   const base = it.base || (it.s || '').split(' · ')[0];   // it.base: a card whose sub line is not its base type
   const build = () => {

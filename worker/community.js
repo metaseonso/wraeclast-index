@@ -69,7 +69,7 @@ function clean(s){
   for(const [k, v] of Object.entries(s.states || {})) if(/^[a-z_]{3,30}$/.test(k) && (v === 'yes' || v === 'no')) states[k] = v;
   return {item, rarity: text(s.rarity, 20), types: (Array.isArray(s.types) ? s.types : []).filter(t => /^(ar|ev|es)(\+(ar|ev|es)){0,2}$/.test(t)).slice(0, 7),
     groups, ilvl: num(s.ilvl), quality: num(s.quality), lvl: num(s.lvl), sockets: num(s.sockets), states,
-    price: num(s.price), cur: text(s.cur, 20), indexed: text(s.indexed, 20), online: s.online !== false};
+    price: num(s.price), cur: text(s.cur, 20), indexed: text(s.indexed, 20), online: s.online === true};
 }
 
 export async function tradeSearches(request, env, ctx, url){

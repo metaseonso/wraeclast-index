@@ -24,7 +24,7 @@ const EXAMPLES = [
   ['Cheapest Headhunter, not corrupted', {item: {k: 'unique', v: 'Headhunter', n: 'Headhunter'}, states: {corrupted: 'no'}}],
 ];
 const blank = () => ({item: null, rarity: '', types: [], groups: [], ilvl: '', quality: '', lvl: '', sockets: '', states: {},
-  price: '', cur: 'divine', indexed: '', online: true});
+  price: '', cur: 'divine', indexed: '', online: false});
 
 let T, EL, S = blank(), MOD = new Map(), POP = [];
 
