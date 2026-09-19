@@ -10,6 +10,8 @@ Output:
   exchange  currency-type item name  ->  exchange id (for the bulk exchange)
   uniques   unique name  ->  base types it comes on
   states    item-state filters: corrupted, twice corrupted, cultivated Vaal unique, sanctified, ...
+  options   the site's own choices for category, rarity, "listed within" and price currency
+  bases     every non-unique base type, by group (for "I want a ... ")
 """
 import json
 import re
@@ -35,7 +37,7 @@ def main():
     items = get('items'); time.sleep(1)
     static = get('static'); time.sleep(1)
     filters = get('filters')
-    out = {'mods': [], 'exchange': {}, 'uniques': {}, 'states': []}
+    out = {'mods': [], 'exchange': {}, 'uniques': {}, 'states': [], 'options': {}, 'bases': {}}
     for group in stats:
         if group.get('id') not in KINDS + ('pseudo',):
             continue
@@ -47,6 +49,16 @@ def main():
                 bases = out['uniques'].setdefault(e['name'], [])
                 if e['type'] not in bases:
                     bases.append(e['type'])
+    for group in filters:   # the site's own option lists
+        for f in group.get('filters', []):
+            if f['id'] in ('category', 'rarity', 'indexed', 'price'):
+                out['options'][f['id']] = [[o.get('id'), o.get('text')] for o in f['option']['options'] if o.get('id')]
+    for group in items:
+        seen = set()
+        for e in group.get('entries', []):
+            if not (e.get('flags') or {}).get('unique') and e.get('type') and e['type'] not in seen:
+                seen.add(e['type'])
+                out['bases'].setdefault(group['label'], []).append(e['type'])
     for group in filters:   # yes/no item states from the Miscellaneous group
         if group.get('id') != 'misc_filters':
             continue
