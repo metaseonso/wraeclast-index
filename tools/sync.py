@@ -50,7 +50,7 @@ MAST_OLD = '<h1 class="brand">Wraeclast <em>Index</em></h1>\n    <nav class="nav
 MAST_NEW = ('<a href="./" class="brand-link"><h1 class="brand"><span class="mark" aria-hidden="true">'
             '<img class="mark-wisp" src="assets/brand/wisp-b.webp" alt="" decoding="async" fetchpriority="low">'
             '<img class="mark-logo" src="assets/brand/logo-64.webp" alt="" width="51" height="64"></span>Wraeclast <em>Index</em></h1></a>\n'
-            '    <nav class="applinks" aria-label="App"><a href="./#/">Search</a><a href="./#/build">Build</a><a href="./#/currency">Currency</a><a href="./#/trade">Trade</a><a href="./#/farms">Farms</a><a href="./#/atlas">Atlas</a></nav>\n'
+            '    <nav class="applinks" aria-label="App"><a href="./#/">Search</a><a href="./#/build">Build</a><a href="./#/currency">Currency</a><a href="./#/trade">Trade</a><a href="./#/farms">Farms</a><a href="./#/atlas">Atlas</a><a href="./#/craft">Craft</a></nav>\n'
             '    <nav class="nav" id="nav" aria-label="Sections"></nav>')
 CL_OLD = '<button class="clbtn" id="clbtn" type="button">Patch notes</button>'
 # The keybindings button (assets/keys.js), the same markup as in index.html.

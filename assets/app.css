@@ -303,3 +303,90 @@ small.at-bonus{display:block}
 .leagueclock .lc-sep{margin:0 8px; color:var(--line)}
 /* phones: the fog drifts past the crest but never makes the page wider than the screen */
 @media (max-width:760px){ .hero{overflow-x:clip} }
+
+/* Craft tab */
+.cr-top{display:grid; gap:12px; margin-bottom:14px}
+.cr-pick{position:relative; max-width:560px}
+.cr-pick input{width:100%}
+.cr-kinds{display:flex; flex-wrap:wrap; align-items:center; gap:6px 10px}
+.cr-kinds .lbl{min-width:76px}
+.cr-chips{justify-content:flex-start; margin:0; gap:5px}
+.cr-base{display:grid; grid-template-columns:minmax(0, 420px) minmax(0, 1fr); gap:14px; align-items:start}
+.cr-base:empty{display:none}
+.cr-bctl{display:grid; gap:12px; align-content:start}
+.cr-lab{display:grid; gap:5px; min-width:0}
+.cr-lab select{max-width:420px}
+.cr-main{display:grid; grid-template-columns:minmax(0, 1fr) 380px; grid-template-areas:"mech prev" "pool prev"; gap:14px; align-items:start}
+.cr-prev{grid-area:prev; position:sticky; top:76px; max-height:calc(100vh - 90px); overflow:auto; overscroll-behavior:contain; padding:10px 4px}
+.cr-mech{grid-area:mech; display:grid; gap:10px}
+.cr-pool{grid-area:pool; display:grid; gap:10px}
+.cr-h{font-family:var(--disp); font-size:16px; display:flex; gap:10px; align-items:baseline; flex-wrap:wrap}
+.cr-h .note{font-family:var(--sans)}
+.cr-h4{margin:6px 0 2px; font-size:10.5px; font-weight:500; text-transform:uppercase; letter-spacing:.09em; color:var(--faint)}
+.cr-h4 span{font-family:var(--mono); color:var(--muted)}
+.cr-mbody{display:grid; gap:6px; border-top:1px dashed var(--line); padding-top:10px}
+.cr-bar{display:flex; flex-wrap:wrap; gap:8px 10px; align-items:center}
+.cr-bar .field{flex:1 1 220px; max-width:360px}
+.cr-list{display:grid; gap:4px}
+.cr-row{display:flex; gap:10px; align-items:center; padding:6px 8px; border-radius:8px; background:var(--sunken); min-width:0}
+.cr-ic{flex:none; width:30px; height:30px; display:grid; place-items:center}
+.cr-ic img{width:30px; height:30px; object-fit:contain}
+.cr-rt{flex:1; min-width:0; display:grid; gap:1px; font-size:12.5px; line-height:1.4}
+.cr-rt b{font-weight:600; color:var(--text); overflow-wrap:anywhere}
+.cr-px{justify-self:start; font:600 11.5px var(--mono); color:var(--muted)}
+.cr-px small{margin-left:2px; font-weight:500; color:var(--faint)}
+.cr-ml{color:var(--text)}
+.cr-rs{font-size:11.5px; color:var(--faint)}
+.cr-row .btn, .cr-fam .btn{flex:none; padding:4px 12px; font-size:12px}
+.btn.cr-use[aria-pressed="true"]{color:var(--accent); border-color:var(--accent)}
+.cr-orb{display:grid; gap:4px}
+.cr-vers{display:flex; flex-wrap:wrap; gap:5px; padding-left:48px}
+.cr-vers .chip{font-size:11.5px; padding:3px 10px; display:inline-flex; gap:6px; align-items:baseline}
+.cr-vers .cr-px{font-size:10.5px}
+.cr-fnote{margin:0; display:flex; flex-wrap:wrap; gap:6px 12px; align-items:baseline; font-size:12.5px; color:var(--accent);
+  background:var(--accent-soft); border-left:3px solid var(--accent); border-radius:0 6px 6px 0; padding:6px 10px}
+.cr-cols{display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:12px}
+.cr-col{display:grid; gap:6px; align-content:start; min-width:0}
+.cr-fams{display:grid; gap:6px}
+.cr-fam{display:grid; gap:4px; padding:8px 10px; border-radius:8px; background:var(--sunken); border:2px solid var(--line-soft); min-width:0}
+.cr-fam.on{border-color:color-mix(in srgb, var(--accent) 50%, var(--line))}
+.cr-fam.off{opacity:.5}
+.cr-fhd{display:flex; gap:8px; align-items:baseline; min-width:0}
+.cr-ft{flex:1; min-width:0; font-size:13px; line-height:1.4; overflow-wrap:anywhere}
+.cr-tn{flex:none; font:500 10.5px var(--mono); color:var(--faint); white-space:nowrap}
+.cr-fctl{display:flex; flex-wrap:wrap; gap:6px 10px; align-items:center; min-width:0}
+.cr-fctl .tval{flex:1 1 240px}
+.cr-fctl .ttier{white-space:normal}
+.cr-fctl .cr-add{margin-left:auto}
+.cr-lock{position:absolute; top:-1px; bottom:-1px; pointer-events:none; border-radius:2px;
+  background:repeating-linear-gradient(135deg, rgba(5,6,5,.82) 0 3px, rgba(5,6,5,.55) 3px 6px)}
+.btn:disabled{opacity:.45; cursor:not-allowed}
+.btn:disabled:hover{border-color:transparent}
+.card.cr-item{cursor:default}
+.card.cr-item:hover{translate:none}
+.cr-item.r-magic h3{color:#8888FF}
+.cr-item.r-rare h3{color:var(--c-rare, #E3D36B)}
+.cr-base-ls{color:var(--muted)}
+.cr-ls{margin:0; padding:0; list-style:none; display:grid; gap:4px}
+.cr-il{display:grid; grid-template-columns:minmax(0, 1fr) auto; gap:2px 10px; align-items:baseline; font-size:13px; line-height:1.4;
+  padding:4px 0; border-bottom:1px dashed var(--line-soft)}
+.cr-il.bad{color:var(--neg)}
+.cr-lines{display:grid; min-width:0; overflow-wrap:anywhere}
+.cr-lines .nt{color:var(--faint); text-decoration:line-through dotted; text-decoration-thickness:1px}
+.cr-lmeta{grid-column:1; font-size:11px; color:var(--faint); display:flex; gap:6px}
+.cr-lmeta b{font:600 11px var(--mono); color:var(--accent)}
+.cr-rm{grid-column:2; grid-row:1 / span 2; align-self:center; font-size:11.5px}
+.cr-counts{margin:4px 0 0; display:flex; flex-wrap:wrap; gap:4px 14px; font-size:12px; color:var(--muted)}
+.cr-counts b{font-family:var(--mono); color:var(--text)}
+.cr-go{flex-wrap:wrap; align-items:center}
+.cr-go .linkbtn{margin-right:auto}
+@media (max-width:1000px){
+  .cr-main{grid-template-columns:minmax(0, 1fr); grid-template-areas:"prev" "mech" "pool"}
+  .cr-prev{position:static; max-height:none; overflow:visible; padding:10px 0}
+}
+@media (max-width:760px){
+  .cr-base{grid-template-columns:minmax(0, 1fr)}
+  .cr-cols{grid-template-columns:minmax(0, 1fr)}
+  .cr-vers{padding-left:0}
+}
+/* end Craft tab */
