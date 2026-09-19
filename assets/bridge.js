@@ -19,7 +19,7 @@
     const links = document.createElement('nav');
     links.className = 'applinks'; links.setAttribute('aria-label', 'App');
     // app routes that are live; a route joins this list when it ships
-    links.innerHTML = [['./#/', 'Search']].map(([h, l]) => '<a href="' + h + '">' + l + '</a>').join('');
+    links.innerHTML = [['./#/', 'Search'], ['./#/currency', 'Currency']].map(([h, l]) => '<a href="' + h + '">' + l + '</a>').join('');
     nav.before(links);
     // keep the address bar in step with the section tab, so links and reloads land in the same place
     nav.addEventListener('click', e => {

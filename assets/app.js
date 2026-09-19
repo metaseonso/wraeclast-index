@@ -224,7 +224,8 @@ export function card(it, opts = {}){
     anointOf(it) +
     (opts.invest ? '<div class="card-inv"><span>' + esc(opts.invest.label) + '</span><b>' +
       (opts.invest.div !== undefined && opts.invest.div !== null ? moneyHTML(opts.invest.div) : esc(opts.invest.note || '')) + '</b></div>' : '') +
-    '<div class="card-ft">' + (px ? spark(px.sp, px.ch) : '') +
+    (opts.extra || '') +
+    '<div class="card-ft">' + (opts.action || '') + (px ? spark(px.sp, px.ch) : '') +
       (use !== null ? '<span class="use">in ' + (use >= 10 ? Math.round(use) : trim(use, 1)) + '% of builds</span>' : '') +
       (px && px.ls !== undefined && px.ls < 3 ? '<span class="use" title="Few listings: this is one asking price, not a market">thin market</span>' : '') +
       (bh ? '<a class="card-ext" href="' + esc(bh) + '" target="_blank" rel="noopener" title="Characters in ' +
