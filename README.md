@@ -56,6 +56,21 @@ Two things to do by hand, once:
 1. Add `https://wraeclastindex.fyi` in [Google Search Console](https://search.google.com/search-console) and [Bing Webmaster Tools](https://www.bing.com/webmasters) (Bing can import from Google). Verify with a DNS TXT record in Cloudflare, or paste the meta tag where the comment in `index.html` says. Then submit `https://wraeclastindex.fyi/sitemap.xml` in both.
 2. In the Cloudflare dashboard, for the domain: **AI Crawl Control** (also under Security > Bots): turn off "Block AI bots" and set the AI crawlers to allow, and turn off the "managed robots.txt" option (it adds its own blocks for AI crawlers in front of ours). Cloudflare can block AI crawlers by default.
 
+## Owner dashboard
+
+`/admin` (`admin.html`, `assets/admin.js`; not linked anywhere, kept out of search engines). Sign in with the dashboard password: the worker checks it against the `DASH_HASH` secret and sets a 12-hour cookie. The page holds no data; everything comes from `/api/admin/*` behind that cookie (`worker/dash.js`).
+
+It shows page views per day, pages, how visitors arrive (direct, search engines, AI search, social, other sites), countries, devices, top clicks, a heatmap per page and device, notes from the Suggest button (mark read or done), the trade site load per hour, and how close the site is to the Cloudflare free plan.
+
+What is tracked (`assets/track.js`, sent in small batches to `/api/t`):
+- page views: the page, the other site's name or "direct" (or a `utm_source` tag), phone/tablet/desktop
+- clicks: a fixed label such as "tab:Trade", "card:gem", "popup:Trade" or the host of a link out; never what anyone types
+- click spots: across in 2% steps of the screen width, down in 20 px steps of the page
+
+What is not: no cookies for visitors, no IP address, no account, nothing typed (only the Suggest notes players send on purpose). Nothing is sent when the browser asks not to be tracked (Do Not Track or Global Privacy Control), from inside a frame, or from the owner's own browser once signed in (a tick box on the dashboard).
+
+The counts live in the site's D1 database, per day (tables `views`, `clicks`, `heat` from `worker/migrations/0005_dash.sql`); request volume goes into the `load` table. The country is Cloudflare's two-letter guess.
+
 ## Update the game data
 
 1. After a game patch: `python tools/gameinfo.py`

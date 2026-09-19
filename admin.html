@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>Owner · Wraeclast Index</title>
+<meta name="theme-color" content="#070807">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="assets/app.css">
+<link rel="stylesheet" href="assets/cards.css">
+<link rel="stylesheet" href="assets/theme.css">
+<link rel="stylesheet" href="assets/look.css">
+<link rel="icon" type="image/png" sizes="64x64" href="assets/brand/favicon-64.png">
+<link rel="icon" type="image/png" sizes="32x32" href="assets/brand/favicon-32.png">
+</head>
+<body class="ad-page">
+
+<header class="top">
+  <div class="top-in">
+    <a class="brand" href="./"><span class="mark" aria-hidden="true"><img class="mark-logo" src="assets/brand/logo-64.webp" alt="" width="51" height="64"></span>Wraeclast <em>Index</em></a>
+    <span class="ad-tag">Owner</span>
+    <span class="grow"></span>
+    <div class="ad-range" id="range" role="group" aria-label="Range" hidden>
+      <button type="button" class="chip" data-days="1" aria-pressed="false">Today</button>
+      <button type="button" class="chip" data-days="7" aria-pressed="true">7 days</button>
+      <button type="button" class="chip" data-days="30" aria-pressed="false">30 days</button>
+    </div>
+    <button type="button" class="btn ad-out" id="signout" hidden>Sign out</button>
+  </div>
+</header>
+
+<main>
+  <section class="view ad" id="signin" hidden>
+    <form class="panel ad-signin" id="signform">
+      <h2>Owner sign-in</h2>
+      <input class="field" type="password" id="pw" autocomplete="current-password" placeholder="Password" aria-label="Password" required>
+      <button type="submit" class="btn gold">Sign in</button>
+      <p class="note ad-msg" id="signmsg" aria-live="polite"></p>
+    </form>
+  </section>
+
+  <section class="view ad" id="dash" hidden>
+    <div class="ad-tiles" id="tiles"></div>
+
+    <div class="panel ad-box">
+      <div class="ad-hd"><h3 id="charttl">Views per day</h3></div>
+      <div id="chart"></div>
+    </div>
+
+    <div class="ad-grid">
+      <div class="panel ad-box"><div class="ad-hd"><h3>Pages</h3><p>Click a page for its clicks.</p></div><div id="routes"></div></div>
+      <div class="panel ad-box"><div class="ad-hd"><h3>How they arrive</h3></div><div id="kinds"></div><div id="sources"></div></div>
+      <div class="panel ad-box"><div class="ad-hd"><h3>Countries</h3></div><div id="countries"></div></div>
+      <div class="panel ad-box"><div class="ad-hd"><h3>Devices</h3></div><div id="devices"></div></div>
+    </div>
+
+    <div class="panel ad-box">
+      <div class="ad-hd"><h3>Top clicks</h3></div>
+      <div class="ad-chips" id="clickpick"></div>
+      <div id="clicks"></div>
+    </div>
+
+    <div class="panel ad-box">
+      <div class="ad-hd"><h3>Heatmap</h3><p id="heatnote"></p></div>
+      <div class="ad-chips" id="heatpage"></div>
+      <div class="ad-row">
+        <div class="seg" id="heatdev"></div>
+        <span class="ad-legend" aria-hidden="true"><span>Few</span><i></i><span>Many</span></span>
+      </div>
+      <div class="ad-heat" id="heatbox"></div>
+    </div>
+
+    <div class="panel ad-box">
+      <div class="ad-hd"><h3>Notes from players</h3></div>
+      <div class="ad-chips" id="notepick"></div>
+      <ul class="ad-notes" id="notes"></ul>
+    </div>
+
+    <div class="panel ad-box">
+      <div class="ad-hd"><h3>Load</h3><p>Last 48 hours.</p></div>
+      <div id="load"></div>
+    </div>
+
+    <div class="panel ad-box">
+      <div class="ad-hd"><h3>Free plan</h3></div>
+      <div id="plan"></div>
+    </div>
+
+    <div class="panel ad-box">
+      <div class="ad-hd"><h3>Popular trade searches</h3></div>
+      <div id="searches"></div>
+    </div>
+
+    <p class="note ad-foot"><label class="note"><input type="checkbox" id="notrack"> Skip my own visits on this browser</label></p>
+  </section>
+</main>
+
+<script src="assets/admin.js" type="module"></script>
+</body>
+</html>
