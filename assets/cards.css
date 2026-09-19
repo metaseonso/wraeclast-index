@@ -249,3 +249,17 @@ header.top .notesbtn ~ .suggestbtn{margin-left:0}
 .uses-t span{font-size:11.5px; color:var(--muted); overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
 .uses-px{flex:none; font-size:12px}
 .uses-all{margin-top:10px}
+/* ---- keyword "Found on" lists: every row, a filter box on long lists (data/kwuse.json, usesSection in app.js) ---- */
+.uses-list{max-height:min(420px, 55vh); overscroll-behavior:contain}
+.uses-list > [hidden]{display:none}
+.uses-q{display:block; width:100%; box-sizing:border-box; margin:0 0 8px; padding:7px 10px; font:inherit; font-size:13px;
+  color:var(--text); background:var(--raised); border:1px solid var(--line); border-radius:8px}
+.uses-q:focus{outline:none; border-color:var(--accent)}
+.uses-plain{cursor:default}
+.uses-plain:hover{border-color:var(--line)}
+.uses-t .uses-x{display:inline; font:500 11px var(--mono, ui-monospace, monospace); color:var(--accent); overflow:visible}
+.uses-t .uses-kinds{white-space:normal; overflow:visible; line-height:1.5}
+.uses-kinds a{color:var(--accent); text-decoration:none}
+.uses-kinds a:hover, .uses-kinds a:focus-visible{text-decoration:underline}
+.uses-none{margin:6px 2px 0}
+/* ---- end keyword lists ---- */

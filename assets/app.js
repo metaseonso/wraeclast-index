@@ -381,17 +381,16 @@ function closeDetail(){
 }
 
 /* ---------- keywords: what uses what ----------
-   Every gem, unique, passive and keyword lists the keywords its game text marks (data/index.json "kw").
-   A keyword's card turns that around: everything that uses it, by kind. Atlas and currency text has no marks,
-   so it is matched by the words the keyword shows as ("f": Ignited, Ignites...). */
-let REV = null, ATLAS = null;
+   Every gem, unique, passive and keyword lists the keywords its game text marks (data/index.json "kw": the chips).
+   A keyword's card turns that around with data/kwuse.json (tools/kwuse.py, loaded the first time a keyword opens):
+   everything that uses it, from every source (the game's markup and the keyword's words in plain text), each
+   list in alphabetical order and in full. Gems, uniques, passives, currency and keywords that have a card open it;
+   small passives and crafting mods are plain rows; atlas rows and item kinds link to their tab. */
+let KWUSE = null;
 const SEC = {g: 'gems', u: 'uniques', p: 'tree'};
-function rev(){
-  if(!REV){
-    REV = {};
-    for(const x of D.index.items) for(const k of x.kw || []) (REV[k] = REV[k] || []).push(x);
-  }
-  return REV;
+function kwUse(){
+  if(!KWUSE) KWUSE = getJSON('data/kwuse.json').catch(() => { KWUSE = null; return null; });
+  return KWUSE;
 }
 export function keywordCard(id){
   const name = D.index.kwx && D.index.kwx[id];   // a keystone stands for its own keyword
@@ -409,62 +408,95 @@ function kwChips(it){
   return '<div class="kwchips"><span class="lbl">Keywords</span>' + ids.map(k =>
     '<button type="button" class="chip kwlink" data-kw="' + esc(k) + '">' + esc(keywordCard(k).n) + '</button>').join('') + '</div>';
 }
-const reEsc = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-function wordsOf(it){ return new RegExp('\\b(' + [it.n, ...(it.f || [])].map(reEsc).join('|') + ')\\b'); }
-const USE_KINDS = [['u', 'Uniques'], ['g', 'Gems'], ['p', 'Passives'], ['a', 'Atlas'], ['c', 'Currency'], ['w', 'Keywords']];
+const USE_KINDS = [['u', 'Uniques'], ['g', 'Gems'], ['p', 'Passives'], ['a', 'Atlas'], ['m', 'Crafting'], ['c', 'Currency'], ['w', 'Keywords']];
+const USE_FILTER = 30;   // a list longer than this gets a filter box
+const USE_TAB = new Map();   // keyword -> the tab last shown
 function usesSection(it){
   const id = keywordIdOf(it);
   if(!id) return null;
-  const R = (rev()[id] || []).filter(x => x !== it), re = wordsOf(it);
-  const groups = {u: [], g: [], p: [], a: null, c: [], w: []};
-  for(const x of R) if(groups[x.k]) groups[x.k].push(x);
-  for(const x of D.index.items) if(x.k === 'c' && re.test(x.t || '')) groups.c.push(x);
-  const pv = x => { const p = priceOf(x); return p && p.v || 0; };
-  groups.u.sort((a, b) => pv(b) - pv(a)); groups.c.sort((a, b) => pv(b) - pv(a));
-  for(const k of 'gpw') groups[k].sort((a, b) => a.n.localeCompare(b.n));
   const sec = document.createElement('section');
   sec.className = 'uses';
-  sec._g = groups; sec._id = id;
-  sec.dataset.on = (USE_KINDS.find(([k]) => groups[k] && groups[k].length) || ['u'])[0];
+  sec._id = id;
   paintUses(sec);
-  atlasUses(re).then(list => { groups.a = list; paintUses(sec); });
+  kwUse().then(U => {
+    sec._g = U ? useGroups(U, U.k[id] || {}) : 'err';
+    const was = USE_TAB.get(id);   // Back to this keyword: the tab it was on
+    if(U) sec.dataset.on = was && sec._g[was].length ? was : (USE_KINDS.find(([k]) => sec._g[k].length) || ['u'])[0];
+    paintUses(sec);
+  });
   return sec;
 }
-async function atlasUses(re){
-  if(!ATLAS){ try { ATLAS = await (await fetch('data/atlas.json')).json(); } catch { ATLAS = {}; } }
-  const out = [], A = ATLAS;
-  const add = (sec, name, lines, what) => { const hit = (lines || []).find(l => re.test(l)); if(hit) out.push({sec, name, line: hit, what}); };
-  for(const m of A.wmods || []) add('ways', m.a, (m.r || []).flatMap(r => r.ls || []), 'Waystone mod');
-  for(const m of A.wdes || []) add('ways', m.a, m.ls, 'Desecrated waystone mod');
-  for(const m of A.wemo || []) add('ways', m.n, m.ls, 'Liquid Emotion');
-  for(const t of A.tabs || []) add('tabs', t.n, t.ls, 'Tablet');
-  for(const t of A.tuniq || []) add('tabs', t.n, t.ls, 'Unique tablet');
-  for(const m of A.tmods || []) add('tabs', m.a, m.ls, 'Tablet mod');
-  for(const k of A.keys || []) add('keys', k.n, [k.t, ...(k.ls || [])].filter(Boolean), k.s || 'Key');
-  for(const i of A.items || []) add('items', i.n, [...(i.ls || []), i.t].filter(Boolean), i.s || 'Atlas item');
-  for(const tr of A.tree || []) for(const nd of tr.nodes || []) add('tree', nd.n, [...(nd.ls || []), ...(nd.o || [])], tr.n);
-  return out;
+/* the rows of each group, in the file's order: {html, h: the words the filter box searches} */
+function useGroups(U, e){
+  const card = key => D.byKey.get(key);
+  const craftHref = c => './#/craft?s=' + encodeURIComponent(btoa(unescape(encodeURIComponent(JSON.stringify({c, b: '', l: 0, m: []})))));
+  const times = n => n > 1 ? ' <span class="uses-x">\u00d7' + n + '</span>' : '';   // how many of it are on the tree
+  const cardRow = (x, sub, n) => { const p = priceOf(x);
+    return '<button type="button" class="uses-row" data-key="' + esc(x.k + ':' + x.id) + '"><span class="uses-ic">' + iconHTML(x) + '</span>' +
+      '<span class="uses-t"><b>' + esc(x.n) + times(n) + '</b><span>' + esc(sub) + '</span></span>' +
+      (p && p.v !== undefined ? '<span class="uses-px">' + moneyHTML(p.v) + '</span>' : '') + '</button>'; };
+  const plainRow = (name, sub, o = {}) => '<div class="uses-row uses-plain" title="' + esc(o.title || sub) + '">' +
+    (o.ic ? '<span class="uses-ic"></span>' : '') + '<span class="uses-t"><b>' + esc(name) + times(o.n) + '</b><span>' + esc(sub) + '</span>' +
+    (o.more || '') + '</span></div>';
+  const row = (html, ...h) => ({html, h: h.filter(Boolean).join(' ').toLowerCase()});
+  const G = {};   // a card row is found by anything its card says (name, lines, tags), as in the search
+  G.u = (e.u || []).map(id => card('u:' + id)).filter(Boolean).map(x => row(cardRow(x, x.s || ''), x._hay));
+  G.g = (e.g || []).map(id => card('g:' + id)).filter(Boolean).map(x => row(cardRow(x, x.s || ''), x._hay));
+  G.p = (e.p || []).map(x => {
+    if(typeof x !== 'number'){   // a card: its id, or [id, how many of it are on the tree]
+      const [id, k] = Array.isArray(x) ? x : [x, 1], c = card('p:' + id), r = c && row(cardRow(c, c.s || '', k), c._hay);
+      if(r) r.n = k;
+      return r;
+    }
+    const [n, t, k, where] = U.sp[x] || [];   // a small passive: one row, counted each time it is on the tree
+    const sub = t + (where ? ' \u00b7 ' + where : '');
+    const r = n && row(plainRow(n, sub, {ic: 1, n: k, title: sub + ' \u00b7 ' + k + ' on the tree'}), n, t, where, 'small passive');
+    if(r) r.n = k;
+    return r;
+  }).filter(Boolean);
+  G.a = (e.a || []).map(([i, line]) => { const [s, n, what] = U.at[i] || [];
+    return n && row('<a class="uses-row uses-go" href="./#/atlas?s=' + esc(s) + '&q=' + encodeURIComponent(n) + '" title="' + esc(line) + '">' +
+      '<span class="uses-t"><b>' + esc(n) + '</b><span>' + esc(what) + ' \u00b7 ' + esc(line) + '</span></span></a>', n, what, line); }).filter(Boolean);
+  G.m = (e.m || []).map(i => { const [line, what, kinds] = U.cr[i] || [];
+    const names = (kinds || []).map(c => U.ck[c] || c);
+    return line && row(plainRow(line, what, {title: line + ' \u00b7 ' + what + ' \u00b7 ' + names.join(', '),
+      more: '<span class="uses-kinds">' + (kinds || []).map((c, j) => '<a class="uses-go" href="' + craftHref(c) + '">' + esc(names[j]) + '</a>').join(', ') + '</span>'}),
+      line, what, names.join(' ')); }).filter(Boolean);
+  G.c = (e.c || []).map(i => { const [n, cat, t] = U.cu[i] || [];
+    const c = card('c:' + n);   // a card when the market lists it
+    return n && row(c ? cardRow(c, cat + ' \u00b7 ' + t) : plainRow(n, cat + ' \u00b7 ' + t, {ic: 1}), n, cat, t); }).filter(Boolean);
+  G.w = (e.w || []).map(k => { const c = keywordCard(k);
+    return c ? row(cardRow(c, c.k === 'w' ? 'Keyword' : c.s || ''), c._hay)
+      : U.kn && U.kn[k] ? row(plainRow(U.kn[k], 'Keyword'), U.kn[k]) : null; }).filter(Boolean);
+  return G;
 }
 function paintUses(sec){
-  const G = sec._g, on = sec.dataset.on, list = G[on];
-  const tabs = USE_KINDS.map(([k, l]) => '<button type="button" class="chip uses-tab" data-g="' + k + '" aria-pressed="' + (k === on) + '">' +
-    l + ' <span class="ct">' + (G[k] ? G[k].length : '\u2026') + '</span></button>').join('');
+  const G = sec._g, ok = G && G !== 'err', on = sec.dataset.on, list = ok ? G[on] : null;
+  if(ok) USE_TAB.set(sec._id, on);
+  const count = k => G[k].reduce((a, x) => a + (x.n || 1), 0);   // passives: every one on the tree
+  const tabs = USE_KINDS.map(([k, l]) => '<button type="button" class="chip uses-tab" data-g="' + k + '" aria-pressed="' + (k === on) + '"' +
+    (ok ? '' : ' disabled') + (ok && count(k) !== G[k].length ? ' title="' + count(k) + ' on the tree, ' + G[k].length + ' different"' : '') + '>' +
+    l + ' <span class="ct">' + (ok ? count(k).toLocaleString() : G ? '\u2013' : '\u2026') + '</span></button>').join('');
   let rows;
-  if(!list) rows = '<p class="note">Looking\u2026</p>';
+  if(G === 'err') rows = '<p class="note">Could not load this list. Try again in a minute.</p>';
+  else if(!list) rows = '<p class="note">Looking\u2026</p>';
   else if(!list.length) rows = '<p class="note">Nothing here uses it.</p>';
-  else if(on === 'a') rows = list.slice(0, 60).map(x => '<a class="uses-row uses-go" href="./#/atlas?s=' + x.sec + '&q=' + encodeURIComponent(x.name) + '">' +
-    '<span class="uses-t"><b>' + esc(x.name) + '</b><span>' + esc(x.what) + ' \u00b7 ' + esc(x.line) + '</span></span></a>').join('');
-  else rows = list.slice(0, 60).map(x => { const p = priceOf(x);
-    return '<button type="button" class="uses-row" data-key="' + esc(x.k + ':' + x.id) + '"><span class="uses-ic">' + iconHTML(x) + '</span>' +
-      '<span class="uses-t"><b>' + esc(x.n) + '</b><span>' + esc(x.s || '') + '</span></span>' +
-      (p && p.v !== undefined ? '<span class="uses-px">' + moneyHTML(p.v) + '</span>' : '') + '</button>'; }).join('');
-  const more = (list && list.length > 60 ? '<p class="note">+' + (list.length - 60) + ' more</p>' : '') +
-    (on === 'p' && list && list.length ? '<p class="note">Notables and keystones. The Passive tree shows the small ones too.</p>' : '');
+  else rows = list.map(x => x.html).join('');
+  const kind = {u: 'uniques', g: 'gems', p: 'passives', a: 'atlas entries', m: 'mods', c: 'items', w: 'keywords'}[on] || '';
+  const filter = list && list.length > USE_FILTER ? '<input class="uses-q" type="search" autocomplete="off" spellcheck="false" placeholder="Filter ' +
+    kind + '\u2026" aria-label="Filter the ' + kind + '">' : '';
   const here = /explore/.test(location.pathname) ? '' : 'explore';   // on the drill-down already: stay on the page
   const all = SEC[on] ? '<a class="btn gold" href="' + here + '#' + SEC[on] + '?kw=' + encodeURIComponent(sec._id) + '">See all in ' +
     {g: 'Gems', u: 'Uniques', p: 'Passive tree'}[on] + ' \u2192</a>' : '';
-  sec.innerHTML = '<h4>Found on</h4><div class="uses-tabs">' + tabs + '</div><div class="uses-list">' + rows + '</div>' + more +
-    (all && list && list.length ? '<div class="uses-all">' + all + '</div>' : '');
+  sec.innerHTML = '<h4>Found on</h4><div class="uses-tabs">' + tabs + '</div>' + filter + '<div class="uses-list">' + rows + '</div>' +
+    '<p class="note uses-none" hidden>Nothing matches.</p>' + (all && list && list.length ? '<div class="uses-all">' + all + '</div>' : '');
+  const q = sec.querySelector('.uses-q');
+  if(q) q.addEventListener('input', () => {
+    const words = q.value.trim().toLowerCase().split(/\s+/).filter(Boolean), els = sec.querySelector('.uses-list').children;
+    let shown = 0;
+    list.forEach((x, i) => { const hit = words.every(w => x.h.includes(w)); els[i].hidden = !hit; shown += hit; });
+    sec.querySelector('.uses-none').hidden = shown > 0;
+  });
 }
 
 /* Render a list of cards into a grid. Cards that stay glide to their new place, new cards fly in,
