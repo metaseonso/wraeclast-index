@@ -6,9 +6,11 @@
      /item/*, /gems, /uniques, /passives, /currency, /keywords, /sitemap.xml, /llms.txt, /search
                          plain pages for search engines and AI search: worker/seo.js
      /data/rollprices.json, /data/farmprices.json
-                         live trade prices, pulled a little every minute by the scheduled job: worker/prices.js */
+                         live trade prices, pulled a little every minute by the scheduled job: worker/prices.js
+     /api/trade/searches popular Trade page searches (GET), and counting one (POST): worker/community.js */
 import * as seo from './seo.js';
 import { runPrices, servePrices } from './prices.js';
+import { tradeSearches } from './community.js';
 
 const MARKET_SOURCE = 'https://metaseonso.github.io/wraeclast-index/data/market.json';
 const UA = 'wraeclast-index/1.0 (+https://wraeclastindex.fyi)';
@@ -18,6 +20,7 @@ export default {
     const url = new URL(request.url);
     if(url.pathname === '/data/market.json') return market(request, env);
     if(url.pathname === '/api/pob') return pob(url);
+    if(url.pathname === '/api/trade/searches') return tradeSearches(request, env, ctx, url);
     if(url.pathname === '/data/rollprices.json') return servePrices(request, env, ctx, 'roll');
     if(url.pathname === '/data/farmprices.json') return servePrices(request, env, ctx, 'farm');
     if(seo.handles(url.pathname)) return seo.respond(request, env, ctx, () => market(new Request(url.origin + '/data/market.json'), env));

@@ -26,7 +26,7 @@ const EXAMPLES = [
 const blank = () => ({item: null, rarity: '', types: [], groups: [], ilvl: '', quality: '', lvl: '', sockets: '', states: {},
   price: '', cur: 'divine', indexed: '', online: true});
 
-let T, EL, S = blank(), MOD = new Map();
+let T, EL, S = blank(), MOD = new Map(), POP = [];
 
 /* ---------- state in the address ---------- */
 function load(){
@@ -124,6 +124,50 @@ function summary(){
   return bits.join(', ') + '. ' + extra.join(', ') + '.';
 }
 
+/* ---------- popular searches (everyone's, from the site's database) ----------
+   Only names that exist in the game data are shown, so nothing typed by a person can appear here. */
+function itemName(it){
+  if(!it) return '';
+  if(it.k === 'category'){ const c = T.options.category.find(o => o[0] === it.v); return c ? c[1] : ''; }
+  if(it.k === 'unique') return T.uniques[it.v] ? it.v : '';
+  if(it.k === 'base') return Object.values(T.bases).some(list => list.includes(it.v)) ? it.v : '';
+  return '';
+}
+function modLabel(m){
+  const info = MOD.get(m.id);
+  if(!info) return '';
+  const t = m.v !== '' && m.v !== undefined && isFinite(+m.v) ? info.t.replace('#', +m.v) : info.t;
+  return t.replace(/#/g, 'X');
+}
+function popLabel(s){
+  if(s.item && !itemName(s.item)) return '';
+  const mods = (s.groups || []).flatMap(g => g.mods || []);
+  if(mods.some(m => !MOD.has(m.id))) return '';
+  const bits = [itemName(s.item), ...mods.slice(0, 2).map(modLabel)].filter(Boolean);
+  return bits.length ? bits.join(' · ') + (mods.length > 2 ? ' · +' + (mods.length - 2) + ' more' : '') : '';
+}
+function popHTML(){
+  const rows = POP.map((p, i) => ({i, label: popLabel(p.s), n: p.n})).filter(r => r.label).slice(0, 8);
+  return rows.length ? '<span class="lbl">Popular now</span>' + rows.map(r => '<button type="button" class="chip" data-pop="' + r.i +
+    '" title="' + esc(r.label) + ' · searched ' + r.n + (r.n === 1 ? ' time' : ' times') + ' this week">' + esc(r.label) + '</button>').join('') : '';
+}
+async function loadPop(){
+  try {
+    const r = await fetch('api/trade/searches', {cache: 'no-cache'});
+    POP = r.ok ? ((await r.json()).popular || []) : [];
+  } catch { POP = []; }
+  const host = EL && EL.querySelector('.tp-pop');
+  if(host) host.innerHTML = popHTML();
+}
+/* count this search as used (when it is opened or copied) */
+function record(){
+  if(!S.item && !S.groups.some(g => g.mods.length)) return;
+  try {
+    fetch('api/trade/searches', {method: 'POST', keepalive: true, body: JSON.stringify(S),
+      headers: {'Content-Type': 'application/json', 'X-WI': '1'}}).catch(() => {});
+  } catch {}
+}
+
 /* ---------- pickers ---------- */
 function itemMatches(q){
   q = q.trim().toLowerCase();
@@ -178,6 +222,7 @@ export async function mount(el){
   }
   S = load();
   draw();
+  loadPop();
   return {update};
 }
 function update(){ const s = load(); if(JSON.stringify(s) !== JSON.stringify(S)){ S = s; draw(); } }
@@ -217,6 +262,7 @@ function draw(){
   const url = searchURL(D.market ? D.market.league : 'Standard', query());
   EL.innerHTML =
     '<div class="pagehd"><h2>Trade</h2><p>Build any trade search in plain words, then open it on the official site.</p></div>' +
+    '<div class="tp-pop">' + popHTML() + '</div>' +
     '<div class="tp-ex">' + EXAMPLES.map(([l], i) => '<button type="button" class="chip" data-ex="' + i + '">' + esc(l) + '</button>').join('') +
       '<button type="button" class="linkbtn" data-act="reset">Start over</button></div>' +
     '<div class="panel tp">' +
@@ -289,7 +335,14 @@ function wire(){
     else if(t.tagName === 'SELECT'){ S[k] = t.value; refresh(); }
   });
   EL.addEventListener('click', e => {
+    if(e.target.closest('.tp-out a.gold')) return record();
     const b = e.target.closest('button'); if(!b) return;
+    if(b.dataset.pop !== undefined){
+      const p = POP[+b.dataset.pop]; if(!p) return;
+      const s = JSON.parse(JSON.stringify(p.s));
+      if(s.item) s.item.n = itemName(s.item);
+      S = {...blank(), ...s}; return commit();
+    }
     const g = b.closest('.tp-group'), m = b.closest('.tp-mod'), seg = b.closest('.seg');
     if(b.dataset.ex !== undefined){ S = {...blank(), ...JSON.parse(JSON.stringify(EXAMPLES[+b.dataset.ex][1]))}; return commit(); }
     if(b.dataset.addg){ S.groups.push(b.dataset.addg === 'count' ? {t: 'count', n: 1, mods: []} : {t: b.dataset.addg, mods: []}); return commit(); }
@@ -300,6 +353,7 @@ function wire(){
     if(seg && seg.dataset.k === 'op'){ S.groups[+g.dataset.g].mods[+m.dataset.m].op = b.dataset.v; return commit(); }
     if(seg && seg.dataset.state){ S.states[seg.dataset.state] = b.dataset.v; return commit(); }
     if(b.classList.contains('tcopy')){
+      record();
       const url = searchURL(D.market ? D.market.league : 'Standard', query());
       navigator.clipboard && navigator.clipboard.writeText(url).then(() => { b.textContent = 'Copied'; setTimeout(() => b.textContent = 'Copy link', 1400); });
     }

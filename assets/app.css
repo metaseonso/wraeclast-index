@@ -219,3 +219,7 @@ small.at-bonus{display:block}
   .at-t{width:62px}
   .at-bar .seg{width:100%}
 }
+/* Trade page: popular searches from everyone */
+.tp-pop{display:flex; flex-wrap:wrap; align-items:center; gap:6px; margin:0 0 10px}
+.tp-pop:empty{display:none}
+.tp-pop .chip{max-width:340px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
