@@ -572,7 +572,7 @@ ready.then(() => {
   const st = $('#stamp');
   if(D.market) st.innerHTML = 'Prices: <b>' + esc(D.market.league) + '</b> · ' + ago(D.market.updated);
   else st.textContent = 'Prices not loaded yet';
-  import('./league.js').then(m => m.mountLeague($('#leaguebar'))).catch(() => {});   // the league clock
+  import('./league.js').then(m => m.mountLeague($('#leagueclock'))).catch(() => {});   // the league clock
   // fetch the drill-down page in the background once this page is idle, so Gems / Uniques / Passive tree open fast
   (window.requestIdleCallback || (f => setTimeout(f, 2500)))(() => {
     const l = document.createElement('link'); l.rel = 'prefetch'; l.href = 'explore'; document.head.appendChild(l);

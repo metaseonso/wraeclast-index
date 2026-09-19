@@ -76,7 +76,7 @@ h1,h2,h3{margin:0; text-wrap:balance}
 .hero-sub{color:var(--muted); margin:6px 0 22px; font-size:14px; transition:opacity .3s, max-height .45s, margin .45s; max-height:90px; overflow:hidden}
 .hero-tag{display:block; font-family:var(--disp); font-size:17px; color:var(--text); letter-spacing:.02em}
 .hero-more{display:block; margin-top:4px; font-size:13px}
-.hero.docked .leaguebar,.hero.docked .hero-title,.hero.docked .hero-sub{opacity:0; max-height:0; margin:0; transform:translateY(-8px)}
+.hero.docked .hero-title,.hero.docked .hero-sub{opacity:0; max-height:0; margin:0; transform:translateY(-8px)}
 
 .searchbox{position:relative; width:min(720px, 100%)}
 .searchbox input{width:100%; height:56px; border-radius:14px; border:1px solid var(--line); background:var(--surface);
@@ -295,12 +295,13 @@ small.at-bonus{display:block}
 .tp-pop{display:flex; flex-wrap:wrap; align-items:center; gap:6px; margin:0 0 10px}
 .tp-pop:empty{display:none}
 .tp-pop .chip{max-width:340px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
-/* the league clock at the top of home (assets/league.js) */
-.leaguebar{margin:0 auto 6px; text-align:center; font-size:12.5px; color:var(--muted); transition:opacity .3s, max-height .45s, margin .45s; max-height:60px; overflow:hidden}
-.leaguebar b{color:var(--text); font-weight:600}
-.leaguebar .lb-left{color:var(--accent)}
-.leaguebar .lb-sep{color:var(--faint); margin:0 6px}
-.leaguebar .lb-src{margin-left:8px; font-size:11px; color:var(--faint)}
-.leaguebar .lb-src:hover{color:var(--muted)}
+/* the league clock in the home page's top bar (assets/league.js) */
+.leagueclock{font-size:11.5px; color:var(--faint); white-space:nowrap; font-variant-numeric:tabular-nums}
+.leagueclock b{color:var(--muted); font-weight:600}
+.leagueclock .lc-up, .leagueclock .lc-down{font-family:var(--mono); color:var(--text)}
+.leagueclock .lc-down{color:var(--accent)}
+.leagueclock .lc-sep{margin:0 8px; color:var(--line)}
+body:not([data-route="home"]) .leagueclock{display:none}
+@media (max-width:640px){ .leagueclock{flex-basis:100%; order:100; text-align:center; white-space:normal} }
 /* phones: the fog drifts past the crest but never makes the page wider than the screen */
 @media (max-width:760px){ .hero{overflow-x:clip} }
