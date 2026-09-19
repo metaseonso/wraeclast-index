@@ -3,14 +3,17 @@
 The artifact page (gems, uniques, passive tree) is the drill-down. This script:
   1. rewrites each unique's mod lines to the official ones (data/uniques.json, from tools/uniques.py),
      keeping the keyword links wherever the wording matches
-  2. copies the page to explore.html and adds the small bridge script that links it to the home page
-  3. builds data/index.json, the compact search index the home page loads (with the base items, the Atlas and the
-     currency the catalogue lacks, from tools/morecards.py; lineage support gems are marked "li")
+  2. copies the page to explore.html and adds the small bridge script that links it to the home page; the page's data
+     goes to data/explore/ (see "the drill-down page's data, outside the page")
+  3. builds data/index.json, the compact search index (with the base items, the Atlas and the currency the catalogue
+     lacks, from tools/morecards.py; lineage support gems are marked "li"), and its two parts the home page loads
+     (tools/appdata.py)
   4. gives every card without a sprite an official game image (see "card images" below)
 
 Usage:  python tools/sync.py path/to/artifact.html
 """
 import gzip
+import hashlib
 import json
 import re
 import sys
@@ -39,37 +42,64 @@ SEO = ('<title>PoE2 gems, uniques and passive tree · Wraeclast Index</title>'
        '"isPartOf":{"@type":"WebSite","@id":"https://wraeclastindex.fyi/#website","name":"Wraeclast Index","url":"https://wraeclastindex.fyi/"},'
        '"about":{"@type":"VideoGame","@id":"https://wraeclastindex.fyi/#game","name":"Path of Exile 2"}}</script>')
 TITLE = '<title>Wraeclast Index</title>\n'   # the artifact's own title, in <body>: SEO's title takes its place
-# In <head>, so the drill-down never paints in its old look first: the fonts, the shared card and
-# theme styles, the drill-down's own additions, the forged-bronze look, and the icon.
-HEAD = SEO + ('<link rel="icon" type="image/png" sizes="64x64" href="assets/brand/favicon-64.png">'
-        '<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>'
-        '<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&display=swap">'
-        '<link rel="stylesheet" href="assets/cards.css"><link rel="stylesheet" href="assets/theme.css">'
-        '<link rel="stylesheet" href="assets/bridge.css"><link rel="stylesheet" href="assets/look.css">')
-# The header as the app draws it: the brand is a link home with the crest, then the app's own tabs.
+# In <head>, so the drill-down never paints in its old look first: the icon, the fonts (the site's own copies in
+# assets/fonts, @font-face in theme.css; the two that paint first are preloaded), the shared card and theme styles,
+# the drill-down's own additions and the forged-bronze look.
+CSS = ('<link rel="stylesheet" href="assets/cards.css"><link rel="stylesheet" href="assets/theme.css">'
+       '<link rel="stylesheet" href="assets/bridge.css"><link rel="stylesheet" href="assets/look.css">')
+ICON = '<link rel="icon" type="image/png" sizes="64x64" href="assets/brand/favicon-64.png">'
+FONTS = ('<link rel="preload" href="assets/fonts/ibmplexsans-latin.woff2" as="font" type="font/woff2" crossorigin>'
+         '<link rel="preload" href="assets/fonts/cinzel-latin.woff2" as="font" type="font/woff2" crossorigin>')
+HEAD = SEO + ICON + FONTS + CSS
+HEAD_OLD = SEO + ICON + CSS   # the head before ticket 39, once its Google Fonts links are gone (GOOGLE_FONTS)
+GOOGLE_FONTS = re.compile(r'<link rel="(?:preconnect|stylesheet)" href="https://fonts\.(?:googleapis|gstatic)\.com[^"]*"(?: crossorigin)?>\n?')
+# The header as the app draws it: the brand is a link home with the crest, then the app's own tabs. Everything the
+# scripts fill in later is already there, the same size (the section tabs, the top search box, Suggest, the Patch
+# notes label), so the header never jumps; the wisp above the crest loads after the page (assets/bridge.js).
 MAST_OLD = '<h1 class="brand">Wraeclast <em>Index</em></h1>\n    <nav class="nav" id="nav" aria-label="Sections"></nav>'
-MAST_NEW = ('<a href="./" class="brand-link"><h1 class="brand"><span class="mark" aria-hidden="true">'
-            '<img class="mark-wisp" src="assets/brand/wisp-b.webp" alt="" decoding="async" fetchpriority="low">'
+NAV_BUTTONS = ''.join('<button type="button" data-k="%s" aria-pressed="%s">%s</button>' % (k, str(k == 'gems').lower(), label)
+                      for k, label in (('gems', 'Gems'), ('uniques', 'Uniques'), ('tree', 'Passive tree')))
+
+
+def mast(wisp, nav):
+    return ('<a href="./" class="brand-link"><h1 class="brand"><span class="mark" aria-hidden="true">' + wisp +
             '<img class="mark-logo" src="assets/brand/logo-64.webp" alt="" width="51" height="64"></span>Wraeclast <em>Index</em></h1></a>\n'
             '    <nav class="applinks" aria-label="Play"><a href="./#/"><i class="ti ti-search" aria-hidden="true"></i>Search</a><a href="./#/build"><i class="ti ti-build" aria-hidden="true"></i>Build</a><a href="./#/trade"><i class="ti ti-trade" aria-hidden="true"></i>Trade</a><a href="./#/farms"><i class="ti ti-farms" aria-hidden="true"></i>Farms</a></nav>\n'
             '    <div class="navgrp" role="group" aria-label="Look up"><nav class="applinks" aria-label="Tools"><a href="./#/craft"><i class="ti ti-craft" aria-hidden="true"></i>Craft</a><a href="./#/currency"><i class="ti ti-currency" aria-hidden="true"></i>Currency</a></nav>'
-            '<nav class="nav" id="nav" aria-label="Sections"></nav>'
+            '<nav class="nav" id="nav" aria-label="Sections">' + nav + '</nav>'
             '<nav class="applinks" aria-label="Atlas"><a href="./#/atlas"><i class="ti ti-atlas" aria-hidden="true"></i>Atlas</a></nav></div>')
+
+
+MAST_NEW = mast('<img class="mark-wisp" data-src="assets/brand/wisp-b.webp" alt="" decoding="async">', NAV_BUTTONS)
+MAST_PREV = mast('<img class="mark-wisp" src="assets/brand/wisp-b.webp" alt="" decoding="async" fetchpriority="low">', '')
 CL_OLD = '<button class="clbtn" id="clbtn" type="button">Patch notes</button>'
 # The keybindings button (assets/keys.js), the same markup as in index.html.
 KEYS_BTN = ('<button class="keysbtn" id="keysbtn" type="button" aria-haspopup="dialog" aria-label="Keybindings" title="Keybindings">'
             '<svg viewBox="0 0 20 20" aria-hidden="true"><rect x="2" y="5" width="16" height="10.5" rx="2" fill="none" stroke="currentColor" stroke-width="1.6"/>'
             '<path d="M5.6 8.6h.1M8.6 8.6h.1M11.4 8.6h.1M14.4 8.6h.1M6.5 12.1h7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></button>')
-CL_NEW = '<div class="topsearch" id="topsearch"></div>\n    ' + KEYS_BTN + '\n    ' + CL_OLD
+# the top search box as assets/app.js mountTopSearch() writes it (it keeps this one), and the Suggest button (assets/suggest.js)
+TOPSEARCH = ('<div class="topsearch" id="topsearch"><div class="tsearch"><svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="8.5" cy="8.5" r="5.5" fill="none" stroke="currentColor" stroke-width="1.8"/>'
+             '<path d="M13 13l4.5 4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>'
+             '<input type="search" placeholder="Search the index" autocomplete="off" spellcheck="false" aria-label="Search the index" '
+             'role="combobox" aria-expanded="false" aria-autocomplete="list"><kbd aria-hidden="true">/</kbd>'
+             '<div class="tsearch-drop" role="listbox" hidden></div></div></div>')
+SUGGEST_BTN = '<button id="suggestbtn" type="button" class="suggestbtn" title="Send an idea or report a problem">Suggest</button>'
+CL_BTN = '<button class="clbtn" id="clbtn" type="button">Patch notes <span class="ct wait">v0.00</span></button>'   # assets/notes.js writes the version
+CL_NEW = TOPSEARCH + '\n    ' + SUGGEST_BTN + '\n    ' + KEYS_BTN + '\n    ' + CL_BTN
+CL_PREV = '<div class="topsearch" id="topsearch"></div>\n    ' + KEYS_BTN + '\n    ' + CL_OLD
 
 RAW = re.compile(r'(?<![\w\[./-])[a-z][a-z0-9]*(?:_[a-z0-9%+]+){2,}(?:\s*=\s*-?\d+)?|\{[^}\s]{1,80}\}')
 
 
 def block(html, bid):
+    """One of the artifact's data blocks: in the page (the artifact), or in its file (explore.html, see externalize)."""
     m = re.search(r'<script id="%s" type="application/json">(.*?)</script>' % bid, html, re.S)
-    if not m:
-        sys.exit('missing data block: ' + bid)
-    return json.loads(m.group(1))
+    if m:
+        return json.loads(m.group(1))
+    f = data_files(html).get(bid)
+    if f and (ROOT / f).exists():
+        return json.loads((ROOT / f).read_text(encoding='utf-8'))
+    sys.exit('missing data block: ' + bid)
 
 
 def plain(t):
@@ -450,14 +480,140 @@ def build_index(html):
 
 
 # Prices on the drill-down page: never the snapshot baked into the artifact (poe.ninja), only the site's live file
-# (/data/market.json: uniques from real trade listings, emotions from the Currency Exchange). The baked numbers are
-# removed; the page's own script waits (at most 3 s) for the live file and fills them in before it draws, so its
-# price sorting and filters work on real prices.
-LIVE = ('<script>window.WI_MARKET=fetch("data/market.json").then(function(r){return r.ok?r.json():null}).catch(function(){return null});'
+# (/data/market.json: uniques from real trade listings, emotions from the Currency Exchange; ?part=now is every price
+# without the day-by-day history, worker/prices.js). The baked numbers are removed; the page's own script waits (at
+# most 3 s) for the live file and fills them in before it draws, so its price sorting and filters work on real prices.
+LIVE = ('window.WI_MARKET=(window.WI_DATA&&WI_DATA.one||Promise.resolve()).then(function(){return fetch("data/market.json?part=now")})'   # after the Gems table's files
+        '.then(function(r){return r.ok?r.json():null}).catch(function(){return null});'
         'window.wiLive=async function(UQ,TR){var m=await Promise.race([window.WI_MARKET,new Promise(function(r){setTimeout(function(){r(null)},3000)})]);'
         'if(!m||!m.items)return;var I=m.items;(UQ.items||[]).forEach(function(u){var p=I["u:"+u.n+" | "+u.b]||I["u:"+u.n];'
         'if(p&&p.v!=null){u.v=p.v;u.ls=p.ls;if(p.ch!=null)u.ch=p.ch;}});var E=(TR&&TR.emotions)||{};Object.keys(E).forEach(function(k){'
-        'var p=I["c:"+E[k].name];if(p&&p.v!=null){E[k].v=p.v;if(p.ch!=null)E[k].ch=p.ch;}});};</script>')
+        'var p=I["c:"+E[k].name];if(p&&p.v!=null){E[k].v=p.v;if(p.ch!=null)E[k].ch=p.ch;}});};')
+LIVE_TAG = re.compile(r'<script>window\.WI_MARKET=.*?</script>', re.S)   # the price script before ticket 39
+
+# ---- the drill-down page's data, outside the page ----
+# The artifact carries its data inline (<script type="application/json"> blocks, 4.7 MB). The site's page keeps only the
+# page: each block goes to data/explore/<name>.<hash>.json (a new name whenever it changes, so browsers keep the files a
+# year and the page never mixes two versions), fetched from <head> while the page paints (DATA_JS): the Gems table's
+# files first (FIRST), the rest right after them. The page's own scripts run in their order, each once the files it
+# reads are in (WI_DATA.run). Until the page has drawn its table (assets/bridge.js calls WI_DATA.show), the space under
+# the header stays empty, so nothing jumps.
+# cldata (the artifact's old changelog) is dropped: Patch notes come from data/changelog.json (assets/notes.js).
+# `python tools/sync.py explore.html` works too: inline() puts the page back in the artifact's form first.
+EXPLORE = ROOT / 'data' / 'explore'
+DATA_FILES = {'gemdata': 'gems', 'uqdata': 'uniques', 'trdata': 'tree', 'kwdata': 'keywords', 'jwdata': 'jewels'}
+DROP_BLOCKS = ('cldata',)
+FIRST = ('kwdata', 'gemdata')   # the Gems table, the page's first view
+BLOCK = re.compile(r'<script id="(\w+)" type="application/json">(.*?)</script>\n?', re.S)
+PARSE = re.compile(r"JSON\.parse\(document\.getElementById\('(\w+)'\)\.textContent\)")
+RUN = re.compile(r'<script>WI_DATA\.run\((\[[^\]]*\]),function\(\)\{(.*?)\}\);</script>', re.S)
+DATA_TAG = re.compile(r'<script id="wi-data">.*?</script>', re.S)
+DATA_JS = ('<script id="wi-data">/* the page\'s data (tools/sync.py): every file at once; each script runs in order once its files are in */\n'
+           '(function(){var F=__FILES__,W=__FIRST__;var D=window.WI_DATA={files:F},q=Promise.resolve(),got={};'
+           'document.documentElement.classList.add("wi-wait");'
+           'function load(b,n){return fetch(F[b]).then(function(r){if(!r.ok)throw Error(F[b]+" "+r.status);return r.json()})'
+           '.catch(function(e){if(n)throw e;return load(b,1)})}'
+           'function get(b){return got[b]||(got[b]=load(b,0).then(function(o){return D[b]=o}))}'
+           'D.one=Promise.all(W.filter(function(b){return F[b]}).map(get)).then(null,function(){});'
+           'D.one.then(function(){for(var b in F)get(b)});'   # the rest once the first view's files are in
+           'D.run=function(need,fn){var p=D.q=q=q.then(function(){return Promise.all(need.map(get))}).then(fn).catch(function(e){console.error(e)});'
+           'if(need.indexOf("gemdata")>=0)D.gems=p;return p};'
+           'D.show=function(){document.documentElement.classList.remove("wi-wait")};'
+           'addEventListener("DOMContentLoaded",function(){q.then(function(){setTimeout(D.show,1500)})});'   # in case assets/bridge.js never runs
+           '})();\n' + LIVE + '</script>')
+
+
+def data_files(html):
+    """The page's data files, as DATA_JS lists them: {block id: path}."""
+    m = re.search(r'var F=(\{[^{}]*\})[,;]', html)
+    return json.loads(m.group(1)) if m else {}
+
+
+def inline(html):
+    """An explore.html this script wrote, back in the artifact's form: the data blocks in the page, plain scripts."""
+    files = data_files(html)
+    html = LIVE_TAG.sub('', DATA_TAG.sub('', html))
+    if not files:
+        return html
+
+    def unwrap(m):
+        body = re.sub(r'\bWI_DATA\.(\w+)\b', lambda x: "JSON.parse(document.getElementById('%s').textContent)" % x.group(1), m.group(2))
+        return '<script>' + re.sub(r'^(\s*)return \(async function\(\)\{', r'\1(async function(){', body, count=1) + '</script>'
+    html = RUN.sub(unwrap, html)
+    at = html.index('<script>', html.index('<body>'))
+    blocks = ''.join('<script id="%s" type="application/json">%s</script>\n' % (b, (ROOT / f).read_text(encoding='utf-8'))
+                     for b, f in files.items())
+    return html[:at] + blocks + html[at:]
+
+
+def externalize(html):
+    """The data blocks out of the page into data/explore/, and the page's scripts made to wait for them."""
+    EXPLORE.mkdir(parents=True, exist_ok=True)
+    files = {}
+    for m in BLOCK.finditer(html):
+        bid = m.group(1)
+        if bid in DROP_BLOCKS:
+            continue
+        if bid not in DATA_FILES:
+            sys.exit('the artifact has a new data block %r: add it to DATA_FILES in tools/sync.py' % bid)
+        body = json.dumps(json.loads(m.group(2)), ensure_ascii=False, separators=(',', ':'))
+        rel = 'data/explore/%s.%s.json' % (DATA_FILES[bid], hashlib.sha1(body.encode('utf-8')).hexdigest()[:10])
+        (ROOT / rel).write_text(body, encoding='utf-8')
+        files[bid] = rel
+    # older versions go, except the one the site serves now: a page loaded just before the new one goes live still finds its files
+    live = ROOT / 'explore.html'
+    keep = set(files.values()) | set(data_files(live.read_text(encoding='utf-8')).values() if live.exists() else ())
+    for f in EXPLORE.glob('*.json'):
+        if 'data/explore/' + f.name not in keep:
+            f.unlink()
+    html = BLOCK.sub('', html)
+
+    def wrap(m):
+        body = m.group(1)
+        need = sorted(set(PARSE.findall(body)))
+        if not need:
+            return m.group(0)
+        missing = [b for b in need if b not in files]
+        if missing:
+            sys.exit('the drill-down script reads %s, which the page no longer carries: update tools/sync.py' % missing)
+        body = re.sub(r'^(\s*)\(async function\(\)\{', r'\1return (async function(){', PARSE.sub(lambda x: 'WI_DATA.' + x.group(1), body), count=1)
+        return '<script>WI_DATA.run(%s,function(){%s});</script>' % (json.dumps(need, separators=(',', ':')), body)
+    html = re.sub(r'<script>(.*?)</script>', wrap, html, flags=re.S)
+    js = DATA_JS.replace('__FILES__', json.dumps(files, separators=(',', ':'))).replace('__FIRST__', json.dumps(list(FIRST)))
+    return html.replace('</head>', js + '</head>', 1)
+
+
+# The page's scripts, for the site: the old changelog button code goes (assets/notes.js runs that button), the section
+# tabs replace the header's copies (NAV_BUTTONS), and the header shows the patch and gem count before the data is in.
+CL_CODE = "const CHANGELOG = JSON.parse(document.getElementById('cldata').textContent);\n"
+CL_LABEL = re.compile(r"\$\('#clbtn'\)\.innerHTML = .*?(?=function cl2\(\))", re.S)
+NAV_OLD = "const nav = $('#nav');\n"
+NAV_NEW = "const nav = $('#nav');\nnav.textContent = '';   // the header has the same buttons already (tools/sync.py NAV_BUTTONS)\n"
+# the Gems table shows before this script runs (assets/bridge.js): its first go() keeps where the player has scrolled to
+BOOT_OLD = "/* boot */\ngo('gems');\n"
+BOOT_NEW = "/* boot */\n{ const y = scrollY; go('gems'); if(y) scrollTo(0, y); }   // tools/sync.py BOOT_NEW\n"
+
+
+def site_scripts(html):
+    html = html.replace(CL_CODE, '')
+    html = CL_LABEL.sub('// the Patch notes button: assets/notes.js (data/changelog.json)\n', html, count=1)
+    if "getElementById('cldata')" in html or 'CHANGELOG' in html.split('<body>', 1)[1]:
+        sys.exit('the drill-down script still uses its changelog; update CL_CODE / CL_LABEL in tools/sync.py')
+    if NAV_NEW not in html:
+        if NAV_OLD not in html:
+            sys.exit('the drill-down script changed; update NAV_OLD in tools/sync.py')
+        html = html.replace(NAV_OLD, NAV_NEW, 1)
+    if BOOT_NEW not in html:
+        if BOOT_OLD not in html:
+            sys.exit('the drill-down script changed; update BOOT_OLD in tools/sync.py')
+        html = html.replace(BOOT_OLD, BOOT_NEW, 1)
+    gems = block(html, 'gemdata')
+    patch = re.sub(r'^4\.(\d+)\.(\d+).*$', r'0.\1.\2', str(gems['meta'].get('game_version') or ''))
+    live = sum(1 for g in gems['gems'] if not re.search(r'^\[DNT|^Removed Skill$', g['n']))   # the page's own count (CUT)
+    html = re.sub(r'<b id="patch">[^<]*</b>', '<b id="patch">%s</b>' % patch, html, count=1)
+    return re.sub(r'<b id="total">[^<]*</b>', '<b id="total">{:,}</b>'.format(live), html, count=1)
+
+
 UQ_OLD = """(function(){\n"use strict";\nconst UQ = JSON.parse(document.getElementById('uqdata').textContent);"""
 UQ_NEW = """(async function(){\n"use strict";\nconst UQ = JSON.parse(document.getElementById('uqdata').textContent);"""
 TR_OLD = "const TR = JSON.parse(document.getElementById('trdata').textContent);\n"
@@ -505,34 +661,41 @@ def live_prices(html):
 def main():
     if len(sys.argv) != 2:
         sys.exit(__doc__)
-    html = Path(sys.argv[1]).read_text(encoding='utf-8')
+    html = inline(Path(sys.argv[1]).read_text(encoding='utf-8'))
     html, n = with_official_uniques(html)
     print('uniques with official lines:', n, 'changed')
     index = build_index(html)
     (ROOT / 'data').mkdir(exist_ok=True)
     (ROOT / 'data' / 'index.json').write_text(
         json.dumps(index, ensure_ascii=False, separators=(',', ':')), encoding='utf-8')
-    if BRIDGE not in html:
-        html = html.replace('</body>', BRIDGE + '\n</body>', 1)
-    if HEAD not in html:
-        html = html.replace(TITLE, '', 1).replace('</head>', HEAD + '</head>', 1)
-    if LIVE not in html:
-        html = html.replace('</head>', LIVE + '</head>', 1)
-    html = live_prices(html)
-    for a, b in ((MAST_OLD, MAST_NEW), (CL_OLD, CL_NEW)):
-        if b not in html:
-            if a not in html:
-                sys.exit('the drill-down header changed; update MAST_OLD / CL_OLD in tools/sync.py')
-            html = html.replace(a, b, 1)
-    (ROOT / 'explore.html').write_text(html, encoding='utf-8', newline='')
+    import appdata   # the index in two parts for the home page (data/index-core.json, data/index-rest.json)
+    appdata.write(index)
+    (ROOT / 'explore.html').write_text(explore_page(html), encoding='utf-8', newline='')
     counts, bare = {}, {}
     for it in index['items']:
         counts[it['k']] = counts.get(it['k'], 0) + 1
         if not it.get('ic') and not it.get('img'):
             bare.setdefault(it['k'], []).append(it['n'])
-    print('explore.html written; index.json:', counts)
+    print('explore.html written (its data in data/explore/); index.json:', counts)
     for k, v in bare.items():
         print('  no image for %d %s cards:' % (len(v), k), ', '.join(v[:12]), file=sys.stderr)
+
+
+def explore_page(html):
+    """The artifact's page as the site serves it (explore.html): head, header, live prices, its data in files."""
+    if BRIDGE not in html:
+        html = html.replace('</body>', BRIDGE + '\n</body>', 1)
+    html = GOOGLE_FONTS.sub('', html)   # the fonts are the site's own (assets/fonts)
+    if HEAD not in html:
+        html = html.replace(HEAD_OLD, HEAD, 1) if HEAD_OLD in html else html.replace(TITLE, '', 1).replace('</head>', HEAD + '</head>', 1)
+    html = live_prices(html)
+    for new, olds in ((MAST_NEW, (MAST_PREV, MAST_OLD)), (CL_NEW, (CL_PREV, CL_OLD))):
+        if new not in html:
+            old = next((o for o in olds if o in html), None)
+            if not old:
+                sys.exit('the drill-down header changed; update MAST_OLD / CL_OLD in tools/sync.py')
+            html = html.replace(old, new, 1)
+    return externalize(site_scripts(html))
 
 
 if __name__ == '__main__':

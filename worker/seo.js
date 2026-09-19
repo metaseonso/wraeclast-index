@@ -596,9 +596,8 @@ ${noindex ? '<meta name="robots" content="noindex">' : `<link rel="canonical" hr
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="Wraeclast Index: Path of Exile 2, made easier for every kind of player.">
 <meta name="twitter:card" content="summary_large_image">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<link rel="preload" href="/assets/fonts/ibmplexsans-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/cinzel-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="/assets/app.css">
 <link rel="stylesheet" href="/assets/cards.css">
 <link rel="stylesheet" href="/assets/theme.css">
@@ -610,7 +609,7 @@ ${data ? '<script type="application/ld+json">' + JSON.stringify(data).replace(/<
 <body>
 <header class="top">
   <div class="top-in">
-    <a class="brand" href="/"><span class="mark" aria-hidden="true"><img class="mark-wisp" src="/assets/brand/wisp-b.webp" alt="" decoding="async" fetchpriority="low"><img class="mark-logo" src="/assets/brand/logo-64.webp" alt="" width="51" height="64"></span>Wraeclast <em>Index</em></a>
+    <a class="brand" href="/"><span class="mark" aria-hidden="true"><img class="mark-wisp on" src="/assets/brand/wisp-b.webp" alt="" decoding="async" fetchpriority="low"><img class="mark-logo" src="/assets/brand/logo-64.webp" alt="" width="51" height="64"></span>Wraeclast <em>Index</em></a>
     <nav class="tabs" aria-label="Sections">${tabs}</nav>
   </div>
 </header>

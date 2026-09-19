@@ -28,24 +28,28 @@
 {"@type":"VideoGame","@id":"https://wraeclastindex.fyi/#game","name":"Path of Exile 2"}
 ]}
 </script>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
-<link rel="preload" href="data/index.json" as="fetch" crossorigin>
-<link rel="preload" href="data/market.json" as="fetch" crossorigin>
-<link rel="modulepreload" href="assets/app.js"><link rel="modulepreload" href="assets/keys.js">
+<script>/* what the first cards need, asked for before anything else: the index's core and today's prices (assets/app.js
+   takes these; the rest of the index follows them) */
+window.WI_FIRST = {core: fetch('data/index-core.json'), now: fetch('data/market.json?part=now')};
+for(var k in WI_FIRST) WI_FIRST[k].catch(function(){});</script>
 <link rel="stylesheet" href="assets/app.css">
 <link rel="stylesheet" href="assets/cards.css">
 <link rel="stylesheet" href="assets/theme.css">
 <link rel="stylesheet" href="assets/look.css">
+<!-- the two fonts the first paint uses (the site's own copies: assets/fonts, theme.css) -->
+<link rel="preload" href="assets/fonts/cinzel-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="assets/fonts/ibmplexsans-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="modulepreload" href="assets/app.js"><link rel="modulepreload" href="assets/keys.js">
 <link rel="icon" type="image/png" sizes="64x64" href="assets/brand/favicon-64.png">
 <link rel="icon" type="image/png" sizes="32x32" href="assets/brand/favicon-32.png">
 </head>
 <body>
+<script>/* the tab first, so the top bar never changes shape on the first paint (assets/app.js show() keeps it) */
+document.body.dataset.route = (function(r){ return ['build','currency','trade','farms','atlas','craft'].indexOf(r) >= 0 ? r : 'home'; })((location.hash.match(/^#\/(\w+)/) || [])[1]);</script>
 
 <header class="top">
   <div class="top-in">
-    <a class="brand" href="#/"><span class="mark" aria-hidden="true"><img class="mark-wisp" src="assets/brand/wisp-b.webp" alt="" decoding="async" fetchpriority="low"><img class="mark-logo" src="assets/brand/logo-64.webp" alt="" width="51" height="64"></span>Wraeclast <em>Index</em></a>
+    <a class="brand" href="#/"><span class="mark" aria-hidden="true"><img class="mark-wisp" data-src="assets/brand/wisp-b.webp" alt="" decoding="async"><img class="mark-logo" src="assets/brand/logo-64.webp" alt="" width="51" height="64"></span>Wraeclast <em>Index</em></a>
     <nav class="tabs" aria-label="Play">
       <a href="#/" data-route="home"><i class="ti ti-search" aria-hidden="true"></i>Search</a>
       <a href="#/build" data-route="build"><i class="ti ti-build" aria-hidden="true"></i>Build</a>
@@ -61,28 +65,30 @@
       <a href="#/atlas" data-route="atlas"><i class="ti ti-atlas" aria-hidden="true"></i>Atlas</a>
     </nav>
     <span class="grow"></span>
-    <div class="topsearch" id="topsearch"></div>
+    <div class="topsearch" id="topsearch"><div class="tsearch"><svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="8.5" cy="8.5" r="5.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M13 13l4.5 4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><input type="search" placeholder="Search the index" autocomplete="off" spellcheck="false" aria-label="Search the index" role="combobox" aria-expanded="false" aria-autocomplete="list"><kbd aria-hidden="true">/</kbd><div class="tsearch-drop" role="listbox" hidden></div></div></div>
+    <button id="notesbtn" type="button" class="notesbtn">Patch notes <span class="ct wait">v0.00</span></button>
+    <button id="suggestbtn" type="button" class="suggestbtn" title="Send an idea or report a problem">Suggest</button>
     <button class="keysbtn" id="keysbtn" type="button" aria-haspopup="dialog" aria-label="Keybindings" title="Keybindings"><svg viewBox="0 0 20 20" aria-hidden="true"><rect x="2" y="5" width="16" height="10.5" rx="2" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M5.6 8.6h.1M8.6 8.6h.1M11.4 8.6h.1M14.4 8.6h.1M6.5 12.1h7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></button>
-    <span class="stamp" id="stamp">Loading prices…</span>
+    <span class="stamp wait" id="stamp">Loading prices…</span>
   </div>
 </header>
 
 <main>
   <!-- Home: one search bar, front and center -->
   <section class="view" id="view-home" data-view="home">
-    <p class="leagueclock" id="leagueclock" hidden></p>
+    <p class="leagueclock" id="leagueclock"></p>
     <div class="hero" id="hero">
       <div class="emblem" aria-hidden="true">
         <div class="fog back">
-          <img class="haze" src="assets/brand/haze.webp" alt="" decoding="async" fetchpriority="low">
-          <img class="haze m" src="assets/brand/haze.webp" alt="" decoding="async" fetchpriority="low">
-          <img class="bank b1" src="assets/brand/fog-bank.webp" alt="" decoding="async" fetchpriority="low">
-          <img class="bank b1 m" src="assets/brand/fog-bank.webp" alt="" decoding="async" fetchpriority="low">
+          <img class="haze" data-src="assets/brand/haze.webp" alt="" decoding="async">
+          <img class="haze m" data-src="assets/brand/haze.webp" alt="" decoding="async">
+          <img class="bank b1" data-src="assets/brand/fog-bank.webp" alt="" decoding="async">
+          <img class="bank b1 m" data-src="assets/brand/fog-bank.webp" alt="" decoding="async">
         </div>
-        <img class="emblem-logo" src="assets/brand/logo-320.webp" alt="" width="253" height="320">
+        <img class="emblem-logo" src="assets/brand/logo-320.webp" alt="" width="253" height="320" fetchpriority="high">
         <div class="fog front">
-          <img class="bank b2" src="assets/brand/fog-bank.webp" alt="" decoding="async" fetchpriority="low">
-          <img class="bank b2 m" src="assets/brand/fog-bank.webp" alt="" decoding="async" fetchpriority="low">
+          <img class="bank b2" data-src="assets/brand/fog-bank.webp" alt="" decoding="async">
+          <img class="bank b2 m" data-src="assets/brand/fog-bank.webp" alt="" decoding="async">
         </div>
       </div>
       <h1 class="hero-title">Wraeclast <em>Index</em></h1>
@@ -92,11 +98,13 @@
         <input id="q" type="search" placeholder="Search anything — a gem, a unique, a keystone, a currency…" autocomplete="off" spellcheck="false" aria-label="Search the index">
         <kbd class="searchbox-kbd" aria-hidden="true">/</kbd>
       </div>
-      <div class="kinds" id="kinds" role="group" aria-label="Show only"></div>
+      <div class="kinds" id="kinds" role="group" aria-label="Show only"><button type="button" class="chip" data-k="all" aria-pressed="true">All<span class="ct"></span></button><button type="button" class="chip" data-k="g" aria-pressed="false">Gems<span class="ct"></span></button><button type="button" class="chip" data-k="u" aria-pressed="false">Uniques<span class="ct"></span></button><button type="button" class="chip" data-k="p" aria-pressed="false">Passives<span class="ct"></span></button><button type="button" class="chip" data-k="b" aria-pressed="false">Bases<span class="ct"></span></button><button type="button" class="chip" data-k="a" aria-pressed="false">Atlas<span class="ct"></span></button><button type="button" class="chip" data-k="c" aria-pressed="false">Currency<span class="ct"></span></button><button type="button" class="chip" data-k="w" aria-pressed="false">Keywords<span class="ct"></span></button></div>
     </div>
     <figure class="quote" id="quote"><blockquote>Make Leapslam Great again.</blockquote><figcaption>Seonso</figcaption></figure>
+    <script>/* a search in the address (#/?q=...): the hero starts docked and the quote hidden, as assets/app.js leaves them */
+    if(/^#\/\?(.*&)?q=[^&]/.test(location.hash)){ document.getElementById('hero').classList.add('docked'); document.getElementById('quote').hidden = true; }</script>
     <p class="status" id="status" aria-live="polite"></p>
-    <div class="cards" id="cards"></div>
+    <div class="cards wait" id="cards"></div>
     <div class="more" id="more" hidden><span class="note">Loading more…</span></div>
   </section>
 

@@ -64,6 +64,7 @@ h1,h2,h3{margin:0; text-wrap:balance}
 .grow{flex:1}
 .stamp{font-size:11.5px; color:var(--faint); white-space:nowrap}
 .stamp b{color:var(--muted); font-weight:500}
+.stamp.wait{min-width:190px}   /* about the width of "Prices: <league> · 1 h ago", so the top bar keeps its shape while it loads */
 
 /* ---------- home ---------- */
 .view{max-width:1400px; margin:0 auto; padding:0 16px 40px}
@@ -103,6 +104,7 @@ h1,h2,h3{margin:0; text-wrap:balance}
 .quote figcaption::before{content:'\2014\00a0'}
 .quote[hidden]{display:none}
 .status{text-align:center; color:var(--faint); font-size:12.5px; min-height:18px; margin:6px 0 14px}
+.cards.wait{min-height:100vh}   /* until the first cards are in (assets/app.js homeRender): the footer stays out of the way */
 .status b{color:var(--muted); font-weight:500}
 
 
@@ -297,6 +299,7 @@ small.at-bonus{display:block}
 .tp-pop .chip{max-width:340px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
 /* the league clock just below the header on home (assets/league.js) */
 .leagueclock{margin:10px auto 0; text-align:center; font-size:12px; color:var(--faint); font-variant-numeric:tabular-nums}
+.leagueclock:empty::before{content:'\00a0'}   /* its line is kept while it loads, so the crest and search box never jump */
 .leagueclock b{color:var(--muted); font-weight:600}
 .leagueclock .lc-up, .leagueclock .lc-down{font-family:var(--mono); color:var(--text)}
 .leagueclock .lc-down{color:var(--accent)}

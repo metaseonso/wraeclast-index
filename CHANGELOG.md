@@ -3,6 +3,35 @@
 The full list of changes. The public patch notes (data/changelog.json, shown on the site) stay short.
 Add the details here first, then a short public line there.
 
+## Next — Speed (#39)
+- Home: data/index.json split for the page by tools/appdata.py (run by sync.py and kwuse.py): index-core.json (u and c
+  cards, the kinds' order, atlas names the market must skip, lineage names; ~58 KB br) and index-rest.json (everything
+  else, keystone keywords, the core cards' keyword chips; ~253 KB br); items grouped by kind, id left out where it
+  equals the name, both parts carry the same id (a mismatch refetches both). index.json stays whole (seo.js, tools).
+  app.js: `first` (core + prices) draws the first cards; `ready` (all) gates search, popups and the other tabs; the rest
+  starts after the first files. index.html fetches the two first files from an inline script before its styles
+  (a link preload was not reused under the service worker).
+- worker/prices.js: /data/market.json?part=now (no h/pairs: 68 KB br instead of 130) and ?part=past (only those);
+  each part cached on its own. Plain /data/market.json unchanged (seo.js).
+- explore.html: the artifact's data blocks moved to data/explore/<name>.<hash>.json (gems, uniques, tree, keywords,
+  jewels; cldata dropped); tools/sync.py DATA_JS fetches them (Gems table's files first) and runs the page's three
+  scripts in order as their files arrive (WI_DATA.run). inline() turns a written page back into the artifact's form, so
+  `sync.py explore.html` still works. Header written complete (section tabs, patch and gem count, top search box,
+  Suggest, Patch notes label) and the sections hidden until drawn (bridge.js WI_DATA.show): CLS 1.1 -> 0 (headless
+  Chrome, 1366 px). The page's own changelog code removed (notes.js runs that button). The previous data version is
+  kept on sync. /explore is always revalidated (_headers).
+- sw.js (new, service worker): per-deploy copy (BUILD = the deploy's version id, written by worker/index.js from the
+  CF_VERSION_METADATA binding; wrangler.jsonc version_metadata, /sw.js in run_worker_first). Pages and site files come
+  from the copy of the deploy the page was loaded with (client id -> deploy kept in cache wi-meta); other pages get the
+  network. Precaches the shell and the drill-down data at install (replaces the home page's explore prefetch).
+  Unstamped (Pages, local) it does nothing and unregisters.
+- Fonts self-hosted (assets/fonts, woff2 from Google Fonts, OFL files alongside): Cinzel (variable 500-700), IBM Plex
+  Sans (variable 400-600), IBM Plex Mono 400/500/600; latin, latin-ext and the other subsets by unicode-range.
+  Fraunces dropped (unused: theme.css sets --disp to Cinzel). Removed from index, explore, privacy, admin and seo.js.
+- Layout shift on home: kind chips, Patch notes / Suggest buttons and the top search box in the HTML; the league clock
+  and price stamp keep their space; the card grid keeps the footer out of view until the first cards. Fog and wisps load
+  after the first cards (data-src; each fog layer fades in, a wisp's loop starts when loaded).
+
 ## v0.23 — The whole game in one search (19 Sep 2026)
 - #37 (helper): tools/morecards.py (called from tools/sync.py build_index): 1,554 base cards (kind b; RePoE bases that are
   also on the trade site's list; requirements, implicits, properties, keywords, official art), 368 atlas cards (kind a:

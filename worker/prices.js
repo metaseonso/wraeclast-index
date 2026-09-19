@@ -17,6 +17,8 @@
 
    /data/market.json   every item's price (the shape the pages read), only from these checks. Names, pictures
                        and descriptions come from the hourly catalogue (market.json); its prices are dropped.
+                       ?part=now: the same without the day-by-day history (h) and the exchange pairs (half the size:
+                       what the first cards need); ?part=past: only those, for the charts (assets/app.js)
    /data/rollprices.json, /data/farmprices.json   the slider and farm prices */
 
 import { published, fromServer } from './files.js';
@@ -132,8 +134,10 @@ function fields(r){
 
 /* ---------- /data/market.json ---------- */
 const DROP = ['v', 'ch', 'sp', 'vol', 'pair', 'gap', 'routes', 'arb', 'h', 'ls'];   // the catalogue's own prices: never shown
+const LATER = ['h', 'pairs'];   // the fields ?part=past carries and ?part=now leaves out
 export async function serveMarket(request, env, ctx){
-  const url = new URL(request.url), ck = new Request(url.origin + '/data/market.json?from=trade');
+  const url = new URL(request.url), part = ({now: 'now', past: 'past'})[url.searchParams.get('part')] || '';
+  const ck = new Request(url.origin + '/data/market.json?from=trade' + (part ? '&part=' + part : ''));
   const hit = await caches.default.match(ck);
   if(hit) return hit;
   const cat = (await published(env, url.origin, 'market.json', ctx)) || {items: {}};
@@ -163,9 +167,19 @@ export async function serveMarket(request, env, ctx){
   }
   // uniques: real listings on the trade site
   for(const r of rows.results || []) items['u:' + r.key.slice(5)] = {...fields(r), src: 'trade'};
-  const out = {league, updated, primary: 'divine', rates: rate ? {exalted: rate} : {},
+  let out = {league, updated, primary: 'divine', rates: rate ? {exalted: rate} : {},
     source: 'Currency Exchange and trade site listings', builds: cat.builds,
     markets: cx.league === league ? (cx.markets || []).slice(0, 40) : [], items};
+  if(part){   // each part cached on its own (a few minutes apart at most: the history moves once a day)
+    const now = {}, past = {};
+    for(const [k, it] of Object.entries(items)){
+      const a = {}, b = {};
+      for(const [f, v] of Object.entries(it)) (LATER.includes(f) ? b : a)[f] = v;
+      now[k] = a;
+      if(Object.keys(b).length) past[k] = b;
+    }
+    out = part === 'now' ? {...out, part, items: now} : {league, updated, part, items: past};
+  }
   const res = new Response(JSON.stringify(out), {headers: {'Content-Type': 'application/json; charset=utf-8',
     'Cache-Control': 'public, max-age=300, stale-while-revalidate=600'}});
   ctx.waitUntil(caches.default.put(ck, res.clone()));

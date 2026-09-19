@@ -32,7 +32,7 @@ Output groups per keyword: u uniques, g gems, p passives, b bases, e essences (r
 m crafting (rows of "cr"), c currency (rows of "cu"), w keywords.
 
 Usage:  python tools/kwuse.py [explore.html]
-Run last: after tools/atlas.py, tools/craft.py and tools/sync.py (it reads explore.html, data/index.json,
+Run last: after tools/atlas.py, tools/craft.py and tools/sync.py (it reads explore.html and its data/explore/ files, data/index.json,
 data/atlas.json, data/info.json, data/market.json and data/craft/).
 """
 import json
@@ -529,6 +529,8 @@ def main():
     if changed:
         (ROOT / 'data' / 'index.json').write_text(json.dumps(index, ensure_ascii=False, separators=(',', ':')), encoding='utf-8')
     print('data/index.json: "Used by" counts on %d keyword cards updated' % changed)
+    import appdata   # and its two parts for the home page
+    appdata.write()
 
     check(kw, out_k, sp, gems, uq, tr, uniq)
     if '-v' in sys.argv:

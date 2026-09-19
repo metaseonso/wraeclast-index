@@ -1,6 +1,6 @@
 // Cloudflare Worker for wraeclastindex.fyi. Cloudflare builds and publishes this on every push to main.
 // The site itself is static files (served straight from the edge); the worker only answers
-// /data/market.json (live prices), /api/* (things a browser cannot fetch on its own) and the
+// /data/market.json (live prices), /sw.js (the service worker, stamped with the deploy), /api/* (things a browser cannot fetch on its own) and the
 // plain pages for search engines and AI search (worker/seo.js: item pages, lists, sitemap, llms.txt).
 // The hourly data jobs (tools/pricepull.py, exchange.py, market.py, leagues.py) run on the data server (tools/vm/)
 // and send their results in (worker/prices.js, worker/files.js).
@@ -12,9 +12,11 @@
   "assets": {
     "directory": ".",
     "binding": "ASSETS",
-    "run_worker_first": ["/data/market.json", "/data/leagues.json", "/data/rollprices.json", "/data/farmprices.json", "/api/*", "/item/*", "/gems", "/uniques", "/passives", "/bases", "/atlas", "/currency",
+    "run_worker_first": ["/data/market.json", "/sw.js", "/data/leagues.json", "/data/rollprices.json", "/data/farmprices.json", "/api/*", "/item/*", "/gems", "/uniques", "/passives", "/bases", "/atlas", "/currency",
                          "/keywords", "/sitemap.xml", "/llms.txt", "/llms-full.txt", "/search"]
   },
+  // the deploy's version id, written into /sw.js by the worker (worker/index.js serviceWorker)
+  "version_metadata": { "binding": "CF_VERSION_METADATA" },
   "d1_databases": [
     { "binding": "DB", "database_name": "wraeclast", "database_id": "d1c4d101-dce9-4f19-9dc3-4525eca2f17e", "migrations_dir": "worker/migrations" }
   ],

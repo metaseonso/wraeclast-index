@@ -13,20 +13,23 @@ async function load(){
 const label = log => 'Patch notes' + (log[0] ? ' <span class="ct">v' + esc(log[0].v) + '</span>' : '');
 
 export async function mountNotes(){
-  const log = await load();
   let b = document.getElementById('clbtn');   // the drill-down page's button: same list
   if(b){
-    b.innerHTML = label(log);
     b.addEventListener('click', e => { e.stopImmediatePropagation(); e.preventDefault(); open(); }, true);
-    return;
+  } else {
+    b = document.getElementById('notesbtn');   // the app writes it in its top bar (no jump on first paint)
+    if(b && b.dataset.on) return;
+    if(!b){
+      b = document.createElement('button');
+      b.id = 'notesbtn'; b.type = 'button'; b.className = 'notesbtn';
+      b.innerHTML = label([]);
+      const next = document.getElementById('suggestbtn') || document.getElementById('keysbtn');
+      if(next) next.before(b);
+    }
+    b.dataset.on = '1';
+    b.addEventListener('click', open);
   }
-  if(document.getElementById('notesbtn')) return;
-  b = document.createElement('button');
-  b.id = 'notesbtn'; b.type = 'button'; b.className = 'notesbtn';
-  b.innerHTML = label(log);
-  b.addEventListener('click', open);
-  const next = document.getElementById('suggestbtn') || document.getElementById('keysbtn');
-  if(next) next.before(b);
+  b.innerHTML = label(await load());   // the latest version number
 }
 
 async function open(){

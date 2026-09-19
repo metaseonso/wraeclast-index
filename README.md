@@ -33,14 +33,34 @@ The site is static. GitHub Pages serves it; a GitHub Action (`.github/workflows/
 | File | What it is |
 |---|---|
 | `index.html`, `assets/app.js`, `assets/app.css` | The app: search home page and the live card |
-| `explore.html` | The drill-down page (built from the Wraeclast Index artifact) |
-| `data/index.json` | Search index, built by `tools/sync.py`; the base item, Atlas and extra currency cards come from `tools/morecards.py` (kinds `b`, `a`, `c`) |
+| `explore.html` | The drill-down page (built from the Wraeclast Index artifact); its data sits in `data/explore/` (files named by their content) |
+| `data/index.json` | Search index, built by `tools/sync.py`; the base item, Atlas and extra currency cards come from `tools/morecards.py` (kinds `b`, `a`, `c`). The home page loads it in two parts, `data/index-core.json` and `data/index-rest.json` (`tools/appdata.py`) |
+| `sw.js` | The service worker (see Speed) |
+| `assets/fonts/` | The site's own copies of its fonts (Cinzel, IBM Plex Sans, IBM Plex Mono; SIL Open Font License) |
 | `data/kwuse.json` | What uses each keyword (the "Found on" lists on keyword cards), built by `tools/kwuse.py` |
 | `data/info.json`, `data/reqs.json` | Item text and requirements, built by `tools/gameinfo.py` |
 | `data/market.json` | Prices, rebuilt every hour by `tools/market.py` |
 | `data/atlas.json` | Atlas tab: waystones, tablets, keys, atlas items and the Atlas tree, built by `tools/atlas.py` (run after a game patch) |
 | `data/farms.json`, `data/farmqueries.json` | Farms tab: strategies from BawLoch's public tier list sheet and the trade searches for their rolled tablets and waystones, by hand with `python tools/farms.py` (`data/farmprices.json` holds those searches' prices) |
 | `data/craft.json`, `data/craft/` | Craft tab: every base and the mods it can roll (all tiers, item levels, groups), essences, runes and soul cores, desecrated and corruption mods, orbs, omens and catalysts, built by `tools/craft.py` from the game files (essence tables and orb levels checked on poe2db; run after a game patch, after `tools/tradedata.py`) |
+
+## Speed
+
+- **First visit.** The home page asks for what its first cards need before anything else: `data/index-core.json` (uniques
+  and currency cards) and `data/market.json?part=now` (today's prices without the day-by-day history). The rest of the
+  index and the history follow right after (`data/index-rest.json`, `?part=past`); search, the popups and the other tabs
+  wait for them, a moment later. The fog and wisps load after the first cards. The fonts are the site's own
+  (`assets/fonts`, only the weights in use; the two that paint first are preloaded).
+- **The drill-down page** is only the page (about 35 KB); its data comes from `data/explore/`, the Gems table's files
+  first. Until its table is drawn, the space under the header stays empty, so nothing jumps.
+- **Repeat visits** open from the browser's own copy: `sw.js` keeps each deploy's files together. The worker writes the
+  deploy's version id into it, so every deploy is a new copy and a page is never a mix of two deploys. After a deploy,
+  the next load still opens the copy it has while the new one downloads; the load after that is the new deploy (reload
+  twice to check a deploy in a browser that has visited before). Never kept: `/api/*`, `/admin`, the crawler pages and
+  the live price files (market, leagues, roll and farm prices).
+- **Nothing to run by hand:** `tools/sync.py` and `tools/kwuse.py` write the index parts and the drill-down files; after
+  editing `data/index.json` by hand, run `python tools/appdata.py`. To switch the service worker off everywhere, make
+  `sw.js` a file that only calls `self.registration.unregister()`.
 
 ## Findable (search engines and AI search)
 

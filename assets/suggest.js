@@ -3,13 +3,17 @@
 import { openBox } from './app.js';
 
 export function mountSuggest(){
-  if(document.getElementById('suggestbtn')) return;
-  const b = document.createElement('button');
-  b.id = 'suggestbtn'; b.type = 'button'; b.className = 'suggestbtn';
-  b.textContent = 'Suggest'; b.title = 'Send an idea or report a problem';
+  let b = document.getElementById('suggestbtn');   // the pages write it in their top bar (no jump on first paint)
+  if(b && b.dataset.on) return;
+  if(!b){
+    b = document.createElement('button');
+    b.id = 'suggestbtn'; b.type = 'button'; b.className = 'suggestbtn';
+    b.textContent = 'Suggest'; b.title = 'Send an idea or report a problem';
+    const keys = document.getElementById('keysbtn');   // top bar, just left of the keybind button
+    if(keys) keys.before(b); else document.body.appendChild(b);
+  }
+  b.dataset.on = '1';
   b.addEventListener('click', open);
-  const keys = document.getElementById('keysbtn');   // top bar, just left of the keybind button
-  if(keys) keys.before(b); else document.body.appendChild(b);
 }
 
 function open(){

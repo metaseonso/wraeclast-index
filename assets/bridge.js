@@ -23,15 +23,28 @@
   }
   const host = document.getElementById('topsearch');   // the same top search as the app, with the same popups
   let M = null;   // the app module, once loaded: its cards and popup
-  import('./app.js').then(m => { M = m; if(host) m.mountTopSearch(host); }).catch(() => host && host.remove());
+  // the page's data comes in files (tools/sync.py DATA_JS); WI_DATA.q is done when its scripts have drawn the page
+  const drawn = window.WI_DATA && WI_DATA.q ? WI_DATA.q : null;
+  const reveal = () => { if(window.WI_DATA && WI_DATA.show) WI_DATA.show(); };
+  // the plain Gems view shows as soon as its table is drawn; a link to a row, a keyword or another section waits for the whole page
+  if(drawn && WI_DATA.gems && /^(#gems)?$/.test(location.hash)) WI_DATA.gems.then(reveal);
+  // the app (top search, card popups) loads after the page's own data, so it never slows the tables down
+  const app = Promise.resolve(drawn).then(() => import('./app.js')).then(m => { M = m; if(host) m.mountTopSearch(host); return m; });
+  app.catch(() => host && host.remove());
+  // after the page: the wisp over the crest, then (once idle) the service worker (assets/app.js)
+  Promise.all([app, drawn]).then(([m]) => {
+    m.later();
+    (window.requestIdleCallback || (f => setTimeout(f, 1200)))(() => m.registerSW(), {timeout: 4000});
+  }).catch(() => {});
 
   // GGG's own wording for fan sites, and the privacy page, at the foot of the drill-down too
   if(!document.querySelector('.ggg-note')) document.body.insertAdjacentHTML('beforeend',
     '<p class="ggg-note">This product isn’t affiliated with or endorsed by Grinding Gear Games in any way. <a href="privacy">Privacy</a></p>');
 
   const sleep = ms => new Promise(r => setTimeout(r, ms));
-  // the page builds its section buttons only once live prices have loaded (tools/sync.py LIVE): wait for them
+  // the page builds its sections once its data and live prices are in (tools/sync.py): wait for that
   async function navReady(){
+    if(drawn) return drawn;
     for(let i = 0; i < 100 && !document.querySelector('#nav button'); i++) await sleep(50);
   }
   function navTo(label){
@@ -44,6 +57,9 @@
   }
   async function open(){
     await navReady();
+    try { await openHash(); } finally { reveal(); }   // the page shows once it is on the right section and row
+  }
+  async function openHash(){
     const f = location.hash.match(/^#(gems|uniques|tree)\?kw=(.+)$/);
     if(f) return filterBy(f[1], decodeURIComponent(f[2]));
     const m = location.hash.match(/^#(gems|uniques|tree)(?:=(.*))?$/);
@@ -101,7 +117,7 @@
     return null;
   }
   addEventListener('click', e => {
-    if(!M || !M.D.index || e.button !== 0 || e.ctrlKey || e.metaKey || e.shiftKey || e.altKey) return;
+    if(!M || !M.D.full || e.button !== 0 || e.ctrlKey || e.metaKey || e.shiftKey || e.altKey) return;
     if(e.target.closest('.ov')) return;   // inside the popup itself
     const kw = e.target.closest('.kw[data-k]');
     if(kw){
@@ -122,7 +138,7 @@
     M.openDetail(it, {onFull: () => full.call(tr)}, null);   // no "Open in" link: this is the drill-down
   }, true);
   addEventListener('keydown', e => {   // Enter on a keyword does the same as a click
-    if(e.key !== 'Enter' || !M || !M.D.index) return;
+    if(e.key !== 'Enter' || !M || !M.D.full) return;
     const kw = e.target.closest && e.target.closest('.kw[data-k]');
     const c = kw && M.keywordCard(kw.dataset.k);
     if(!c) return;

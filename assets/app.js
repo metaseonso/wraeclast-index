@@ -1,6 +1,6 @@
 /* Wraeclast Index — app shell, live cards, and the search-first home page.
-   Data files (all static, served by GitHub Pages):
-     data/index.json   search index built from the game data (tools/sync.py)
+   Data files (see "data" below):
+     data/index-core.json, data/index-rest.json   the search index built from the game data (tools/sync.py, tools/appdata.py)
      data/market.json  real prices only: currency from the in-game Currency Exchange, everything else from live
                        trade site listings (worker/prices.js); trends from the site's own daily prices
    Build usage links to poe.ninja's own builds page: their builds API is not open to other sites. */
@@ -10,46 +10,97 @@ export const $ = (s, el = document) => el.querySelector(s);
 export const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-/* ---------- data ---------- */
-export const D = { index: null, market: null, usage: null, byKey: new Map() };   // usage stays empty: see buildsHref
-async function getJSON(url){
-  const r = await fetch(url);   // the browser keeps it for 2 minutes (_headers), then checks for a new one
+/* ---------- data ----------
+   Two parts each, so the first cards never wait for the whole index (tools/appdata.py):
+     data/index-core.json   the uniques and currency cards: all the home page's first cards need
+     data/index-rest.json   everything else (gems, passives, keywords, bases, the Atlas)
+     data/market.json?part=now    every price, without the day-by-day history (worker/prices.js)
+     data/market.json?part=past   the history, for the charts
+   `first` is the core with today's prices: the home page's first cards. `ready` is all of it: search, the popups
+   and the other tabs wait for it (a moment later; the rest loads while the first cards fly in). */
+export const D = { index: null, market: null, usage: null, byKey: new Map(), full: false };   // usage stays empty: see buildsHref
+async function getJSON(url, opt, early){
+  const r = await (early || fetch(url, opt));   // the browser keeps it for 2 minutes (_headers), then checks for a new one
   if(!r.ok) throw new Error(url + ' ' + r.status);
   return r.json();
 }
-export const ready = (async () => {
-  const [index, market] = await Promise.all([
-    getJSON('data/index.json'),
-    getJSON('data/market.json').catch(() => null),
-  ]);
-  D.index = index; D.market = market;
-  const IMGS = index.imgs || {};   // images are stored short, "<key>:<path>"; the key names the image server
-  const named = new Map();   // atlas and bulk item cards of the index, by name (the market must not repeat them)
-  const lineage = new Set();  // lineage support gems: the market lists them too (the gem card shows that price)
-  for(const it of index.items){
-    if(it.img){ const i = it.img.indexOf(':'), pre = IMGS[it.img.slice(0, i)]; if(pre) it.img = pre + it.img.slice(i + 1); }
-    it._nl = it.n.toLowerCase();
-    it._hay = [it.n, it.s, it.t, it.q, it.asc, it.reg, (it.ls || []).join(' '), (it.tags || []).join(' '), (it.o || []).join(' ')]
-      .filter(Boolean).join(' ').toLowerCase();
-    D.byKey.set(it.k + ':' + it.id, it);
-    if(it.k === 'b'){ it.base = it.n; if(it.ls) it.ni = it.ls.length; }   // a base: every line is an implicit
-    if(it.k === 'a' || it.k === 'c'){ named.set(it.n, it); if(it.k === 'c') it.nx = true; }   // nx: not in the catalogue (yet)
-    if(it.k === 'g' && it.li) lineage.add(it.n);
+const EARLY = window.WI_FIRST || {};   // index.html asks for these two before its styles
+const CORE = getJSON('data/index-core.json', undefined, EARLY.core);
+const NOW = getJSON('data/market.json?part=now', undefined, EARLY.now).catch(() => null);
+// the rest starts once the first cards' files are in, so it never slows them down
+const AFTER = Promise.all([CORE, NOW]).catch(() => null);
+const REST = AFTER.then(() => getJSON('data/index-rest.json', {priority: 'low'}));
+// the history, only when the worker split it off (the backup site's market file has no parts: it is all in NOW)
+const PAST = AFTER.then(() => NOW).then(m => m && m.part === 'now' ? getJSON('data/market.json?part=past', {priority: 'low'}).catch(() => null) : null);
+
+function prep(it, k, IMGS){   // once per card: its kind, full image link and search words
+  if(it._nl !== undefined) return it;
+  it.k = k;
+  if(it.id === undefined) it.id = it.n;   // the parts leave the id out where it is the name
+  if(it.img){ const i = it.img.indexOf(':'), pre = IMGS[it.img.slice(0, i)]; if(pre) it.img = pre + it.img.slice(i + 1); }   // "<server key>:<path>"
+  it._nl = it.n.toLowerCase();
+  it._hay = [it.n, it.s, it.t, it.q, it.asc, it.reg, (it.ls || []).join(' '), (it.tags || []).join(' '), (it.o || []).join(' ')]
+    .filter(Boolean).join(' ').toLowerCase();
+  if(k === 'b'){ it.base = it.n; if(it.ls) it.ni = it.ls.length; }   // a base: every line is an implicit
+  if(k === 'c') it.nx = true;   // nx: not in the catalogue (yet)
+  return it;
+}
+const MC = new Map();   // the market's own currency cards, made once
+/* The index as the pages use it: every card in the index's own order, then the market's currency.
+   Without the rest (the first cards), only the core's kinds. */
+function assemble(core, rest){
+  const IMGS = core.imgs || {}, pool = {}, at = {};
+  for(const part of [core, rest]) if(part) for(const [k] of core.order) if(Array.isArray(part[k])){ pool[k] = part[k]; at[k] = 0; }
+  const items = [], byKey = new Map();
+  for(const [k, n] of core.order){
+    const list = pool[k]; if(!list) continue;
+    for(let i = 0; i < n && at[k] < list.length; i++){ const it = prep(list[at[k]++], k, IMGS); items.push(it); byKey.set(k + ':' + it.id, it); }
   }
+  if(rest) for(const [key, kw] of Object.entries(rest.ckw || {})){ const it = byKey.get(key); if(it) it.kw = kw; }
+  const named = new Map();   // atlas and bulk item cards of the index, by name (the market must not repeat them)
+  for(const it of items) if(it.k === 'a' || it.k === 'c') named.set(it.n, it);
+  const skip = rest ? new Set() : new Set(core.skip || []);   // cards the rest has: their prices wait for it
+  const lineage = new Set(core.li || []);   // lineage support gems: the market lists them too (the gem card shows that price)
   // currencies live in the market file; they join the search as their own kind
+  const market = D.market;
   if(market && market.items){
     for(const [key, m] of Object.entries(market.items)){
-      if(!key.startsWith('c:')) continue;
+      if(!key.startsWith('c:') || skip.has(m.n)) continue;
       const own = named.get(m.n);
       if(own){ own.nx = false; if(!own.img) own.img = m.ic; continue; }   // the index has it: its card, with the market's price
-      const it = {k:'c', id:key.slice(2), n:m.n, s:m.cat || 'Currency', t:m.u || '', img:m.ic, dl:m.dl};
-      if(lineage.has(m.n)) it.dup = true;   // kept for the Currency tab; the search shows the gem card
-      it._nl = it.n.toLowerCase(); it._hay = (it.n + ' ' + it.s + ' ' + it.t).toLowerCase();
-      index.items.push(it); D.byKey.set('c:' + it.id, it);
+      let it = MC.get(key);
+      if(!it){
+        it = {k:'c', id:key.slice(2), n:m.n, s:m.cat || 'Currency', t:m.u || '', img:m.ic, dl:m.dl};
+        if(lineage.has(m.n)) it.dup = true;   // kept for the Currency tab; the search shows the gem card
+        it._nl = it.n.toLowerCase(); it._hay = (it.n + ' ' + it.s + ' ' + it.t).toLowerCase();
+        MC.set(key, it);
+      }
+      items.push(it); byKey.set('c:' + it.id, it);
     }
   }
+  D.index = {v: core.v, gen: core.gen, sprites: core.sprites, imgs: IMGS, kwx: rest ? rest.kwx || {} : {}, items};
+  D.byKey = byKey;
+}
+export const first = (async () => {
+  const [core, market] = await Promise.all([CORE, NOW]);
+  D.market = market; D.core = core;
+  assemble(core, null);
   return D;
 })();
+export const ready = (async () => {
+  let [, rest, past] = await Promise.all([first, REST, PAST]);
+  let core = D.core;
+  if(rest.id !== core.id){   // two versions (a new one went live between the two files): both again, fresh
+    [core, rest] = await Promise.all([getJSON('data/index-core.json', {cache: 'no-cache'}), getJSON('data/index-rest.json', {cache: 'no-cache'})]);
+    D.core = core;
+  }
+  if(past && past.items && D.market && D.market.items)   // the history joins today's prices
+    for(const [key, h] of Object.entries(past.items)) if(D.market.items[key]) Object.assign(D.market.items[key], h);
+  assemble(core, rest);
+  D.full = true;
+  return D;
+})();
+ready.catch(() => { D.failed = true; });
 
 /* ---------- market lookups ---------- */
 export function priceOf(it){
@@ -345,6 +396,7 @@ export function openBox(node, label = 'Details'){
 /* opts.nested: opened from inside the popup (a keyword, or something that uses it): Back returns.
    opts.onFull: the drill-down page's own full-stats panel, offered as a button. */
 export function openDetail(it, opts = {}, href){
+  if(!D.full && !D.failed){ const go = () => openDetail(it, opts, href); ready.then(go, go); return; }   // its keywords and history: a moment
   ensureOV();
   const nested = !OV.hidden && CUR && opts.nested;
   if(nested) STACK.push(CUR); else STACK = [];
@@ -627,7 +679,7 @@ const PAGE = 30;   // cards added each time the list reaches the bottom of the s
 const H = {q:'', kind:'all', shown:PAGE, list:[]};
 function homeInit(){
   const q = $('#q'), kinds = $('#kinds');
-  kinds.innerHTML = KINDS.map(([k, l]) => '<button type="button" class="chip" data-k="' + k + '" aria-pressed="' + (k === 'all') + '">' + l + '<span class="ct"></span></button>').join('');
+  if(!kinds.children.length) kinds.innerHTML = KINDS.map(([k, l]) => '<button type="button" class="chip" data-k="' + k + '" aria-pressed="' + (k === 'all') + '">' + l + '<span class="ct"></span></button>').join('');
   kinds.addEventListener('click', e => {
     const b = e.target.closest('button'); if(!b) return;
     H.kind = b.dataset.k; H.shown = PAGE;
@@ -655,6 +707,14 @@ function homeRender(){
   const has = H.q.trim().length > 0;
   hero.classList.toggle('docked', has);
   let list, label;
+  if(has && !D.full && !D.failed){   // search covers everything: it waits for the rest of the index, a moment
+    status.textContent = 'Loading…';
+    for(const b of $('#kinds').children) b.querySelector('.ct').textContent = '';
+    $('#quote').hidden = true; more.hidden = true;
+    flow($('#cards'), [], null);
+    if(!H.waiting){ H.waiting = true; ready.then(() => { H.waiting = false; if(route() === 'home') homeRender(); }, () => {}); }
+    return;
+  }
   if(has){
     const all = search(H.q, 'all');
     const counts = {all: all.length};
@@ -668,6 +728,7 @@ function homeRender(){
     label = list.length ? 'Biggest price moves this week' + (D.market ? ' · ' + esc(D.market.league) : '') : 'Start typing to search.';
   }
   status.innerHTML = label;
+  $('#cards').classList.remove('wait');   // the first cards are in: the grid takes its own height
   $('#quote').hidden = has || !list.length;
   const shown = list.slice(0, H.shown);
   flow($('#cards'), shown.map(it => ({key: it.k + ':' + it.id, it})), x => card(x.it));
@@ -681,7 +742,7 @@ function homeRender(){
    On every page but home. Results drop down under the bar; each opens the popup. */
 let TOPQ = null;
 export function mountTopSearch(host){
-  host.innerHTML = '<div class="tsearch"><svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="8.5" cy="8.5" r="5.5" fill="none" stroke="currentColor" stroke-width="1.8"/>' +
+  if(!host.querySelector('.tsearch input')) host.innerHTML = '<div class="tsearch"><svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="8.5" cy="8.5" r="5.5" fill="none" stroke="currentColor" stroke-width="1.8"/>' +
     '<path d="M13 13l4.5 4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>' +
     '<input type="search" placeholder="Search the index" autocomplete="off" spellcheck="false" aria-label="Search the index" ' +
     'role="combobox" aria-expanded="false" aria-autocomplete="list"><kbd aria-hidden="true">/</kbd>' +
@@ -734,13 +795,14 @@ async function show(){
   document.body.dataset.route = r;
   document.querySelectorAll('.view').forEach(v => v.hidden = v.dataset.view !== r);
   document.querySelectorAll('.tabs a[data-route]').forEach(a => { if(a.dataset.route === r) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current'); });
-  await ready;
   if(r === 'home'){
+    await first;   // the core and today's prices: the first cards (search waits for the rest itself)
     const q = params().get('q') || '';
     if(q !== H.q){ H.q = q; $('#q').value = q; }
     homeRender();
     if(!matchMedia('(pointer:coarse)').matches) $('#q').focus({preventScroll:true});
   } else {
+    await ready;
     if(!loaded[r]) loaded[r] = import('./' + ({trade: 'tradepage'}[r] || r) + '.js').then(m => m.mount($('#view-' + r)));
     const m = await loaded[r];
     if(m && m.update) m.update();
@@ -755,18 +817,46 @@ homeInit();
 mountTopSearch(document.getElementById('topsearch'));
 addEventListener('hashchange', show);
 show();
-ready.then(() => {
+const failed = err => { $('#status').innerHTML = '<span class="err">Could not load the index: ' + esc(err.message) + '</span>'; };
+first.then(() => {
   // the client build (4.5.5.2) as players know it: patch 0.5.5
   $('#gamever').textContent = (D.index.v || '').replace(/^4\.(\d+)\.(\d+).*$/, '0.$1.$2');
   const st = $('#stamp');
+  st.classList.remove('wait');
   if(D.market) st.innerHTML = 'Prices: <b>' + esc(D.market.league) + '</b> · ' + ago(D.market.updated);
   else st.textContent = 'Prices not loaded yet';
   import('./league.js').then(m => m.mountLeague($('#leagueclock'))).catch(() => {});   // the league clock
-  // fetch the drill-down page in the background once this page is idle, so Gems / Uniques / Passive tree open fast
-  (window.requestIdleCallback || (f => setTimeout(f, 2500)))(() => {
+}).catch(failed);
+first.then(later, later);   // the crest's fog, once the first cards are on screen
+ready.then(() => {
+  // once this page is idle: the service worker (repeat visits paint from this browser's copy, and it keeps a copy of
+  // the drill-down page, so Gems / Uniques / Passive tree open fast); without one, fetch the drill-down page ahead
+  idle(() => {
+    if(registerSW()) return;
     const l = document.createElement('link'); l.rel = 'prefetch'; l.href = 'explore'; document.head.appendChild(l);
   });
-}).catch(err => {
-  $('#status').innerHTML = '<span class="err">Could not load the index: ' + esc(err.message) + '</span>';
-});
+}).catch(failed);
+}
+
+/* ---------- after the first paint ----------
+   Decoration that must never hold up the page: the fog and wisps (index.html and explore.html give them data-src).
+   Each fog layer fades in once its images are in, so the drifting starts smooth; a wisp starts its loop when loaded. */
+function idle(f){ (window.requestIdleCallback || (g => setTimeout(g, 1200)))(f, {timeout: 4000}); }
+export function later(){
+  requestAnimationFrame(() => setTimeout(() => {
+    for(const img of document.querySelectorAll('img[data-src]')){
+      const box = img.closest('.fog') || img;
+      img.addEventListener('load', () => {
+        img.classList.add('on');
+        if(box !== img && [...box.querySelectorAll('img')].every(x => x.classList.contains('on'))) box.classList.add('on');
+      }, {once: true});
+      img.src = img.dataset.src; img.removeAttribute('data-src');
+    }
+  }, 0));
+}
+/* The service worker (sw.js): not on the backup site (GitHub Pages serves sw.js unstamped) or inside a frame. */
+export function registerSW(){
+  if(!('serviceWorker' in navigator) || /\.github\.io$/.test(location.hostname) || window.top !== window) return false;
+  navigator.serviceWorker.register('sw.js').catch(() => {});
+  return true;
 }
