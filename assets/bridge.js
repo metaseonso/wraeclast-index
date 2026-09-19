@@ -16,6 +16,9 @@
       const a = document.createElement('a'); a.href = './'; a.className = 'brand-link';
       brand.replaceWith(a); a.appendChild(brand);
     }
+    if(!brand.querySelector('.mark')) brand.insertAdjacentHTML('afterbegin', '<span class="mark" aria-hidden="true"><img class="mark-cloud" src="assets/brand/cloud.webp" alt="" decoding="async" fetchpriority="low"><img class="mark-logo" src="assets/brand/logo-64.webp" alt="" width="51" height="64"></span>');
+    if(!document.querySelector('link[rel=icon]')) document.head.insertAdjacentHTML('beforeend',
+      '<link rel="icon" type="image/png" sizes="64x64" href="assets/brand/favicon-64.png">');
     const links = document.createElement('nav');
     links.className = 'applinks'; links.setAttribute('aria-label', 'App');
     // app routes that are live; a route joins this list when it ships

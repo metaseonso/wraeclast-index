@@ -73,3 +73,29 @@ html:root:not([data-theme="none"]){scrollbar-color:#2A3627 #070907}
   background:var(--raised); color:var(--text); box-shadow:inset 0 -2px 0 var(--accent)}
 .top, .mast{border-bottom-color:#1E281C; box-shadow:0 1px 0 rgba(168,132,74,.12)}
 .down, .neg{color:var(--neg)}
+
+/* ---------- the W.I. crest and its poison cloud ----------
+   Art from the image API (OpenRouter); the cloud is 8 API frames eased into a 24-frame loop. */
+.mark{position:relative; display:inline-grid; place-items:center; width:28px; height:34px; margin-right:9px; vertical-align:middle; translate:0 -2px}
+.mark-logo{position:relative; z-index:1; height:34px; width:auto; filter:drop-shadow(0 0 6px rgba(140,203,63,.35))}
+.mark-cloud{position:absolute; left:50%; top:55%; width:78px; height:78px; translate:-50% -50%; opacity:.5;
+  mix-blend-mode:screen; pointer-events:none; animation:wi-drift 14s ease-in-out infinite}
+.emblem{position:relative; width:220px; height:210px; margin:0 auto 4px;
+  transition:height .45s cubic-bezier(.2,.8,.2,1), opacity .3s, margin .45s}
+.emblem img{position:absolute; left:50%; top:50%; translate:-50% -50%; pointer-events:none}
+.emblem-logo{z-index:1; height:200px; width:auto; filter:drop-shadow(0 0 24px rgba(140,203,63,.22)) drop-shadow(0 10px 30px rgba(0,0,0,.8))}
+.emblem-cloud{width:380px; height:380px; top:58%; opacity:.6; mix-blend-mode:screen; animation:wi-drift 16s ease-in-out infinite}
+.emblem-cloud.two{width:300px; height:300px; top:40%; opacity:.38; animation:wi-drift2 23s ease-in-out infinite}
+@keyframes wi-drift{
+  0%,100%{transform:translate(-14px, 6px) rotate(0deg) scale(1)}
+  50%{transform:translate(16px, -10px) rotate(9deg) scale(1.1)}
+}
+@keyframes wi-drift2{
+  0%,100%{transform:scaleX(-1) translate(18px, -4px) rotate(0deg)}
+  50%{transform:scaleX(-1) translate(-20px, 12px) rotate(-12deg) scale(1.12)}
+}
+.hero-title{font-size:clamp(28px, 4.6vw, 42px)}
+.hero.docked .emblem{height:0; opacity:0; margin:0}
+@media (prefers-reduced-motion: reduce){ .mark-cloud, .emblem-cloud{display:none} }
+html:root:not([data-theme="none"]) body{overflow-x:clip}   /* the drifting gas may reach past the edge */
+@media (max-width:640px){ .emblem{width:170px; height:160px} .emblem-logo{height:150px} .emblem-cloud{width:280px; height:280px} }
