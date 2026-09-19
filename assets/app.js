@@ -254,6 +254,7 @@ export function card(it, opts = {}){
    Every card opens here first. The gold button is the one way on to the drill-down page. */
 const PLACE = {g: 'Gems', u: 'Uniques', p: 'Passive tree', c: 'Currency'};
 let OV = null, lastFocus = null;
+let CUR = null, STACK = [], CLOSING = false;   // the card on show, and the cards under it (Back returns to them)
 function bigLine(vals, label){
   const p = vals.filter(v => v !== null && isFinite(v));
   if(p.length < 2) return '';
@@ -286,33 +287,65 @@ function ensureOV(){
       '<div class="ov-body"></div></div>';
     document.body.appendChild(OV);
     OV.addEventListener('click', e => {
-      if(e.target.closest('[data-close]')) closeDetail();
-      else if(e.target.closest('a.btn.gold')) hideDetail();   // leaving the page: nothing to undo
+      const t = e.target;
+      if(t.closest('[data-close]')) return closeDetail();
+      if(t.closest('a.btn.gold, a.uses-go')) return hideDetail();   // leaving the page: nothing to undo
+      if(t.closest('.ov-back')) return history.back();
+      const kw = t.closest('.kwlink');
+      if(kw){ const c = keywordCard(kw.dataset.kw); if(c) openDetail(c, {nested: true}, hrefOf(c)); return; }
+      const row = t.closest('.uses-row[data-key]');
+      if(row){ const c = D.byKey.get(row.dataset.key); if(c) openDetail(c, {nested: true}, hrefOf(c)); return; }
+      const tab = t.closest('.uses-tab');
+      if(tab){ const sec = tab.closest('.uses'); sec.dataset.on = tab.dataset.g; paintUses(sec); return; }
+      if(t.closest('.fullstats') && CUR && CUR.opts.onFull){ const f = CUR.opts.onFull; closeDetail(); setTimeout(f, 60); }
     });
     addEventListener('keydown', e => { if(e.key === 'Escape' && !OV.hidden) closeDetail(); });
-    addEventListener('popstate', () => { if(!OV.hidden) hideDetail(); });
+    addEventListener('popstate', () => {
+      if(OV.hidden) return;
+      if(CLOSING){ CLOSING = false; STACK = []; CUR = null; hideDetail(); return; }
+      if(STACK.length){ CUR = STACK.pop(); paintDetail(); OV.querySelector('.ov-box').scrollTop = 0; }
+      else hideDetail();
+    });
   }
 }
 /* the same popup for anything else (e.g. the Suggest box) */
 export function openBox(node, label = 'Details'){
   ensureOV();
+  CUR = null; STACK = [];
   OV.querySelector('.ov-box').setAttribute('aria-label', label);
   OV.querySelector('.ov-body').replaceChildren(node);
   showOV();
 }
+/* opts.nested: opened from inside the popup (a keyword, or something that uses it): Back returns.
+   opts.onFull: the drill-down page's own full-stats panel, offered as a button. */
 export function openDetail(it, opts = {}, href){
   ensureOV();
+  const nested = !OV.hidden && CUR && opts.nested;
+  if(nested) STACK.push(CUR); else STACK = [];
+  CUR = {it, opts, href};
+  paintDetail();
+  if(nested){ history.pushState({ov: STACK.length + 1}, '', location.href); OV.querySelector('.ov-box').scrollTop = 0; }
+  else showOV();
+}
+function paintDetail(){
+  const {it, opts, href} = CUR;
   OV.querySelector('.ov-box').setAttribute('aria-label', 'Details');
   const px = opts.price !== undefined ? opts.price : priceOf(it);
   const body = OV.querySelector('.ov-body');
   const c = card(it, {...opts, href: null, rank: undefined, full: true, detail: true, extra: (opts.extra || '') + detailExtras(it, px)});
   c.classList.add('detail');
   body.replaceChildren(c);
+  if(STACK.length) body.insertAdjacentHTML('afterbegin', '<button type="button" class="btn ov-back">\u2190 Back to ' + esc(STACK[STACK.length - 1].it.n) + '</button>');
+  const chips = kwChips(it);
+  if(chips) body.insertAdjacentHTML('beforeend', chips);
+  const uses = usesSection(it);
+  if(uses) body.appendChild(uses);
   const tradeable = /^[ugcb]$/.test(it.k);
-  if((href && PLACE[it.k]) || tradeable){
+  if((href && PLACE[it.k]) || tradeable || opts.onFull){
     const row = document.createElement('div');
     row.className = 'ov-go';
     row.innerHTML = (tradeable ? '<button type="button" class="btn ttoggle" aria-expanded="false">Trade</button>' : '') +
+      (opts.onFull ? '<button type="button" class="btn fullstats">Full stats</button>' : '') +
       (href && PLACE[it.k] ? '<a class="btn gold" href="' + esc(href) + '">Open in ' + PLACE[it.k] + ' \u2192</a>' : '');
     body.appendChild(row);
     const tb = row.querySelector('.ttoggle');
@@ -327,7 +360,6 @@ export function openDetail(it, opts = {}, href){
       } finally { tb.disabled = false; }
     });
   }
-  showOV();
 }
 function showOV(){
   lastFocus = document.activeElement;
@@ -343,8 +375,96 @@ function hideDetail(){
   if(lastFocus && lastFocus.focus) lastFocus.focus({preventScroll: true});
 }
 function closeDetail(){
-  if(history.state && history.state.ov) history.back();   // popstate hides it
-  else hideDetail();
+  const depth = (history.state && history.state.ov) || 0;   // the popup and every card opened inside it
+  if(depth){ CLOSING = true; history.go(-depth); }   // popstate hides it
+  else { STACK = []; hideDetail(); }
+}
+
+/* ---------- keywords: what uses what ----------
+   Every gem, unique, passive and keyword lists the keywords its game text marks (data/index.json "kw").
+   A keyword's card turns that around: everything that uses it, by kind. Atlas and currency text has no marks,
+   so it is matched by the words the keyword shows as ("f": Ignited, Ignites...). */
+let REV = null, ATLAS = null;
+const SEC = {g: 'gems', u: 'uniques', p: 'tree'};
+function rev(){
+  if(!REV){
+    REV = {};
+    for(const x of D.index.items) for(const k of x.kw || []) (REV[k] = REV[k] || []).push(x);
+  }
+  return REV;
+}
+export function keywordCard(id){
+  const name = D.index.kwx && D.index.kwx[id];   // a keystone stands for its own keyword
+  return D.byKey.get('w:' + id) || (name && D.index.items.find(x => x.k === 'p' && x.n === name)) || null;
+}
+function keywordIdOf(it){
+  if(it.k === 'w') return it.id;
+  if(it.k === 'p' && D.index.kwx) for(const [k, n] of Object.entries(D.index.kwx)) if(n === it.n) return k;
+  return null;
+}
+function kwChips(it){
+  const own = keywordIdOf(it);
+  const ids = (it.kw || []).filter(k => k !== own && keywordCard(k));
+  if(!ids.length) return '';
+  return '<div class="kwchips"><span class="lbl">Keywords</span>' + ids.map(k =>
+    '<button type="button" class="chip kwlink" data-kw="' + esc(k) + '">' + esc(keywordCard(k).n) + '</button>').join('') + '</div>';
+}
+const reEsc = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+function wordsOf(it){ return new RegExp('\\b(' + [it.n, ...(it.f || [])].map(reEsc).join('|') + ')\\b'); }
+const USE_KINDS = [['u', 'Uniques'], ['g', 'Gems'], ['p', 'Passives'], ['a', 'Atlas'], ['c', 'Currency'], ['w', 'Keywords']];
+function usesSection(it){
+  const id = keywordIdOf(it);
+  if(!id) return null;
+  const R = (rev()[id] || []).filter(x => x !== it), re = wordsOf(it);
+  const groups = {u: [], g: [], p: [], a: null, c: [], w: []};
+  for(const x of R) if(groups[x.k]) groups[x.k].push(x);
+  for(const x of D.index.items) if(x.k === 'c' && re.test(x.t || '')) groups.c.push(x);
+  const pv = x => { const p = priceOf(x); return p && p.v || 0; };
+  groups.u.sort((a, b) => pv(b) - pv(a)); groups.c.sort((a, b) => pv(b) - pv(a));
+  for(const k of 'gpw') groups[k].sort((a, b) => a.n.localeCompare(b.n));
+  const sec = document.createElement('section');
+  sec.className = 'uses';
+  sec._g = groups; sec._id = id;
+  sec.dataset.on = (USE_KINDS.find(([k]) => groups[k] && groups[k].length) || ['u'])[0];
+  paintUses(sec);
+  atlasUses(re).then(list => { groups.a = list; paintUses(sec); });
+  return sec;
+}
+async function atlasUses(re){
+  if(!ATLAS){ try { ATLAS = await (await fetch('data/atlas.json')).json(); } catch { ATLAS = {}; } }
+  const out = [], A = ATLAS;
+  const add = (sec, name, lines, what) => { const hit = (lines || []).find(l => re.test(l)); if(hit) out.push({sec, name, line: hit, what}); };
+  for(const m of A.wmods || []) add('ways', m.a, (m.r || []).flatMap(r => r.ls || []), 'Waystone mod');
+  for(const m of A.wdes || []) add('ways', m.a, m.ls, 'Desecrated waystone mod');
+  for(const m of A.wemo || []) add('ways', m.n, m.ls, 'Liquid Emotion');
+  for(const t of A.tabs || []) add('tabs', t.n, t.ls, 'Tablet');
+  for(const t of A.tuniq || []) add('tabs', t.n, t.ls, 'Unique tablet');
+  for(const m of A.tmods || []) add('tabs', m.a, m.ls, 'Tablet mod');
+  for(const k of A.keys || []) add('keys', k.n, [k.t, ...(k.ls || [])].filter(Boolean), k.s || 'Key');
+  for(const i of A.items || []) add('items', i.n, [...(i.ls || []), i.t].filter(Boolean), i.s || 'Atlas item');
+  for(const tr of A.tree || []) for(const nd of tr.nodes || []) add('tree', nd.n, [...(nd.ls || []), ...(nd.o || [])], tr.n);
+  return out;
+}
+function paintUses(sec){
+  const G = sec._g, on = sec.dataset.on, list = G[on];
+  const tabs = USE_KINDS.map(([k, l]) => '<button type="button" class="chip uses-tab" data-g="' + k + '" aria-pressed="' + (k === on) + '">' +
+    l + ' <span class="ct">' + (G[k] ? G[k].length : '\u2026') + '</span></button>').join('');
+  let rows;
+  if(!list) rows = '<p class="note">Looking\u2026</p>';
+  else if(!list.length) rows = '<p class="note">Nothing here uses it.</p>';
+  else if(on === 'a') rows = list.slice(0, 60).map(x => '<a class="uses-row uses-go" href="./#/atlas?s=' + x.sec + '&q=' + encodeURIComponent(x.name) + '">' +
+    '<span class="uses-t"><b>' + esc(x.name) + '</b><span>' + esc(x.what) + ' \u00b7 ' + esc(x.line) + '</span></span></a>').join('');
+  else rows = list.slice(0, 60).map(x => { const p = priceOf(x);
+    return '<button type="button" class="uses-row" data-key="' + esc(x.k + ':' + x.id) + '"><span class="uses-ic">' + iconHTML(x) + '</span>' +
+      '<span class="uses-t"><b>' + esc(x.n) + '</b><span>' + esc(x.s || '') + '</span></span>' +
+      (p && p.v !== undefined ? '<span class="uses-px">' + moneyHTML(p.v) + '</span>' : '') + '</button>'; }).join('');
+  const more = (list && list.length > 60 ? '<p class="note">+' + (list.length - 60) + ' more</p>' : '') +
+    (on === 'p' && list && list.length ? '<p class="note">Notables and keystones. The Passive tree shows the small ones too.</p>' : '');
+  const here = /explore/.test(location.pathname) ? '' : 'explore';   // on the drill-down already: stay on the page
+  const all = SEC[on] ? '<a class="btn gold" href="' + here + '#' + SEC[on] + '?kw=' + encodeURIComponent(sec._id) + '">See all in ' +
+    {g: 'Gems', u: 'Uniques', p: 'Passive tree'}[on] + ' \u2192</a>' : '';
+  sec.innerHTML = '<h4>Found on</h4><div class="uses-tabs">' + tabs + '</div><div class="uses-list">' + rows + '</div>' + more +
+    (all && list && list.length ? '<div class="uses-all">' + all + '</div>' : '');
 }
 
 /* Render a list of cards into a grid. Cards that stay glide to their new place, new cards fly in,

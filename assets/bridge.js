@@ -1,6 +1,9 @@
 /* Bridge between the home page and the drill-down page (explore.html).
    - mounts the top search (the header itself is written into the page by tools/sync.py)
-   - opens a deep link: explore#gems=Untether, #uniques=Headhunter, #tree=Zealot's Oath
+   - opens a deep link: explore#gems=Untether, #uniques=Headhunter, #tree=Zealot's Oath (the row is shown and marked),
+     and explore#uniques?kw=Ignite (the list filtered by that keyword)
+   - rows and keywords open the same card popup as the rest of the site (price, trade, builds, what uses a keyword);
+     the page's own panel stays one click away ("Full stats")
    - makes the list rows fly into place when a list filters or sorts   */
 (function(){
   'use strict';
@@ -19,7 +22,8 @@
     });
   }
   const host = document.getElementById('topsearch');   // the same top search as the app, with the same popups
-  if(host) import('./app.js').then(m => m.mountTopSearch(host)).catch(() => host.remove());
+  let M = null;   // the app module, once loaded: its cards and popup
+  import('./app.js').then(m => { M = m; if(host) m.mountTopSearch(host); }).catch(() => host && host.remove());
 
   const sleep = ms => new Promise(r => setTimeout(r, ms));
   function navTo(label){
@@ -31,6 +35,8 @@
     return (n ? n.textContent : (tr.cells[0] ? tr.cells[0].innerText.split('\n')[0] : '')).trim();
   }
   async function open(){
+    const f = location.hash.match(/^#(gems|uniques|tree)\?kw=(.+)$/);
+    if(f) return filterBy(f[1], decodeURIComponent(f[2]));
     const m = location.hash.match(/^#(gems|uniques|tree)(?:=(.*))?$/);
     if(!m) return;
     const sec = m[1], name = m[2] ? decodeURIComponent(m[2]) : '';
@@ -45,8 +51,75 @@
     await sleep(60);
     const rows = [...document.querySelectorAll(BODY[sec] + ' tr')];
     const hit = rows.find(r => rowName(r) === name) || rows.find(r => rowName(r).startsWith(name)) || rows[0];
-    if(hit){ hit.scrollIntoView({block:'center'}); hit.click(); }
+    if(hit){   // show it and mark it; its card popup is one click away
+      hit.scrollIntoView({block:'center'});
+      document.querySelectorAll('tbody tr[aria-selected]').forEach(r => r.removeAttribute('aria-selected'));
+      hit.setAttribute('aria-selected', 'true');
+      hit.animate && hit.animate([{background: 'rgba(140,203,63,.18)'}, {background: 'transparent'}], {duration: 1600, easing: 'ease-out'});
+    }
   }
+  // the list, filtered by one keyword: the page's own keyword picker does the filtering
+  async function filterBy(sec, k){
+    navTo(SECTIONS[sec]);
+    await sleep(60);
+    const wrap = document.querySelector({gems: '#gkw', uniques: '#ukw', tree: '#tkw'}[sec]);
+    if(!wrap) return;
+    let chip = wrap.querySelector('.kwchip[data-k="' + CSS.escape(k) + '"]');
+    if(!chip){ const more = wrap.querySelector('.kwmore'); if(more){ more.click(); await sleep(30); chip = wrap.querySelector('.kwchip[data-k="' + CSS.escape(k) + '"]'); } }
+    if(chip && chip.getAttribute('aria-pressed') !== 'true') chip.click();
+    history.replaceState(null, '', '#' + sec);
+    const list = document.querySelector(BODY[sec]);
+    if(list) list.closest('table').scrollIntoView({block: 'start'});
+  }
+
+  /* ---------- rows and keywords open the site's card popup ----------
+     Caught on the way down (window, capture) so the page's own row and keyword handlers don't also run.
+     Anything the app has no card for (a small passive) still opens the page's own panel. */
+  const ROWS = Object.values(BODY).map(b => b + ' tr').join(', ');
+  let byName = null;
+  function itemFor(tr){
+    const D = M.D;
+    if(tr.dataset.id && D.byKey.get('g:' + tr.dataset.id)) return D.byKey.get('g:' + tr.dataset.id);
+    const name = rowName(tr);
+    if(tr.closest(BODY.uniques)){
+      const base = ((tr.querySelector('.sublbl') || {}).textContent || '').split(' \u00b7 ')[0].trim();
+      return D.byKey.get('u:' + name + ' | ' + base) || D.byKey.get('u:' + name) || null;
+    }
+    if(tr.closest(BODY.tree)){
+      if(!byName){ byName = new Map(); for(const it of D.index.items) if(it.k === 'p' && !byName.has(it.n)) byName.set(it.n, it); }
+      return byName.get(name) || null;
+    }
+    return null;
+  }
+  addEventListener('click', e => {
+    if(!M || !M.D.index || e.button !== 0 || e.ctrlKey || e.metaKey || e.shiftKey || e.altKey) return;
+    if(e.target.closest('.ov')) return;   // inside the popup itself
+    const kw = e.target.closest('.kw[data-k]');
+    if(kw){
+      const c = M.keywordCard(kw.dataset.k);
+      if(!c) return;   // no card: the page's own keyword panel
+      e.stopImmediatePropagation(); e.preventDefault();
+      M.openDetail(c, {}, null);
+      return;
+    }
+    const tr = e.target.closest(ROWS);
+    if(!tr || e.target.closest('a, button, input, select, label, summary')) return;
+    const it = itemFor(tr);
+    if(!it || typeof tr.onclick !== 'function') return;
+    e.stopImmediatePropagation(); e.preventDefault();
+    document.querySelectorAll('tbody tr[aria-selected]').forEach(r => r.removeAttribute('aria-selected'));
+    tr.setAttribute('aria-selected', 'true');
+    const full = tr.onclick;
+    M.openDetail(it, {onFull: () => full.call(tr)}, null);   // no "Open in" link: this is the drill-down
+  }, true);
+  addEventListener('keydown', e => {   // Enter on a keyword does the same as a click
+    if(e.key !== 'Enter' || !M || !M.D.index) return;
+    const kw = e.target.closest && e.target.closest('.kw[data-k]');
+    const c = kw && M.keywordCard(kw.dataset.k);
+    if(!c) return;
+    e.stopImmediatePropagation(); e.preventDefault();
+    M.openDetail(c, {}, null);
+  }, true);
   addEventListener('hashchange', open);
   if(document.readyState === 'complete') open(); else addEventListener('load', open);
 

@@ -3,6 +3,19 @@
 The full list of changes. The public patch notes (data/changelog.json, shown on the site) stay short.
 Add the details here first, then a short public line there.
 
+## v0.21 — Keywords and Crafting (19 Sep 2026)
+- tools/sync.py: every gem/unique/passive/keyword in data/index.json lists the keyword ids its game text marks ("kw");
+  keywords list the words they show as ("f"); keystones stand for their own keyword (index "kwx"). Keyword cards
+  are kept when a gem or notable shares the name (Shock gem vs Shock ailment): 412 keyword cards.
+- Popup (app.js): clickable keyword chips on every card; keyword cards get "Found on" tabs (uniques by price, gems,
+  passives [notables/keystones], atlas [text match on atlas.json], currency [text match], keywords) with
+  "See all in <section>" linking to explore#<section>?kw=<id>. Cards opened inside the popup stack: Back returns,
+  Esc/click-off closes all.
+- Drill-down (bridge.js): row and keyword clicks open the site's card popup (window capture, stops the page's own
+  handlers); "Full stats" opens the page's own panel; deep links mark the row instead of opening it;
+  explore#<section>?kw=<id> filters with the page's keyword picker.
+- Craft tab (#30, helper): tools/craft.py -> data/craft.json + data/craft/*.json per kind.
+
 ## v0.20 — Live prices on trade sliders, Farms and Atlas (19 Sep 2026)
 - A live league clock in the home page's top bar: how long this league has run and the countdown to the next one.
 - Trade sliders now show real prices from the trade site: the colour and the "from ~" price beside each box. Prices update every hour.

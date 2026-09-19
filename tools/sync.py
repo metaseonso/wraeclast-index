@@ -280,6 +280,9 @@ def card_image(it, src, base=None):
     return next((c for c in tries if c and (c.startswith('p:') or shows(c))), None)
 
 
+KWREF = re.compile(r'\[([A-Za-z][A-Za-z0-9_]*)(?:\|([^\]]*))?\]')
+
+
 def build_index(html):
     gems = block(html, 'gemdata')
     uq = block(html, 'uqdata')
@@ -288,6 +291,17 @@ def build_index(html):
     emo = tr.get('emotions') or {}
     reqs = json.loads((ROOT / 'data' / 'reqs.json').read_text(encoding='utf-8'))['bases']
     items = []
+
+    # keywords: which ones each gem, unique and passive mentions (the game text marks them [Id] or [Id|words]),
+    # and the words each keyword shows as, so other text (atlas, currency) can be matched too
+    def refs(obj):
+        return sorted({m.group(1) for m in KWREF.finditer(json.dumps(obj, ensure_ascii=False)) if m.group(1) in kw})
+    forms = {}
+    for blob in (gems, uq, tr, kw):
+        for m in KWREF.finditer(json.dumps(blob, ensure_ascii=False)):
+            k = m.group(1)
+            if k in kw:
+                forms.setdefault(k, set()).add(((m.group(2) or kw[k].get('t') or k)).strip())
 
     colour = {'r': 'Strength', 'g': 'Dexterity', 'b': 'Intelligence', 'w': ''}
     kind = {'active': 'Skill gem', 'spirit': 'Spirit gem', 'support': 'Support gem'}
@@ -310,6 +324,8 @@ def build_index(html):
         if (g.get('res') or {}).get('spirit') is not None:
             sp = g['res']['spirit']
             it['sp'] = sp[19] if isinstance(sp, list) and len(sp) >= 20 else sp
+        if refs(g):
+            it['kw'] = refs(g)
         items.append(it)
 
     uniq, seen_u = [], set()
@@ -339,6 +355,8 @@ def build_index(html):
             it['pr'] = [plain(x) for x in u['pr']]
         if u.get('cor'):
             it['cor'] = 1
+        if refs(u):
+            it['kw'] = refs(u)
         items.append(it)
 
     seen = set()
@@ -359,16 +377,27 @@ def build_index(html):
             it['rec'] = [emo.get(r, {}).get('name', '') for r in p['rec']]
             if p.get('ac'):
                 it['ac'] = p['ac']
+        if refs(p):
+            it['kw'] = refs(p)
         items.append(it)
 
-    taken = {it['n'].lower() for it in items}
+    # a keystone is its own keyword: its card stands for both. Other same-name cards (a Shock support gem and
+    # the Shock ailment) are different things, so the keyword keeps its own card.
+    taken = {it['n'].lower() for it in items if it['k'] == 'p' and it['s'].startswith('Keystone')}
+    kwx = {}   # keyword -> the keystone card the app opens for it
     for k, v in kw.items():
         if not v.get('t') or not v.get('d'):
             continue
-        if v['t'].lower() in taken:   # a keystone or gem already has its own card
+        if v['t'].lower() in taken:
+            kwx[k] = v['t']
             continue
-        items.append({'k': 'w', 'id': k, 'n': v['t'], 's': 'Keyword', 't': plain(v['d']),
-                      'use': v.get('n') or {}})
+        f = sorted(x for x in forms.get(k, ()) if len(x) >= 3 and x != v['t'])[:8]
+        it = {'k': 'w', 'id': k, 'n': v['t'], 's': 'Keyword', 't': plain(v['d']), 'use': v.get('n') or {}}
+        if f:
+            it['f'] = f
+        if refs(v.get('d', '')):
+            it['kw'] = [x for x in refs(v.get('d', '')) if x != k]
+        items.append(it)
 
     src = image_sources()
     for it in items:   # every card shows a picture: its sprite, else official game art
@@ -397,7 +426,7 @@ def build_index(html):
     if dup:
         sys.exit('duplicate card keys: %s' % sorted(dup)[:10])
     return {'v': gems['meta'].get('game_version'), 'gen': gems['meta'].get('generated'),
-            'sprites': gems.get('sprites'), 'imgs': IMGS, 'items': items}
+            'sprites': gems.get('sprites'), 'imgs': IMGS, 'kwx': kwx, 'items': items}
 
 
 def main():
