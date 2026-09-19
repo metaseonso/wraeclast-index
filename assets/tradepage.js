@@ -6,6 +6,7 @@ import { tradeData, searchURL, valueFor } from './trade.js';
 
 const GROUPS = {
   and:    {label: 'Must have', hint: 'Every mod here must be on the item.'},
+  or:     {label: 'Any of these', hint: 'At least one of these must be on the item.'},
   count:  {label: 'At least some of these', hint: 'The item needs this many of the mods below.'},
   weight: {label: 'Add these up', hint: 'Each mod adds to a score (a mod set to 2 counts double). Ask for a total.'},
   not:    {label: 'Must not have', hint: 'Skip items with any of these.'},
@@ -46,13 +47,15 @@ function query(){
   if(S.item && S.item.k === 'unique'){ q.name = S.item.v; if(S.item.base) q.type = S.item.base; }
   if(S.item && S.item.k === 'base') q.type = S.item.v;
   const stats = S.groups.filter(g => g.mods.length).map(g => {
+    const type = g.t === 'or' ? 'count' : g.t;   // "any of these" is a count of at least 1 on the trade site
     const filters = g.mods.map(m => {
       if(g.t === 'weight') return {id: m.id, value: {weight: +m.w || 1}};
       if(g.t === 'not') return {id: m.id};
       return m.v === '' || m.v === undefined ? {id: m.id} : {id: m.id, value: valueFor(m.op || 'min', +m.v)};
     });
-    const out = {type: g.t, filters};
+    const out = {type, filters};
     if(g.t === 'count') out.value = {min: +g.n || 1};
+    if(g.t === 'or') out.value = {min: 1};
     if(g.t === 'weight' && g.min !== '' && g.min !== undefined) out.value = {min: +g.min};
     return out;
   });
@@ -86,6 +89,7 @@ function summary(){
     });
     if(g.t === 'and') bits.push('with ' + names.join(', '));
     if(g.t === 'count') bits.push('with at least ' + (g.n || 1) + ' of: ' + names.join(', '));
+    if(g.t === 'or') bits.push('with ' + names.join(' or '));
     if(g.t === 'weight') bits.push('score of ' + names.join(' + ') + (g.min !== '' && g.min !== undefined ? ' ≥ ' + g.min : ''));
     if(g.t === 'not') bits.push('without ' + names.join(', '));
   }
@@ -173,7 +177,7 @@ function groupHTML(g, gi){
     g.mods.map((m, mi) => {
       const info = MOD.get(m.id) || {t: m.id, k: ''};
       return '<div class="tp-mod" data-m="' + mi + '"><span class="tp-mtext">' + esc(info.t) + ' <span class="pill">' + (KIND[info.k] || '') + '</span></span>' +
-        (g.t === 'and' || g.t === 'count' ? '<div class="seg" data-k="op">' + OPS.map(([o, l]) =>
+        (g.t === 'and' || g.t === 'count' || g.t === 'or' ? '<div class="seg" data-k="op">' + OPS.map(([o, l]) =>
           '<button type="button" data-v="' + o + '" aria-pressed="' + ((m.op || 'min') === o) + '">' + l + '</button>').join('') + '</div>' + num('v', m.v ?? '', 'any') : '') +
         (g.t === 'weight' ? '<span class="note">counts ×</span>' + num('w', m.w ?? 1) : '') +
         '<button type="button" class="btn tp-x" data-act="delmod" title="Remove">Remove</button></div>';
