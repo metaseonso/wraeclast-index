@@ -69,16 +69,16 @@
 /* ---------- popup ---------- */
 .ov{position:fixed; inset:0; z-index:100; display:grid; place-items:center; padding:16px}
 .ov-scrim{position:absolute; inset:0; background:rgba(0,0,0,.62); -webkit-backdrop-filter:blur(3px); backdrop-filter:blur(3px)}
-.ov-box{position:relative; width:min(640px, 100%); max-height:calc(100vh - 32px); overflow:auto; border-radius:14px;
+.ov-box{position:relative; width:min(640px, 100%); max-height:calc(100vh - 32px); overflow:auto; border-radius:14px; padding-top:42px;
   animation:ovpop .24s cubic-bezier(.2,.8,.2,1); overscroll-behavior:contain}
 @keyframes ovpop{from{opacity:0; transform:translateY(12px) scale(.98)} to{opacity:1; transform:none}}
-.ov-x{position:absolute; top:10px; right:10px; z-index:3; width:32px; height:32px; border-radius:8px; border:1px solid var(--line);
+.ov-x{position:absolute; top:2px; right:2px; z-index:3; width:32px; height:32px; border-radius:8px; border:1px solid var(--line);
   background:var(--raised); color:var(--muted); font-size:20px; line-height:1; cursor:pointer}
 .ov-x:hover{color:var(--text); border-color:var(--accent)}
 body.ov-open{overflow:hidden}
 .card.detail{cursor:default; padding:22px 24px 18px; gap:12px; box-shadow:0 20px 60px rgba(0,0,0,.5)}
 .card.detail:hover{translate:none}
-.card.detail h3{font-size:20px; padding-right:36px}
+.card.detail h3{font-size:20px}
 .card.detail .card-ic{width:56px; height:56px}
 .card.detail .card-tx{-webkit-line-clamp:unset; font-size:13.5px}
 .card.detail .card-ls{font-size:13.5px}
