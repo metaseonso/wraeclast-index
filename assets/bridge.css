@@ -15,3 +15,9 @@
 }
 .ggg-note{max-width:1200px; margin:24px auto 32px; padding:0 16px; text-align:center; font-size:12px; color:var(--faint)}
 .ggg-note a{color:var(--muted)}
+/* the second nav group: Craft, Currency, then the page's own Passive tree, Uniques, Gems, then Atlas, as one pill */
+.navgrp{display:flex; align-items:center; gap:2px}
+html:not(#_) .navgrp > .applinks, html:not(#_) .navgrp > .nav{border:0; background:none; box-shadow:none; padding:0; margin:0}
+#nav{display:flex}
+#nav button[data-k="tree"]{order:1} #nav button[data-k="uniques"]{order:2} #nav button[data-k="gems"]{order:3}
+.applinks + .navgrp{margin-left:8px}
