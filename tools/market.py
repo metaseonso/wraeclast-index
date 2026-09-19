@@ -1,4 +1,7 @@
-"""Fetch live PoE2 prices from poe.ninja's public economy API and write data/market.json.
+"""Build data/market.json: the catalogue of currency-like items (names, pictures, what they do, drop level) and
+the league name, from poe.ninja's public economy API. NO PRICES: the site shows only real prices, which come from
+the in-game Currency Exchange (tools/exchange.py) and live trade listings (tools/pricepull.py); the site's worker
+(worker/prices.js) builds the /data/market.json that pages read. poe.ninja's prices are dropped here.
 
 Runs every hour in the GitHub Action (.github/workflows/pages.yml), and by hand:  python tools/market.py
 poe.ninja's API guidelines (https://poe.ninja/docs/api): public economy endpoints only, a descriptive
@@ -189,22 +192,13 @@ def main():
     # the league's page name on poe.ninja's builds site, so cards can link to "builds using this"
     state = get_state() or {}
     slug = next((v.get('url') for v in state.get('snapshotVersions') or [] if v.get('name') == league), None)
+    # the catalogue only: names, pictures, text, drop level. No prices of any kind (see the top of this file).
+    keep = ('n', 'cat', 'ic', 'did', 'u', 'dl')
+    catalogue = {k: {f: v[f] for f in keep if f in v} for k, v in items.items() if k.startswith('c:')}
     out = {'league': league, 'updated': dt.datetime.now(dt.timezone.utc).isoformat(timespec='minutes'),
-           'primary': 'divine', 'rates': rates or {}, 'source': 'poe.ninja', 'builds': slug, 'items': items}
+           'source': 'catalogue (names and pictures); prices come from the Currency Exchange and trade listings',
+           'builds': slug, 'items': catalogue}
     (ROOT / 'data' / 'market.json').write_text(json.dumps(out, ensure_ascii=False, separators=(',', ':')), encoding='utf-8')
-    # what each currency the trade site prices things in is worth, in divines (the worker turns trade listings
-    # into divine prices with this; see worker/prices.js)
-    try:
-        exchange = json.loads((ROOT / 'data' / 'trade.json').read_text(encoding='utf-8'))['exchange']
-        worth = {'divine': 1}
-        for name, cid in exchange.items():
-            it = items.get('c:' + name)
-            if it and it.get('v'):
-                worth[cid] = it['v']
-        (ROOT / 'data' / 'worth.json').write_text(json.dumps({'league': league, 'updated': out['updated'], 'worth': worth},
-                                                             separators=(',', ':')), encoding='utf-8')
-    except (OSError, KeyError, ValueError) as e:
-        print('worth.json skipped:', e)
     kinds = {}
     for k in items:
         kinds[k[0]] = kinds.get(k[0], 0) + 1
