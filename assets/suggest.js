@@ -14,7 +14,7 @@ export function mountSuggest(){
 
 function open(){
   const box = document.createElement('section');
-  box.className = 'suggest';
+  box.className = 'suggest panel';
   box.innerHTML = '<h3>Got an idea or found a problem?</h3>' +
     '<p class="note">Keep it short. No sign-in, no name needed.</p>' +
     '<textarea class="field" maxlength="500" rows="5" placeholder="What should we add or fix?" aria-label="Your note"></textarea>' +

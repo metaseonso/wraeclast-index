@@ -534,6 +534,7 @@ export function mountTopSearch(host){
 // every keyboard shortcut lives in keys.js; "Search everything" jumps into the big box on home, the top box everywhere else
 initKeys(() => (IS_APP && route() === 'home' && document.getElementById('q')) || TOPQ);
 import('./suggest.js').then(m => m.mountSuggest()).catch(() => {});   // the Suggest button, on every page
+import('./notes.js').then(m => m.mountNotes()).catch(() => {});       // Patch notes, on every page
 
 /* ---------- router ---------- */
 function route(){ const m = location.hash.match(/^#\/(\w+)/); return m ? m[1] : 'home'; }

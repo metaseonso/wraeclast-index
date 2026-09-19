@@ -209,3 +209,18 @@ header.top .suggestbtn + .keysbtn{margin-left:0}
 .suggest h3{margin:0 0 4px}
 .suggest textarea{width:100%; margin:10px 0 8px; resize:vertical; min-height:110px; font:inherit}
 .sug-row{display:flex; align-items:center; justify-content:space-between; gap:10px}
+/* Patch notes (assets/notes.js): top bar button and its popup */
+.notesbtn{order:97; flex:none; align-self:center; height:34px; padding:0 10px; cursor:pointer; font:500 12px/1 var(--sans);
+  color:var(--muted); background:var(--surface); border:2px solid var(--line); border-radius:8px; transition:color .15s, border-color .15s}
+.notesbtn:hover, .notesbtn:focus-visible{color:var(--text); border-color:var(--accent); outline:none}
+.notesbtn .ct{font-family:var(--mono); font-size:10.5px; color:var(--faint); margin-left:4px}
+header.top .notesbtn{margin-left:auto}
+header.top .notesbtn ~ .suggestbtn{margin-left:0}
+.notes{padding:18px}
+.notes h3{margin:0 0 4px}
+.notes-v{margin-top:14px; padding-top:12px; border-top:1px solid var(--line)}
+.notes-v h4{margin:0 0 6px; font-size:14px}
+.notes-ver{font-family:var(--mono); font-size:12px; color:var(--accent); margin-right:4px}
+.notes-v ul{margin:0; padding-left:18px; color:var(--muted); font-size:13px; line-height:1.5}
+@media (max-width:640px){ .notesbtn .ct{display:none} }
+.notes, .suggest{background:var(--surface); border:2px solid var(--line); border-radius:var(--r, 10px)}
