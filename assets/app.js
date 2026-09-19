@@ -278,8 +278,9 @@ export function openDetail(it, opts = {}, href){
   if(!OV){
     OV = document.createElement('div');
     OV.className = 'ov'; OV.hidden = true;
-    OV.innerHTML = '<div class="ov-scrim" data-close></div><div class="ov-box" role="dialog" aria-modal="true" aria-label="Details">' +
-      '<button type="button" class="ov-x" data-close aria-label="Close">\u00d7</button><div class="ov-body"></div></div>';
+    // no close button: clicking off the card, Esc or Back closes it
+    OV.innerHTML = '<div class="ov-scrim" data-close></div><div class="ov-box" role="dialog" aria-modal="true" aria-label="Details" tabindex="-1">' +
+      '<div class="ov-body"></div></div>';
     document.body.appendChild(OV);
     OV.addEventListener('click', e => {
       if(e.target.closest('[data-close]')) closeDetail();
@@ -303,7 +304,7 @@ export function openDetail(it, opts = {}, href){
   OV.hidden = false;
   document.body.classList.add('ov-open');
   history.pushState({ov: 1}, '', location.href);   // the back button closes the popup
-  OV.querySelector('.ov-x').focus();
+  OV.querySelector('.ov-box').focus({preventScroll: true});
 }
 function hideDetail(){
   if(!OV || OV.hidden) return;
