@@ -554,7 +554,8 @@ mountTopSearch(document.getElementById('topsearch'));
 addEventListener('hashchange', show);
 show();
 ready.then(() => {
-  $('#gamever').textContent = D.index.v || '';
+  // the client build (4.5.5.2) as players know it: patch 0.5.5
+  $('#gamever').textContent = (D.index.v || '').replace(/^4\.(\d+)\.(\d+).*$/, '0.$1.$2');
   const st = $('#stamp');
   if(D.market) st.innerHTML = 'Prices: <b>' + esc(D.market.league) + '</b> · ' + ago(D.market.updated);
   else st.textContent = 'Prices not loaded yet';
