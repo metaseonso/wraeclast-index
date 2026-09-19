@@ -103,7 +103,7 @@ input[type=range], input[type=checkbox]{accent-color:#4E7A28}
 .mark{position:relative; display:inline-grid; place-items:center; width:28px; height:34px; margin-right:9px; vertical-align:middle; translate:0 -2px}
 .mark-logo{position:relative; z-index:1; height:34px; width:auto; filter:drop-shadow(0 0 6px rgba(140,203,63,.14))}
 .mark-wisp{position:absolute; left:50%; bottom:2px; width:44px; height:auto; translate:-50% 0; opacity:0;
-  mix-blend-mode:screen; pointer-events:none; animation:wi-mark 9s ease-in-out infinite}
+  mix-blend-mode:screen; pointer-events:none; animation:wi-mark 6.5s ease-in-out infinite}
 @keyframes wi-mark{
   0%{transform:translate(0, 6px) scale(.7); opacity:0}
   30%{opacity:.55}
@@ -120,8 +120,8 @@ input[type=range], input[type=checkbox]{accent-color:#4E7A28}
 
 /* Horizontal fog only, centred on the crest: every layer has a mirrored twin (.m) that drifts
    the other way, so the fog mass stays balanced left and right. */
-.fog .haze{top:14%; width:640px; translate:-50% 0; animation:wi-haze 36s ease-in-out infinite}
-.fog .haze.m{animation-name:wi-haze-m; animation-delay:-18s}
+.fog .haze{top:14%; width:640px; translate:-50% 0; animation:wi-haze 23s ease-in-out infinite}
+.fog .haze.m{animation-name:wi-haze-m; animation-delay:-11.5s}
 @keyframes wi-haze{
   0%,100%{transform:translateX(-4%) scale(1); opacity:.35}
   50%{transform:translateX(4%) scale(1.06); opacity:.55}
@@ -132,10 +132,10 @@ input[type=range], input[type=checkbox]{accent-color:#4E7A28}
 }
 /* the bank: pools at the base, spreads outward, hangs, fades */
 .fog .bank{bottom:-2%; width:560px; translate:-50% 0}
-.fog .b1{animation:wi-spill 26s ease-in-out infinite}
-.fog .b1.m{animation-name:wi-spill-m; animation-delay:-13s}
-.fog .b2{animation:wi-front 30s ease-in-out infinite; animation-delay:-7s}
-.fog .b2.m{animation-name:wi-front-m; animation-delay:-22s}
+.fog .b1{animation:wi-spill 17s ease-in-out infinite}
+.fog .b1.m{animation-name:wi-spill-m; animation-delay:-8.5s}
+.fog .b2{animation:wi-front 19.5s ease-in-out infinite; animation-delay:-4.5s}
+.fog .b2.m{animation-name:wi-front-m; animation-delay:-14.5s}
 @keyframes wi-spill{
   0%{transform:translateX(-3%) scaleX(.8) scaleY(.8); opacity:0}
   30%{opacity:.36}
