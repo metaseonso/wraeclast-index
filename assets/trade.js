@@ -200,6 +200,7 @@ export async function tradePanel(it){
       rows.push({label: line, id: statId(line, i < (it.ni || 0), onGear), r, v: r ? r.lo : null, op: 'min', on: false});
     });
   }
+  const searchable = () => rows.filter(r => r.misc || r.id);
   const states = Object.fromEntries(STATES.map(s => [s, 'any']));
   const stateName = Object.fromEntries(T.states);
   let online = true;
@@ -238,7 +239,9 @@ export async function tradePanel(it){
   const paint = () => {
     const url = searchURL(league, build());
     box.innerHTML = '<h4>Find it on trade <span class="note">' + esc(league) + '</span></h4>' +
-      (rows.length ? '<p class="note">Tick the mods you care about.</p>' + heatNote(false, false) + '<div class="tmods">' + rows.map(rowHTML).join('') + '</div>' : '') +
+      (rows.length ? '<p class="note">Tick the mods you care about.</p>' + heatNote(false, false) +
+        (searchable().length > 1 ? '<label class="tcheck tall"><input type="checkbox" data-k="all"' + (searchable().every(r => r.on) ? ' checked' : '') + '><span>Tick all</span></label>' : '') +
+        '<div class="tmods">' + rows.map(rowHTML).join('') + '</div>' : '') +
       '<div class="tstates">' + STATES.filter(s => stateName[s]).map(s =>
         '<div class="trow"><span>' + esc(stateName[s]) + '</span><div class="seg" data-state="' + s + '">' +
         ['any', 'yes', 'no'].map(v => '<button type="button" data-v="' + v + '" aria-pressed="' + (states[s] === v) + '">' + v[0].toUpperCase() + v.slice(1) + '</button>').join('') +
@@ -261,6 +264,7 @@ export async function tradePanel(it){
   box.addEventListener('change', e => {
     const t = e.target, row = t.closest('.tmod');
     if(t.dataset.k === 'on' && row){ rows[+row.dataset.i].on = t.checked; paint(); }
+    if(t.dataset.k === 'all'){ searchable().forEach(r => { r.on = t.checked; }); paint(); }
     if(t.dataset.k === 'online'){ online = t.checked; relink(); }
   });
   box.addEventListener('click', e => {

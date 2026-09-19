@@ -224,3 +224,4 @@ header.top .notesbtn ~ .suggestbtn{margin-left:0}
 .notes-v ul{margin:0; padding-left:18px; color:var(--muted); font-size:13px; line-height:1.5}
 @media (max-width:640px){ .notesbtn .ct{display:none} }
 .notes, .suggest{background:var(--surface); border:2px solid var(--line); border-radius:var(--r, 10px)}
+.tall{margin:2px 0 8px; font-weight:600}
