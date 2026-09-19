@@ -138,3 +138,38 @@ body[data-route="home"] .top .topsearch{display:none}
 .trow{display:flex; justify-content:space-between; align-items:center; gap:10px; font-size:12.5px; color:var(--muted)}
 .tonline{display:inline-flex; gap:6px; align-items:center; cursor:pointer}
 .tgo{display:flex; justify-content:flex-end; gap:8px}
+
+/* ---------- keybindings: the keyboard button in the top bar and its popup (assets/keys.js) ---------- */
+.keysbtn{flex:none; align-self:center; display:grid; place-items:center; width:34px; height:34px; padding:0; cursor:pointer;
+  border:2px solid var(--line); border-radius:8px; background:var(--surface); color:var(--faint); transition:color .15s, border-color .15s}
+.keysbtn:hover{color:var(--text); border-color:var(--accent)}
+.keysbtn svg{width:18px; height:18px}
+.keys-box{width:min(400px, 100%)}
+.keys-card{position:relative; background:var(--surface); border:2px solid var(--line); border-radius:var(--r);
+  box-shadow:0 20px 60px rgba(0,0,0,.5); padding:18px 18px 10px}
+.keys-card::before{content:''; position:absolute; left:12px; right:12px; top:0; height:1px; opacity:.45;
+  background:linear-gradient(90deg, transparent, var(--bronze, var(--line)) 20%, var(--bronze, var(--line)) 80%, transparent)}
+.keys-card h2{margin:0 0 8px; font:600 17px var(--disp); letter-spacing:.03em}
+.keys-list{margin:0; padding:0; list-style:none}
+.keys-row{display:flex; align-items:center; gap:8px; padding:5px 0; border-top:1px solid var(--line-soft)}
+.keys-row:first-child{border-top:0}
+.keys-name{flex:1; min-width:0; font-size:13.5px}
+.keys-key{min-width:46px; height:30px; padding:0 10px; cursor:pointer; border:2px solid var(--line); border-radius:6px;
+  background:var(--raised); color:var(--text); font:600 13px var(--mono); box-shadow:inset 0 -2px 0 rgba(0,0,0,.35);
+  transition:color .15s, border-color .15s, background .15s}
+.keys-key:hover{border-color:var(--accent)}
+.keys-key.none{color:var(--faint); font:italic 400 12px var(--sans); background:transparent; box-shadow:none}
+.keys-key.on{border-color:var(--accent); color:var(--accent); background:var(--accent-soft); font:500 12px var(--sans);
+  animation:keys-wait 1.2s ease-in-out infinite}
+@keyframes keys-wait{50%{box-shadow:0 0 0 3px color-mix(in srgb, var(--accent) 22%, transparent)}}
+.keys-reset{padding:4px 6px; cursor:pointer; border:0; border-radius:4px; background:none; color:var(--faint); font-size:11.5px}
+.keys-reset:hover{color:var(--accent)}
+.keys-reset:disabled{opacity:.3; cursor:default; color:var(--faint)}
+.keys-note{min-height:18px; margin:6px 0 0; font-size:12px; color:var(--muted)}
+.keys-foot{display:flex; justify-content:center; margin-top:10px}
+.keys-clear{padding:6px 14px; cursor:pointer; border:2px solid var(--line); border-radius:8px; background:var(--sunken);
+  color:var(--muted); font-size:12.5px; transition:color .15s, border-color .15s}
+.keys-clear:hover{color:#F08A82; border-color:var(--blood, var(--neg))}
+.keysbtn:focus-visible, .keys-key:focus-visible, .keys-reset:focus-visible, .keys-clear:focus-visible{outline:2px solid var(--accent); outline-offset:2px}
+@media (prefers-reduced-motion: reduce){ .keys-key.on{animation:none} }
+@media (max-width:640px), (hover:none) and (pointer:coarse){ .keysbtn{display:none} }   /* no keyboard, no shortcuts */

@@ -30,7 +30,11 @@ MAST_NEW = ('<a href="./" class="brand-link"><h1 class="brand"><span class="mark
             '    <nav class="applinks" aria-label="App"><a href="./#/">Search</a><a href="./#/build">Build</a><a href="./#/currency">Currency</a><a href="./#/trade">Trade</a></nav>\n'
             '    <nav class="nav" id="nav" aria-label="Sections"></nav>')
 CL_OLD = '<button class="clbtn" id="clbtn" type="button">Patch notes</button>'
-CL_NEW = '<div class="topsearch" id="topsearch"></div>\n    ' + CL_OLD
+# The keybindings button (assets/keys.js), the same markup as in index.html.
+KEYS_BTN = ('<button class="keysbtn" id="keysbtn" type="button" aria-haspopup="dialog" aria-label="Keybindings" title="Keybindings">'
+            '<svg viewBox="0 0 20 20" aria-hidden="true"><rect x="2" y="5" width="16" height="10.5" rx="2" fill="none" stroke="currentColor" stroke-width="1.6"/>'
+            '<path d="M5.6 8.6h.1M8.6 8.6h.1M11.4 8.6h.1M14.4 8.6h.1M6.5 12.1h7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></button>')
+CL_NEW = '<div class="topsearch" id="topsearch"></div>\n    ' + KEYS_BTN + '\n    ' + CL_OLD
 
 RAW = re.compile(r'(?<![\w\[./-])[a-z][a-z0-9]*(?:_[a-z0-9%+]+){2,}(?:\s*=\s*-?\d+)?|\{[^}\s]{1,80}\}')
 
