@@ -1,7 +1,7 @@
 /* Wraeclast Index on Cloudflare.
    Static files are served straight from the edge. This worker only answers:
      /data/market.json   live prices: the hourly GitHub job publishes them; cached here for 5 minutes
-     /api/pob?url=...    the build code behind a pobb.in, poe.ninja, maxroll, poe2db or pastebin link
+     /api/pob?url=...    the build code behind a pobb.in, poe.ninja, maxroll, mobalytics, poe2db or pastebin link
                          (browsers cannot fetch those sites themselves)
      /item/*, /gems, /uniques, /passives, /currency, /keywords, /sitemap.xml, /llms.txt, /search
                          plain pages for search engines and AI search: worker/seo.js
@@ -49,6 +49,9 @@ const HOSTS = [
   [/^(?:www\.)?maxroll\.gg$/, p => p.match(/^\/poe2\/(?:api\/)?pob\/([\w-]+)/), id => 'https://maxroll.gg/poe2/api/pob/' + id],
   [/^(?:www\.)?poe2db\.tw$/, p => p.match(/^\/pob\/([\w-]+)/), id => 'https://poe2db.tw/pob/' + id + '/raw'],
   [/^(?:www\.)?pastebin\.com$/, p => p.match(/^\/(?:raw\/)?(\w+)/), id => 'https://pastebin.com/raw/' + id],
+  // a Mobalytics build page: the code sits in the page's data, when the author added one
+  [/^(?:www\.)?mobalytics\.gg$/, p => p.match(/^\/poe-2\/builds\/([\w-]+)/), id => 'https://mobalytics.gg/poe-2/builds/' + id,
+    page => (page.match(/"pobCode":"([A-Za-z0-9+\/=_-]{40,})"/) || [])[1] || ''],
 ];
 async function pob(url){
   const reply = (status, body) => new Response(body, {status, headers: {'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'no-store'}});
@@ -56,10 +59,12 @@ async function pob(url){
   try { link = new URL(url.searchParams.get('url') || ''); } catch { return reply(400, "That isn't a link."); }
   const host = HOSTS.find(h => h[0].test(link.hostname));
   const m = host && host[1](link.pathname);
-  if(!m) return reply(400, 'Links from pobb.in, poe.ninja, maxroll, poe2db or pastebin only.');
+  if(!m) return reply(400, 'Links from pobb.in, poe.ninja, maxroll, mobalytics, poe2db or pastebin only.');
   const r = await fetch(host[2](m[1]), {headers: {'User-Agent': UA}, cf: {cacheTtl: 600}});
   if(!r.ok) return reply(502, "Couldn't open that link.");
-  const code = (await r.text()).trim();
+  const text = await r.text();
+  const code = (host[3] ? host[3](text) : text).trim();
+  if(host[3] && !code) return reply(404, "That build page has no Path of Building code.");
   if(code.length > 400000 || !/^[A-Za-z0-9+/=_-]+$/.test(code)) return reply(502, "That link doesn't hold a build code.");
   return reply(200, code);
 }

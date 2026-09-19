@@ -284,7 +284,7 @@ export function mount(el){
     '<div class="panel"><label class="lbl" for="pob">Path of Building code</label>' +
       '<textarea class="field" id="pob" spellcheck="false" placeholder="Paste a Path of Building code or a build link"></textarea>' +
       '<div class="row" style="margin-top:10px"><button type="button" class="btn primary" id="pobgo">Read build</button>' +
-      '<span class="note" id="pobmsg">A code, or a pobb.in / poe.ninja / maxroll link.</span></div></div>' +
+      '<span class="note" id="pobmsg">A code, or a pobb.in / poe.ninja / maxroll / mobalytics link.</span></div></div>' +
     '<div id="pobout"></div>';
   const go = () => run($('#pob', el).value);
   $('#pobgo', el).addEventListener('click', go);
