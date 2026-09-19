@@ -11,5 +11,8 @@
     "binding": "ASSETS",
     "run_worker_first": ["/data/market.json", "/api/*"]
   },
+  "d1_databases": [
+    { "binding": "DB", "database_name": "wraeclast", "database_id": "d1c4d101-dce9-4f19-9dc3-4525eca2f17e", "migrations_dir": "worker/migrations" }
+  ],
   "observability": { "enabled": true }
 }
