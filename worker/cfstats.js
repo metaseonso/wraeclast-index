@@ -1,29 +1,155 @@
 /* Cloudflare's own numbers for the owner's dashboard: GET /api/admin/cloudflare?days=1|7|30 (signed-in only).
    Read from Cloudflare's GraphQL analytics with a read-only stats key (Worker secret CF_ANALYTICS_TOKEN:
    Account Analytics read + Zone Analytics read). Cached here for 5 minutes.
-   What Cloudflare records, as far as the free plan shows it:
-     traffic per day (requests, page views, unique visitors, bandwidth, cached share, threats), countries,
-     browsers, status codes, content types; per request (adaptive): top paths, devices and systems, who is asking
-     (browsers vs named crawlers); real visitors (Web Analytics, no cookies): visits, pages, where they came from,
-     countries, devices, browsers, systems, page speed (Core Web Vitals, load time); the worker (requests, errors,
-     CPU time) and the database (rows read and written). */
+   Every breakdown is one block in BLOCKS. Blocks go out a few per request; when a request fails, its blocks
+   are asked for one at a time, and a block the free plan will not answer is dropped, remembered while this
+   worker is warm, and named in the dashboard instead of breaking the page.
+   tools/dev/cfcheck.mjs runs the same blocks against the real API, one at a time. */
 const ZONE = '65a507d6b6a2ff8cc71260aba0872799', ACC = '80fa25161d1d4403df3b849853368410';
+const CHUNK = 5;          // blocks per request
+const MISS = new Set();   // blocks the free plan did not answer
+
+/* [scope, GraphQL]. Scopes: zt zone by time, zd zone by date, at account by time, ad account by date.
+   zt and at read single events: the free plan only keeps those for a few days (reach() finds how far back). */
+const BLOCKS = {
+  // ---- per day: the dataset the free plan keeps longest (about a month back) ----
+  daily: ['zd', `httpRequests1dGroups(limit:31, filter:{date_geq:$d}, orderBy:[date_ASC]){dimensions{date}
+    sum{requests pageViews bytes cachedBytes cachedRequests encryptedRequests encryptedBytes threats} uniq{uniques}}`],
+  dailyMaps: ['zd', `httpRequests1dGroups(limit:31, filter:{date_geq:$d}){sum{
+    countryMap{clientCountryName requests threats bytes} browserMap{uaBrowserFamily pageViews}
+    responseStatusMap{edgeResponseStatus requests} contentTypeMap{edgeResponseContentTypeName requests bytes}}}`],
+  dailyKinds: ['zd', `httpRequests1dGroups(limit:31, filter:{date_geq:$d}){sum{
+    threatPathingMap{threatPathingName requests} ipClassMap{ipType requests}}}`],
+
+  // ---- per request: what was asked for, and how we answered ----
+  hourly: ['zt', `httpRequestsAdaptiveGroups(limit:400, filter:{datetime_geq:$t}, orderBy:[datetimeHour_ASC]){count sum{edgeResponseBytes} dimensions{datetimeHour}}`],
+  paths: ['zt', `httpRequestsAdaptiveGroups(limit:60, filter:{datetime_geq:$t}, orderBy:[count_DESC]){count sum{edgeResponseBytes} dimensions{clientRequestPath}}`],
+  queries: ['zt', `httpRequestsAdaptiveGroups(limit:25, filter:{datetime_geq:$t}, orderBy:[count_DESC]){count dimensions{clientRequestQuery}}`],
+  hosts: ['zt', `httpRequestsAdaptiveGroups(limit:15, filter:{datetime_geq:$t}, orderBy:[count_DESC]){count dimensions{clientRequestHTTPHost}}`],
+  methods: ['zt', `httpRequestsAdaptiveGroups(limit:12, filter:{datetime_geq:$t}, orderBy:[count_DESC]){count dimensions{clientRequestHTTPMethodName}}`],
+  cache: ['zt', `httpRequestsAdaptiveGroups(limit:20, filter:{datetime_geq:$t}, orderBy:[count_DESC]){count sum{edgeResponseBytes} dimensions{cacheStatus}}`],
+  protocols: ['zt', `httpRequestsAdaptiveGroups(limit:12, filter:{datetime_geq:$t}, orderBy:[count_DESC]){count dimensions{clientRequestHTTPProtocol}}`],
+  tls: ['zt', `httpRequestsAdaptiveGroups(limit:12, filter:{datetime_geq:$t}, orderBy:[count_DESC]){count dimensions{clientSSLProtocol}}`],
+  originStatus: ['zt', `httpRequestsAdaptiveGroups(limit:25, filter:{datetime_geq:$t}, orderBy:[count_DESC]){count dimensions{originResponseStatus}}`],
+
+  // ---- per request: where it came from ----
+  referers: ['zt', `httpRequestsAdaptiveGroups(limit:30, filter:{datetime_geq:$t}, orderBy:[count_DESC]){count dimensions{clientRefererHost}}`],
+  colo: ['zt', `httpRequestsAdaptiveGroups(limit:40, filter:{datetime_geq:$t}, orderBy:[count_DESC]){count dimensions{coloCode}}`],
+  devices: ['zt', `httpRequestsAdaptiveGroups(limit:12, filter:{datetime_geq:$t}, orderBy:[count_DESC]){count dimensions{clientDeviceType}}`],
+  systems: ['zt', `httpRequestsAdaptiveGroups(limit:20, filter:{datetime_geq:$t}, orderBy:[count_DESC]){count dimensions{userAgentOS}}`],
+  networks: ['zt', `httpRequestsAdaptiveGroups(limit:25, filter:{datetime_geq:$t}, orderBy:[count_DESC]){count dimensions{clientASNDescription}}`],
+  ipClass: ['zt', `httpRequestsAdaptiveGroups(limit:15, filter:{datetime_geq:$t}, orderBy:[count_DESC]){count dimensions{clientIPClass}}`],
+  regions: ['zt', `httpRequestsAdaptiveGroups(limit:25, filter:{datetime_geq:$t}, orderBy:[count_DESC]){count dimensions{clientRegionName}}`],
+  cities: ['zt', `httpRequestsAdaptiveGroups(limit:25, filter:{datetime_geq:$t}, orderBy:[count_DESC]){count dimensions{clientCityName}}`],
+  agents: ['zt', `httpRequestsAdaptiveGroups(limit:120, filter:{datetime_geq:$t}, orderBy:[count_DESC]){count dimensions{userAgent}}`],
+  firewall: ['zt', `firewallEventsAdaptiveGroups(limit:30, filter:{datetime_geq:$t}, orderBy:[count_DESC]){count dimensions{action source}}`],
+
+  // ---- real visitors (Web Analytics, no cookies) ----
+  rumTotal: ['at', `rumPageloadEventsAdaptiveGroups(limit:1, filter:{datetime_geq:$t}){count sum{visits}}`],
+  rumDay: ['at', `rumPageloadEventsAdaptiveGroups(limit:40, filter:{datetime_geq:$t}, orderBy:[date_ASC]){count sum{visits} dimensions{date}}`],
+  rumHour: ['at', `rumPageloadEventsAdaptiveGroups(limit:400, filter:{datetime_geq:$t}, orderBy:[datetimeHour_ASC]){count sum{visits} dimensions{datetimeHour}}`],
+  rumPages: ['at', `rumPageloadEventsAdaptiveGroups(limit:40, filter:{datetime_geq:$t}, orderBy:[count_DESC]){count sum{visits} dimensions{requestPath}}`],
+  rumHosts: ['at', `rumPageloadEventsAdaptiveGroups(limit:10, filter:{datetime_geq:$t}, orderBy:[count_DESC]){count sum{visits} dimensions{requestHost}}`],
+  rumRefs: ['at', `rumPageloadEventsAdaptiveGroups(limit:30, filter:{datetime_geq:$t}, orderBy:[count_DESC]){count sum{visits} dimensions{refererHost}}`],
+  rumCountries: ['at', `rumPageloadEventsAdaptiveGroups(limit:40, filter:{datetime_geq:$t}, orderBy:[count_DESC]){count sum{visits} dimensions{countryName}}`],
+  rumDevices: ['at', `rumPageloadEventsAdaptiveGroups(limit:10, filter:{datetime_geq:$t}, orderBy:[count_DESC]){count sum{visits} dimensions{deviceType}}`],
+  rumBrowsers: ['at', `rumPageloadEventsAdaptiveGroups(limit:20, filter:{datetime_geq:$t}, orderBy:[count_DESC]){count sum{visits} dimensions{userAgentBrowser}}`],
+  rumSystems: ['at', `rumPageloadEventsAdaptiveGroups(limit:20, filter:{datetime_geq:$t}, orderBy:[count_DESC]){count sum{visits} dimensions{userAgentOS}}`],
+
+  // ---- page speed: what real visitors felt ----
+  vitals: ['at', `rumWebVitalsEventsAdaptiveGroups(limit:25, filter:{datetime_geq:$t}, orderBy:[count_DESC]){count
+    quantiles{largestContentfulPaintP75 interactionToNextPaintP75 cumulativeLayoutShiftP75 firstContentfulPaintP75} dimensions{requestPath}}`],
+  speed: ['at', `rumPerformanceEventsAdaptiveGroups(limit:25, filter:{datetime_geq:$t}, orderBy:[count_DESC]){count
+    quantiles{pageLoadTimeP50 pageLoadTimeP90} dimensions{requestPath}}`],
+  parts: ['at', `rumPerformanceEventsAdaptiveGroups(limit:1, filter:{datetime_geq:$t}){count
+    quantiles{dnsTimeP50 connectionTimeP50 responseTimeP50 domLoadTimeP50 loadEventTimeP50 pageLoadTimeP50 pageLoadTimeP90}}`],
+  ttfb: ['at', `rumWebVitalsEventsAdaptiveGroups(limit:25, filter:{datetime_geq:$t}, orderBy:[count_DESC]){count quantiles{timeToFirstByteP75} dimensions{requestPath}}`],
+  // good / needs work / poor, each metric on its own so one missing name does not cost the rest
+  splitLcp: ['at', `rumWebVitalsEventsAdaptiveGroups(limit:1, filter:{datetime_geq:$t}){sum{lcpGood lcpNeedsImprovement lcpPoor lcpTotal}}`],
+  splitInp: ['at', `rumWebVitalsEventsAdaptiveGroups(limit:1, filter:{datetime_geq:$t}){sum{inpGood inpNeedsImprovement inpPoor inpTotal}}`],
+  splitCls: ['at', `rumWebVitalsEventsAdaptiveGroups(limit:1, filter:{datetime_geq:$t}){sum{clsGood clsNeedsImprovement clsPoor clsTotal}}`],
+  splitFcp: ['at', `rumWebVitalsEventsAdaptiveGroups(limit:1, filter:{datetime_geq:$t}){sum{fcpGood fcpNeedsImprovement fcpPoor fcpTotal}}`],
+  splitTtfb: ['at', `rumWebVitalsEventsAdaptiveGroups(limit:1, filter:{datetime_geq:$t}){sum{ttfbGood ttfbNeedsImprovement ttfbPoor ttfbTotal}}`],
+
+  // ---- the worker and the database ----
+  workers: ['at', `workersInvocationsAdaptive(limit:20, filter:{datetime_geq:$t}){sum{requests errors subrequests}
+    quantiles{cpuTimeP50 cpuTimeP99} dimensions{scriptName status}}`],
+  d1: ['ad', `d1AnalyticsAdaptiveGroups(limit:40, filter:{date_geq:$d}, orderBy:[date_ASC]){sum{readQueries writeQueries rowsRead rowsWritten} dimensions{date}}`],
+};
+/* what to say when a block is missing */
+const LABEL = {
+  daily: 'per-day traffic', dailyMaps: 'countries, browsers, status codes and content types', dailyKinds: 'threat kinds and visitor kinds',
+  hourly: 'requests per hour', paths: 'paths', queries: 'query strings', hosts: 'hosts', methods: 'request methods', cache: 'cache hits',
+  protocols: 'HTTP versions', tls: 'TLS versions', originStatus: 'server status codes',
+  referers: 'referring sites', colo: 'data centres', devices: 'device kinds', systems: 'operating systems', networks: 'networks (ASN)',
+  ipClass: 'visitor kinds per request', regions: 'regions', cities: 'cities', agents: 'crawlers and browsers', firewall: 'security events',
+  rumTotal: 'real visits', rumDay: 'real visits per day', rumHour: 'real visits per hour', rumPages: 'real visitor pages',
+  rumHosts: 'real visitor hosts', rumRefs: 'where real visitors came from', rumCountries: 'real visitor countries',
+  rumDevices: 'real visitor devices', rumBrowsers: 'real visitor browsers', rumSystems: 'real visitor systems',
+  vitals: 'page speed per page', speed: 'load time per page', parts: 'load time, step by step', ttfb: 'time to first byte',
+  splitLcp: 'main content: good / poor split', splitInp: 'reaction: good / poor split', splitCls: 'jumpiness: good / poor split',
+  splitFcp: 'first paint: good / poor split', splitTtfb: 'first byte: good / poor split',
+  workers: 'server numbers', d1: 'database numbers',
+};
+const HEAD = {
+  zt: ['query($z:String!,$t:Time!){viewer{zones(filter:{zoneTag:$z}){', '}}}'],
+  zd: ['query($z:String!,$d:Date!){viewer{zones(filter:{zoneTag:$z}){', '}}}'],
+  at: ['query($a:String!,$t:Time!){viewer{accounts(filter:{accountTag:$a}){', '}}}'],
+  ad: ['query($a:String!,$d:Date!){viewer{accounts(filter:{accountTag:$a}){', '}}}'],
+};
+/* the smallest question each event dataset takes: how far back the free plan still answers */
+const PROBE = {zt: 'httpRequestsAdaptiveGroups(limit:1, filter:{datetime_geq:$t}){count}',
+  at: 'rumPageloadEventsAdaptiveGroups(limit:1, filter:{datetime_geq:$t}){count}'};
 
 async function gql(env, query, variables){
   const r = await fetch('https://api.cloudflare.com/client/v4/graphql', {method: 'POST',
     headers: {'Authorization': 'Bearer ' + env.CF_ANALYTICS_TOKEN, 'Content-Type': 'application/json'},
     body: JSON.stringify({query, variables})});
   const j = await r.json().catch(() => ({}));
-  if(j.errors && j.errors.length) throw new Error(j.errors[0].message);
+  if(j.errors && j.errors.length) throw new Error(j.errors.map(e => e.message).join('; '));
+  if(!j.data) throw new Error('HTTP ' + r.status);
   return j.data;
 }
 const sinceTime = h => new Date(Date.now() - h * 3600e3).toISOString().replace(/\.\d+Z$/, 'Z');
 const sinceDate = d => new Date(Date.now() - (d - 1) * 86400e3).toISOString().slice(0, 10);
-const sumBy = (rows, key, val) => {
-  const m = new Map();
-  for(const r of rows) m.set(key(r), (m.get(key(r)) || 0) + val(r));
-  return [...m].map(([k, n]) => ({k, n})).sort((a, b) => b.n - a.n);
-};
+/* a field the free plan does not have, rather than a bad moment: worth remembering */
+const forGood = m => /cannot query|unknown (field|argument|type)|did you mean|not exist|denied|unauthor|forbidden|no access|not allowed/i.test(m);
+export const query = (scope, names) => HEAD[scope][0] + names.map(n => n + ': ' + BLOCKS[n][1]).join('\n') + HEAD[scope][1];
+
+/* ask for some blocks of one scope in one request */
+async function ask(env, scope, names, vars){
+  const d = await gql(env, query(scope, names), vars);
+  const box = (d.viewer.zones || d.viewer.accounts || [])[0];
+  return box || {};
+}
+/* every block we still believe in, a few per request; a failed request is retried block by block.
+   The retries have a budget, so one bad afternoon cannot spend the worker's whole subrequest limit. */
+async function collect(env, want, vars){
+  const got = {}, gone = [], jobs = [];
+  let budget = 25;
+  for(const scope of Object.keys(HEAD)){
+    const names = want.filter(n => BLOCKS[n][0] === scope && !MISS.has(n));
+    for(let i = 0; i < names.length; i += CHUNK) jobs.push([scope, names.slice(i, i + CHUNK)]);
+  }
+  await Promise.all(jobs.map(async ([scope, names]) => {
+    try { Object.assign(got, await ask(env, scope, names, vars[scope])); return; } catch {}
+    await Promise.all(names.map(async n => {
+      if(budget-- <= 0){ gone.push(n); return; }   // next time, then
+      try { Object.assign(got, await ask(env, scope, [n], vars[scope])); }
+      catch(e){ gone.push(n); if(forGood(String(e.message || e))) MISS.add(n); }
+    }));
+  }));
+  for(const n of want) if(MISS.has(n) && !gone.includes(n)) gone.push(n);
+  return {got, gone};
+}
+/* the longest window the free plan still answers for single events, in hours */
+async function reach(env, scope, hours){
+  for(const h of hours){
+    try { await gql(env, HEAD[scope][0] + 'probe: ' + PROBE[scope] + HEAD[scope][1],
+      scope === 'zt' ? {z: ZONE, t: sinceTime(h)} : {a: ACC, t: sinceTime(h)}); return h; } catch { /* try a shorter one */ }
+  }
+  return 0;
+}
 
 /* who is asking: named crawlers from the user agent, else people's browsers */
 const CRAWLERS = [
@@ -46,114 +172,149 @@ function who(ua){
   return /Mozilla|Opera/.test(ua) ? ['People (browsers)', 'People'] : ['Other programs', 'Other bot'];
 }
 
+/* ---- rows into plain lists ---- */
+const add = (m, k, n) => m.set(k, (m.get(k) || 0) + (n || 0));
+const listOf = (m, n) => [...m].map(([k, v]) => ({k, n: v})).sort((a, b) => b.n - a.n).slice(0, n || 500);
+const pick = (rows, dim) => (rows || []).map(r => {
+  const o = {k: r.dimensions[dim] === null || r.dimensions[dim] === undefined ? '' : String(r.dimensions[dim]), n: r.count};
+  if(r.sum && r.sum.edgeResponseBytes !== undefined) o.bytes = r.sum.edgeResponseBytes;
+  if(r.sum && r.sum.visits !== undefined) o.visits = r.sum.visits;
+  return o;
+}).filter(r => r.n);
+const ms = v => v === null || v === undefined ? null : Math.round(v / 1000);   // Cloudflare gives microseconds
+/* good / needs work / poor for one metric */
+const split = (row, key) => {
+  const s = row && row[0] && row[0].sum;
+  if(!s) return null;
+  const good = s[key + 'Good'] || 0, ok = s[key + 'NeedsImprovement'] || 0, poor = s[key + 'Poor'] || 0;
+  return good + ok + poor ? {good, ok, poor} : null;
+};
+
 export async function cloudflare(env, url){
   if(!env.CF_ANALYTICS_TOKEN) return {error: 'No stats key yet.'};
   const days = [1, 7, 30].includes(+url.searchParams.get('days')) ? +url.searchParams.get('days') : 7;
   const ck = new Request('https://cache.local/cf-stats/' + days);
   const hit = await caches.default.match(ck);
   if(hit) return hit.json();
-  const d = sinceDate(days), notes = [];
+  const d = sinceDate(days), notes = [], want = Object.keys(BLOCKS);
 
-  // ---- per day: traffic, countries, browsers, status codes, content types ----
-  const daily = (await gql(env, `query($z:String!,$d:Date!){viewer{zones(filter:{zoneTag:$z}){
-    httpRequests1dGroups(limit:31, filter:{date_geq:$d}, orderBy:[date_ASC]){ dimensions{date}
-      sum{requests pageViews bytes cachedBytes cachedRequests threats
-        countryMap{clientCountryName requests threats} browserMap{uaBrowserFamily pageViews}
-        responseStatusMap{edgeResponseStatus requests} contentTypeMap{edgeResponseContentTypeName requests}}
-      uniq{uniques}}}}}`, {z: ZONE, d})).viewer.zones[0].httpRequests1dGroups;
+  // how far back single events go on this plan (the per-day dataset goes back further)
+  const win = [...new Set([days * 24, 7 * 24, 3 * 24, 24])].filter(h => h <= days * 24);
+  const [adHours, rumHours] = await Promise.all([reach(env, 'zt', win), reach(env, 'at', win)]);
+  if(!adHours) notes.push('Cloudflare would not answer for single requests.');
+  else if(adHours < days * 24) notes.push('Paths, referrers, crawlers and the rest per request: the last ' + (adHours / 24) + ' days.');
+  if(!rumHours) notes.push('Real-visitor numbers (Web Analytics) did not answer.');
+  else if(rumHours < days * 24) notes.push('Real visitors: the last ' + (rumHours / 24) + ' days.');
 
-  // ---- per request (adaptive): paths, devices, who is asking. The free plan may keep fewer days of these. ----
-  const adaptiveQ = `query($z:String!,$t:Time!){viewer{zones(filter:{zoneTag:$z}){
-    paths: httpRequestsAdaptiveGroups(limit:25, filter:{datetime_geq:$t}, orderBy:[count_DESC]){count dimensions{clientRequestPath}}
-    devices: httpRequestsAdaptiveGroups(limit:20, filter:{datetime_geq:$t}, orderBy:[count_DESC]){count dimensions{clientDeviceType userAgentOS}}
-    agents: httpRequestsAdaptiveGroups(limit:100, filter:{datetime_geq:$t}, orderBy:[count_DESC]){count dimensions{userAgent}}
-    status: httpRequestsAdaptiveGroups(limit:20, filter:{datetime_geq:$t}, orderBy:[count_DESC]){count dimensions{edgeResponseStatus}}}}}`;
-  let ad = null, adHours = days * 24;
-  for(const h of [...new Set([days * 24, 7 * 24, 24])].filter(h => h <= days * 24)){
-    try { ad = (await gql(env, adaptiveQ, {z: ZONE, t: sinceTime(h)})).viewer.zones[0]; adHours = h; break; } catch { /* try a shorter window */ }
-  }
-  if(adHours < days * 24) notes.push('Paths, devices and crawlers: the free plan shows the last ' + (adHours === 24 ? '24 hours' : '7 days') + '.');
+  const vars = {zt: {z: ZONE, t: sinceTime(adHours || 24)}, zd: {z: ZONE, d},
+    at: {a: ACC, t: sinceTime(rumHours || 24)}, ad: {a: ACC, d}};
+  const skip = want.filter(n => (!adHours && BLOCKS[n][0] === 'zt') || (!rumHours && BLOCKS[n][0] === 'at'));
+  const {got, gone} = await collect(env, want.filter(n => !skip.includes(n)), vars);
+  const missing = [...new Set([...gone, ...skip])].map(n => LABEL[n] || n).sort();
 
-  // ---- real visitors (Web Analytics): pages, where from, countries, devices, browsers, systems, speed ----
-  const rumQ = `query($a:String!,$t:Time!){viewer{accounts(filter:{accountTag:$a}){
-    total: rumPageloadEventsAdaptiveGroups(limit:1, filter:{datetime_geq:$t}){count sum{visits}}
-    byDay: rumPageloadEventsAdaptiveGroups(limit:40, filter:{datetime_geq:$t}, orderBy:[date_ASC]){count sum{visits} dimensions{date}}
-    pages: rumPageloadEventsAdaptiveGroups(limit:25, filter:{datetime_geq:$t}, orderBy:[count_DESC]){count sum{visits} dimensions{requestPath}}
-    refs: rumPageloadEventsAdaptiveGroups(limit:25, filter:{datetime_geq:$t}, orderBy:[count_DESC]){count sum{visits} dimensions{refererHost}}
-    countries: rumPageloadEventsAdaptiveGroups(limit:25, filter:{datetime_geq:$t}, orderBy:[count_DESC]){count sum{visits} dimensions{countryName}}
-    devices: rumPageloadEventsAdaptiveGroups(limit:10, filter:{datetime_geq:$t}, orderBy:[count_DESC]){count sum{visits} dimensions{deviceType}}
-    browsers: rumPageloadEventsAdaptiveGroups(limit:15, filter:{datetime_geq:$t}, orderBy:[count_DESC]){count sum{visits} dimensions{userAgentBrowser}}
-    systems: rumPageloadEventsAdaptiveGroups(limit:15, filter:{datetime_geq:$t}, orderBy:[count_DESC]){count sum{visits} dimensions{userAgentOS}}
-    vitals: rumWebVitalsEventsAdaptiveGroups(limit:15, filter:{datetime_geq:$t}, orderBy:[count_DESC]){count
-      quantiles{largestContentfulPaintP75 interactionToNextPaintP75 cumulativeLayoutShiftP75 firstContentfulPaintP75} dimensions{requestPath}}
-    speed: rumPerformanceEventsAdaptiveGroups(limit:15, filter:{datetime_geq:$t}, orderBy:[count_DESC]){count
-      quantiles{pageLoadTimeP50 pageLoadTimeP90} dimensions{requestPath}}}}}`;
-  let rum = null;
-  try { rum = (await gql(env, rumQ, {a: ACC, t: sinceTime(days * 24)})).viewer.accounts[0]; }
-  catch(e){ notes.push('Real-visitor numbers: ' + String(e.message).slice(0, 120)); }
-
-  // ---- the worker and the database ----
-  let wk = null, db = null;
-  try {
-    const a = (await gql(env, `query($a:String!,$t:Time!,$d:Date!){viewer{accounts(filter:{accountTag:$a}){
-      workers: workersInvocationsAdaptive(limit:20, filter:{datetime_geq:$t}){sum{requests errors subrequests} quantiles{cpuTimeP50 cpuTimeP99} dimensions{scriptName status}}
-      d1: d1AnalyticsAdaptiveGroups(limit:40, filter:{date_geq:$d}, orderBy:[date_ASC]){sum{readQueries writeQueries rowsRead rowsWritten} dimensions{date}}}}}`,
-      {a: ACC, t: sinceTime(days * 24), d})).viewer.accounts[0];
-    wk = a.workers; db = a.d1;
-  } catch(e){ notes.push('Worker and database numbers: ' + String(e.message).slice(0, 120)); }
-
-  // ---- shape it ----
-  const tot = {requests: 0, pageViews: 0, uniques: 0, bytes: 0, cachedBytes: 0, cachedRequests: 0, threats: 0};
-  const countries = new Map(), browsers = new Map(), status = new Map(), types = new Map();
-  const add = (m, k, n) => m.set(k, (m.get(k) || 0) + (n || 0));
+  // ---- per day: traffic, and the maps inside it ----
+  const daily = got.daily || [];
+  const tot = {requests: 0, pageViews: 0, uniques: 0, bytes: 0, cachedBytes: 0, cachedRequests: 0,
+    encryptedRequests: 0, encryptedBytes: 0, threats: 0};
   for(const g of daily){
-    for(const k of ['requests', 'pageViews', 'bytes', 'cachedBytes', 'cachedRequests', 'threats']) tot[k] += g.sum[k] || 0;
+    for(const k of Object.keys(tot)) if(k !== 'uniques') tot[k] += g.sum[k] || 0;
     tot.uniques += g.uniq.uniques || 0;   // unique visitors per day, added up
-    for(const c of g.sum.countryMap || []) add(countries, c.clientCountryName, c.requests);
+  }
+  const countries = new Map(), cThreats = new Map(), cBytes = new Map(), browsers = new Map(), status = new Map(), types = new Map();
+  for(const g of got.dailyMaps || []){
+    for(const c of g.sum.countryMap || []){ add(countries, c.clientCountryName, c.requests); add(cThreats, c.clientCountryName, c.threats); add(cBytes, c.clientCountryName, c.bytes); }
     for(const b of g.sum.browserMap || []) add(browsers, b.uaBrowserFamily, b.pageViews);
     for(const s of g.sum.responseStatusMap || []) add(status, s.edgeResponseStatus, s.requests);
     for(const t of g.sum.contentTypeMap || []) add(types, t.edgeResponseContentTypeName, t.requests);
   }
-  const list = (m, n) => [...m].map(([k, v]) => ({k, n: v})).sort((a, b) => b.n - a.n).slice(0, n);
+  const threatKinds = new Map(), ipKinds = new Map();
+  for(const g of got.dailyKinds || []){
+    for(const t of g.sum.threatPathingMap || []) add(threatKinds, t.threatPathingName, t.requests);
+    for(const i of g.sum.ipClassMap || []) add(ipKinds, i.ipType, i.requests);
+  }
+
+  // ---- who is asking: named crawlers, else browsers ----
   const crawl = new Map(), kinds = new Map();
-  for(const r of (ad && ad.agents) || []){
+  for(const r of got.agents || []){
     const [name, kind] = who(r.dimensions.userAgent);
     add(crawl, name + '' + kind, r.count);
     add(kinds, kind, r.count);
   }
-  const rumList = (rows, f) => (rows || []).map(r => ({k: r.dimensions[f] || '', n: r.count, visits: r.sum ? r.sum.visits : 0}));
-  const ms = v => v === null || v === undefined ? null : Math.round(v / 1000);   // Cloudflare gives microseconds
-  const speed = new Map(((rum && rum.speed) || []).map(r => [r.dimensions.requestPath, r]));
+
+  // ---- real visitors and page speed ----
+  const rumOn = got.rumTotal || got.rumPages || got.rumDay;
+  const load = new Map((got.speed || []).map(r => [r.dimensions.requestPath, r]));
+  const byte = new Map((got.ttfb || []).map(r => [r.dimensions.requestPath, r]));
+  const rum = rumOn ? {
+    byDay: (got.rumDay || []).map(r => ({date: r.dimensions.date, loads: r.count, visits: r.sum.visits})),
+    byHour: (got.rumHour || []).map(r => ({hour: String(r.dimensions.datetimeHour).slice(0, 13), loads: r.count, visits: r.sum.visits})),
+    pages: pick(got.rumPages, 'requestPath'), hosts: pick(got.rumHosts, 'requestHost'), refs: pick(got.rumRefs, 'refererHost'),
+    countries: pick(got.rumCountries, 'countryName'), devices: pick(got.rumDevices, 'deviceType'),
+    browsers: pick(got.rumBrowsers, 'userAgentBrowser'), systems: pick(got.rumSystems, 'userAgentOS'),
+    vitals: (got.vitals || []).map(r => {
+      const s = load.get(r.dimensions.requestPath), b = byte.get(r.dimensions.requestPath);
+      return {path: r.dimensions.requestPath, n: r.count,
+        lcp: ms(r.quantiles.largestContentfulPaintP75), inp: ms(r.quantiles.interactionToNextPaintP75),
+        cls: r.quantiles.cumulativeLayoutShiftP75, fcp: ms(r.quantiles.firstContentfulPaintP75),
+        ttfb: b ? ms(b.quantiles.timeToFirstByteP75) : null,
+        load50: s ? ms(s.quantiles.pageLoadTimeP50) : null, load90: s ? ms(s.quantiles.pageLoadTimeP90) : null};
+    }),
+    split: {lcp: split(got.splitLcp, 'lcp'), inp: split(got.splitInp, 'inp'), cls: split(got.splitCls, 'cls'),
+      fcp: split(got.splitFcp, 'fcp'), ttfb: split(got.splitTtfb, 'ttfb')},
+    parts: got.parts && got.parts[0] ? (q => ({dns: ms(q.dnsTimeP50), connect: ms(q.connectionTimeP50), answer: ms(q.responseTimeP50),
+      dom: ms(q.domLoadTimeP50), ready: ms(q.loadEventTimeP50), load50: ms(q.pageLoadTimeP50), load90: ms(q.pageLoadTimeP90)}))(got.parts[0].quantiles) : null,
+  } : null;
+
+  // ---- the worker ----
   const workers = {requests: 0, errors: 0, subrequests: 0, cpu50: 0, cpu99: 0, byStatus: []};
-  for(const w of wk || []){
+  for(const w of got.workers || []){
     if(w.dimensions.scriptName !== 'wraeclast-index') continue;
     workers.requests += w.sum.requests; workers.errors += w.sum.errors; workers.subrequests += w.sum.subrequests;
     workers.byStatus.push({k: w.dimensions.status, n: w.sum.requests});
     if(w.dimensions.status === 'success'){ workers.cpu50 = ms(w.quantiles.cpuTimeP50); workers.cpu99 = ms(w.quantiles.cpuTimeP99); }
   }
   workers.byStatus.sort((a, b) => b.n - a.n);
+
   const out = {
-    days, notes, updated: new Date().toISOString(), adaptiveHours: adHours,
-    totals: {...tot, visits: rum && rum.total[0] ? rum.total[0].sum.visits : null, pageLoads: rum && rum.total[0] ? rum.total[0].count : null},
+    days, notes, missing, updated: new Date().toISOString(), adaptiveHours: adHours, rumHours,
+    totals: {...tot, visits: rumOn && got.rumTotal && got.rumTotal[0] ? got.rumTotal[0].sum.visits : null,
+      pageLoads: rumOn && got.rumTotal && got.rumTotal[0] ? got.rumTotal[0].count : null},
     daily: daily.map(g => ({date: g.dimensions.date, requests: g.sum.requests, pageViews: g.sum.pageViews, uniques: g.uniq.uniques,
-      bytes: g.sum.bytes, cachedBytes: g.sum.cachedBytes, threats: g.sum.threats})),
-    countries: list(countries, 25), browsers: list(browsers, 15), status: list(status, 15), types: list(types, 12),
-    paths: ((ad && ad.paths) || []).map(r => ({k: r.dimensions.clientRequestPath, n: r.count})),
-    devices: ((ad && ad.devices) || []).map(r => ({k: r.dimensions.clientDeviceType + ' · ' + r.dimensions.userAgentOS, n: r.count})),
+      bytes: g.sum.bytes, cachedBytes: g.sum.cachedBytes, cachedRequests: g.sum.cachedRequests, threats: g.sum.threats})),
+    hourly: (got.hourly || []).map(r => ({hour: String(r.dimensions.datetimeHour).slice(0, 13), n: r.count,
+      bytes: r.sum ? r.sum.edgeResponseBytes : 0})),
+    countries: listOf(countries, 60).map(c => ({...c, threats: cThreats.get(c.k) || 0, bytes: cBytes.get(c.k) || 0})),
+    browsers: listOf(browsers, 20), status: listOf(status, 20), types: listOf(types, 20),
+    threatKinds: listOf(threatKinds, 15),
+    ipKinds: ipKinds.size ? listOf(ipKinds, 15) : pick(got.ipClass, 'clientIPClass'),   // per day if we have it, else per request
+    paths: pick(got.paths, 'clientRequestPath'), queries: pick(got.queries, 'clientRequestQuery'),
+    hosts: pick(got.hosts, 'clientRequestHTTPHost'), methods: pick(got.methods, 'clientRequestHTTPMethodName'),
+    cache: pick(got.cache, 'cacheStatus'), protocols: pick(got.protocols, 'clientRequestHTTPProtocol'), tls: pick(got.tls, 'clientSSLProtocol'),
+    originStatus: pick(got.originStatus, 'originResponseStatus'),
+    referers: pick(got.referers, 'clientRefererHost'), colo: pick(got.colo, 'coloCode'),
+    devices: pick(got.devices, 'clientDeviceType'), systems: pick(got.systems, 'userAgentOS'),
+    networks: pick(got.networks, 'clientASNDescription'),
+    regions: pick(got.regions, 'clientRegionName'), cities: pick(got.cities, 'clientCityName'),
+    firewall: (got.firewall || []).map(r => ({k: r.dimensions.action, source: r.dimensions.source, n: r.count})),
     crawlers: [...crawl].map(([k, n]) => { const [name, kind] = k.split(''); return {k: name, kind, n}; }).sort((a, b) => b.n - a.n),
-    askers: list(kinds, 10),
-    rum: rum ? {
-      byDay: (rum.byDay || []).map(r => ({date: r.dimensions.date, loads: r.count, visits: r.sum.visits})),
-      pages: rumList(rum.pages, 'requestPath'), refs: rumList(rum.refs, 'refererHost'), countries: rumList(rum.countries, 'countryName'),
-      devices: rumList(rum.devices, 'deviceType'), browsers: rumList(rum.browsers, 'userAgentBrowser'), systems: rumList(rum.systems, 'userAgentOS'),
-      vitals: (rum.vitals || []).map(r => { const s = speed.get(r.dimensions.requestPath); return {path: r.dimensions.requestPath, n: r.count,
-        lcp: ms(r.quantiles.largestContentfulPaintP75), inp: ms(r.quantiles.interactionToNextPaintP75), cls: r.quantiles.cumulativeLayoutShiftP75,
-        fcp: ms(r.quantiles.firstContentfulPaintP75), load50: s ? ms(s.quantiles.pageLoadTimeP50) : null, load90: s ? ms(s.quantiles.pageLoadTimeP90) : null}; }),
-    } : null,
+    askers: listOf(kinds, 12),
+    rum,
     workers,
-    d1: (db || []).map(r => ({date: r.dimensions.date, rowsRead: r.sum.rowsRead, rowsWritten: r.sum.rowsWritten, reads: r.sum.readQueries, writes: r.sum.writeQueries})),
-    free: {requests: 100000, d1Reads: 5000000, d1Writes: 100000},
+    d1: (got.d1 || []).map(r => ({date: r.dimensions.date, rowsRead: r.sum.rowsRead, rowsWritten: r.sum.rowsWritten,
+      reads: r.sum.readQueries, writes: r.sum.writeQueries})),
+    free: {requests: 100000, d1Reads: 5000000, d1Writes: 100000, d1StorageGB: 5},
   };
   await caches.default.put(ck, new Response(JSON.stringify(out), {headers: {'Cache-Control': 'max-age=300'}}));
   return out;
+}
+
+/* for tools/dev/cfcheck.mjs: every block on its own, so a run says which ones the free plan answers */
+export function checks(days = 7){
+  const t = sinceTime(Math.min(days, 7) * 24), d = sinceDate(days);
+  const vars = {zt: {z: ZONE, t}, zd: {z: ZONE, d}, at: {a: ACC, t}, ad: {a: ACC, d}};
+  return Object.keys(BLOCKS).map(name => {
+    const scope = BLOCKS[name][0];
+    return {name, scope, label: LABEL[name] || name, query: query(scope, [name]), variables: vars[scope],
+      root: scope[0] === 'z' ? 'zones' : 'accounts'};
+  });
 }

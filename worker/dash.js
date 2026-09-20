@@ -7,6 +7,7 @@
      GET  /api/admin/stats?days=1|7|30   (with the data jobs: when each file and each kind of price last came in)
      GET  /api/admin/heat?route=&device=&days=
      GET  /api/admin/cloudflare?days=1|7|30   Cloudflare's own numbers (worker/cfstats.js)
+     GET  /api/admin/suggestions?before=<id>  the next hundred notes, newest first
      POST /api/admin/suggestion      {id, status: new|read|done}
    admin.html itself holds no data: everything comes from here, behind the cookie.
    DASH_HASH is "pbkdf2$<iterations>$<salt base64>$<hash base64>" (PBKDF2-SHA256 of the password). */
@@ -16,6 +17,7 @@ import { cloudflare } from './cfstats.js';
 export const ROUTES = ['home', 'build', 'currency', 'trade', 'farms', 'atlas', 'explore-gems', 'explore-uniques', 'explore-tree'];
 const ROUTE = new Set(ROUTES), DEVICE = new Set(['phone', 'tablet', 'desktop']), STATUS = new Set(['new', 'read', 'done']);
 export const MAX = {views: 50, clicks: 200, heat: 200};
+const NOTES = 100;   // notes from players per page, here and in /api/admin/suggestions
 const LOAD_KINDS = ['trade_search', 'trade_fetch', 'trade_limited', 'trade_error', 'site_view', 'site_batch', 'd1_writes'];
 /* Cloudflare Workers Free plan, per day (storage in total) */
 export const FREE = {requests: 100000, d1Reads: 5000000, d1Writes: 100000, d1StorageGB: 5};
@@ -170,6 +172,7 @@ export async function admin(request, env, url){
   if(path === 'cloudflare' && request.method === 'GET'){
     try { return json(200, await cloudflare(env, url)); } catch(e){ return json(502, {error: String(e.message || e).slice(0, 200)}); }
   }
+  if(path === 'suggestions' && request.method === 'GET') return json(200, await olderSuggestions(env, url));
   if(path === 'suggestion' && request.method === 'POST') return setSuggestion(request, env);
   return json(404, {error: 'Not found.'});
 }
@@ -206,7 +209,7 @@ export async function stats(env, url){
   const [v, c, sg, sgCount, ld, ts] = (await env.DB.batch([
     env.DB.prepare('SELECT day, route, source, device, country, n FROM views WHERE day >= ?').bind(since),
     env.DB.prepare('SELECT route, label, SUM(n) AS n FROM clicks WHERE day >= ? GROUP BY route, label').bind(since),
-    env.DB.prepare('SELECT id, text, page, at, status FROM suggestions ORDER BY id DESC LIMIT 100'),
+    env.DB.prepare('SELECT id, text, page, at, status FROM suggestions ORDER BY id DESC LIMIT ' + NOTES),
     env.DB.prepare('SELECT status, COUNT(*) AS n FROM suggestions GROUP BY status'),
     env.DB.prepare('SELECT hour, kind, n FROM load WHERE hour >= ?').bind(since48),
     env.DB.prepare('SELECT state, n, last FROM trade_searches WHERE last >= ? ORDER BY n DESC, last DESC LIMIT 10').bind(since),
@@ -292,6 +295,17 @@ async function heatmap(env, url){
     .bind(route, sinceOf(days), device).all();
   const cells = (rows.results || []).map(r => [r.xb, r.yb, r.n]);
   return json(200, {route, device, days, cells, total: cells.reduce((a, x) => a + x[2], 0), max: cells.reduce((a, x) => Math.max(a, x[2]), 0)});
+}
+
+/* ---------- GET /api/admin/suggestions?before=<id> ---------- */
+/* the next hundred notes below that id, newest first. /api/admin/stats already sends the first hundred. */
+async function olderSuggestions(env, url){
+  const before = int(url.searchParams.get('before'), 1, 2 ** 31) || 2 ** 31;
+  const r = await env.DB.prepare('SELECT id, text, page, at, status FROM suggestions WHERE id < ? ORDER BY id DESC LIMIT ?')
+    .bind(before, NOTES + 1).all();
+  const rows = r.results || [];
+  return {list: rows.slice(0, NOTES).map(x => ({id: x.id, text: x.text, page: x.page || '', at: x.at, status: x.status})),
+    more: rows.length > NOTES};
 }
 
 /* ---------- POST /api/admin/suggestion ---------- */

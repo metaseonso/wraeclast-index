@@ -40,79 +40,119 @@
   </section>
 
   <section class="view ad" id="dash" hidden>
-    <div class="ad-tiles" id="tiles"></div>
-
-    <div class="panel ad-box">
-      <div class="ad-hd"><h3 id="charttl">Views per day</h3></div>
-      <div id="chart"></div>
+    <div class="seg ad-tabs" id="tabs" role="group" aria-label="Sections">
+      <button type="button" data-t="overview" aria-pressed="true">Overview</button>
+      <button type="button" data-t="visitors" aria-pressed="false">Visitors</button>
+      <button type="button" data-t="traffic" aria-pressed="false">Traffic</button>
+      <button type="button" data-t="clicks" aria-pressed="false">Clicks</button>
+      <button type="button" data-t="speed" aria-pressed="false">Speed</button>
+      <button type="button" data-t="notes" aria-pressed="false">Notes<span class="ct" id="notect"></span></button>
+      <button type="button" data-t="jobs" aria-pressed="false">Data jobs</button>
+      <button type="button" data-t="plan" aria-pressed="false">Plan</button>
     </div>
 
-    <div class="ad-grid">
-      <div class="panel ad-box"><div class="ad-hd"><h3>Pages</h3><p>Click a page for its clicks.</p></div><div id="routes"></div></div>
-      <div class="panel ad-box"><div class="ad-hd"><h3>How they arrive</h3></div><div id="kinds"></div><div id="sources"></div></div>
-      <div class="panel ad-box"><div class="ad-hd"><h3>Countries</h3></div><div id="countries"></div></div>
-      <div class="panel ad-box"><div class="ad-hd"><h3>Devices</h3></div><div id="devices"></div></div>
-    </div>
+    <!-- ---------- Overview ---------- -->
+    <div class="ad-pane" id="t-overview">
+      <div class="ad-tiles" id="tiles"></div>
 
-    <div class="panel ad-box">
-      <div class="ad-hd"><h3>Top clicks</h3></div>
-      <div class="ad-chips" id="clickpick"></div>
-      <div id="clicks"></div>
-    </div>
-
-    <div class="panel ad-box">
-      <div class="ad-hd"><h3>Heatmap</h3><p id="heatnote"></p></div>
-      <div class="ad-chips" id="heatpage"></div>
-      <div class="ad-row">
-        <div class="seg" id="heatdev"></div>
-        <span class="ad-legend" aria-hidden="true"><span>Few</span><i></i><span>Many</span></span>
+      <div class="panel ad-box">
+        <div class="ad-hd"><h3 id="charttl">Views per day</h3><p>Our own count, from the pages themselves.</p></div>
+        <div id="chart"></div>
       </div>
-      <div class="ad-heat" id="heatbox"></div>
+
+      <div class="ad-grid">
+        <div class="panel ad-box"><div class="ad-hd"><h3>Pages</h3><p>Click a page for its clicks.</p></div><div id="routes"></div></div>
+        <div class="panel ad-box"><div class="ad-hd"><h3>How they arrive</h3></div><div id="kinds"></div><div id="sources"></div></div>
+      </div>
+
+      <h2 class="ad-sect">From Cloudflare</h2>
+      <p class="note" id="cfnotes">Loading Cloudflare's numbers…</p>
+      <div class="ad-tiles" id="cftiles"></div>
+      <div class="panel ad-box"><div class="ad-hd"><h3>Requests per day</h3><p>Everything Cloudflare served, people and bots.</p></div><div id="cfchart"></div></div>
+      <div class="panel ad-box"><div class="ad-hd"><h3>Real visits per day</h3><p>Web Analytics: browsers only, no cookies.</p></div><div id="cfrumchart"></div></div>
     </div>
 
-    <div class="panel ad-box">
-      <div class="ad-hd"><h3>Notes from players</h3></div>
-      <div class="ad-chips" id="notepick"></div>
-      <ul class="ad-notes" id="notes"></ul>
+    <!-- ---------- Visitors: who they are and where from ---------- -->
+    <div class="ad-pane" id="t-visitors" hidden>
+      <div class="ad-grid" id="cfreal"></div>
+      <h2 class="ad-sect">Everyone who asked</h2>
+      <div class="ad-grid" id="cfwho"></div>
+      <h2 class="ad-sect">Our own count</h2>
+      <div class="ad-grid">
+        <div class="panel ad-box"><div class="ad-hd"><h3>Countries</h3></div><div id="countries"></div></div>
+        <div class="panel ad-box"><div class="ad-hd"><h3>Devices</h3></div><div id="devices"></div></div>
+      </div>
     </div>
 
-    <h2 class="ad-sect">From Cloudflare</h2>
-    <p class="note" id="cfnotes">Loading Cloudflare's numbers…</p>
-    <div class="ad-tiles" id="cftiles"></div>
-    <div class="panel ad-box"><div class="ad-hd"><h3>Requests and page views per day</h3><p>Everything Cloudflare served, people and bots.</p></div><div id="cfchart"></div></div>
-    <div class="ad-grid">
-      <div class="panel ad-box"><div class="ad-hd"><h3>Real visitors: pages</h3><p>Web Analytics: browsers only, no cookies.</p></div><div id="cfpages"></div></div>
-      <div class="panel ad-box"><div class="ad-hd"><h3>Real visitors: where they came from</h3></div><div id="cfrefs"></div></div>
-      <div class="panel ad-box"><div class="ad-hd"><h3>Real visitors: countries</h3></div><div id="cfrcountries"></div></div>
-      <div class="panel ad-box"><div class="ad-hd"><h3>Real visitors: devices, browsers, systems</h3></div><div id="cfrdev"></div></div>
-      <div class="panel ad-box"><div class="ad-hd"><h3>Who is asking</h3><p>People, search engines, AI crawlers and scripts, by requests.</p></div><div id="cfaskers"></div></div>
-      <div class="panel ad-box"><div class="ad-hd"><h3>Crawlers by name</h3></div><div id="cfcrawlers"></div></div>
-      <div class="panel ad-box"><div class="ad-hd"><h3>All requests: countries</h3></div><div id="cfcountries"></div></div>
-      <div class="panel ad-box"><div class="ad-hd"><h3>All requests: devices and systems</h3></div><div id="cfdevices"></div></div>
-      <div class="panel ad-box"><div class="ad-hd"><h3>Most asked for</h3><p>Paths, people and bots.</p></div><div id="cfpaths"></div></div>
-      <div class="panel ad-box"><div class="ad-hd"><h3>Answers</h3><p>Status codes and content types.</p></div><div id="cfstatus"></div></div>
-    </div>
-    <div class="panel ad-box"><div class="ad-hd"><h3>Page speed</h3><p>What real visitors felt (75% of visits were this fast or faster).</p></div><div id="cfspeed"></div></div>
-    <div class="panel ad-box"><div class="ad-hd"><h3>Server and database</h3></div><div id="cfserver"></div></div>
-
-    <div class="panel ad-box">
-      <div class="ad-hd"><h3>Load</h3><p>Last 48 hours.</p></div>
-      <div id="load"></div>
+    <!-- ---------- Traffic: what was asked for and how we answered ---------- -->
+    <div class="ad-pane" id="t-traffic" hidden>
+      <div class="panel ad-box"><div class="ad-hd"><h3 id="cfhourtl">Requests per hour</h3><p>Bars are requests, hover for bytes.</p></div><div id="cfhour"></div></div>
+      <div class="ad-grid" id="cftraffic"></div>
     </div>
 
-    <div class="panel ad-box">
-      <div class="ad-hd"><h3>Data jobs</h3><p>When each last came in.</p></div>
-      <div id="jobs"></div>
+    <!-- ---------- Clicks: our own click tracking ---------- -->
+    <div class="ad-pane" id="t-clicks" hidden>
+      <div class="panel ad-box">
+        <div class="ad-hd"><h3>Top clicks</h3></div>
+        <div class="ad-chips" id="clickpick"></div>
+        <div id="clicks"></div>
+      </div>
+
+      <div class="panel ad-box">
+        <div class="ad-hd"><h3>Heatmap</h3><p id="heatnote"></p></div>
+        <div class="ad-chips" id="heatpage"></div>
+        <div class="ad-row">
+          <div class="seg" id="heatdev"></div>
+          <span class="ad-legend" aria-hidden="true"><span>Few</span><i></i><span>Many</span></span>
+        </div>
+        <div class="ad-heat" id="heatbox"></div>
+      </div>
+
+      <div class="panel ad-box">
+        <div class="ad-hd"><h3>Popular trade searches</h3></div>
+        <div id="searches"></div>
+      </div>
     </div>
 
-    <div class="panel ad-box">
-      <div class="ad-hd"><h3>Free plan</h3></div>
-      <div id="plan"></div>
+    <!-- ---------- Speed ---------- -->
+    <div class="ad-pane" id="t-speed" hidden>
+      <div class="panel ad-box"><div class="ad-hd"><h3>Good, needs work, poor</h3><p>Every real page load, by Google's lines.</p></div><div id="cfsplit"></div></div>
+      <div class="panel ad-box"><div class="ad-hd"><h3>Page speed</h3><p>What real visitors felt (75% of loads were this fast or faster).</p></div><div id="cfspeed"></div></div>
+      <div class="panel ad-box"><div class="ad-hd"><h3>Where the time goes</h3><p>Half of the loads, step by step.</p></div><div id="cfparts"></div></div>
     </div>
 
-    <div class="panel ad-box">
-      <div class="ad-hd"><h3>Popular trade searches</h3></div>
-      <div id="searches"></div>
+    <!-- ---------- Notes from players ---------- -->
+    <div class="ad-pane" id="t-notes" hidden>
+      <div class="panel ad-box">
+        <div class="ad-hd"><h3>Notes from players</h3><p>Newest first. Mark them read or done.</p></div>
+        <div class="ad-chips" id="notepick"></div>
+        <ul class="ad-notes" id="notes"></ul>
+        <div class="ad-row" id="notemore"></div>
+      </div>
+    </div>
+
+    <!-- ---------- Data jobs and load ---------- -->
+    <div class="ad-pane" id="t-jobs" hidden>
+      <div class="panel ad-box">
+        <div class="ad-hd"><h3>Data jobs</h3><p>When each last came in.</p></div>
+        <div id="jobs"></div>
+      </div>
+
+      <div class="panel ad-box">
+        <div class="ad-hd"><h3>Load</h3><p>Last 48 hours.</p></div>
+        <div id="load"></div>
+      </div>
+    </div>
+
+    <!-- ---------- Free plan, server and database ---------- -->
+    <div class="ad-pane" id="t-plan" hidden>
+      <div class="panel ad-box">
+        <div class="ad-hd"><h3>Free plan</h3></div>
+        <div id="plan"></div>
+      </div>
+
+      <div class="panel ad-box"><div class="ad-hd"><h3>Server and database</h3><p>Cloudflare's own count.</p></div><div id="cfserver"></div></div>
+      <div class="panel ad-box"><div class="ad-hd"><h3>Database rows per day</h3></div><div id="cfd1"></div></div>
     </div>
 
     <p class="note ad-foot"><label class="note"><input type="checkbox" id="notrack"> Skip my own visits on this browser</label></p>

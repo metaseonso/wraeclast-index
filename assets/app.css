@@ -398,6 +398,9 @@ small.at-bonus{display:block}
 .ad-range{display:flex; gap:6px; flex-wrap:wrap}
 .ad-out{padding:5px 12px; font-size:12px}
 .ad{padding-top:18px; display:grid; gap:14px; grid-template-columns:minmax(0, 1fr)}
+.ad-tabs{width:max-content; max-width:100%}
+.ad-tabs .ct{font-family:var(--mono); font-size:11px; opacity:.8; margin-left:5px}
+.ad-pane{display:grid; gap:14px; grid-template-columns:minmax(0, 1fr)}
 .ad-signin{width:min(360px, 100%); margin:12vh auto 0; display:grid; gap:12px}
 .ad-signin h2{font-family:var(--disp); font-size:19px; letter-spacing:.03em}
 .ad-signin .btn{justify-self:start}
@@ -496,3 +499,17 @@ small.at-bonus{display:block}
 .ad-g.g-good{color:#16C784; border-color:rgba(22,199,132,.45)}
 .ad-g.g-ok{color:#E0B84A; border-color:rgba(224,184,74,.45)}
 .ad-g.g-poor{color:#EA3943; border-color:rgba(234,57,67,.45)}
+/* a breakdown table: how many rows, and the long ones folded until "Show all" */
+.ad-cap{margin:2px 0 0; display:flex; gap:10px; align-items:baseline; flex-wrap:wrap}
+.ad-cap .linkbtn{font-size:11.5px}
+.ad-tbl .ad-more{display:none}
+.ad-tbl.open .ad-more{display:table-row}
+/* page speed: the good / needs work / poor split */
+.ad-cwv{display:grid; gap:10px}
+.ad-cwv-hd{display:flex; flex-wrap:wrap; justify-content:space-between; gap:4px 12px; font-size:12.5px; color:var(--muted)}
+.ad-cwv-hd b{font:500 12.5px var(--mono); color:var(--text)}
+.ad-cwv-bar{display:flex; height:10px; border-radius:6px; overflow:hidden; background:var(--sunken); box-shadow:0 0 0 1px var(--line-soft)}
+.ad-cwv-bar i{height:100%}
+.ad-cwv-bar i.g{background:#16C784}
+.ad-cwv-bar i.o{background:#E0B84A}
+.ad-cwv-bar i.p{background:#EA3943}

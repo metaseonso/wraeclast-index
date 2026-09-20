@@ -3,6 +3,29 @@
 The full list of changes. The public patch notes (data/changelog.json, shown on the site) stay short.
 Add the details here first, then a short public line there.
 
+## Next — Owner dashboard: everything Cloudflare gives us
+- worker/cfstats.js rebuilt around blocks: one breakdown = one named GraphQL block with a scope (zone by date,
+  zone by time, account by time, account by date). Blocks go out five per request; a request that fails is retried
+  block by block (budget 25 a call, so the worker's subrequest limit is safe), a block the free plan will not answer
+  is dropped, remembered in MISS while the worker is warm, and named in `missing` for the dashboard to show.
+  reach() probes how far back single events go (range, a week, three days, a day) before anything else, for the zone
+  and for Web Analytics on their own. Still one 5-minute cache per range. About 12 requests on a cache miss.
+  New: requests and bytes per hour, query strings, hosts, methods, cache status, HTTP and TLS versions, server status
+  codes, referring hosts, data centres (colo), device kinds and systems apart, networks (ASN), visitor kinds
+  (ipClassMap, else clientIPClass), threat kinds (threatPathingMap), security events (firewallEventsAdaptiveGroups),
+  bytes and threats per country, encrypted share, cached requests; real visitors also per hour, by host, and
+  Core Web Vitals split good / needs work / poor per metric, time to first byte, and load time step by step
+  (DNS, connect, answer, page built, everything loaded). regions and cities are asked for and reported as missing
+  if the plan has no such dimension. edgeStatus dropped (the per-day map already answers it).
+- admin.html + assets/admin.js: tabs (Overview, Visitors, Traffic, Clicks, Speed, Notes, Data jobs, Plan), the last
+  one kept in localStorage `wi-admin-tab`. Charts are drawn when their tab opens (a hidden box has no width), and the
+  heatmap's page preview only loads on the Clicks tab. Breakdown tables now say how many rows they have, fold away
+  everything past the first 10-20 and have a "Show all"; the Cloudflare boxes are built from one BREAK list.
+- Notes from players are their own tab with the new count on it, the filter chips and "Load older":
+  GET /api/admin/suggestions?before=<id> sends the next hundred, newest first (worker/dash.js).
+- tools/dev/cfcheck.mjs (new): runs every block from cfstats.js against the real API one at a time with
+  CF_ANALYTICS_TOKEN from the environment, and prints rows and fields back, or Cloudflare's error. No key in the repo.
+
 ## Next — Speed (#39)
 - Home: data/index.json split for the page by tools/appdata.py (run by sync.py and kwuse.py): index-core.json (u and c
   cards, the kinds' order, atlas names the market must skip, lineage names; ~58 KB br) and index-rest.json (everything

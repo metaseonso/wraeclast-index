@@ -1,5 +1,6 @@
 /* The owner's dashboard (admin.html). The page holds no data: everything comes from /api/admin/*,
-   behind a 12-hour sign-in cookie (worker/dash.js). Charts are plain SVG, drawn to the box's own width. */
+   behind a 12-hour sign-in cookie (worker/dash.js). Charts are plain SVG, drawn to the box's own width.
+   Tabs: Overview, Visitors, Traffic, Clicks, Speed, Notes, Data jobs, Plan. The last one stays in localStorage. */
 const $ = (s, el = document) => el.querySelector(s);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c]));
 const num = n => (+n || 0).toLocaleString('en');
@@ -11,7 +12,8 @@ const DEVICES = {phone: 'Phone', tablet: 'Tablet', desktop: 'Desktop'};
 const WIDTH = {phone: 390, tablet: 820, desktop: 1366};   // the heatmap shows the page at this width
 const EXPLORE = /^(localhost|127\.0\.0\.1)$/.test(location.hostname) ? 'explore.html' : 'explore';
 const pageURL = r => r.startsWith('explore-') ? EXPLORE + '#' + r.slice(8) : './#/' + (r === 'home' ? '' : r);
-const S = {days: 7, data: null, clickRoute: 'all', heatRoute: 'home', heatDev: 'desktop', notes: 'new'};
+const TABS = ['overview', 'visitors', 'traffic', 'clicks', 'speed', 'notes', 'jobs', 'plan'];
+const S = {days: 7, tab: 'overview', data: null, cf: null, clickRoute: 'all', heatRoute: 'home', heatDev: 'desktop', notes: 'new', more: false};
 
 /* ---------- the API ---------- */
 async function api(path, body){
@@ -56,9 +58,12 @@ async function load(){
   if(r.status === 503) return showSignin('Not set up yet.');
   if(!r.ok || !r.j) return showSignin('Could not load the numbers.');
   S.data = r.j;
+  const c = r.j.suggestions.count;
+  S.more = c.new + c.read + c.done > r.j.suggestions.list.length;
   $('#signin').hidden = true; $('#dash').hidden = false; $('#range').hidden = false; $('#signout').hidden = false;
   render();
-  heat();
+  H.stale = true;
+  showTab(S.tab);
   cloudflare();
 }
 $('#range').addEventListener('click', e => {
@@ -70,6 +75,31 @@ $('#range').addEventListener('click', e => {
 });
 try { $('#notrack').checked = localStorage.getItem('wi-notrack') === '1'; } catch {}
 $('#notrack').addEventListener('change', e => { try { localStorage.setItem('wi-notrack', e.target.checked ? '1' : '0'); } catch {} });
+
+/* ---------- tabs ---------- */
+function showTab(t){
+  if(!TABS.includes(t)) t = 'overview';
+  S.tab = t;
+  for(const b of $('#tabs').children) b.setAttribute('aria-pressed', String(b.dataset.t === t));
+  for(const p of TABS) $('#t-' + p).hidden = p !== t;
+  try { localStorage.setItem('wi-admin-tab', t); } catch {}
+  if(t === 'clicks' && (H.stale || !H.frameKey)) heat();   // the page preview only loads when it is looked at
+  redraw();
+}
+/* charts are drawn to the box's own width, so a tab draws its own when it opens */
+function redraw(){
+  if(!S.data || $('#dash').hidden) return;
+  if(S.tab === 'overview'){ viewChart(); cfChart('#cfchart', 'requests'); cfChart('#cfrumchart', 'visits'); }
+  if(S.tab === 'traffic') cfHourChart();
+  if(S.tab === 'jobs') loadCharts();
+  if(S.tab === 'plan') cfD1Chart();
+  if(S.tab === 'clicks') fit();
+}
+$('#tabs').addEventListener('click', e => {
+  const b = e.target.closest('button[data-t]');
+  if(b) showTab(b.dataset.t);
+});
+try { S.tab = localStorage.getItem('wi-admin-tab') || 'overview'; } catch {}
 
 /* ---------- small pieces ---------- */
 const day = d => new Date(d + 'T00:00:00Z').toLocaleDateString('en', {month: 'short', day: 'numeric', timeZone: 'UTC'});
@@ -111,18 +141,32 @@ function pageName(p){
   return (m && PAGES[m[1]]) || 'Search';
 }
 
-/* a table with a share bar behind each number */
-function table(rows, head, max){
-  if(!rows.length) return '<p class="note ad-none">Nothing yet.</p>';
-  const top = max || Math.max(1, ...rows.map(r => r.n));
-  return '<div class="tablewrap ad-tw"><table class="ad-t"><thead><tr><th>' + esc(head) + '</th><th class="n">Count</th></tr></thead><tbody>' +
-    rows.map(r => '<tr' + (r.key ? ' data-key="' + esc(r.key) + '" class="ad-link" tabindex="0"' : '') + '><td>' + r.html + '</td>' +
-      '<td class="n"><span class="ad-share" style="width:' + (r.n / top * 100).toFixed(1) + '%"></span><b>' + num(r.n) + '</b></td></tr>').join('') +
-    '</tbody></table></div>';
+/* a table with a share bar behind each number, how many rows it has, and the long tail folded away */
+function table(list, head, max, show = 12){
+  if(!list.length) return '<p class="note ad-none">Nothing yet.</p>';
+  const top = max || Math.max(1, ...list.map(r => r.n));
+  const body = list.map((r, i) => {
+    const cls = [r.key ? 'ad-link' : '', i >= show ? 'ad-more' : ''].filter(Boolean).join(' ');
+    return '<tr' + (cls ? ' class="' + cls + '"' : '') + (r.key ? ' data-key="' + esc(r.key) + '" tabindex="0"' : '') + '><td>' + r.html + '</td>' +
+      '<td class="n"><span class="ad-share" style="width:' + (r.n / top * 100).toFixed(1) + '%"></span><b>' + num(r.n) + '</b></td></tr>';
+  }).join('');
+  const rows = num(list.length) + ' row' + (list.length === 1 ? '' : 's');
+  return '<div class="ad-tbl"><div class="tablewrap ad-tw"><table class="ad-t"><thead><tr><th>' + esc(head) +
+    '</th><th class="n">Count</th></tr></thead><tbody>' + body + '</tbody></table></div>' +
+    '<p class="ad-cap note"><span>' + rows + '</span>' +
+    (list.length > show ? '<button type="button" class="linkbtn ad-all">Show all</button>' : '') + '</p></div>';
 }
+$('#dash').addEventListener('click', e => {
+  const b = e.target.closest('.ad-all');
+  if(!b) return;
+  const box = b.closest('.ad-tbl');
+  box.classList.toggle('open');
+  b.textContent = box.classList.contains('open') ? 'Show less' : 'Show all';
+});
 
 /* bars, drawn at the box's own width so the text stays readable on a phone */
 function bars(host, vals, labels, opt = {}){
+  if(!host) return;
   const w = Math.max(260, Math.floor(host.clientWidth || 600)), h = opt.h || 170, L = 36, B = 22, T = 12;
   const peak = Math.max(1, ...vals, opt.line || 0);
   const step = 10 ** Math.floor(Math.log10(peak)), top = Math.ceil(peak / step) * step;
@@ -135,7 +179,7 @@ function bars(host, vals, labels, opt = {}){
   vals.forEach((v, i) => {
     const x = L + i * bw + gap / 2, bh = Math.max(v ? 1.5 : 0, (h - B - T) * v / top);
     s += '<rect x="' + x.toFixed(1) + '" y="' + (h - B - bh).toFixed(1) + '" width="' + Math.max(1, bw - gap).toFixed(1) + '" height="' + bh.toFixed(1) + '"' +
-      (opt.line && v > opt.line ? ' class="over"' : '') + '><title>' + esc(labels[i]) + ': ' + num(v) + '</title></rect>';
+      (opt.line && v > opt.line ? ' class="over"' : '') + '><title>' + esc(labels[i]) + ': ' + num(v) + (opt.tip ? opt.tip(i) : '') + '</title></rect>';
     if(i % every === 0) s += '<text x="' + (x + (bw - gap) / 2).toFixed(1) + '" y="' + (h - 6) + '" text-anchor="middle">' + esc(labels[i]) + '</text>';
   });
   if(opt.line) s += '<line x1="' + L + '" x2="' + w + '" y1="' + y(opt.line) + '" y2="' + y(opt.line) + '" class="ad-limit"/>' +
@@ -160,7 +204,7 @@ function popup(node){
   return close;
 }
 
-/* ---------- the dashboard ---------- */
+/* ---------- our own numbers ---------- */
 function render(){
   const d = S.data, t = d.totals;
   const range = {1: 'today', 7: 'last 7 days', 30: 'last 30 days'}[d.days];
@@ -170,7 +214,8 @@ function render(){
     [t.clicks, 'Clicks', range],
     [t.newNotes, 'New notes', 'from players'],
   ].map(([n, l, sub]) => '<div class="panel ad-tile"><b>' + num(n) + '</b><span>' + l + '</span><small>' + sub + '</small></div>').join('');
-  charts();
+  viewChart();
+  loadPanel();
 
   $('#routes').innerHTML = table(d.routes.map(r => ({key: r.route, n: r.n, html: esc(PAGES[r.route] || r.route)})), 'Page');
   $('#kinds').innerHTML = table(d.kinds.map(k => ({n: k.n, html: esc(KINDS[k.kind] || k.kind)})), 'From');
@@ -199,7 +244,7 @@ function render(){
     ' mod' + (s.mods === 1 ? '' : 's') + '</span>' : '') + '<span class="ad-sub">' + esc(ago(s.last)) + '</span>'})), 'Search');
 }
 
-function charts(){
+function viewChart(){
   const d = S.data;
   if(d.days === 1){   // today: by the hour (the last 24)
     const hrs = d.load.hours.slice(-24);
@@ -209,19 +254,25 @@ function charts(){
     $('#charttl').textContent = 'Views per day';
     bars($('#chart'), d.perDay.map(x => x.n), d.perDay.map(x => day(x.day)), {label: 'Views per day'});
   }
-  const L = d.load, hl = L.hours.map(hourLabel), sum = k => L.perHour[k].reduce((a, b) => a + b, 0);
+}
+function loadPanel(){
+  const L = S.data.load, sum = k => L.perHour[k].reduce((a, b) => a + b, 0);
   $('#load').innerHTML = '<h4 class="ad-h4">Trade site searches per hour</h4><div id="ld-trade"></div>' +
     '<p class="note">' + num(sum('trade_search')) + ' searches, ' + num(sum('trade_fetch')) + ' fetches. Told to slow down ' +
       num(sum('trade_limited')) + ' times, ' + num(sum('trade_error')) + ' errors.</p>' +
     '<h4 class="ad-h4">Site views per hour</h4><div id="ld-site"></div>' +
     '<p class="note">' + num(sum('site_view')) + ' page views in ' + num(sum('site_batch')) + ' batches.</p>';
+  loadCharts();
+}
+function loadCharts(){
+  const L = S.data.load, hl = L.hours.map(hourLabel);
   bars($('#ld-trade'), L.perHour.trade_search, hl, {h: 150, line: L.tradeLimitPerHour, lineLabel: 'limit ~' + L.tradeLimitPerHour, label: 'Trade site searches per hour'});
   bars($('#ld-site'), L.perHour.site_view, hl, {h: 150, label: 'Site views per hour'});
 }
 
 function clicks(){
   const c = S.data.clicks, list = S.clickRoute === 'all' ? c.all : (c.byRoute[S.clickRoute] || []);
-  $('#clicks').innerHTML = table(list.map(x => ({n: x.n, html: esc(pretty(x.label))})), 'What');
+  $('#clicks').innerHTML = table(list.map(x => ({n: x.n, html: esc(pretty(x.label))})), 'What', 0, 20);
 }
 $('#clickpick').addEventListener('click', e => {
   const b = e.target.closest('button[data-k]');
@@ -237,14 +288,15 @@ function openRoute(r){
   const box = document.createElement('section');
   box.className = 'panel ad-pop';
   box.innerHTML = '<h3>' + esc(PAGES[r] || r) + '</h3><p class="note">' + num((S.data.routes.find(x => x.route === r) || {}).n) + ' views · top clicks</p>' +
-    table(list.slice(0, 20).map(x => ({n: x.n, html: esc(pretty(x.label))})), 'What') +
+    table(list.slice(0, 20).map(x => ({n: x.n, html: esc(pretty(x.label))})), 'What', 0, 20) +
     '<div class="ov-go"><button type="button" class="btn gold">Heatmap</button></div>';
   const close = popup(box);
   box.querySelector('.btn.gold').addEventListener('click', () => {
     close();
     S.heatRoute = r;
     for(const c of $('#heatpage').children) c.setAttribute('aria-pressed', String(c.dataset.k === r));
-    heat();
+    H.stale = true;
+    showTab('clicks');
     $('#heatbox').closest('.panel').scrollIntoView({behavior: 'smooth', block: 'start'});
   });
 }
@@ -252,9 +304,10 @@ $('#routes').addEventListener('click', e => { const tr = e.target.closest('tr[da
 $('#routes').addEventListener('keydown', e => { const tr = e.target.closest('tr[data-key]'); if(tr && (e.key === 'Enter' || e.key === ' ')){ e.preventDefault(); openRoute(tr.dataset.key); } });
 
 /* ---------- heatmap: the page itself in a frame, the clicks painted over it ---------- */
-const H = {token: 0, cells: [], max: 0, W: 1366, h: 1200, frameKey: ''};
+const H = {token: 0, cells: [], max: 0, W: 1366, h: 1200, frameKey: '', stale: true};
 async function heat(){
   const box = $('#heatbox'), token = ++H.token, route = S.heatRoute, dev = S.heatDev;
+  H.stale = false;
   $('#heatnote').textContent = 'Loading…';
   let r;
   try { r = await api('heat?route=' + route + '&device=' + dev + '&days=' + S.days); } catch { r = null; }
@@ -338,8 +391,9 @@ $('#heatdev').addEventListener('click', e => {
 const NEXT = {new: [['read', 'Mark read'], ['done', 'Done']], read: [['done', 'Done'], ['new', 'Mark new']], done: [['new', 'Mark new']]};
 const noteButtons = n => NEXT[n.status].map(([s, l]) => '<button type="button" class="btn" data-id="' + n.id + '" data-s="' + s + '">' + l + '</button>').join('');
 function notes(){
-  const sg = S.data.suggestions, c = sg.count;
-  $('#notepick').innerHTML = [['new', 'New', c.new], ['read', 'Read', c.read], ['done', 'Done', c.done], ['all', 'All', c.new + c.read + c.done]]
+  const sg = S.data.suggestions, c = sg.count, all = c.new + c.read + c.done;
+  $('#notect').textContent = c.new ? num(c.new) : '';
+  $('#notepick').innerHTML = [['new', 'New', c.new], ['read', 'Read', c.read], ['done', 'Done', c.done], ['all', 'All', all]]
     .map(([k, l, n]) => '<button type="button" class="chip" data-k="' + k + '" aria-pressed="' + (k === S.notes) + '">' + l +
       '<span class="ct">' + num(n) + '</span></button>').join('');
   const list = sg.list.filter(n => S.notes === 'all' || n.status === S.notes);
@@ -347,6 +401,8 @@ function notes(){
     '<p class="ad-note-t" data-open="' + n.id + '" tabindex="0">' + esc(n.text) + '</p>' +
     '<div class="ad-note-ft"><span class="note">' + esc(pageName(n.page)) + ' · ' + esc(ago(n.at)) + '</span><span class="grow"></span>' + noteButtons(n) + '</div></li>').join('')
     : '<li class="note ad-none">Nothing here.</li>';
+  $('#notemore').innerHTML = S.more ? '<button type="button" class="btn" id="older">Load older</button>' +
+    '<span class="note">' + num(sg.list.length) + ' of ' + num(all) + ' loaded</span>' : '';
 }
 async function mark(id, status){
   const r = await api('suggestion', {id, status}).catch(() => null);
@@ -392,6 +448,19 @@ $('#notes').addEventListener('keydown', e => {
   const t = e.target.closest('[data-open]');
   if(t && (e.key === 'Enter' || e.key === ' ')){ e.preventDefault(); openNote(+t.dataset.open); }
 });
+/* the next hundred, oldest end first */
+$('#notemore').addEventListener('click', async e => {
+  const b = e.target.closest('#older');
+  if(!b) return;
+  b.disabled = true; b.textContent = 'Loading…';
+  const list = S.data.suggestions.list, last = list.length ? list[list.length - 1].id : 0;
+  const r = await api('suggestions?before=' + last).catch(() => null);
+  if(!r || !r.ok || !r.j){ b.disabled = false; b.textContent = 'Load older'; return; }
+  const have = new Set(list.map(x => x.id));
+  for(const n of r.j.list) if(!have.has(n.id)) list.push(n);
+  S.more = !!r.j.more;
+  notes();
+});
 
 /* ---------- the free plan ---------- */
 function meter(label, used, limit, sub){
@@ -433,7 +502,53 @@ function jobs(){
 /* ---------- Cloudflare's own numbers (worker/cfstats.js) ---------- */
 const COUNTRY = code => { try { return new Intl.DisplayNames(['en'], {type: 'region'}).of(code) || code; } catch { return code; } };
 const bytes = b => b >= 1e9 ? (b / 1e9).toFixed(2) + ' GB' : b >= 1e6 ? (b / 1e6).toFixed(1) + ' MB' : Math.round(b / 1e3) + ' kB';
-const rows = (list, label, max) => table((list || []).filter(x => x.n).slice(0, max || 15).map(x => ({n: x.n, html: esc(label ? label(x) : x.k || '(none)')})), '');
+const PATH = x => x.k === '/' ? 'Home (/)' : x.k || '(none)';
+const REF = x => !x.k ? 'Direct (typed or bookmarked)' : x.k === location.hostname ? 'Within the site' : x.k;
+const VISITS = x => x.visits ? '<span class="ad-sub">' + num(x.visits) + ' visits</span>' : '';
+const BYTES = x => x.bytes ? '<span class="ad-sub">' + bytes(x.bytes) + '</span>' : '';
+const dig = (o, path) => path.split('.').reduce((v, k) => v && v[k], o);
+
+/* every breakdown Cloudflare gives us, each in its own box: box, where the rows are, title, note, row name, row sub-line */
+const BREAK = [
+  // Visitors: real people (Web Analytics)
+  {box: 'cfreal', k: 'rum.pages', t: 'Pages', p: 'Real visitors: browsers only, no cookies.', name: PATH, sub: VISITS, show: 15},
+  {box: 'cfreal', k: 'rum.refs', t: 'Where they came from', name: REF, sub: VISITS, show: 15},
+  {box: 'cfreal', k: 'rum.countries', t: 'Countries', name: x => COUNTRY(x.k), sub: VISITS, show: 15},
+  {box: 'cfreal', k: 'rum.browsers', t: 'Browsers', sub: VISITS},
+  {box: 'cfreal', k: 'rum.systems', t: 'Systems', sub: VISITS},
+  {box: 'cfreal', k: 'rum.devices', t: 'Devices', sub: VISITS},
+  {box: 'cfreal', k: 'rum.hosts', t: 'Hosts', p: 'Which name they came in on.', sub: VISITS},
+  // Visitors: everyone Cloudflare saw, people and bots
+  {box: 'cfwho', k: 'askers', t: 'Who is asking', p: 'People, search engines, AI crawlers and scripts.'},
+  {box: 'cfwho', k: 'crawlers', t: 'Crawlers by name', name: x => x.k + ' · ' + x.kind, show: 15},
+  {box: 'cfwho', k: 'countries', t: 'Countries', p: 'Every request, people and bots.', name: x => COUNTRY(x.k),
+    sub: x => (x.threats ? '<span class="ad-sub">' + num(x.threats) + ' threats · ' + bytes(x.bytes || 0) + '</span>' : BYTES(x)), show: 15},
+  {box: 'cfwho', k: 'regions', t: 'Regions', show: 15},
+  {box: 'cfwho', k: 'cities', t: 'Cities', show: 15},
+  {box: 'cfwho', k: 'networks', t: 'Networks', p: 'The company the request came through.', show: 15},
+  {box: 'cfwho', k: 'colo', t: 'Cloudflare data centres', p: 'Which city answered, nearest to the visitor.', show: 15},
+  {box: 'cfwho', k: 'devices', t: 'Device kinds'},
+  {box: 'cfwho', k: 'systems', t: 'Operating systems'},
+  {box: 'cfwho', k: 'browsers', t: 'Browsers', p: 'Page views, Cloudflare’s own count.'},
+  {box: 'cfwho', k: 'ipKinds', t: 'Visitor kinds', p: 'Cloudflare’s label for the address: clean, search engine, scanner.'},
+  // Traffic: what was asked for and how we answered
+  {box: 'cftraffic', k: 'paths', t: 'Most asked for', p: 'Paths, people and bots.', name: PATH, sub: BYTES, show: 20},
+  {box: 'cftraffic', k: 'queries', t: 'Query strings', name: x => x.k || '(none)', show: 10},
+  {box: 'cftraffic', k: 'hosts', t: 'Hosts'},
+  {box: 'cftraffic', k: 'methods', t: 'Methods'},
+  {box: 'cftraffic', k: 'status', t: 'Status codes', p: 'What we answered.', name: x => 'Status ' + x.k},
+  {box: 'cftraffic', k: 'originStatus', t: 'Server status codes', p: 'What the worker answered before the cache.', name: x => 'Status ' + x.k},
+  {box: 'cftraffic', k: 'cache', t: 'Cache', p: 'A hit never reached the worker.', sub: BYTES},
+  {box: 'cftraffic', k: 'types', t: 'Content types'},
+  {box: 'cftraffic', k: 'protocols', t: 'HTTP versions'},
+  {box: 'cftraffic', k: 'tls', t: 'TLS versions'},
+  {box: 'cftraffic', k: 'referers', t: 'Referring sites', p: 'Every request, people and bots.', name: REF, show: 15},
+  {box: 'cftraffic', k: 'threatKinds', t: 'Threats stopped', p: 'What Cloudflare blocked, and why.'},
+  {box: 'cftraffic', k: 'firewall', t: 'Security events', name: x => x.k + ' · ' + x.source, show: 15},
+];
+const rowList = (list, b) => table((list || []).filter(x => x.n).map(x => ({n: x.n,
+  html: esc(b.name ? b.name(x) : x.k || '(none)') + (b.sub ? b.sub(x) : '')})), '', 0, b.show || 12);
+
 async function cloudflare(){
   let r;
   try { r = await api('cloudflare?days=' + S.days); } catch { r = null; }
@@ -441,7 +556,8 @@ async function cloudflare(){
   if(!c || c.error){ $('#cfnotes').textContent = 'Cloudflare numbers are not available right now' + (c && c.error ? ': ' + c.error : '.'); return; }
   S.cf = c;
   const t = c.totals, range = {1: 'today', 7: 'last 7 days', 30: 'last 30 days'}[c.days];
-  $('#cfnotes').textContent = (c.notes || []).join(' ') || 'Straight from Cloudflare, refreshed every 5 minutes.';
+  $('#cfnotes').innerHTML = esc(['Straight from Cloudflare, refreshed every 5 minutes.', ...(c.notes || [])].join(' ')) +
+    (c.missing && c.missing.length ? ' <b>Not available:</b> ' + esc(c.missing.join(', ')) + '.' : '');
   $('#cftiles').innerHTML = [
     [num(t.visits ?? 0), 'Real visits', 'people in browsers, ' + range],
     [num(t.pageLoads ?? 0), 'Real page loads', range],
@@ -449,52 +565,95 @@ async function cloudflare(){
     [num(t.pageViews), 'Page views', 'people and bots'],
     [num(t.requests), 'Requests', range],
     [bytes(t.bytes), 'Data served', Math.round(t.cachedBytes / Math.max(1, t.bytes) * 100) + '% from cache'],
+    [Math.round(t.cachedRequests / Math.max(1, t.requests) * 100) + '%', 'Requests cached', num(t.cachedRequests) + ' never hit the worker'],
+    [Math.round(t.encryptedRequests / Math.max(1, t.requests) * 100) + '%', 'Encrypted', num(t.requests - t.encryptedRequests) + ' plain'],
     [num(t.threats), 'Threats', 'stopped by Cloudflare'],
     [num(c.workers.errors), 'Server errors', num(c.workers.requests) + ' server requests'],
   ].map(([n, l, sub]) => '<div class="panel ad-tile"><b>' + n + '</b><span>' + l + '</span><small>' + sub + '</small></div>').join('');
-  cfChart();
-  const R = c.rum || {};
-  const REF = k => !k ? 'Direct (typed or bookmarked)' : k === location.hostname ? 'Within the site' : k;
-  $('#cfpages').innerHTML = rows(R.pages, x => x.k === '/' ? 'Home (/)' : x.k);
-  $('#cfrefs').innerHTML = rows(R.refs, x => REF(x.k));
-  $('#cfrcountries').innerHTML = rows(R.countries, x => COUNTRY(x.k));
-  $('#cfrdev').innerHTML = rows([...(R.devices || []).map(x => ({...x, k: 'Device: ' + x.k})), ...(R.browsers || []).map(x => ({...x, k: 'Browser: ' + x.k})),
-    ...(R.systems || []).map(x => ({...x, k: 'System: ' + x.k}))], null, 30);
-  $('#cfaskers').innerHTML = rows(c.askers);
-  $('#cfcrawlers').innerHTML = rows(c.crawlers, x => x.k + ' · ' + x.kind, 30);
-  $('#cfcountries').innerHTML = rows(c.countries, x => COUNTRY(x.k));
-  $('#cfdevices').innerHTML = rows(c.devices);
-  $('#cfpaths').innerHTML = rows(c.paths, null, 25);
-  $('#cfstatus').innerHTML = rows([...c.status.map(x => ({...x, k: 'Status ' + x.k})), ...c.types.map(x => ({...x, k: 'Type: ' + x.k}))], null, 25);
-  const grade = (v, good, poor) => v === null || v === undefined ? '' : v <= good ? 'good' : v <= poor ? 'ok' : 'poor';
-  const cell = (v, unit, good, poor) => v === null || v === undefined ? '<td class="n">\u2014</td>' :
-    '<td class="n"><span class="ad-g g-' + grade(v, good, poor) + '">' + (unit === 's' ? (v / 1000).toFixed(2) + ' s' : unit === 'ms' ? num(v) + ' ms' : (+v).toFixed(2)) + '</span></td>';
-  $('#cfspeed').innerHTML = R.vitals && R.vitals.length ? '<div class="tablewrap ad-tw"><table class="ad-t"><thead><tr><th>Page</th><th class="n">Loads</th>' +
-    '<th class="n" title="Biggest thing on screen shown">Main content</th><th class="n" title="Reaction to a click or key">Reaction</th>' +
-    '<th class="n" title="Things jumping around while loading">Jumpiness</th><th class="n" title="First thing on screen">First paint</th>' +
-    '<th class="n">Full load (half / 90%)</th></tr></thead><tbody>' +
-    R.vitals.map(v => '<tr><td>' + esc(v.path === '/' ? 'Home (/)' : v.path) + '</td><td class="n">' + num(v.n) + '</td>' +
-      cell(v.lcp, 's', 2500, 4000) + cell(v.inp, 'ms', 200, 500) + cell(v.cls, '', 0.1, 0.25) + cell(v.fcp, 's', 1800, 3000) +
-      '<td class="n">' + (v.load50 !== null ? (v.load50 / 1000).toFixed(2) + ' s / ' + (v.load90 / 1000).toFixed(2) + ' s' : '\u2014') + '</td></tr>').join('') +
-    '</tbody></table></div><p class="note">Green is good, amber needs work, red is poor (Google\u2019s own lines).</p>' : '<p class="note ad-none">Nothing yet.</p>';
+
+  const box = {};
+  for(const b of BREAK) (box[b.box] = box[b.box] || []).push(b);
+  for(const id of Object.keys(box)) $('#' + id).innerHTML = box[id].map(b =>
+    '<div class="panel ad-box"><div class="ad-hd"><h3>' + esc(b.t) + '</h3>' + (b.p ? '<p>' + esc(b.p) + '</p>' : '') + '</div>' +
+    rowList(dig(c, b.k), b) + '</div>').join('');
+
+  speed(c);
   const W = c.workers, lastD1 = (c.d1 || []).slice(-1)[0] || {rowsRead: 0, rowsWritten: 0}, days1 = Math.max(1, (c.daily || []).length);
   $('#cfserver').innerHTML =
     meter('Server requests, per day (average)', Math.round(W.requests / days1), c.free.requests, 'Errors: ' + num(W.errors) + ' · ' +
       W.byStatus.map(s => esc(s.k) + ' ' + num(s.n)).join(' · ') + ' · CPU per request: half under ' + W.cpu50 + ' ms, 99% under ' + W.cpu99 + ' ms') +
     meter('Database rows read today', lastD1.rowsRead, c.free.d1Reads) +
     meter('Database rows written today', lastD1.rowsWritten, c.free.d1Writes, num(lastD1.reads) + ' read queries, ' + num(lastD1.writes) + ' write queries today');
+  redraw();
 }
-function cfChart(){
+
+/* page speed: the good / needs work / poor split, then every page, then where the time goes */
+const CWV = [['lcp', 'Main content shown'], ['inp', 'Reaction to a click'], ['cls', 'Things jumping around'],
+  ['fcp', 'First paint'], ['ttfb', 'First byte from us']];
+function speed(c){
+  const R = c.rum || {}, sp = R.split || {};
+  const have = CWV.filter(([k]) => sp[k]);
+  $('#cfsplit').innerHTML = have.length ? '<div class="ad-cwv">' + have.map(([k, l]) => {
+    const s = sp[k], all = Math.max(1, s.good + s.ok + s.poor), pc = n => (n / all * 100).toFixed(1) + '%';
+    return '<div class="ad-cwv-row"><div class="ad-cwv-hd"><span>' + esc(l) + '</span><b>' + Math.round(s.good / all * 100) + '% good</b></div>' +
+      '<div class="ad-cwv-bar"><i class="g" style="width:' + pc(s.good) + '" title="Good ' + num(s.good) + '"></i>' +
+      '<i class="o" style="width:' + pc(s.ok) + '" title="Needs work ' + num(s.ok) + '"></i>' +
+      '<i class="p" style="width:' + pc(s.poor) + '" title="Poor ' + num(s.poor) + '"></i></div>' +
+      '<p class="note">' + num(s.good) + ' good · ' + num(s.ok) + ' needs work · ' + num(s.poor) + ' poor</p></div>';
+  }).join('') + '</div>' : '<p class="note ad-none">Nothing yet.</p>';
+
+  const grade = (v, good, poor) => v === null || v === undefined ? '' : v <= good ? 'good' : v <= poor ? 'ok' : 'poor';
+  const cell = (v, unit, good, poor) => v === null || v === undefined ? '<td class="n">—</td>' :
+    '<td class="n"><span class="ad-g g-' + grade(v, good, poor) + '">' + (unit === 's' ? (v / 1000).toFixed(2) + ' s' : unit === 'ms' ? num(v) + ' ms' : (+v).toFixed(2)) + '</span></td>';
+  $('#cfspeed').innerHTML = R.vitals && R.vitals.length ? '<div class="tablewrap ad-tw"><table class="ad-t"><thead><tr><th>Page</th><th class="n">Loads</th>' +
+    '<th class="n" title="Biggest thing on screen shown">Main content</th><th class="n" title="Reaction to a click or key">Reaction</th>' +
+    '<th class="n" title="Things jumping around while loading">Jumpiness</th><th class="n" title="First thing on screen">First paint</th>' +
+    '<th class="n" title="First byte back from us">First byte</th><th class="n">Full load (half / 90%)</th></tr></thead><tbody>' +
+    R.vitals.map(v => '<tr><td>' + esc(v.path === '/' ? 'Home (/)' : v.path) + '</td><td class="n">' + num(v.n) + '</td>' +
+      cell(v.lcp, 's', 2500, 4000) + cell(v.inp, 'ms', 200, 500) + cell(v.cls, '', 0.1, 0.25) + cell(v.fcp, 's', 1800, 3000) + cell(v.ttfb, 'ms', 800, 1800) +
+      '<td class="n">' + (v.load50 !== null ? (v.load50 / 1000).toFixed(2) + ' s / ' + (v.load90 / 1000).toFixed(2) + ' s' : '—') + '</td></tr>').join('') +
+    '</tbody></table></div><p class="note">Green is good, amber needs work, red is poor (Google’s own lines).</p>' : '<p class="note ad-none">Nothing yet.</p>';
+
+  const p = R.parts;
+  const STEP = [['dns', 'Finding the address'], ['connect', 'Connecting'], ['answer', 'Our answer'],
+    ['dom', 'Page built'], ['ready', 'Everything loaded'], ['load50', 'Full load, half of them'], ['load90', 'Full load, 90% of them']];
+  $('#cfparts').innerHTML = p ? '<div class="tablewrap ad-tw"><table class="ad-t"><thead><tr><th>Step</th><th class="n">Time</th></tr></thead><tbody>' +
+    STEP.filter(([k]) => p[k] !== null && p[k] !== undefined).map(([k, l]) => '<tr><td>' + l + '</td><td class="n"><b>' +
+      (p[k] >= 1000 ? (p[k] / 1000).toFixed(2) + ' s' : num(p[k]) + ' ms') + '</b></td></tr>').join('') +
+    '</tbody></table></div>' : '<p class="note ad-none">Nothing yet.</p>';
+}
+
+/* the charts on Cloudflare's numbers */
+function cfChart(where, what){
   const c = S.cf;
-  if(!c || !$('#cfchart')) return;
-  const d = c.daily || [];
-  if(d.length < 2){ $('#cfchart').innerHTML = '<p class="note">' + (d[0] ? day(d[0].date) + ': ' + num(d[0].requests) + ' requests, ' + num(d[0].pageViews) +
-    ' page views, ' + num(d[0].uniques) + ' unique visitors. The chart fills in day by day.' : 'Nothing yet.') + '</p>'; return; }
-  bars($('#cfchart'), d.map(x => x.requests), d.map(x => day(x.date)), {label: 'Requests per day'});
+  if(!c || !$(where)) return;
+  const d = what === 'visits' ? ((c.rum && c.rum.byDay) || []) : (c.daily || []);
+  const val = x => what === 'visits' ? x.visits : x.requests;
+  if(d.length < 2){ $(where).innerHTML = '<p class="note">' + (d[0] ? day(d[0].date) + ': ' + num(val(d[0])) +
+    '. The chart fills in day by day.' : 'Nothing yet.') + '</p>'; return; }
+  bars($(where), d.map(val), d.map(x => day(x.date)), {label: what === 'visits' ? 'Real visits per day' : 'Requests per day'});
+}
+function cfHourChart(){
+  const c = S.cf;
+  if(!c || !$('#cfhour')) return;
+  const h = c.hourly || [];
+  $('#cfhourtl').textContent = 'Requests per hour' + (c.adaptiveHours ? ', last ' + (c.adaptiveHours / 24 >= 1 ? (c.adaptiveHours / 24) + ' days' : c.adaptiveHours + ' hours') : '');
+  if(!h.length){ $('#cfhour').innerHTML = '<p class="note ad-none">Nothing yet.</p>'; return; }
+  bars($('#cfhour'), h.map(x => x.n), h.map(x => hourLabel(x.hour)), {label: 'Requests per hour',
+    tip: i => ' · ' + bytes(h[i].bytes || 0)});
+}
+function cfD1Chart(){
+  const c = S.cf;
+  if(!c || !$('#cfd1')) return;
+  const d = c.d1 || [];
+  if(!d.length){ $('#cfd1').innerHTML = '<p class="note ad-none">Nothing yet.</p>'; return; }
+  $('#cfd1').innerHTML = '<h4 class="ad-h4">Rows written</h4><div id="d1-w"></div><h4 class="ad-h4">Rows read</h4><div id="d1-r"></div>';
+  bars($('#d1-w'), d.map(x => x.rowsWritten), d.map(x => day(x.date)), {h: 150, label: 'Rows written per day'});
+  bars($('#d1-r'), d.map(x => x.rowsRead), d.map(x => day(x.date)), {h: 150, label: 'Rows read per day'});
 }
 
 /* charts and the heatmap follow the window's width */
 let rs = 0;
-addEventListener('resize', () => { clearTimeout(rs); rs = setTimeout(() => { if(S.data && !$('#dash').hidden){ charts(); fit(); cfChart(); } }, 150); });
+addEventListener('resize', () => { clearTimeout(rs); rs = setTimeout(redraw, 150); });
 
 load();
