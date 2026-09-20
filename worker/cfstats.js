@@ -26,23 +26,14 @@ const BLOCKS = {
   paths: ['zt', `httpRequestsAdaptiveGroups(limit:60, filter:{datetime_geq:$t}, orderBy:[count_DESC]){count sum{edgeResponseBytes} dimensions{clientRequestPath}}`],
   hosts: ['zt', `httpRequestsAdaptiveGroups(limit:15, filter:{datetime_geq:$t}, orderBy:[count_DESC]){count dimensions{clientRequestHTTPHost}}`],
   methods: ['zt', `httpRequestsAdaptiveGroups(limit:12, filter:{datetime_geq:$t}, orderBy:[count_DESC]){count dimensions{clientRequestHTTPMethodName}}`],
-  scheme: ['zt', `httpRequestsAdaptiveGroups(limit:6, filter:{datetime_geq:$t}, orderBy:[count_DESC]){count dimensions{clientRequestScheme}}`],
-  accept: ['zt', `httpRequestsAdaptiveGroups(limit:15, filter:{datetime_geq:$t}, orderBy:[count_DESC]){count dimensions{clientRequestAcceptContentTypeCategory}}`],
   cache: ['zt', `httpRequestsAdaptiveGroups(limit:20, filter:{datetime_geq:$t}, orderBy:[count_DESC]){count sum{edgeResponseBytes} dimensions{cacheStatus}}`],
   adTypes: ['zt', `httpRequestsAdaptiveGroups(limit:20, filter:{datetime_geq:$t}, orderBy:[count_DESC]){count dimensions{edgeResponseContentTypeName}}`],
   protocols: ['zt', `httpRequestsAdaptiveGroups(limit:12, filter:{datetime_geq:$t}, orderBy:[count_DESC]){count dimensions{clientRequestHTTPProtocol}}`],
   tls: ['zt', `httpRequestsAdaptiveGroups(limit:12, filter:{datetime_geq:$t}, orderBy:[count_DESC]){count dimensions{clientSSLProtocol}}`],
   originStatus: ['zt', `httpRequestsAdaptiveGroups(limit:25, filter:{datetime_geq:$t}, orderBy:[count_DESC]){count dimensions{originResponseStatus}}`],
 
-  // ---- per request: how fast the edge and the worker answered (avg and quantiles apart, in case of the names) ----
-  edgeSpeed: ['zt', `httpRequestsAdaptiveGroups(limit:1, filter:{datetime_geq:$t}){count avg{edgeTimeToFirstByteMs}}`],
-  edgeSpeedQ: ['zt', `httpRequestsAdaptiveGroups(limit:1, filter:{datetime_geq:$t}){quantiles{edgeTimeToFirstByteMsP50 edgeTimeToFirstByteMsP90}}`],
-  originSpeed: ['zt', `httpRequestsAdaptiveGroups(limit:1, filter:{datetime_geq:$t}){count avg{originResponseDurationMs}}`],
-  originSpeedQ: ['zt', `httpRequestsAdaptiveGroups(limit:1, filter:{datetime_geq:$t}){quantiles{originResponseDurationMsP50 originResponseDurationMsP90}}`],
-
   // ---- per request: where it came from ----
   colo: ['zt', `httpRequestsAdaptiveGroups(limit:40, filter:{datetime_geq:$t}, orderBy:[count_DESC]){count dimensions{coloCode}}`],
-  upperColo: ['zt', `httpRequestsAdaptiveGroups(limit:20, filter:{datetime_geq:$t}, orderBy:[count_DESC]){count dimensions{upperTierColoName}}`],
   devices: ['zt', `httpRequestsAdaptiveGroups(limit:12, filter:{datetime_geq:$t}, orderBy:[count_DESC]){count dimensions{clientDeviceType}}`],
   systems: ['zt', `httpRequestsAdaptiveGroups(limit:20, filter:{datetime_geq:$t}, orderBy:[count_DESC]){count dimensions{userAgentOS}}`],
   verifiedBots: ['zt', `httpRequestsAdaptiveGroups(limit:25, filter:{datetime_geq:$t}, orderBy:[count_DESC]){count dimensions{verifiedBotCategory}}`],
@@ -85,12 +76,10 @@ const BLOCKS = {
 /* what to say when a block is missing */
 const LABEL = {
   daily: 'per-day traffic', dailyMaps: 'countries, browsers, status codes and content types', dailyKinds: 'threat kinds and visitor kinds',
-  hourly: 'requests per hour', paths: 'paths', hosts: 'hosts', methods: 'request methods', scheme: 'https or plain',
-  accept: 'what they asked for', cache: 'cache hits', adTypes: 'content types per request',
+  hourly: 'requests per hour', paths: 'paths', hosts: 'hosts', methods: 'request methods',
+  cache: 'cache hits', adTypes: 'content types per request',
   protocols: 'HTTP versions', tls: 'TLS versions', originStatus: 'server status codes',
-  edgeSpeed: 'how fast Cloudflare answered', edgeSpeedQ: 'how fast Cloudflare answered (half and 90%)',
-  originSpeed: 'how fast the worker answered', originSpeedQ: 'how fast the worker answered (half and 90%)',
-  colo: 'data centres', upperColo: 'upper-tier data centres', devices: 'device kinds', systems: 'operating systems',
+  colo: 'data centres', devices: 'device kinds', systems: 'operating systems',
   verifiedBots: 'named bots', agents: 'crawlers and browsers',
   rumTotal: 'real visits', rumDay: 'real visits per day', rumHour: 'real visits per hour', rumPages: 'real visitor pages',
   rumHosts: 'real visitor hosts', rumRefs: 'where real visitors came from', rumCountries: 'real visitor countries',
@@ -101,9 +90,10 @@ const LABEL = {
   workers: 'server numbers', d1: 'database numbers',
 };
 /* asked for once, refused by this plan (tools/dev/cfcheck.mjs): said out loud on the dashboard, not asked for again.
-   Referring hosts, query strings and networks are in the schema but our zone may not read them; the rest is not there at all. */
+   Most are in the schema but our zone may not read them; regions, cities and visitor kinds per request are not there at all. */
 const NEVER = ['query strings', 'referring hosts per request', 'networks (ASN)', 'visitor kinds per request',
-  'regions', 'cities', 'security events (firewall)'];
+  'regions', 'cities', 'security events (firewall)', 'https or plain', 'what the request wanted',
+  'how fast Cloudflare answered', 'upper-tier data centres'];
 const HEAD = {
   zt: ['query($z:String!,$t:Time!){viewer{zones(filter:{zoneTag:$z}){', '}}}'],
   zd: ['query($z:String!,$d:Date!){viewer{zones(filter:{zoneTag:$z}){', '}}}'],
@@ -199,14 +189,6 @@ const ms = v => v === null || v === undefined ? null : Math.round(v / 1000);   /
 const STEPS = [['Finding the address', 'dnsTime'], ['Connecting', 'connectionTime'], ['Securing the line', 'tlsTime'],
   ['Asking us', 'requestTime'], ['Our answer', 'responseTime'], ['Page drawn', 'pageRenderTime'],
   ['Everything loaded', 'loadEventTime'], ['Full load', 'pageLoadTime']];
-/* how long one step took, in milliseconds already: the average block and the quantile block, either may be missing */
-const howFast = (avgRows, qRows, field) => {
-  const a = avgRows && avgRows[0] && avgRows[0].avg, q = qRows && qRows[0] && qRows[0].quantiles;
-  if(!a && !q) return null;
-  const r = {avg: a ? Math.round(a[field]) : null, p50: q ? q[field + 'P50'] : null, p90: q ? q[field + 'P90'] : null,
-    n: avgRows && avgRows[0] ? avgRows[0].count : null};
-  return r.avg === null && r.p50 === null ? null : r;
-};
 /* good / needs work / poor for one metric */
 const split = (row, key) => {
   const s = row && row[0] && row[0].sum;
@@ -314,14 +296,10 @@ export async function cloudflare(env, url){
     threatKinds: listOf(threatKinds, 15), ipKinds: listOf(ipKinds, 15),
     paths: pick(got.paths, 'clientRequestPath'),
     hosts: pick(got.hosts, 'clientRequestHTTPHost'), methods: pick(got.methods, 'clientRequestHTTPMethodName'),
-    scheme: pick(got.scheme, 'clientRequestScheme'), accept: pick(got.accept, 'clientRequestAcceptContentTypeCategory'),
     cache: pick(got.cache, 'cacheStatus'), protocols: pick(got.protocols, 'clientRequestHTTPProtocol'), tls: pick(got.tls, 'clientSSLProtocol'),
-    originStatus: pick(got.originStatus, 'originResponseStatus'),
-    colo: pick(got.colo, 'coloCode'), upperColo: pick(got.upperColo, 'upperTierColoName'),
+    originStatus: pick(got.originStatus, 'originResponseStatus'), colo: pick(got.colo, 'coloCode'),
     devices: pick(got.devices, 'clientDeviceType'), systems: pick(got.systems, 'userAgentOS'),
     verifiedBots: pick(got.verifiedBots, 'verifiedBotCategory'),
-    edge: howFast(got.edgeSpeed, got.edgeSpeedQ, 'edgeTimeToFirstByteMs'),
-    origin: howFast(got.originSpeed, got.originSpeedQ, 'originResponseDurationMs'),
     crawlers: [...crawl].map(([k, n]) => { const [name, kind] = k.split(''); return {k: name, kind, n}; }).sort((a, b) => b.n - a.n),
     askers: listOf(kinds, 12),
     rum,
