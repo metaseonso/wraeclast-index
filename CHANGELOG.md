@@ -10,13 +10,18 @@ Add the details here first, then a short public line there.
   is dropped, remembered in MISS while the worker is warm, and named in `missing` for the dashboard to show.
   reach() probes how far back single events go (range, a week, three days, a day) before anything else, for the zone
   and for Web Analytics on their own. Still one 5-minute cache per range. About 12 requests on a cache miss.
-  New: requests and bytes per hour, query strings, hosts, methods, cache status, HTTP and TLS versions, server status
-  codes, referring hosts, data centres (colo), device kinds and systems apart, networks (ASN), visitor kinds
-  (ipClassMap, else clientIPClass), threat kinds (threatPathingMap), security events (firewallEventsAdaptiveGroups),
-  bytes and threats per country, encrypted share, cached requests; real visitors also per hour, by host, and
-  Core Web Vitals split good / needs work / poor per metric, time to first byte, and load time step by step
-  (DNS, connect, answer, page built, everything loaded). regions and cities are asked for and reported as missing
-  if the plan has no such dimension. edgeStatus dropped (the per-day map already answers it).
+  New: requests and bytes per hour, hosts, methods, https or plain (clientRequestScheme), what the request wanted
+  (clientRequestAcceptContentTypeCategory), cache status, content types per request, HTTP and TLS versions, server
+  status codes, how fast we answered (avg and P50/P90 of edgeTimeToFirstByteMs and originResponseDurationMs, avg and
+  quantiles as separate blocks), data centres (coloCode) and the upper tier behind them, device kinds and systems
+  apart, named bots (verifiedBotCategory), visitor kinds and threat kinds (ipClassMap, threatPathingMap), bytes and
+  threats per country, encrypted share, cached requests; real visitors also per hour and by host; Core Web Vitals
+  split good / needs work / poor per metric, time to first byte, and a page load step by step (DNS, connect, TLS,
+  ask, answer, drawn, loaded, full, each P50 and P75 from rumPerformanceEventsAdaptiveGroups).
+  Checked against the real API with tools/dev/cfcheck.mjs: this plan will not give us query strings, referring hosts
+  per request, networks (ASN), visitor kinds per request, regions, cities or the firewall events, so those blocks are
+  gone and the dashboard says so (NEVER). Referrers come from Web Analytics instead, and the Traffic tab says that
+  where the per-request table would have been. edgeStatus dropped too (the per-day map already answers it).
 - admin.html + assets/admin.js: tabs (Overview, Visitors, Traffic, Clicks, Speed, Notes, Data jobs, Plan), the last
   one kept in localStorage `wi-admin-tab`. Charts are drawn when their tab opens (a hidden box has no width), and the
   heatmap's page preview only loads on the Clicks tab. Breakdown tables now say how many rows they have, fold away

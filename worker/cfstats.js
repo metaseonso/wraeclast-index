@@ -24,25 +24,29 @@ const BLOCKS = {
   // ---- per request: what was asked for, and how we answered ----
   hourly: ['zt', `httpRequestsAdaptiveGroups(limit:400, filter:{datetime_geq:$t}, orderBy:[datetimeHour_ASC]){count sum{edgeResponseBytes} dimensions{datetimeHour}}`],
   paths: ['zt', `httpRequestsAdaptiveGroups(limit:60, filter:{datetime_geq:$t}, orderBy:[count_DESC]){count sum{edgeResponseBytes} dimensions{clientRequestPath}}`],
-  queries: ['zt', `httpRequestsAdaptiveGroups(limit:25, filter:{datetime_geq:$t}, orderBy:[count_DESC]){count dimensions{clientRequestQuery}}`],
   hosts: ['zt', `httpRequestsAdaptiveGroups(limit:15, filter:{datetime_geq:$t}, orderBy:[count_DESC]){count dimensions{clientRequestHTTPHost}}`],
   methods: ['zt', `httpRequestsAdaptiveGroups(limit:12, filter:{datetime_geq:$t}, orderBy:[count_DESC]){count dimensions{clientRequestHTTPMethodName}}`],
+  scheme: ['zt', `httpRequestsAdaptiveGroups(limit:6, filter:{datetime_geq:$t}, orderBy:[count_DESC]){count dimensions{clientRequestScheme}}`],
+  accept: ['zt', `httpRequestsAdaptiveGroups(limit:15, filter:{datetime_geq:$t}, orderBy:[count_DESC]){count dimensions{clientRequestAcceptContentTypeCategory}}`],
   cache: ['zt', `httpRequestsAdaptiveGroups(limit:20, filter:{datetime_geq:$t}, orderBy:[count_DESC]){count sum{edgeResponseBytes} dimensions{cacheStatus}}`],
+  adTypes: ['zt', `httpRequestsAdaptiveGroups(limit:20, filter:{datetime_geq:$t}, orderBy:[count_DESC]){count dimensions{edgeResponseContentTypeName}}`],
   protocols: ['zt', `httpRequestsAdaptiveGroups(limit:12, filter:{datetime_geq:$t}, orderBy:[count_DESC]){count dimensions{clientRequestHTTPProtocol}}`],
   tls: ['zt', `httpRequestsAdaptiveGroups(limit:12, filter:{datetime_geq:$t}, orderBy:[count_DESC]){count dimensions{clientSSLProtocol}}`],
   originStatus: ['zt', `httpRequestsAdaptiveGroups(limit:25, filter:{datetime_geq:$t}, orderBy:[count_DESC]){count dimensions{originResponseStatus}}`],
 
+  // ---- per request: how fast the edge and the worker answered (avg and quantiles apart, in case of the names) ----
+  edgeSpeed: ['zt', `httpRequestsAdaptiveGroups(limit:1, filter:{datetime_geq:$t}){count avg{edgeTimeToFirstByteMs}}`],
+  edgeSpeedQ: ['zt', `httpRequestsAdaptiveGroups(limit:1, filter:{datetime_geq:$t}){quantiles{edgeTimeToFirstByteMsP50 edgeTimeToFirstByteMsP90}}`],
+  originSpeed: ['zt', `httpRequestsAdaptiveGroups(limit:1, filter:{datetime_geq:$t}){count avg{originResponseDurationMs}}`],
+  originSpeedQ: ['zt', `httpRequestsAdaptiveGroups(limit:1, filter:{datetime_geq:$t}){quantiles{originResponseDurationMsP50 originResponseDurationMsP90}}`],
+
   // ---- per request: where it came from ----
-  referers: ['zt', `httpRequestsAdaptiveGroups(limit:30, filter:{datetime_geq:$t}, orderBy:[count_DESC]){count dimensions{clientRefererHost}}`],
   colo: ['zt', `httpRequestsAdaptiveGroups(limit:40, filter:{datetime_geq:$t}, orderBy:[count_DESC]){count dimensions{coloCode}}`],
+  upperColo: ['zt', `httpRequestsAdaptiveGroups(limit:20, filter:{datetime_geq:$t}, orderBy:[count_DESC]){count dimensions{upperTierColoName}}`],
   devices: ['zt', `httpRequestsAdaptiveGroups(limit:12, filter:{datetime_geq:$t}, orderBy:[count_DESC]){count dimensions{clientDeviceType}}`],
   systems: ['zt', `httpRequestsAdaptiveGroups(limit:20, filter:{datetime_geq:$t}, orderBy:[count_DESC]){count dimensions{userAgentOS}}`],
-  networks: ['zt', `httpRequestsAdaptiveGroups(limit:25, filter:{datetime_geq:$t}, orderBy:[count_DESC]){count dimensions{clientASNDescription}}`],
-  ipClass: ['zt', `httpRequestsAdaptiveGroups(limit:15, filter:{datetime_geq:$t}, orderBy:[count_DESC]){count dimensions{clientIPClass}}`],
-  regions: ['zt', `httpRequestsAdaptiveGroups(limit:25, filter:{datetime_geq:$t}, orderBy:[count_DESC]){count dimensions{clientRegionName}}`],
-  cities: ['zt', `httpRequestsAdaptiveGroups(limit:25, filter:{datetime_geq:$t}, orderBy:[count_DESC]){count dimensions{clientCityName}}`],
+  verifiedBots: ['zt', `httpRequestsAdaptiveGroups(limit:25, filter:{datetime_geq:$t}, orderBy:[count_DESC]){count dimensions{verifiedBotCategory}}`],
   agents: ['zt', `httpRequestsAdaptiveGroups(limit:120, filter:{datetime_geq:$t}, orderBy:[count_DESC]){count dimensions{userAgent}}`],
-  firewall: ['zt', `firewallEventsAdaptiveGroups(limit:30, filter:{datetime_geq:$t}, orderBy:[count_DESC]){count dimensions{action source}}`],
 
   // ---- real visitors (Web Analytics, no cookies) ----
   rumTotal: ['at', `rumPageloadEventsAdaptiveGroups(limit:1, filter:{datetime_geq:$t}){count sum{visits}}`],
@@ -61,8 +65,10 @@ const BLOCKS = {
     quantiles{largestContentfulPaintP75 interactionToNextPaintP75 cumulativeLayoutShiftP75 firstContentfulPaintP75} dimensions{requestPath}}`],
   speed: ['at', `rumPerformanceEventsAdaptiveGroups(limit:25, filter:{datetime_geq:$t}, orderBy:[count_DESC]){count
     quantiles{pageLoadTimeP50 pageLoadTimeP90} dimensions{requestPath}}`],
-  parts: ['at', `rumPerformanceEventsAdaptiveGroups(limit:1, filter:{datetime_geq:$t}){count
-    quantiles{dnsTimeP50 connectionTimeP50 responseTimeP50 domLoadTimeP50 loadEventTimeP50 pageLoadTimeP50 pageLoadTimeP90}}`],
+  parts: ['at', `rumPerformanceEventsAdaptiveGroups(limit:1, filter:{datetime_geq:$t}){count quantiles{
+    dnsTimeP50 dnsTimeP75 connectionTimeP50 connectionTimeP75 tlsTimeP50 tlsTimeP75 requestTimeP50 requestTimeP75
+    responseTimeP50 responseTimeP75 pageRenderTimeP50 pageRenderTimeP75 loadEventTimeP50 loadEventTimeP75
+    pageLoadTimeP50 pageLoadTimeP75}}`],
   ttfb: ['at', `rumWebVitalsEventsAdaptiveGroups(limit:25, filter:{datetime_geq:$t}, orderBy:[count_DESC]){count quantiles{timeToFirstByteP75} dimensions{requestPath}}`],
   // good / needs work / poor, each metric on its own so one missing name does not cost the rest
   splitLcp: ['at', `rumWebVitalsEventsAdaptiveGroups(limit:1, filter:{datetime_geq:$t}){sum{lcpGood lcpNeedsImprovement lcpPoor lcpTotal}}`],
@@ -79,10 +85,13 @@ const BLOCKS = {
 /* what to say when a block is missing */
 const LABEL = {
   daily: 'per-day traffic', dailyMaps: 'countries, browsers, status codes and content types', dailyKinds: 'threat kinds and visitor kinds',
-  hourly: 'requests per hour', paths: 'paths', queries: 'query strings', hosts: 'hosts', methods: 'request methods', cache: 'cache hits',
+  hourly: 'requests per hour', paths: 'paths', hosts: 'hosts', methods: 'request methods', scheme: 'https or plain',
+  accept: 'what they asked for', cache: 'cache hits', adTypes: 'content types per request',
   protocols: 'HTTP versions', tls: 'TLS versions', originStatus: 'server status codes',
-  referers: 'referring sites', colo: 'data centres', devices: 'device kinds', systems: 'operating systems', networks: 'networks (ASN)',
-  ipClass: 'visitor kinds per request', regions: 'regions', cities: 'cities', agents: 'crawlers and browsers', firewall: 'security events',
+  edgeSpeed: 'how fast Cloudflare answered', edgeSpeedQ: 'how fast Cloudflare answered (half and 90%)',
+  originSpeed: 'how fast the worker answered', originSpeedQ: 'how fast the worker answered (half and 90%)',
+  colo: 'data centres', upperColo: 'upper-tier data centres', devices: 'device kinds', systems: 'operating systems',
+  verifiedBots: 'named bots', agents: 'crawlers and browsers',
   rumTotal: 'real visits', rumDay: 'real visits per day', rumHour: 'real visits per hour', rumPages: 'real visitor pages',
   rumHosts: 'real visitor hosts', rumRefs: 'where real visitors came from', rumCountries: 'real visitor countries',
   rumDevices: 'real visitor devices', rumBrowsers: 'real visitor browsers', rumSystems: 'real visitor systems',
@@ -91,6 +100,10 @@ const LABEL = {
   splitFcp: 'first paint: good / poor split', splitTtfb: 'first byte: good / poor split',
   workers: 'server numbers', d1: 'database numbers',
 };
+/* asked for once, refused by this plan (tools/dev/cfcheck.mjs): said out loud on the dashboard, not asked for again.
+   Referring hosts, query strings and networks are in the schema but our zone may not read them; the rest is not there at all. */
+const NEVER = ['query strings', 'referring hosts per request', 'networks (ASN)', 'visitor kinds per request',
+  'regions', 'cities', 'security events (firewall)'];
 const HEAD = {
   zt: ['query($z:String!,$t:Time!){viewer{zones(filter:{zoneTag:$z}){', '}}}'],
   zd: ['query($z:String!,$d:Date!){viewer{zones(filter:{zoneTag:$z}){', '}}}'],
@@ -182,6 +195,18 @@ const pick = (rows, dim) => (rows || []).map(r => {
   return o;
 }).filter(r => r.n);
 const ms = v => v === null || v === undefined ? null : Math.round(v / 1000);   // Cloudflare gives microseconds
+/* a page load, step by step: our name and Cloudflare's, in the order a browser does them */
+const STEPS = [['Finding the address', 'dnsTime'], ['Connecting', 'connectionTime'], ['Securing the line', 'tlsTime'],
+  ['Asking us', 'requestTime'], ['Our answer', 'responseTime'], ['Page drawn', 'pageRenderTime'],
+  ['Everything loaded', 'loadEventTime'], ['Full load', 'pageLoadTime']];
+/* how long one step took, in milliseconds already: the average block and the quantile block, either may be missing */
+const howFast = (avgRows, qRows, field) => {
+  const a = avgRows && avgRows[0] && avgRows[0].avg, q = qRows && qRows[0] && qRows[0].quantiles;
+  if(!a && !q) return null;
+  const r = {avg: a ? Math.round(a[field]) : null, p50: q ? q[field + 'P50'] : null, p90: q ? q[field + 'P90'] : null,
+    n: avgRows && avgRows[0] ? avgRows[0].count : null};
+  return r.avg === null && r.p50 === null ? null : r;
+};
 /* good / needs work / poor for one metric */
 const split = (row, key) => {
   const s = row && row[0] && row[0].sum;
@@ -202,7 +227,7 @@ export async function cloudflare(env, url){
   const win = [...new Set([days * 24, 7 * 24, 3 * 24, 24])].filter(h => h <= days * 24);
   const [adHours, rumHours] = await Promise.all([reach(env, 'zt', win), reach(env, 'at', win)]);
   if(!adHours) notes.push('Cloudflare would not answer for single requests.');
-  else if(adHours < days * 24) notes.push('Paths, referrers, crawlers and the rest per request: the last ' + (adHours / 24) + ' days.');
+  else if(adHours < days * 24) notes.push('Paths, crawlers and the rest per request: the last ' + (adHours / 24) + ' days.');
   if(!rumHours) notes.push('Real-visitor numbers (Web Analytics) did not answer.');
   else if(rumHours < days * 24) notes.push('Real visitors: the last ' + (rumHours / 24) + ' days.');
 
@@ -210,7 +235,7 @@ export async function cloudflare(env, url){
     at: {a: ACC, t: sinceTime(rumHours || 24)}, ad: {a: ACC, d}};
   const skip = want.filter(n => (!adHours && BLOCKS[n][0] === 'zt') || (!rumHours && BLOCKS[n][0] === 'at'));
   const {got, gone} = await collect(env, want.filter(n => !skip.includes(n)), vars);
-  const missing = [...new Set([...gone, ...skip])].map(n => LABEL[n] || n).sort();
+  const missing = [...new Set([...[...gone, ...skip].map(n => LABEL[n] || n), ...NEVER])].sort();
 
   // ---- per day: traffic, and the maps inside it ----
   const daily = got.daily || [];
@@ -261,8 +286,8 @@ export async function cloudflare(env, url){
     }),
     split: {lcp: split(got.splitLcp, 'lcp'), inp: split(got.splitInp, 'inp'), cls: split(got.splitCls, 'cls'),
       fcp: split(got.splitFcp, 'fcp'), ttfb: split(got.splitTtfb, 'ttfb')},
-    parts: got.parts && got.parts[0] ? (q => ({dns: ms(q.dnsTimeP50), connect: ms(q.connectionTimeP50), answer: ms(q.responseTimeP50),
-      dom: ms(q.domLoadTimeP50), ready: ms(q.loadEventTimeP50), load50: ms(q.pageLoadTimeP50), load90: ms(q.pageLoadTimeP90)}))(got.parts[0].quantiles) : null,
+    parts: got.parts && got.parts[0] ? (q => STEPS.map(([k, f]) => ({k, p50: ms(q[f + 'P50']), p75: ms(q[f + 'P75'])}))
+      .filter(s => s.p50 !== null || s.p75 !== null))(got.parts[0].quantiles) : null,
   } : null;
 
   // ---- the worker ----
@@ -284,18 +309,19 @@ export async function cloudflare(env, url){
     hourly: (got.hourly || []).map(r => ({hour: String(r.dimensions.datetimeHour).slice(0, 13), n: r.count,
       bytes: r.sum ? r.sum.edgeResponseBytes : 0})),
     countries: listOf(countries, 60).map(c => ({...c, threats: cThreats.get(c.k) || 0, bytes: cBytes.get(c.k) || 0})),
-    browsers: listOf(browsers, 20), status: listOf(status, 20), types: listOf(types, 20),
-    threatKinds: listOf(threatKinds, 15),
-    ipKinds: ipKinds.size ? listOf(ipKinds, 15) : pick(got.ipClass, 'clientIPClass'),   // per day if we have it, else per request
-    paths: pick(got.paths, 'clientRequestPath'), queries: pick(got.queries, 'clientRequestQuery'),
+    browsers: listOf(browsers, 20), status: listOf(status, 20),
+    types: types.size ? listOf(types, 20) : pick(got.adTypes, 'edgeResponseContentTypeName'),   // per day if we have it, else per request
+    threatKinds: listOf(threatKinds, 15), ipKinds: listOf(ipKinds, 15),
+    paths: pick(got.paths, 'clientRequestPath'),
     hosts: pick(got.hosts, 'clientRequestHTTPHost'), methods: pick(got.methods, 'clientRequestHTTPMethodName'),
+    scheme: pick(got.scheme, 'clientRequestScheme'), accept: pick(got.accept, 'clientRequestAcceptContentTypeCategory'),
     cache: pick(got.cache, 'cacheStatus'), protocols: pick(got.protocols, 'clientRequestHTTPProtocol'), tls: pick(got.tls, 'clientSSLProtocol'),
     originStatus: pick(got.originStatus, 'originResponseStatus'),
-    referers: pick(got.referers, 'clientRefererHost'), colo: pick(got.colo, 'coloCode'),
+    colo: pick(got.colo, 'coloCode'), upperColo: pick(got.upperColo, 'upperTierColoName'),
     devices: pick(got.devices, 'clientDeviceType'), systems: pick(got.systems, 'userAgentOS'),
-    networks: pick(got.networks, 'clientASNDescription'),
-    regions: pick(got.regions, 'clientRegionName'), cities: pick(got.cities, 'clientCityName'),
-    firewall: (got.firewall || []).map(r => ({k: r.dimensions.action, source: r.dimensions.source, n: r.count})),
+    verifiedBots: pick(got.verifiedBots, 'verifiedBotCategory'),
+    edge: howFast(got.edgeSpeed, got.edgeSpeedQ, 'edgeTimeToFirstByteMs'),
+    origin: howFast(got.originSpeed, got.originSpeedQ, 'originResponseDurationMs'),
     crawlers: [...crawl].map(([k, n]) => { const [name, kind] = k.split(''); return {k: name, kind, n}; }).sort((a, b) => b.n - a.n),
     askers: listOf(kinds, 12),
     rum,

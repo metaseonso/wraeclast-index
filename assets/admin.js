@@ -523,9 +523,7 @@ const BREAK = [
   {box: 'cfwho', k: 'crawlers', t: 'Crawlers by name', name: x => x.k + ' · ' + x.kind, show: 15},
   {box: 'cfwho', k: 'countries', t: 'Countries', p: 'Every request, people and bots.', name: x => COUNTRY(x.k),
     sub: x => (x.threats ? '<span class="ad-sub">' + num(x.threats) + ' threats · ' + bytes(x.bytes || 0) + '</span>' : BYTES(x)), show: 15},
-  {box: 'cfwho', k: 'regions', t: 'Regions', show: 15},
-  {box: 'cfwho', k: 'cities', t: 'Cities', show: 15},
-  {box: 'cfwho', k: 'networks', t: 'Networks', p: 'The company the request came through.', show: 15},
+  {box: 'cfwho', k: 'verifiedBots', t: 'Named bots', p: 'Cloudflare’s own list of bots it recognises.', show: 15},
   {box: 'cfwho', k: 'colo', t: 'Cloudflare data centres', p: 'Which city answered, nearest to the visitor.', show: 15},
   {box: 'cfwho', k: 'devices', t: 'Device kinds'},
   {box: 'cfwho', k: 'systems', t: 'Operating systems'},
@@ -533,18 +531,19 @@ const BREAK = [
   {box: 'cfwho', k: 'ipKinds', t: 'Visitor kinds', p: 'Cloudflare’s label for the address: clean, search engine, scanner.'},
   // Traffic: what was asked for and how we answered
   {box: 'cftraffic', k: 'paths', t: 'Most asked for', p: 'Paths, people and bots.', name: PATH, sub: BYTES, show: 20},
-  {box: 'cftraffic', k: 'queries', t: 'Query strings', name: x => x.k || '(none)', show: 10},
   {box: 'cftraffic', k: 'hosts', t: 'Hosts'},
   {box: 'cftraffic', k: 'methods', t: 'Methods'},
+  {box: 'cftraffic', k: 'scheme', t: 'https or plain'},
+  {box: 'cftraffic', k: 'accept', t: 'What they asked for', p: 'The kind of answer the request wanted.'},
   {box: 'cftraffic', k: 'status', t: 'Status codes', p: 'What we answered.', name: x => 'Status ' + x.k},
   {box: 'cftraffic', k: 'originStatus', t: 'Server status codes', p: 'What the worker answered before the cache.', name: x => 'Status ' + x.k},
   {box: 'cftraffic', k: 'cache', t: 'Cache', p: 'A hit never reached the worker.', sub: BYTES},
   {box: 'cftraffic', k: 'types', t: 'Content types'},
   {box: 'cftraffic', k: 'protocols', t: 'HTTP versions'},
   {box: 'cftraffic', k: 'tls', t: 'TLS versions'},
-  {box: 'cftraffic', k: 'referers', t: 'Referring sites', p: 'Every request, people and bots.', name: REF, show: 15},
+  {box: 'cftraffic', k: 'upperColo', t: 'Upper tier', p: 'The bigger data centre behind the one that answered.', show: 10},
+  {box: 'cftraffic', k: 'rum.refs', t: 'Referring sites', p: 'Real visitors only: this plan gives us no referrer per request.', name: REF, show: 15},
   {box: 'cftraffic', k: 'threatKinds', t: 'Threats stopped', p: 'What Cloudflare blocked, and why.'},
-  {box: 'cftraffic', k: 'firewall', t: 'Security events', name: x => x.k + ' · ' + x.source, show: 15},
 ];
 const rowList = (list, b) => table((list || []).filter(x => x.n).map(x => ({n: x.n,
   html: esc(b.name ? b.name(x) : x.k || '(none)') + (b.sub ? b.sub(x) : '')})), '', 0, b.show || 12);
@@ -614,12 +613,21 @@ function speed(c){
       '<td class="n">' + (v.load50 !== null ? (v.load50 / 1000).toFixed(2) + ' s / ' + (v.load90 / 1000).toFixed(2) + ' s' : '—') + '</td></tr>').join('') +
     '</tbody></table></div><p class="note">Green is good, amber needs work, red is poor (Google’s own lines).</p>' : '<p class="note ad-none">Nothing yet.</p>';
 
-  const p = R.parts;
-  const STEP = [['dns', 'Finding the address'], ['connect', 'Connecting'], ['answer', 'Our answer'],
-    ['dom', 'Page built'], ['ready', 'Everything loaded'], ['load50', 'Full load, half of them'], ['load90', 'Full load, 90% of them']];
-  $('#cfparts').innerHTML = p ? '<div class="tablewrap ad-tw"><table class="ad-t"><thead><tr><th>Step</th><th class="n">Time</th></tr></thead><tbody>' +
-    STEP.filter(([k]) => p[k] !== null && p[k] !== undefined).map(([k, l]) => '<tr><td>' + l + '</td><td class="n"><b>' +
-      (p[k] >= 1000 ? (p[k] / 1000).toFixed(2) + ' s' : num(p[k]) + ' ms') + '</b></td></tr>').join('') +
+  const p = R.parts, time = v => v === null || v === undefined ? '—' : v >= 1000 ? (v / 1000).toFixed(2) + ' s' : num(v) + ' ms';
+  $('#cfparts').innerHTML = p && p.length ? '<div class="tablewrap ad-tw"><table class="ad-t"><thead><tr><th>Step</th>' +
+    '<th class="n">Half of them</th><th class="n">75% of them</th></tr></thead><tbody>' +
+    p.map(s => '<tr><td>' + esc(s.k) + '</td><td class="n"><b>' + time(s.p50) + '</b></td><td class="n"><b>' + time(s.p75) + '</b></td></tr>').join('') +
+    '</tbody></table></div>' : '<p class="note ad-none">Nothing yet.</p>';
+
+  // how fast we answered, before the browser did anything with it
+  const SIDE = [['edge', 'Cloudflare’s first byte', 'From the data centre nearest the visitor.'],
+    ['origin', 'The worker’s answer', 'Only the requests the cache did not cover.']];
+  const got = SIDE.filter(([k]) => c[k]);
+  $('#cfedge').innerHTML = got.length ? '<div class="tablewrap ad-tw"><table class="ad-t"><thead><tr><th>What</th>' +
+    '<th class="n">Average</th><th class="n">Half of them</th><th class="n">90% of them</th></tr></thead><tbody>' +
+    got.map(([k, l, note]) => { const s = c[k];
+      return '<tr><td>' + l + '<span class="ad-sub">' + note + '</span></td><td class="n"><b>' + time(s.avg) + '</b></td>' +
+        '<td class="n"><b>' + time(s.p50) + '</b></td><td class="n"><b>' + time(s.p90) + '</b></td></tr>'; }).join('') +
     '</tbody></table></div>' : '<p class="note ad-none">Nothing yet.</p>';
 }
 

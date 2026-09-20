@@ -38,6 +38,14 @@ function fields(rows){
   }
   return [...keys];
 }
+/* the numbers themselves, for the blocks that answer with a single row (totals, quantiles, good/poor splits) */
+function sample(rows){
+  const row = rows[0], out = [];
+  if(!row) return '';
+  for(const part of ['avg', 'quantiles', 'sum'])
+    for(const [k, v] of Object.entries(row[part] || {})) out.push(k + '=' + v);
+  return out.slice(0, 10).join(' ');
+}
 const pad = (s, n) => (s + ' '.repeat(n)).slice(0, n);
 const trim = (s, n) => String(s).replace(/\s+/g, ' ').slice(0, n);
 
@@ -56,6 +64,7 @@ for(let i = 0; i < list.length; i += AT_ONCE){
     }
     if(!r.rows.length) empty.push(c.name);
     console.log('ok   ' + pad(c.name, 14) + pad(r.rows.length + ' rows', 10) + trim(fields(r.rows).join(', '), 110));
+    if(r.rows.length === 1 && sample(r.rows)) console.log('     ' + pad('', 14) + trim(sample(r.rows), 140));
   });
 }
 console.log((list.length - missing.length) + ' ok, ' + missing.length + ' failed' + (missing.length ? ': ' + missing.join(', ') : '') +
