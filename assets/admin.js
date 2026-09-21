@@ -3,7 +3,9 @@
    Sign in, a loading screen fills while the three parts (our own count, Cloudflare, notes) come in at
    once, then the panel opens with every tab ready. Nothing waits on anything else: a part that fails or
    takes too long only puts "failed" and a Retry in its own blocks, every block draws inside its own
-   try/catch, and whatever breaks also goes in one line at the top of the page. */
+   try/catch, and whatever breaks also goes in one line at the top of the page. A tab draws its blocks
+   again when it opens - a pane is first filled while it is still hidden - and anything still empty says
+   "No data.", so no tab can come up blank. */
 const $ = (s, el = document) => el.querySelector(s);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c]));
 const num = n => (+n || 0).toLocaleString('en');
@@ -199,6 +201,24 @@ $('#range').addEventListener('click', e => {
 });
 
 /* ---------- tabs: buttons first, data later. They never wait for anything. ---------- */
+/* every block a tab holds, and which part brings it in. A pane is filled once, while it is still hidden;
+   opening it draws its blocks again from what is already in hand, so nothing can stay empty because of
+   one write that did not land, and whatever is still empty says so. */
+const TAB_BOX = {
+  overview: ['#tiles', '#chart', '#routes', '#kinds', '#sources', '#cfnotes', '#cftiles', '#cfchart', '#cfrumchart'],
+  visitors: ['#cfreal', '#cfwho', '#countries', '#devices'],
+  traffic: ['#cfhour', '#cftraffic'],
+  clicks: ['#clickpick', '#clicks', '#heatpage', '#heatdev', '#heatbox', '#searches'],
+  speed: ['#cfsplit', '#cfspeed', '#cfparts'],
+  notes: ['#notepick', '#notes'],
+  jobs: ['#jobs', '#load'],
+  plan: ['#plan', '#cfserver', '#cfd1'],
+};
+const TAB_PART = {overview: ['stats', 'cf'], visitors: ['stats', 'cf'], traffic: ['cf'], clicks: ['stats'],
+  speed: ['cf'], notes: ['notes'], jobs: ['stats'], plan: ['stats', 'cf']};
+const BOX_PART = {};   // which part each block waits on
+for(const n of Object.keys(PART)) for(const id of PART[n].boxes) BOX_PART[id] = n;
+
 function showTab(t){
   if(!TABS.includes(t)) t = 'overview';
   S.tab = t;
@@ -208,8 +228,18 @@ function showTab(t){
   try { localStorage.setItem('wi-admin-tab', t); } catch {}
   try {
     if(t === 'clicks' && (H.stale || !H.frameKey)) heat();   // the page preview only loads when it is looked at
-    redraw();
+    paint();
   } catch(e){ console.error(e); shout((e && e.message) || e); }
+}
+/* the tab that is open, drawn again from the answers already in hand */
+function paint(){
+  if($('#dash').hidden) return;
+  for(const n of TAB_PART[S.tab] || []){
+    if(ST[n] !== 'ok') continue;
+    try { PART[n].draw(); }
+    catch(e){ console.error(n, e); shout(n + ': ' + ((e && e.message) || e)); }
+  }
+  redraw();
 }
 /* charts are drawn to the box's own width, so a tab draws its own when it opens */
 function redraw(){
@@ -220,6 +250,18 @@ function redraw(){
   if(S.tab === 'jobs' && ST.stats === 'ok') safe('#load', () => loadCharts());
   if(S.tab === 'plan' && ST.cf === 'ok') safe('#cfd1', () => cfD1Chart());
   if(S.tab === 'clicks') safe('#heatbox', () => fit());
+  blanks();
+}
+/* the last word on every drawing: a block says why it is empty, and never waits on an answer that is in */
+function blanks(){
+  for(const id of TAB_BOX[S.tab] || []){
+    const el = $(id);
+    if(!el) continue;
+    const n = BOX_PART[id];
+    const missed = ST[n] === 'ok' && el.querySelector('.ad-wait');   // the drawing went past this one
+    if(el.innerHTML.trim() && !missed) continue;
+    fill(id, ST[n] === 'loading' ? WAIT : ST[n] === 'fail' ? failLine(n, 'Could not load.') : NONE);
+  }
 }
 $('#tabs').addEventListener('click', e => {
   const b = e.target.closest('button[data-t]');
@@ -464,6 +506,7 @@ async function heat(){
   if(!box) return;
   H.stale = false;
   if(note) note.textContent = 'Loading…';
+  if(!box.querySelector('iframe')) fill('#heatbox', WAIT);   // an empty box would look like nothing is coming
   let r = null;
   try { r = await race(api('heat?route=' + route + '&device=' + dev + '&days=' + S.days), 20000, 'Took too long.'); } catch { r = null; }
   if(token !== H.token) return;
@@ -576,11 +619,10 @@ function drawNotes(){
     .map(([k, l, n]) => '<button type="button" class="chip" data-k="' + k + '" aria-pressed="' + (k === S.filter) + '">' + l +
       '<span class="ct">' + num(n) + '</span></button>').join(''));
   safe('#notes', () => notesList(sg));
-  safe('#notemore', () => {
-    const have = arr(sg.list).length;
-    return sg.more || all > have ? '<button type="button" class="btn" id="older">Load older</button>' +
-      '<span class="note">' + num(have) + ' of ' + num(all) + ' loaded</span>' : '';
-  });
+  // the row under the list, empty when there is nothing older to ask for
+  const have = arr(sg.list).length;
+  fill('#notemore', sg.more || all > have ? '<button type="button" class="btn" id="older">Load older</button>' +
+    '<span class="note">' + num(have) + ' of ' + num(all) + ' loaded</span>' : '');
   count(fin(c.new));
 }
 async function mark(id, status){

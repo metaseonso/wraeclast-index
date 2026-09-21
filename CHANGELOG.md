@@ -3,6 +3,29 @@
 The full list of changes. The public patch notes (data/changelog.json, shown on the site) stay short.
 Add the details here first, then a short public line there.
 
+## Next — Owner dashboard: the blank tabs, and the notes that never came
+
+- Every tab but Overview came up blank on the live site: no numbers, no "No data.", nothing under the tab
+  strip. A pane is filled once, while it is still hidden — the panel only opens later — and nothing ever
+  wrote it again: showTab() redrew six charts and no blocks at all. Against the answers the live site gives,
+  every tab does fill here in headless Chrome; but a pane filled that way rests on one write landing, and if
+  it does not, that tab is empty for good, with not even "No data." to show for it. So a tab now draws its
+  own blocks when it opens, from the answers already in hand (paint() in assets/admin.js), and blanks() gives
+  anything still empty the line it should have: "Loading…" while its part is on its way, the failure line and
+  a Retry if that part went wrong, else "No data.". A tab click costs 0-34 ms with a full week in hand.
+- Two smaller holes in the same page: the heatmap box says "Loading…" while it loads instead of being an empty
+  square, and the row under the notes list is empty again when there is nothing older to ask for — an empty
+  answer there was being turned into "No data." under a list that had notes in it.
+- /api/admin/suggestions answered `{"list":[],"more":false,"count":{"new":2,"read":0,"done":0}}`: the count was
+  right, the notes were gone. A missing `?before=` went through int(), which clamped it to the low end of its
+  range instead of saying it was not there at all, so the paging query asked for notes with `id < 1`
+  (worker/dash.js). int() now gives null for nothing at all — missing, empty, not a number — and the first page
+  asks for `id < 2^31` again. Two other reads get stricter for free: a click spot with no x or y is dropped
+  instead of counted as 0, and a note id of null no longer passes for note 1.
+- tools/dev/guard.mjs has a sixth check, **dash**. It serves tools/dev/dash-fixture (what the live site answered
+  on 21 Sep 2026, saved as it came) to admin.html in headless Chrome, three times over — those numbers, an
+  answer with nothing in it, and reads that fail — clicks all eight tabs each time, and fails if any of the 31
+  blocks is left empty or draws nothing. It skips cleanly without Chrome, with --no-phone, and against --live.
 ## Next — No DNT markers in gem descriptions (#29)
 
 - The game files mark text that is not live with `[DNT]` or `[DNT-UNUSED]` ("do not translate"). The site has

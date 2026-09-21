@@ -11,6 +11,7 @@
      links   every deep link the code emits lands on a real row in the data
      pages   every public page answers 200; the sitemap and llms.txt did not shrink
      rawcode no stat ids, [Word|Word] markup or {0} placeholders where a player can read them
+     dash    the owner's dashboard: all eight tabs fill, no block is left empty (tools/dev/dash-fixture)
      phone   a real phone-sized Chrome: cards stay open, nothing scrolls sideways, no console errors
 
    The local server is this worktree's own files plus worker/seo.js, run in this process, so no
@@ -81,6 +82,29 @@ async function asset(req){
   }
   return new Response('Not found', {status: 404, headers: {'Content-Type': 'text/plain'}});
 }
+/* ---------- the owner's dashboard reads, without a password and without the live site ----------
+   dash-fixture holds what wraeclastindex.fyi answered on 21 Sep 2026, saved as it came. SHAPE picks
+   what the page is given: those numbers, an answer with nothing in it, or reads that fail. */
+let SHAPE = 'live';
+const THIN = {
+  stats: {days: 7, since: '', today: '', totals: {}, perDay: [], routes: [], sources: [], kinds: [], countries: [],
+    devices: [], clicks: {total: 0, all: [], byRoute: {}}, suggestions: {count: {}, list: []},
+    load: {hours: [], perHour: {}, today: {}, tradeLimitPerHour: 0}, searches: [], plan: {}, jobs: {}},
+  cloudflare: {days: 7, notes: [], missing: [], totals: {}, daily: [], hourly: [], rum: {}, workers: {}, d1: [], free: {}},
+  suggestions: {list: [], more: false, count: {new: 0, read: 0, done: 0}},
+  heat: {route: 'home', device: 'desktop', days: 7, cells: [], total: 0, max: 0},
+};
+const asJSON = (body, status = 200) => new Response(body, {status,
+  headers: {'Content-Type': TYPES.json, 'Cache-Control': 'no-store'}});
+async function adminRead(path){
+  const name = path.slice('/api/admin/'.length);
+  if(name === 'login' || name === 'logout') return asJSON('{"ok":true}');   // the page may think it is signed in
+  if(!THIN[name]) return asJSON('{"error":"Not found."}', 404);
+  if(SHAPE === 'fail') return asJSON('{"error":"the database is asleep"}', 502);
+  if(SHAPE === 'empty') return asJSON(JSON.stringify(THIN[name]));
+  return asJSON(await readFile(join(HERE, 'dash-fixture', name + '.json'), 'utf8'));
+}
+
 // sw.js is served unstamped on purpose: unstamped it switches itself off (sw.js OFF), so a check never
 // reads a page out of a service worker's copy
 async function startServer(){
@@ -89,9 +113,11 @@ async function startServer(){
     const url = new URL(req.url, 'http://' + (req.headers.host || '127.0.0.1'));
     let r;
     try {
-      r = seo.handles(url.pathname)
-        ? await seo.respond(new Request(url.href, {method: req.method}), env, null, null)
-        : await asset(new Request(url.href));
+      r = url.pathname.startsWith('/api/admin/')
+        ? await adminRead(url.pathname)
+        : seo.handles(url.pathname)
+          ? await seo.respond(new Request(url.href, {method: req.method}), env, null, null)
+          : await asset(new Request(url.href));
     } catch(e){ r = new Response('guard: ' + (e && e.message), {status: 500}); }
     res.writeHead(r.status, Object.fromEntries(r.headers));
     res.end(r.status === 301 || r.status === 302 ? '' : Buffer.from(await r.arrayBuffer()));
@@ -396,8 +422,10 @@ async function checkPhone(bigKeyword, want){
   const chrome = await findChrome();
   if(!chrome){
     say('phone', true, 'skipped: no Chrome found. Point at one with CHROME=<full path to chrome.exe>, or pass --no-phone.');
+    say('dash', true, 'skipped: no Chrome found.');
     return wide;
   }
+  let dashDone = false;
   const dir = await mkdtemp(join(tmpdir(), 'wi-guard-'));
   const proc = spawn(chrome, ['--headless=new', '--remote-debugging-port=0', '--user-data-dir=' + dir, '--no-first-run',
     '--no-default-browser-check', '--disable-gpu', '--disable-extensions', '--hide-scrollbars', 'about:blank'],
@@ -465,12 +493,18 @@ async function checkPhone(bigKeyword, want){
     await until(two, 'document.querySelectorAll("#tbody tr").length', 20000);
     await wait(600);
     wide['/explore'] = await evalJS(two, 'document.documentElement.scrollWidth - document.documentElement.clientWidth');
+
+    /* --- the owner's dashboard, on a desktop-sized page, against the saved answers --- */
+    if(base) say('dash', true, 'skipped: it reads this worktree’s own server, not ' + base + '.');
+    else await checkDash(browser, port);
+    dashDone = true;
   } catch(e){
     bad.push('Chrome: ' + clip(e.message, 110));
   } finally {
     proc.kill();
     await rm(dir, {recursive: true, force: true}).catch(() => {});
   }
+  if(!dashDone) say('dash', true, 'skipped: Chrome did not open.');
   // /explore is 190px too wide on a phone today; that number is in the baseline, so only a new or a
   // worse sideways scroll fails
   const knownWide = (want && want.phoneWide) || {};
@@ -485,6 +519,82 @@ async function checkPhone(bigKeyword, want){
     : '375\u00d7812 touch: the card stays open through a tap, a drag, a selection let go outside and the filter; no console errors' +
       (still.length ? ' \u00b7 known: ' + still.join(', ') : ' \u00b7 nothing scrolls sideways'));
   return wide;
+}
+
+/* ---------- 6. the owner's dashboard: every tab fills ---------- */
+/* Every block each tab shows. A block may say "No data." or that it failed, but it may never be empty:
+   a pane is filled while it is still hidden, and one that stays empty leaves the owner with a blank tab. */
+const DASH_BOX = {
+  overview: ['#tiles', '#chart', '#routes', '#kinds', '#sources', '#cfnotes', '#cftiles', '#cfchart', '#cfrumchart'],
+  visitors: ['#cfreal', '#cfwho', '#countries', '#devices'],
+  traffic: ['#cfhour', '#cftraffic'],
+  clicks: ['#clickpick', '#clicks', '#heatpage', '#heatdev', '#heatbox', '#searches'],
+  speed: ['#cfsplit', '#cfspeed', '#cfparts'],
+  notes: ['#notepick', '#notes'],
+  jobs: ['#jobs', '#load'],
+  plan: ['#plan', '#cfserver', '#cfd1'],
+};
+const DASH_N = Object.values(DASH_BOX).reduce((a, b) => a + b.length, 0);
+/* how many of those blocks hold real numbers with dash-fixture in front of them. The two that do not:
+   nobody arrived from another site in that week, and the notes list is empty in the saved answer. */
+const DASH_WANT = {overview: 8, visitors: 4, traffic: 2, clicks: 6, speed: 3, notes: 1, jobs: 2, plan: 3};
+const allFilled = ids => '!' + JSON.stringify(ids) + '.some(id => { const el = document.querySelector(id); return !el || !el.innerHTML.trim(); })';
+/* what one tab is holding: how many have numbers, say nothing, say they failed; which are empty, drew
+   nothing, or are still waiting on an answer that came in long ago */
+const tabLook = ids => `(() => {
+  const out = {full: 0, none: 0, bad: 0, empty: [], flat: [], slow: []};
+  for(const id of ${JSON.stringify(ids)}){
+    const el = document.querySelector(id);
+    if(!el || !el.innerHTML.trim()){ out.empty.push(id); continue; }
+    if(!el.getBoundingClientRect().height){ out.flat.push(id); continue; }
+    const t = el.textContent.replace(/\\s+/g, ' ').trim();
+    if(/^Loading/.test(t)) out.slow.push(id);
+    else if(/^(No data\\.|Nothing here\\.)$/.test(t)) out.none++;
+    else if(/This block failed|Could not load|took too long|Retry/.test(t)) out.bad++;
+    else out.full++;
+  }
+  return JSON.stringify(out);
+})()`;
+
+async function checkDash(browser, port){
+  const bad = [], said = [];
+  for(const [what, shape] of [['live numbers', 'live'], ['nothing to show', 'empty'], ['reads that fail', 'fail']]){
+    SHAPE = shape;
+    const errs = [], {targetId} = await browser.send('Target.createTarget', {url: 'about:blank'});
+    const page = await open('ws://127.0.0.1:' + port + '/devtools/page/' + targetId);
+    await page.send('Page.enable');
+    await page.send('Runtime.enable');
+    page.on('Runtime.consoleAPICalled', p => { if(p.type === 'error') errs.push(clip((p.args || []).map(a => a.description || a.value).join(' '), 100)); });
+    page.on('Runtime.exceptionThrown', p => errs.push(clip(p.exceptionDetails?.exception?.description || p.exceptionDetails?.text, 100)));
+    await page.send('Emulation.setDeviceMetricsOverride', {width: 1280, height: 900, deviceScaleFactor: 1, mobile: false});
+    await go(page, SITE + '/admin.html');
+    if(!await until(page, 'document.querySelector("#dash") && !document.querySelector("#dash").hidden', 20000)){
+      bad.push(what + ': the panel never opened');
+      await browser.send('Target.closeTarget', {targetId});
+      continue;
+    }
+    let full = 0, none = 0, failed = 0;
+    for(const [tab, ids] of Object.entries(DASH_BOX)){
+      await evalJS(page, '(() => { const b = [...document.querySelectorAll("#tabs button")].find(x => x.dataset.t === "' + tab +
+        '"); if(b) b.click(); })()');
+      await until(page, 'document.querySelector("#t-' + tab + '") && !document.querySelector("#t-' + tab + '").hidden', 4000);
+      await until(page, allFilled(ids), 4000);   // the click spots wait on their own read
+      const r = JSON.parse(await evalJS(page, tabLook(ids)));
+      full += r.full; none += r.none; failed += r.bad;
+      if(r.empty.length) bad.push(what + ': ' + tab + ' left ' + r.empty.length + ' of ' + ids.length + ' blocks empty (' + r.empty.join(' ') + ')');
+      if(r.flat.length) bad.push(what + ': ' + tab + ' drew nothing in ' + r.flat.join(' '));
+      if(r.slow.length) bad.push(what + ': ' + tab + ' still says Loading in ' + r.slow.join(' '));
+      if(shape === 'live' && r.full < DASH_WANT[tab])
+        bad.push(what + ': ' + tab + ' filled ' + r.full + ' blocks, not ' + DASH_WANT[tab]);
+    }
+    const real = errs.filter(e => e && !/favicon|ERR_|asleep/.test(e));
+    if(shape === 'live' && real.length) bad.push('console error: ' + clip(real[0], 80));
+    said.push(what + ' ' + full + '/' + none + '/' + failed);
+    await browser.send('Target.closeTarget', {targetId});
+  }
+  SHAPE = 'live';
+  say('dash', !bad.length, bad.length ? bad.slice(0, 3).join(' · ')
+    : '8 tabs, ' + DASH_N + ' blocks, nothing left empty · numbers/"no data"/failed: ' + said.join(' · '));
 }
 
 /* ---------- run ---------- */
@@ -514,7 +624,7 @@ try {
     const kws = index.items.filter(it => it.k === 'w' && it.use);
     kws.sort((a, b) => Object.values(b.use).reduce((x, y) => x + y, 0) - Object.values(a.use).reduce((x, y) => x + y, 0));
     wide = await checkPhone((kws[0] || {n: 'Critical'}).n, want);
-  } else say('phone', true, 'skipped (--no-phone)');
+  } else { say('phone', true, 'skipped (--no-phone)'); say('dash', true, 'skipped (--no-phone)'); }
 } finally {
   if(server) await server.stop();
 }

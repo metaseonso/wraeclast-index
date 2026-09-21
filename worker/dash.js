@@ -38,7 +38,10 @@ const json = (status, body, extra = {}) => new Response(JSON.stringify(body), {s
 const dayOf = (t = Date.now()) => new Date(t).toISOString().slice(0, 10);
 const hourOf = (t = Date.now()) => new Date(t).toISOString().slice(0, 13);
 const hostOf = s => { try { return new URL(s).host; } catch { return ''; } };
-const int = (v, lo, hi) => { const n = Math.floor(+v); return Number.isFinite(n) ? Math.min(hi, Math.max(lo, n)) : null; };
+/* a whole number, kept inside the range. Nothing to read at all - missing, empty, not a number - is null,
+   never the low end: a missing ?before= once read as id < 1, which is how the notes list came back empty. */
+const int = (v, lo, hi) => { const n = v === null || v === undefined || v === '' ? NaN : Math.floor(+v);
+  return Number.isFinite(n) ? Math.min(hi, Math.max(lo, n)) : null; };
 const LOAD_SQL = 'INSERT INTO load (hour, kind, n) VALUES (?, ?, ?) ON CONFLICT(hour, kind) DO UPDATE SET n = n + excluded.n';
 
 /* our own pages only: fetch sends X-WI; sendBeacon cannot, so a same-origin Origin (or Referer) will do */

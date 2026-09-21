@@ -1,0 +1,2106 @@
+{
+  "days": 7,
+  "notes": [],
+  "missing": [
+    "cities",
+    "how fast Cloudflare answered",
+    "https or plain",
+    "networks (ASN)",
+    "query strings",
+    "referring hosts per request",
+    "regions",
+    "security events (firewall)",
+    "upper-tier data centres",
+    "visitor kinds per request",
+    "what the request wanted"
+  ],
+  "updated": "2026-09-21T13:05:22.034Z",
+  "adaptiveHours": 168,
+  "rumHours": 168,
+  "totals": {
+    "requests": 61731,
+    "pageViews": 50523,
+    "uniques": 789,
+    "bytes": 582977753,
+    "cachedBytes": 433163444,
+    "cachedRequests": 25269,
+    "encryptedRequests": 60125,
+    "encryptedBytes": 558367083,
+    "threats": 28,
+    "visits": 71,
+    "pageLoads": 305
+  },
+  "daily": [
+    {
+      "date": "2026-09-19",
+      "requests": 29981,
+      "pageViews": 22998,
+      "uniques": 236,
+      "bytes": 354224178,
+      "cachedBytes": 241527277,
+      "cachedRequests": 9885,
+      "threats": 15
+    },
+    {
+      "date": "2026-09-20",
+      "requests": 29651,
+      "pageViews": 26863,
+      "uniques": 347,
+      "bytes": 195277739,
+      "cachedBytes": 167382747,
+      "cachedRequests": 14468,
+      "threats": 12
+    },
+    {
+      "date": "2026-09-21",
+      "requests": 2099,
+      "pageViews": 662,
+      "uniques": 206,
+      "bytes": 33475836,
+      "cachedBytes": 24253420,
+      "cachedRequests": 916,
+      "threats": 1
+    }
+  ],
+  "hourly": [
+    {
+      "hour": "2026-09-19T02",
+      "n": 1035,
+      "bytes": 52526386
+    },
+    {
+      "hour": "2026-09-19T03",
+      "n": 1545,
+      "bytes": 71874295
+    },
+    {
+      "hour": "2026-09-19T04",
+      "n": 12055,
+      "bytes": 46639174
+    },
+    {
+      "hour": "2026-09-19T05",
+      "n": 9540,
+      "bytes": 40852341
+    },
+    {
+      "hour": "2026-09-19T06",
+      "n": 4534,
+      "bytes": 17003693
+    },
+    {
+      "hour": "2026-09-19T07",
+      "n": 808,
+      "bytes": 24421058
+    },
+    {
+      "hour": "2026-09-19T08",
+      "n": 525,
+      "bytes": 24000897
+    },
+    {
+      "hour": "2026-09-19T09",
+      "n": 13,
+      "bytes": 1005763
+    },
+    {
+      "hour": "2026-09-19T10",
+      "n": 100,
+      "bytes": 6564733
+    },
+    {
+      "hour": "2026-09-19T11",
+      "n": 42,
+      "bytes": 3249448
+    },
+    {
+      "hour": "2026-09-19T12",
+      "n": 540,
+      "bytes": 52304885
+    },
+    {
+      "hour": "2026-09-19T13",
+      "n": 175,
+      "bytes": 15227528
+    },
+    {
+      "hour": "2026-09-19T14",
+      "n": 385,
+      "bytes": 19637669
+    },
+    {
+      "hour": "2026-09-19T15",
+      "n": 4618,
+      "bytes": 11027447
+    },
+    {
+      "hour": "2026-09-19T16",
+      "n": 1858,
+      "bytes": 16863598
+    },
+    {
+      "hour": "2026-09-19T17",
+      "n": 238,
+      "bytes": 12323586
+    },
+    {
+      "hour": "2026-09-19T18",
+      "n": 139,
+      "bytes": 7388288
+    },
+    {
+      "hour": "2026-09-19T19",
+      "n": 442,
+      "bytes": 19458582
+    },
+    {
+      "hour": "2026-09-19T20",
+      "n": 511,
+      "bytes": 21891308
+    },
+    {
+      "hour": "2026-09-19T21",
+      "n": 30838,
+      "bytes": 171241614
+    },
+    {
+      "hour": "2026-09-19T22",
+      "n": 657,
+      "bytes": 20663370
+    },
+    {
+      "hour": "2026-09-19T23",
+      "n": 446,
+      "bytes": 17003355
+    },
+    {
+      "hour": "2026-09-20T00",
+      "n": 635,
+      "bytes": 25140781
+    },
+    {
+      "hour": "2026-09-20T01",
+      "n": 591,
+      "bytes": 26032267
+    },
+    {
+      "hour": "2026-09-20T02",
+      "n": 973,
+      "bytes": 37176321
+    },
+    {
+      "hour": "2026-09-20T03",
+      "n": 537,
+      "bytes": 23836068
+    },
+    {
+      "hour": "2026-09-20T04",
+      "n": 755,
+      "bytes": 31323290
+    },
+    {
+      "hour": "2026-09-20T05",
+      "n": 500,
+      "bytes": 20162200
+    },
+    {
+      "hour": "2026-09-20T06",
+      "n": 729,
+      "bytes": 23799183
+    },
+    {
+      "hour": "2026-09-20T07",
+      "n": 485,
+      "bytes": 25309092
+    },
+    {
+      "hour": "2026-09-20T08",
+      "n": 337,
+      "bytes": 19657009
+    },
+    {
+      "hour": "2026-09-20T09",
+      "n": 334,
+      "bytes": 18528130
+    },
+    {
+      "hour": "2026-09-20T10",
+      "n": 469,
+      "bytes": 20801313
+    },
+    {
+      "hour": "2026-09-20T11",
+      "n": 647,
+      "bytes": 22757760
+    },
+    {
+      "hour": "2026-09-20T12",
+      "n": 514,
+      "bytes": 26092577
+    },
+    {
+      "hour": "2026-09-20T13",
+      "n": 607,
+      "bytes": 31399468
+    },
+    {
+      "hour": "2026-09-20T14",
+      "n": 30598,
+      "bytes": 164072227
+    },
+    {
+      "hour": "2026-09-20T15",
+      "n": 780,
+      "bytes": 39462203
+    },
+    {
+      "hour": "2026-09-20T16",
+      "n": 997,
+      "bytes": 56932078
+    },
+    {
+      "hour": "2026-09-20T17",
+      "n": 30568,
+      "bytes": 164768191
+    },
+    {
+      "hour": "2026-09-20T18",
+      "n": 465,
+      "bytes": 32153196
+    },
+    {
+      "hour": "2026-09-20T19",
+      "n": 442,
+      "bytes": 33921873
+    },
+    {
+      "hour": "2026-09-20T20",
+      "n": 386,
+      "bytes": 27985005
+    },
+    {
+      "hour": "2026-09-20T21",
+      "n": 618,
+      "bytes": 19052026
+    },
+    {
+      "hour": "2026-09-20T22",
+      "n": 161,
+      "bytes": 9025475
+    },
+    {
+      "hour": "2026-09-20T23",
+      "n": 83,
+      "bytes": 4455091
+    },
+    {
+      "hour": "2026-09-21T00",
+      "n": 63,
+      "bytes": 3188594
+    },
+    {
+      "hour": "2026-09-21T01",
+      "n": 41,
+      "bytes": 1893685
+    },
+    {
+      "hour": "2026-09-21T02",
+      "n": 316,
+      "bytes": 15643540
+    },
+    {
+      "hour": "2026-09-21T03",
+      "n": 54,
+      "bytes": 2659180
+    },
+    {
+      "hour": "2026-09-21T04",
+      "n": 370,
+      "bytes": 13208160
+    },
+    {
+      "hour": "2026-09-21T05",
+      "n": 1797,
+      "bytes": 47496168
+    },
+    {
+      "hour": "2026-09-21T06",
+      "n": 230,
+      "bytes": 9436636
+    },
+    {
+      "hour": "2026-09-21T07",
+      "n": 359,
+      "bytes": 1900147
+    },
+    {
+      "hour": "2026-09-21T08",
+      "n": 96,
+      "bytes": 3224022
+    },
+    {
+      "hour": "2026-09-21T09",
+      "n": 62,
+      "bytes": 2848575
+    },
+    {
+      "hour": "2026-09-21T10",
+      "n": 45,
+      "bytes": 2934959
+    },
+    {
+      "hour": "2026-09-21T11",
+      "n": 120,
+      "bytes": 4941964
+    },
+    {
+      "hour": "2026-09-21T12",
+      "n": 202,
+      "bytes": 6900888
+    },
+    {
+      "hour": "2026-09-21T13",
+      "n": 12,
+      "bytes": 77372
+    }
+  ],
+  "countries": [
+    {
+      "k": "SG",
+      "n": 24570,
+      "threats": 0,
+      "bytes": 151269797
+    },
+    {
+      "k": "US",
+      "n": 16939,
+      "threats": 0,
+      "bytes": 166184305
+    },
+    {
+      "k": "FR",
+      "n": 12484,
+      "threats": 0,
+      "bytes": 80704414
+    },
+    {
+      "k": "ID",
+      "n": 2931,
+      "threats": 0,
+      "bytes": 132941775
+    },
+    {
+      "k": "NL",
+      "n": 1689,
+      "threats": 17,
+      "bytes": 1027737
+    },
+    {
+      "k": "DE",
+      "n": 461,
+      "threats": 0,
+      "bytes": 5045644
+    },
+    {
+      "k": "TH",
+      "n": 425,
+      "threats": 0,
+      "bytes": 8717563
+    },
+    {
+      "k": "HK",
+      "n": 423,
+      "threats": 0,
+      "bytes": 946113
+    },
+    {
+      "k": "CA",
+      "n": 331,
+      "threats": 0,
+      "bytes": 18623599
+    },
+    {
+      "k": "BE",
+      "n": 283,
+      "threats": 5,
+      "bytes": 172486
+    },
+    {
+      "k": "IT",
+      "n": 264,
+      "threats": 3,
+      "bytes": 128717
+    },
+    {
+      "k": "KE",
+      "n": 244,
+      "threats": 0,
+      "bytes": 7219390
+    },
+    {
+      "k": "GB",
+      "n": 149,
+      "threats": 0,
+      "bytes": 1962854
+    },
+    {
+      "k": "CH",
+      "n": 97,
+      "threats": 0,
+      "bytes": 1444139
+    },
+    {
+      "k": "CZ",
+      "n": 74,
+      "threats": 0,
+      "bytes": 1766544
+    },
+    {
+      "k": "KR",
+      "n": 58,
+      "threats": 0,
+      "bytes": 991034
+    },
+    {
+      "k": "LU",
+      "n": 49,
+      "threats": 0,
+      "bytes": 107651
+    },
+    {
+      "k": "KH",
+      "n": 48,
+      "threats": 0,
+      "bytes": 1603091
+    },
+    {
+      "k": "PL",
+      "n": 43,
+      "threats": 2,
+      "bytes": 920819
+    },
+    {
+      "k": "JP",
+      "n": 28,
+      "threats": 0,
+      "bytes": 58191
+    },
+    {
+      "k": "VN",
+      "n": 26,
+      "threats": 0,
+      "bytes": 683173
+    },
+    {
+      "k": "BD",
+      "n": 19,
+      "threats": 0,
+      "bytes": 106048
+    },
+    {
+      "k": "CN",
+      "n": 18,
+      "threats": 0,
+      "bytes": 61460
+    },
+    {
+      "k": "BR",
+      "n": 11,
+      "threats": 0,
+      "bytes": 47567
+    },
+    {
+      "k": "AU",
+      "n": 10,
+      "threats": 0,
+      "bytes": 10898
+    },
+    {
+      "k": "IE",
+      "n": 9,
+      "threats": 0,
+      "bytes": 31846
+    },
+    {
+      "k": "SE",
+      "n": 8,
+      "threats": 1,
+      "bytes": 23621
+    },
+    {
+      "k": "FI",
+      "n": 6,
+      "threats": 0,
+      "bytes": 27670
+    },
+    {
+      "k": "IN",
+      "n": 6,
+      "threats": 0,
+      "bytes": 49984
+    },
+    {
+      "k": "ES",
+      "n": 5,
+      "threats": 0,
+      "bytes": 20912
+    },
+    {
+      "k": "UA",
+      "n": 5,
+      "threats": 0,
+      "bytes": 13195
+    },
+    {
+      "k": "BY",
+      "n": 3,
+      "threats": 0,
+      "bytes": 7344
+    },
+    {
+      "k": "RU",
+      "n": 3,
+      "threats": 0,
+      "bytes": 11170
+    },
+    {
+      "k": "TR",
+      "n": 3,
+      "threats": 0,
+      "bytes": 9998
+    },
+    {
+      "k": "LV",
+      "n": 2,
+      "threats": 0,
+      "bytes": 11556
+    },
+    {
+      "k": "NO",
+      "n": 2,
+      "threats": 0,
+      "bytes": 5044
+    },
+    {
+      "k": "TW",
+      "n": 2,
+      "threats": 0,
+      "bytes": 870
+    },
+    {
+      "k": "CO",
+      "n": 1,
+      "threats": 0,
+      "bytes": 12782
+    },
+    {
+      "k": "MX",
+      "n": 1,
+      "threats": 0,
+      "bytes": 4691
+    },
+    {
+      "k": "SI",
+      "n": 1,
+      "threats": 0,
+      "bytes": 2061
+    }
+  ],
+  "browsers": [
+    {
+      "k": "Edge",
+      "n": 36219
+    },
+    {
+      "k": "Unknown",
+      "n": 12346
+    },
+    {
+      "k": "GoogleBot",
+      "n": 827
+    },
+    {
+      "k": "Chrome",
+      "n": 452
+    },
+    {
+      "k": "ChromeMobile",
+      "n": 314
+    },
+    {
+      "k": "MobileSafari",
+      "n": 153
+    },
+    {
+      "k": "Curl",
+      "n": 63
+    },
+    {
+      "k": "ChromeHeadless",
+      "n": 54
+    },
+    {
+      "k": "Firefox",
+      "n": 36
+    },
+    {
+      "k": "ChromeDerivative",
+      "n": 25
+    },
+    {
+      "k": "AppleBot",
+      "n": 12
+    },
+    {
+      "k": "BingBot",
+      "n": 11
+    },
+    {
+      "k": "Safari",
+      "n": 6
+    },
+    {
+      "k": "Opera",
+      "n": 1
+    },
+    {
+      "k": "ChromeMobileWebview",
+      "n": 1
+    },
+    {
+      "k": "UCBrowserMobile",
+      "n": 1
+    },
+    {
+      "k": "Yandex",
+      "n": 1
+    },
+    {
+      "k": "OperaMobile",
+      "n": 1
+    }
+  ],
+  "status": [
+    {
+      "k": 200,
+      "n": 55537
+    },
+    {
+      "k": 404,
+      "n": 3537
+    },
+    {
+      "k": 304,
+      "n": 1871
+    },
+    {
+      "k": 204,
+      "n": 591
+    },
+    {
+      "k": 301,
+      "n": 52
+    },
+    {
+      "k": 401,
+      "n": 45
+    },
+    {
+      "k": 403,
+      "n": 30
+    },
+    {
+      "k": 499,
+      "n": 24
+    },
+    {
+      "k": 307,
+      "n": 16
+    },
+    {
+      "k": 405,
+      "n": 14
+    },
+    {
+      "k": 500,
+      "n": 7
+    },
+    {
+      "k": 400,
+      "n": 5
+    },
+    {
+      "k": 302,
+      "n": 2
+    }
+  ],
+  "types": [
+    {
+      "k": "html",
+      "n": 51013
+    },
+    {
+      "k": "empty",
+      "n": 3231
+    },
+    {
+      "k": "json",
+      "n": 1906
+    },
+    {
+      "k": "js",
+      "n": 1723
+    },
+    {
+      "k": "css",
+      "n": 1213
+    },
+    {
+      "k": "txt",
+      "n": 943
+    },
+    {
+      "k": "webp",
+      "n": 920
+    },
+    {
+      "k": "unknown",
+      "n": 384
+    },
+    {
+      "k": "png",
+      "n": 332
+    },
+    {
+      "k": "xml",
+      "n": 66
+    }
+  ],
+  "threatKinds": [
+    {
+      "k": "bic.ban.unknown",
+      "n": 3
+    }
+  ],
+  "ipKinds": [
+    {
+      "k": "noRecord",
+      "n": 47177
+    },
+    {
+      "k": "unknown",
+      "n": 11231
+    },
+    {
+      "k": "searchEngine",
+      "n": 3315
+    },
+    {
+      "k": "allowlist",
+      "n": 8
+    }
+  ],
+  "paths": [
+    {
+      "k": "/data/market.json",
+      "n": 2678,
+      "bytes": 436757985
+    },
+    {
+      "k": "/",
+      "n": 830,
+      "bytes": 3489620
+    },
+    {
+      "k": "/wraeclast-index/data/exchange.json",
+      "n": 731,
+      "bytes": 262776565
+    },
+    {
+      "k": "/wraeclast-index/data/market.json",
+      "n": 721,
+      "bytes": 205505275
+    },
+    {
+      "k": "/data/exchange.json",
+      "n": 693,
+      "bytes": 171904
+    },
+    {
+      "k": "/cdn-cgi/rum",
+      "n": 590,
+      "bytes": 404712
+    },
+    {
+      "k": "/assets/theme.css",
+      "n": 385,
+      "bytes": 1249655
+    },
+    {
+      "k": "/robots.txt",
+      "n": 314,
+      "bytes": 328765
+    },
+    {
+      "k": "/item/snap",
+      "n": 281,
+      "bytes": 99991
+    },
+    {
+      "k": "/.well-known/jwks",
+      "n": 262,
+      "bytes": 1576773
+    },
+    {
+      "k": "/assets/look.css",
+      "n": 257,
+      "bytes": 576879
+    },
+    {
+      "k": "/assets/cards.css",
+      "n": 257,
+      "bytes": 997857
+    },
+    {
+      "k": "/assets/app.css",
+      "n": 251,
+      "bytes": 1515747
+    },
+    {
+      "k": "/data/leagues.json",
+      "n": 249,
+      "bytes": 139412
+    },
+    {
+      "k": "/assets/app.js",
+      "n": 249,
+      "bytes": 2802945
+    },
+    {
+      "k": "/explore",
+      "n": 224,
+      "bytes": 114432070
+    },
+    {
+      "k": "/assets/brand/logo-320.webp",
+      "n": 223,
+      "bytes": 2864271
+    },
+    {
+      "k": "/api/prices/ingest",
+      "n": 196,
+      "bytes": 114499
+    },
+    {
+      "k": "/item/ornate-wombgift",
+      "n": 188,
+      "bytes": 312466
+    },
+    {
+      "k": "/sitemap.xml",
+      "n": 185,
+      "bytes": 15488460
+    },
+    {
+      "k": "/assets/keys.js",
+      "n": 185,
+      "bytes": 422901
+    },
+    {
+      "k": "/assets/brand/logo-64.webp",
+      "n": 178,
+      "bytes": 398385
+    },
+    {
+      "k": "/assets/league.js",
+      "n": 172,
+      "bytes": 202020
+    },
+    {
+      "k": "/item/uncut-support-gem-level-5",
+      "n": 167,
+      "bytes": 341463
+    },
+    {
+      "k": "/assets/brand/fog-bank.webp",
+      "n": 166,
+      "bytes": 7528014
+    },
+    {
+      "k": "/assets/brand/haze.webp",
+      "n": 163,
+      "bytes": 4803386
+    },
+    {
+      "k": "/assets/support.js",
+      "n": 160,
+      "bytes": 203501
+    },
+    {
+      "k": "/item/the-soul-meridian",
+      "n": 159,
+      "bytes": 39822
+    },
+    {
+      "k": "/assets/brand/favicon-32.png",
+      "n": 158,
+      "bytes": 369674
+    },
+    {
+      "k": "/item/critical-hits",
+      "n": 156,
+      "bytes": 34488
+    },
+    {
+      "k": "/api/t",
+      "n": 155,
+      "bytes": 86404
+    },
+    {
+      "k": "/item/runemastered-woven-focus",
+      "n": 151,
+      "bytes": 643026
+    },
+    {
+      "k": "/data/changelog.json",
+      "n": 148,
+      "bytes": 220217
+    },
+    {
+      "k": "/item/font-of-mana",
+      "n": 148,
+      "bytes": 847602
+    },
+    {
+      "k": "/assets/brand/favicon-64.png",
+      "n": 148,
+      "bytes": 1332590
+    },
+    {
+      "k": "/item/frozen-limit",
+      "n": 146,
+      "bytes": 36024
+    },
+    {
+      "k": "/item/volatile-catalyst",
+      "n": 144,
+      "bytes": 83696
+    },
+    {
+      "k": "/item/legacy-of-bramblejack",
+      "n": 144,
+      "bytes": 701712
+    },
+    {
+      "k": "/item/scavenged-plating",
+      "n": 144,
+      "bytes": 1439647
+    },
+    {
+      "k": "/item/carved-earth",
+      "n": 142,
+      "bytes": 76659
+    },
+    {
+      "k": "/item/shaper-of-storms",
+      "n": 141,
+      "bytes": 46330
+    },
+    {
+      "k": "/item/embodiment-of-death",
+      "n": 140,
+      "bytes": 717856
+    },
+    {
+      "k": "/item/mirror-of-kalandra",
+      "n": 140,
+      "bytes": 1288668
+    },
+    {
+      "k": "/data/index.json",
+      "n": 136,
+      "bytes": 20719836
+    },
+    {
+      "k": "/item/painted-tower-shield",
+      "n": 135,
+      "bytes": 1324668
+    },
+    {
+      "k": "/item/secrets-of-the-orb",
+      "n": 135,
+      "bytes": 623667
+    },
+    {
+      "k": "/item/ironwood-shortbow",
+      "n": 135,
+      "bytes": 970377
+    },
+    {
+      "k": "/item/swift-affliction-ii",
+      "n": 134,
+      "bytes": 59085
+    },
+    {
+      "k": "/item/pinpoint-critical",
+      "n": 133,
+      "bytes": 1188218
+    },
+    {
+      "k": "/item/chainsting-runeforged-hunting-spear",
+      "n": 133,
+      "bytes": 1481134
+    },
+    {
+      "k": "/item/refocus",
+      "n": 133,
+      "bytes": 1050516
+    },
+    {
+      "k": "/item/battle-hardened",
+      "n": 132,
+      "bytes": 520184
+    },
+    {
+      "k": "/item/controlled-climates",
+      "n": 132,
+      "bytes": 44214
+    },
+    {
+      "k": "/item/runeforged-hunter-hood",
+      "n": 130,
+      "bytes": 495576
+    },
+    {
+      "k": "/item/gas-arrow",
+      "n": 129,
+      "bytes": 96822
+    },
+    {
+      "k": "/item/ring",
+      "n": 128,
+      "bytes": 559024
+    },
+    {
+      "k": "/item/overlords-influence",
+      "n": 128,
+      "bytes": 586924
+    },
+    {
+      "k": "/item/spell-totem",
+      "n": 127,
+      "bytes": 311205
+    },
+    {
+      "k": "/item/life-leech",
+      "n": 127,
+      "bytes": 313976
+    },
+    {
+      "k": "/item/perfection-buff",
+      "n": 125,
+      "bytes": 620928
+    }
+  ],
+  "hosts": [
+    {
+      "k": "wraeclastindex.fyi",
+      "n": 144502
+    },
+    {
+      "k": "metaseonso.github.io",
+      "n": 1576
+    },
+    {
+      "k": "www.wraeclastindex.fyi",
+      "n": 1043
+    },
+    {
+      "k": "token.actions.githubusercontent.com",
+      "n": 262
+    },
+    {
+      "k": "wraeclastindex.fyi:8443",
+      "n": 142
+    },
+    {
+      "k": "wraeclastindex.fyi:8880",
+      "n": 103
+    },
+    {
+      "k": "wraeclastindex.fyi:8080",
+      "n": 99
+    },
+    {
+      "k": "wraeclastindex.fyi:80",
+      "n": 91
+    },
+    {
+      "k": "www.wraeclastindex.fyi:8443",
+      "n": 68
+    },
+    {
+      "k": "wraeclastindex.fyi:443",
+      "n": 59
+    },
+    {
+      "k": "cache.local",
+      "n": 16
+    },
+    {
+      "k": "wraeclastindex.fyi:2053",
+      "n": 15
+    },
+    {
+      "k": "www.wraeclastindex.fyi:443",
+      "n": 4
+    },
+    {
+      "k": "www.wraeclastindex.fyi:2095",
+      "n": 3
+    },
+    {
+      "k": "wraeclastindex.fyi:2082",
+      "n": 3
+    }
+  ],
+  "methods": [
+    {
+      "k": "GET",
+      "n": 98230
+    },
+    {
+      "k": "PUT",
+      "n": 30711
+    },
+    {
+      "k": "HEAD",
+      "n": 18006
+    },
+    {
+      "k": "POST",
+      "n": 1062
+    },
+    {
+      "k": "OPTIONS",
+      "n": 13
+    }
+  ],
+  "cache": [
+    {
+      "k": "none",
+      "n": 66231,
+      "bytes": 100449766
+    },
+    {
+      "k": "hit",
+      "n": 46000,
+      "bytes": 1166588993
+    },
+    {
+      "k": "miss",
+      "n": 26988,
+      "bytes": 77925605
+    },
+    {
+      "k": "stale",
+      "n": 7577,
+      "bytes": 1894230
+    },
+    {
+      "k": "revalidated",
+      "n": 622,
+      "bytes": 187951739
+    },
+    {
+      "k": "expired",
+      "n": 604,
+      "bytes": 158555399
+    }
+  ],
+  "protocols": [
+    {
+      "k": "UNK",
+      "n": 84858
+    },
+    {
+      "k": "HTTP/1.1",
+      "n": 45563
+    },
+    {
+      "k": "HTTP/2",
+      "n": 13216
+    },
+    {
+      "k": "HTTP/3",
+      "n": 4384
+    },
+    {
+      "k": "HTTP/1.0",
+      "n": 1
+    }
+  ],
+  "tls": [
+    {
+      "k": "none",
+      "n": 88397
+    },
+    {
+      "k": "TLSv1.3",
+      "n": 59607
+    },
+    {
+      "k": "TLSv1.2",
+      "n": 18
+    }
+  ],
+  "originStatus": [
+    {
+      "k": "0",
+      "n": 146702
+    },
+    {
+      "k": "200",
+      "n": 696
+    },
+    {
+      "k": "304",
+      "n": 622
+    },
+    {
+      "k": "404",
+      "n": 2
+    }
+  ],
+  "colo": [
+    {
+      "k": "SIN",
+      "n": 65908
+    },
+    {
+      "k": "CDG",
+      "n": 31404
+    },
+    {
+      "k": "CMH",
+      "n": 19408
+    },
+    {
+      "k": "ATL",
+      "n": 12003
+    },
+    {
+      "k": "SEA",
+      "n": 9918
+    },
+    {
+      "k": "IAD",
+      "n": 1341
+    },
+    {
+      "k": "DFW",
+      "n": 1278
+    },
+    {
+      "k": "WAW",
+      "n": 1174
+    },
+    {
+      "k": "AMS",
+      "n": 922
+    },
+    {
+      "k": "HKG",
+      "n": 858
+    },
+    {
+      "k": "PDX",
+      "n": 513
+    },
+    {
+      "k": "ORD",
+      "n": 495
+    },
+    {
+      "k": "NBO",
+      "n": 404
+    },
+    {
+      "k": "ZRH",
+      "n": 300
+    },
+    {
+      "k": "SJC",
+      "n": 295
+    },
+    {
+      "k": "LHR",
+      "n": 291
+    },
+    {
+      "k": "LAX",
+      "n": 284
+    },
+    {
+      "k": "YYZ",
+      "n": 183
+    },
+    {
+      "k": "EWR",
+      "n": 145
+    },
+    {
+      "k": "YVR",
+      "n": 124
+    },
+    {
+      "k": "BKK",
+      "n": 89
+    },
+    {
+      "k": "FRA",
+      "n": 87
+    },
+    {
+      "k": "SOF",
+      "n": 87
+    },
+    {
+      "k": "ARN",
+      "n": 77
+    },
+    {
+      "k": "KIX",
+      "n": 65
+    },
+    {
+      "k": "ICN",
+      "n": 62
+    },
+    {
+      "k": "NRT",
+      "n": 50
+    },
+    {
+      "k": "MUC",
+      "n": 50
+    },
+    {
+      "k": "MRS",
+      "n": 32
+    },
+    {
+      "k": "YUL",
+      "n": 22
+    },
+    {
+      "k": "MSP",
+      "n": 19
+    },
+    {
+      "k": "GRU",
+      "n": 19
+    },
+    {
+      "k": "DUB",
+      "n": 17
+    },
+    {
+      "k": "DAC",
+      "n": 16
+    },
+    {
+      "k": "MXP",
+      "n": 10
+    },
+    {
+      "k": "DTW",
+      "n": 10
+    },
+    {
+      "k": "BOM",
+      "n": 9
+    },
+    {
+      "k": "SYD",
+      "n": 7
+    },
+    {
+      "k": "PRG",
+      "n": 5
+    },
+    {
+      "k": "MAD",
+      "n": 5
+    }
+  ],
+  "devices": [
+    {
+      "k": "desktop",
+      "n": 143355
+    },
+    {
+      "k": "mobile",
+      "n": 4657
+    },
+    {
+      "k": "tablet",
+      "n": 10
+    }
+  ],
+  "systems": [
+    {
+      "k": "Unknown",
+      "n": 102972
+    },
+    {
+      "k": "Windows",
+      "n": 40488
+    },
+    {
+      "k": "Android",
+      "n": 1811
+    },
+    {
+      "k": "Linux",
+      "n": 1265
+    },
+    {
+      "k": "iOS",
+      "n": 823
+    },
+    {
+      "k": "MacOSX",
+      "n": 663
+    }
+  ],
+  "verifiedBots": [
+    {
+      "k": "",
+      "n": 134094
+    },
+    {
+      "k": "AI Crawler",
+      "n": 12102
+    },
+    {
+      "k": "Search Engine Crawler",
+      "n": 1300
+    },
+    {
+      "k": "AI Search",
+      "n": 141
+    },
+    {
+      "k": "Page Preview",
+      "n": 125
+    },
+    {
+      "k": "AI Assistant",
+      "n": 117
+    },
+    {
+      "k": "Security",
+      "n": 89
+    },
+    {
+      "k": "Archiver",
+      "n": 54
+    }
+  ],
+  "crawlers": [
+    {
+      "k": "No browser name",
+      "kind": "Unknown",
+      "n": 85161
+    },
+    {
+      "k": "People (browsers)",
+      "kind": "People",
+      "n": 46040
+    },
+    {
+      "k": "ClaudeBot",
+      "kind": "AI crawler",
+      "n": 6525
+    },
+    {
+      "k": "GPTBot",
+      "kind": "AI crawler",
+      "n": 3795
+    },
+    {
+      "k": "Googlebot",
+      "kind": "Search engine",
+      "n": 2935
+    },
+    {
+      "k": "Our own jobs and scripts",
+      "kind": "Scripts",
+      "n": 2767
+    },
+    {
+      "k": "Applebot",
+      "kind": "Search engine",
+      "n": 141
+    },
+    {
+      "k": "Other programs",
+      "kind": "Other bot",
+      "n": 90
+    },
+    {
+      "k": "Other bots",
+      "kind": "Other bot",
+      "n": 90
+    },
+    {
+      "k": "DuckDuckBot",
+      "kind": "Search engine",
+      "n": 83
+    },
+    {
+      "k": "ChatGPT (search and links)",
+      "kind": "AI search",
+      "n": 63
+    },
+    {
+      "k": "Bingbot",
+      "kind": "Search engine",
+      "n": 43
+    },
+    {
+      "k": "Discord previews",
+      "kind": "Link preview",
+      "n": 12
+    }
+  ],
+  "askers": [
+    {
+      "k": "Unknown",
+      "n": 85161
+    },
+    {
+      "k": "People",
+      "n": 46040
+    },
+    {
+      "k": "AI crawler",
+      "n": 10320
+    },
+    {
+      "k": "Search engine",
+      "n": 3202
+    },
+    {
+      "k": "Scripts",
+      "n": 2767
+    },
+    {
+      "k": "Other bot",
+      "n": 180
+    },
+    {
+      "k": "AI search",
+      "n": 63
+    },
+    {
+      "k": "Link preview",
+      "n": 12
+    }
+  ],
+  "rum": {
+    "byDay": [
+      {
+        "date": "2026-09-19",
+        "loads": 290,
+        "visits": 56
+      },
+      {
+        "date": "2026-09-20",
+        "loads": 9,
+        "visits": 9
+      },
+      {
+        "date": "2026-09-21",
+        "loads": 6,
+        "visits": 6
+      }
+    ],
+    "byHour": [
+      {
+        "hour": "2026-09-19T02",
+        "loads": 23,
+        "visits": 10
+      },
+      {
+        "hour": "2026-09-19T03",
+        "loads": 93,
+        "visits": 13
+      },
+      {
+        "hour": "2026-09-19T04",
+        "loads": 1,
+        "visits": 1
+      },
+      {
+        "hour": "2026-09-19T05",
+        "loads": 10,
+        "visits": 8
+      },
+      {
+        "hour": "2026-09-19T06",
+        "loads": 5,
+        "visits": 5
+      },
+      {
+        "hour": "2026-09-19T07",
+        "loads": 127,
+        "visits": 2
+      },
+      {
+        "hour": "2026-09-19T08",
+        "loads": 3,
+        "visits": 1
+      },
+      {
+        "hour": "2026-09-19T10",
+        "loads": 1,
+        "visits": 1
+      },
+      {
+        "hour": "2026-09-19T11",
+        "loads": 1,
+        "visits": 1
+      },
+      {
+        "hour": "2026-09-19T12",
+        "loads": 13,
+        "visits": 4
+      },
+      {
+        "hour": "2026-09-19T13",
+        "loads": 1,
+        "visits": 1
+      },
+      {
+        "hour": "2026-09-19T14",
+        "loads": 3,
+        "visits": 3
+      },
+      {
+        "hour": "2026-09-19T16",
+        "loads": 1,
+        "visits": 1
+      },
+      {
+        "hour": "2026-09-19T19",
+        "loads": 2,
+        "visits": 2
+      },
+      {
+        "hour": "2026-09-19T20",
+        "loads": 1,
+        "visits": 1
+      },
+      {
+        "hour": "2026-09-19T21",
+        "loads": 5,
+        "visits": 2
+      },
+      {
+        "hour": "2026-09-20T02",
+        "loads": 3,
+        "visits": 3
+      },
+      {
+        "hour": "2026-09-20T03",
+        "loads": 1,
+        "visits": 1
+      },
+      {
+        "hour": "2026-09-20T05",
+        "loads": 1,
+        "visits": 1
+      },
+      {
+        "hour": "2026-09-20T15",
+        "loads": 1,
+        "visits": 1
+      },
+      {
+        "hour": "2026-09-20T19",
+        "loads": 1,
+        "visits": 1
+      },
+      {
+        "hour": "2026-09-20T21",
+        "loads": 1,
+        "visits": 1
+      },
+      {
+        "hour": "2026-09-20T22",
+        "loads": 1,
+        "visits": 1
+      },
+      {
+        "hour": "2026-09-21T02",
+        "loads": 2,
+        "visits": 2
+      },
+      {
+        "hour": "2026-09-21T04",
+        "loads": 1,
+        "visits": 1
+      },
+      {
+        "hour": "2026-09-21T05",
+        "loads": 2,
+        "visits": 2
+      },
+      {
+        "hour": "2026-09-21T06",
+        "loads": 1,
+        "visits": 1
+      }
+    ],
+    "pages": [
+      {
+        "k": "/",
+        "n": 280,
+        "visits": 65
+      },
+      {
+        "k": "/explore",
+        "n": 23,
+        "visits": 4
+      },
+      {
+        "k": "/admin",
+        "n": 1,
+        "visits": 1
+      },
+      {
+        "k": "/cdn-cgi/rum",
+        "n": 1,
+        "visits": 1
+      }
+    ],
+    "hosts": [
+      {
+        "k": "wraeclastindex.fyi",
+        "n": 298,
+        "visits": 64
+      },
+      {
+        "k": "www.wraeclastindex.fyi",
+        "n": 7,
+        "visits": 7
+      }
+    ],
+    "refs": [
+      {
+        "k": "wraeclastindex.fyi",
+        "n": 234,
+        "visits": 0
+      },
+      {
+        "k": "",
+        "n": 70,
+        "visits": 70
+      },
+      {
+        "k": "bing.com",
+        "n": 1,
+        "visits": 1
+      }
+    ],
+    "countries": [
+      {
+        "k": "US",
+        "n": 152,
+        "visits": 48
+      },
+      {
+        "k": "TH",
+        "n": 131,
+        "visits": 4
+      },
+      {
+        "k": "ID",
+        "n": 15,
+        "visits": 12
+      },
+      {
+        "k": "CA",
+        "n": 2,
+        "visits": 2
+      },
+      {
+        "k": "KR",
+        "n": 1,
+        "visits": 1
+      },
+      {
+        "k": "SG",
+        "n": 1,
+        "visits": 1
+      },
+      {
+        "k": "KH",
+        "n": 1,
+        "visits": 1
+      },
+      {
+        "k": "VN",
+        "n": 1,
+        "visits": 1
+      },
+      {
+        "k": "BD",
+        "n": 1,
+        "visits": 1
+      }
+    ],
+    "devices": [
+      {
+        "k": "desktop",
+        "n": 268,
+        "visits": 43
+      },
+      {
+        "k": "mobile",
+        "n": 37,
+        "visits": 28
+      }
+    ],
+    "browsers": [
+      {
+        "k": "Chrome",
+        "n": 248,
+        "visits": 26
+      },
+      {
+        "k": "MobileSafari",
+        "n": 25,
+        "visits": 16
+      },
+      {
+        "k": "ChromeMobile",
+        "n": 12,
+        "visits": 12
+      },
+      {
+        "k": "ChromeDerivative",
+        "n": 10,
+        "visits": 7
+      },
+      {
+        "k": "ChromeHeadless",
+        "n": 3,
+        "visits": 3
+      },
+      {
+        "k": "Edge",
+        "n": 3,
+        "visits": 3
+      },
+      {
+        "k": "Unknown",
+        "n": 2,
+        "visits": 2
+      },
+      {
+        "k": "Firefox",
+        "n": 2,
+        "visits": 2
+      }
+    ],
+    "systems": [
+      {
+        "k": "Windows",
+        "n": 251,
+        "visits": 28
+      },
+      {
+        "k": "iOS",
+        "n": 29,
+        "visits": 20
+      },
+      {
+        "k": "Linux",
+        "n": 8,
+        "visits": 6
+      },
+      {
+        "k": "Android",
+        "n": 8,
+        "visits": 8
+      },
+      {
+        "k": "MacOSX",
+        "n": 7,
+        "visits": 7
+      },
+      {
+        "k": "Unknown",
+        "n": 2,
+        "visits": 2
+      }
+    ],
+    "vitals": [
+      {
+        "path": "/",
+        "n": 259,
+        "lcp": 185,
+        "inp": 56,
+        "cls": 0,
+        "fcp": 920,
+        "ttfb": 365,
+        "load50": 782,
+        "load90": 2364
+      },
+      {
+        "path": "/explore",
+        "n": 26,
+        "lcp": 412,
+        "inp": 64,
+        "cls": 0.415,
+        "fcp": 600,
+        "ttfb": 331,
+        "load50": 989,
+        "load90": 2734
+      },
+      {
+        "path": "/admin",
+        "n": 1,
+        "lcp": 0,
+        "inp": 0,
+        "cls": -1,
+        "fcp": 0,
+        "ttfb": 87,
+        "load50": 503,
+        "load90": 503
+      }
+    ],
+    "split": {
+      "lcp": {
+        "good": 250,
+        "ok": 2,
+        "poor": 1
+      },
+      "inp": {
+        "good": 202,
+        "ok": 1,
+        "poor": 0
+      },
+      "cls": {
+        "good": 211,
+        "ok": 2,
+        "poor": 34
+      },
+      "fcp": {
+        "good": 58,
+        "ok": 2,
+        "poor": 4
+      },
+      "ttfb": {
+        "good": 73,
+        "ok": 2,
+        "poor": 3
+      }
+    },
+    "parts": [
+      {
+        "k": "Finding the address",
+        "p50": 0,
+        "p75": 10
+      },
+      {
+        "k": "Connecting",
+        "p50": 19,
+        "p75": 84
+      },
+      {
+        "k": "Securing the line",
+        "p50": 19,
+        "p75": 62
+      },
+      {
+        "k": "Asking us",
+        "p50": 79,
+        "p75": 154
+      },
+      {
+        "k": "Our answer",
+        "p50": 1,
+        "p75": 5
+      },
+      {
+        "k": "Page drawn",
+        "p50": 297,
+        "p75": 574
+      },
+      {
+        "k": "Everything loaded",
+        "p50": 0,
+        "p75": 0
+      },
+      {
+        "k": "Full load",
+        "p50": 782,
+        "p75": 1227
+      }
+    ]
+  },
+  "workers": {
+    "requests": 53462,
+    "errors": 11,
+    "subrequests": 5453,
+    "cpu50": 1,
+    "cpu99": 59,
+    "byStatus": [
+      {
+        "k": "success",
+        "n": 53433
+      },
+      {
+        "k": "clientDisconnected",
+        "n": 18
+      },
+      {
+        "k": "scriptThrewException",
+        "n": 11
+      }
+    ]
+  },
+  "d1": [
+    {
+      "date": "2026-09-19",
+      "rowsRead": 66178,
+      "rowsWritten": 1577,
+      "reads": 843,
+      "writes": 960
+    },
+    {
+      "date": "2026-09-20",
+      "rowsRead": 302363,
+      "rowsWritten": 2263,
+      "reads": 1538,
+      "writes": 1819
+    },
+    {
+      "date": "2026-09-21",
+      "rowsRead": 83974,
+      "rowsWritten": 645,
+      "reads": 422,
+      "writes": 576
+    }
+  ],
+  "free": {
+    "requests": 100000,
+    "d1Reads": 5000000,
+    "d1Writes": 100000,
+    "d1StorageGB": 5
+  }
+}
