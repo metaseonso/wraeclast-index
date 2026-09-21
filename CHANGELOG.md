@@ -3,6 +3,43 @@
 The full list of changes. The public patch notes (data/changelog.json, shown on the site) stay short.
 Add the details here first, then a short public line there.
 
+## Next — Bosses: who drops what, and what the way in costs
+- The tab itself, after the two commits that built its data (`data/bosses.json`) and its prices
+  (`data/bossprices.json`). It sits under Atlas: `#/bosses`, a new route in `assets/app.js` and a new view in
+  `index.html`, with no entry of its own in the top bar — the Atlas page carries a gold **Bosses →** button at the
+  top of every one of its sections, which is the only way in besides the address. One line in the nav would promote
+  it if the owner wants that later.
+- `assets/bosses.js` follows `assets/farms.js`: the list is rows rather than cards (104 bosses, most of them only a
+  name, an area and a level), each row opens the site's own card popup, and every item inside that popup opens its
+  own card on top of it, with Back returning to the boss. The item rows sit in the card's own HTML, so the popup
+  redraws them itself on Back; the one click listener lives on the page, not on a card that gets replaced.
+- Columns: boss, where, area level, the way in with its real live price, and how many items are known to drop.
+  Sorts: name, and the way in cheapest first with the unpriced last. There is no total, no per-kill figure and no
+  column that multiplies a price by a rate — the drop rates and the prices never meet anywhere in the code.
+- A boss with no drop feed behind it keeps its name, area and level and leaves the last two cells off the row
+  rather than filling them with a dash. Chips filter to the game's own pinnacle marking (7) or to the bosses a feed
+  covers (10); the search box matches a boss, an area or anything it drops.
+- What a boss drops is the drop pool plus anything only the wiki's rate table names (The Aberration, The Bodach and
+  The Raven Trickster have no pool at all, so that is their whole card). Each row carries the feeds that named it
+  — "Path of Building, Exiled Exchange 2", or "PoE2 Wiki" for a rate-only row — under the item, so the two feeds'
+  disagreements stay visible instead of being merged away.
+- Rates get their own column, and one line under the table: "Drop rates according to: PoE2 Wiki - 235 and 100
+  kills, patch 0.3.0-0.5.0", built from the sample sizes and the patch actually stored for that boss (no sample and
+  no patch for Zarokh and The Trialmaster, so the line stops after the name). A boss with no rates has no rate
+  column. The item card repeats the rate and that line when it is opened from a boss that has one.
+- Prices: `/data/bossprices.json` first, because it already picked the cheapest base really listed and its null
+  means the last check found nobody selling; then the card's own market price. A catalogue row with no price and
+  no check behind it is not a price and is left out — that bug showed as "none listed" on items nothing had ever
+  checked. `no price` and `none listed · checked 40 min ago` read differently, and neither can sort as free.
+- Phone: no sideways scroll at 375px in the list or in a card. The wide five-column table stacks to three lines
+  (name, then area and level, then the way in and the drop count) under 760px, and the rate column drops under the
+  item name under 640px. `tools/dev/guard.mjs` now opens `#/bosses` in its phone pass, taps The Arbiter of Ash,
+  drags across the card and counts the item rows, and measures the tab's sideways scroll (0, against a baseline of
+  nothing allowed) — still five checks, still five ok.
+- Not done: the boss names are not in the site search. The index is built by `tools/sync.py` from the artifact HTML
+  only the owner's machine has, so adding a kind for bosses needs a rebuild the owner runs; the drops themselves
+  (uniques, gems, currency) are already in the search. No public patch-notes line yet either: that goes in with
+  the release.
 ## Next — What grants what: the first edges of the card graph (#13)
 - A card's lines name other cards as text, and the last step marked where those names sit. "This grants that
   skill" is different: the game files state it outright, so it is worth holding as an edge instead of re-reading

@@ -8,11 +8,19 @@ worktree (the static files plus `worker/seo.js`, same process, no wrangler) and 
 
 - **cards** how many of each kind, against `guard-baseline.json` · **links** every deep link the code emits
   lands on a real row · **pages** every public page 200, sitemap and llms.txt did not shrink · **rawcode**
+<<<<<<< HEAD
   no stat ids, `[Word|Word]` markup or `{0}` placeholders where a player reads them · **dash** the owner's
   dashboard opens and all eight tabs fill · **phone** 375x812 with touch: a card stays open through a tap,
   a drag and a selection, no sideways scroll, no console errors
 - `--live` check wraeclastindex.fyi instead (or pass any `http://...`) · `--no-phone` skip both Chrome
   checks · `CHROME=<path to chrome.exe>` if Chrome is somewhere odd
+=======
+  no stat ids, `[Word|Word]` markup or `{0}` placeholders where a player reads them · **phone** 375x812 with
+  touch: a card and a boss card stay open through a tap, a drag and a selection, the Bosses table fits,
+  no sideways scroll, no console errors
+- `--live` check wraeclastindex.fyi instead (or pass any `http://...`) · `--no-phone` skip Chrome ·
+  `CHROME=<path to chrome.exe>` if Chrome is somewhere odd
+>>>>>>> 0dd5be2 (Bosses tab: who drops what, and what the way in costs)
 - `--bless` rewrite the baseline: the counts, and what the site is allowed to be wrong about today.
   Only after a data rebuild, and read what it says it added.
 

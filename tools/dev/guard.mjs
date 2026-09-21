@@ -11,8 +11,13 @@
      links   every deep link the code emits lands on a real row in the data
      pages   every public page answers 200; the sitemap and llms.txt did not shrink
      rawcode no stat ids, [Word|Word] markup or {0} placeholders where a player can read them
+<<<<<<< HEAD
      dash    the owner's dashboard: all eight tabs fill, no block is left empty (tools/dev/dash-fixture)
      phone   a real phone-sized Chrome: cards stay open, nothing scrolls sideways, no console errors
+=======
+     phone   a real phone-sized Chrome: cards stay open, the Bosses table fits, nothing scrolls sideways,
+             no console errors
+>>>>>>> 0dd5be2 (Bosses tab: who drops what, and what the way in costs)
 
    The local server is this worktree's own files plus worker/seo.js, run in this process, so no
    wrangler and no deploy. Nothing is written anywhere but the baseline, and only with --bless. */
@@ -487,6 +492,32 @@ async function checkPhone(bigKeyword, want){
       wide['/'] = await evalJS(page, 'document.documentElement.scrollWidth - document.documentElement.clientWidth');
     }
 
+    /* --- the Bosses tab: a table on a phone, and a boss card with everything on it --- */
+    const three = await phonePage(browser, port, errs);
+    await go(three, SITE + '/#/bosses');
+    if(!await until(three, 'document.querySelectorAll("#bolist .bo-row").length', 20000)) bad.push('no rows on the Bosses tab');
+    else {
+      wide['/#/bosses'] = await evalJS(three, 'document.documentElement.scrollWidth - document.documentElement.clientWidth');
+      // the one boss with a way in, a drop list and community rates: the widest row the card can draw
+      await evalJS(three, '(() => { const q = document.getElementById("boq"); q.value = "arbiter of ash";' +
+        ' q.dispatchEvent(new Event("input", {bubbles: true})); })()');
+      const at = await evalJS(three, '(() => { const r = document.querySelector("#bolist .bo-row"); if(!r) return null;' +
+        ' r.scrollIntoView({block: "center"}); const q = r.getBoundingClientRect(); return {x: q.x + q.width / 2, y: q.y + q.height / 2}; })()');
+      if(!at) bad.push('the Bosses tab found no boss to open');
+      else {
+        await tap(three, at.x, at.y);
+        if(!await until(three, OPEN, 8000)) bad.push('a tap on a boss did not open it');
+        else {
+          const b = await evalJS(three, BOX);
+          const y = b.y + Math.min(80, b.h / 3);
+          await drag(three, b.x + 20, y, b.x + b.w - 20, y);
+          if(!await evalJS(three, OPEN)) bad.push('a drag across a boss card closed it');
+          const rows = await evalJS(three, 'document.querySelectorAll(".ov-box .bo-item").length');
+          if(!rows) bad.push('a boss card drew no item rows');
+        }
+      }
+    }
+
     /* --- the drill-down page --- */
     const two = await phonePage(browser, port, errs);
     await go(two, SITE + '/explore');
@@ -516,7 +547,7 @@ async function checkPhone(bigKeyword, want){
   const real = errs.filter(e => e && !/favicon|ERR_/.test(e));
   if(real.length) bad.push(real.length + ' console error' + (real.length === 1 ? '' : 's') + ': ' + clip(real[0], 80));
   say('phone', !bad.length, bad.length ? bad.join(' \u00b7 ')
-    : '375\u00d7812 touch: the card stays open through a tap, a drag, a selection let go outside and the filter; no console errors' +
+    : '375\u00d7812 touch: the card and the boss card stay open through a tap, a drag, a selection let go outside and the filter; no console errors' +
       (still.length ? ' \u00b7 known: ' + still.join(', ') : ' \u00b7 nothing scrolls sideways'));
   return wide;
 }

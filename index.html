@@ -45,7 +45,7 @@ for(var k in WI_FIRST) WI_FIRST[k].catch(function(){});</script>
 </head>
 <body>
 <script>/* the tab first, so the top bar never changes shape on the first paint (assets/app.js show() keeps it) */
-document.body.dataset.route = (function(r){ return ['build','currency','trade','farms','atlas','craft'].indexOf(r) >= 0 ? r : 'home'; })((location.hash.match(/^#\/(\w+)/) || [])[1]);</script>
+document.body.dataset.route = (function(r){ return ['build','currency','trade','farms','atlas','bosses','craft'].indexOf(r) >= 0 ? r : 'home'; })((location.hash.match(/^#\/(\w+)/) || [])[1]);</script>
 
 <header class="top">
   <div class="top-in">
@@ -127,6 +127,7 @@ document.body.dataset.route = (function(r){ return ['build','currency','trade','
   <section class="view" id="view-trade" data-view="trade" hidden></section>
   <section class="view" id="view-farms" data-view="farms" hidden></section>
   <section class="view" id="view-atlas" data-view="atlas" hidden></section>
+  <section class="view" id="view-bosses" data-view="bosses" hidden></section>
   <section class="view" id="view-craft" data-view="craft" hidden></section>
 </main>
 

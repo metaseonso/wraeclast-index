@@ -293,6 +293,76 @@ small.at-bonus{display:block}
   .at-t{width:62px}
   .at-bar .seg{width:100%}
 }
+.at-more{display:flex; flex-wrap:wrap; gap:8px 12px; align-items:center; margin:0 0 14px}
+.at-more .note{margin:0}
+/* Bosses tab (assets/bosses.js): the list, and the item rows in a boss card */
+.bo-src{margin:0; font-size:12px; line-height:1.5; color:var(--faint)}
+.bo-ctl .field{flex:1 1 240px; max-width:440px}
+.bo-ctl .fm-chips{flex:1 1 auto}
+.bo-list{border:2px solid var(--line); border-radius:var(--r); background:var(--surface); box-shadow:var(--shadow); overflow:hidden}
+.bo-list .empty{padding:26px 16px}
+.bo-hd, .bo-row{display:grid; grid-template-columns:minmax(0,1.5fr) minmax(0,1.1fr) 60px minmax(0,1.4fr) 58px;
+  gap:3px 12px; align-items:center; width:100%; min-width:0; padding:9px 12px; text-align:left}
+.bo-hd{background:var(--sunken); border-bottom:1px solid var(--line); font-size:10.5px; text-transform:uppercase;
+  letter-spacing:.08em; color:var(--faint)}
+.bo-row{border:0; border-top:1px solid var(--line-soft); background:none; color:inherit; font:inherit; cursor:pointer}
+.bo-row:first-of-type{border-top:0}
+.bo-row:hover, .bo-row:focus-visible{background:var(--raised); outline:none}
+/* every cell names its column, so a boss with nothing known can leave the last two out */
+.bo-n{grid-column:1} .bo-w{grid-column:2} .bo-lv{grid-column:3} .bo-in{grid-column:4} .bo-d{grid-column:5}
+.bo-n{min-width:0; display:flex; flex-wrap:wrap; gap:3px 7px; align-items:baseline}
+.bo-n b{font-weight:600; font-size:13.5px; overflow-wrap:anywhere}
+.bo-n small{font-size:9.5px; text-transform:uppercase; letter-spacing:.08em; color:var(--accent);
+  border:1px solid color-mix(in srgb, var(--accent) 45%, var(--line)); border-radius:4px; padding:1px 5px}
+.bo-w{min-width:0; font-size:12.5px; color:var(--muted); overflow-wrap:anywhere}
+.bo-lv, .bo-d{font:500 12.5px var(--mono); font-variant-numeric:tabular-nums; color:var(--muted)}
+.bo-in{min-width:0; display:flex; flex-wrap:wrap; gap:2px 8px; align-items:baseline}
+.bo-in-n{min-width:0; font-size:12.5px; overflow-wrap:anywhere}
+.bo-in-n i{font-style:normal; color:var(--faint)}
+.bo-no{color:var(--faint)}
+.bo-row .spark{flex:none; width:44px; height:16px}
+.bo-row .chg{font:500 11px var(--mono); white-space:nowrap}
+.bo-row i.l{display:none}   /* the column names: shown only once the row stacks */
+.bo-foot{margin-top:18px}
+.bo-foot a{color:var(--muted)}
+.bo-gaps{margin:0; padding-left:18px; display:grid; gap:4px}
+@media (max-width:760px){
+  .bo-hd{display:none}
+  .bo-row{grid-template-columns:minmax(0,1fr) auto; gap:2px 10px}
+  .bo-n{grid-column:1/-1} .bo-w{grid-column:1} .bo-lv{grid-column:2} .bo-in{grid-column:1} .bo-d{grid-column:2}
+  .bo-row i.l{display:inline; font-style:normal; color:var(--faint); margin-right:5px}
+}
+/* the rows inside a boss card */
+.bo-sec{display:grid; grid-template-columns:minmax(0,1fr); gap:6px; border-top:1px dashed var(--line); padding-top:10px}
+.bo-sec .lbl, .bo-sec .note{margin:0}
+.bo-tbl{display:grid; grid-template-columns:minmax(0,1fr); gap:2px}
+.bo-thd{display:grid; grid-template-columns:24px minmax(0,1fr) auto minmax(0,120px); gap:8px; padding:0 7px 0 4px;
+  font-size:9.5px; text-transform:uppercase; letter-spacing:.08em; color:var(--faint)}
+.bo-thd span:first-child{grid-column:1/3}
+.bo-item{display:grid; grid-template-columns:24px minmax(0,1fr) auto; gap:3px 8px; align-items:center; width:100%;
+  min-width:0; padding:4px 7px 4px 4px; border:0; border-radius:7px; background:none; color:inherit; font:inherit;
+  text-align:left; cursor:pointer}
+.bo-item.rated{grid-template-columns:24px minmax(0,1fr) auto minmax(0,120px)}
+.bo-item:hover, .bo-item:focus-visible{background:var(--raised); outline:none}
+.card.detail .bo-item .card-ic{width:24px; height:24px; border-radius:5px}   /* the popup's own 56px icon is for its header */
+.card.detail .bo-item .card-ic img{width:22px; height:22px}
+.card.detail .bo-item .card-ic .ic{zoom:.6}
+.card.detail .bo-item .card-ic .glyph{font-size:12px}
+.bo-item .spark{display:none}
+.bo-it{min-width:0}
+.bo-it b{display:block; font-weight:500; font-size:13px; line-height:1.3; overflow-wrap:anywhere}
+.bo-it span{display:block; font-size:11px; line-height:1.35; color:var(--faint); overflow-wrap:anywhere}
+.bo-rate{display:grid; gap:1px; min-width:0}
+.bo-r{display:flex; flex-wrap:wrap; gap:1px 6px; align-items:baseline; min-width:0}
+.bo-r b{font:600 12px var(--mono); font-variant-numeric:tabular-nums; color:var(--text)}
+.bo-r.none{font-size:11px; color:var(--faint)}
+.bo-r i{font-style:normal; font-size:10.5px; line-height:1.3; color:var(--faint); overflow-wrap:anywhere}
+@media (max-width:640px){
+  .bo-thd{display:none}
+  .bo-item.rated{grid-template-columns:24px minmax(0,1fr) auto}
+  .bo-item.rated .bo-rate{grid-column:2/-1}
+}
+/* end Bosses tab */
 /* Trade page: popular searches from everyone */
 .tp-pop{display:flex; flex-wrap:wrap; align-items:center; gap:6px; margin:0 0 10px}
 .tp-pop:empty{display:none}

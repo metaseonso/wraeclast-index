@@ -1,7 +1,8 @@
 /* Atlas tab: waystones, tablets, keys and invitations, other atlas items, and the Atlas passive tree.
    Game data: data/atlas.json (tools/atlas.py, from the game files). Prices: data/market.json (Currency Exchange / trade listings).
    Every item is a live card: price and 7-day trend where poe.ninja has one, the popup, and the Trade button
-   (the bulk exchange for exchange items, a trade search by base type with mod rows for tablets). */
+   (the bulk exchange for exchange items, a trade search by base type with mod rows for tablets).
+   Bosses sit under this tab: the link at the top of the page opens #/bosses (assets/bosses.js). */
 import { D, $, esc, card, flow, params } from './app.js';
 
 const SECTS = [['ways', 'Waystones'], ['tabs', 'Tablets'], ['keys', 'Keys & invitations'], ['items', 'Atlas items'], ['tree', 'Atlas tree']];
@@ -132,6 +133,8 @@ export async function mount(el){
   el.innerHTML =
     '<div class="pagehd"><h2>Atlas</h2><p>Waystones, tablets, keys and the Atlas tree. Patch ' + esc(A.patch) +
       (D.market ? ' · prices ' + esc(D.market.league) + ', every hour.' : '.') + '</p></div>' +
+    '<div class="at-more"><a class="btn gold" href="#/bosses">Bosses →</a>' +
+      '<p class="note">Every endgame boss: what it drops, and what the way in costs.</p></div>' +
     '<div class="kinds at-secs" id="atsec" role="group" aria-label="Section">' + SECTS.map(([k, l]) =>
       '<button type="button" class="chip" data-v="' + k + '" aria-pressed="' + (k === S.sec) + '">' + l + '<span class="ct"></span></button>').join('') + '</div>' +
     '<div class="at-bar"><input class="field" id="atq" type="search" autocomplete="off" spellcheck="false">' +
