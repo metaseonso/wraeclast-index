@@ -7,7 +7,7 @@
      GET  /api/admin/stats?days=1|7|30   (with the data jobs: when each file and each kind of price last came in)
      GET  /api/admin/heat?route=&device=&days=
      GET  /api/admin/cloudflare?days=1|7|30   Cloudflare's own numbers (worker/cfstats.js)
-     GET  /api/admin/suggestions?before=<id>  the next hundred notes, newest first
+     GET  /api/admin/suggestions?before=<id>  a hundred notes, newest first, and how many of each kind
      POST /api/admin/suggestion      {id, status: new|read|done}
    admin.html itself holds no data: everything comes from here, behind the cookie.
    DASH_HASH is "pbkdf2$<iterations>$<salt base64>$<hash base64>" (PBKDF2-SHA256 of the password). */
@@ -167,14 +167,18 @@ export async function admin(request, env, url){
   if(request.method === 'POST' && !writeOK(request, url)) return json(403, {error: 'Not allowed.'});
   if(!(await signedIn(request, env))) return json(401, {error: 'Sign in.'});
   if(path === 'logout' && request.method === 'POST') return json(200, {ok: true}, {'Set-Cookie': setCookie('', 0)});
-  if(path === 'stats' && request.method === 'GET') return json(200, await stats(env, url));
+  // each of these answers on its own: one that breaks says so, the dashboard keeps its other parts
+  if(path === 'stats' && request.method === 'GET') return own(() => stats(env, url));
   if(path === 'heat' && request.method === 'GET') return heatmap(env, url);
-  if(path === 'cloudflare' && request.method === 'GET'){
-    try { return json(200, await cloudflare(env, url)); } catch(e){ return json(502, {error: String(e.message || e).slice(0, 200)}); }
-  }
-  if(path === 'suggestions' && request.method === 'GET') return json(200, await olderSuggestions(env, url));
+  if(path === 'cloudflare' && request.method === 'GET') return own(() => cloudflare(env, url));
+  if(path === 'suggestions' && request.method === 'GET') return own(() => olderSuggestions(env, url));
   if(path === 'suggestion' && request.method === 'POST') return setSuggestion(request, env);
   return json(404, {error: 'Not found.'});
+}
+/* one part of the dashboard: its answer, or why it could not be made (never an empty worker error page) */
+async function own(make){
+  try { return json(200, await make()); }
+  catch(e){ return json(502, {error: String((e && e.message) || e).slice(0, 200)}); }
 }
 const rangeOf = url => { const d = +url.searchParams.get('days'); return [1, 7, 30].includes(d) ? d : 7; };
 const sinceOf = days => dayOf(Date.parse(dayOf()) - (days - 1) * 86400e3);
@@ -281,8 +285,10 @@ async function jobs(env){
     const r = await env.DB.prepare('SELECT name, at FROM files').all();
     for(const x of r.results || []) out.files[x.name] = new Date(x.at * 1000).toISOString();
   } catch {}   // no table yet
-  const r = await env.DB.prepare("SELECT substr(key, 1, instr(key, ':') - 1) AS kind, MAX(at) AS at FROM trade_prices GROUP BY kind").all();
-  for(const x of r.results || []) if(['uniq', 'roll', 'farm', 'cur'].includes(x.kind)) out.prices[x.kind] = x.at;
+  try {
+    const r = await env.DB.prepare("SELECT substr(key, 1, instr(key, ':') - 1) AS kind, MAX(at) AS at FROM trade_prices GROUP BY kind").all();
+    for(const x of r.results || []) if(['uniq', 'roll', 'farm', 'cur'].includes(x.kind)) out.prices[x.kind] = x.at;
+  } catch {}   // no table yet
   return out;
 }
 
@@ -298,14 +304,18 @@ async function heatmap(env, url){
 }
 
 /* ---------- GET /api/admin/suggestions?before=<id> ---------- */
-/* the next hundred notes below that id, newest first. /api/admin/stats already sends the first hundred. */
+/* a hundred notes, newest first, with how many there are of each kind. The dashboard's notes tab loads
+   from here on its own, so it never waits on the rest of the numbers. */
 async function olderSuggestions(env, url){
   const before = int(url.searchParams.get('before'), 1, 2 ** 31) || 2 ** 31;
-  const r = await env.DB.prepare('SELECT id, text, page, at, status FROM suggestions WHERE id < ? ORDER BY id DESC LIMIT ?')
-    .bind(before, NOTES + 1).all();
-  const rows = r.results || [];
-  return {list: rows.slice(0, NOTES).map(x => ({id: x.id, text: x.text, page: x.page || '', at: x.at, status: x.status})),
-    more: rows.length > NOTES};
+  const [sg, count] = (await env.DB.batch([
+    env.DB.prepare('SELECT id, text, page, at, status FROM suggestions WHERE id < ? ORDER BY id DESC LIMIT ?').bind(before, NOTES + 1),
+    env.DB.prepare('SELECT status, COUNT(*) AS n FROM suggestions GROUP BY status'),
+  ])).map(r => (r && r.results) || []);
+  const status = Object.fromEntries(['new', 'read', 'done'].map(s => [s, 0]));
+  for(const r of count) if(r.status in status) status[r.status] = r.n;
+  return {list: sg.slice(0, NOTES).map(x => ({id: x.id, text: x.text, page: x.page || '', at: x.at, status: x.status})),
+    more: sg.length > NOTES, count: status};
 }
 
 /* ---------- POST /api/admin/suggestion ---------- */

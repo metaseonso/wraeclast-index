@@ -39,7 +39,22 @@
     </form>
   </section>
 
+  <section class="view ad" id="boot" hidden>
+    <div class="panel ad-load">
+      <div class="ad-load-mark" aria-hidden="true">
+        <img class="ad-load-logo" src="assets/brand/logo-128.webp" alt="" width="102" height="128">
+        <img class="ad-load-wisp" src="assets/brand/wisp-a.webp" alt="">
+      </div>
+      <h2>Opening the vault</h2>
+      <div class="ad-bar" id="bootbar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-label="Loading">
+        <i id="bootfill"><img src="assets/brand/fog-bank.webp" alt="" aria-hidden="true"></i>
+      </div>
+      <p class="note ad-load-say" id="bootsay" aria-live="polite">Waking the worker…</p>
+    </div>
+  </section>
+
   <section class="view ad" id="dash" hidden>
+    <p class="ad-err" id="err" hidden aria-live="polite"></p>
     <div class="seg ad-tabs" id="tabs" role="group" aria-label="Sections">
       <button type="button" data-t="overview" aria-pressed="true">Overview</button>
       <button type="button" data-t="visitors" aria-pressed="false">Visitors</button>

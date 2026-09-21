@@ -3,6 +3,27 @@
 The full list of changes. The public patch notes (data/changelog.json, shown on the site) stay short.
 Add the details here first, then a short public line there.
 
+## Next — Owner dashboard: it cannot freeze any more
+- The bug live on 542ec64: the dashboard drew in two big runs (render() then cloudflare()), so the first field that
+  was missing threw and everything after it stayed empty — and because cloudflare() was called after render() in the
+  same function, a throw in the first one also skipped every Cloudflare block and the first showTab(). That is why
+  the owner saw content on the first tab only and a page that looked frozen. Proved by running the live module
+  headless against payload variants (tools were throwaway): workers, workers.byStatus, free or totals missing, a
+  null click label, plan.links missing, a missing load kind and routes missing each blanked the rest of the page.
+- assets/admin.js rebuilt around three parts that never wait on each other: our own count (/api/admin/stats),
+  Cloudflare (/api/admin/cloudflare) and the notes (/api/admin/suggestions, which now also sends how many of each
+  kind there are). Sign in shows a loading screen — the crest, a poison cloud creeping across a sunken well, and one
+  line saying what it is doing — and the panel opens when all three are in, or after 15 seconds whatever happens.
+  A part that is still out keeps its blocks on "Loading…" and fills them when it lands; a part that fails or passes
+  20 seconds puts "failed" and a Retry in its own blocks only.
+- Every block now draws inside its own try/catch (safe()), through helpers that cannot throw on a missing field, a
+  null, a number that is not one or a division by zero (arr, obj, fin, share). A block that still fails says so in
+  place and the page keeps going. Anything uncaught, from a block or from the window, also goes in one line at the
+  top of the page with its message, so the owner can read it out without dev tools. Empty data says "No data".
+- The tab buttons are plain buttons drawn before any data, so they work on keyboard and touch from the first moment
+  and never depend on a fetch. worker/dash.js: stats, cloudflare and suggestions each answer through own(), so one
+  that breaks returns its message instead of an empty worker error page.
+
 ## Next — Owner dashboard: everything Cloudflare gives us
 - worker/cfstats.js rebuilt around blocks: one breakdown = one named GraphQL block with a scope (zone by date,
   zone by time, account by time, account by date). Blocks go out five per request; a request that fails is retried
