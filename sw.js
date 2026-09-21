@@ -27,7 +27,7 @@ const SHELL = ['./', 'explore', 'privacy',
   'assets/fonts/ibmplexmono-500-latin.woff2', 'assets/fonts/ibmplexmono-600-latin.woff2',
   'assets/brand/logo-64.webp', 'assets/brand/logo-320.webp', 'assets/brand/wisp-b.webp', 'assets/brand/fog-bank.webp',
   'assets/brand/haze.webp', 'assets/brand/favicon-64.png', 'assets/brand/favicon-32.png',
-  'data/index-core.json', 'data/index-rest.json', 'data/changelog.json', 'data/support.json'];
+  'data/index-core.json', 'data/index-rest.json', 'data/bosses.json', 'data/changelog.json', 'data/support.json'];
 const PAGES = {'/': './', '/index.html': './', '/explore': 'explore', '/privacy': 'privacy'};
 const OWN = /^\/(assets|data|sprites)\//;
 const PASS = /^\/(api\/|admin|assets\/admin\.js|sw\.js|data\/(market|leagues|rollprices|farmprices|bossprices)\.json)/;

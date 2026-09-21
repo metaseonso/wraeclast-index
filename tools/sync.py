@@ -69,16 +69,20 @@ NAV_BUTTONS = ''.join('<button type="button" data-k="%s" aria-pressed="%s">%s</b
                       for k, label in (('gems', 'Gems'), ('uniques', 'Uniques'), ('tree', 'Passive tree')))
 
 
-def mast(wisp, nav):
+def mast(wisp, nav, boss=''):
     return ('<a href="./" class="brand-link"><h1 class="brand"><span class="mark" aria-hidden="true">' + wisp +
             '<img class="mark-logo" src="assets/brand/logo-64.webp" alt="" width="51" height="64"></span>Wraeclast <em>Index</em></h1></a>\n'
             '    <nav class="applinks" aria-label="Play"><a href="./#/"><i class="ti ti-search" aria-hidden="true"></i>Search</a><a href="./#/build"><i class="ti ti-build" aria-hidden="true"></i>Build</a><a href="./#/trade"><i class="ti ti-trade" aria-hidden="true"></i>Trade</a><a href="./#/farms"><i class="ti ti-farms" aria-hidden="true"></i>Farms</a></nav>\n'
             '    <div class="navgrp" role="group" aria-label="Look up"><nav class="applinks" aria-label="Tools"><a href="./#/craft"><i class="ti ti-craft" aria-hidden="true"></i>Craft</a><a href="./#/currency"><i class="ti ti-currency" aria-hidden="true"></i>Currency</a></nav>'
             '<nav class="nav" id="nav" aria-label="Sections">' + nav + '</nav>'
-            '<nav class="applinks" aria-label="Atlas"><a href="./#/atlas"><i class="ti ti-atlas" aria-hidden="true"></i>Atlas</a></nav></div>')
+            '<nav class="applinks" aria-label="Atlas"><a href="./#/atlas"><i class="ti ti-atlas" aria-hidden="true"></i>Atlas</a>' + boss +
+            '</nav></div>')
 
 
-MAST_NEW = mast('<img class="mark-wisp" data-src="assets/brand/wisp-b.webp" alt="" decoding="async">', NAV_BUTTONS)
+BOSS_LINK = '<a href="./#/bosses"><i class="ti ti-bosses" aria-hidden="true"></i>Bosses</a>'
+WISP = '<img class="mark-wisp" data-src="assets/brand/wisp-b.webp" alt="" decoding="async">'
+MAST_NEW = mast(WISP, NAV_BUTTONS, BOSS_LINK)
+MAST_NOBOSS = mast(WISP, NAV_BUTTONS)   # the header before the Bosses tab had a way in
 MAST_PREV = mast('<img class="mark-wisp" src="assets/brand/wisp-b.webp" alt="" decoding="async" fetchpriority="low">', '')
 CL_OLD = '<button class="clbtn" id="clbtn" type="button">Patch notes</button>'
 # The keybindings button (assets/keys.js), the same markup as in index.html.
@@ -858,7 +862,7 @@ def explore_page(html):
     if HEAD not in html:
         html = html.replace(HEAD_OLD, HEAD, 1) if HEAD_OLD in html else html.replace(TITLE, '', 1).replace('</head>', HEAD + '</head>', 1)
     html = live_prices(html)
-    for new, olds in ((MAST_NEW, (MAST_PREV, MAST_OLD)), (CL_NEW, (CL_PREV, CL_OLD))):
+    for new, olds in ((MAST_NEW, (MAST_NOBOSS, MAST_PREV, MAST_OLD)), (CL_NEW, (CL_PREV, CL_OLD))):
         if new not in html:
             old = next((o for o in olds if o in html), None)
             if not old:

@@ -185,6 +185,14 @@ function itemOpts(r, x){
   o.extra = rate;
   return o;
 }
+/* One boss's card, from anywhere: the search opens it without the tab ever being on screen
+   (assets/app.js OWN_CARD hands the kind over here). */
+export async function openCard(it){
+  if(await load()){
+    const r = ROWS.find(x => x.b.name === it.n);
+    if(r) openBoss(r);
+  }
+}
 function openBoss(r){
   const b = r.b, rated = !!(b.rates && (b.rates.rows || []).length), from = dropSrc(r);
   const pills = [];   // the level is not a pill: it sits on its own area, in the line under the boss's name
@@ -201,7 +209,10 @@ function openBoss(r){
       (from ? '<p class="note">' + esc(from) + '</p>' : '') +
       (rated ? '<p class="note">' + esc(rateSrc(b.rates)) + '</p>' : '') + '</div>'
       : '<p class="fm-miss">No feed names what this one drops.</p>');
-  openDetail(bossItem(b), {price: null, builds: false, href: null, kind: b.pinnacle ? 'Pinnacle boss' : 'Boss', extra}, null);
+  const it = bossItem(b);
+  const here = /^#\/bosses\b/.test(location.hash);   // on the tab already: the gold button has nowhere new to go
+  openDetail(it, {price: null, builds: false, drawn: true, kind: b.pinnacle ? 'Pinnacle boss' : 'Boss', extra},
+    here ? null : hrefOf(it));
 }
 /* The item rows live in the card's own HTML, so the popup redraws them itself on Back: one listener on the page,
    not on a card that gets replaced. */
@@ -238,17 +249,26 @@ function wayHTML(r){
 }
 
 /* ---------- view ---------- */
+/* The rows, made once, whether the tab or the search asked for them. The boss file is the one the search
+   already holds (assets/app.js D.bosses); only the prices are fetched here. */
+let LOADING = null;
+function load(){
+  return LOADING || (LOADING = (async () => {
+    const [data, px] = await Promise.all([D.bosses || getJSON('data/bosses.json'), getJSON('data/bossprices.json')]);
+    if(!data || !data.bosses) return false;
+    B = data; BP = px;
+    ROWS = data.bosses.map(row);
+    wire();
+    return true;
+  })());
+}
 export async function mount(el){
   EL = el;
   el.innerHTML = head() + '<p class="note">Loading…</p>';
-  const [data, px] = await Promise.all([getJSON('data/bosses.json'), getJSON('data/bossprices.json')]);
-  if(!data || !data.bosses){
+  if(!await load()){
     el.innerHTML = head() + '<p class="err">Could not load the bosses. Try again in a minute.</p>';
     return {};
   }
-  B = data; BP = px;
-  ROWS = data.bosses.map(row);
-  wire();
   const count = {all: ROWS.length, pin: ROWS.filter(r => r.b.pinnacle).length, drops: ROWS.filter(r => r.drops.length).length};
   el.innerHTML = head() +
     '<div class="controls bo-ctl">' +

@@ -30,6 +30,8 @@ const NOW = getJSON('data/market.json?part=now', undefined, EARLY.now).catch(() 
 // the rest starts once the first cards' files are in, so it never slows them down
 const AFTER = Promise.all([CORE, NOW]).catch(() => null);
 const REST = AFTER.then(() => getJSON('data/index-rest.json', {priority: 'low'}));
+// the bosses keep their own file (data/bosses.json, tools/bosses.py); it joins the search with the rest
+const BOSS = AFTER.then(() => getJSON('data/bosses.json', {priority: 'low'}).catch(() => null));
 // the history, only when the worker split it off (the backup site's market file has no parts: it is all in NOW)
 const PAST = AFTER.then(() => NOW).then(m => m && m.part === 'now' ? getJSON('data/market.json?part=past', {priority: 'low'}).catch(() => null) : null);
 
@@ -46,7 +48,8 @@ function prep(it, k, IMGS){   // once per card: its kind, full image link and se
   return it;
 }
 const MC = new Map();   // the market's own currency cards, made once
-/* The index as the pages use it: every card in the index's own order, then the market's currency.
+const MB = new Map();   // the boss cards, made once
+/* The index as the pages use it: every card in the index's own order, then the market's currency and the bosses.
    Without the rest (the first cards), only the core's kinds. */
 function assemble(core, rest){
   const IMGS = core.imgs || {}, pool = {}, at = {};
@@ -78,6 +81,18 @@ function assemble(core, rest){
       items.push(it); byKey.set('c:' + it.id, it);
     }
   }
+  // the bosses live in their own file; they join the search as their own kind, and the Bosses tab draws their card
+  for(const b of (D.bosses && D.bosses.bosses) || []){
+    let it = MB.get(b.name);
+    if(!it){
+      const where = (b.areas || []).map(a => a.name).join(' · ');
+      it = {k: 'x', id: b.name, n: b.name, s: where};
+      it._nl = it.n.toLowerCase();
+      it._hay = (it.n + ' ' + where + ' boss' + (b.pinnacle ? ' pinnacle' : '')).toLowerCase();
+      MB.set(b.name, it);
+    }
+    items.push(it); byKey.set('x:' + it.id, it);
+  }
   D.index = {v: core.v, gen: core.gen, sprites: core.sprites, imgs: IMGS, kwx: rest ? rest.kwx || {} : {}, items};
   D.byKey = byKey;
 }
@@ -88,8 +103,9 @@ export const first = (async () => {
   return D;
 })();
 export const ready = (async () => {
-  let [, rest, past] = await Promise.all([first, REST, PAST]);
+  let [, rest, past, boss] = await Promise.all([first, REST, PAST, BOSS]);
   let core = D.core;
+  D.bosses = boss;
   if(rest.id !== core.id){   // two versions (a new one went live between the two files): both again, fresh
     [core, rest] = await Promise.all([getJSON('data/index-core.json', {cache: 'no-cache'}), getJSON('data/index-rest.json', {cache: 'no-cache'})]);
     D.core = core;
@@ -169,7 +185,7 @@ function iconHTML(it){
 }
 
 /* ---------- the live card ---------- */
-const KIND = {g:'Gem', u:'Unique', p:'Passive', w:'Keyword', c:'Currency', b:'Base', a:'Atlas'};
+const KIND = {g:'Gem', u:'Unique', p:'Passive', w:'Keyword', c:'Currency', b:'Base', a:'Atlas', x:'Boss'};
 const SECTION = {g:'gems', u:'uniques', p:'tree'};
 /* the Craft tab, opened on this base (its plan lives in the address, see craft.js) */
 export const craftHref = (c, b = '') => './#/craft?s=' + encodeURIComponent(btoa(unescape(encodeURIComponent(JSON.stringify({c, b, l: 0, m: []})))));
@@ -178,6 +194,7 @@ export function hrefOf(it){
   if(it.k === 'c') return it.nx ? null : './#/currency?c=' + encodeURIComponent(it.id);   // the Currency tab lists the catalogue
   if(it.k === 'b' && it.cr && D.byKey.get('b:' + it.id) === it) return craftHref(it.cr, it.n);
   if(it.k === 'a' && it.at) return './#/atlas?s=' + it.at + '&q=' + encodeURIComponent(it.n);
+  if(it.k === 'x') return './#/bosses?q=' + encodeURIComponent(it.n);
   return null;
 }
 /* ---------- requirements ----------
@@ -331,7 +348,9 @@ export function card(it, opts = {}){
    which step is on show. Every open pushes one history entry carrying that step's id, so the phone's
    Back and Forward both land on a real step and nothing dead is left behind. Opening a card from the
    middle of the trail drops the steps after it. Step 51 drops the oldest one. */
-const PLACE = {g: 'Gems', u: 'Uniques', p: 'Passive tree', c: 'Currency', b: 'Craft', a: 'Atlas'};
+const PLACE = {g: 'Gems', u: 'Uniques', p: 'Passive tree', c: 'Currency', b: 'Craft', a: 'Atlas', x: 'Bosses'};
+/* a kind whose card its own tab draws: the popup asks that module for it instead of drawing a bare one */
+const OWN_CARD = {x: './bosses.js'};
 const typing = el => el && (/^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName) || el.isContentEditable);   // same guard as keys.js
 const TAP = 10;   // px a finger may slide and still count as a tap, not a drag
 const TRAIL_MAX = 50;   // cards kept on the trail; all of it is in this browser, so nothing is paid for it
@@ -488,6 +507,8 @@ export function openDetail(it, opts = {}, href){
     return;
   }
   PEND = null;
+  const own = OWN_CARD[it.k];   // a boss: its tab has the way in and the drops, so it draws the card and calls back
+  if(own && !opts.drawn) return void import(own).then(m => m.openCard(it), () => {});
   ensureOV();
   const cur = CUR();
   let d = 1;
@@ -754,7 +775,7 @@ export function flow(grid, list, make){
 }
 
 /* ---------- search ---------- */
-const KINDS = [['all','All'], ['g','Gems'], ['u','Uniques'], ['p','Passives'], ['b','Bases'], ['a','Atlas'], ['c','Currency'], ['w','Keywords']];
+const KINDS = [['all','All'], ['g','Gems'], ['u','Uniques'], ['p','Passives'], ['b','Bases'], ['a','Atlas'], ['c','Currency'], ['w','Keywords'], ['x','Bosses']];
 export function search(q, kind = 'all'){
   const qs = q.trim().toLowerCase();
   const toks = qs.split(/\s+/).filter(Boolean);

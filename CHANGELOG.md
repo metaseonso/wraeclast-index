@@ -3,6 +3,31 @@
 The full list of changes. The public patch notes (data/changelog.json, shown on the site) stay short.
 Add the details here first, then a short public line there.
 
+## Next — Bosses: a way in, and a boss in the search
+- The tab shipped with no way to reach it. `index.html` already carried the view and `assets/app.js` already
+  routed `#/bosses`; what was missing was a door. The only one was a gold button on the Atlas page, so a player
+  who never opened Atlas never learned the tab existed, and `assets/bosses.js` was never fetched.
+- **The menu.** Bosses joins the second group, after Atlas, on both pages (`index.html`, and the drill-down's own
+  header through `mast()` in `tools/sync.py`, with the header-before-this-change added to the chain that tool
+  replaces so the next sync still lands). The second group is the look-up group and that is what this is: a list
+  you read, not a thing you do. A sixth segment inside the Atlas page would have buried 104 bosses behind two taps
+  and a segment whose four neighbours are atlas *items* — bosses are not. One tap from the bar now, and the Atlas
+  page keeps its gold button as a second door. `.ti-bosses` is a skull in the same 16px, 1.5-weight, no-fill line
+  as the other ten nav icons (`assets/cards.css`).
+- **The search.** Bosses are a kind of their own, `x`, declared the way the market's currency cards already are:
+  `data/bosses.json` joins the index in `assemble()` (`assets/app.js`), one loop, with the kind's name, its place
+  on the home chips, its address and its card owner in the four small tables next to it. No rebuild: the file the
+  Bosses tab already reads is the file the search reads, so a `tools/bosses.py` run reaches both at once and
+  `tools/sync.py` never has to know bosses exist. 104 boss cards, found by name, by area, and by the words "boss"
+  and "pinnacle"; 28 KB, fetched with the rest of the index at low priority, and kept by the service worker.
+- **The card is the tab's own.** `OWN_CARD` is one line in `assets/app.js`: a kind whose card its own tab draws.
+  A boss opened from anywhere — the grid, the top search box, a deep link — hands over to `assets/bosses.js`,
+  which builds the same card the list does (way in, what it drops, the rates and their sources) and hands it back
+  to the popup. So the drops open their own cards from the search exactly as they do from the tab, and the popup's
+  trail, Back and Forward work on them like anything else. The card carries **Open in Bosses →** unless you are
+  already on the tab.
+- The rows are built once now (`load()` in `assets/bosses.js`), whether the tab or the search asked for them, and
+  they reuse the boss file the search already holds, so nothing is fetched twice.
 ## Next — Currency: a watch list you can actually build
 - The complaint: the Vaal temple currencies were not in the watch list. They were never missing — all seven
   are in the data with real Exchange prices and, four of them, enormous volume (Vaal Armourer's Infuser 67,332
@@ -122,7 +147,7 @@ Add the details here first, then a short public line there.
 - Not done: the boss names are not in the site search. The index is built by `tools/sync.py` from the artifact HTML
   only the owner's machine has, so adding a kind for bosses needs a rebuild the owner runs; the drops themselves
   (uniques, gems, currency) are already in the search. No public patch-notes line yet either: that goes in with
-  the release.
+  the release. (Both settled in the entry above: the search reads `data/bosses.json` itself, so no rebuild.)
 ## Next — What grants what: the first edges of the card graph (#13)
 - A card's lines name other cards as text, and the last step marked where those names sit. "This grants that
   skill" is different: the game files state it outright, so it is worth holding as an edge instead of re-reading
