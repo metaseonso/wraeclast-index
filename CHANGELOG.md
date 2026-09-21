@@ -3,6 +3,28 @@
 The full list of changes. The public patch notes (data/changelog.json, shown on the site) stay short.
 Add the details here first, then a short public line there.
 
+## Next — Back to a card, exactly as you left it
+- The trail already kept a `top` per step and put it back, and it never worked: measured on a phone, a card
+  scrolled to 371 came back at 0. The line that restores it runs the moment the card is drawn, and at that
+  moment the "Found on" list is still the word "Looking…" — its rows come from `data/kwuse.json` a promise
+  later. A short card cannot be scrolled to 371, so the browser clamps it to the top, and the rows arriving
+  afterwards do not undo that. The card goes back to where it was a second time now, once the rows are in
+  (`uses._then` in `assets/app.js`); when the file is already loaded that second go happens before the browser
+  paints, so there is nothing to see.
+- A step is the whole state, not a scroll number. `saveStep()` is one place, called by both the places that
+  leave a card (a new card opened, and the Back/Forward handler), and it takes: the popup's own scroll, the
+  "Found on" list's group, the filter you typed in it, that list's own scroll (it is its own scroller above
+  760px), and the Trade panel if you had it open. `paintStep()` puts all five back, forwards and backwards
+  alike — one path, so Forward has never needed its own code.
+- The Trade panel comes back as the panel, not as a new one: the step holds the element, so Back never fires
+  a second trade search. Closing it with its own button still clears it from the step.
+- The list's group and filter are put back once and then let go, so a group you press after coming back starts
+  clean. The keyword-wide memory of the last group used (`USE_TAB`) still applies to a card opened fresh; the
+  step's own answer wins over it.
+- Untouched: the history entries the trail pushes, Close unwinding all of them, deep links, "Full stats" on the
+  drill-down page and that page's own panel. Checked at 375×812 with touch and at 1280×900, three levels deep,
+  Back to the bottom and Forward to the top and back down again.
+
 ## Next — Bosses: a way in, and a boss in the search
 - The tab shipped with no way to reach it. `index.html` already carried the view and `assets/app.js` already
   routed `#/bosses`; what was missing was a door. The only one was a gold button on the Atlas page, so a player

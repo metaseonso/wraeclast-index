@@ -344,10 +344,10 @@ export function card(it, opts = {}){
    Every card opens here first. The gold button is the one way on to the drill-down page.
 
    The trail: the cards you have opened, in order, exactly like a browser's own back and forward.
-   TRAIL holds a step per card (the card, how it was opened, and where you had scrolled it); AT says
-   which step is on show. Every open pushes one history entry carrying that step's id, so the phone's
-   Back and Forward both land on a real step and nothing dead is left behind. Opening a card from the
-   middle of the trail drops the steps after it. Step 51 drops the oldest one. */
+   TRAIL holds a step per card (the card, how it was opened, and the whole state you left it in: see
+   saveStep); AT says which step is on show. Every open pushes one history entry carrying that step's id,
+   so the phone's Back and Forward both land on a real step and nothing dead is left behind. Opening a card
+   from the middle of the trail drops the steps after it. Step 51 drops the oldest one. */
 const PLACE = {g: 'Gems', u: 'Uniques', p: 'Passive tree', c: 'Currency', b: 'Craft', a: 'Atlas', x: 'Bosses'};
 /* a kind whose card its own tab draws: the popup asks that module for it instead of drawing a bare one */
 const OWN_CARD = {x: './bosses.js'};
@@ -358,6 +358,18 @@ let OV = null, lastFocus = null;
 let TRAIL = [], AT = -1, SEQ = 0, PEND = null;   // the trail, where you are on it, the next step id, a card still loading
 const CUR = () => TRAIL[AT] || null;   // the card on show
 const focusBox = () => OV.querySelector('.ov-box').focus({preventScroll: true});
+/* Everything about the step you are leaving, so coming back to it finds it untouched: where the card was
+   scrolled, and its "Found on" list's group, filter and own scroll. The Trade panel is kept as it stands —
+   the same panel comes back, so Back never fires a second trade search. paintStep puts it all back. */
+function saveStep(){
+  const step = CUR();
+  if(!step || !OV || OV.hidden) return;
+  const box = OV.querySelector('.ov-box'), sec = box.querySelector('.uses');
+  step.top = box.scrollTop;
+  step.uses = sec && sec.dataset.on ? {on: sec.dataset.on, q: (sec.querySelector('.uses-q') || {}).value || '',
+    top: (sec.querySelector('.uses-list') || {}).scrollTop || 0} : null;
+  step.trade = box.querySelector('.trade') || null;
+}
 // a box you are typing in, brought back above the keyboard. Twice: once now, once after the keyboard has settled
 function keepInView(el){
   const show = () => { if(el.isConnected) el.scrollIntoView({block: 'nearest'}); };
@@ -446,8 +458,7 @@ function ensureOV(){
     });
     addEventListener('popstate', () => {
       const id = (history.state || {}).ov;
-      const cur = CUR();
-      if(!OV.hidden && cur) cur.top = OV.querySelector('.ov-box').scrollTop;   // remember the card we are leaving
+      saveStep();   // remember the card we are leaving, whole
       const i = id ? TRAIL.findIndex(s => s.id === id) : -1;
       // off the trail: the popup goes, the trail stays, so Forward walks straight back into it
       if(i < 0) return hideDetail();
@@ -513,7 +524,7 @@ export function openDetail(it, opts = {}, href){
   const cur = CUR();
   let d = 1;
   if(!OV.hidden && cur){
-    cur.top = OV.querySelector('.ov-box').scrollTop;   // where you had scrolled the card you are leaving
+    saveStep();              // the state of the card you are leaving
     TRAIL.length = AT + 1;   // opening from the middle of the trail drops what was ahead, like a browser
     d = ((history.state || {}).d || 0) + 1;
   } else TRAIL = [];         // a card opened from the page starts a fresh trail
@@ -525,7 +536,8 @@ export function openDetail(it, opts = {}, href){
   paintStep();
 }
 function paintStep(){
-  const {it, opts, href, top} = CUR();
+  const step = CUR();
+  const {it, opts, href} = step;
   const box = OV.querySelector('.ov-box');
   box.setAttribute('aria-label', 'Details');
   const px = opts.price !== undefined ? opts.price : priceOf(it);
@@ -535,7 +547,7 @@ function paintStep(){
   body.replaceChildren(c);
   const chips = kwChips(it);
   if(chips) body.insertAdjacentHTML('beforeend', chips);
-  const uses = usesSection(it);
+  const uses = usesSection(it, step.uses);
   if(uses) body.appendChild(uses);
   const tradeable = /^[ugcb]$/.test(it.k) || (it.k === 'a' && it.at !== 'tree');   // atlas passives are not items
   if((href && PLACE[it.k]) || tradeable || opts.onFull){
@@ -557,9 +569,17 @@ function paintStep(){
         row.scrollIntoView({block: 'start'});   // the panel opens below the fold: show it, with the button above it
       } finally { tb.disabled = false; }
     });
+    if(step.trade){   // the panel this step had open, itself: no second trade search
+      body.appendChild(step.trade);
+      if(tb) tb.setAttribute('aria-expanded', 'true');
+    }
   }
   paintNav();
-  box.scrollTop = top || 0;   // back to where you had this card
+  const back = () => { if(CUR() === step) box.scrollTop = step.top || 0; };   // back to where you had this card
+  back();
+  // ...and again once the "Found on" rows are in: they come from data/kwuse.json a moment later, and until
+  // they do the card is too short to scroll that far, so the browser would clamp it back to the top
+  if(uses) uses._then = back;
   const on = document.activeElement;
   if(!on || !box.contains(on) || on.disabled) focusBox();   // the button under the finger may have just gone
 }
@@ -637,18 +657,21 @@ const USE_KINDS = [['u', 'Uniques'], ['g', 'Gems'], ['p', 'Passives'], ['b', 'Ba
   ['m', 'Crafting'], ['c', 'Currency'], ['w', 'Keywords']];
 const USE_FILTER = 30;   // a list longer than this gets a filter box
 const USE_TAB = new Map();   // keyword -> the tab last shown
-function usesSection(it){
+/* want: the group, filter and scroll this step was left on (saveStep), put back once the rows are in */
+function usesSection(it, want){
   const id = keywordIdOf(it);
   if(!id) return null;
   const sec = document.createElement('section');
   sec.className = 'uses';
   sec._id = id;
+  sec._want = want || null;
   paintUses(sec);
   kwUse().then(U => {
     sec._g = U ? useGroups(U, U.k[id] || {}) : 'err';
-    const was = USE_TAB.get(id);   // Back to this keyword: the tab it was on
-    if(U) sec.dataset.on = was && sec._g[was].length ? was : (USE_KINDS.find(([k]) => sec._g[k].length) || ['u'])[0];
+    const was = (sec._want && sec._want.on) || USE_TAB.get(id);   // Back to this keyword: the tab it was on
+    if(U) sec.dataset.on = was && sec._g[was] && sec._g[was].length ? was : (USE_KINDS.find(([k]) => sec._g[k].length) || ['u'])[0];
     paintUses(sec);
+    if(sec._then) sec._then();   // the rows are in: the card can go back to where it was scrolled
   });
   return sec;
 }
@@ -730,6 +753,14 @@ function paintUses(sec){
     list.forEach((x, i) => { const hit = words.every(w => x.h.includes(w)); els[i].hidden = !hit; shown += hit; });
     sec.querySelector('.uses-none').hidden = shown > 0;
   });
+  // Back to this card: the filter you had typed and where you had scrolled the list, once only — a tab you
+  // press after that starts clean
+  const want = sec._want;
+  if(ok && want){
+    sec._want = null;
+    if(q && want.q){ q.value = want.q; q.dispatchEvent(new Event('input')); }
+    sec.querySelector('.uses-list').scrollTop = want.top || 0;
+  }
 }
 
 /* Render a list of cards into a grid. Cards that stay glide to their new place, new cards fly in,
