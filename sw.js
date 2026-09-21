@@ -8,7 +8,8 @@
    - After a deploy, the next page load still opens instantly from the copy it has while the new deploy downloads in
      the background; the load after that is the new deploy.
    - Never from the copy: /api/*, the owner's dashboard, the crawler pages, and the live files the worker answers
-     (market.json, leagues.json, rollprices.json, farmprices.json): those follow their own cache rules (a few minutes).
+     (market.json, leagues.json, rollprices.json, farmprices.json, bossprices.json): those follow their own cache rules
+     (a few minutes).
    Not stamped (the GitHub Pages backup, a local preview): it does nothing and removes itself.
    To switch it off everywhere: deploy a sw.js that only calls self.registration.unregister(). */
 const BUILD = '__WI_BUILD__';
@@ -29,7 +30,7 @@ const SHELL = ['./', 'explore', 'privacy',
   'data/index-core.json', 'data/index-rest.json', 'data/changelog.json', 'data/support.json'];
 const PAGES = {'/': './', '/index.html': './', '/explore': 'explore', '/privacy': 'privacy'};
 const OWN = /^\/(assets|data|sprites)\//;
-const PASS = /^\/(api\/|admin|assets\/admin\.js|sw\.js|data\/(market|leagues|rollprices|farmprices)\.json)/;
+const PASS = /^\/(api\/|admin|assets\/admin\.js|sw\.js|data\/(market|leagues|rollprices|farmprices|bossprices)\.json)/;
 const NAMED = /^\/(data\/explore|assets\/fonts)\//;   // named by their content, or never changed: the browser's copy is fine
 
 self.addEventListener('install', e => {

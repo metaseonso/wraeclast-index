@@ -9,13 +9,14 @@
                          plain pages for search engines and AI search: worker/seo.js
      /data/rollprices.json, /data/farmprices.json
                          live trade prices (sent in through the hour: /api/prices/ingest): worker/prices.js
+     /data/bossprices.json  what every item on the Bosses tab costs: worker/prices.js
      /api/data/put       the data server's hourly files (Currency Exchange, catalogue, league dates): worker/files.js
      /api/health         how old every data file and every kind of price is, and whether a job is late: worker/health.js
      /api/trade/searches popular Trade page searches (GET), and counting one (POST): worker/community.js
      /api/suggest        notes from the Suggest button: worker/community.js
      /api/t, /api/admin/* page views and clicks, and the owner's dashboard (admin.html): worker/dash.js */
 import * as seo from './seo.js';
-import { servePrices, ingest, state, serveMarket } from './prices.js';
+import { servePrices, ingest, state, serveMarket, serveBossPrices } from './prices.js';
 import { fileText, putFile } from './files.js';
 import { tradeSearches, suggest } from './community.js';
 import { track, admin } from './dash.js';
@@ -40,6 +41,7 @@ export default {
     if(url.pathname === '/api/data/put') return putFile(request, env, url, ctx);
     if(url.pathname === '/data/rollprices.json') return servePrices(request, env, ctx, 'roll');
     if(url.pathname === '/data/farmprices.json') return servePrices(request, env, ctx, 'farm');
+    if(url.pathname === '/data/bossprices.json') return serveBossPrices(request, env, ctx);
     if(seo.handles(url.pathname)) return seo.respond(request, env, ctx, () => serveMarket(new Request(url.origin + '/data/market.json'), env, ctx));
     return env.ASSETS.fetch(request);
   },

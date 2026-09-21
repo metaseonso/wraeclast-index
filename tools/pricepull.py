@@ -4,8 +4,9 @@
 
 Currency prices come from the in-game Currency Exchange instead (tools/exchange.py).
 What it checks, oldest first (it asks the site, GET /api/prices/state, when each was last checked):
-  - uniques: the 10 cheapest listings from online sellers (the site uses the middle of the 5 cheapest). About 58 an hour.
-  - trade slider tiers (data/pricejobs.json, tools/rollprices.py) and farm inputs (data/farmqueries.json).
+  - uniques: the 10 cheapest listings from online sellers (the site uses the middle of the 5 cheapest). About 57 an hour.
+  - trade slider tiers (data/pricejobs.json, tools/rollprices.py), farm inputs (data/farmqueries.json) and the
+    boss entry items the in-game Currency Exchange does not trade (data/bossqueries.json, by hand).
 Results go to POST /api/prices/ingest a few at a time. The site works out each price (the middle of those
 listings, in divines) and keeps one price per day for trends.
 
@@ -35,7 +36,7 @@ CATALOGUE = 'https://metaseonso.github.io/wraeclast-index/data/market.json'
 API = 'https://www.pathofexile.com/api/trade2/'
 UA = 'wraeclast-index/1.0 (contact: https://wraeclastindex.fyi/)'
 SPAN = 55 * 60
-SEARCH = {'uniq': 58, 'roll': 18, 'farm': 12}   # searches per run
+SEARCH = {'uniq': 57, 'roll': 18, 'farm': 12, 'boss': 1}   # searches per run
 EXCHANGE = 0                                    # currency comes from the Currency Exchange feed now
 BATCH = 12
 
@@ -92,7 +93,7 @@ def site(path, body=None):
 
 # ---------- what there is to check ----------
 def jobs(catalogue):
-    out = {'roll': [], 'farm': [], 'uniq': [], 'cur': []}
+    out = {'roll': [], 'farm': [], 'boss': [], 'uniq': [], 'cur': []}
     roll = sitedata.site_file('pricejobs.json')
     for stat, values in roll.get('roll', []):
         for v in values:
@@ -101,14 +102,16 @@ def jobs(catalogue):
                           'stats': [{'type': 'and', 'filters': [{'id': stat, 'value': {'min': v}}]}],
                           'filters': {'type_filters': {'filters': {'rarity': {'option': 'nonunique'}}}}},
                 'sort': {'price': 'asc'}}))
-    farm = sitedata.site_file('farmqueries.json', required=False)
-    if farm is not None:
-        for f in (farm if isinstance(farm, list) else farm.get('queries') or farm.get('items') or []):
+    for kind, name in (('farm', 'farmqueries.json'), ('boss', 'bossqueries.json')):
+        written = sitedata.site_file(name, required=False)
+        if written is None:
+            continue
+        for f in (written if isinstance(written, list) else written.get('queries') or written.get('items') or []):
             if f.get('key') and f.get('query'):
                 body = dict(f['query']) if 'query' in f['query'] else {'query': f['query']}
                 body['query'] = {**body['query'], 'status': {'option': 'online'}}
                 body['sort'] = {'price': 'asc'}
-                out['farm'].append(('farm:' + f['key'], body))
+                out[kind].append(('%s:%s' % (kind, f['key']), body))
     index = sitedata.site_file('index.json')
     for it in index['items']:
         if it['k'] != 'u':

@@ -25,8 +25,9 @@ export const JOBS = [
   ['price', 'uniq', 'Unique prices', 1, 3, 8],
   ['price', 'roll', 'Mod roll prices', 1, 3, 8],
   ['price', 'farm', 'Farm prices', 1, 3, 8],
+  ['price', 'boss', 'Boss entry prices', 1, 3, 8],
 ];
-const KIND = {uniq: 'uniques', roll: 'rolls', farm: 'farms'};   // what each kind of price is called in /api/health
+const KIND = {uniq: 'uniques', roll: 'rolls', farm: 'farms', boss: 'bosses'};   // what each kind of price is called in /api/health
 const RANK = {ok: 0, unknown: 1, late: 2, stopped: 3};
 const json = (status, body, extra = {}) => new Response(JSON.stringify(body), {status, headers: {
   'Content-Type': 'application/json; charset=utf-8', 'X-Robots-Tag': 'noindex', ...extra}});

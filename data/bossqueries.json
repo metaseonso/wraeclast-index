@@ -1,0 +1,4 @@
+{"updated":"2026-09-21","queries":[
+{"key":"djinn-barya","item":"Djinn Barya","label":"Djinn Barya: the way into the Trial of the Sekhemas","query":{"query":{"status":{"option":"online"},"type":"Djinn Barya"},"sort":{"price":"asc"}}}
+],
+"unlisted":{"checked":"2026-09-21","league":"Forbidden Rites","why":"Boss entry items with nothing listed on the trade site and no offer on its bulk exchange, so there is nothing to check. Move one into queries if it trades again.","items":["Runic Splinter","Petition Splinter","Primary Calamity Fragment","Secondary Calamity Fragment","Tertiary Calamity Fragment"]}}

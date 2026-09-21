@@ -22,6 +22,8 @@ of Building names. Act bosses have no drop data in any source, so they are left 
 
 Nothing but player-facing names and numbers is written out: no area ids, no metadata ids, no source paths.
 
+At the end it says which of the items it names nothing can price yet, so the tab never has to invent one.
+
 Usage:  python tools/bosses.py                 fetch everything, write data/bosses.json
         python tools/bosses.py --cache DIR     keep the wiki pages in DIR and reuse them on the next run
 """
@@ -358,6 +360,37 @@ def attach(rows, sources, pool_list):
                             for it in sorted(named.values(), key=lambda i: i['name'])]
 
 
+# ---------------------------------------------------------------- what the site can put a price on
+def price_gaps(rows):
+    """(nothing prices these, nothing listed when last looked at). A unique is priced by the hourly unique
+    checks, which cover every unique in data/index.json; an entry item or a gem is priced by the in-game
+    Currency Exchange if the catalogue carries it (data/market.json), or by a trade search if one is written
+    for it (data/bossqueries.json). An item in none of those has no real price anywhere, and the tab shows
+    nothing for it, so it is worth saying out loud."""
+    def read(name):
+        try:
+            return json.loads((ROOT / 'data' / name).read_text(encoding='utf-8'))
+        except Exception:
+            return None
+
+    market, queries, index = read('market.json'), read('bossqueries.json'), read('index.json')
+    if not market or not index:
+        return [], []
+    uniques = {i['n'] for i in index.get('items', []) if i.get('k') == 'u'}
+    traded = {k[2:] for k in market.get('items', {}) if k.startswith('c:')}
+    searched = {q.get('item') for q in (queries or {}).get('queries', [])}
+    unlisted = set(((queries or {}).get('unlisted') or {}).get('items', []))
+    want = {}
+    for row in rows:
+        for name in row.get('access', []):
+            want.setdefault(name, 'entry')
+        for item in row.get('drops', []):
+            want.setdefault(item['name'], item.get('kind'))
+    gaps = [n for n, kind in want.items() if n not in traded and n not in searched and n not in unlisted
+            and not (kind == 'unique' and n in uniques)]
+    return sorted(gaps), sorted(n for n in want if n in unlisted)
+
+
 def main():
     args = sys.argv[1:]
     cache = Path(args[args.index('--cache') + 1]) if '--cache' in args else None
@@ -444,6 +477,11 @@ def main():
         print('  note: ' + n)
     if no_page:
         print('  no wiki page, so no rates: ' + ', '.join(no_page))
+    gaps, quiet = price_gaps(rows)
+    if quiet:
+        print('  nothing listed when last looked at, so no price: ' + ', '.join(quiet))
+    if gaps:
+        print('  nothing prices these yet: ' + ', '.join(gaps) + '; write a search for them in data/bossqueries.json')
 
 
 if __name__ == '__main__':
