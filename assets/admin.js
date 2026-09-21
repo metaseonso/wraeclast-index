@@ -14,8 +14,8 @@ const arr = x => Array.isArray(x) ? x : [];
 const obj = x => x && typeof x === 'object' ? x : {};
 const fin = v => Number.isFinite(+v) ? +v : 0;
 const share = (a, b) => fin(b) > 0 ? Math.round(fin(a) / fin(b) * 100) : 0;
-const NONE = '<p class="note ad-none">No data.</p>';
-const WAIT = '<p class="note ad-wait">Loading…</p>';
+const NONE = '<p class="note dv-none">No data.</p>';
+const WAIT = '<p class="note dv-wait">Loading…</p>';
 
 const PAGES = {home: 'Search', build: 'Build', currency: 'Currency', trade: 'Trade', farms: 'Farms', atlas: 'Atlas',
   'explore-gems': 'Gems', 'explore-uniques': 'Uniques', 'explore-tree': 'Passive tree'};
@@ -63,14 +63,14 @@ function safe(id, fn){
     if(typeof out === 'string') el.innerHTML = out || NONE;
   } catch(e){
     console.error('block ' + id, e);
-    el.innerHTML = '<p class="note ad-bad">This block failed: ' + esc(String((e && e.message) || e).slice(0, 160)) + '</p>';
+    el.innerHTML = '<p class="note dv-bad">This block failed: ' + esc(String((e && e.message) || e).slice(0, 160)) + '</p>';
     shout(id + ': ' + ((e && e.message) || e));
   }
 }
 /* a <ul> needs its lines in <li> */
 const fill = (id, html) => {
   const el = $(id);
-  if(el) el.innerHTML = el.tagName === 'UL' ? '<li class="note ad-none">' + html.replace(/<\/?p[^>]*>/g, '') + '</li>' : html;
+  if(el) el.innerHTML = el.tagName === 'UL' ? '<li class="note dv-none">' + html.replace(/<\/?p[^>]*>/g, '') + '</li>' : html;
 };
 
 /* ---------- sign-in ---------- */
@@ -117,7 +117,7 @@ const PART = {
 const ST = {stats: 'idle', cf: 'idle', notes: 'idle'};
 let RUN = 0;   // bumped when the range changes: answers from before are dropped
 
-const failLine = (name, msg) => '<p class="note ad-bad">' + esc(String(msg).slice(0, 140)) +
+const failLine = (name, msg) => '<p class="note dv-bad">' + esc(String(msg).slice(0, 140)) +
   ' <button type="button" class="btn" data-retry="' + name + '">Retry</button></p>';
 
 async function need(name, again){
@@ -258,7 +258,7 @@ function blanks(){
     const el = $(id);
     if(!el) continue;
     const n = BOX_PART[id];
-    const missed = ST[n] === 'ok' && el.querySelector('.ad-wait');   // the drawing went past this one
+    const missed = ST[n] === 'ok' && el.querySelector('.dv-wait');   // the drawing went past this one
     if(el.innerHTML.trim() && !missed) continue;
     fill(id, ST[n] === 'loading' ? WAIT : ST[n] === 'fail' ? failLine(n, 'Could not load.') : NONE);
   }
@@ -319,20 +319,20 @@ function table(list, head, max, show = 12){
   if(!rows.length) return NONE;
   const top = fin(max) || Math.max(1, ...rows.map(r => fin(r && r.n)));
   const body = rows.map((r, i) => {
-    const row = obj(r), cls = [row.key ? 'ad-link' : '', i >= show ? 'ad-more' : ''].filter(Boolean).join(' ');
+    const row = obj(r), cls = [row.key ? 'dv-link' : '', i >= show ? 'dv-more' : ''].filter(Boolean).join(' ');
     return '<tr' + (cls ? ' class="' + cls + '"' : '') + (row.key ? ' data-key="' + esc(row.key) + '" tabindex="0"' : '') +
-      '><td>' + (row.html || '') + '</td><td class="n"><span class="ad-share" style="width:' +
+      '><td>' + (row.html || '') + '</td><td class="n"><span class="dv-share" style="width:' +
       (fin(row.n) / (top || 1) * 100).toFixed(1) + '%"></span><b>' + num(row.n) + '</b></td></tr>';
   }).join('');
-  return '<div class="ad-tbl"><div class="tablewrap ad-tw"><table class="ad-t"><thead><tr><th>' + esc(head) +
+  return '<div class="dv-tbl"><div class="tablewrap dv-tw"><table class="dv-t"><thead><tr><th>' + esc(head) +
     '</th><th class="n">Count</th></tr></thead><tbody>' + body + '</tbody></table></div>' +
-    '<p class="ad-cap note"><span>' + num(rows.length) + ' row' + (rows.length === 1 ? '' : 's') + '</span>' +
-    (rows.length > show ? '<button type="button" class="linkbtn ad-all">Show all</button>' : '') + '</p></div>';
+    '<p class="dv-cap note"><span>' + num(rows.length) + ' row' + (rows.length === 1 ? '' : 's') + '</span>' +
+    (rows.length > show ? '<button type="button" class="linkbtn dv-all">Show all</button>' : '') + '</p></div>';
 }
 document.addEventListener('click', e => {
-  const b = e.target && e.target.closest && e.target.closest('.ad-all');
+  const b = e.target && e.target.closest && e.target.closest('.dv-all');
   if(!b) return;
-  const box = b.closest('.ad-tbl');
+  const box = b.closest('.dv-tbl');
   if(!box) return;
   box.classList.toggle('open');
   b.textContent = box.classList.contains('open') ? 'Show less' : 'Show all';
@@ -350,7 +350,7 @@ function bars(host, values, labels, opt = {}){
   const y = v => T + (h - B - T) * (1 - v / top);
   const every = Math.max(1, Math.ceil(vals.length / Math.max(2, Math.floor((w - L) / 56))));
   let s = '';
-  for(const g of [0, top / 2, top]) s += '<line x1="' + L + '" x2="' + w + '" y1="' + y(g) + '" y2="' + y(g) + '" class="ad-grid-l"/>' +
+  for(const g of [0, top / 2, top]) s += '<line x1="' + L + '" x2="' + w + '" y1="' + y(g) + '" y2="' + y(g) + '" class="dv-grid-l"/>' +
     '<text x="' + (L - 6) + '" y="' + (y(g) + 3.5) + '" text-anchor="end">' + num(Math.round(g)) + '</text>';
   vals.forEach((v, i) => {
     const x = L + i * bw + gap / 2, bh = Math.max(v ? 1.5 : 0, (h - B - T) * v / top);
@@ -358,9 +358,9 @@ function bars(host, values, labels, opt = {}){
       (opt.line && v > opt.line ? ' class="over"' : '') + '><title>' + esc(lab[i]) + ': ' + num(v) + (opt.tip ? esc(opt.tip(i)) : '') + '</title></rect>';
     if(i % every === 0) s += '<text x="' + (x + (bw - gap) / 2).toFixed(1) + '" y="' + (h - 6) + '" text-anchor="middle">' + esc(lab[i]) + '</text>';
   });
-  if(opt.line) s += '<line x1="' + L + '" x2="' + w + '" y1="' + y(opt.line) + '" y2="' + y(opt.line) + '" class="ad-limit"/>' +
-    '<text x="' + (w - 4) + '" y="' + (y(opt.line) - 5) + '" text-anchor="end" class="ad-limit-t">' + esc(opt.lineLabel || '') + '</text>';
-  host.innerHTML = '<svg class="ad-bars" width="' + w + '" height="' + h + '" viewBox="0 0 ' + w + ' ' + h + '" role="img" aria-label="' +
+  if(opt.line) s += '<line x1="' + L + '" x2="' + w + '" y1="' + y(opt.line) + '" y2="' + y(opt.line) + '" class="dv-limit"/>' +
+    '<text x="' + (w - 4) + '" y="' + (y(opt.line) - 5) + '" text-anchor="end" class="dv-limit-t">' + esc(opt.lineLabel || '') + '</text>';
+  host.innerHTML = '<svg class="dv-bars" width="' + w + '" height="' + h + '" viewBox="0 0 ' + w + ' ' + h + '" role="img" aria-label="' +
     esc(opt.label || '') + '">' + s + '</svg>';
 }
 
@@ -403,7 +403,7 @@ function drawStats(){
     [t.arrivals, 'Arrivals', 'from outside the site'],
     [t.clicks, 'Clicks', range],
     [t.newNotes, 'New notes', 'from players'],
-  ].map(([n, l, sub]) => '<div class="panel ad-tile"><b>' + num(n) + '</b><span>' + esc(l) + '</span><small>' + esc(sub) + '</small></div>').join(''));
+  ].map(([n, l, sub]) => '<div class="panel dv-tile"><b>' + num(n) + '</b><span>' + esc(l) + '</span><small>' + esc(sub) + '</small></div>').join(''));
   safe('#chart', () => { viewChart(); });
   safe('#load', () => { loadPanel(); });
   safe('#routes', () => table(arr(d.routes).map(r => ({key: obj(r).route, n: obj(r).n, html: esc(PAGES[obj(r).route] || obj(r).route)})), 'Page'));
@@ -411,7 +411,7 @@ function drawStats(){
   safe('#sources', () => {
     const sites = arr(d.sources).map(obj).filter(s => s.source !== 'direct');
     return sites.length ? table(sites.map(s => ({n: s.n, html: esc(source(s.source)) +
-      '<span class="ad-sub">' + esc(KINDS[s.kind] || '') + '</span>'})), 'Site') : NONE;
+      '<span class="dv-sub">' + esc(KINDS[s.kind] || '') + '</span>'})), 'Site') : NONE;
   });
   safe('#countries', () => table(arr(d.countries).map(c => ({n: obj(c).n, html: esc(country(obj(c).country))})), 'Country'));
   safe('#devices', () => table(arr(d.devices).map(x => ({n: obj(x).n, html: esc(DEVICES[obj(x).device] || obj(x).device)})), 'Device', t.views));
@@ -426,8 +426,8 @@ function drawStats(){
   safe('#jobs', () => jobsBox());
   safe('#datastate', el => { dataLine(el); });
   safe('#searches', () => table(arr(d.searches).map(obj).map(s => ({n: s.n, html: esc(s.name || 'An item type') +
-    (s.mods ? '<span class="ad-sub">' + fin(s.mods) + ' mod' + (fin(s.mods) === 1 ? '' : 's') + '</span>' : '') +
-    '<span class="ad-sub">' + esc(ago(s.last)) + '</span>'})), 'Search'));
+    (s.mods ? '<span class="dv-sub">' + fin(s.mods) + ' mod' + (fin(s.mods) === 1 ? '' : 's') + '</span>' : '') +
+    '<span class="dv-sub">' + esc(ago(s.last)) + '</span>'})), 'Search'));
   if(!S.sg) safe('#notes', () => notesList(obj(d.suggestions)));   // until the notes' own call lands
   count(fin(t.newNotes));
   redraw();
@@ -450,10 +450,10 @@ function viewChart(){
 function loadPanel(){
   const L = obj(obj(S.data).load), per = obj(L.perHour);
   const sum = k => arr(per[k]).reduce((a, b) => a + fin(b), 0);
-  $('#load').innerHTML = '<h4 class="ad-h4">Trade site searches per hour</h4><div id="ld-trade"></div>' +
+  $('#load').innerHTML = '<h4 class="dv-h4">Trade site searches per hour</h4><div id="ld-trade"></div>' +
     '<p class="note">' + num(sum('trade_search')) + ' searches, ' + num(sum('trade_fetch')) + ' fetches. Told to slow down ' +
       num(sum('trade_limited')) + ' times, ' + num(sum('trade_error')) + ' errors.</p>' +
-    '<h4 class="ad-h4">Site views per hour</h4><div id="ld-site"></div>' +
+    '<h4 class="dv-h4">Site views per hour</h4><div id="ld-site"></div>' +
     '<p class="note">' + num(sum('site_view')) + ' page views in ' + num(sum('site_batch')) + ' batches.</p>';
   loadCharts();
 }
@@ -480,7 +480,7 @@ $('#clickpick').addEventListener('click', e => {
 function openRoute(r){
   const list = arr(obj(obj(obj(S.data).clicks).byRoute)[r]);
   const box = document.createElement('section');
-  box.className = 'panel ad-pop';
+  box.className = 'panel dv-pop';
   box.innerHTML = '<h3>' + esc(PAGES[r] || r) + '</h3><p class="note">' +
     num(obj(arr(obj(S.data).routes).find(x => obj(x).route === r)).n) + ' views · top clicks</p>' +
     table(list.map(obj).slice(0, 20).map(x => ({n: x.n, html: esc(pretty(x.label))})), 'What', 0, 20) +
@@ -522,7 +522,7 @@ async function heat(){
     if(H.frameKey !== key || !box.querySelector('iframe')){
       H.frameKey = key;
       H.h = Math.min(6000, Math.max(900, ...H.cells.map(c => fin(arr(c)[1]) * 20 + 60)));
-      box.innerHTML = '<div class="ad-heat-sz"><div class="ad-heat-in"><iframe tabindex="-1" aria-hidden="true" title="Page preview"></iframe>' +
+      box.innerHTML = '<div class="dv-heat-sz"><div class="dv-heat-in"><iframe tabindex="-1" aria-hidden="true" title="Page preview"></iframe>' +
         '<canvas></canvas></div></div>';
       const f = box.querySelector('iframe');
       f.addEventListener('load', () => {
@@ -548,7 +548,7 @@ document.addEventListener('click', e => { if(e.target && e.target.closest && e.t
 function fit(){
   const box = $('#heatbox');
   if(!box) return;
-  const sz = box.querySelector('.ad-heat-sz'), inn = box.querySelector('.ad-heat-in');
+  const sz = box.querySelector('.dv-heat-sz'), inn = box.querySelector('.dv-heat-in');
   if(!sz || !inn) return;
   const s = Math.min(1, (box.clientWidth - 2) / H.W);
   sz.style.width = (H.W * s) + 'px'; sz.style.height = (H.h * s) + 'px';
@@ -607,11 +607,11 @@ const noteButtons = n => (NEXT[n.status] || NEXT.done).map(([s, l]) =>
 const noteBox = () => obj(S.sg || obj(obj(S.data).suggestions));
 function notesList(sg){
   const list = arr(obj(sg).list).map(obj).filter(n => S.filter === 'all' || n.status === S.filter);
-  return list.length ? list.map(n => '<li class="ad-note s-' + esc(n.status) + '">' +
-    '<p class="ad-note-t" data-open="' + esc(n.id) + '" tabindex="0">' + esc(n.text) + '</p>' +
-    '<div class="ad-note-ft"><span class="note">' + esc(pageName(n.page)) + ' · ' + esc(ago(n.at)) + '</span>' +
+  return list.length ? list.map(n => '<li class="dv-note s-' + esc(n.status) + '">' +
+    '<p class="dv-note-t" data-open="' + esc(n.id) + '" tabindex="0">' + esc(n.text) + '</p>' +
+    '<div class="dv-note-ft"><span class="note">' + esc(pageName(n.page)) + ' · ' + esc(ago(n.at)) + '</span>' +
     '<span class="grow"></span>' + noteButtons(n) + '</div></li>').join('')
-    : '<li class="note ad-none">Nothing here.</li>';
+    : '<li class="note dv-none">Nothing here.</li>';
 }
 function drawNotes(){
   const sg = noteBox(), c = obj(sg.count), all = fin(c.new) + fin(c.read) + fin(c.done);
@@ -632,7 +632,7 @@ async function mark(id, status){
   const sg = noteBox(), n = arr(sg.list).find(x => obj(x).id === id), c = obj(sg.count);
   if(n && n.status !== status){ c[n.status] = fin(c[n.status]) - 1; c[status] = fin(c[status]) + 1; n.status = status; }
   if(S.data && S.data.totals) S.data.totals.newNotes = fin(c.new);
-  const tile = $('#tiles .ad-tile:nth-child(4) b');
+  const tile = $('#tiles .dv-tile:nth-child(4) b');
   if(tile) tile.textContent = num(c.new);
   drawNotes();
   return true;
@@ -641,10 +641,10 @@ function openNote(id){
   const n = arr(noteBox().list).map(obj).find(x => x.id === id);
   if(!n) return;
   const box = document.createElement('section');
-  box.className = 'panel ad-pop';
+  box.className = 'panel dv-pop';
   const paint = () => {
     box.innerHTML = '<h3>Note</h3><p class="note">' + esc(pageName(n.page)) + ' · ' + esc(ago(n.at)) + '</p>' +
-      '<p class="ad-note-full">' + esc(n.text) + '</p><div class="ov-go">' + noteButtons(n) + '</div>';
+      '<p class="dv-note-full">' + esc(n.text) + '</p><div class="ov-go">' + noteButtons(n) + '</div>';
   };
   paint();
   box.addEventListener('click', async e => {
@@ -691,9 +691,9 @@ $('#notemore').addEventListener('click', async e => {
 /* ---------- the free plan and the data jobs ---------- */
 function meter(label, used, limit, sub){
   const u = fin(used), l = fin(limit), p = l > 0 ? u / l * 100 : 0;
-  return '<div class="ad-meter-row"><div class="ad-meter-hd"><span>' + esc(label) + '</span><b>' + num(u) + ' / ' + num(l) +
+  return '<div class="dv-meter-row"><div class="dv-meter-hd"><span>' + esc(label) + '</span><b>' + num(u) + ' / ' + num(l) +
     ' <small>' + (p < 1 && u ? '<1' : Math.round(p)) + '%</small></b></div>' +
-    '<div class="ad-meter' + (p >= 80 ? ' bad' : p >= 50 ? ' warn' : '') + '"><i style="width:' + Math.min(100, p).toFixed(1) + '%"></i></div>' +
+    '<div class="dv-meter' + (p >= 80 ? ' bad' : p >= 50 ? ' warn' : '') + '"><i style="width:' + Math.min(100, p).toFixed(1) + '%"></i></div>' +
     (sub ? '<p class="note">' + sub + '</p>' : '') + '</div>';
 }
 function planBox(){
@@ -701,12 +701,12 @@ function planBox(){
   const verdict = {fine: 'Free plan is fine.', watch: 'Free plan is fine for now. Past half of the daily limit.',
     upgrade: 'Close to the free limit: upgrade to Workers Paid ($5/month).'}[p.verdict] || 'Free plan.';
   const link = (href, text) => href ? '<a href="' + esc(href) + '" target="_blank" rel="noopener">' + text + '</a>' : text;
-  return '<p class="ad-verdict v-' + esc(p.verdict || 'fine') + '">' + verdict + '</p>' +
+  return '<p class="dv-verdict v-' + esc(p.verdict || 'fine') + '">' + verdict + '</p>' +
     meter('Database writes today (about)', t.writes, f.d1Writes, 'Page tracking ' + num(t.trackingWrites) + ' · trade prices ' + num(t.priceWrites)) +
     meter('Worker requests today (about)', t.requests, f.requests, num(t.views) + ' page views, ' + num(t.batches) + ' tracking batches') +
     '<p class="note">Free plan, per day: ' + num(f.requests) + ' requests · ' + num(fin(f.d1Reads) / 1e6) + ' million database reads · ' +
       num(f.d1Writes) + ' database writes · ' + fin(f.d1StorageGB) + ' GB stored.</p>' +
-    '<p class="note ad-links">Exact numbers on Cloudflare: ' + link(links.traffic, 'Traffic') + ' · ' +
+    '<p class="note dv-links">Exact numbers on Cloudflare: ' + link(links.traffic, 'Traffic') + ' · ' +
       link(links.workers, 'Workers &amp; Pages') + ' · ' + link(links.d1, 'Database') + '</p>';
 }
 /* the data jobs: fine, late or stopped, worked out by the site (worker/health.js) */
@@ -716,10 +716,10 @@ const TOP = {late: ' v-late', stopped: ' v-stopped'};   // how the line at the t
 function jobsBox(){
   const list = arr(obj(obj(S.data).jobs).jobs).map(obj);
   if(!list.length) return NONE;
-  return '<div class="tablewrap ad-tw"><table class="ad-t"><thead><tr><th>What</th><th class="n">State</th><th class="n">Last in</th></tr></thead><tbody>' +
+  return '<div class="tablewrap dv-tw"><table class="dv-t"><thead><tr><th>What</th><th class="n">State</th><th class="n">Last in</th></tr></thead><tbody>' +
     list.map(x => {
       const [word, tone] = STATE[x.state] || STATE.stopped;
-      return '<tr><td>' + esc(x.what) + '</td><td class="n"><span class="ad-g g-' + tone + '">' + word + '</span></td>' +
+      return '<tr><td>' + esc(x.what) + '</td><td class="n"><span class="dv-g g-' + tone + '">' + word + '</span></td>' +
         '<td class="n">' + (x.at ? esc(ago(x.at)) : esc(FROM[x.from] || '—')) + '</td></tr>';
     }).join('') + '</tbody></table></div>';
 }
@@ -727,7 +727,7 @@ function jobsBox(){
 function dataLine(el){
   const j = obj(obj(S.data).jobs), line = typeof j.line === 'string' ? j.line : '';
   el.textContent = line;
-  el.className = 'ad-verdict' + (TOP[j.state] || '');
+  el.className = 'dv-verdict' + (TOP[j.state] || '');
   el.hidden = !line;
 }
 
@@ -736,8 +736,8 @@ const bytes = b => { const v = fin(b);
   return v >= 1e9 ? (v / 1e9).toFixed(2) + ' GB' : v >= 1e6 ? (v / 1e6).toFixed(1) + ' MB' : Math.round(v / 1e3) + ' kB'; };
 const PATH = x => x.k === '/' ? 'Home (/)' : x.k || '(none)';
 const REF = x => !x.k ? 'Direct (typed or bookmarked)' : x.k === location.hostname ? 'Within the site' : x.k;
-const VISITS = x => x.visits ? '<span class="ad-sub">' + num(x.visits) + ' visits</span>' : '';
-const BYTES = x => x.bytes ? '<span class="ad-sub">' + bytes(x.bytes) + '</span>' : '';
+const VISITS = x => x.visits ? '<span class="dv-sub">' + num(x.visits) + ' visits</span>' : '';
+const BYTES = x => x.bytes ? '<span class="dv-sub">' + bytes(x.bytes) + '</span>' : '';
 const dig = (o, path) => String(path).split('.').reduce((v, k) => (v == null ? v : v[k]), o);
 
 /* every breakdown Cloudflare gives us, each in its own box: box, where the rows are, title, note, row name, row sub-line */
@@ -754,7 +754,7 @@ const BREAK = [
   {box: 'cfwho', k: 'askers', t: 'Who is asking', p: 'People, search engines, AI crawlers and scripts.'},
   {box: 'cfwho', k: 'crawlers', t: 'Crawlers by name', name: x => x.k + ' · ' + (x.kind || ''), show: 15},
   {box: 'cfwho', k: 'countries', t: 'Countries', p: 'Every request, people and bots.', name: x => country(x.k),
-    sub: x => (x.threats ? '<span class="ad-sub">' + num(x.threats) + ' threats · ' + bytes(x.bytes) + '</span>' : BYTES(x)), show: 15},
+    sub: x => (x.threats ? '<span class="dv-sub">' + num(x.threats) + ' threats · ' + bytes(x.bytes) + '</span>' : BYTES(x)), show: 15},
   {box: 'cfwho', k: 'verifiedBots', t: 'Named bots', p: 'Cloudflare’s own list of bots it recognises.', show: 15},
   {box: 'cfwho', k: 'colo', t: 'Cloudflare data centres', p: 'Which city answered, nearest to the visitor.', show: 15},
   {box: 'cfwho', k: 'devices', t: 'Device kinds'},
@@ -798,17 +798,17 @@ function drawCloud(){
     [share(t.encryptedRequests, t.requests) + '%', 'Encrypted', num(fin(t.requests) - fin(t.encryptedRequests)) + ' plain'],
     [num(t.threats), 'Threats', 'stopped by Cloudflare'],
     [num(obj(c.workers).errors), 'Server errors', num(obj(c.workers).requests) + ' server requests'],
-  ].map(([n, l, sub]) => '<div class="panel ad-tile"><b>' + esc(n) + '</b><span>' + esc(l) + '</span><small>' + esc(sub) + '</small></div>').join(''));
+  ].map(([n, l, sub]) => '<div class="panel dv-tile"><b>' + esc(n) + '</b><span>' + esc(l) + '</span><small>' + esc(sub) + '</small></div>').join(''));
 
   // each breakdown builds on its own: one bad row cannot empty the box around it
   const box = {};
   for(const b of BREAK) (box[b.box] = box[b.box] || []).push(b);
   for(const id of Object.keys(box)) safe('#' + id, () => box[id].map(b => {
-    const head = '<div class="ad-hd"><h3>' + esc(b.t) + '</h3>' + (b.p ? '<p>' + esc(b.p) + '</p>' : '') + '</div>';
+    const head = '<div class="dv-hd"><h3>' + esc(b.t) + '</h3>' + (b.p ? '<p>' + esc(b.p) + '</p>' : '') + '</div>';
     let body;
     try { body = rowList(dig(c, b.k), b); }
-    catch(e){ console.error(b.k, e); body = '<p class="note ad-bad">This block failed: ' + esc((e && e.message) || e) + '</p>'; }
-    return '<div class="panel ad-box">' + head + body + '</div>';
+    catch(e){ console.error(b.k, e); body = '<p class="note dv-bad">This block failed: ' + esc((e && e.message) || e) + '</p>'; }
+    return '<div class="panel dv-box">' + head + body + '</div>';
   }).join(''));
 
   safe('#cfchart', () => cfChart('#cfchart', 'requests'));
@@ -836,10 +836,10 @@ function drawSpeed(c){
   safe('#cfsplit', () => {
     const have = CWV.filter(([k]) => sp[k]);
     if(!have.length) return NONE;
-    return '<div class="ad-cwv">' + have.map(([k, l]) => {
+    return '<div class="dv-cwv">' + have.map(([k, l]) => {
       const s = obj(sp[k]), all = Math.max(1, fin(s.good) + fin(s.ok) + fin(s.poor)), pc = n => (fin(n) / all * 100).toFixed(1) + '%';
-      return '<div class="ad-cwv-row"><div class="ad-cwv-hd"><span>' + esc(l) + '</span><b>' + share(s.good, all) + '% good</b></div>' +
-        '<div class="ad-cwv-bar"><i class="g" style="width:' + pc(s.good) + '" title="Good ' + num(s.good) + '"></i>' +
+      return '<div class="dv-cwv-row"><div class="dv-cwv-hd"><span>' + esc(l) + '</span><b>' + share(s.good, all) + '% good</b></div>' +
+        '<div class="dv-cwv-bar"><i class="g" style="width:' + pc(s.good) + '" title="Good ' + num(s.good) + '"></i>' +
         '<i class="o" style="width:' + pc(s.ok) + '" title="Needs work ' + num(s.ok) + '"></i>' +
         '<i class="p" style="width:' + pc(s.poor) + '" title="Poor ' + num(s.poor) + '"></i></div>' +
         '<p class="note">' + num(s.good) + ' good · ' + num(s.ok) + ' needs work · ' + num(s.poor) + ' poor</p></div>';
@@ -847,12 +847,12 @@ function drawSpeed(c){
   });
   const grade = (v, good, poor) => v <= good ? 'good' : v <= poor ? 'ok' : 'poor';
   const cell = (v, unit, good, poor) => v === null || v === undefined || !Number.isFinite(+v) ? '<td class="n">—</td>' :
-    '<td class="n"><span class="ad-g g-' + grade(+v, good, poor) + '">' +
+    '<td class="n"><span class="dv-g g-' + grade(+v, good, poor) + '">' +
     (unit === 's' ? (+v / 1000).toFixed(2) + ' s' : unit === 'ms' ? num(v) + ' ms' : (+v).toFixed(2)) + '</span></td>';
   safe('#cfspeed', () => {
     const rows = arr(R.vitals).map(obj);
     if(!rows.length) return NONE;
-    return '<div class="tablewrap ad-tw"><table class="ad-t"><thead><tr><th>Page</th><th class="n">Loads</th>' +
+    return '<div class="tablewrap dv-tw"><table class="dv-t"><thead><tr><th>Page</th><th class="n">Loads</th>' +
       '<th class="n" title="Biggest thing on screen shown">Main content</th><th class="n" title="Reaction to a click or key">Reaction</th>' +
       '<th class="n" title="Things jumping around while loading">Jumpiness</th><th class="n" title="First thing on screen">First paint</th>' +
       '<th class="n" title="First byte back from us">First byte</th><th class="n">Full load (half / 90%)</th></tr></thead><tbody>' +
@@ -867,7 +867,7 @@ function drawSpeed(c){
   safe('#cfparts', () => {
     const p = arr(R.parts).map(obj), time = v => !Number.isFinite(+v) ? '—' : +v >= 1000 ? (+v / 1000).toFixed(2) + ' s' : num(v) + ' ms';
     if(!p.length) return NONE;
-    return '<div class="tablewrap ad-tw"><table class="ad-t"><thead><tr><th>Step</th>' +
+    return '<div class="tablewrap dv-tw"><table class="dv-t"><thead><tr><th>Step</th>' +
       '<th class="n">Half of them</th><th class="n">75% of them</th></tr></thead><tbody>' +
       p.map(s => '<tr><td>' + esc(s.k) + '</td><td class="n"><b>' + time(s.p50) + '</b></td><td class="n"><b>' + time(s.p75) + '</b></td></tr>').join('') +
       '</tbody></table></div>';
@@ -896,7 +896,7 @@ function cfD1Chart(){
   const d = arr(obj(S.cf).d1).map(obj);
   if(!$('#cfd1')) return;
   if(!d.length){ $('#cfd1').innerHTML = NONE; return; }
-  $('#cfd1').innerHTML = '<h4 class="ad-h4">Rows written</h4><div id="d1-w"></div><h4 class="ad-h4">Rows read</h4><div id="d1-r"></div>';
+  $('#cfd1').innerHTML = '<h4 class="dv-h4">Rows written</h4><div id="d1-w"></div><h4 class="dv-h4">Rows read</h4><div id="d1-r"></div>';
   bars($('#d1-w'), d.map(x => x.rowsWritten), d.map(x => day(x.date)), {h: 150, label: 'Rows written per day'});
   bars($('#d1-r'), d.map(x => x.rowsRead), d.map(x => day(x.date)), {h: 150, label: 'Rows read per day'});
 }
