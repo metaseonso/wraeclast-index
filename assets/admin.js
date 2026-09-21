@@ -382,6 +382,7 @@ function drawStats(){
   safe('#clicks', () => clicksTable());
   safe('#plan', () => planBox());
   safe('#jobs', () => jobsBox());
+  safe('#datastate', el => { dataLine(el); });
   safe('#searches', () => table(arr(d.searches).map(obj).map(s => ({n: s.n, html: esc(s.name || 'An item type') +
     (s.mods ? '<span class="ad-sub">' + fin(s.mods) + ' mod' + (fin(s.mods) === 1 ? '' : 's') + '</span>' : '') +
     '<span class="ad-sub">' + esc(ago(s.last)) + '</span>'})), 'Search'));
@@ -666,18 +667,26 @@ function planBox(){
     '<p class="note ad-links">Exact numbers on Cloudflare: ' + link(links.traffic, 'Traffic') + ' · ' +
       link(links.workers, 'Workers &amp; Pages') + ' · ' + link(links.d1, 'Database') + '</p>';
 }
-const JOBS = [   // [where, what, label, hours before it counts as late]
-  ['files', 'exchange.json', 'Currency prices', 2], ['files', 'market.json', 'Currency list', 2], ['files', 'leagues.json', 'League dates', 7],
-  ['prices', 'uniq', 'Unique prices', 2], ['prices', 'roll', 'Mod roll prices', 2], ['prices', 'farm', 'Farm prices', 2], ['prices', 'cur', 'Currency listings', 2],
-];
+/* the data jobs: fine, late or stopped, worked out by the site (worker/health.js) */
+const STATE = {ok: ['fine', 'good'], unknown: ['unknown', 'ok'], late: ['late', 'ok'], stopped: ['stopped', 'poor']};
+const FROM = {backup: 'backup site', none: '—'};   // where a file came from, when it has no time of its own
+const TOP = {late: ' v-late', stopped: ' v-stopped'};   // how the line at the top of the page reads
 function jobsBox(){
-  const j = obj(obj(S.data).jobs);
-  return '<div class="tablewrap ad-tw"><table class="ad-t"><thead><tr><th>What</th><th class="n">Last in</th></tr></thead><tbody>' +
-    JOBS.map(([k, name, l, late]) => {
-      const at = obj(j[k])[name], t = Date.parse(at), h = Number.isFinite(t) ? (Date.now() - t) / 3600e3 : null;
-      return '<tr><td>' + esc(l) + '</td><td class="n">' + (h === null ? '—' : '<span class="ad-g g-' +
-        (h <= late ? 'good' : h <= late * 3 ? 'ok' : 'poor') + '">' + esc(ago(at)) + '</span>') + '</td></tr>';
+  const list = arr(obj(obj(S.data).jobs).jobs).map(obj);
+  if(!list.length) return NONE;
+  return '<div class="tablewrap ad-tw"><table class="ad-t"><thead><tr><th>What</th><th class="n">State</th><th class="n">Last in</th></tr></thead><tbody>' +
+    list.map(x => {
+      const [word, tone] = STATE[x.state] || STATE.stopped;
+      return '<tr><td>' + esc(x.what) + '</td><td class="n"><span class="ad-g g-' + tone + '">' + word + '</span></td>' +
+        '<td class="n">' + (x.at ? esc(ago(x.at)) : esc(FROM[x.from] || '—')) + '</td></tr>';
     }).join('') + '</tbody></table></div>';
+}
+/* the worst of them, in one line at the top of every tab */
+function dataLine(el){
+  const j = obj(obj(S.data).jobs), line = typeof j.line === 'string' ? j.line : '';
+  el.textContent = line;
+  el.className = 'ad-verdict' + (TOP[j.state] || '');
+  el.hidden = !line;
 }
 
 /* ---------- Cloudflare's own numbers (worker/cfstats.js) ---------- */

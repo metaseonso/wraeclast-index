@@ -4,7 +4,7 @@
      POST /api/t                     a batch from assets/track.js
      POST /api/admin/login           {password}: checked against the DASH_HASH secret; sets a 12-hour cookie
      POST /api/admin/logout
-     GET  /api/admin/stats?days=1|7|30   (with the data jobs: when each file and each kind of price last came in)
+     GET  /api/admin/stats?days=1|7|30   (with the data jobs: fine, late or stopped, worker/health.js)
      GET  /api/admin/heat?route=&device=&days=
      GET  /api/admin/cloudflare?days=1|7|30   Cloudflare's own numbers (worker/cfstats.js)
      GET  /api/admin/suggestions?before=<id>  a hundred notes, newest first, and how many of each kind
@@ -13,6 +13,7 @@
    DASH_HASH is "pbkdf2$<iterations>$<salt base64>$<hash base64>" (PBKDF2-SHA256 of the password). */
 import { sameSite, allowed } from './community.js';
 import { cloudflare } from './cfstats.js';
+import { health } from './health.js';
 
 export const ROUTES = ['home', 'build', 'currency', 'trade', 'farms', 'atlas', 'explore-gems', 'explore-uniques', 'explore-tree'];
 const ROUTE = new Set(ROUTES), DEVICE = new Set(['phone', 'tablet', 'desktop']), STATUS = new Set(['new', 'read', 'done']);
@@ -274,22 +275,8 @@ export async function stats(env, url){
     searches: ts.map(r => ({...searchName(r.state), n: r.n, last: r.last})),
     plan: {free: FREE, today: {views: todayLoad.site_view, batches: todayLoad.site_batch, requests, trackingWrites, priceWrites, writes},
       pct: Math.round(pct * 10) / 10, verdict: pct >= 80 ? 'upgrade' : pct >= 50 ? 'watch' : 'fine', links: LINKS},
-    jobs: await jobs(env),
+    jobs: await health(env, url.origin),
   };
-}
-
-/* the data jobs: when each file (worker/files.js) and each kind of trade price last came in */
-async function jobs(env){
-  const out = {files: {}, prices: {}};
-  try {
-    const r = await env.DB.prepare('SELECT name, at FROM files').all();
-    for(const x of r.results || []) out.files[x.name] = new Date(x.at * 1000).toISOString();
-  } catch {}   // no table yet
-  try {
-    const r = await env.DB.prepare("SELECT substr(key, 1, instr(key, ':') - 1) AS kind, MAX(at) AS at FROM trade_prices GROUP BY kind").all();
-    for(const x of r.results || []) if(['uniq', 'roll', 'farm', 'cur'].includes(x.kind)) out.prices[x.kind] = x.at;
-  } catch {}   // no table yet
-  return out;
 }
 
 /* ---------- GET /api/admin/heat ---------- */

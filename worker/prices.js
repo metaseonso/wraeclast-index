@@ -17,11 +17,14 @@
 
    /data/market.json   every item's price (the shape the pages read), only from these checks. Names, pictures
                        and descriptions come from the hourly catalogue (market.json); its prices are dropped.
+                       updated is the real age of the data behind these prices, times says where that came from
+                       and late is true once a job has missed a run (worker/health.js): the page stamps them.
                        ?part=now: the same without the day-by-day history (h) and the exchange pairs (half the size:
                        what the first cards need); ?part=past: only those, for the charts (assets/app.js)
    /data/rollprices.json, /data/farmprices.json   the slider and farm prices */
 
-import { published, fromServer } from './files.js';
+import { published, publishedRow, fromServer } from './files.js';
+import { lateAfter } from './health.js';
 
 const ISSUER = 'https://token.actions.githubusercontent.com';
 const REPO = 'metaseonso/wraeclast-index';
@@ -140,8 +143,8 @@ export async function serveMarket(request, env, ctx){
   const ck = new Request(url.origin + '/data/market.json?from=trade' + (part ? '&part=' + part : ''));
   const hit = await caches.default.match(ck);
   if(hit) return hit;
-  const cat = (await published(env, url.origin, 'market.json', ctx)) || {items: {}};
-  const cx = (await published(env, url.origin, 'exchange.json', ctx)) || {items: {}};
+  const catRow = await publishedRow(env, url.origin, 'market.json', ctx), cat = (catRow && catRow.data) || {items: {}};
+  const cxRow = await publishedRow(env, url.origin, 'exchange.json', ctx), cx = (cxRow && cxRow.data) || {items: {}};
   const league = cat.league || '';
   const rows = await env.DB.prepare("SELECT key, v, total, at, h FROM trade_prices WHERE league = ? AND key LIKE 'uniq:%'").bind(league).all();
   const rate = cx.league === league ? cx.rate : null;
@@ -152,10 +155,21 @@ export async function serveMarket(request, env, ctx){
     for(const [f, v] of Object.entries(it)) if(!DROP.includes(f)) o[f] = v;
     items[k] = o;
   }
-  let updated = cx.league === league ? cx.updated : null;
+  /* How old these prices really are. The Currency Exchange feed's own time, but never newer than the moment its
+     file came in (the backup site's copy does not say when it came in, so the feed's own time stands); and the
+     newest trade check. The page stamps the older of the two, so a job that has stopped cannot hide behind one
+     that is still running. */
+  const came = row => row && row.at ? new Date(row.at * 1000).toISOString() : null;
+  const older = (a, b) => a && b ? (Date.parse(a) <= Date.parse(b) ? a : b) : (a || b || null);
+  const stale = (t, where, name) => !t || Date.now() - Date.parse(t) >= lateAfter(where, name) * 3600e3;
+  const currencyAt = cx.league === league ? older(cx.updated, came(cxRow)) : null;
+  let tradeAt = null;
+  for(const r of rows.results || []) if(!tradeAt || r.at > tradeAt) tradeAt = r.at;
+  const updated = older(currencyAt, tradeAt);
+  const late = stale(currencyAt, 'file', 'exchange.json') || (!!tradeAt && stale(tradeAt, 'price', 'uniq'));
   // currency: what it traded for on the Currency Exchange over the last 24 hours
   if(cx.league === league) for(const [name, x] of Object.entries(cx.items || {})){
-    const o = {v: x.v, vol: x.vol, at: cx.updated, src: 'cx'};
+    const o = {v: x.v, vol: x.vol, at: currencyAt, src: 'cx'};
     if(x.v1h) o.v1h = x.v1h;
     if(x.pairs) o.pairs = x.pairs;
     if(x.h && x.h.length >= 2){
@@ -167,7 +181,8 @@ export async function serveMarket(request, env, ctx){
   }
   // uniques: real listings on the trade site
   for(const r of rows.results || []) items['u:' + r.key.slice(5)] = {...fields(r), src: 'trade'};
-  let out = {league, updated, primary: 'divine', rates: rate ? {exalted: rate} : {},
+  let out = {league, updated, late, times: {currency: currencyAt, trade: tradeAt, catalogue: came(catRow)},
+    primary: 'divine', rates: rate ? {exalted: rate} : {},
     source: 'Currency Exchange and trade site listings', builds: cat.builds,
     markets: cx.league === league ? (cx.markets || []).slice(0, 40) : [], items};
   if(part){   // each part cached on its own (a few minutes apart at most: the history moves once a day)
