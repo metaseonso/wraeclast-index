@@ -34,7 +34,7 @@ The site is static. GitHub Pages serves it; a GitHub Action (`.github/workflows/
 |---|---|
 | `index.html`, `assets/app.js`, `assets/app.css` | The app: search home page and the live card |
 | `explore.html` | The drill-down page (built from the Wraeclast Index artifact); its data sits in `data/explore/` (files named by their content) |
-| `data/index.json` | Search index, built by `tools/sync.py`; the base item, Atlas and extra currency cards come from `tools/morecards.py` (kinds `b`, `a`, `c`); the phrases in a card's lines that name another card are marked by `tools/nodelinks.py` (`lx` on the card, `lxk` the key table). The home page loads it in two parts, `data/index-core.json` and `data/index-rest.json` (`tools/appdata.py`) |
+| `data/index.json` | Search index, built by `tools/sync.py`; the base item, Atlas and extra currency cards come from `tools/morecards.py` (kinds `b`, `a`, `c`), and the keyword cards the artifact does not carry from `tools/gamelib.py` (kind `w`); the phrases in a card's lines that name another card are marked by `tools/nodelinks.py` (`lx` on the card, `lxk` the key table). The home page loads it in two parts, `data/index-core.json` and `data/index-rest.json` (`tools/appdata.py`) |
 | `sw.js` | The service worker (see Speed) |
 | `assets/fonts/` | The site's own copies of its fonts (Cinzel, IBM Plex Sans, IBM Plex Mono; SIL Open Font License) |
 | `data/kwuse.json` | What uses each keyword (the "Found on" lists on keyword cards), built by `tools/kwuse.py` |
@@ -44,6 +44,7 @@ The site is static. GitHub Pages serves it; a GitHub Action (`.github/workflows/
 | `data/farms.json`, `data/farmqueries.json` | Farms tab: strategies from BawLoch's public tier list sheet and the trade searches for their rolled tablets and waystones, by hand with `python tools/farms.py` (`data/farmprices.json` holds those searches' prices) |
 | `data/craft.json`, `data/craft/` | Craft tab: every base and the mods it can roll (all tiers, item levels, groups), essences, runes and soul cores, desecrated and corruption mods, orbs, omens and catalysts, built by `tools/craft.py` from the game files (essence tables and orb levels checked on poe2db; run after a game patch, after `tools/tradedata.py`) |
 | `data/gamedata.json` | Which patch the shipped data is from, written by `tools/gamepull.py` (one daily pull of the official export; it also writes the gap report `tools/dev/gaps.txt` — what the game files hold against what we card) |
+| `data/gamestats.json` | One monster of each level (life, damage, accuracy, armour, evasion) and what each class starts with, from the game files by `tools/gamelib.py`. Nothing reads it yet |
 
 **Before every push: `node tools/dev/guard.mjs`** (about 5 seconds). It starts a local copy of the site and
 checks the card counts, every deep link the code emits, every public page, that no raw game code shows where a
@@ -114,10 +115,14 @@ In this order (each step reads what the one before wrote):
    lists are cached a day in `tools/cache/`)
 3. After a game patch: `python tools/atlas.py` and `python tools/craft.py`, then `python tools/sync.py` again
    (the Atlas cards come from `data/atlas.json`, and a base's Craft link only where the Craft tab has that base)
-4. Last, after any of the above: `python tools/kwuse.py`
+4. After every `tools/sync.py`: `python tools/gamelib.py`
+   (the keyword cards the artifact does not carry, the keyword links that reach them, and `data/gamestats.json`;
+   `tools/sync.py` rebuilds `data/index.json` from the artifact, so this has to come after it. Running it twice
+   adds nothing twice, and `--report` says what it would do without writing)
+5. Last, after any of the above: `python tools/kwuse.py`
    (every keyword's "Found on" lists in `data/kwuse.json`: uniques, gems, passives, bases, essences, atlas, crafting, currency,
    keywords; and the "Used by" counts in `data/index.json`; it prints its counts against the artifact's own, lower only for
    things the site leaves out)
-5. Commit and push to `main`. The site republishes in about a minute.
+6. Commit and push to `main`. The site republishes in about a minute.
 
 Path of Exile is a trademark of Grinding Gear Games. This is a fan project and is not affiliated with them.

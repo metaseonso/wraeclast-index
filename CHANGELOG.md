@@ -95,6 +95,46 @@ Add the details here first, then a short public line there.
   down to 1,072, data/index.json and its two parts (tools/appdata.py), and data/kwuse.json re-run.
 - Still there and still hidden behind the name filter, untouched: the 43 `[DNT]`-named gems, 104 passives and
   the placeholder keyword entries in the drill-down's own data, which the guard already knows as internal keys.
+## Next — Publish the missing libraries (#11)
+- tools/gamepull.py counted the gap; tools/gamelib.py closes the part of it that is nothing but "the game has
+  more than we carry". It runs after tools/sync.py (which rebuilds data/index.json from the artifact and would
+  drop these cards) and before tools/kwuse.py. Running it twice adds nothing twice; `--report` writes nothing.
+- It answers to the same [DNT] list tools/sync.py does. CUT, DNT and DNT_GEMS are imported from there rather
+  than written a second time, every card it adds is checked over the same fields (SHOWN_FIELDS, now a name in
+  tools/sync.py instead of a tuple written out twice), and every run checks that neither gem that list drops —
+  Atziri's Call, Dreamer's Knell — has come back as a card. The gem count names them as dropped instead of
+  reporting them as unaccounted for.
+- **Keywords: 411 cards -> 693.** The artifact carries 451 keywords; the game's own help text has 1,030 entries.
+  282 of them became cards, in the game's exact wording — map and area mechanics (Abyssal Fissure, Invaded City,
+  Citadel), monster modifiers (Shroud Walker, Volatile Plants), shrines, medallions, Expedition, strongboxes,
+  Sanctum rooms. Every card carries what the card layer already expects: name, "Keyword", the text, an empty
+  "Used by" and the Book of Skill image the other keyword cards use.
+- Left out, on purpose: 261 entries with no term or no text; 33 whose official text is the game's own tooltip
+  markup rather than a sentence (every Expedition rune — `<rgb(...)>{Cold Rune}`; rewriting it into words would
+  stop being the game's wording, so they wait for a step that can read those tags); 7 whose name is already on
+  another card and nothing in the data says which one a player means (Enraged, Reviving Minions, Shroud Walker,
+  Siphons Mana and Deals Lightning Damage); one developer placeholder ("Test"); two [DNT] names.
+- 8 more keystones now stand for their own keyword (index "kwx", the rule tools/sync.py already uses): Chaos
+  Inoculation, Mind over Matter, Primal Hunger, Trusted Kinship, Conduit, Resonance, Blackflame Covenant,
+  Whispers of Doom. A keyword link to any of them opens the keystone card, not a second card saying the same.
+- The links go both ways, which is the point: 216 of the new cards link on to another keyword, and 26 cards we
+  already had now link to one of the new ones (25 keywords and the passive Way of the Mountain, whose text marks
+  Mountain's Teachings). A card's links are read from its own game text, the same rule tools/sync.py uses.
+- **Gems: nothing to add, and now it says so every run.** The audit read the gap as 1,072 of 1,191. The 119 are
+  45 "Coming Soon" slots (SkillGemUnknown1-27, ReservationSkillGemUnknown1-9, SupportGemUnknown1-9), 71 entries
+  named [DNT], the one "Removed Skill" stand-in and the two DNT_GEMS drops. Not one is a gem a player can hold,
+  and none may become a card.
+- **data/gamestats.json** (4 KB): one monster of each of the 100 levels — life, the life of a monster on your
+  side, physical damage, accuracy, armour, evasion — and what each class starts with (attributes, life, mana,
+  unarmed hit, attack time and range). The only official answer to "how much do I need at level N". The export's
+  own field names are game code, so the file ships plain words. Experience per kill is in the export and stays
+  out: the site never prints a per-kill figure. Nothing reads the file yet; that is a later ticket.
+- Eight classes, not the export's twelve: Duelist, Marauder, Shadow and Templar have 51 ascendancy nodes each on
+  the passive tree and not one of them has a stat line, the same kind of slot held open as the gems above. The
+  eight that are in the game have between 27 and 57.
+- tools/gamepull.py now pulls keywords, default_monster_stats and characters as site data rather than report-only
+  (17 files), and its "no tool reads these" note says what it measures.
+
 ## Next — One daily pull of the official data (#10)
 - Every tool fetched its own copy of the RePoE fork's export whenever it ran, and nothing ever said when the game
   data moved on or how much of it we do not ship. tools/gamepull.py is the one place that pulls it and counts.

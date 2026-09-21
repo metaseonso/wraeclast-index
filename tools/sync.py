@@ -133,6 +133,9 @@ def plain_lines(t):
 CUT = re.compile(r'^\[DNT|^Removed Skill$')
 DNT = re.compile(r'\bDNT[\w-]*')
 DNT_TAG = re.compile(r'\[DNT[\w-]*\]\s*')
+# The fields of a card a player reads. Every one is checked for raw game code and for a leftover marker
+# (build_index below, and tools/gamelib.py for the cards it adds after this tool has run).
+SHOWN_FIELDS = ('n', 's', 't', 'ls', 'pr', 'tags', 'rec', 'o', 'nt')
 DNT_GEMS = {
     'SupportGemAtzirisCall':    ('drop', 'the trade site has no such lineage gem, and the skill it triggers is a placeholder'),
     'SupportGemDreamersKnell':  ('drop', 'the trade site has no such lineage gem; its description is the codename "Ezomyte Four"'),
@@ -544,7 +547,7 @@ def build_index(html):
 
     for it in items:  # the standard: nothing in the search index may read as game code
         it.pop('_try', None)
-        for f in ('n', 's', 't', 'ls', 'pr', 'tags', 'rec', 'o', 'nt'):
+        for f in SHOWN_FIELDS:
             for x in (it.get(f) if isinstance(it.get(f), list) else [it.get(f)]):
                 if x and RAW.search(x):
                     sys.exit('raw game code in %s %r: %r' % (f, it['n'], x))

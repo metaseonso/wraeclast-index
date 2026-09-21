@@ -46,8 +46,8 @@ TRIES = 3
 PAUSE = 1.0        # at most one request a second
 BACKOFF = (3, 10)  # seconds to wait after a failed try
 
-# The files the site is built from today, plus the two the gap report counts against (skill_gems and
-# keywords: the gems and keyword cards come from the artifact, nothing here reads the export for them).
+# The files the site is built from today, plus skill_gems (only the gap report reads it) and the three
+# tools/gamelib.py turns into site data.
 PULL = [
     'base_items.min.json',          # bases, requirements, properties, implicits, granted skills, art
     'mods.min.json',                # the wording of every mod
@@ -55,7 +55,9 @@ PULL = [
     'item_classes.min.json',        # item class names
     'uniques.min.json',             # unique art and base
     'skill_gems.min.json',          # every gem
-    'keywords.min.json',            # the game's own help text
+    'keywords.min.json',            # the game's own help text (the keyword cards tools/gamelib.py adds)
+    'default_monster_stats.min.json',   # one monster of each level  } data/gamestats.json,
+    'characters.min.json',              # what each class starts with } tools/gamelib.py
     'passive_skill_trees/Default.min.json',
     'passive_skill_trees/Atlas.min.json',
     'stat_translations/stat_descriptions.min.json',
@@ -303,7 +305,7 @@ def notes():
                         if f.name != Path(__file__).name)
         unread = [n for n in everything if n not in src and n.replace('.min', '') not in src]
         if unread:
-            said.append('No tool turns these export files into site data: ' + ', '.join(unread) + '.')
+            said.append('No tool here reads these export files at all: ' + ', '.join(unread) + '.')
     return said
 
 
