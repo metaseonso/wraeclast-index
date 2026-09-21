@@ -326,6 +326,8 @@ export function card(it, opts = {}){
 /* ---------- the popup ----------
    Every card opens here first. The gold button is the one way on to the drill-down page. */
 const PLACE = {g: 'Gems', u: 'Uniques', p: 'Passive tree', c: 'Currency', b: 'Craft', a: 'Atlas'};
+const typing = el => el && (/^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName) || el.isContentEditable);   // same guard as keys.js
+const TAP = 10;   // px a finger may slide and still count as a tap, not a drag
 let OV = null, lastFocus = null;
 let CUR = null, STACK = [], CLOSING = false;   // the card on show, and the cards under it (Back returns to them)
 function bigLine(vals, label){
@@ -359,13 +361,13 @@ function ensureOV(){
   if(!OV){
     OV = document.createElement('div');
     OV.className = 'ov'; OV.hidden = true;
-    // no close button: clicking off the card, Esc or Back closes it
-    OV.innerHTML = '<div class="ov-scrim" data-close></div><div class="ov-box" role="dialog" aria-modal="true" aria-label="Details" tabindex="-1">' +
+    // no close button: tapping the dim, Esc or Back closes it
+    OV.innerHTML = '<div class="ov-scrim"></div><div class="ov-box" role="dialog" aria-modal="true" aria-label="Details" tabindex="-1">' +
       '<div class="ov-body"></div></div>';
     document.body.appendChild(OV);
+    scrimTap();
     OV.addEventListener('click', e => {
       const t = e.target;
-      if(t.closest('[data-close]')) return closeDetail();
       if(t.closest('a.btn.gold, a.uses-go')) return hideDetail();   // leaving the page: nothing to undo
       if(t.closest('.ov-back')) return history.back();
       const kw = t.closest('.kwlink');
@@ -376,7 +378,15 @@ function ensureOV(){
       if(tab){ const sec = tab.closest('.uses'); sec.dataset.on = tab.dataset.g; paintUses(sec); return; }
       if(t.closest('.fullstats') && CUR && CUR.opts.onFull){ const f = CUR.opts.onFull; closeDetail(); setTimeout(f, 60); }
     });
-    addEventListener('keydown', e => { if(e.key === 'Escape' && !OV.hidden) closeDetail(); });
+    addEventListener('keydown', e => {
+      if(e.key !== 'Escape' || OV.hidden) return;
+      const el = document.activeElement;
+      if(typing(el)){   // typing in a filter box: Esc empties it, then lets it go. The cards stay.
+        if(el.value){ el.value = ''; el.dispatchEvent(new Event('input', {bubbles: true})); } else el.blur();
+        return;
+      }
+      closeDetail();
+    });
     addEventListener('popstate', () => {
       if(OV.hidden) return;
       if(CLOSING){ CLOSING = false; STACK = []; CUR = null; hideDetail(); return; }
@@ -384,6 +394,23 @@ function ensureOV(){
       else hideDetail();
     });
   }
+}
+/* The dim closes the cards only on a real tap on it: the finger goes down and comes up on the dim itself,
+   barely moves, and leaves no text selected. A drag out of the card, a swipe, or letting go of a selection
+   over the dim keeps the cards where they are. */
+function scrimTap(){
+  const scrim = OV.querySelector('.ov-scrim');
+  let from = null;   // where the finger went down on the dim
+  scrim.addEventListener('pointerdown', e => { from = {id: e.pointerId, x: e.clientX, y: e.clientY}; });
+  addEventListener('pointercancel', () => { from = null; });
+  addEventListener('pointerup', e => {
+    const f = from; from = null;
+    if(!f || f.id !== e.pointerId || e.target !== scrim) return;   // it started or ended somewhere else
+    if(Math.hypot(e.clientX - f.x, e.clientY - f.y) > TAP) return;   // a drag, not a tap
+    const sel = getSelection();
+    if(sel && !sel.isCollapsed) return;   // the end of a text selection
+    closeDetail();
+  });
 }
 /* the same popup for anything else (e.g. the Suggest box) */
 export function openBox(node, label = 'Details'){

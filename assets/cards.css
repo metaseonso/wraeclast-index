@@ -83,6 +83,12 @@ body.ov-open{overflow:hidden}
 .chart{margin:4px 0 0}
 .chart figcaption{font-size:11px; color:var(--faint); margin-bottom:4px}
 .chart svg{display:block; width:100%; height:64px; background:var(--sunken); border-radius:6px}
+/* phone: a card sheet fills the height, so what is left of the dim is a thin strip, not a third of the screen */
+@media (max-width:640px){
+  .ov:has(.card.detail) .ov-box{min-height:calc(100vh - 32px); display:flex; flex-direction:column}
+  .ov:has(.card.detail) .ov-body{flex:1 0 auto; display:flex; flex-direction:column}
+  .ov:has(.card.detail) .ov-body > .card.detail{flex:1 0 auto}
+}
 /* the one way on to the drill-down page: a small gold-on-black button that lights up on hover */
 .ov-go{display:flex; justify-content:flex-end; margin-top:10px}
 .btn.gold{display:inline-flex; align-items:center; gap:6px; padding:6px 13px; border-radius:8px; text-decoration:none;
