@@ -1,12 +1,15 @@
 """Publish the libraries the official export holds and the site does not ship yet.
 
 tools/gamepull.py counts the gap; this closes the part of it that is nothing but "the game has more than we
-carry". Three jobs, all from the export (tools/cache/official, gamepull.official):
+carry". Four jobs, all from the export (tools/cache/official, gamepull.official):
 
   keywords   The drill-down artifact carries 451 keywords. The game's own help text has far more, and every
              one of them is a thing a player meets: map and area mechanics, monster modifiers, shrines,
              Expedition runes, medallions. They become keyword cards like the others, so a keyword link in
              any text has something to open, in the game's own wording.
+  notables   The 33 ascendancy notables whose whole effect is a skill. The tree gives them no stat line, so
+             the drill-down has no row for them and the site had no card — but "Grants Skill: <name>" is
+             the line, the same line a base item or a unique shows for the same thing.
   gems       Counted only. The export has 1,191 gem entries and we card 1,072; every one of the 119 is a
              name no player ever sees (see gems()). Nothing to add, and the count says so each run.
   numbers    data/gamestats.json: what one monster of each level is worth in life, damage and defences, and
@@ -14,7 +17,7 @@ carry". Three jobs, all from the export (tools/cache/official, gamepull.official
              Written for the site to use later; no page reads it yet.
 
 Run it after tools/sync.py (which rebuilds data/index.json from the artifact and would drop these cards) and
-before tools/kwuse.py. Running it twice adds nothing twice.
+before tools/grants.py and tools/kwuse.py. Running it twice adds nothing twice.
 
 Usage:
   python tools/gamelib.py            write the cards and the numbers
@@ -25,11 +28,13 @@ import email.utils
 import json
 import re
 import sys
+import urllib.parse
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from gamepull import official, patch, state  # noqa: E402
-from sync import CUT, DNT, DNT_GEMS, KWREF, RAW, SHOWN_FIELDS, data_files, plain  # noqa: E402
+from sync import (BLANK_NODE, CUT, DNT, DNT_GEMS, KWREF, RAW, SHOWN_FIELDS,  # noqa: E402
+                  data_files, plain, shows)
 
 ROOT = Path(__file__).resolve().parent.parent
 INDEX = ROOT / 'data' / 'index.json'
@@ -196,6 +201,77 @@ def keywords(index, write=True):
     return {'cards': cards, 'kwx': kwx, 'why': why, 'back': back, 'fresh': fresh}
 
 
+# ---------------------------------------------------------------- ascendancy notables
+
+TREE = 'passive_skill_trees/Default.min.json'
+ICON = re.compile(r'^Art/2DArt/SkillIcons/', re.I)   # what the tree's icon path is called on poe.ninja's copy
+
+
+def node_image(node):
+    """A tree node's picture, the way tools/sync.py finds it: poe.ninja's copy of the node's own icon."""
+    icon = ICON.sub('', node.get('icon') or '')
+    if icon.lower().endswith('.dds') and not icon.startswith('Art/'):
+        code = 'n:' + urllib.parse.quote(icon[:-4].lower()) + '.webp'
+        if shows(code):
+            return code
+    return BLANK_NODE
+
+
+def notables(index, write=True):
+    """The ascendancy notables whose whole effect is a skill.
+
+    The passive tree gives them no stat line, so the drill-down page has no row for them and tools/sync.py
+    made no card: 33 notables a player can spend a point on and not look up anywhere here. The tree does say
+    which skill each one grants, and that is the card — one line, "Grants Skill: <name>", the same words a
+    base item or a unique shows for the same thing.
+
+    Left out: the five Pathfinder concoction choices, which are options inside another notable rather than
+    notables of their own, and anything whose name or skill is a name players never see."""
+    have = {it['id'] for it in index['items'] if it['k'] == 'p'}
+    gem = {it['id']: it['n'] for it in index['items'] if it['k'] == 'g'}
+    # the ascendancy's real name, from the cards we already have: the tree writes it as a class and a number
+    asc = {}
+    for it in index['items']:
+        if it['k'] == 'p' and it.get('asc'):
+            m = re.match(r'^(Ascendancy[A-Za-z]+\d)', it['id'])
+            if m:
+                asc.setdefault(m.group(1), it['asc'])
+
+    cards, why = [], {}
+    for node in official(TREE)['passives'].values():
+        skill, nid = node.get('granted_skill'), node.get('id') or ''
+        if not skill or nid in have:
+            continue
+        name = (node.get('name') or '').strip()
+        gid = skill.rsplit('/', 1)[-1]
+        m = re.match(r'^(Ascendancy[A-Za-z]+\d)', nid)
+        who = asc.get(m.group(1)) if m else None
+        if not node.get('is_notable'):
+            why[nid] = 'an option inside another notable'
+        elif not real(name) or not real(gem.get(gid, '')):
+            why[nid] = 'a name players never see'
+        elif gid not in gem:
+            why[nid] = 'the skill has no card'
+        elif not who:
+            why[nid] = 'no ascendancy we know'
+        else:
+            cards.append({'k': 'p', 'id': nid, 'n': name, 's': 'Notable · ' + who,
+                          'ls': ['Grants Skill: ' + gem[gid]], 'asc': who, 'img': node_image(node)})
+    cards.sort(key=lambda c: (c['asc'], c['n']))
+
+    # the same standard tools/sync.py holds its own cards to
+    for it in cards:
+        for f in SHOWN_FIELDS:
+            for x in (it.get(f) if isinstance(it.get(f), list) else [it.get(f)]):
+                if x and (any(m.search(x) for m in SHOWN) or RAW.search(x) or DNT.search(x)):
+                    sys.exit('game code in %s %r: %r' % (f, it['n'], x))
+
+    if write and cards:
+        at = max(i for i, it in enumerate(index['items']) if it['k'] == 'p') + 1
+        index['items'][at:at] = cards   # next to the passive cards, so the index keeps its order
+    return {'cards': cards, 'why': why}
+
+
 # ---------------------------------------------------------------- gems
 
 def gem_names():
@@ -299,7 +375,9 @@ def main():
 
     index = json.loads(INDEX.read_text(encoding='utf-8'))
     was = sum(1 for it in index['items'] if it['k'] == 'w')
+    wasp = sum(1 for it in index['items'] if it['k'] == 'p')
     kw = keywords(index, write=not args.report)
+    nb = notables(index, write=not args.report)
 
     cut = gone(index)
     g = gems(index)
@@ -319,6 +397,15 @@ def main():
           % (sum(1 for c in kw['cards'] if c.get('kw')), kw['back']))
     if kw['fresh']:
         print('         %d cards reworded to the export' % kw['fresh'])
+
+    nwhy = {}
+    for reason in nb['why'].values():
+        nwhy[reason] = nwhy.get(reason, 0) + 1
+    print('notables the tree grants a skill on %d nodes, %d of them had no card; passives %d -> %d (+%d)'
+          % (sum(1 for n in official(TREE)['passives'].values() if n.get('granted_skill')),
+             len(nb['cards']) + len(nb['why']), wasp, wasp + len(nb['cards']), len(nb['cards'])))
+    if nwhy:
+        print('         left out: ' + ', '.join('%d %s' % (n, r) for r, n in sorted(nwhy.items(), key=lambda x: -x[1])))
 
     stats = gamestats()
     print('numbers %d monster levels, %d classes in the game (the export lists %d)'

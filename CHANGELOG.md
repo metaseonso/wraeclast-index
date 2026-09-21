@@ -3,6 +3,49 @@
 The full list of changes. The public patch notes (data/changelog.json, shown on the site) stay short.
 Add the details here first, then a short public line there.
 
+## Next — What grants what: the first edges of the card graph (#13)
+- A card's lines name other cards as text, and the last step marked where those names sit. "This grants that
+  skill" is different: the game files state it outright, so it is worth holding as an edge instead of re-reading
+  a sentence. It is exact, it works in both directions, and the reverse — "what gives me this skill?" — is a
+  question no line on any card answers today. **data/grants.json** (`tools/grants.py`) is that edge set: 452
+  edges from 391 cards to 168 skills, and the same 452 the other way round, built in one pass.
+- Read from the place the game says it, per kind:
+  - **base items** — `skills_granted`: 260 lines on 201 base cards (253 different pairs; a few bases have
+    alternates the card prints as "or", and each alternate's skill is an edge of its own).
+  - **ascendancy notables** — the passive tree's `granted_skill`: 49 nodes. The tree grants a skill on 54; the
+    other five are the Pathfinder concoction choices, which are options inside a notable rather than nodes a
+    card could be.
+  - **uniques** — the item's own "Grants Skill: ..." line, through the official skill list: the line names a
+    skill, `skills.min.json` says which skill that is, and the gem list says which gem grants it. 149 of 150
+    resolved that way; one (The Dark Defiler, Skeletal Warrior) has no skill of that name in the files and was
+    matched against the gem cards by name instead, and carries a different source because of it.
+- **Nothing is guessed.** 13 lines name something two cards could be — Decompose, Spark, Blink, the three
+  Heralds, Ember Fusillade, Lightning Bolt — where the game has a plain gem and a second entry made for one
+  item, and nothing in the line says which. No edge is written for them; they are listed under "amb" with both
+  candidates, so a page can say the files do not settle it and a later run picks it up if they ever do.
+- Every edge carries where it came from ("f" the official game files, "w" the item's own wording), with the
+  words to print in the file's own "src" table. Both are official today; the field is there so a named source
+  that is not can be added later without changing the shape.
+- Shipped the way data/kwuse.json is: its own file, ids not names, loaded the first time a card needs it — so
+  **data/index-core.json does not grow at all** (63.6 KB compressed against a budget of 70, one byte off what it
+  was). data/grants.json is 48.7 KB, 7.4 KB compressed. Nothing on the site reads it yet.
+- **33 new passive cards.** The gap report flagged 40 ascendancy notables with no card because the tree gives
+  them no stat line, 33 of them granting a skill — and "Grants Skill: <name>" is the line, the same words a base
+  item or a unique shows for the same thing. tools/gamelib.py now makes them (a fourth job), with the node's own
+  icon from poe.ninja's copy of the tree, so the passive side of the edge set went from 16 cards to 49 and the
+  notables are searchable at last. Passives 1,186 -> 1,219.
+- Those cards' own lines go through tools/nodelinks.py like any other, so 20 of them link straight to the gem
+  they grant (references 242 -> 262, passive -> gem 20 -> 40). The other 13 are the notables the game names
+  after the skill itself (Mirage Deadeye, Archon of Chayula): a card is not a door to itself, so the line stays
+  plain and the edge in data/grants.json carries it instead.
+- tools/gamepull.py pulls `skills.min.json` now (18 files), so the daily pull carries everything tools/grants.py
+  reads and no builder fetches on its own; the report's "no tool reads these" list is one shorter for it. Its gem
+  row also stops counting the two gems DNT_GEMS drops as a gap — they are not in the game, so they are not
+  missing — and the notable gap it flagged is down from 40 (33 granting a skill) to 7 (none of them granting one).
+- tools/dev/guard.mjs reads data/grants.json in the raw-code check now, like the other data files. It holds no
+  raw key at all: 62 known internal keys, nothing new. Guard: 6 ok, 0 failed; baseline blessed for the 33 cards
+  (passives 1,186 -> 1,219, sitemap 6,265 -> 6,298, llms-full 6,256 -> 6,289).
+
 ## Next — The lines carry their own links (build side)
 - A card's lines name other cards all the time ("Grants Skill: Icestorm", "Zealot's Oath", "You can only Socket
   Ruby Jewels in this item") and every one of them shipped as flat text. The builders now find those phrases and

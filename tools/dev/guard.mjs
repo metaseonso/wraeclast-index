@@ -310,7 +310,7 @@ async function checkRaw(index, files, pages, want){
   const found = new Map();
   const jsonFiles = [['data/index.json', index]];
   for(const [key, path] of Object.entries(files)) jsonFiles.push([path.replace(/\.[0-9a-f]{6,}\.json$/, '.*.json'), await getJSON('/' + path)]);
-  for(const name of ['kwuse.json', 'info.json', 'reqs.json', 'atlas.json', 'craft.json', 'uniques.json', 'trade.json'])
+  for(const name of ['kwuse.json', 'grants.json', 'info.json', 'reqs.json', 'atlas.json', 'craft.json', 'uniques.json', 'trade.json'])
     jsonFiles.push(['data/' + name, await getJSON('/data/' + name)]);
   for(const [name, j] of jsonFiles) walk(name, '', j, found);
 

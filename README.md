@@ -34,10 +34,11 @@ The site is static. GitHub Pages serves it; a GitHub Action (`.github/workflows/
 |---|---|
 | `index.html`, `assets/app.js`, `assets/app.css` | The app: search home page and the live card |
 | `explore.html` | The drill-down page (built from the Wraeclast Index artifact); its data sits in `data/explore/` (files named by their content) |
-| `data/index.json` | Search index, built by `tools/sync.py`; the base item, Atlas and extra currency cards come from `tools/morecards.py` (kinds `b`, `a`, `c`), and the keyword cards the artifact does not carry from `tools/gamelib.py` (kind `w`); the phrases in a card's lines that name another card are marked by `tools/nodelinks.py` (`lx` on the card, `lxk` the key table). The home page loads it in two parts, `data/index-core.json` and `data/index-rest.json` (`tools/appdata.py`) |
+| `data/index.json` | Search index, built by `tools/sync.py`; the base item, Atlas and extra currency cards come from `tools/morecards.py` (kinds `b`, `a`, `c`), and the keyword cards the artifact does not carry, plus the ascendancy notables whose whole effect is a skill, from `tools/gamelib.py` (kinds `w` and `p`); the phrases in a card's lines that name another card are marked by `tools/nodelinks.py` (`lx` on the card, `lxk` the key table). The home page loads it in two parts, `data/index-core.json` and `data/index-rest.json` (`tools/appdata.py`) |
 | `sw.js` | The service worker (see Speed) |
 | `assets/fonts/` | The site's own copies of its fonts (Cinzel, IBM Plex Sans, IBM Plex Mono; SIL Open Font License) |
 | `data/kwuse.json` | What uses each keyword (the "Found on" lists on keyword cards), built by `tools/kwuse.py` |
+| `data/grants.json` | What grants a skill and what each skill is granted by (base items, ascendancy notables and uniques), both directions, built by `tools/grants.py`. Loaded the first time a card that needs it opens, like `data/kwuse.json` |
 | `data/info.json`, `data/reqs.json` | Item text and requirements, built by `tools/gameinfo.py` |
 | `data/market.json` | Prices, rebuilt every hour by `tools/market.py` |
 | `data/atlas.json` | Atlas tab: waystones, tablets, keys, atlas items and the Atlas tree, built by `tools/atlas.py` (run after a game patch) |
@@ -116,13 +117,16 @@ In this order (each step reads what the one before wrote):
 3. After a game patch: `python tools/atlas.py` and `python tools/craft.py`, then `python tools/sync.py` again
    (the Atlas cards come from `data/atlas.json`, and a base's Craft link only where the Craft tab has that base)
 4. After every `tools/sync.py`: `python tools/gamelib.py`
-   (the keyword cards the artifact does not carry, the keyword links that reach them, and `data/gamestats.json`;
-   `tools/sync.py` rebuilds `data/index.json` from the artifact, so this has to come after it. Running it twice
-   adds nothing twice, and `--report` says what it would do without writing)
-5. Last, after any of the above: `python tools/kwuse.py`
+   (the keyword cards the artifact does not carry, the keyword links that reach them, the 33 ascendancy notables whose
+   whole effect is a skill, and `data/gamestats.json`; `tools/sync.py` rebuilds `data/index.json` from the artifact, so
+   this has to come after it. Running it twice adds nothing twice, and `--report` says what it would do without writing)
+5. After `tools/gamelib.py`: `python tools/grants.py`, then `python tools/nodelinks.py`
+   (`data/grants.json`, the grants-skill edges both ways; it resolves against the cards the two steps above wrote, and
+   writes nothing else. `tools/nodelinks.py` after it, so the new cards' own lines get their references too)
+6. Last, after any of the above: `python tools/kwuse.py`
    (every keyword's "Found on" lists in `data/kwuse.json`: uniques, gems, passives, bases, essences, atlas, crafting, currency,
    keywords; and the "Used by" counts in `data/index.json`; it prints its counts against the artifact's own, lower only for
    things the site leaves out)
-6. Commit and push to `main`. The site republishes in about a minute.
+7. Commit and push to `main`. The site republishes in about a minute.
 
 Path of Exile is a trademark of Grinding Gear Games. This is a fan project and is not affiliated with them.

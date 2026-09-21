@@ -46,7 +46,7 @@ TRIES = 3
 PAUSE = 1.0        # at most one request a second
 BACKOFF = (3, 10)  # seconds to wait after a failed try
 
-# The files the site is built from today, plus skill_gems (only the gap report reads it) and the three
+# The files the site is built from today, plus skill_gems and skills (the gap report and tools/grants.py) and the three
 # tools/gamelib.py turns into site data.
 PULL = [
     'base_items.min.json',          # bases, requirements, properties, implicits, granted skills, art
@@ -54,7 +54,8 @@ PULL = [
     'augments.min.json',            # runes, soul cores, idols
     'item_classes.min.json',        # item class names
     'uniques.min.json',             # unique art and base
-    'skill_gems.min.json',          # every gem
+    'skill_gems.min.json',          # every gem, and the skills each one grants
+    'skills.min.json',              # every skill by name (tools/grants.py turns a "Grants Skill" line into a gem)
     'keywords.min.json',            # the game's own help text (the keyword cards tools/gamelib.py adds)
     'default_monster_stats.min.json',   # one monster of each level  } data/gamestats.json,
     'characters.min.json',              # what each class starts with } tools/gamelib.py
@@ -227,9 +228,11 @@ def rows():
         ours.setdefault(it['k'], set()).add(it['n'])
     out = []
 
+    from sync import DNT_GEMS   # the gems that tool drops for good: not in the game, so not a gap either
+    cut = {k for k, (what, _) in DNT_GEMS.items() if what == 'drop'}
     gems = real((v.get('base_item') or {}).get('display_name')
-                for v in official('skill_gems.min.json').values()
-                if (v.get('base_item') or {}).get('release_state') == 'released')
+                for k, v in official('skill_gems.min.json').items()
+                if (v.get('base_item') or {}).get('release_state') == 'released' and k.rsplit('/', 1)[-1] not in cut)
     out.append(('gems', gems, ours.get('g', set()), True))
 
     uniq = real(v.get('name') for v in official('uniques.min.json').values() if not v.get('is_alternate_art'))
