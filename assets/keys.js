@@ -5,20 +5,21 @@
    A binding is a key ("g", "/") or a Ctrl combo ("ctrl+/"; Cmd counts as Ctrl on a Mac). */
 
 const ACTIONS = [
-  {id: 'search',   name: 'Search everything',  key: '/'},
-  {id: 'list',     name: 'Search this list',   key: 'ctrl+/'},
-  {id: 'home',     name: 'Go to Search',       key: 'h', go: './#/'},
-  {id: 'build',    name: 'Go to Build',        key: 'b', go: './#/build'},
-  {id: 'currency', name: 'Go to Currency',     key: 'c', go: './#/currency'},
-  {id: 'trade',    name: 'Go to Trade',        key: 't', go: './#/trade'},
-  {id: 'gems',     name: 'Go to Gems',         key: 'g', go: 'explore#gems'},
-  {id: 'uniques',  name: 'Go to Uniques',      key: 'u', go: 'explore#uniques'},
-  {id: 'tree',     name: 'Go to Passive tree', key: 'p', go: 'explore#tree'},
-  {id: 'keys',     name: 'Show keybindings',   key: '?'},
+  {id: 'search',   name: 'Search everything',       key: '/'},
+  // the list you are looking at: a drill-down list, the currency search… and, with a card open, the card itself
+  {id: 'list',     name: 'Search this list or card', key: 'ctrl+/'},
+  {id: 'home',     name: 'Go to Search',            key: 'h', go: './#/'},
+  {id: 'build',    name: 'Go to Build',             key: 'b', go: './#/build'},
+  {id: 'currency', name: 'Go to Currency',          key: 'c', go: './#/currency'},
+  {id: 'trade',    name: 'Go to Trade',             key: 't', go: './#/trade'},
+  {id: 'gems',     name: 'Go to Gems',              key: 'g', go: 'explore#gems'},
+  {id: 'uniques',  name: 'Go to Uniques',           key: 'u', go: 'explore#uniques'},
+  {id: 'tree',     name: 'Go to Passive tree',      key: 'p', go: 'explore#tree'},
+  {id: 'keys',     name: 'Show keybindings',        key: '?'},
   // the open card's own keys: they run only while a card is up, and nothing else runs then
-  {id: 'cardback', name: 'Card back',          key: 'ArrowLeft',  card: true},
-  {id: 'cardfwd',  name: 'Card forward',       key: 'ArrowRight', card: true},
-  {id: 'cardclose', name: 'Close card',        key: 'x',          card: true},
+  {id: 'cardback', name: 'Card back',               key: 'ArrowLeft',  card: true},
+  {id: 'cardfwd',  name: 'Card forward',            key: 'ArrowRight', card: true},
+  {id: 'cardclose', name: 'Close card',             key: 'x',          card: true},
 ];
 const STORE = 'wi.keys';
 const MODS = new Set(['Shift', 'Control', 'Alt', 'AltGraph', 'Meta', 'OS', 'Super', 'Hyper', 'Fn', 'FnLock',
@@ -63,6 +64,8 @@ function bind(id, k){
   save(); paint();
   return moved;
 }
+// what a key looks like on the sheet ("←", "Ctrl + /"), for a line that names it. '' when it is unbound.
+export const keyLabel = id => keyName(map[id] || '');
 
 /* ---------- actions ---------- */
 let focusTarget = () => null;
@@ -71,7 +74,9 @@ const shown = el => el.getClientRects().length > 0;
 function listTarget(){
   return [...document.querySelectorAll('input[type=search]')].find(el => shown(el) && !el.closest('.top, .mast, .ov')) || focusTarget();
 }
-let cardRun = null;   // what a card's own key does; assets/app.js says so, and answers false when it cannot
+// what a key does while a card is open (its own keys, and "Search this list or card"); assets/app.js
+// says so, and answers false when it cannot — then the key falls through untouched
+let cardRun = null;
 export function setCardKeys(f){ cardRun = f; }
 function run(a){
   if(a.card) return cardRun && cardRun(a.id);
@@ -196,9 +201,10 @@ function onKey(e){
   if(e.key === '/') e.stopImmediatePropagation();   // the drill-down page's own "/" shortcut: this one replaces it
   if(!k || e.repeat || e.isComposing) return;
   if(!k.startsWith('ctrl+') && typing(document.activeElement)) return;   // a plain key while typing is just typing
-  if(document.body.classList.contains('ov-open')){   // a card popup is open: only the card's own keys run
-    const c = ACTIONS.find(x => x.card && map[x.id] === k);
-    if(!c || !run(c)) return;
+  // a card is open: its own keys run, and "Search this list or card" filters what the card holds. Nothing else.
+  if(document.body.classList.contains('ov-open')){
+    const c = ACTIONS.find(x => (x.card || x.id === 'list') && map[x.id] === k);
+    if(!c || !(cardRun && cardRun(c.id))) return;
     e.preventDefault(); e.stopImmediatePropagation();
     return;
   }

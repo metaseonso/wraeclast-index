@@ -4,7 +4,7 @@
      data/market.json  real prices only: currency from the in-game Currency Exchange, everything else from live
                        trade site listings (worker/prices.js); trends from the site's own daily prices
    Build usage links to poe.ninja's own builds page: their builds API is not open to other sites. */
-import {initKeys, setCardKeys} from './keys.js';
+import {initKeys, setCardKeys, keyLabel} from './keys.js';
 
 export const $ = (s, el = document) => el.querySelector(s);
 export const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -407,16 +407,20 @@ function ensureOV(){
   if(!OV){
     OV = document.createElement('div');
     OV.className = 'ov'; OV.hidden = true;
-    // the bar sits inside the scroll box, so Back, Forward and Close never scroll away
+    // the bar sits inside the scroll box, so Back, Forward and Close never scroll away. The tip is a row of
+    // the bar, so it sits beside the arrows it is talking about and never covers anything.
     OV.innerHTML = '<div class="ov-scrim"></div><div class="ov-box" role="dialog" aria-modal="true" aria-label="Details" tabindex="-1">' +
       '<div class="ov-nav" hidden><button type="button" class="ov-back">← <span class="ov-nm">Back</span></button>' +
       '<span class="ov-at"></span><button type="button" class="ov-fwd">→</button>' +
-      '<button type="button" class="ov-x" aria-label="Close">✕</button></div>' +
+      '<button type="button" class="ov-x" aria-label="Close">✕</button>' +
+      '<p class="ov-tip" hidden><span class="ov-tipt"></span>' +
+      '<button type="button" class="ov-tipx">Got it</button></p></div>' +
       '<div class="ov-body"></div></div>';
     document.body.appendChild(OV);
     scrimTap();
     OV.addEventListener('click', e => {
       const t = e.target;
+      if(t.closest('.ov-tipx')){ tipSeen(); focusBox(); return; }   // "Got it": the line goes, for good
       const nb = t.closest('.ov-nav button');
       if(nb){
         if(nb.disabled) return;
@@ -460,6 +464,7 @@ function ensureOV(){
       const id = (history.state || {}).ov;
       saveStep();   // remember the card we are leaving, whole
       const i = id ? TRAIL.findIndex(s => s.id === id) : -1;
+      if(i >= 0 && i !== AT) tipSeen();   // a real step back or forward — the bar, the keys or a swipe. No need to say so.
       // off the trail: the popup goes, the trail stays, so Forward walks straight back into it
       if(i < 0) return hideDetail();
       AT = i;
@@ -596,6 +601,26 @@ function paintNav(){
   fwd.disabled = !next;
   fwd.setAttribute('aria-label', next ? 'Forward to ' + next.it.n : 'Forward');
   at.textContent = TRAIL.length > 1 ? (AT + 1) + '/' + TRAIL.length : '';
+  const tip = nav.querySelector('.ov-tip');
+  tip.hidden = tipOff || TRAIL.length < TIP_AT;
+  if(!tip.hidden) tip.querySelector('.ov-tipt').textContent = tipLine();
+}
+/* One line, once: the cards remember where you have been. It waits until the trail is three deep, because
+   that is when stepping back starts to be worth knowing, and it is gone for good once it is dismissed or
+   once the player has stepped back or forward without it. Kept in this browser, beside the keybindings. */
+const TIP_KEY = 'wi.cardtip', TIP_AT = 3;
+let tipOff = false;
+try { tipOff = localStorage.getItem(TIP_KEY) === '1'; } catch {}
+function tipLine(){
+  const keys = [keyLabel('cardback'), keyLabel('cardfwd')].filter(Boolean).join(' and ');
+  return 'Cards remember where you’ve been. Step back and forward with ' + (keys ? keys + ', or ' : '') + 'the arrows in this bar.';
+}
+function tipSeen(){
+  if(tipOff) return;
+  tipOff = true;
+  try { localStorage.setItem(TIP_KEY, '1'); } catch {}
+  const t = OV && OV.querySelector('.ov-tip');
+  if(t) t.hidden = true;
 }
 function showOV(){
   if(!OV.hidden) return;
@@ -615,9 +640,47 @@ function closeDetail(){
   const d = (history.state || {}).d || 0;
   if(d) history.go(-d); else hideDetail();   // popstate hides it
 }
+/* "Search this list or card" inside a card: a box for what this card holds. A keyword card filters its
+   "Found on" list; any other card filters its own lines. Typing filters the rows live; Esc empties the box
+   and then leaves it (the Escape handler above), so the card stays open either way. */
+function cardFilter(){
+  const box = OV.querySelector('.ov-box');
+  let q = box.querySelector('.uses-q');
+  if(q) q.hidden = false;                                  // a short "Found on" list keeps its box out of the way until now
+  else if(box.querySelector('.uses-list')) return false;   // a list still loading, or with nothing in it to filter
+  else q = lineFilter(box);
+  if(!q) return false;
+  q.focus(); q.select(); keepInView(q);
+  return true;
+}
+// the card's own lines — mods, stats, drops — with a box above them and a word when nothing is left
+function lineFilter(box){
+  const had = box.querySelector('.card-q');
+  if(had) return had;
+  const c = box.querySelector('.card.detail'), lists = c ? [...c.querySelectorAll('.card-ls')] : [];
+  const rows = lists.flatMap(l => [...l.children]);
+  if(rows.length < 2) return null;
+  const hay = rows.map(el => el.textContent.toLowerCase());
+  const q = document.createElement('input');
+  q.className = 'uses-q card-q'; q.type = 'search'; q.autocomplete = 'off'; q.spellcheck = false;
+  q.placeholder = 'Filter lines…';
+  q.setAttribute('aria-label', 'Filter the lines on this card');
+  const none = document.createElement('p');
+  none.className = 'note uses-none'; none.hidden = true; none.textContent = 'Nothing matches.';
+  q.addEventListener('input', () => {
+    const words = q.value.trim().toLowerCase().split(/\s+/).filter(Boolean);
+    let shown = 0;
+    rows.forEach((el, i) => { const hit = words.every(w => hay[i].includes(w)); el.hidden = !hit; shown += hit; });
+    none.hidden = shown > 0;
+  });
+  lists[0].before(q);
+  lists[lists.length - 1].after(none);
+  return q;
+}
 // the card's own keys, in the keybindings sheet (assets/keys.js) like every other shortcut
 setCardKeys(id => {
   if(!OV || OV.hidden || AT < 0) return false;
+  if(id === 'list') return cardFilter();
   if(id === 'cardback'){ if(AT < 1) return false; history.back(); return true; }
   if(id === 'cardfwd'){ if(AT >= TRAIL.length - 1) return false; history.forward(); return true; }
   if(id === 'cardclose'){ closeDetail(); return true; }
@@ -739,8 +802,9 @@ function paintUses(sec){
   else if(!list.length) rows = '<p class="note">Nothing here uses it.</p>';
   else rows = list.map(x => x.html).join('');
   const kind = {u: 'uniques', g: 'gems', p: 'passives', b: 'bases', e: 'essences', a: 'atlas entries', m: 'mods', c: 'items', w: 'keywords'}[on] || '';
-  const filter = list && list.length > USE_FILTER ? '<input class="uses-q" type="search" autocomplete="off" spellcheck="false" placeholder="Filter ' +
-    kind + '\u2026" aria-label="Filter the ' + kind + '">' : '';
+  // a long list shows its filter box from the start; a short one keeps it hidden until the card's own key asks for it
+  const filter = list && list.length ? '<input class="uses-q" type="search" autocomplete="off" spellcheck="false"' +
+    (list.length > USE_FILTER ? '' : ' hidden') + ' placeholder="Filter ' + kind + '\u2026" aria-label="Filter the ' + kind + '">' : '';
   const here = /explore/.test(location.pathname) ? '' : 'explore';   // on the drill-down already: stay on the page
   const all = SEC[on] ? '<a class="btn gold" href="' + here + '#' + SEC[on] + '?kw=' + encodeURIComponent(sec._id) + '">See all in ' +
     {g: 'Gems', u: 'Uniques', p: 'Passive tree'}[on] + ' \u2192</a>' : '';

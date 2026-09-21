@@ -93,6 +93,8 @@ body.ov-open{overflow:hidden}
   .ov:has(.card.detail) .ov-body{order:1; flex:1 0 auto; display:flex; flex-direction:column}
   .ov:has(.card.detail) .ov-body > .card.detail{flex:1 0 auto; border-radius:0; border-width:0; padding:14px 15px 12px; gap:10px}
   .ov:has(.card.detail) .ov-nav{order:2; flex:none; top:auto; bottom:0; margin:10px 0 0}
+  /* the buttons stay at the very bottom, where the thumb is; the line sits above them */
+  .ov-nav .ov-tip{order:-1; margin:0; padding:1px 3px 6px; border-top:0; border-bottom:1px solid var(--line-soft)}
   .card.detail h3{font-size:18px}
   /* the name comes first: it keeps its room and wraps between words, and the price drops to its own line */
   .card.detail .card-hd{flex-wrap:wrap}
@@ -255,7 +257,7 @@ header.top .notesbtn ~ .suggestbtn{margin-left:0}
 /* popup: the card's bar, its keywords, and a keyword's "Found on" lists (app.js) */
 /* the bar holds the trail: Back names the card behind you, then where you are, Forward and Close.
    It sticks to the scroll box, so it is there wherever you have scrolled the card. */
-.ov-nav{position:sticky; top:0; z-index:3; display:flex; align-items:center; gap:6px; margin:0 0 10px; padding:5px;
+.ov-nav{position:sticky; top:0; z-index:3; display:flex; flex-wrap:wrap; align-items:center; gap:6px; margin:0 0 10px; padding:5px;
   background:var(--surface); border:2px solid var(--line); border-radius:var(--r, 10px)}
 .ov-nav[hidden]{display:none}
 .ov-nav button{display:flex; align-items:center; gap:6px; min-height:40px; padding:0 10px; cursor:pointer;
@@ -270,6 +272,12 @@ header.top .notesbtn ~ .suggestbtn{margin-left:0}
 .ov-x{color:var(--muted); font-size:14px}
 .ov-x:hover{color:#F08A82; border-color:#F08A82}
 .ov-at{flex:none; font:500 11px/1 var(--mono); color:var(--faint)}
+/* the one line that says the cards remember: its own row of the bar, so it never covers a control */
+.ov-tip{flex-basis:100%; display:flex; align-items:center; gap:8px; margin:0; padding:6px 3px 1px;
+  font-size:12px; line-height:1.45; color:var(--muted); border-top:1px solid var(--line-soft)}
+.ov-tip[hidden]{display:none}
+.ov-tipt{flex:1; min-width:0}
+.ov-nav .ov-tipx{flex:none; min-height:34px; font-size:12px; color:var(--muted)}
 .kwchips{display:flex; flex-wrap:wrap; align-items:center; gap:6px; margin:12px 2px 0}
 .kwchips .lbl{font-size:11px; text-transform:uppercase; letter-spacing:.08em; color:var(--faint); margin-right:4px}
 .uses{margin-top:14px; padding:14px; background:var(--surface); border:2px solid var(--line); border-radius:var(--r, 10px)}
@@ -292,6 +300,10 @@ header.top .notesbtn ~ .suggestbtn{margin-left:0}
 .uses-q{display:block; width:100%; box-sizing:border-box; margin:0 0 8px; padding:7px 10px; font:inherit; font-size:13px;
   color:var(--text); background:var(--raised); border:1px solid var(--line); border-radius:8px}
 .uses-q:focus{outline:none; border-color:var(--accent)}
+.uses-q[hidden]{display:none}
+/* the same box over a card's own lines, put there by the card's search key (app.js lineFilter) */
+.card-q{margin:0}
+.card .uses-none{margin:0}
 .uses-plain{cursor:default}
 .uses-plain:hover{border-color:var(--line)}
 .uses-t .uses-x{display:inline; font:500 11px var(--mono, ui-monospace, monospace); color:var(--accent); overflow:visible}
