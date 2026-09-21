@@ -95,6 +95,26 @@ Add the details here first, then a short public line there.
   down to 1,072, data/index.json and its two parts (tools/appdata.py), and data/kwuse.json re-run.
 - Still there and still hidden behind the name filter, untouched: the 43 `[DNT]`-named gems, 104 passives and
   the placeholder keyword entries in the drill-down's own data, which the guard already knows as internal keys.
+## Next — One daily pull of the official data (#10)
+- Every tool fetched its own copy of the RePoE fork's export whenever it ran, and nothing ever said when the game
+  data moved on or how much of it we do not ship. tools/gamepull.py is the one place that pulls it and counts.
+- It pulls the 15 export files the site is built from (plus skill_gems and keywords, which only the report reads)
+  with the site's User-Agent, one request a second, three tries with a backoff, and a clear message on failure —
+  it keeps the copy it has if it has one, and stops outright if it does not. The copies live in tools/cache/official
+  (already git-ignored, the folder tools/sync.py uses), with pulled.json holding each file's ETag, Last-Modified,
+  size, hash and dates.
+- GitHub Pages stamps its own ETag per server, so the same unchanged file comes back 200 with a new tag on about
+  half the requests. A conditional GET is still sent, but the bytes decide what counts as changed: only a file that
+  really differs is written, so a re-run reports "0 new, 15 unchanged" instead of inventing changes.
+- data/gamedata.json records the public patch (0.5.5), the date the export's files carry and the date we pulled —
+  the patch number a player knows, never the internal build, which stays in the cache manifest and the report.
+- tools/dev/gaps.txt (and stdout) is the gap report: per kind, how many names the game has, how many we card, and
+  a sample of what is missing. Gems, uniques, passives, keywords and the Atlas tree are counted against the export
+  minus the names players never see ([DNT] markers, names the game fills in); bases and currency against the
+  official trade site's lists, since the export still marks hundreds of old items released. The report also names
+  the export files no tool reads at all.
+- Nothing else changed: no existing tool was touched, and every data file the site already had is byte-identical
+  after a run. gamepull is importable, so moving a tool onto it later is one line (`from gamepull import official`).
 
 ## Next — No game-file text on the cards (#2)
 - Brutus' Lead Sprinkler carried "local display grants level X molten shower [1]" on its card, straight from the

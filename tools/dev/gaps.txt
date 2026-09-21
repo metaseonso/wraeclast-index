@@ -1,0 +1,35 @@
+Wraeclast Index · the official game data, and what we ship of it
+
+  export  patch 0.5.5, files dated 11 Sep 2026
+  pulled  2026-09-21 13:37 UTC · 15 files, 0 downloaded
+  index   5,400 cards over 5,125 names
+
+  Counts are names, not cards: one name can be several cards.
+
+  kind             game  carded     gap  missing, a sample
+  gems             1052    1050       2  Coming Soon, Removed Skill
+  uniques           441     441       0  +18 we card that the export has no name for
+  notables         1192    1152      40  Against the Anvil, Archon of Chayula, Barya of Kelari …
+  keystones          33      33       0  -
+  small passives    784       1     783  Accuracy, Accuracy Mastery, Accuracy Rating …
+  keywords          759     408     351  Abandoned City, Abyssal Depths, Abyssal Eye …
+  bases            1555    1554       1  Timeless Jewel
+  currency          667     651      16  Albino Rhoa Feather, Black Scythe Artifact, Broken Circle Artifact …
+  atlas tree        333     333       0  -
+
+  game: the export, minus the names players never see ([DNT] markers, names the game fills in).
+  Bases and currency count the official trade site's lists instead (data/trade.json): the export
+  still marks hundreds of old and unused items released.
+
+  · 40 of the missing notables are ascendancy notables with no stat lines; 33 of those grant a skill
+    instead. No lines, no card.
+  · 1086 items have official text in data/info.json and 339 of them get no card — but only 9 of those
+    are on the trade site's list today. The rest are old items the export still carries.
+  · 239 base items grant a skill; we card 201 of them and name the skill on 201. The other 38 are not on
+    the trade site's list.
+  · The drill-down page lists 28 jewels; there is no jewel card kind at all.
+  · No tool turns these export files into site data: active_skill_types.min.json, ascendancies.min.json,
+    audio.min.json, buff_visuals.min.json, buffs.min.json, characters.min.json, cost_types.min.json,
+    default_monster_stats.min.json, flavour.min.json, gem_tags.min.json, keywords.min.json,
+    mods_by_base.min.json, skill_gems.min.json, skills.min.json, stat_value_handlers.min.json,
+    stats_by_file.min.json, tag_details.min.json, tags.min.json, world_areas.min.json.
