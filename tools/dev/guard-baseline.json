@@ -83,7 +83,6 @@
     "data/kwuse.json .k.*.w[] [stat id]": 29,
     "data/kwuse.json .k.{key} [stat id]": 9,
     "data/reqs.json .bases.{key} [[Tag] markup]": 51,
-    "data/trade.json .bases.Currency[] [[Tag] markup]": 2,
     "data/trade.json .mods[][] [stat id]": 8001,
     "data/trade.json .options.price[][] [stat id]": 1,
     "data/trade.json .states[][] [stat id]": 2

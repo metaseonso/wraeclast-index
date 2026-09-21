@@ -30,6 +30,15 @@ UA = 'wraeclast-index/1.0 (contact: https://wraeclastindex.fyi/)'
 KINDS = ('explicit', 'implicit', 'rune', 'desecrated', 'fractured', 'enchant', 'crafted')
 
 
+# ---- leftover game markers ----
+# The site's own lists still carry a few game-file placeholders whose NAME opens with [DNT] ("do not translate"):
+# rows the game never shows a player. Every list below is printed straight back at the player (the base search in
+# assets/tradepage.js walks every name in "bases"), so a marked row is never shipped, the same way a [DNT] gem name
+# is never a card in tools/sync.py. Here the marker is in the name itself, so the whole row goes.
+def dnt(*names):
+    return any((n or '').startswith('[DNT') for n in names)
+
+
 def get(name):
     req = urllib.request.Request(API + name, headers={'User-Agent': UA})
     with urllib.request.urlopen(req, timeout=60) as r:
@@ -237,21 +246,24 @@ def main():
         if group.get('id') not in KINDS + ('pseudo',):
             continue
         for e in group.get('entries', []):
+            if dnt(e['text']):
+                continue
             out['mods'].append([e['id'], e['text']])
     for group in items:
         for e in group.get('entries', []):
-            if (e.get('flags') or {}).get('unique') and e.get('name'):
+            if (e.get('flags') or {}).get('unique') and e.get('name') and not dnt(e['name'], e.get('type')):
                 bases = out['uniques'].setdefault(e['name'], [])
                 if e['type'] not in bases:
                     bases.append(e['type'])
     for group in filters:   # the site's own option lists
         for f in group.get('filters', []):
             if f['id'] in ('category', 'rarity', 'indexed', 'price'):
-                out['options'][f['id']] = [[o.get('id'), o.get('text')] for o in f['option']['options'] if o.get('id')]
+                out['options'][f['id']] = [[o.get('id'), o.get('text')] for o in f['option']['options']
+                                           if o.get('id') and not dnt(o.get('text'))]
     for group in items:
         seen = set()
         for e in group.get('entries', []):
-            if not (e.get('flags') or {}).get('unique') and e.get('type') and e['type'] not in seen:
+            if not (e.get('flags') or {}).get('unique') and e.get('type') and e['type'] not in seen and not dnt(e['type']):
                 seen.add(e['type'])
                 out['bases'].setdefault(group['label'], []).append(e['type'])
     for group in filters:   # yes/no item states from the Miscellaneous group
@@ -259,11 +271,11 @@ def main():
             continue
         for f in group.get('filters', []):
             opts = [o.get('id') for o in (f.get('option') or {}).get('options', [])]
-            if 'true' in opts and 'false' in opts and f['id'] != 'identified':
+            if 'true' in opts and 'false' in opts and f['id'] != 'identified' and not dnt(f.get('text')):
                 out['states'].append([f['id'], f.get('text') or f['id']])
     for group in static:
         for e in group.get('entries', []):
-            if e.get('id') and e.get('text'):
+            if e.get('id') and e.get('text') and not dnt(e['text']):
                 out['exchange'][e['text']] = e['id']
     add_ranges(out)
     typings(out)
