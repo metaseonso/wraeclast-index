@@ -118,6 +118,82 @@ def plain_lines(t):
     return [plain(x) for x in (t or '').split('\n') if x.strip()]
 
 
+# ---- leftover game markers ----
+# The game files mark text that is not live with [DNT] or [DNT-UNUSED] ("do not translate"). A gem whose NAME
+# carries the marker is never a card (CUT, the same test in explore.html and worker/seo.js), but the marker also
+# sits in the description of gems whose name is clean, and a description is printed on the card, on the item page
+# and in llms-full.txt. Each of those is a decision, so each is written down here by gem id:
+#   drop   not in the game. The row goes, the same way a [DNT] name goes.
+#   keep   in the game, and the wording is the real one: the marker goes, the words stay.
+#   blank  in the game, but the files hold no wording at all (the description is the placeholder "Description"):
+#          the description goes and the card stays, like every other gem the files describe nothing for.
+# Checked against the RePoE export, poe2db and the official trade site's own item lists.
+# A gem that carries a marker and is not on this list stops the build (clean_gems), and so does a marker that
+# reaches the search index (build_index). Shipping one is never the answer.
+CUT = re.compile(r'^\[DNT|^Removed Skill$')
+DNT = re.compile(r'\bDNT[\w-]*')
+DNT_TAG = re.compile(r'\[DNT[\w-]*\]\s*')
+DNT_GEMS = {
+    'SupportGemAtzirisCall':    ('drop', 'the trade site has no such lineage gem, and the skill it triggers is a placeholder'),
+    'SupportGemDreamersKnell':  ('drop', 'the trade site has no such lineage gem; its description is the codename "Ezomyte Four"'),
+    'SupportGemKnightsAnthem':  ('blank', 'a real lineage gem on the trade site, but the files hold no description for it'),
+    'SupportGemGreatwoodTwo':   ('keep', 'a real support gem: the trade site lists it under this name'),
+    'SupportGemNadir':          ('keep', 'a real support gem'),
+    'SupportGemFusillade':      ('keep', 'a real support gem'),
+    'SkillGemDarkTempest':      ('keep', 'a real skill gem'),
+    'SkillGemHazardousHoldout': ('keep', 'a real skill gem'),
+}
+
+
+def strip_dnt(v):
+    """Every [DNT] tag out of a gem's text, and the marker itself out of its keyword list."""
+    if isinstance(v, str):
+        return DNT_TAG.sub('', v)
+    if isinstance(v, list):
+        return [strip_dnt(x) for x in v if not (isinstance(x, str) and DNT.fullmatch(x))]
+    if isinstance(v, dict):
+        return {k: strip_dnt(x) for k, x in v.items()}
+    return v
+
+
+def clean_gems(gems):
+    """Every gem whose text still carries a game marker, settled by DNT_GEMS. Returns (dropped, cleaned) names."""
+    kept, dropped, cleaned = [], [], []
+    for g in gems['gems']:
+        if CUT.match(g['n']) or not DNT.search(json.dumps(g, ensure_ascii=False)):
+            kept.append(g)
+            continue
+        what, _ = DNT_GEMS.get(g['id'], (None, None))
+        if not what:
+            sys.exit('%s has a game marker in text a player reads: %r\n'
+                     '  Say what it is in DNT_GEMS in tools/sync.py: "drop" if it is not in the game, "keep" if it '
+                     'is and the wording is real, "blank" if it is and the files hold no wording.'
+                     % (g['n'], plain(g.get('txt', ''))[:100] or g['n']))
+        if what == 'drop':
+            dropped.append(g['n'])
+            # name and keywords only, no text: nothing draws these, but tools/kwuse.py counts them so its check
+            # against the artifact's own numbers still adds up
+            gems.setdefault('dropped', []).append({'n': g['n'], 'kw': strip_dnt(g.get('kw') or [])})
+            continue
+        if what == 'blank':
+            g.pop('txt', None)
+        for k in list(g):
+            g[k] = strip_dnt(g[k])
+        left = DNT.search(json.dumps(g, ensure_ascii=False))
+        if left:
+            sys.exit('%s still carries a game marker after cleaning: %r' % (g['n'], left.group(0)))
+        cleaned.append(g['n'])
+        kept.append(g)
+    gems['gems'] = kept
+    return dropped, cleaned
+
+
+def with_clean_gems(html):
+    gems = block(html, 'gemdata')
+    dropped, cleaned = clean_gems(gems)
+    return put(html, 'gemdata', gems), dropped, cleaned
+
+
 # ---- official unique lines (data/uniques.json, from tools/uniques.py) ----
 # A number, a range, or a signed range: 5, +(40-60), -(5-1), (4.01-5.48)
 NUM = re.compile(r'[+-]?\(?[+-]?\d+(?:\.\d+)?(?:-[+-]?\d+(?:\.\d+)?)?\)?')
@@ -354,7 +430,7 @@ def build_index(html):
     colour = {'r': 'Strength', 'g': 'Dexterity', 'b': 'Intelligence', 'w': ''}
     kind = {'active': 'Skill gem', 'spirit': 'Spirit gem', 'support': 'Support gem'}
     for g in gems['gems']:
-        if re.match(r'^\[DNT|^Removed Skill$', g['n']):
+        if CUT.match(g['n']):
             continue
         what = 'Lineage support gem' if g.get('lin') and g['t'] == 'support' else kind.get(g['t'], 'Gem')   # the game files mark lineage gems
         sub = what + (' · ' + colour[g['c']] if colour.get(g.get('c')) else '')
@@ -439,6 +515,8 @@ def build_index(html):
     for k, v in kw.items():
         if not v.get('t') or not v.get('d'):
             continue
+        if v['t'].startswith('[DNT'):   # a placeholder keyword, like a [DNT] gem or passive name: no card
+            continue
         if v['t'].lower() in taken:
             kwx[k] = v['t']
             continue
@@ -470,6 +548,8 @@ def build_index(html):
             for x in (it.get(f) if isinstance(it.get(f), list) else [it.get(f)]):
                 if x and RAW.search(x):
                     sys.exit('raw game code in %s %r: %r' % (f, it['n'], x))
+                if x and DNT.search(x):
+                    sys.exit('leftover game marker in %s %r: %r (see DNT_GEMS in tools/sync.py)' % (f, it['n'], x))
         for f in ('ls', 'pr', 'tags', 'o'):
             if f in it and not it[f]:
                 del it[f]
@@ -616,7 +696,7 @@ def site_scripts(html):
         html = html.replace(BOOT_OLD, BOOT_NEW, 1)
     gems = block(html, 'gemdata')
     patch = re.sub(r'^4\.(\d+)\.(\d+).*$', r'0.\1.\2', str(gems['meta'].get('game_version') or ''))
-    live = sum(1 for g in gems['gems'] if not re.search(r'^\[DNT|^Removed Skill$', g['n']))   # the page's own count (CUT)
+    live = sum(1 for g in gems['gems'] if not CUT.match(g['n']))   # the page's own count (CUT)
     html = re.sub(r'<b id="patch">[^<]*</b>', '<b id="patch">%s</b>' % patch, html, count=1)
     html = re.sub(r'<b id="total">[^<]*</b>', '<b id="total">{:,}</b>'.format(live), html, count=1)
     for pat, words in BUILD_COPY:   # the foot copy says the patch, not the client build
@@ -738,6 +818,9 @@ def main():
     html = inline(Path(sys.argv[1]).read_text(encoding='utf-8'))
     html, n = with_official_uniques(html)
     print('uniques with official lines:', n, 'changed')
+    html, dropped, cleaned = with_clean_gems(html)
+    print('gems with a leftover game marker: %d cleaned, %d dropped%s'
+          % (len(cleaned), len(dropped), (' (' + ', '.join(dropped) + ')') if dropped else ''))
     index = build_index(html)
     (ROOT / 'data').mkdir(exist_ok=True)
     (ROOT / 'data' / 'index.json').write_text(

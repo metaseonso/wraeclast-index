@@ -3,6 +3,44 @@
 The full list of changes. The public patch notes (data/changelog.json, shown on the site) stay short.
 Add the details here first, then a short public line there.
 
+## Next — No DNT markers in gem descriptions (#29)
+
+- The game files mark text that is not live with `[DNT]` or `[DNT-UNUSED]` ("do not translate"). The site has
+  always dropped a gem whose NAME carries the marker, but the marker also sits in the description of gems whose
+  name is clean, and a description is printed on the card, on the item page and in llms-full.txt. Eight gems
+  showed one there: Atziri's Call, Dreamer's Knell, Greatwood II, Styrn's Anthem, Nadir, His Dark Horizon,
+  Kinetic Bash and Fusillade. All eight were on the deploy guard's known-exception list (guard-baseline.json
+  `rawText`), which is now empty.
+- Each was settled on its own, against the RePoE fork's export, poe2db and the official trade site's own item
+  lists, and written down in DNT_GEMS in tools/sync.py:
+  - **Atziri's Call** and **Dreamer's Knell** are not in the game. Neither is in the trade site's lineage gem
+    list or its item list, the skills they grant are still placeholders ("Fill me in", "Ring Ring but small"),
+    and Dreamer's Knell's whole description is the codename "Ezomyte Four". They are not cards any more: the
+    rows leave the gem data, the same end as a `[DNT]` name.
+  - **Styrn's Anthem** is a real lineage gem — the trade site lists it, and its card's picture already comes
+    from that list — but the files hold no description for it at all, only the placeholder "Description". The
+    description goes and the card stays, like the 13 other lineage gems the files describe nothing for.
+  - **Greatwood II**, **Nadir**, **His Dark Horizon**, **Kinetic Bash** and **Fusillade** are in the game and
+    the wording is the real one, word for word what poe2db prints. Only the marker goes. (Greatwood II reads
+    like an internal name, but the trade site itself lists the gem under it, so it stays.)
+- One more card came out of the same marker: the keyword **[DNT-UNUSED] Edict Declaration**. Its name kept it
+  off the crawler pages but not out of the app's search, so build_index now drops a `[DNT]` keyword the way it
+  already drops a `[DNT]` gem or passive.
+- The fix is at the source, in tools/sync.py, so a data pull cannot bring it back: clean_gems() runs over the
+  gem block before anything reads it, and a gem that carries a marker and is not in DNT_GEMS **stops the
+  build**, naming the gem and the three calls open to it. A marker that reaches the search index stops the
+  build too, beside the existing raw-game-code check. CUT (the `[DNT]`/Removed Skill name test) is now one
+  expression instead of three copies.
+- A dropped row would have left tools/kwuse.py's check against the artifact's own counts two gems short, so
+  clean_gems() leaves the dropped names and their keywords in the gem block under `dropped` — nothing draws
+  it, kwuse.py counts it, and the check still adds up ("all left out on purpose").
+- The shipped data was patched in place with that same cleaner rather than rebuilt (a full rebuild needs the
+  artifact HTML, which only the owner's machine has): data/explore/gems.*.json renamed to its new content hash
+  the way externalize() names it (b077d996f1 → 9b8a02fcf1) with explore.html pointed at it and its gem count
+  down to 1,072, data/index.json and its two parts (tools/appdata.py), and data/kwuse.json re-run.
+- Still there and still hidden behind the name filter, untouched: the 43 `[DNT]`-named gems, 104 passives and
+  the placeholder keyword entries in the drill-down's own data, which the guard already knows as internal keys.
+
 ## Next — No game-file text on the cards (#2)
 - Brutus' Lead Sprinkler carried "local display grants level X molten shower [1]" on its card, straight from the
   game files. poe2db prints a stat like that when the game has no wording for it: the stat's id written out in

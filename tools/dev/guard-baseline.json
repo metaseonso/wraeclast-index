@@ -19,16 +19,7 @@
     "/": 0,
     "/explore": 190
   },
-  "rawText": [
-    "DNT marker: DNT Description Tags: Support, Lineage ### Styrn's Feroc",
-    "DNT marker: DNT Raise your Crossbow to Block all incoming Blockable ",
-    "DNT marker: DNT Supports Skills which create Totems, limiting their ",
-    "DNT marker: DNT-UNUSED Create a storm of deathly energies that Empow",
-    "DNT marker: DNT-UNUSED Ezomyte Four Tags: Support, Lineage, Attack, ",
-    "DNT marker: DNT-UNUSED Supports Bow Attacks you use yourself. Suppor",
-    "DNT marker: DNT-UNUSED Supports Skills which gain Stages or Seals. S",
-    "DNT marker: DNT-UNUSED Supports Spells you use yourself which Hit en"
-  ],
+  "rawText": [],
   "raw": {
     "data/explore/gems.*.json .*.* [[Tag] markup]": 48,
     "data/explore/gems.*.json .*.* [[a|b] markup]": 7,

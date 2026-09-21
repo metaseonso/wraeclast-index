@@ -26,7 +26,7 @@ everyday one (Gain, Maximum, Charges), matched in plain text only next to their 
 Every list is in alphabetical order. The "Used by" counts on keyword cards (data/index.json "use") are set to
 these lists' lengths. Checked against the artifact's own counts (kwdata "n"): every gem,
 unique and passive it counts is here, except the ones the site leaves out (unreleased [DNT] gems and passives,
-and repeated copies of a unique); the report says which.
+the gems tools/sync.py drops by name in DNT_GEMS, and repeated copies of a unique); the report says which.
 
 Output groups per keyword: u uniques, g gems, p passives, b bases, e essences (rows of "es"), a atlas (rows of "at"),
 m crafting (rows of "cr"), c currency (rows of "cu"), w keywords.
@@ -546,6 +546,8 @@ def on_tree(e, sp):
 def check(kw, out_k, sp, gems, uq, tr, uniq):
     """The counts the site shows against the artifact's own (kwdata "n"). Lower only where the site leaves things out."""
     dnt_g = Counter(k for g in gems['gems'] if re.match(r'^\[DNT|^Removed Skill$', g['n']) for k in set(g.get('kw') or []))
+    # and the gems tools/sync.py left out of the file altogether (DNT_GEMS "drop"), which it lists in "dropped"
+    dnt_g += Counter(k for g in gems.get('dropped') or [] for k in set(g.get('kw') or []))
     dup_u = Counter(k for u in uq['items'] for k in set(u.get('kw') or [])) - Counter(k for u in uniq for k in set(u.get('kw') or []))
     dnt_p = Counter(k for p in tr['passives'] if (p.get('n') or '').startswith('[DNT') or (p.get('a') or '').startswith('[DNT')
                     or not p.get('n') or not p.get('t') for k in set(p.get('kw') or []))
