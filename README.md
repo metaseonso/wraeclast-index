@@ -44,6 +44,11 @@ The site is static. GitHub Pages serves it; a GitHub Action (`.github/workflows/
 | `data/farms.json`, `data/farmqueries.json` | Farms tab: strategies from BawLoch's public tier list sheet and the trade searches for their rolled tablets and waystones, by hand with `python tools/farms.py` (`data/farmprices.json` holds those searches' prices) |
 | `data/craft.json`, `data/craft/` | Craft tab: every base and the mods it can roll (all tiers, item levels, groups), essences, runes and soul cores, desecrated and corruption mods, orbs, omens and catalysts, built by `tools/craft.py` from the game files (essence tables and orb levels checked on poe2db; run after a game patch, after `tools/tradedata.py`) |
 
+**Before every push: `node tools/dev/guard.mjs`** (about 5 seconds). It starts a local copy of the site and
+checks the card counts, every deep link the code emits, every public page, that no raw game code shows where a
+player reads it, and that a phone-sized Chrome still opens a card without it snapping shut. See
+[`tools/dev/README.md`](tools/dev/README.md).
+
 ## Speed
 
 - **First visit.** The home page asks for what its first cards need before anything else: `data/index-core.json` (uniques
