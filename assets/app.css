@@ -597,6 +597,34 @@ small.at-bonus{display:block}
 .cxm-row b{font-weight:600; font-size:13px}
 .cxm-for{font-family:var(--mono); font-size:12px; color:var(--text)}
 .cxm-vol{grid-column:1/-1; font-size:11.5px; color:var(--muted)}
+/* Currency tab: the watch list picker (assets/currency.js) */
+.sect .btn{align-self:center}
+.cx-more{display:flex; justify-content:center; gap:8px; flex-wrap:wrap}
+.cxpick h3{font-family:var(--disp); font-size:19px; margin:0 0 4px}
+.cxpick .cxp-q{width:100%; margin:10px 0 8px}
+.cxp-chips{display:flex; flex-wrap:wrap; gap:5px; margin-bottom:8px}
+.cxp-chips:empty{display:none}
+.cxp-chips .chip{padding:3px 10px; font-size:12px}
+.cxp-fams{padding-top:8px; border-top:1px solid var(--line-soft)}
+.cxp-list{display:grid; gap:4px; max-height:46vh; overflow:auto; overscroll-behavior:contain}
+.cxp-row{display:grid; grid-template-columns:auto minmax(0,1fr) auto; grid-template-rows:auto auto; gap:0 10px; width:100%; text-align:left;
+  font:inherit; color:var(--text); background:var(--surface); border:2px solid var(--line); border-radius:8px; padding:6px 10px; cursor:pointer}
+.cxp-row:hover, .cxp-row:focus-visible{border-color:var(--accent); outline:none}
+.cxp-row[aria-checked="true"]{border-color:var(--accent); background:var(--accent-soft)}
+.cxp-row .star{grid-area:1/1/3/2; align-self:center; font-size:16px; color:var(--faint)}
+.cxp-row[aria-checked="true"] .star{color:var(--accent)}
+.cxp-nm{grid-area:1/2/2/3; font-weight:600; font-size:13px; overflow-wrap:anywhere}
+.cxp-cat{grid-area:2/2/3/3; font-size:11px; color:var(--faint)}
+.cxp-px{grid-area:1/3/3/4; align-self:center; font-family:var(--mono); font-size:13px; white-space:nowrap}
+.cxp-px small{font-size:10px; color:var(--faint); margin-left:2px}
+.cxp-ft{display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-top:10px}
+/* a phone: the chips run in one swipeable line each, so the currencies start above the fold, and the
+   list scrolls with the popup rather than inside it — one finger, one surface */
+@media (max-width:640px){
+  .cxp-chips{flex-wrap:nowrap; overflow-x:auto; overscroll-behavior-x:contain; scrollbar-width:none; padding-bottom:2px}
+  .cxp-chips::-webkit-scrollbar{display:none}
+  .cxp-list{max-height:none; overflow:visible}
+}
 /* Admin: Cloudflare section */
 .dv-sect{margin:26px 0 6px; font-family:var(--disp); font-size:20px}
 .dv-g{display:inline-block; padding:1px 7px; border-radius:6px; font-family:var(--mono); font-size:12px; border:1px solid var(--line)}

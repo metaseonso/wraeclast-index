@@ -3,6 +3,52 @@
 The full list of changes. The public patch notes (data/changelog.json, shown on the site) stay short.
 Add the details here first, then a short public line there.
 
+## Next — Currency: a watch list you can actually build
+- The complaint: the Vaal temple currencies were not in the watch list. They were never missing — all seven
+  are in the data with real Exchange prices and, four of them, enormous volume (Vaal Armourer's Infuser 67,332
+  div a day). The grid just draws the first 48 rows sorted by biggest move, out of 661 the Exchange lists, so
+  unless you already knew to type "vaal" in the filter box there was no star to click. Most of the 661 could
+  not be reached at all.
+- **The picker.** A gold **★ Add to watch list** at the head of the Watch list section opens the site's own
+  popup (`openBox`, the one the Suggest box uses), so Escape, the phone's Back and a tap on the dim all close
+  it and there is no ✕. Inside: a search box over every row whatever its volume, the group chips, and the
+  currencies. A row is the whole tap target — star on the left, name and its kind in the middle, the live
+  Exchange price on the right — and a starred row lights up, border and star both, so the state reads at a
+  glance. A currency the Exchange has no price for gets no price cell at all, not a dash and not a zero.
+- **Groups come out of the data, not out of a list someone has to maintain.** Two rows of chips:
+  - the catalogue's own kinds, as the page's filter already used them: Currency, Fragments, Abyssal Bones,
+    Uncut Gems, Lineage Supports, Essences, Soul Cores, Idols, Runes, Omens, Expedition, Liquid Emotions,
+    Catalysts, Verisium.
+  - **families found in the names themselves**: a word at least three names in the group share. A word that
+    covers 90% or more of its group says nothing and is dropped (so no "Essence" chip inside Essences), and
+    two words that travel together 90% of the time both ways read as one chip — that is where "Soul Core",
+    "Uncut Gem", "Reliquary Key", "Crisis Fragment" and "Starlit Ore" come from. Levels in brackets and a
+    leading "The" are not words a family can be named after.
+- What that actually gives today: **All** → Rune 128, Essence 82, Soul Core 49, Greater 45, Uncut Gem 42,
+  Perfect 41, Omen 37, Lesser 34, Orb 32, Ancient 31, Idol 31, Liquid 27, Catalyst 26, Skill 20. **Currency**
+  → Orb 32, **Vaal 7**, Greater 6, Perfect 6, Infuser 5, Regal 4, Sacrifice 4, Shard 4, Transmutation 4, and
+  four more of three. **Runes** → Warding 17, Aldur 5, Glacial 4, Iron 4… **Soul Cores** → Jiquani 15, Atziri 4,
+  Thesis 4. **Fragments** → Reliquary Key 9. **Verisium** → Alloy 13, Crest 4, Starlit Ore 4. Fourteen chips at
+  most per group, biggest first.
+- Nine rows the Exchange trades carry no kind in the catalogue at all (Stone Rune, Charging Rune, Essence of
+  Battle, Lesser Stone Rune and five more). No kind was invented for them: they answer to the search box and
+  to their family, and the page's own kind filter no longer draws the blank chip it used to draw for them.
+- **Past 48.** The "Show more" row grew a **Show all N** beside it. Every one of the 661 rows draws in about
+  half a second on a 375×812 phone profile, with no sideways scroll and no console error; the picker has its
+  own "Show all 661" and draws in about 90 ms. On a phone the two chip rows run in one swipeable line each so
+  the currencies still start above the fold, and the list scrolls with the popup rather than inside it, the
+  same way the card's "Found on" list does.
+- **Nothing changed for a watch list already saved.** Same `wi.watch` key, same ids as the card stars. One
+  `toggleWatch` now turns a star on or off for both the card on the page and the row in the picker, so they
+  cannot disagree — the grid reuses card nodes, so the card's star had to be told.
+- Checked in headless Chrome at 375×812 with touch and at 1280×900, against a local server that merges
+  `exchange.json` into `market.json` the way `worker/prices.js` does, so the prices under test are the real
+  feed: find and star all seven Vaal currencies through the picker, reload, "★ Watching" then lists exactly
+  those seven with their live prices, no zero anywhere, "Show all" draws 661, and the picker opens and closes
+  by Escape, by Back and by the dim. `node tools/dev/guard.mjs` stays 6 ok, 0 failed.
+- Not done: the picker sorts by name only — no "busiest first". Families are one at a time, not stacked. The
+  Watching chip counts only stars the Exchange still lists, so a star left over from an older league is kept
+  but not counted. No public patch-notes line yet: that goes in with the release.
 ## Next — Craft: mod weights, and what the game files really carry
 - The ticket was "crafting mod weights are required under crafting section": per mod tier its spawn weight and its
   share of the pool it competes in. **The weights are not in the game data.** RePoE's export of the current client
