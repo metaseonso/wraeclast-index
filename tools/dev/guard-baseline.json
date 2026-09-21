@@ -75,6 +75,7 @@
     "data/index.json .items[].q [stat id]": 514,
     "data/index.json .items[].t [DNT marker]": 9,
     "data/index.json .kwx.{key} [stat id]": 9,
+    "data/index.json .lxk[] [stat id]": 5,
     "data/info.json .*.t [DNT marker]": 1,
     "data/info.json .{key} [DNT marker]": 8,
     "data/info.json .{key} [[Tag] markup]": 1,

@@ -34,7 +34,7 @@ The site is static. GitHub Pages serves it; a GitHub Action (`.github/workflows/
 |---|---|
 | `index.html`, `assets/app.js`, `assets/app.css` | The app: search home page and the live card |
 | `explore.html` | The drill-down page (built from the Wraeclast Index artifact); its data sits in `data/explore/` (files named by their content) |
-| `data/index.json` | Search index, built by `tools/sync.py`; the base item, Atlas and extra currency cards come from `tools/morecards.py` (kinds `b`, `a`, `c`). The home page loads it in two parts, `data/index-core.json` and `data/index-rest.json` (`tools/appdata.py`) |
+| `data/index.json` | Search index, built by `tools/sync.py`; the base item, Atlas and extra currency cards come from `tools/morecards.py` (kinds `b`, `a`, `c`); the phrases in a card's lines that name another card are marked by `tools/nodelinks.py` (`lx` on the card, `lxk` the key table). The home page loads it in two parts, `data/index-core.json` and `data/index-rest.json` (`tools/appdata.py`) |
 | `sw.js` | The service worker (see Speed) |
 | `assets/fonts/` | The site's own copies of its fonts (Cinzel, IBM Plex Sans, IBM Plex Mono; SIL Open Font License) |
 | `data/kwuse.json` | What uses each keyword (the "Found on" lists on keyword cards), built by `tools/kwuse.py` |
@@ -64,7 +64,8 @@ player reads it, and that a phone-sized Chrome still opens a card without it sna
   twice to check a deploy in a browser that has visited before). Never kept: `/api/*`, `/admin`, the crawler pages and
   the live price files (market, leagues, roll and farm prices).
 - **Nothing to run by hand:** `tools/sync.py` and `tools/kwuse.py` write the index parts and the drill-down files; after
-  editing `data/index.json` by hand, run `python tools/appdata.py`. To switch the service worker off everywhere, make
+  editing `data/index.json` by hand, run `python tools/appdata.py` (or `python tools/nodelinks.py`, which finds the
+  references in the lines again and then writes the parts). To switch the service worker off everywhere, make
   `sw.js` a file that only calls `self.registration.unregister()`.
 
 ## Findable (search engines and AI search)
@@ -108,7 +109,8 @@ In this order (each step reads what the one before wrote):
 1. After a game patch: `python tools/gameinfo.py`, then `python tools/tradedata.py`
 2. `python tools/sync.py path/to/artifact.html` (after the Wraeclast Index artifact changes; `explore.html` works too, it holds the same data)
    (builds `data/index.json`: the artifact's gems, uniques, passives and keywords, plus base items, the Atlas and the currency the
-   catalogue lacks; the first run checks each new image link once, up to 20 minutes; lists are cached a day in `tools/cache/`)
+   catalogue lacks, and the references inside each card's lines; the first run checks each new image link once, up to 20 minutes;
+   lists are cached a day in `tools/cache/`)
 3. After a game patch: `python tools/atlas.py` and `python tools/craft.py`, then `python tools/sync.py` again
    (the Atlas cards come from `data/atlas.json`, and a base's Craft link only where the Craft tab has that base)
 4. Last, after any of the above: `python tools/kwuse.py`

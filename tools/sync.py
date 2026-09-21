@@ -7,8 +7,8 @@ The artifact page (gems, uniques, passive tree) is the drill-down. This script:
   2. copies the page to explore.html and adds the small bridge script that links it to the home page; the page's data
      goes to data/explore/ (see "the drill-down page's data, outside the page")
   3. builds data/index.json, the compact search index (with the base items, the Atlas and the currency the catalogue
-     lacks, from tools/morecards.py; lineage support gems are marked "li"), and its two parts the home page loads
-     (tools/appdata.py)
+     lacks, from tools/morecards.py; lineage support gems are marked "li"), marks the phrases in each card's lines
+     that name another card (tools/nodelinks.py), and writes its two parts the home page loads (tools/appdata.py)
   4. gives every card without a sprite an official game image (see "card images" below)
 
 Usage:  python tools/sync.py path/to/artifact.html
@@ -562,8 +562,11 @@ def build_index(html):
     dup = {x for x in keys if keys.count(x) > 1}
     if dup:
         sys.exit('duplicate card keys: %s' % sorted(dup)[:10])
-    return {'v': gems['meta'].get('game_version'), 'gen': gems['meta'].get('generated'),
-            'sprites': gems.get('sprites'), 'imgs': IMGS, 'kwx': kwx, 'items': items}
+    index = {'v': gems['meta'].get('game_version'), 'gen': gems['meta'].get('generated'),
+             'sprites': gems.get('sprites'), 'imgs': IMGS, 'kwx': kwx, 'items': items}
+    import nodelinks   # the doors inside each card's own lines: a phrase naming another card
+    nodelinks.report(index, nodelinks.attach(index))
+    return index
 
 
 # Prices on the drill-down page: never the snapshot baked into the artifact (poe.ninja), only the site's live file

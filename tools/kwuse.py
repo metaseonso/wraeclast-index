@@ -42,6 +42,7 @@ from collections import Counter, defaultdict
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+from phrases import Matcher  # noqa: E402
 from sync import KWREF, RAW, block  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -132,26 +133,6 @@ def covers(fw, ws):
     return bool(ws) and all(any(same_word(w, x) for x in fw) for w in ws)
 
 
-class Matcher:
-    """Finds whole-word, case-sensitive occurrences of many phrases at once (they may overlap)."""
-    WORD = re.compile(r'\w+')
-
-    def __init__(self, phrases):   # phrase -> set of keyword ids
-        self.first = defaultdict(list)
-        for f, ks in phrases.items():
-            m = self.WORD.match(f)
-            if not m:
-                sys.exit('a keyword form must start with a letter: %r' % f)
-            self.first[m.group(0)].append((f, ks))
-
-    def find(self, text):
-        for m in self.WORD.finditer(text):
-            for f, ks in self.first.get(m.group(0), ()):
-                s, e = m.start(), m.start() + len(f)
-                if text.startswith(f, s) and (e == len(text) or not (text[e].isalnum() or text[e] == '_')):
-                    yield s, e, f, ks
-
-
 def keyword_forms(kw, blobs):
     """keyword id -> the words it is matched by in plain text."""
     shown = defaultdict(Counter)   # keyword -> display form -> how often the markup shows it so
@@ -169,7 +150,7 @@ def keyword_forms(kw, blobs):
     corpus = [x for blob in blobs for s in strings(blob) if ' ' in s for x in lines(s)]
     single = {f for k, c in shown.items() for f in c if owners[f] == {k}}
     seen = Counter()
-    m = Matcher({f: {f} for f in single})
+    m = Matcher({f: {f} for f in single}, what='keyword form')
     for text in corpus:
         for _, _, f, _ in m.find(text):
             seen[f] += 1
@@ -231,7 +212,7 @@ def main():
     for k in live:
         for f in forms[k]:
             phrases[f].add(k)
-    matcher = Matcher(phrases)
+    matcher = Matcher(phrases, what='keyword form')
     not_this = {k: re.compile(p) for k, p in NOT_THIS.items()}
     only_with = {k: re.compile(p) for k, p in ONLY_WITH.items()}
 

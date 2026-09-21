@@ -11,7 +11,9 @@ The home page shows its first cards as soon as the core and the prices are in; s
 tabs wait for the rest (assets/app.js). Both parts carry the same id (from data/index.json), so the page never mixes
 two versions. data/index.json itself stays whole: the crawler pages (worker/seo.js) and the tools read it.
 
-Shorter than the index: items are grouped by kind (no "k" on each), and "id" is left out where it equals the name.
+Shorter than the index: items are grouped by kind (no "k" on each), "id" is left out where it equals the name, and
+the references in the lines ("lx", tools/nodelinks.py) point into a key table each part builds for itself ("lxk"),
+so a file only carries the node keys it uses.
 
 Usage:  python tools/appdata.py
 """
@@ -21,6 +23,24 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 CORE_KINDS = ('u', 'c')   # uniques and currency: every card the home page's "biggest price moves" can show
+
+
+def renumber(lx, keys, table, at):
+    """A card's references, pointed at this part's own key table instead of the whole index's."""
+    out = []
+    for spans in lx:
+        if not spans:
+            out.append(0)
+            continue
+        row = []
+        for start, n, i in spans:
+            key = keys[i]
+            if key not in at:
+                at[key] = len(table)
+                table.append(key)
+            row.append([start, n, at[key]])
+        out.append(row)
+    return out
 
 
 def split(index, raw):
@@ -37,15 +57,23 @@ def split(index, raw):
             'skip': sorted({it['n'] for it in index['items'] if it['k'] == 'a'}),
             'li': sorted({it['n'] for it in index['items'] if it['k'] == 'g' and it.get('li')})}
     rest = {'id': ident, 'kwx': index.get('kwx') or {}, 'ckw': {}}
+    keys = index.get('lxk') or []
+    tables = {'core': ([], {}), 'rest': ([], {})}
     for it in index['items']:
         k = it['k']
         o = {f: v for f, v in it.items() if f != 'k' and not (f == 'id' and v == it['n'])}
+        if o.get('lx'):
+            table, at = tables['core' if k in CORE_KINDS else 'rest']
+            o['lx'] = renumber(o['lx'], keys, table, at)
         if k in CORE_KINDS:
             if o.get('kw'):   # keyword chips show in the popup, which waits for the rest
                 rest['ckw'][k + ':' + it['id']] = o.pop('kw')
             core.setdefault(k, []).append(o)
         else:
             rest.setdefault(k, []).append(o)
+    for name, part in (('core', core), ('rest', rest)):
+        if tables[name][0]:
+            part['lxk'] = tables[name][0]
     return core, rest
 
 

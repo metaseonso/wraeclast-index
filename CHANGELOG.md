@@ -3,6 +3,38 @@
 The full list of changes. The public patch notes (data/changelog.json, shown on the site) stay short.
 Add the details here first, then a short public line there.
 
+## Next — The lines carry their own links (build side)
+- A card's lines name other cards all the time ("Grants Skill: Icestorm", "Zealot's Oath", "You can only Socket
+  Ruby Jewels in this item") and every one of them shipped as flat text. The builders now find those phrases and
+  write down where they sit, so no card's links are typed by hand and a new card opens its own doors the next
+  time the index is built. Nothing on the site changes yet: the browser still reads the same plain lines.
+- `tools/phrases.py` holds the matcher both jobs now share. `tools/kwuse.py` had it (whole-word, case-sensitive,
+  many phrases at once); it moved out with `find()` unchanged and a `scan()` beside it that takes the longest
+  phrase at each place and never one inside another. `tools/kwuse.py` writes a byte-identical `data/kwuse.json`
+  after the move.
+- `tools/nodelinks.py` is the resolver: 5,070 card names plus the 554 other words the game's own markup shows a
+  keyword as, matched over the lines a player reads ("ls" on uniques, bases and passives, "t" on gems). It never
+  guesses. One card with that name is a reference; the card's own name is not a door; two cards of one kind with
+  that name (Decompose, Herald of Ash, Spark) is nothing; two kinds is nothing unless the line says which kind it
+  means, and only "Grants Skill:" does — it names a gem. A keyword is nothing: the card already carries its
+  keyword chips, and linking the 13,990 keyword phrases in these lines as well (11,457 references) would put
+  `data/index-core.json` at 81.1 KB compressed against a budget of 70. Keyword forms still earn their place by
+  blocking: "Endurance Charges" is the keyword, so the notable called "Endurance" inside it is left alone.
+- 242 references on 215 cards, in 237 lines: 205 to gems, 17 to passives, 14 to bases, 3 to uniques, 3 to the
+  Atlas. 150 of the 163 "Grants Skill:" lines on uniques now name their gem; the 13 that do not are the skills
+  the game has two gem entries for. 46 phrases stay plain as ambiguous over 377 lines, the loudest being Shock
+  and Freeze (a support gem and an ailment share the name).
+- The lines themselves are untouched. A card gains `lx`, one entry per line in the order the card shows them:
+  0 where the line has no reference, else `[[start, length, key], ...]` with key an index into a table of node
+  keys ("g:...", "u:...", the keys `D.byKey` is built from). `tools/appdata.py` renumbers into a table of each
+  part's own when it splits the index, so `data/index-core.json` carries only the 81 keys it uses and
+  `data/index-rest.json` the 32 it uses. Compressed: core 63.9 KB -> 65.9 KB (the budget is 70), rest
+  280.1 KB -> 281.1 KB. Written as `[text, spans...]` instead, with the text copied a second time, core would
+  have been 68.6 KB and could drift from the line it copies.
+- Proof nothing moved: across all 5,400 cards in all three files, not one existing field changed value and the
+  only new keys are `lx` and `lxk`; 20 item pages across five kinds, rendered through `worker/seo.js` before and
+  after, hash the same. `tools/dev/guard-baseline.json` gains one line: the key table holds five passive ids,
+  which read as game code in the data and are never shown to anyone.
 ## Next — Owner dashboard: the blank tabs, and the notes that never came
 
 - Every tab but Overview came up blank on the live site: no numbers, no "No data.", nothing under the tab
