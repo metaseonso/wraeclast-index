@@ -28,6 +28,10 @@ from uniques import clean_lines  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent
 BRIDGE = '<script src="assets/bridge.js" defer></script>'
+# On a phone the keyboard shrinks the page instead of covering it, so a card's own boxes stay in view
+# (the card sheet is sized in dvh, assets/cards.css).
+VIEWPORT_OLD = '<meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover">'
+VIEWPORT_NEW = '<meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover,interactive-widget=resizes-content">'
 # For search engines and link previews: the page's own title (the artifact's sits in <body>, see TITLE),
 # description, canonical address, preview card and structured data.
 SEO = ('<title>PoE2 gems, uniques and passive tree · Wraeclast Index</title>'
@@ -849,6 +853,8 @@ def explore_page(html):
     if BRIDGE not in html:
         html = html.replace('</body>', BRIDGE + '\n</body>', 1)
     html = GOOGLE_FONTS.sub('', html)   # the fonts are the site's own (assets/fonts)
+    if VIEWPORT_NEW not in html:
+        html = html.replace(VIEWPORT_OLD, VIEWPORT_NEW, 1)
     if HEAD not in html:
         html = html.replace(HEAD_OLD, HEAD, 1) if HEAD_OLD in html else html.replace(TITLE, '', 1).replace('</head>', HEAD + '</head>', 1)
     html = live_prices(html)

@@ -9,12 +9,14 @@ html.wi-wait body > .wrap{visibility:hidden; min-height:100vh}
 /* flying rows (bridge.js): a row that leaves fades out over the list, clipped to it */
 .tablewrap{position:relative; overflow-y:hidden}
 .flyghost{position:absolute; min-width:0; margin:0; table-layout:fixed; pointer-events:none; z-index:0}
-/* phones: the drill-down's category tabs and filter rows wrap, the app links scroll sideways (no page overflow) */
+/* phones: the drill-down's category tabs and filter rows wrap, and the two strips of app links slide
+   sideways inside themselves, so the page itself never runs off the side */
 @media (max-width:760px){
-  .seg, .row{flex-wrap:wrap}
-  .row > *{min-width:0}
-  .applinks{overflow-x:auto; max-width:100%; scrollbar-width:none; flex-wrap:nowrap}
-  .applinks::-webkit-scrollbar{display:none}
+  .seg, .row, .tagwrap{flex-wrap:wrap}
+  .controls > *, .row > *, .kwwrap > *, .tagwrap > *{min-width:0}
+  .applinks, .navgrp{overflow-x:auto; max-width:100%; min-width:0; scrollbar-width:none; flex-wrap:nowrap}
+  .applinks::-webkit-scrollbar, .navgrp::-webkit-scrollbar{display:none}
+  .navgrp > .applinks{overflow:visible; max-width:none}   /* the whole group slides, not each part of it */
 }
 .ggg-note{max-width:1200px; margin:24px auto 32px; padding:0 16px; text-align:center; font-size:12px; color:var(--faint)}
 .ggg-note a{color:var(--muted)}

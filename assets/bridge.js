@@ -207,7 +207,9 @@
     bodies.forEach(measure);
     const mo = new MutationObserver(recs => new Set(recs.map(r => r.target)).forEach(fly));
     bodies.forEach(tb => mo.observe(tb, {childList: true}));
-    // measure again just before anything the player does, so a resize or a font load never leaves stale positions
-    for(const t of ['input', 'change', 'click']) document.addEventListener(t, () => bodies.forEach(measure), true);
+    // measure again just before anything the player does, so a resize or a font load never leaves stale positions.
+    // While a card covers the page the rows behind it cannot move, so skip it: typing in the card stays smooth
+    for(const t of ['input', 'change', 'click'])
+      document.addEventListener(t, () => { if(!document.body.classList.contains('ov-open')) bodies.forEach(measure); }, true);
   }
 })();

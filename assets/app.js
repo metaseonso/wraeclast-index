@@ -339,6 +339,12 @@ let OV = null, lastFocus = null;
 let TRAIL = [], AT = -1, SEQ = 0, PEND = null;   // the trail, where you are on it, the next step id, a card still loading
 const CUR = () => TRAIL[AT] || null;   // the card on show
 const focusBox = () => OV.querySelector('.ov-box').focus({preventScroll: true});
+// a box you are typing in, brought back above the keyboard. Twice: once now, once after the keyboard has settled
+function keepInView(el){
+  const show = () => { if(el.isConnected) el.scrollIntoView({block: 'nearest'}); };
+  show();
+  setTimeout(show, 260);
+}
 function bigLine(vals, label){
   const p = vals.filter(v => v !== null && isFinite(v));
   if(p.length < 2) return '';
@@ -410,8 +416,14 @@ function ensureOV(){
     });
     addEventListener('keydown', trapTab, true);
     addEventListener('focusin', e => {   // focus stays inside the open card
-      if(OV.hidden || OV.contains(e.target)) return;
-      focusBox();
+      if(OV.hidden) return;
+      if(!OV.contains(e.target)) return focusBox();
+      if(typing(e.target)) keepInView(e.target);   // the phone's keyboard is about to take the bottom half
+    });
+    // the keyboard resizes the page rather than covering it (the viewport hint on both pages):
+    // whichever way it goes, the box you type in comes back on screen
+    if(window.visualViewport) visualViewport.addEventListener('resize', () => {
+      if(!OV.hidden && typing(document.activeElement) && OV.contains(document.activeElement)) keepInView(document.activeElement);
     });
     addEventListener('popstate', () => {
       const id = (history.state || {}).ov;
