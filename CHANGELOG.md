@@ -3,6 +3,32 @@
 The full list of changes. The public patch notes (data/changelog.json, shown on the site) stay short.
 Add the details here first, then a short public line there.
 
+## Next — The essence tables survive a poe2db redesign
+
+- poe2db took the Essence list out of its tab: the section is now plain `<div id="Essence">`, so the marker
+  `tools/craft.py` sliced on (`id="Essence" class="tab-pane`) was not on the page any more. `str.find` returned
+  -1, the slice ran backwards from the end and yielded nothing, and the run printed "essences from poe2db: 0".
+  The section is now found by `id="Essence"` followed by a space or a `>`, which reads both the old shape and the
+  new one. Everything else on the page — the per-essence link, the per-item-class table behind it, the orb and
+  bone cards — is unchanged and was left alone.
+- The worse half: an empty parse was not a failure. `main()` only fell back to what is in `data/craft` when
+  `essences()` raised, and an empty list is not an exception, so a run today would have written every
+  `data/craft/*.json` with `"ess": []` and dropped the essence-only mods out of the mods table with them
+  (ring.json 246 -> 237). The docstring promised the opposite. Three guards now close that:
+  `essences()` raises when the section is missing and again when the page yields no essence it can read, and
+  `main()` counts the essence names already in `data/craft` (95 today) and treats a parse under four fifths of
+  that as not loaded. All three keep what is on disk and say why on stderr. An empty table is never published.
+- Essences that really do leave the game still go: the count only has to clear four fifths, and any name that was
+  on disk and is no longer on poe2db is named on stderr rather than dropped in silence.
+- `item_levels()` had the same silent-empty hole, and its fallback was dead on top of that. A Greater or Perfect
+  orb keeps its level inside its base orb's `up` list, not under a top-level `n`, so `old_lv` never held one and
+  the old value could not have been kept even when the fetch threw. `old_lv` now reads the `up` entries too, and
+  a level the page no longer shows falls back to the one in `data/craft.json`, per field, with a line on stderr.
+- Checked against the live site and against four broken copies of its pages (section renamed, link markup changed,
+  only 20 of 95 essences left, level line gone from a Greater orb and a Gnawed bone). The good run rebuilds
+  `data/craft.json` and all 31 `data/craft/*.json` byte for byte as they already are in git; each broken run keeps
+  the same files untouched and prints the reason. `tools/dev/guard.mjs`: 6 ok, 0 failed.
+- Nothing the site shows changes, so there is no public patch note for this.
 ## Next — "Increased" is not a keyword (checked, nothing changed)
 - Reported: passive nodes whose text says "increased" show no Increased keyword. Nothing was changed, because
   there is nothing to attach. The official export's help text — `keywords.min.json`, the same 1,030 entries

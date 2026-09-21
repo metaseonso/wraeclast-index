@@ -14,7 +14,9 @@ Sources, all official game data:
   poe2db.tw (datamined from the same game files), only for what RePoE does not export:
     - the essence tables: the mod each essence adds on each kind of item, prefix or suffix, and its level
     - "Minimum Modifier Level" of the Greater and Perfect orbs and the Ancient bones, "Maximum Item Level" of the Gnawed bones
-  If poe2db cannot be reached, the essences and levels already in data/craft are kept.
+  If poe2db cannot be reached, or its page no longer reads the way the code below expects (no essences,
+  far fewer than data/craft already holds, or a missing level), the essences and levels already in data/craft
+  are kept and the reason is printed on stderr. An empty table is never published.
 
 Hand-kept facts (not in the game data exports):
   AFFIX_MAX  jewels take 2 prefixes and 2 suffixes; other rares 3 and 3; magic items 1 and 1.
@@ -335,10 +337,18 @@ def defences(v):
 
 
 # ---------------------------------------------------------------- poe2db
+ESS_SECTION = re.compile(r'id="Essence"[\s>]')     # the list of essences; poe2db has moved this in and out of a tab
+
+
 def essences(item_class_names):
-    """Every essence: its kind (magic to rare, or on a rare) and per item class the mod it adds, from poe2db."""
+    """Every essence: its kind (magic to rare, or on a rare) and per item class the mod it adds, from poe2db.
+    Raises if the page no longer reads the way this expects, so main() keeps what is in data/craft."""
     t = page('Essence')
-    sec = t[t.find('id="Essence" class="tab-pane'):t.find('id="EssenceRef"')]
+    m = ESS_SECTION.search(t)
+    end = t.find('id="EssenceRef"')
+    if not m or end <= m.start():
+        raise LookupError('the Essence list is not on the page where this reads it (poe2db changed its markup)')
+    sec = t[m.start():end]
     out = []
     for c in sec.split('<div class="col">')[1:]:
         name = re.search(r'href="([^"]+)"><img[^>]*height="16"[^>]*/>([^<]+)</a>', c)
@@ -363,7 +373,20 @@ def essences(item_class_names):
                 rows.append([cls, cell(td[1]), cell(td[2]).lower()[:1], int(lvl or 1)])
         out.append({'n': html.unescape(name.group(2)).strip(), 'k': kind, 't': what, 'rows': rows,
                     'lines': [cell(x) for x in mods[1:]]})
+    if not out:
+        raise LookupError('the Essence page has no essence this can read (poe2db changed its markup)')
     return out
+
+
+def on_disk_essences():
+    """The essence names already in data/craft: what a fresh parse has to live up to."""
+    names = set()
+    for f in OUT_DIR.glob('*.json'):
+        try:
+            names |= {e[0] for e in json.loads(f.read_text(encoding='utf-8')).get('ess', [])}
+        except Exception:
+            pass
+    return names
 
 
 def item_levels(name):
@@ -433,10 +456,16 @@ def main():
                 print('  no metadata for', cls, e, file=sys.stderr)
                 meta[cls] = {}
 
-    # ---- essences (poe2db)
+    # ---- essences (poe2db). Nothing, or far less than data/craft already holds, counts as not loaded.
+    had = on_disk_essences()
     try:
         ESS = essences(plural)
+        got = {e['n'] for e in ESS}
+        if len(got) < max(1, len(had) * 4 // 5):
+            raise LookupError('only %d essences read, data/craft already has %d' % (len(got), len(had)))
         print('essences from poe2db:', len(ESS))
+        if had - got:
+            print('  gone from poe2db since the last run: %s' % ', '.join(sorted(had - got)), file=sys.stderr)
     except Exception as e:
         print('  poe2db essences not loaded (%s); keeping the ones in data/craft' % e, file=sys.stderr)
         ESS = None
@@ -607,16 +636,25 @@ def main():
     def desc(n):
         return sentence((cur.get(n, {}).get('properties') or {}).get('description', ''))
 
-    old_lv = {o['n']: o for o in old.get('orbs', [])}
+    old_lv = {}
+    for o in old.get('orbs', []):
+        old_lv[o['n']] = o
+        for up_n, up_ml in o.get('up', []):     # a Greater or Perfect orb keeps its level inside its base orb's 'up'
+            if up_ml:
+                old_lv[up_n] = {'ml': up_ml}
     old_lv.update({b['n']: b for b in old.get('bones', [])})
 
     def levels(n):
+        o = old_lv.get(n) or {}
         try:
-            return item_levels(n)
+            ml, mi = item_levels(n)
         except Exception as e:
             print('  poe2db level for %s not loaded (%s); keeping the old one' % (n, e), file=sys.stderr)
-            o = old_lv.get(n) or {}
             return o.get('ml'), o.get('mi')
+        for got, key, what in ((ml, 'ml', 'Minimum Modifier Level'), (mi, 'mi', 'Maximum Item Level')):
+            if got is None and o.get(key) is not None:
+                print('  poe2db no longer shows a %s for %s; keeping the old one' % (what, n), file=sys.stderr)
+        return (ml if ml is not None else o.get('ml')), (mi if mi is not None else o.get('mi'))
 
     orbs = []
     for n, tiered in ORBS:
