@@ -16,3 +16,7 @@ worktree (the static files plus `worker/seo.js`, same process, no wrangler) and 
   Only after a data rebuild, and read what it says it added.
 
 `cfcheck.mjs`: every Cloudflare query the owner's dashboard makes, against the real API. Needs `CF_ANALYTICS_TOKEN`.
+
+`dash.mjs`: set `WI_OWNER_KEY` to the owner key (only its SHA-256 lives in the `OWNER_HASH` secret), then
+`node tools/dev/dash.mjs` (add `http://127.0.0.1:8787` for a local worker, `--raw stats` to dump one answer).
+It prints per read endpoint: status, bytes, top-level keys and what came back empty or null. The key only reads.

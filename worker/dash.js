@@ -10,7 +10,10 @@
      GET  /api/admin/suggestions?before=<id>  a hundred notes, newest first, and how many of each kind
      POST /api/admin/suggestion      {id, status: new|read|done}
    admin.html itself holds no data: everything comes from here, behind the cookie.
-   DASH_HASH is "pbkdf2$<iterations>$<salt base64>$<hash base64>" (PBKDF2-SHA256 of the password). */
+   DASH_HASH is "pbkdf2$<iterations>$<salt base64>$<hash base64>" (PBKDF2-SHA256 of the password).
+   The owner's key reads the same numbers without a password: "Authorization: Bearer <key>" on the four
+   GETs above (tools/dev/dash.mjs). Only its SHA-256 (hex) is kept, in the OWNER_HASH secret; no OWNER_HASH,
+   no key works. It reads only: never a write, never a sign-in. */
 import { sameSite, allowed } from './community.js';
 import { cloudflare } from './cfstats.js';
 import { health } from './health.js';
@@ -150,6 +153,17 @@ export async function signedIn(request, env){
 }
 const setCookie = (value, age) => COOKIE + '=' + value + '; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=' + age;
 
+/* the owner's read-only key, the same shape as the data server's (worker/files.js fromServer):
+   "Authorization: Bearer <key>", only its SHA-256 (hex) stored, in OWNER_HASH. No OWNER_HASH: no key works. */
+export async function fromOwner(request, env){
+  const want = String(env.OWNER_HASH || '').trim().toLowerCase();
+  if(!/^[0-9a-f]{64}$/.test(want)) return false;
+  const m = (request.headers.get('Authorization') || '').match(/^Bearer (\S{16,512})$/);
+  if(!m) return false;
+  const got = new Uint8Array(await crypto.subtle.digest('SHA-256', enc.encode(m[1])));
+  return same(got, Uint8Array.from(want.match(/../g), h => parseInt(h, 16)));
+}
+
 async function login(request, env, url){
   if(request.method !== 'POST' || !writeOK(request, url)) return json(403, {error: 'Not allowed.'});
   if(!parseHash(env.DASH_HASH)) return json(503, {error: 'Not set up.'});
@@ -161,12 +175,17 @@ async function login(request, env, url){
 }
 
 /* ---------- /api/admin/* ---------- */
+const READS = new Set(['stats', 'heat', 'cloudflare', 'suggestions']);   // all the owner's key may reach
 export async function admin(request, env, url){
   const path = url.pathname.slice('/api/admin/'.length);
   if(path === 'login') return login(request, env, url);
-  if(!parseHash(env.DASH_HASH)) return json(503, {error: 'Not set up.'});
-  if(request.method === 'POST' && !writeOK(request, url)) return json(403, {error: 'Not allowed.'});
-  if(!(await signedIn(request, env))) return json(401, {error: 'Sign in.'});
+  // the key answers for the reading GETs only; everything else still wants the cookie
+  const byKey = request.method === 'GET' && READS.has(path) && await fromOwner(request, env);
+  if(!byKey){
+    if(!parseHash(env.DASH_HASH)) return json(503, {error: 'Not set up.'});
+    if(request.method === 'POST' && !writeOK(request, url)) return json(403, {error: 'Not allowed.'});
+    if(!(await signedIn(request, env))) return json(401, {error: 'Sign in.'});
+  }
   if(path === 'logout' && request.method === 'POST') return json(200, {ok: true}, {'Set-Cookie': setCookie('', 0)});
   // each of these answers on its own: one that breaks says so, the dashboard keeps its other parts
   if(path === 'stats' && request.method === 'GET') return own(() => stats(env, url));
