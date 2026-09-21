@@ -3,6 +3,44 @@
 The full list of changes. The public patch notes (data/changelog.json, shown on the site) stay short.
 Add the details here first, then a short public line there.
 
+## Next — No game-file text on the cards (#2)
+- Brutus' Lead Sprinkler carried "local display grants level X molten shower [1]" on its card, straight from the
+  game files. poe2db prints a stat like that when the game has no wording for it: the stat's id written out in
+  words with the raw value in brackets. 35 such lines were on 29 uniques (54 lines over 46 rows in the drill-down),
+  among them Voltaxic Rift, Facebreaker, Lioneye's Glare, Lightning Coil, Vestige of Darkness, Grand Spectrum and
+  both timeless jewels. All of them are art, visual and flag stats: not one has an English wording in the RePoE
+  fork's export (all 27 stat_translations files checked, 15,786 stat ids), and the game shows the player nothing
+  for them, so there is no honest wording to put in their place — the lines go.
+- tools/uniques.py owns that text, so the cleaner lives there: is_raw_line() (a line ending on a bracketed number
+  with no capital in it bar the level placeholder X) and clean_lines(), which drops those lines mod by mod and the
+  mod with them when nothing is left. parse() and from_summary() run every implicit and explicit line through it,
+  and the implicit count is now taken after cleaning, so a dropped implicit cannot shift the Trade button's split.
+- tools/sync.py imports clean_lines and runs it over the drill-down's own lines in officialize(), before the
+  official ones are matched in, so an item with no entry in data/uniques.json is cleaned too. The next data pull
+  cannot bring these lines back.
+- Five places in the drill-down's own copy named game code in a sentence a player reads. All reworded in the
+  site's words, same facts, no ids: the timeless-jewel lede (the jewel's file name and the stat that picks its
+  conqueror — the poe.ninja mention went with it, since prices are the Currency Exchange and live listings now);
+  the Gemling flag in the gems foot; the id a Delirium anoint node starts with, in the tree foot; the art folder
+  in the uniques foot; and the client build, printed three times, which now reads as the patch a player knows
+  (0.5.5), the way the header already shows it.
+- The tree foot also claimed about 0.7% of passive lines are shown as the raw id and value. No line on the page
+  is any more, so the page stops describing a problem it does not have.
+- The keyword popup printed the keyword's own id under its name — every one of the 451, not only the ten
+  keystones whose id reads as plain code. The line is now just what it is: "Keyword", or "Keyword · a keystone
+  on the passive tree". The name above it is unchanged and nothing else moves.
+- Each one is a pair in tools/sync.py TEXT (the three build ones match whatever client build the artifact
+  carries, so a patch bump needs no edit), and COPY_IDS at the end of site_scripts stops the build outright,
+  naming what it found, if a reworded artifact still carries any of them — including any <code> span the page
+  fills in from a value, which is how the keyword id got out. No <code> span is left in the page at all. The
+  closed "Technical details" box on the gem and passive panels is the sanctioned place for an internal id and
+  is untouched.
+- The shipped data was patched in place with the same cleaner rather than rebuilt (a full rebuild needs the
+  artifact HTML, which only the owner's machine has): data/uniques.json, data/index.json and its two parts
+  (tools/appdata.py). data/explore/uniques.*.json is served immutable for a year, so it was renamed to its new
+  content hash (f801baf1f0 -> afc15012da) and explore.html now names that file; browsers get the clean copy
+  straight away instead of the cached one.
+
 ## Next — Owner dashboard: it cannot freeze any more
 - The bug live on 542ec64: the dashboard drew in two big runs (render() then cloudflare()), so the first field that
   was missing threw and everything after it stayed empty — and because cloudflare() was called after render() in the

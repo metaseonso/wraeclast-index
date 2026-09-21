@@ -1,5 +1,5 @@
 <!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style><title>PoE2 gems, uniques and passive tree · Wraeclast Index</title><meta name="description" content="Full tables of every Path of Exile 2 gem, unique and passive: requirements, official mod lines, tags and the passive tree."><link rel="canonical" href="https://wraeclastindex.fyi/explore"><meta name="theme-color" content="#070807"><meta property="og:type" content="website"><meta property="og:site_name" content="Wraeclast Index"><meta property="og:title" content="PoE2 gems, uniques and passive tree · Wraeclast Index"><meta property="og:description" content="Full tables of every Path of Exile 2 gem, unique and passive, from the game files."><meta property="og:url" content="https://wraeclastindex.fyi/explore"><meta property="og:image" content="https://wraeclastindex.fyi/assets/brand/social.png"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta property="og:image:alt" content="Wraeclast Index"><meta name="twitter:card" content="summary_large_image"><script type="application/ld+json">{"@context":"https://schema.org","@type":"WebPage","@id":"https://wraeclastindex.fyi/explore","url":"https://wraeclastindex.fyi/explore","name":"PoE2 gems, uniques and passive tree","inLanguage":"en","isPartOf":{"@type":"WebSite","@id":"https://wraeclastindex.fyi/#website","name":"Wraeclast Index","url":"https://wraeclastindex.fyi/"},"about":{"@type":"VideoGame","@id":"https://wraeclastindex.fyi/#game","name":"Path of Exile 2"}}</script><link rel="icon" type="image/png" sizes="64x64" href="assets/brand/favicon-64.png"><link rel="preload" href="assets/fonts/ibmplexsans-latin.woff2" as="font" type="font/woff2" crossorigin><link rel="preload" href="assets/fonts/cinzel-latin.woff2" as="font" type="font/woff2" crossorigin><link rel="stylesheet" href="assets/cards.css"><link rel="stylesheet" href="assets/theme.css"><link rel="stylesheet" href="assets/bridge.css"><link rel="stylesheet" href="assets/look.css"><script id="wi-data">/* the page's data (tools/sync.py): every file at once; each script runs in order once its files are in */
-(function(){var F={"gemdata":"data/explore/gems.b077d996f1.json","uqdata":"data/explore/uniques.f801baf1f0.json","trdata":"data/explore/tree.d94ecbfeea.json","jwdata":"data/explore/jewels.6eb97e6f0b.json","kwdata":"data/explore/keywords.ff077c72a1.json"},W=["kwdata", "gemdata"];var D=window.WI_DATA={files:F},q=Promise.resolve(),got={};document.documentElement.classList.add("wi-wait");function load(b,n){return fetch(F[b]).then(function(r){if(!r.ok)throw Error(F[b]+" "+r.status);return r.json()}).catch(function(e){if(n)throw e;return load(b,1)})}function get(b){return got[b]||(got[b]=load(b,0).then(function(o){return D[b]=o}))}D.one=Promise.all(W.filter(function(b){return F[b]}).map(get)).then(null,function(){});D.one.then(function(){for(var b in F)get(b)});D.run=function(need,fn){var p=D.q=q=q.then(function(){return Promise.all(need.map(get))}).then(fn).catch(function(e){console.error(e)});if(need.indexOf("gemdata")>=0)D.gems=p;return p};D.show=function(){document.documentElement.classList.remove("wi-wait")};addEventListener("DOMContentLoaded",function(){q.then(function(){setTimeout(D.show,1500)})});})();
+(function(){var F={"gemdata":"data/explore/gems.b077d996f1.json","uqdata":"data/explore/uniques.afc15012da.json","trdata":"data/explore/tree.d94ecbfeea.json","jwdata":"data/explore/jewels.6eb97e6f0b.json","kwdata":"data/explore/keywords.ff077c72a1.json"},W=["kwdata", "gemdata"];var D=window.WI_DATA={files:F},q=Promise.resolve(),got={};document.documentElement.classList.add("wi-wait");function load(b,n){return fetch(F[b]).then(function(r){if(!r.ok)throw Error(F[b]+" "+r.status);return r.json()}).catch(function(e){if(n)throw e;return load(b,1)})}function get(b){return got[b]||(got[b]=load(b,0).then(function(o){return D[b]=o}))}D.one=Promise.all(W.filter(function(b){return F[b]}).map(get)).then(null,function(){});D.one.then(function(){for(var b in F)get(b)});D.run=function(need,fn){var p=D.q=q=q.then(function(){return Promise.all(need.map(get))}).then(fn).catch(function(e){console.error(e)});if(need.indexOf("gemdata")>=0)D.gems=p;return p};D.show=function(){document.documentElement.classList.remove("wi-wait")};addEventListener("DOMContentLoaded",function(){q.then(function(){setTimeout(D.show,1500)})});})();
 window.WI_MARKET=(window.WI_DATA&&WI_DATA.one||Promise.resolve()).then(function(){return fetch("data/market.json?part=now")}).then(function(r){return r.ok?r.json():null}).catch(function(){return null});window.wiLive=async function(UQ,TR){var m=await Promise.race([window.WI_MARKET,new Promise(function(r){setTimeout(function(){r(null)},3000)})]);if(!m||!m.items)return;var I=m.items;(UQ.items||[]).forEach(function(u){var p=I["u:"+u.n+" | "+u.b]||I["u:"+u.n];if(p&&p.v!=null){u.v=p.v;u.ls=p.ls;if(p.ch!=null)u.ch=p.ch;}});var E=(TR&&TR.emotions)||{};Object.keys(E).forEach(function(k){var p=I["c:"+E[k].name];if(p&&p.v!=null){E[k].v=p.v;if(p.ch!=null)E[k].ch=p.ch;}});};</script></head><body>
 
 <style>
@@ -609,7 +609,7 @@ function openKeyword(k){
   p.innerHTML =
     '<div class="panel-hd"><h2>'+esc(meta.t)+'</h2>'+
       '<div class="sub" style="margin-top:3px">Keyword'+(meta.ks?' · a keystone on the passive tree':'')+
-      ' · <code>'+esc(k)+'</code></div>'+
+      '</div>'+
       '<button class="closebtn" type="button" aria-label="Close">×</button></div>'+
     (meta.d ? '<p class="kwdef">'+rich(meta.d)+'</p>'
             : '<p class="hint">The game files carry this keyword but no definition text for it.</p>')+
@@ -1423,7 +1423,7 @@ $('#copy').onclick=async ()=>{
   setTimeout(()=>{ $('#copy').textContent='Copy table as TSV'; }, 2400);
 };
 
-$('#foot').innerHTML = 'Every gem in the game build <code>4.5.5.2</code> data dump — '+
+$('#foot').innerHTML = 'Every gem in the game data for patch <b>0.5.5</b> — '+
   GEMS.filter(g=>g.t==='active').length+' active, '+GEMS.filter(g=>g.t==='spirit').length+' spirit and '+
   GEMS.filter(g=>g.t==='support').length+' support gems, with each one’s own level table from 1 to 40. '+
   'Support gems have no levels in Path of Exile 2 — they come in numbered tiers instead, so the level slider does nothing to them. '+
@@ -1441,7 +1441,7 @@ $('#foot').innerHTML = 'Every gem in the game build <code>4.5.5.2</code> data du
   'so a white gem, belonging to no attribute, gets none of the level bonus. The gear options are the two real ceilings in the mod files: the desecrated amulet suffix '+
   '<i>of Kurgal</i> at +3\u20135% quality to all skill gems, and a +10% unique/corruption mod. '+
   'Quality past 20% is scaled straight on, because the files store each quality line per 1% quality \u2014 that is arithmetic from the storage, not a rule quoted from the game. '+
-  'The Gemling notable <i>Advanced Thaumaturgy</i> sets a flag called <code>ascendancy_gemling_enable_thaumaturgy_quality_stats</code> that nothing else in the dump refers to, so whatever extra quality it unlocks is not modelled here. '+
+  'The Gemling notable <i>Advanced Thaumaturgy</i> sets a flag nothing else in the game data uses, so whatever extra quality it unlocks is not counted here. '+
   'Cut and unused skills still sitting in the game files are hidden by default. '+
   'Numbers come straight from the game files, not from a build engine: they are the gem in isolation, before your tree, gear or other supports touch it.';
 
@@ -1714,12 +1714,12 @@ function ubuild(){
     U.reset();
   };
   $('#ufoot').innerHTML = 'Modifier text comes from the official game data and prices from live trade listings; the item list itself comes from the '+
-    'game build <code>4.5.5.2</code> dump. The dump names every unique but does not say which modifiers sit on which item — its 10,447 unique modifiers are '+
+    'game data for patch <b>0.5.5</b>. It names every unique but does not say which modifiers sit on which item — its 10,447 unique modifiers are '+
     'not joined to items — so an item nobody had listed shows up here with a name and no modifiers, marked <b>unlisted</b>. '+
     'Prices are in divine: the middle of the 5 cheapest online listings on the trade site, checked through the day. <b>A listing count under three is greyed out</b>, because that is one person’s asking '+
     'price rather than a market — the <i>min listed</i> slider exists to push those out of the way. '+
     'Variants of the same unique are separate rows, because that is how they are priced. '+
-    'Item art is the game’s own, from the RePoE mirror of the extracted <code>Art/2DItems</code> folder, packed into one sprite sheet; '+
+    'Item art is the game’s own, from the RePoE mirror of the game files, packed into one sprite sheet; '+
     '694 of the 712 rows have art and the rest are items the dump carries no picture for.';
   U.buildHead(); U.render();
 }
@@ -1907,17 +1907,14 @@ function tbuild(){
   }).join('');
 
   $('#jlede').innerHTML =
-    'Seven factions sit in the mod files as <code>UniqueJewelAlternateTreeInRadius…</code>. Each jewel rolls three numbers: a '+
-    '<b>version</b> fixed by which jewel it is, a <b>seed</b> inside the range below, and a <b>conqueror roll</b> that picks which '+
-    'leader the jewel belongs to. The stat that picks the conqueror is named <code>local_unique_jewel_alternate_tree_keystone</code> '+
-    'in the files, but what it selects is the conqueror line, not a keystone directly. '+
-    'Two of the seven have an item on the market in Forbidden Rites: <b>Heroic Tragedy</b> carries the Kalguur version and '+
-    '<b>Undying Hate</b> carries the Abyssal one. <b>Vaal, Karui, Maraketh, Templar and Eternal Empire are in the files with full '+
-    'conqueror tables and seed ranges, but no Path of Exile 2 jewel carries them yet</b> — nothing in the unique list or on poe.ninja uses those versions. '+
-    'Abyssal is the odd one out twice over: five conquerors instead of three, and a seed range of 79–30,977 against everyone else’s few thousand.';
+    'Seven factions are in the game files, and each jewel rolls three numbers: a <b>version</b> set by which jewel it is, a '+
+    '<b>seed</b> from the range below, and a roll that picks the <b>conqueror</b>. '+
+    'Only two are real items — <b>Heroic Tragedy</b> is Kalguur, <b>Undying Hate</b> is Abyssal; <b>Vaal, Karui, Maraketh, '+
+    'Templar and Eternal Empire have full conqueror tables and seed ranges but no jewel in the game yet</b>. '+
+    'Abyssal is the odd one out twice over: five conquerors instead of three, and seeds 79–30,977 against everyone else’s few thousand.';
 
   $('#tfoot').innerHTML =
-    'Every passive in the base tree and all ascendancies, from the game build <code>4.5.5.2</code> tree export: '+
+    'Every passive in the base tree and all ascendancies, from the patch <b>0.5.5</b> tree export: '+
     TR.passives.filter(p=>p.k==='keystone').length+' keystones, '+
     TR.passives.filter(p=>p.k==='notable').length+' notables, '+
     TR.passives.filter(p=>p.k==='anoint').length+' anoint-only notables and '+
@@ -1925,8 +1922,8 @@ function tbuild(){
     '<b>Duplicates are merged by default.</b> The tree repeats itself hard — 293 separate nodes all called Attribute, and 3,760 small nodes that are only '+
     '1,035 distinct effects — so an unmerged list is mostly the same handful of rows over and over. The <b>Copies</b> column counts how many '+
     'times each one appears, and the toggle above puts every node back if you need the individual hashes. '+
-    'Effects are translated from raw stat ids using the game’s own description files; about 0.7% of lines have no description entry and are shown as the raw id and value instead of being dropped. '+
-    '<b>Anointing</b> is much wider than this page first said: <b>874 notables carry an anointment recipe</b> of three Distilled emotions, and the <b>Anoint</b> column totals what those three cost in divine at today’s Currency Exchange prices, so the column sorts straight into cheap power. Thirteen emotions appear across every recipe; three of them — Potent Contempt, Ferocity and Melancholy — are used by only 19 nodes between them and are what makes the dear end dear. The 17 nodes whose id starts with <code>DeliriumAnoint_</code> are a separate thing: notables that exist only as anoints and sit nowhere on the tree, and one of them, Thaumaturgic Generator, is also a Gemling ascendancy notable. '+
+    'Effects are worded from the game’s own description files, so every line here reads as it does in game. '+
+    '<b>Anointing</b> is much wider than this page first said: <b>874 notables carry an anointment recipe</b> of three Distilled emotions, and the <b>Anoint</b> column totals what those three cost in divine at today’s Currency Exchange prices, so the column sorts straight into cheap power. Thirteen emotions appear across every recipe; three of them — Potent Contempt, Ferocity and Melancholy — are used by only 19 nodes between them and are what makes the dear end dear. The 17 Delirium anoints are a separate thing: notables that exist only as anoints and sit nowhere on the tree, and one of them, Thaumaturgic Generator, is also a Gemling ascendancy notable. '+
     'Every node in this export is placed somewhere on the tree, so there is no separate pool of hidden passives to list — the closest thing is the '+
     TR.passives.filter(p=>p.io).length+' icon-only nodes, which carry no name plate, and the anoint set above. '+
     '<b>What is not here:</b> the table that maps a timeless jewel’s seed to the passives it rewrites is not in this dump, and neither is the keystone each conqueror grants. '+

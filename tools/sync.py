@@ -2,7 +2,8 @@
 
 The artifact page (gems, uniques, passive tree) is the drill-down. This script:
   1. rewrites each unique's mod lines to the official ones (data/uniques.json, from tools/uniques.py),
-     keeping the keyword links wherever the wording matches
+     keeping the keyword links wherever the wording matches, and drops any line the game has no wording
+     for (uniques.clean_lines), so no game-file text reaches a card
   2. copies the page to explore.html and adds the small bridge script that links it to the home page; the page's data
      goes to data/explore/ (see "the drill-down page's data, outside the page")
   3. builds data/index.json, the compact search index (with the base items, the Atlas and the currency the catalogue
@@ -21,6 +22,9 @@ import time
 import urllib.parse
 import urllib.request
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from uniques import clean_lines  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent
 BRIDGE = '<script src="assets/bridge.js" defer></script>'
@@ -159,6 +163,9 @@ def officialize(uq):
     o, by_name = load_official()
     changed = 0
     for u in uq['items']:
+        for f in ('im', 'ex'):   # the drill-down's own lines carry game-file text too, official entry or not
+            if u.get(f):
+                u[f] = clean_lines(u[f])
         off, exact = official_for(u, o, by_name)
         if not off:
             continue
@@ -611,14 +618,81 @@ def site_scripts(html):
     patch = re.sub(r'^4\.(\d+)\.(\d+).*$', r'0.\1.\2', str(gems['meta'].get('game_version') or ''))
     live = sum(1 for g in gems['gems'] if not re.search(r'^\[DNT|^Removed Skill$', g['n']))   # the page's own count (CUT)
     html = re.sub(r'<b id="patch">[^<]*</b>', '<b id="patch">%s</b>' % patch, html, count=1)
-    return re.sub(r'<b id="total">[^<]*</b>', '<b id="total">{:,}</b>'.format(live), html, count=1)
+    html = re.sub(r'<b id="total">[^<]*</b>', '<b id="total">{:,}</b>'.format(live), html, count=1)
+    for pat, words in BUILD_COPY:   # the foot copy says the patch, not the client build
+        html = pat.sub(words % patch, html, count=1)
+    left = sorted(set(COPY_IDS.findall(html)))   # a reworded artifact that still carries game code
+    if left:
+        sys.exit('the drill-down copy still names %s; update the copy pairs in tools/sync.py' % ', '.join(left))
+    return html
 
 
 UQ_OLD = """(function(){\n"use strict";\nconst UQ = JSON.parse(document.getElementById('uqdata').textContent);"""
 UQ_NEW = """(async function(){\n"use strict";\nconst UQ = JSON.parse(document.getElementById('uqdata').textContent);"""
 TR_OLD = "const TR = JSON.parse(document.getElementById('trdata').textContent);\n"
 TR_NEW = TR_OLD + "await wiLive(UQ, TR);   // live prices first (tools/sync.py LIVE)\n"
+# ---- the drill-down's own copy ----
+# Four places where the artifact wrote game code into a sentence a player reads: the jewel's file name and the
+# stat that picks its conqueror, a Gemling flag, the id a Delirium anoint node starts with, and the folder the
+# item art came out of. A closed "Technical details" box is the one place an internal id belongs; running copy
+# is not it. Each pair is (what the artifact says, what the site says), and COPY_IDS at the end of site_scripts
+# stops the build if a reworded artifact still carries any of them.
+JLEDE_OLD = """'Seven factions sit in the mod files as <code>UniqueJewelAlternateTreeInRadius…</code>. Each jewel rolls three numbers: a '+
+    '<b>version</b> fixed by which jewel it is, a <b>seed</b> inside the range below, and a <b>conqueror roll</b> that picks which '+
+    'leader the jewel belongs to. The stat that picks the conqueror is named <code>local_unique_jewel_alternate_tree_keystone</code> '+
+    'in the files, but what it selects is the conqueror line, not a keystone directly. '+
+    'Two of the seven have an item on the market in Forbidden Rites: <b>Heroic Tragedy</b> carries the Kalguur version and '+
+    '<b>Undying Hate</b> carries the Abyssal one. <b>Vaal, Karui, Maraketh, Templar and Eternal Empire are in the files with full '+
+    'conqueror tables and seed ranges, but no Path of Exile 2 jewel carries them yet</b> — nothing in the unique list or on poe.ninja uses those versions. '+
+    'Abyssal is the odd one out twice over: five conquerors instead of three, and a seed range of 79–30,977 against everyone else’s few thousand.'"""
+JLEDE_NEW = """'Seven factions are in the game files, and each jewel rolls three numbers: a <b>version</b> set by which jewel it is, a '+
+    '<b>seed</b> from the range below, and a roll that picks the <b>conqueror</b>. '+
+    'Only two are real items — <b>Heroic Tragedy</b> is Kalguur, <b>Undying Hate</b> is Abyssal; <b>Vaal, Karui, Maraketh, '+
+    'Templar and Eternal Empire have full conqueror tables and seed ranges but no jewel in the game yet</b>. '+
+    'Abyssal is the odd one out twice over: five conquerors instead of three, and seeds 79–30,977 against everyone else’s few thousand.'"""
+GEMFLAG_OLD = ("'The Gemling notable <i>Advanced Thaumaturgy</i> sets a flag called "
+               "<code>ascendancy_gemling_enable_thaumaturgy_quality_stats</code> that nothing else in the dump refers to, "
+               "so whatever extra quality it unlocks is not modelled here. '")
+GEMFLAG_NEW = ("'The Gemling notable <i>Advanced Thaumaturgy</i> sets a flag nothing else in the game data uses, "
+               "so whatever extra quality it unlocks is not counted here. '")
+ANOINT_OLD = ('The 17 nodes whose id starts with <code>DeliriumAnoint_</code> are a separate thing: notables that exist '
+              'only as anoints and sit nowhere on the tree')
+ANOINT_NEW = ('The 17 Delirium anoints are a separate thing: notables that exist '
+              'only as anoints and sit nowhere on the tree')
+ART_OLD = "'Item art is the game’s own, from the RePoE mirror of the extracted <code>Art/2DItems</code> folder, packed into one sprite sheet; '"
+ART_NEW = "'Item art is the game’s own, from the RePoE mirror of the game files, packed into one sprite sheet; '"
+# The keyword popup's header line printed the keyword's own id beside its name. Ten of the 451 keywords have an
+# id that reads as game code (the keystones); the name and what it is are all a player needs, so the id goes.
+KWHEAD_OLD = """'<div class="sub" style="margin-top:3px">Keyword'+(meta.ks?' · a keystone on the passive tree':'')+
+      ' · <code>'+esc(k)+'</code></div>'+"""
+KWHEAD_NEW = """'<div class="sub" style="margin-top:3px">Keyword'+(meta.ks?' · a keystone on the passive tree':'')+
+      '</div>'+"""
+# The tree copy said about 0.7% of passive lines were shown as the raw id and value. Nothing on the page is any
+# more, so the page stops describing a problem it no longer has.
+STATID_OLD = ("'Effects are translated from raw stat ids using the game’s own description files; about 0.7% of lines "
+              "have no description entry and are shown as the raw id and value instead of being dropped. '")
+STATID_NEW = "'Effects are worded from the game’s own description files, so every line here reads as it does in game. '"
+# The foot copy named the client build three times. A player knows the patch, which the header already shows, so
+# these rewrite the sentence around whatever build the artifact carries (site_scripts works out the patch).
+BUILD_COPY = [
+    (re.compile(r"'Every gem in the game build <code>4\.[\d.]+</code> data dump — '"),
+     "'Every gem in the game data for patch <b>%s</b> — '"),
+    (re.compile(r"'game build <code>4\.[\d.]+</code> dump\. The dump names every unique"),
+     "'game data for patch <b>%s</b>. It names every unique"),
+    (re.compile(r"from the game build <code>4\.[\d.]+</code> tree export: '"),
+     "from the patch <b>%s</b> tree export: '"),
+]
+COPY_IDS = re.compile(r'UniqueJewelAlternateTreeInRadius|local_unique_jewel_alternate_tree_keystone'
+                      r'|ascendancy_gemling_enable_thaumaturgy_quality_stats|DeliriumAnoint_'
+                      r'|Art/2DItems|<code>4\.[\d.]+</code>|raw id and value'
+                      r"|<code>[^<]*'\s*\+")   # a code span the page fills in: an id printed into reading view
 TEXT = [
+    (JLEDE_OLD, JLEDE_NEW),
+    (GEMFLAG_OLD, GEMFLAG_NEW),
+    (ANOINT_OLD, ANOINT_NEW),
+    (ART_OLD, ART_NEW),
+    (STATID_OLD, STATID_NEW),
+    (KWHEAD_OLD, KWHEAD_NEW),
     ('Prices are divine, from poe.ninja, Forbidden Rites', 'Prices in divine, from live trade listings'),
     ('Modifier text and prices come from poe.ninja\u2019s Forbidden Rites stash snapshot; the item list itself comes from the ',
      'Modifier text comes from the official game data and prices from live trade listings; the item list itself comes from the '),
