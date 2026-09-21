@@ -168,6 +168,8 @@ const STATES = ['corrupted', 'twice_corrupted', 'mutated', 'sanctified', 'desecr
 const PAYS = [['divine', 'Divine'], ['exalted', 'Exalted'], ['chaos', 'Chaos']];
 const step = r => (Number.isInteger(r.lo) && Number.isInteger(r.hi) && !r.avg) ? 1 : 0.1;
 function fmt(v){ return Math.abs(v) >= 100 || Number.isInteger(v) ? String(Math.round(v * 10) / 10) : String(Math.round(v * 100) / 100); }
+// mark the chosen button in a row of buttons
+const press = (seg, v) => seg.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.v === v)));
 
 export async function tradePanel(it){
   await tradeData();
@@ -178,13 +180,17 @@ export async function tradePanel(it){
   const want = (/^[ca]$/.test(it.k) || it.li) && T.exchange[it.n];   // it.li: a lineage gem trades there too
   if(want){   // currency and exchange items (waystones, fragments): the bulk exchange
     let have = want === 'divine' ? 'exalted' : 'divine';
-    const paint = () => {
-      box.innerHTML = '<h4>Buy on the exchange</h4><div class="trow"><span>Pay with</span><div class="seg tpay">' +
-        PAYS.filter(p => p[0] !== want).map(([id, l]) => '<button type="button" data-v="' + id + '" aria-pressed="' + (id === have) + '">' + l + '</button>').join('') +
-        '</div></div><div class="tgo"><a class="btn gold" target="_blank" rel="noopener" href="' + esc(exchangeURL(league, have, want)) + '">Open exchange ↗</a></div>';
-    };
-    paint();
-    box.addEventListener('click', e => { const b = e.target.closest('.tpay button'); if(b){ have = b.dataset.v; paint(); } });
+    box.innerHTML = '<h4>Buy on the exchange</h4><div class="trow"><span>Pay with</span><div class="seg tpay">' +
+      PAYS.filter(p => p[0] !== want).map(([id, l]) => '<button type="button" data-v="' + id + '" aria-pressed="' + (id === have) + '">' + l + '</button>').join('') +
+      '</div></div><div class="tgo"><a class="btn gold" target="_blank" rel="noopener" href="' + esc(exchangeURL(league, have, want)) + '">Open exchange ↗</a></div>';
+    // another coin to pay with: move the mark and the link, leave the panel alone
+    box.addEventListener('click', e => {
+      const b = e.target.closest('.tpay button'); if(!b) return;
+      have = b.dataset.v;
+      press(b.closest('.seg'), have);
+      const a = box.querySelector('.tgo .gold');
+      if(a) a.href = exchangeURL(league, have, want);
+    });
     return box;
   }
 
@@ -226,18 +232,23 @@ export async function tradePanel(it){
     return {query: q, sort: {price: 'asc'}};
   };
 
+  // the number box, the at least / at most / exactly buttons and the slider of one ticked mod
+  const ctlHTML = r => {
+    if(!r.on || r.v === null) return '';
+    const slider = r.r && r.r.lo !== r.r.hi;
+    return '<div class="tctl"><div class="seg" data-k="op">' + OPS.map(([o, l]) =>
+        '<button type="button" data-v="' + o + '" aria-pressed="' + (o === r.op) + '">' + l + '</button>').join('') + '</div>' +
+      valHTML(slider ? {k: 'v', lo: r.r.lo, hi: r.r.hi, step: step(r.r), v: r.v} : {k: 'v', lo: 0, hi: 0, v: r.v},
+        '<input class="field tnum" type="number" data-k="v" step="' + step(r.r || {lo: 0, hi: 0}) + '" value="' + fmt(r.v) + '">') +
+      (r.r && r.r.avg ? '<span class="note">average</span>' : '') + '</div>';
+  };
   const rowHTML = (r, i) => {
     if(!r.misc && !r.id) return '<div class="tmod off" title="The trade site cannot search this line">' + esc(r.label) + '</div>';
-    const slider = r.r && r.r.lo !== r.r.hi;
     return '<div class="tmod' + (r.on ? ' on' : '') + '" data-i="' + i + '">' +
       '<label class="tcheck"><input type="checkbox" data-k="on"' + (r.on ? ' checked' : '') + '><span>' + esc(r.label) + '</span></label>' +
-      (r.on && r.v !== null ? '<div class="tctl"><div class="seg" data-k="op">' + OPS.map(([o, l]) =>
-          '<button type="button" data-v="' + o + '" aria-pressed="' + (o === r.op) + '">' + l + '</button>').join('') + '</div>' +
-        valHTML(slider ? {k: 'v', lo: r.r.lo, hi: r.r.hi, step: step(r.r), v: r.v} : {k: 'v', lo: 0, hi: 0, v: r.v},
-          '<input class="field tnum" type="number" data-k="v" step="' + step(r.r || {lo: 0, hi: 0}) + '" value="' + fmt(r.v) + '">') +
-        (r.r && r.r.avg ? '<span class="note">average</span>' : '') + '</div>' : '') + '</div>';
+      ctlHTML(r) + '</div>';
   };
-  const paint = () => {
+  const draw = () => {
     const url = searchURL(league, build());
     box.innerHTML = '<h4>Find it on trade <span class="note">' + esc(league) + '</span></h4>' +
       (rows.length ? '<p class="note">Tick the mods you care about.</p>' + heatNote(false, false) +
@@ -251,9 +262,19 @@ export async function tradePanel(it){
       '<div class="tgo"><button type="button" class="btn tcopy">Copy link</button>' +
       '<a class="btn gold" target="_blank" rel="noopener" href="' + esc(url) + '">Open on trade ↗</a></div>';
   };
-  paint();
+  draw();
+  /* From here the panel is only patched, never redrawn: a box you are typing in keeps its focus,
+     its value and its caret while mods are ticked, buttons pressed and sliders moved. */
   // keep the link current as values move, without redrawing under the pointer
   const relink = () => { const a = box.querySelector('.tgo .gold'); if(a) a.href = searchURL(league, build()); };
+  // one mod ticked or unticked: its own controls come and go, the rest of the panel stays as it is
+  const paintRow = (el, r) => {
+    el.classList.toggle('on', !!r.on);
+    const old = el.querySelector('.tctl');
+    if(old) old.remove();
+    el.insertAdjacentHTML('beforeend', ctlHTML(r));
+  };
+  const syncAll = () => { const a = box.querySelector('input[data-k=all]'); if(a) a.checked = searchable().every(r => r.on); };
   box.addEventListener('input', e => {
     const t = e.target, row = t.closest('.tmod');
     if(t.dataset.k === 'v' && row){
@@ -264,15 +285,25 @@ export async function tradePanel(it){
   });
   box.addEventListener('change', e => {
     const t = e.target, row = t.closest('.tmod');
-    if(t.dataset.k === 'on' && row){ rows[+row.dataset.i].on = t.checked; paint(); }
-    if(t.dataset.k === 'all'){ searchable().forEach(r => { r.on = t.checked; }); paint(); }
+    if(t.dataset.k === 'on' && row){ rows[+row.dataset.i].on = t.checked; paintRow(row, rows[+row.dataset.i]); syncAll(); relink(); }
+    if(t.dataset.k === 'all'){   // only the rows that move are touched: a row already ticked keeps its box
+      box.querySelectorAll('.tmod[data-i]').forEach(el => {
+        const r = rows[+el.dataset.i];
+        if(r.on === t.checked) return;
+        r.on = t.checked;
+        const c = el.querySelector('input[data-k=on]');
+        if(c) c.checked = r.on;
+        paintRow(el, r);
+      });
+      relink();
+    }
     if(t.dataset.k === 'online'){ online = t.checked; relink(); }
   });
   box.addEventListener('click', e => {
     const b = e.target.closest('button'); if(!b) return;
     const seg = b.closest('.seg');
-    if(seg && seg.dataset.k === 'op'){ rows[+b.closest('.tmod').dataset.i].op = b.dataset.v; paint(); }
-    else if(seg && seg.dataset.state){ states[seg.dataset.state] = b.dataset.v; paint(); }
+    if(seg && seg.dataset.k === 'op'){ rows[+b.closest('.tmod').dataset.i].op = b.dataset.v; press(seg, b.dataset.v); relink(); }
+    else if(seg && seg.dataset.state){ states[seg.dataset.state] = b.dataset.v; press(seg, b.dataset.v); relink(); }
     else if(b.classList.contains('tcopy')){
       const url = searchURL(league, build());
       navigator.clipboard && navigator.clipboard.writeText(url).then(() => { b.textContent = 'Copied'; setTimeout(() => b.textContent = 'Copy link', 1400); });

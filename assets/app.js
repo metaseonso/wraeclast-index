@@ -368,7 +368,8 @@ function ensureOV(){
     scrimTap();
     OV.addEventListener('click', e => {
       const t = e.target;
-      if(t.closest('a.btn.gold, a.uses-go')) return hideDetail();   // leaving the page: nothing to undo
+      const go = t.closest('a.btn.gold, a.uses-go');
+      if(go){ if(go.target !== '_blank') hideDetail(); return; }   // leaving the page: nothing to undo. A new tab: the card stays
       if(t.closest('.ov-back')) return history.back();
       const kw = t.closest('.kwlink');
       if(kw){ const c = keywordCard(kw.dataset.kw); if(c) openDetail(c, {nested: true}, hrefOf(c)); return; }
@@ -462,6 +463,7 @@ function paintDetail(){
         const {tradePanel} = await import('./trade.js');
         body.appendChild(await tradePanel(it));
         tb.setAttribute('aria-expanded', 'true');
+        row.scrollIntoView({block: 'start'});   // the panel opens below the fold: show it, with the button above it
       } finally { tb.disabled = false; }
     });
   }
