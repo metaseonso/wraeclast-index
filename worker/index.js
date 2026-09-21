@@ -10,6 +10,7 @@
      /data/rollprices.json, /data/farmprices.json
                          live trade prices (sent in through the hour: /api/prices/ingest): worker/prices.js
      /api/data/put       the data server's hourly files (Currency Exchange, catalogue, league dates): worker/files.js
+     /api/health         how old every data file and every kind of price is, and whether a job is late: worker/health.js
      /api/trade/searches popular Trade page searches (GET), and counting one (POST): worker/community.js
      /api/suggest        notes from the Suggest button: worker/community.js
      /api/t, /api/admin/* page views and clicks, and the owner's dashboard (admin.html): worker/dash.js */
@@ -18,6 +19,7 @@ import { servePrices, ingest, state, serveMarket } from './prices.js';
 import { fileText, putFile } from './files.js';
 import { tradeSearches, suggest } from './community.js';
 import { track, admin } from './dash.js';
+import { serveHealth } from './health.js';
 
 const UA = 'wraeclast-index/1.0 (contact: https://wraeclastindex.fyi/)';
 
@@ -30,6 +32,7 @@ export default {
     if(url.pathname === '/api/pob') return pob(url);
     if(url.pathname === '/api/trade/searches') return tradeSearches(request, env, ctx, url);
     if(url.pathname === '/api/suggest') return suggest(request, env, url);
+    if(url.pathname === '/api/health') return serveHealth(request, env, url, ctx);
     if(url.pathname === '/api/t') return track(request, env, url);
     if(url.pathname.startsWith('/api/admin/')) return admin(request, env, url);
     if(url.pathname === '/api/prices/ingest') return ingest(request, env, url);

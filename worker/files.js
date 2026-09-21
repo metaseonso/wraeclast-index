@@ -3,9 +3,15 @@
    The jobs run on the data server (tools/vm/) and send each file here when it is done. Kept in D1 (table files).
      POST /api/data/put?name=<file>        the file as the body, signed with the data server's key
      published(env, origin, name, ctx)     a file, parsed; each data centre keeps a copy for 5 minutes
+     publishedRow(env, origin, name, ctx)  the same, with when it came in and which source answered
+                                           ({data, at, from}), so what is built from it can say how old it is
+     fileWhen(env, origin, name)           only that, without reading the file (worker/health.js)
+   There is one row per file: the newest copy that came in. It is served however old it is (the last good copy
+   beats nothing), and its age travels with it, so a stale file can never pass for a fresh one.
    The key: "Authorization: Bearer <key>". Only its SHA-256 (hex) is stored, in the INGEST_HASH secret.
    No INGEST_HASH: no key works.
-   Until the move to the data server is done, a file that never came in is read from the old GitHub Pages copy. */
+   Until the move to the data server is done, a file that never came in is read from the old GitHub Pages copy.
+   That copy comes with no arrival time: its age is not known here ("from: backup"). */
 import { same } from './dash.js';
 
 const NAMES = new Set(['exchange.json', 'market.json', 'leagues.json']);
@@ -33,28 +39,53 @@ export async function fromServer(request, env){
 }
 
 /* ---------- reading ---------- */
-export async function fileText(env, origin, name, ctx){
+/* the newest copy there is: {body, at, from}. from "jobs": a job sent it in (at: unix seconds); from "backup":
+   the old GitHub Pages copy, which carries no arrival time (at: null). null when nothing has it. */
+export async function fileRow(env, origin, name, ctx){
   const key = copyOf(origin, name);
-  const hit = await caches.default.match(key);   // this data centre's copy
-  if(hit) return hit.text();
+  const hit = await caches.default.match(key);   // this data centre's copy, with the time it came in
+  if(hit) return {body: await hit.text(), at: +hit.headers.get('X-Data-At') || null, from: 'jobs'};
   let row = null;
-  try { row = await env.DB.prepare('SELECT body FROM files WHERE name = ?').bind(name).first(); } catch {}   // no table yet
+  try { row = await env.DB.prepare('SELECT body, at FROM files WHERE name = ?').bind(name).first(); } catch {}   // no table yet
   if(!row){   // never came in: the old GitHub Pages copy (the edge keeps it for 5 minutes)
     try {
       const r = await fetch(PAGES + name, {headers: {'User-Agent': UA}, cf: {cacheTtl: TTL, cacheEverything: true}});
-      if(r.ok) return await r.text();
+      if(r.ok) return {body: await r.text(), at: null, from: 'backup'};
     } catch {}
     return null;
   }
   const put = caches.default.put(key, new Response(row.body, {headers: {
-    'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'public, max-age=' + TTL}}));
+    'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'public, max-age=' + TTL, 'X-Data-At': String(row.at)}}));
   if(ctx && ctx.waitUntil) ctx.waitUntil(put); else await put;
-  return row.body;
+  return {body: row.body, at: row.at, from: 'jobs'};
+}
+/* when a file came in and which source answered, without reading the file: {at, from} ("jobs", "backup" or
+   "none"). The backup site is asked with a HEAD: enough to know it still answers. */
+export async function fileWhen(env, origin, name){
+  const hit = await caches.default.match(copyOf(origin, name));
+  const at = hit && +hit.headers.get('X-Data-At');
+  if(at) return {at, from: 'jobs'};   // a copy from before this went live has no time: ask the table instead
+  let row = null;
+  try { row = await env.DB.prepare('SELECT at FROM files WHERE name = ?').bind(name).first(); } catch {}   // no table yet
+  if(row) return {at: row.at, from: 'jobs'};
+  try {
+    const r = await fetch(PAGES + name, {method: 'HEAD', headers: {'User-Agent': UA}, cf: {cacheTtl: TTL, cacheEverything: true}});
+    if(r.ok) return {at: null, from: 'backup'};
+  } catch {}
+  return {at: null, from: 'none'};
+}
+export async function fileText(env, origin, name, ctx){
+  const row = await fileRow(env, origin, name, ctx);
+  return row ? row.body : null;
+}
+export async function publishedRow(env, origin, name, ctx){
+  const row = await fileRow(env, origin, name, ctx);
+  if(!row) return null;
+  try { return {data: JSON.parse(row.body), at: row.at, from: row.from}; } catch { return null; }
 }
 export async function published(env, origin, name, ctx){
-  const text = await fileText(env, origin, name, ctx);
-  if(text === null) return null;
-  try { return JSON.parse(text); } catch { return null; }
+  const row = await publishedRow(env, origin, name, ctx);
+  return row ? row.data : null;
 }
 
 /* ---------- POST /api/data/put?name=<file> ---------- */

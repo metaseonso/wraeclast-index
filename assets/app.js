@@ -350,7 +350,7 @@ function detailExtras(it, px){
   // where the price comes from, and when it was checked
   if(px.src === 'trade') facts.push((px.ls || 0).toLocaleString() + ' listed on the trade site' + (px.at ? ' \u00b7 checked ' + ago(px.at) : ''));
   if(px.src === 'cx'){
-    facts.push(Math.round(px.vol || 0).toLocaleString() + ' div traded on the Currency Exchange in 24 h');
+    facts.push(Math.round(px.vol || 0).toLocaleString() + ' div traded on the Currency Exchange in 24 h' + (px.at ? ' · ' + ago(px.at) : ''));
     if(px.pairs && px.pairs.length) facts.push('Trades for: ' + px.pairs.slice(0, 3).map(([o, r]) =>
       (r >= 100 ? Math.round(r).toLocaleString() : +(+r).toPrecision(3)) + ' ' + o).join(', ') + ' each');
   }
@@ -850,7 +850,10 @@ first.then(() => {
   $('#gamever').textContent = (D.index.v || '').replace(/^4\.(\d+)\.(\d+).*$/, '0.$1.$2');
   const st = $('#stamp');
   st.classList.remove('wait');
-  if(D.market) st.innerHTML = 'Prices: <b>' + esc(D.market.league) + '</b> · ' + ago(D.market.updated);
+  // the real age of the data behind the prices (worker/prices.js), and a word when a job has missed a run
+  const M = D.market;
+  if(M && M.updated) st.innerHTML = 'Prices: <b>' + esc(M.league) + '</b> · ' + ago(M.updated) +
+    (M.late ? ' · <span class="err">waiting for new prices</span>' : '');
   else st.textContent = 'Prices not loaded yet';
   import('./league.js').then(m => m.mountLeague($('#leagueclock'))).catch(() => {});   // the league clock
 }).catch(failed);

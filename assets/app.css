@@ -491,8 +491,8 @@ small.at-bonus{display:block}
 .ad-pop .ov-go{gap:8px}
 .ad-note-full{margin:0; font-size:14px; line-height:1.55; white-space:pre-wrap; overflow-wrap:anywhere}
 .ad-verdict{margin:0; font-size:14px; padding:8px 12px; border-radius:8px; background:var(--raised); border-left:3px solid var(--accent)}
-.ad-verdict.v-watch{border-left-color:#D9B04A}
-.ad-verdict.v-upgrade{border-left-color:var(--blood, var(--neg)); color:var(--text)}
+.ad-verdict.v-watch,.ad-verdict.v-late{border-left-color:#D9B04A}
+.ad-verdict.v-upgrade,.ad-verdict.v-stopped{border-left-color:var(--blood, var(--neg)); color:var(--text)}
 #plan{display:grid; gap:12px}
 .ad-meter-row{display:grid; gap:5px}
 .ad-meter-row .note{margin:0}
