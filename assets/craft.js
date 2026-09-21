@@ -145,6 +145,12 @@ function lockHTML(f, ok, lo, hi){   // grey over the tiers this item cannot get
   if(last < n - 1) out += '<i class="cr-lock" style="left:' + at(edges[last + 1]) + ';right:0"></i>';
   return out;
 }
+/* the corner of a family row: how many of its tiers this item level can actually get.
+   Not a chance: the game files carry no spawn weights, only which mods a base can roll (tools/craft.py). */
+function tierCount(t, live){
+  if(t.length < 2) return 'level ' + t[0][2];
+  return (live < t.length ? live + ' of ' + t.length : t.length) + ' tiers';
+}
 function pick(f, v){   // the tier a value lands in (index into f.tiers)
   let k = 0;
   f.tiers.forEach((i, j) => { if(P.mods[i][5] !== null && +v >= P.mods[i][5]) k = j; });
@@ -175,7 +181,7 @@ function famHTML(f, kind){
   const lord = fam[5] ? '<span class="pill">' + esc(fam[5]) + '</span>' : '';
   return '<div class="cr-fam' + (best < 0 ? ' off' : '') + (onItem !== undefined ? ' on' : '') + '" data-f="' + f.f + '" data-kind="' + kind + '">' +
     '<div class="cr-fhd"><span class="cr-ft">' + fam[1].map(esc).join('<br>') + '</span>' + lord +
-      '<span class="cr-tn">' + (t.length > 1 ? t.length + ' tiers' : 'level ' + t[0][2]) + '</span></div>' +
+      '<span class="cr-tn">' + tierCount(t, ok.filter(Boolean).length) + '</span></div>' +
     '<div class="cr-fctl">' + ctl +
       '<button type="button" class="btn cr-add" data-add="' + (kind || 'p') + '"' + (lvlOk && r.ok ? '' : ' disabled title="' + esc(why) + '"') + '>' +
       (onItem !== undefined ? 'Change' : 'Add') + '</button></div></div>';
@@ -315,6 +321,7 @@ function poolHTML(){
     '<div class="kinds cr-chips" role="group" aria-label="Tags">' + [['', 'All'], ...tags].map(([t, l]) =>
       '<button type="button" class="chip" data-tag="' + t + '" aria-pressed="' + (UI.tag === t) + '">' + l + '</button>').join('') + '</div></div>' +
     '<p class="note">T1 is the best roll. Drag to pick a tier, then Add. Grey tiers need a higher item level.</p>' +
+    '<p class="note">No roll chances here: the game files say which mods a base can roll at an item level, not how often each one comes up.</p>' +
     '<div class="cr-cols">' + (only !== 's' ? col('p') : '') + (only !== 'p' ? col('s') : '') + '</div>';
 }
 

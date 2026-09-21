@@ -3,6 +3,43 @@
 The full list of changes. The public patch notes (data/changelog.json, shown on the site) stay short.
 Add the details here first, then a short public line there.
 
+## Next — Craft: mod weights, and what the game files really carry
+- The ticket was "crafting mod weights are required under crafting section": per mod tier its spawn weight and its
+  share of the pool it competes in. **The weights are not in the game data.** RePoE's export of the current client
+  (game version 4.5.5.2, both `mods.json` and `mods.min.json`) states every spawn weight as 1 or 0 and nothing else —
+  7,933 ones and 9,125 zeros across 16,784 mods, no third value anywhere. 1 means the mod can roll on an item with
+  that tag, 0 means it cannot. `generation_weights` is empty on every mod; `mods_by_base` carries levels, not weights.
+- poe2db says the same out loud on every mod table: "Modifier weight information cannot be obtained from game file."
+  The numbers it does print are compiled by Krakenbul from recombinator experiments, and from parsing trade listings
+  for bases that cannot be recombined. Measured, not read out of the client — an estimate, so not for this page
+  (see `official-data-only`: game files first, and say where a number came from when it is not official).
+- So there is nothing numeric to carry: `weight()` already uses the 1/0 as the filter that builds a pool, which makes
+  the pool itself the whole of the weight information the files hold. **data/craft.json and data/craft/\*.json are
+  untouched — 0 bytes added.**
+- And no percentages. With every weight at 1 a share is 1/N and the same for every mod in the pool: an Iron Ring at
+  item level 82 rolls 103 suffixes, so each is 0.971% — "+(41-45)% to Fire Resistance" exactly as likely as
+  "+(5-8) to Strength". The shares do sum to 100%, and the number is still a wrong claim about the game, so the page
+  does not print it. Checked by hand against the export for three classes at item level 82: Iron Ring 203 mods
+  (100 prefixes / 103 suffixes), Vaal Cuirass 144 (59/85), Siphoning Wand 185 (84/101) — each pool matches the built
+  file mod for mod, and every weight in all three is 1.
+- What the Craft page shows instead, both honest and level-aware: the corner of each mod now counts the tiers this
+  item level can actually reach — "6 of 8 tiers" at level 40, "8 tiers" at 82, "0 of 9 tiers" for a mod that is out
+  of reach — which is the level requirement the ticket asked for, made a number rather than a grey bar on a slider.
+  Under the pool, one line: "No roll chances here: the game files say which mods a base can roll at an item level,
+  not how often each one comes up." `assets/craft.js` +479 bytes, still lazy-loaded per kind of item as before.
+- `tools/craft.py`: `weight()` now records what the export carries and why the page shows no chances, and `scale()`
+  prints the weights it saw on every run — "spawn weights in the export: [0, 1] (can roll / cannot: no real weights
+  to show)" today, and a loud line the day GGG starts exporting real ones. That is the trigger to build this ticket
+  properly; until then the only other route is poe2db's measured table, which is the owner's call, not ours.
+- Phone: 375×812 headless Chrome on `#/craft` with an Iron Ring at item level 82 and at 40 — the new count sits in
+  the corner the tier count already used, nothing scrolls sideways (0px, and no element past the edge), no console
+  errors. Guard: 6 ok, 0 failed, baseline untouched.
+- Not done: no public patch-notes line — nothing a player would call a feature landed, and the note on the page says
+  the rest. Found on the way and left alone: poe2db's Essence page no longer carries the tab markup `essences()`
+  reads, so a run today parses 0 essences and, because an empty list is not `None`, writes every craft file with its
+  essence table gone instead of keeping the old one. Raised as its own ticket; the data here was rebuilt, checked
+  against that, and restored.
+
 ## Next — Bosses: who drops what, and what the way in costs
 - The tab itself, after the two commits that built its data (`data/bosses.json`) and its prices
   (`data/bossprices.json`). It sits under Atlas: `#/bosses`, a new route in `assets/app.js` and a new view in

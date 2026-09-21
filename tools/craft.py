@@ -6,7 +6,8 @@ Sources, all official game data:
   RePoE export of the game files (https://repoe-fork.github.io/poe2/):
     base_items   the bases, their drop level, requirements, defences, weapon stats, implicits, tags and art
     mods         every mod: prefix or suffix, mod group, level, wording, tags and where it can roll (spawn tags);
-                 also the desecrated mods (abyss bones) and the Vaal Orb's corruption mods
+                 also the desecrated mods (abyss bones) and the Vaal Orb's corruption mods.
+                 The spawn weights are 1 or 0 — can roll, or cannot; how often one rolls is not in the files (weight())
     augments     runes, soul cores and idols: what each gives in each kind of item
     item_classes and the item metadata (Metadata/Items/.../Abstract*.json): socket limits and which rarities a kind can be
   The official trade site's item list (data/trade.json, built by tools/tradedata.py): which bases exist in the game today.
@@ -227,11 +228,24 @@ def cell(h):
 
 # ---------------------------------------------------------------- mods that can roll
 def weight(m, tags):
-    """The game's rule: the first spawn tag the item has decides."""
+    """The game's rule: the first spawn tag the item has decides.
+
+    The export states every weight as 1 (can roll) or 0 (cannot) — the numbers the game rolls with are not in
+    the files, and poe2db says the same ("Weight information cannot be obtained from game file"; theirs is
+    measured with recombinators, not read out of the client). So a pool here is the set of mods a base can
+    roll, with nothing to say which of them comes up more often, and the page shows no roll chances.
+    scale() below prints the day that changes."""
     for w in m.get('spawn_weights') or []:
         if w['tag'] in tags:
             return w['weight']
     return 0
+
+
+def scale(MODS):
+    """What the export's spawn weights look like. If real weights ever appear, the Craft page can show them."""
+    vals = sorted({w['weight'] for m in MODS.values() for w in m.get('spawn_weights') or []})
+    print('spawn weights in the export:', vals,
+          '(can roll / cannot: no real weights to show)' if set(vals) <= {0, 1} else '· REAL WEIGHTS — the Craft page can show how often a mod rolls')
 
 
 class ClassMods:
@@ -378,6 +392,7 @@ def main():
     print('RePoE game version', version, '-> patch', patch)
     BASE = repoe('base_items.min.json')
     MODS = repoe('mods.min.json')
+    scale(MODS)
     AUG = repoe('augments.min.json')
     ICLS = repoe('item_classes.min.json')
     trade = json.loads((ROOT / 'data' / 'trade.json').read_text(encoding='utf-8'))
