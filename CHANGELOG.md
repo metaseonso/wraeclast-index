@@ -23,10 +23,10 @@ Add the details here first, then a short public line there.
   The Raven Trickster have no pool at all, so that is their whole card). Each row carries the feeds that named it
   — "Path of Building, Exiled Exchange 2", or "PoE2 Wiki" for a rate-only row — under the item, so the two feeds'
   disagreements stay visible instead of being merged away.
-- Rates get their own column, and one line under the table: "Drop rates according to: PoE2 Wiki - 235 and 100
-  kills, patch 0.3.0-0.5.0", built from the sample sizes and the patch actually stored for that boss (no sample and
-  no patch for Zarokh and The Trialmaster, so the line stops after the name). A boss with no rates has no rate
-  column. The item card repeats the rate and that line when it is opened from a boss that has one.
+- Rates get their own column, and one line under the table: "Drop rates according to: PoE2 Wiki, patch 0.3.0",
+  built from the patch actually stored for that boss (no patch for Zarokh and The Trialmaster, so the line stops
+  after the name). The kill count sits on the rate it was taken on, not in that line. A boss with no rates has no
+  rate column. The item card repeats the rate and that line when it is opened from a boss that has one.
 - Prices: `/data/bossprices.json` first, because it already picked the cheapest base really listed and its null
   means the last check found nobody selling; then the card's own market price. A catalogue row with no price and
   no check behind it is not a price and is left out — that bug showed as "none listed" on items nothing had ever
@@ -235,6 +235,58 @@ Add the details here first, then a short public line there.
   the export files no tool reads at all.
 - Nothing else changed: no existing tool was touched, and every data file the site already had is byte-identical
   after a run. gamepull is importable, so moving a tool onto it later is one line (`from gamepull import official`).
+
+### What three reviews found, and what was done
+- The page header told every visitor the drop lists were "checked against the game's own drop limits". Nothing did
+  that check: `tools/bosses.py` fetches four things and none of them is a drop restriction. The only check that ever
+  happened was three items by hand. The clause is gone from `assets/bosses.js` head() and from the file's own
+  comment, which now says what the hand-check was.
+- "Way in according to: Exiled Exchange 2." credited EE2 with a claim it does not make: item-drop.json names no boss
+  anywhere, it lists a pool behind an entry item, and the pool lands on a boss here because two or more of its items
+  are ones Path of Building or the wiki already put there (`attach()`, `if hit < 2: continue`). The line now names
+  the real chain, and the drop list, joined by the same rule, got one of its own (`dropSrc()`).
+- `level` was the *lowest* level across a boss's areas, then printed as a flat fact next to a list of areas it
+  contradicted: Olroth read 65 beside "Obscure Island · Kalguuran Tomb" when the Tomb is 80, Count Geonor and
+  Geonor read 75 beside The Iron Citadel's 80, and Jamanra's two Copper Citadels (75 and 80) hid behind one name.
+  The level now lives on its own area: `boss_rows()` writes `areas: [{name, lo, hi}]` and no boss-wide `level` at
+  all, the card's sub line reads "Obscure Island 65 · Kalguuran Tomb 80", the list's narrow Level column reads the
+  whole span ("65-80"), and the old "Area level" pill is gone rather than repeat it. There was no Level sort to fix:
+  the tab sorts by name and by way in.
+- `data/bosses.json` and `data/bossqueries.json` were outside the rawcode guard: `checkRaw` walks a hard-coded list,
+  and the tab is a hash route, so its rendered rows are never linted either. Both are on the list now
+  (`tools/dev/guard.mjs`), proven by injecting `[Fire|Fire]` into each and watching the check fail.
+- A wiki column heading was thrown away whenever it merely *contained* "drop rate", which is how Zarokh's
+  `! Item !! Pre 0.3.0 drop rate` became an unlabelled rate on a 0.5.x game. `mode_of()` now strips only the rate
+  column's own words and keeps the qualifier, so the card reads "35.5% (31%) Pre 0.3.0". No patch is invented for
+  that section: "Pre 0.3.0" is not patch 0.3.0, and it is on every row of the table anyway. The second figure in
+  `35.5% (31%)` used to be dropped with no rule; `rate_of()` keeps it in its brackets as written, because the wiki
+  never says what it is.
+- The one line under a drop table stated a kill count built only from the rows that carry a sample, so on The King
+  in the Mists "50 kills" sat above 28 Omen rows that state no sample at all. The sample moved onto its own row,
+  beside the mode and the group it already carries; the footer no longer claims one.
+- For a unique on several bases `indexed()` kept whichever index row came first, which was the Runemastered variant
+  for 7 of the 8 multi-base boss drops: the row read "Keeper of the Arc — Spiritbone Crown" and opened a card titled
+  "Runemastered Spiritbone Crown". It now looks for the index id `<name> | <base>` first. `bossprices.json`'s `base`
+  (the base it really priced) is shown in the sub line when it differs, as "cheapest on …".
+- `serveBossPrices` left `h` out of its SELECT, so `fields()` built no h/sp/ch and a unique opened from a boss card
+  had no sparkline, no change badge and no 45-day chart, while the same unique had all three everywhere else.
+  `h` is in the SELECT, the Currency Exchange rows carry their own history the way `serveMarket` builds it, and
+  `money()` in `assets/bosses.js` no longer has to merge a market row back in.
+- The endpoint walked only `access` and `drops`, but the tab draws a price cell for every rate-table item the drop
+  pool misses — 61 rows, the whole drop list of The Aberration, The Bodach and The Raven Trickster among them. It
+  loops the rate rows too now. Four omens are in neither the index nor the catalogue and still read "no price";
+  `price_gaps()` reports them by name instead of staying quiet, which is the honest end of it.
+- The 7-day change badge broke every Currency-Exchange-priced row in a boss card: `priceHTML()` returned three
+  siblings into `.bo-item`, a three-column grid, so `.chg` became a fourth grid item and wrapped to the next line at
+  column 1. Measured at 375×812 on The Arbiter of Ash with a bossprices.json that really carries `ch`: the badge sat
+  223px left of its price and 34px below it, on all 15 rows. The three pieces now go out as one `.bo-px` cell; the
+  same measurement gives 0 rows off, and the tab still scrolls 0px sideways. The guard cannot see this by itself —
+  `/data/bossprices.json` 404s on its own server and the repo's market.json has no prices — so it was measured with
+  a stub outside the repo.
+- The tab printed the wiki's spelling instead of the site's own: "Emergent instinct" directly above "Emergent
+  Protection", opening a card titled "Emergent Instinct". `thing()` returns `found.n` now, `dropsOf()` matches the
+  two feeds without case so one item cannot become two rows, and the price endpoint looks the Currency Exchange and
+  the unique checks up the same way.
 
 ## Next — No game-file text on the cards (#2)
 - Brutus' Lead Sprinkler carried "local display grants level X molten shower [1]" on its card, straight from the

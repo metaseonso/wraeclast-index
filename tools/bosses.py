@@ -84,19 +84,26 @@ def pob_areas(lua):
 
 
 def boss_rows(areas, named):
-    """One row per boss name the endgame areas hold: name, the areas it is in, level, pinnacle."""
+    """One row per boss name the endgame areas hold: name, pinnacle, and every area it is fought in with
+    that area's own level. The level stays on its area rather than becoming one number for the boss: the
+    same fight runs at 65 on Obscure Island and 80 in the Kalguuran Tomb, and both are game data. An area
+    the files carry twice under one name keeps both levels as lo/hi."""
     rows = {}
     for aid, names in named.items():
         area = areas.get(aid) or {}
         if area.get('act') != ENDGAME_ACT or aid.startswith('BossRush'):
             continue
+        where, lv = area.get('name'), area.get('area_level') or 0
         for name in names:
-            row = rows.setdefault(name, {'name': name, 'areas': [], 'level': None, 'pinnacle': False})
-            if area.get('name') and area['name'] not in row['areas']:
-                row['areas'].append(area['name'])
-            lv = area.get('area_level') or 0
-            if lv and (row['level'] is None or lv < row['level']):
-                row['level'] = lv
+            row = rows.setdefault(name, {'name': name, 'areas': [], 'pinnacle': False})
+            if where:
+                at = next((a for a in row['areas'] if a['name'] == where), None)
+                if at is None:
+                    at = {'name': where}
+                    row['areas'].append(at)
+                if lv:
+                    at['lo'] = min(lv, at.get('lo', lv))
+                    at['hi'] = max(lv, at.get('hi', lv))
             if 'pinnacle_boss' in (area.get('tags') or []):
                 row['pinnacle'] = True
     return rows
@@ -150,7 +157,10 @@ REF = re.compile(r'<ref[^>]*/>|<ref.*?</ref>', re.S)
 COMMENT = re.compile(r'<!--.*?-->', re.S)
 IL = re.compile(r'\{\{il\s*\|\s*(?:page\s*=\s*)?([^|}]+)')
 PCT = re.compile(r'(~?<?>?\s?\d+(?:\.\d+)?(?:\s?-\s?\d+(?:\.\d+)?)?\s?%)')
+BRACKETED = re.compile(r'^\s*\(\s*(~?<?>?\s?\d+(?:\.\d+)?(?:\s?-\s?\d+(?:\.\d+)?)?\s?%)\s*\)')
 VERSION = re.compile(r'\[\[version ([\d.]+[a-z]?)\]\]')
+# "Drop rate" on its own is the number's column, not a mode of the fight; "Pre 0.3.0 drop rate" is both
+RATE_COL = re.compile(r'\s*\(?\s*(?:estimated\s+)?drop\s+rates?\s*\)?\s*$', re.I)
 
 
 def plain(text):
@@ -167,9 +177,23 @@ def plain(text):
 
 
 def rate_of(cell):
-    """The percentage a table cell or bullet states, or None when it states no number."""
-    found = PCT.findall(plain(cell))
-    return re.sub(r'\s+', '', found[0]) if found else None
+    """The percentage a table cell or bullet states, or None when it states no number. A cell that puts a
+    second figure in brackets ("35.5% (31%)") keeps both, as written: the wiki never says what the bracketed
+    one is, so it is not silently thrown away and not silently promoted either."""
+    text = plain(cell)
+    m = PCT.search(text)
+    if not m:
+        return None
+    rate = re.sub(r'\s+', '', m.group(1))
+    also = BRACKETED.match(text[m.end():])
+    return rate + ' (' + re.sub(r'\s+', '', also.group(1)) + ')' if also else rate
+
+
+def mode_of(head):
+    """A rate column's heading as a mode of the fight. "Difficulty 3" stays; a bare "Drop rate" is the
+    number's own column, so it is no mode at all; a qualified one keeps the qualifier that makes the
+    number mean something ("Pre 0.3.0 drop rate" -> "Pre 0.3.0")."""
+    return RATE_COL.sub('', head).strip() or None
 
 
 def cell_text(cell):
@@ -198,8 +222,7 @@ def table_rates(section):
                 heads = [h for h in (plain(cell_text(x)) for x in re.split(r'\n!|!!', chunk)) if h]
                 if len(heads) > 1 and not modes:
                     heads = heads[1:] if heads[0].lower() in ('', 'item') else heads
-                    # a lone "Drop rate" column is not a mode of the fight, it is just the number
-                    modes = [None if re.search(r'drop rate', h, re.I) else h for h in heads]
+                    modes = [mode_of(h) for h in heads]
                 elif len(heads) == 1 and re.match(r'^(Guaranteed|Additional)', heads[0], re.I):
                     group = heads[0]
                 continue
@@ -376,19 +399,24 @@ def price_gaps(rows):
     market, queries, index = read('market.json'), read('bossqueries.json'), read('index.json')
     if not market or not index:
         return [], []
-    uniques = {i['n'] for i in index.get('items', []) if i.get('k') == 'u'}
-    traded = {k[2:] for k in market.get('items', {}) if k.startswith('c:')}
-    searched = {q.get('item') for q in (queries or {}).get('queries', [])}
-    unlisted = set(((queries or {}).get('unlisted') or {}).get('items', []))
+    # matched without case: a wiki rate table carries the odd lower-case word, and the price endpoint
+    # looks the same names up the same way
+    uniques = {i['n'].lower() for i in index.get('items', []) if i.get('k') == 'u'}
+    traded = {k[2:].lower() for k in market.get('items', {}) if k.startswith('c:')}
+    searched = {(q.get('item') or '').lower() for q in (queries or {}).get('queries', [])}
+    unlisted = {n.lower() for n in ((queries or {}).get('unlisted') or {}).get('items', [])}
     want = {}
     for row in rows:
         for name in row.get('access', []):
             want.setdefault(name, 'entry')
         for item in row.get('drops', []):
             want.setdefault(item['name'], item.get('kind'))
-    gaps = [n for n, kind in want.items() if n not in traded and n not in searched and n not in unlisted
-            and not (kind == 'unique' and n in uniques)]
-    return sorted(gaps), sorted(n for n in want if n in unlisted)
+        # the tab draws a price cell for a rate row too, even when no drop feed names the item
+        for rate in (row.get('rates') or {}).get('rows', []):
+            want.setdefault(rate['item'], None)
+    gaps = [n for n, kind in want.items() if n.lower() not in traded and n.lower() not in searched
+            and n.lower() not in unlisted and not (kind in ('unique', None) and n.lower() in uniques)]
+    return sorted(gaps), sorted(n for n in want if n.lower() in unlisted)
 
 
 def main():
@@ -419,7 +447,7 @@ def main():
         if not full or any(same(r) == same(name) for r in rows):
             continue
         where = (areas.get(aid) or {}).get('name')
-        rows[full] = {'name': full, 'areas': [where] if where else [], 'level': None, 'pinnacle': False}
+        rows[full] = {'name': full, 'areas': [{'name': where}] if where else [], 'pinnacle': False}
     rows = sorted(rows.values(), key=lambda r: r['name'])
 
     pages = wiki_pages([r['name'] for r in rows], cache)

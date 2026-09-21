@@ -11,13 +11,8 @@
      links   every deep link the code emits lands on a real row in the data
      pages   every public page answers 200; the sitemap and llms.txt did not shrink
      rawcode no stat ids, [Word|Word] markup or {0} placeholders where a player can read them
-<<<<<<< HEAD
      dash    the owner's dashboard: all eight tabs fill, no block is left empty (tools/dev/dash-fixture)
      phone   a real phone-sized Chrome: cards stay open, nothing scrolls sideways, no console errors
-=======
-     phone   a real phone-sized Chrome: cards stay open, the Bosses table fits, nothing scrolls sideways,
-             no console errors
->>>>>>> 0dd5be2 (Bosses tab: who drops what, and what the way in costs)
 
    The local server is this worktree's own files plus worker/seo.js, run in this process, so no
    wrangler and no deploy. Nothing is written anywhere but the baseline, and only with --bless. */
@@ -315,7 +310,8 @@ async function checkRaw(index, files, pages, want){
   const found = new Map();
   const jsonFiles = [['data/index.json', index]];
   for(const [key, path] of Object.entries(files)) jsonFiles.push([path.replace(/\.[0-9a-f]{6,}\.json$/, '.*.json'), await getJSON('/' + path)]);
-  for(const name of ['kwuse.json', 'grants.json', 'info.json', 'reqs.json', 'atlas.json', 'craft.json', 'uniques.json', 'trade.json'])
+  for(const name of ['kwuse.json', 'info.json', 'reqs.json', 'atlas.json', 'craft.json', 'uniques.json', 'trade.json',
+    'bosses.json', 'bossqueries.json'])
     jsonFiles.push(['data/' + name, await getJSON('/data/' + name)]);
   for(const [name, j] of jsonFiles) walk(name, '', j, found);
 

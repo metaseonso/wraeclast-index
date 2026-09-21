@@ -232,7 +232,8 @@ export async function servePrices(request, env, ctx, kind){
 
 /* ---------- /data/bossprices.json ---------- */
 /* What the things on the Bosses tab cost, in one file, so a page never has to work it out from three.
-   Every name in data/bosses.json (what a boss drops, and what it costs to get in) is looked up in:
+   Every name in data/bosses.json (what a boss drops, what it costs to get in, and anything only the wiki's
+   rate table names: the tab draws a price cell for all three) is looked up in:
      the uniques    our own hourly unique checks (uniq:). A unique that comes on more than one base keeps
                     each base's own price: the cheapest one that is really listed is the one given, with
                     the base it is on, the way the site says "from" elsewhere.
@@ -242,6 +243,8 @@ export async function servePrices(request, env, ctx, kind){
                     (boss:, data/bossqueries.json).
    A name appears only once something real is known about it. v is a price in divines, or null when the last
    check found nobody selling: never a zero, never a number worked out here, so nothing can sort as free.
+   Every row carries the day-by-day prices (h) and the 7-day line off them, the way /data/market.json does, so
+   an item opened from a boss card is no poorer than the same item anywhere else on the site.
    The drop rates in data/bosses.json never meet these prices: no value per kill, here or anywhere. */
 async function asset(env, origin, name){   // a data file that ships with the site, parsed
   try {
@@ -258,14 +261,14 @@ export async function serveBossPrices(request, env, ctx){
   const cxRow = await publishedRow(env, url.origin, 'exchange.json', ctx), cx = (cxRow && cxRow.data) || {};
   const league = cat.league || '';
   const rows = await env.DB.prepare(
-    "SELECT key, v, total, at FROM trade_prices WHERE league = ? AND (key LIKE 'uniq:%' OR key LIKE 'boss:%')").bind(league).all();
+    "SELECT key, v, total, at, h FROM trade_prices WHERE league = ? AND (key LIKE 'uniq:%' OR key LIKE 'boss:%')").bind(league).all();
   const uniques = new Map(), entries = new Map();
   let tradeAt = null;
   for(const r of rows.results || []){
     if(!tradeAt || r.at > tradeAt) tradeAt = r.at;
     if(r.key.startsWith('boss:')){ entries.set(r.key.slice(5), r); continue; }
     const id = r.key.slice(5), bar = id.indexOf(' | ');   // "<name>" or "<name> | <base>"
-    const name = bar < 0 ? id : id.slice(0, bar);
+    const name = (bar < 0 ? id : id.slice(0, bar)).toLowerCase();   // a wiki rate table carries the odd lower-case word
     const list = uniques.get(name) || [];
     list.push({...r, base: bar < 0 ? null : id.slice(bar + 3)});
     uniques.set(name, list);
@@ -277,10 +280,12 @@ export async function serveBossPrices(request, env, ctx){
   };
   const currencyAt = cx.league === league ? older(cx.updated, came(cxRow)) : null;
   const byItem = new Map(((queries && queries.queries) || []).filter(q => q.item && q.key).map(q => [q.item, q.key]));
+  const byCx = new Map(Object.keys(cx.items || {}).map(n => [n.toLowerCase(), n]));
   const items = {};
   const add = (name, kind) => {
     if(!name || items[name]) return;
-    const list = kind === 'unique' && uniques.get(name);
+    const low = name.toLowerCase();
+    const list = (kind === 'unique' || !kind) && uniques.get(low);   // a rate table says what, not what kind
     if(list){
       const best = pick(list);
       items[name] = {v: null, ...fields(best), src: 'trade', ...(best.base ? {base: best.base} : {})};
@@ -288,12 +293,21 @@ export async function serveBossPrices(request, env, ctx){
     }
     const row = entries.get(byItem.get(name));
     if(row){ items[name] = {v: null, ...fields(row), src: 'trade'}; return; }
-    const c = currencyAt ? (cx.items || {})[name] : null;   // never another league's prices
-    if(c && c.v) items[name] = {v: c.v, ...(c.vol ? {vol: c.vol} : {}), at: currencyAt, src: 'cx'};
+    const c = currencyAt ? (cx.items || {})[byCx.get(low)] : null;   // never another league's prices
+    if(!c || !c.v) return;
+    const o = {v: c.v, ...(c.vol ? {vol: c.vol} : {}), at: currencyAt, src: 'cx'};
+    if(c.h && c.h.length >= 2){   // the same 7-day line the market file carries, so a card is no poorer here
+      o.h = c.h.map(([d, v]) => [MON[+d.slice(5, 7) - 1] + ' ' + +d.slice(8, 10), v]);
+      o.sp = c.h.slice(-7).map(p => p[1]);
+    }
+    if(c.ch !== undefined) o.ch = c.ch;
+    items[name] = o;
   };
+  // the tab draws a price cell for every item it can name, and a rate table names items no drop pool covers
   for(const b of (bosses && bosses.bosses) || []){
     for(const name of b.access || []) add(name, 'entry');
     for(const d of b.drops || []) add(d.name, d.kind);
+    for(const r of (b.rates && b.rates.rows) || []) add(r.item, null);
   }
   const out = {league, updated: older(currencyAt, tradeAt), every: 'hour',
     late: stale(currencyAt, 'file', 'exchange.json') || (!!tradeAt && stale(tradeAt, 'price', 'uniq')),

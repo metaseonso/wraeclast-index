@@ -1,8 +1,9 @@
 /* Bosses tab: every endgame boss in the game files, what it drops and what it costs to get in.
-   Data: data/bosses.json (tools/bosses.py). The area, its level and the game's own pinnacle marking are game data.
-   The boss names come from Path of Building; the drop pools and the entry items from Exiled Exchange 2 and Path of
-   Building, checked against the game's own drop limits; the drop rates are the PoE2 Wiki's community samples, and
-   every rate says so where it is shown. Nothing in the game files states a drop rate.
+   Data: data/bosses.json (tools/bosses.py). The areas, each area's own level and the game's own pinnacle marking
+   are game data. The boss names come from Path of Building; the drop pools and the entry items from Exiled
+   Exchange 2 and Path of Building, joined to a boss on item names and nothing else (three of them were checked
+   by hand against the game's drop limits, nothing more); the drop rates are the PoE2 Wiki's community samples,
+   and every rate says so where it is shown. Nothing in the game files states a drop rate.
    Prices: data/bossprices.json (worker/prices.js) resolves every name at once from the hourly unique checks, the
    in-game Currency Exchange and the trade searches in data/bossqueries.json; a name it does not carry falls back to
    the card's own market price. Real prices only, and a rate never meets one: no value per kill, here or anywhere. */
@@ -22,40 +23,44 @@ async function getJSON(url){
 const num = v => typeof v === 'number' && isFinite(v);
 const hay = (...xs) => xs.flat(3).filter(Boolean).join(' ').toLowerCase();
 const has = (h, q) => !q || q.split(/\s+/).every(t => h.includes(t));
-// "235 and 100", the way the sample sizes read in a sentence
+// "a, b and c", the way a list reads in a sentence
 const andList = a => a.length < 2 ? String(a[0]) : a.slice(0, -1).join(', ') + ' and ' + a[a.length - 1];
 
 /* ---------- items: the index card when there is one, else a plain item ---------- */
-let NAMES = null, LOWER = null;
-function indexed(n){
+let NAMES = null, LOWER = null, IDS = null;
+function indexed(n, base){
   if(!NAMES){
-    NAMES = new Map(); LOWER = new Map();
+    NAMES = new Map(); LOWER = new Map(); IDS = new Map();
     const rank = {u: 0, g: 1, a: 2, c: 3};   // a lineage gem is both a gem and an exchange item: the gem card wins
     for(const it of D.index.items){
       if(!(it.k in rank)) continue;
+      IDS.set(it.id.toLowerCase(), it);
       const cur = NAMES.get(it.n);
       if(!cur || rank[it.k] < rank[cur.k]){ NAMES.set(it.n, it); LOWER.set(it._nl, it); }
     }
   }
-  return NAMES.get(n) || LOWER.get(n.toLowerCase()) || null;   // the wiki's tables carry the odd lower-case word
+  // a unique on several bases has a card per base; the drop feed names the base, so open that one and not
+  // whichever of them the index happens to list first
+  return (base && IDS.get((n + ' | ' + base).toLowerCase())) ||
+    NAMES.get(n) || LOWER.get(n.toLowerCase()) || null;   // the wiki's tables carry the odd lower-case word
 }
 /* One item's price. The boss file's own endpoint first (it already picked the cheapest base that is really
-   listed, and a null there means the last check found nobody selling), then the card's own market price.
-   A catalogue row with no price and no check behind it is not a price: it is left out. */
+   listed, carries that base and its 7-day line, and a null there means the last check found nobody selling),
+   then the card's own market price. A catalogue row with no price and no check behind it is not a price:
+   it is left out. */
 function money(name, found){
   const M = (D.market && D.market.items) || {};
   const bp = BP && BP.items && BP.items[name];   // keyed by the name data/bosses.json writes
+  if(bp) return bp;
   const key = found ? found.n : name;
   const own = (found && priceOf(found)) || M['c:' + key] || M['u:' + key] || null;
-  const m = own && (num(own.v) || own.src) ? own : null;
-  if(!bp) return m;
-  return bp.src === 'cx' && m ? {...m, ...bp} : bp;   // the same Currency Exchange number, with its 7-day line
+  return own && (num(own.v) || own.src) ? own : null;
 }
 const KOF = {unique: 'u', gem: 'g', item: 'c'};
 function thing(name, kind, base){
-  const found = indexed(name);
+  const found = indexed(name, base);
   const px = money(name, found);
-  if(found) return {n: name, it: found, px, href: hrefOf(found), base: base || null};
+  if(found) return {n: found.n, it: found, px, href: hrefOf(found), base: base || null};
   return {n: name, it: {k: KOF[kind] || 'c', id: name, n: name, s: base || ''}, px, href: null, plain: true,
     kind, base: base || null};
 }
@@ -64,18 +69,20 @@ function thing(name, kind, base){
 /* What a boss drops: the drop pool first, then anything only the wiki's rate table names (the two feeds are kept
    apart in the data, so each row carries the feeds that named it). */
 function dropsOf(b){
-  const rates = new Map();
+  const rates = new Map();   // keyed low: the wiki's odd lower-case word still meets the drop feed's own row
   for(const r of (b.rates && b.rates.rows) || []){
-    if(!rates.has(r.item)) rates.set(r.item, []);
-    rates.get(r.item).push(r);
+    const k = r.item.toLowerCase();
+    if(!rates.has(k)) rates.set(k, {name: r.item, rows: []});
+    rates.get(k).rows.push(r);
   }
   const out = [], seen = new Set();
   for(const d of b.drops || []){
-    seen.add(d.name);
-    out.push({...thing(d.name, d.kind, d.base), src: d.src || [], rate: rates.get(d.name) || []});
+    const k = d.name.toLowerCase();
+    seen.add(k);
+    out.push({...thing(d.name, d.kind, d.base), src: d.src || [], rate: (rates.get(k) || {rows: []}).rows});
   }
-  for(const [name, rows] of rates)
-    if(!seen.has(name)) out.push({...thing(name, ''), src: [b.rates.src], rate: rows});
+  for(const [k, got] of rates)
+    if(!seen.has(k)) out.push({...thing(got.name, ''), src: [b.rates.src], rate: got.rows});
   return out;
 }
 const priceOrder = (a, x) => {   // what really sells first, cheapest at the top; the rest keep the feed's order
@@ -86,7 +93,7 @@ function row(b, i){
   const access = (b.access || []).map(n => thing(n, 'item')).sort(priceOrder);
   const drops = dropsOf(b);
   return {b, i, access, drops, way: access[0] || null,
-    h: hay(b.name, b.areas, b.pinnacle ? 'pinnacle' : '', access.map(x => x.n), drops.map(x => x.n))};
+    h: hay(b.name, areaNames(b), b.pinnacle ? 'pinnacle' : '', access.map(x => x.n), drops.map(x => x.n))};
 }
 const wayValue = r => r.way && r.way.px && num(r.way.px.v) ? r.way.px.v : null;
 
@@ -97,26 +104,47 @@ function icon(it){   // the live card's own icon, so a row always matches the ca
   if(!ICONS.has(k)) ICONS.set(k, card(it, {detail: true, price: null, href: null, builds: false}).querySelector('.card-ic').innerHTML);
   return ICONS.get(k);
 }
+/* The three price pieces go out as one element: .bo-item is a grid with a fixed column count, and a loose
+   change badge would land in a column of its own. */
 function priceHTML(x){
-  if(x.px && num(x.px.v)) return spark(x.px.sp, x.px.ch) + '<span class="fm-p">' + moneyHTML(x.px.v) + '</span>' + change(x.px.ch);
-  return '<span class="fm-p none">' + (x.px ? 'none listed' + (x.px.at ? ' · ' + esc(ago(x.px.at)) : '') : 'no price') + '</span>';
+  const inner = x.px && num(x.px.v)
+    ? spark(x.px.sp, x.px.ch) + '<span class="fm-p">' + moneyHTML(x.px.v) + '</span>' + change(x.px.ch)
+    : '<span class="fm-p none">' + (x.px ? 'none listed' + (x.px.at ? ' · ' + esc(ago(x.px.at)) : '') : 'no price') + '</span>';
+  return '<span class="bo-px">' + inner + '</span>';
 }
+/* A rate carries its own sample: a number the wiki took over 50 kills must never inherit another row's count,
+   and most pages sample some rows and not others. */
+const rateTag = r => [r.mode, (r.group || '').replace(/\.\.\.$/, '…'), num(r.sample) ? r.sample + ' kills' : null]
+  .filter(Boolean).join(' · ');
 function rateHTML(rows){
   if(!rows.length) return '<span class="bo-r none">no sample</span>';   // never a blank cell: blank would read as zero
   return rows.map(r => {
-    const tag = [r.mode, r.group].filter(Boolean).join(' · ').replace(/\.\.\.$/, '…');
+    const tag = rateTag(r);
     return '<span class="bo-r"><b>' + esc(r.rate) + '</b>' + (tag ? '<i>' + esc(tag) + '</i>' : '') + '</span>';
   }).join('');
 }
-/* Where a rate came from, inline, wherever a rate is shown. */
+/* Where a rate came from, inline, wherever a rate is shown. The kill count is not here: it sits on the row
+   it was taken on. */
 function rateSrc(rates){
-  const smp = [...new Set((rates.rows || []).map(r => r.sample).filter(num))];
-  const kills = smp.length ? ' - ' + andList(smp) + ' kills' : '';
-  return 'Drop rates according to: ' + rates.src + kills + (rates.patch ? (kills ? ', patch ' : ' - patch ') + rates.patch : '');
+  return 'Drop rates according to: ' + rates.src + (rates.patch ? ', patch ' + rates.patch : '');
+}
+/* Where the drop list came from. Exiled Exchange 2 names no boss anywhere: it lists a pool of items behind an
+   entry item, and that pool lands on this boss because two or more of its items are ones Path of Building or
+   the wiki already put here. The join is the site's, so the line says what was joined instead of handing the
+   reader a source that does not carry the claim. */
+const FEEDS = [['Path of Building', 'the source lines in Path of Building'],
+  ['Exiled Exchange 2', 'the pool Exiled Exchange 2 lists behind the entry items above'],
+  ['PoE2 Wiki', 'the PoE2 Wiki’s own rate table']];
+function dropSrc(r){
+  const seen = new Set(r.drops.flatMap(x => x.src || []));
+  const bits = FEEDS.filter(([f]) => seen.has(f)).map(([, text]) => text);
+  return bits.length ? 'Drop list: ' + andList(bits) + '.' : '';
 }
 function subOf(x){
   const bits = [];
   if(x.base) bits.push(x.base);
+  // the endpoint prices the cheapest base really listed, which is not always the base the drop feed names
+  if(x.px && x.px.base && x.px.base !== x.base) bits.push('cheapest on ' + x.px.base);
   if(x.src && x.src.length) bits.push(x.src.join(', '));
   return bits.join(' · ');
 }
@@ -128,36 +156,49 @@ function itemRow(x, key, rated){
     priceHTML(x) + (rated ? '<span class="bo-rate">' + rateHTML(x.rate || []) + '</span>' : '') + '</button>';
 }
 
-/* ---------- the boss card ---------- */
-function bossItem(b){
-  const where = (b.areas || []).join(' · ');
-  return {k: 'x', id: b.name, n: b.name, s: where + (num(b.level) ? (where ? ' · ' : '') + 'area level ' + b.level : '')};
+/* ---------- areas and their levels ----------
+   Every area keeps its own level: the same fight is 65 on Obscure Island and 80 in the Kalguuran Tomb, and both
+   are game data, so no area's name is ever printed next to another area's level. */
+const areaNames = b => (b.areas || []).map(a => a.name);
+const areaLevel = a => !num(a.lo) ? '' : !num(a.hi) || a.hi === a.lo ? String(a.lo) : a.lo + '-' + a.hi;
+const whereText = b => (b.areas || []).map(a => a.name + (areaLevel(a) ? ' ' + areaLevel(a) : '')).join(' · ');
+function levelText(b){   // the whole span the fight is run at, for the one narrow column on the list
+  const ns = [];
+  for(const a of b.areas || []){ if(num(a.lo)) ns.push(a.lo); if(num(a.hi)) ns.push(a.hi); }
+  if(!ns.length) return '';
+  const lo = Math.min(...ns), hi = Math.max(...ns);
+  return lo === hi ? String(lo) : lo + '-' + hi;
 }
+
+/* ---------- the boss card ---------- */
+const bossItem = b => ({k: 'x', id: b.name, n: b.name, s: whereText(b)});
 function itemOpts(r, x){
   const o = {price: x.px, href: x.href, nested: true};
   if(x.plain){ o.builds = false; if(x.kind === 'item') o.kind = 'Item'; }   // no card of its own: don't call it currency
   const rate = (x.rate || []).length
-    ? '<p class="card-facts">From ' + esc(r.b.name) + ': ' + (x.rate).map(q => esc(q.rate) +
-        ([q.mode, q.group].filter(Boolean).length ? ' (' + esc([q.mode, q.group].filter(Boolean).join(' · ').replace(/\.\.\.$/, '…')) + ')' : '')).join(' · ') +
+    ? '<p class="card-facts">From ' + esc(r.b.name) + ': ' + (x.rate).map(q => {
+        const tag = rateTag(q);
+        return esc(q.rate) + (tag ? ' (' + esc(tag) + ')' : '');
+      }).join(' · ') +
       '</p><p class="note">' + esc(rateSrc(r.b.rates)) + '</p>'
     : '';
   o.extra = rate;
   return o;
 }
 function openBoss(r){
-  const b = r.b, rated = !!(b.rates && (b.rates.rows || []).length);
-  const pills = [];
+  const b = r.b, rated = !!(b.rates && (b.rates.rows || []).length), from = dropSrc(r);
+  const pills = [];   // the level is not a pill: it sits on its own area, in the line under the boss's name
   if(b.pinnacle) pills.push('<span class="pill">Pinnacle</span>');
-  if(num(b.level)) pills.push('<span class="pill">Area level ' + b.level + '</span>');
   if(r.drops.length) pills.push('<span class="pill">' + r.drops.length + (r.drops.length === 1 ? ' drop' : ' drops') + '</span>');
   const extra =
     (pills.length ? '<div class="card-req">' + pills.join('') + '</div>' : '') +
     (r.access.length ? '<div class="bo-sec"><p class="lbl">Way in</p><div class="bo-tbl">' +
       r.access.map((x, i) => itemRow(x, r.i + ':a:' + i, false)).join('') +
-      '</div><p class="note">Way in according to: Exiled Exchange 2.</p></div>' : '') +
+      '</div><p class="note">Way in: the entry items Exiled Exchange 2 lists as dropping what this boss drops.</p></div>' : '') +
     (r.drops.length ? '<div class="bo-sec"><p class="lbl">What it drops</p>' +
       (rated ? '<div class="bo-thd"><span>Item</span><span>Price</span><span>Drop rate</span></div>' : '') +
       '<div class="bo-tbl">' + r.drops.map((x, i) => itemRow(x, r.i + ':d:' + i, rated)).join('') + '</div>' +
+      (from ? '<p class="note">' + esc(from) + '</p>' : '') +
       (rated ? '<p class="note">' + esc(rateSrc(b.rates)) + '</p>' : '') + '</div>'
       : '<p class="fm-miss">No feed names what this one drops.</p>');
   openDetail(bossItem(b), {price: null, builds: false, href: null, kind: b.pinnacle ? 'Pinnacle boss' : 'Boss', extra}, null);
@@ -184,8 +225,8 @@ function listRow(r){
   const b = r.b, known = r.access.length || r.drops.length;
   return '<button type="button" class="bo-row" data-i="' + r.i + '">' +
     '<span class="bo-n"><b>' + esc(b.name) + '</b>' + (b.pinnacle ? '<small>Pinnacle</small>' : '') + '</span>' +
-    '<span class="bo-w">' + esc((b.areas || []).join(', ')) + '</span>' +
-    '<span class="bo-lv"><i class="l">Level</i>' + (num(b.level) ? b.level : '—') + '</span>' +
+    '<span class="bo-w">' + esc(areaNames(b).join(', ')) + '</span>' +
+    '<span class="bo-lv"><i class="l">Level</i>' + (levelText(b) || '—') + '</span>' +
     (known ? '<span class="bo-in">' + wayHTML(r) + '</span>' +
       '<span class="bo-d"><i class="l">Drops</i>' + (r.drops.length || '—') + '</span>' : '') +
     '</button>';
@@ -254,7 +295,7 @@ const srcURL = name => ((B && B.sources) || []).reduce((u, s) => s.name === name
 function head(){
   return '<div class="pagehd"><h2>Bosses</h2>' +
     '<p>Every endgame boss, what it drops and what it costs to get in.</p>' +
-    '<p class="bo-src">Boss names: Path of Building. Drop lists: Exiled Exchange 2, checked against the game’s own drop limits.</p></div>';
+    '<p class="bo-src">Boss names: Path of Building. Drop lists: Exiled Exchange 2 and Path of Building.</p></div>';
 }
 
 function sync(){
