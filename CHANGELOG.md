@@ -3,6 +3,26 @@
 The full list of changes. The public patch notes (data/changelog.json, shown on the site) stay short.
 Add the details here first, then a short public line there.
 
+## Next — "Increased" is not a keyword (checked, nothing changed)
+- Reported: passive nodes whose text says "increased" show no Increased keyword. Nothing was changed, because
+  there is nothing to attach. The official export's help text — `keywords.min.json`, the same 1,030 entries
+  `tools/gamelib.py` reads — has no entry keyed or named *increased*, *reduced*, *more* or *less*. The only
+  three terms containing the word are monster modifiers (Increased Area of Effect, Increased Life, Increased
+  Stun Threshold), which are fights, not maths. The artifact's own 451 keywords have none either, and the 693
+  keyword cards the site ships have none.
+- The game never marks those words as a link, so the builder is not dropping one. A card's chips come from the
+  game's own `[Id|words]` markup (`refs()` in `tools/sync.py`); across every shipped block of game text there
+  is not a single mark whose words begin "increased" or "reduced". Add one and the site would be inventing a
+  glossary entry the game does not have, which is the one thing the data rule forbids.
+- The size of it, for the record: 1,772 of 5,712 cards say increased or reduced, 744 of them passives.
+- What is real, and what could be done about it instead: 249 of those 1,772 cards carry no keyword chip at all
+  (31 passives), because the game left every word on them unmarked — "16% increased Cast Speed" marks neither
+  Cast nor Speed. That is a gap in the game's markup, not a missing keyword, and the honest fix for it is the
+  plain-text pass `tools/kwuse.py` already does in the other direction ("Found on"), turned around to suggest
+  chips. If the owner wants players to learn what increased actually does — additive with every other increase,
+  unlike *more* — that is a site-written note against a named source (the rule for anything the game does not
+  state), not a keyword card wearing the game's voice.
+
 ## Next — Back to a card, exactly as you left it
 - The trail already kept a `top` per step and put it back, and it never worked: measured on a phone, a card
   scrolled to 371 came back at 0. The line that restores it runs the moment the card is drawn, and at that
