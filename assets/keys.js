@@ -15,6 +15,10 @@ const ACTIONS = [
   {id: 'uniques',  name: 'Go to Uniques',      key: 'u', go: 'explore#uniques'},
   {id: 'tree',     name: 'Go to Passive tree', key: 'p', go: 'explore#tree'},
   {id: 'keys',     name: 'Show keybindings',   key: '?'},
+  // the open card's own keys: they run only while a card is up, and nothing else runs then
+  {id: 'cardback', name: 'Card back',          key: 'ArrowLeft',  card: true},
+  {id: 'cardfwd',  name: 'Card forward',       key: 'ArrowRight', card: true},
+  {id: 'cardclose', name: 'Close card',        key: 'x',          card: true},
 ];
 const STORE = 'wi.keys';
 const MODS = new Set(['Shift', 'Control', 'Alt', 'AltGraph', 'Meta', 'OS', 'Super', 'Hyper', 'Fn', 'FnLock',
@@ -67,7 +71,10 @@ const shown = el => el.getClientRects().length > 0;
 function listTarget(){
   return [...document.querySelectorAll('input[type=search]')].find(el => shown(el) && !el.closest('.top, .mast, .ov')) || focusTarget();
 }
+let cardRun = null;   // what a card's own key does; assets/app.js says so, and answers false when it cannot
+export function setCardKeys(f){ cardRun = f; }
 function run(a){
+  if(a.card) return cardRun && cardRun(a.id);
   if(a.id === 'keys') return open();
   if(a.id === 'search' || a.id === 'list'){
     const q = a.id === 'list' ? listTarget() : focusTarget();
@@ -189,8 +196,13 @@ function onKey(e){
   if(e.key === '/') e.stopImmediatePropagation();   // the drill-down page's own "/" shortcut: this one replaces it
   if(!k || e.repeat || e.isComposing) return;
   if(!k.startsWith('ctrl+') && typing(document.activeElement)) return;   // a plain key while typing is just typing
-  if(document.body.classList.contains('ov-open')) return;   // a card popup is open
-  const a = ACTIONS.find(x => map[x.id] === k);
+  if(document.body.classList.contains('ov-open')){   // a card popup is open: only the card's own keys run
+    const c = ACTIONS.find(x => x.card && map[x.id] === k);
+    if(!c || !run(c)) return;
+    e.preventDefault(); e.stopImmediatePropagation();
+    return;
+  }
+  const a = ACTIONS.find(x => map[x.id] === k && !x.card);
   if(!a) return;
   e.preventDefault(); e.stopImmediatePropagation();
   run(a);

@@ -4,7 +4,7 @@
      data/market.json  real prices only: currency from the in-game Currency Exchange, everything else from live
                        trade site listings (worker/prices.js); trends from the site's own daily prices
    Build usage links to poe.ninja's own builds page: their builds API is not open to other sites. */
-import {initKeys} from './keys.js';
+import {initKeys, setCardKeys} from './keys.js';
 
 export const $ = (s, el = document) => el.querySelector(s);
 export const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -324,12 +324,21 @@ export function card(it, opts = {}){
 }
 
 /* ---------- the popup ----------
-   Every card opens here first. The gold button is the one way on to the drill-down page. */
+   Every card opens here first. The gold button is the one way on to the drill-down page.
+
+   The trail: the cards you have opened, in order, exactly like a browser's own back and forward.
+   TRAIL holds a step per card (the card, how it was opened, and where you had scrolled it); AT says
+   which step is on show. Every open pushes one history entry carrying that step's id, so the phone's
+   Back and Forward both land on a real step and nothing dead is left behind. Opening a card from the
+   middle of the trail drops the steps after it. Step 51 drops the oldest one. */
 const PLACE = {g: 'Gems', u: 'Uniques', p: 'Passive tree', c: 'Currency', b: 'Craft', a: 'Atlas'};
 const typing = el => el && (/^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName) || el.isContentEditable);   // same guard as keys.js
 const TAP = 10;   // px a finger may slide and still count as a tap, not a drag
+const TRAIL_MAX = 50;   // cards kept on the trail; all of it is in this browser, so nothing is paid for it
 let OV = null, lastFocus = null;
-let CUR = null, STACK = [], CLOSING = false;   // the card on show, and the cards under it (Back returns to them)
+let TRAIL = [], AT = -1, SEQ = 0, PEND = null;   // the trail, where you are on it, the next step id, a card still loading
+const CUR = () => TRAIL[AT] || null;   // the card on show
+const focusBox = () => OV.querySelector('.ov-box').focus({preventScroll: true});
 function bigLine(vals, label){
   const p = vals.filter(v => v !== null && isFinite(v));
   if(p.length < 2) return '';
@@ -361,23 +370,34 @@ function ensureOV(){
   if(!OV){
     OV = document.createElement('div');
     OV.className = 'ov'; OV.hidden = true;
-    // no close button: tapping the dim, Esc or Back closes it
+    // the bar sits inside the scroll box, so Back, Forward and Close never scroll away
     OV.innerHTML = '<div class="ov-scrim"></div><div class="ov-box" role="dialog" aria-modal="true" aria-label="Details" tabindex="-1">' +
+      '<div class="ov-nav" hidden><button type="button" class="ov-back">← <span class="ov-nm">Back</span></button>' +
+      '<span class="ov-at"></span><button type="button" class="ov-fwd">→</button>' +
+      '<button type="button" class="ov-x" aria-label="Close">✕</button></div>' +
       '<div class="ov-body"></div></div>';
     document.body.appendChild(OV);
     scrimTap();
     OV.addEventListener('click', e => {
       const t = e.target;
+      const nb = t.closest('.ov-nav button');
+      if(nb){
+        if(nb.disabled) return;
+        if(nb.classList.contains('ov-back')) history.back();
+        else if(nb.classList.contains('ov-fwd')) history.forward();
+        else closeDetail();
+        return;
+      }
       const go = t.closest('a.btn.gold, a.uses-go');
       if(go){ if(go.target !== '_blank') hideDetail(); return; }   // leaving the page: nothing to undo. A new tab: the card stays
-      if(t.closest('.ov-back')) return history.back();
       const kw = t.closest('.kwlink');
       if(kw){ const c = keywordCard(kw.dataset.kw); if(c) openDetail(c, {nested: true}, hrefOf(c)); return; }
       const row = t.closest('.uses-row[data-key]');
       if(row){ const c = D.byKey.get(row.dataset.key); if(c) openDetail(c, {nested: true}, hrefOf(c)); return; }
       const tab = t.closest('.uses-tab');
       if(tab){ const sec = tab.closest('.uses'); sec.dataset.on = tab.dataset.g; paintUses(sec); return; }
-      if(t.closest('.fullstats') && CUR && CUR.opts.onFull){ const f = CUR.opts.onFull; closeDetail(); setTimeout(f, 60); }
+      const cur = CUR();
+      if(t.closest('.fullstats') && cur && cur.opts.onFull){ const f = cur.opts.onFull; closeDetail(); setTimeout(f, 60); }
     });
     addEventListener('keydown', e => {
       if(e.key !== 'Escape' || OV.hidden) return;
@@ -386,15 +406,37 @@ function ensureOV(){
         if(el.value){ el.value = ''; el.dispatchEvent(new Event('input', {bubbles: true})); } else el.blur();
         return;
       }
-      closeDetail();
+      history.back();   // one step back, and the trail stays: Forward brings the card straight back
+    });
+    addEventListener('keydown', trapTab, true);
+    addEventListener('focusin', e => {   // focus stays inside the open card
+      if(OV.hidden || OV.contains(e.target)) return;
+      focusBox();
     });
     addEventListener('popstate', () => {
-      if(OV.hidden) return;
-      if(CLOSING){ CLOSING = false; STACK = []; CUR = null; hideDetail(); return; }
-      if(STACK.length){ CUR = STACK.pop(); paintDetail(); OV.querySelector('.ov-box').scrollTop = 0; }
-      else hideDetail();
+      const id = (history.state || {}).ov;
+      const cur = CUR();
+      if(!OV.hidden && cur) cur.top = OV.querySelector('.ov-box').scrollTop;   // remember the card we are leaving
+      const i = id ? TRAIL.findIndex(s => s.id === id) : -1;
+      // off the trail: the popup goes, the trail stays, so Forward walks straight back into it
+      if(i < 0) return hideDetail();
+      AT = i;
+      showOV();
+      paintStep();
     });
   }
+}
+/* Tab runs round the open card and never out of it */
+function trapTab(e){
+  if(e.key !== 'Tab' || !OV || OV.hidden) return;
+  const box = OV.querySelector('.ov-box');
+  const stops = [...box.querySelectorAll('a[href], button:not(:disabled), input:not(:disabled), select:not(:disabled), textarea:not(:disabled), [tabindex="0"]')]
+    .filter(el => el.getClientRects().length);
+  if(!stops.length) return;
+  const at = document.activeElement, first = stops[0], last = stops[stops.length - 1];
+  if(!box.contains(at)){ e.preventDefault(); (e.shiftKey ? last : first).focus(); return; }
+  if(e.shiftKey && (at === first || at === box)){ e.preventDefault(); last.focus(); }
+  else if(!e.shiftKey && at === last){ e.preventDefault(); first.focus(); }
 }
 /* The dim closes the cards only on a real tap on it: the finger goes down and comes up on the dim itself,
    barely moves, and leaves no text selected. A drag out of the card, a swipe, or letting go of a selection
@@ -413,35 +455,51 @@ function scrimTap(){
     closeDetail();
   });
 }
-/* the same popup for anything else (e.g. the Suggest box) */
+/* the same popup for anything else (e.g. the Suggest box): no card, so no trail */
 export function openBox(node, label = 'Details'){
   ensureOV();
-  CUR = null; STACK = [];
+  TRAIL = []; AT = -1;
   OV.querySelector('.ov-box').setAttribute('aria-label', label);
+  OV.querySelector('.ov-nav').hidden = true;
   OV.querySelector('.ov-body').replaceChildren(node);
   showOV();
+  history.pushState({ov: 0, d: 1}, '', location.href);   // ov 0: not a card. Back closes it
 }
-/* opts.nested: opened from inside the popup (a keyword, or something that uses it): Back returns.
+/* opts.nested: opened from inside the popup (a keyword, or something that uses it).
    opts.onFull: the drill-down page's own full-stats panel, offered as a button. */
 export function openDetail(it, opts = {}, href){
-  if(!D.full && !D.failed){ const go = () => openDetail(it, opts, href); ready.then(go, go); return; }   // its keywords and history: a moment
+  if(!D.full && !D.failed){
+    // its keywords and history: a moment away. A second tap while it loads takes over, so one tap, one card
+    const mine = PEND = {};
+    const go = () => { if(PEND !== mine) return; PEND = null; openDetail(it, opts, href); };
+    ready.then(go, go);
+    return;
+  }
+  PEND = null;
   ensureOV();
-  const nested = !OV.hidden && CUR && opts.nested;
-  if(nested) STACK.push(CUR); else STACK = [];
-  CUR = {it, opts, href};
-  paintDetail();
-  if(nested){ history.pushState({ov: STACK.length + 1}, '', location.href); OV.querySelector('.ov-box').scrollTop = 0; }
-  else showOV();
+  const cur = CUR();
+  let d = 1;
+  if(!OV.hidden && cur){
+    cur.top = OV.querySelector('.ov-box').scrollTop;   // where you had scrolled the card you are leaving
+    TRAIL.length = AT + 1;   // opening from the middle of the trail drops what was ahead, like a browser
+    d = ((history.state || {}).d || 0) + 1;
+  } else TRAIL = [];         // a card opened from the page starts a fresh trail
+  TRAIL.push({id: ++SEQ, it, opts, href, top: 0});
+  if(TRAIL.length > TRAIL_MAX) TRAIL.shift();   // 50 deep is plenty; the oldest step drops off
+  AT = TRAIL.length - 1;
+  showOV();
+  history.pushState({ov: TRAIL[AT].id, d}, '', location.href);   // one entry per card, both ways
+  paintStep();
 }
-function paintDetail(){
-  const {it, opts, href} = CUR;
-  OV.querySelector('.ov-box').setAttribute('aria-label', 'Details');
+function paintStep(){
+  const {it, opts, href, top} = CUR();
+  const box = OV.querySelector('.ov-box');
+  box.setAttribute('aria-label', 'Details');
   const px = opts.price !== undefined ? opts.price : priceOf(it);
   const body = OV.querySelector('.ov-body');
   const c = card(it, {...opts, href: null, rank: undefined, full: true, detail: true, extra: (opts.extra || '') + detailExtras(it, px)});
   c.classList.add('detail');
   body.replaceChildren(c);
-  if(STACK.length) body.insertAdjacentHTML('afterbegin', '<button type="button" class="btn ov-back">\u2190 Back to ' + esc(STACK[STACK.length - 1].it.n) + '</button>');
   const chips = kwChips(it);
   if(chips) body.insertAdjacentHTML('beforeend', chips);
   const uses = usesSection(it);
@@ -467,25 +525,51 @@ function paintDetail(){
       } finally { tb.disabled = false; }
     });
   }
+  paintNav();
+  box.scrollTop = top || 0;   // back to where you had this card
+  const on = document.activeElement;
+  if(!on || !box.contains(on) || on.disabled) focusBox();   // the button under the finger may have just gone
+}
+/* the bar: where you are, the card behind you, the card ahead */
+function paintNav(){
+  const nav = OV.querySelector('.ov-nav');
+  nav.hidden = AT < 0;
+  if(nav.hidden) return;
+  const back = nav.querySelector('.ov-back'), fwd = nav.querySelector('.ov-fwd'), at = nav.querySelector('.ov-at');
+  const prev = TRAIL[AT - 1], next = TRAIL[AT + 1];
+  back.disabled = !prev;
+  back.querySelector('.ov-nm').textContent = prev ? prev.it.n : 'Back';
+  back.setAttribute('aria-label', prev ? 'Back to ' + prev.it.n : 'Back');
+  fwd.disabled = !next;
+  fwd.setAttribute('aria-label', next ? 'Forward to ' + next.it.n : 'Forward');
+  at.textContent = TRAIL.length > 1 ? (AT + 1) + '/' + TRAIL.length : '';
 }
 function showOV(){
+  if(!OV.hidden) return;
   lastFocus = document.activeElement;
   OV.hidden = false;
   document.body.classList.add('ov-open');
-  history.pushState({ov: 1}, '', location.href);   // the back button closes the popup
-  OV.querySelector('.ov-box').focus({preventScroll: true});
+  focusBox();
 }
 function hideDetail(){
   if(!OV || OV.hidden) return;
   OV.hidden = true;
   document.body.classList.remove('ov-open');
-  if(lastFocus && lastFocus.focus) lastFocus.focus({preventScroll: true});
+  if(lastFocus && lastFocus.focus && document.contains(lastFocus)) lastFocus.focus({preventScroll: true});   // back on the row that opened it
 }
+// Close means closed: every entry the popup pushed is unwound, so one more Back leaves the page
 function closeDetail(){
-  const depth = (history.state && history.state.ov) || 0;   // the popup and every card opened inside it
-  if(depth){ CLOSING = true; history.go(-depth); }   // popstate hides it
-  else { STACK = []; hideDetail(); }
+  const d = (history.state || {}).d || 0;
+  if(d) history.go(-d); else hideDetail();   // popstate hides it
 }
+// the card's own keys, in the keybindings sheet (assets/keys.js) like every other shortcut
+setCardKeys(id => {
+  if(!OV || OV.hidden || AT < 0) return false;
+  if(id === 'cardback'){ if(AT < 1) return false; history.back(); return true; }
+  if(id === 'cardfwd'){ if(AT >= TRAIL.length - 1) return false; history.forward(); return true; }
+  if(id === 'cardclose'){ closeDetail(); return true; }
+  return false;
+});
 
 /* ---------- keywords: what uses what ----------
    Every gem, unique, passive and keyword lists the keywords its game text marks (data/index.json "kw": the chips).

@@ -83,11 +83,13 @@ body.ov-open{overflow:hidden}
 .chart{margin:4px 0 0}
 .chart figcaption{font-size:11px; color:var(--faint); margin-bottom:4px}
 .chart svg{display:block; width:100%; height:64px; background:var(--sunken); border-radius:6px}
-/* phone: a card sheet fills the height, so what is left of the dim is a thin strip, not a third of the screen */
+/* phone: a card sheet fills the height, so what is left of the dim is a thin strip, not a third of the screen,
+   and the bar drops to the bottom of the sheet, where a thumb reaches it */
 @media (max-width:640px){
   .ov:has(.card.detail) .ov-box{min-height:calc(100vh - 32px); display:flex; flex-direction:column}
-  .ov:has(.card.detail) .ov-body{flex:1 0 auto; display:flex; flex-direction:column}
+  .ov:has(.card.detail) .ov-body{order:1; flex:1 0 auto; display:flex; flex-direction:column}
   .ov:has(.card.detail) .ov-body > .card.detail{flex:1 0 auto}
+  .ov:has(.card.detail) .ov-nav{order:2; flex:none; top:auto; bottom:0; margin:10px 0 0}
 }
 /* the one way on to the drill-down page: a small gold-on-black button that lights up on hover */
 .ov-go{display:flex; justify-content:flex-end; margin-top:10px}
@@ -239,8 +241,24 @@ header.top .notesbtn ~ .suggestbtn{margin-left:0}
 .sup-coin{display:grid; grid-template-columns:auto 1fr auto; gap:8px; align-items:center; margin:6px 0}
 .sup-coin code{font-size:11.5px; word-break:break-all; color:var(--text)}
 .notes-sup{margin-top:14px}
-/* popup: Back, the card's keywords, and a keyword's "Found on" lists (app.js) */
-.ov-back{margin:0 0 10px; font-size:12px}
+/* popup: the card's bar, its keywords, and a keyword's "Found on" lists (app.js) */
+/* the bar holds the trail: Back names the card behind you, then where you are, Forward and Close.
+   It sticks to the scroll box, so it is there wherever you have scrolled the card. */
+.ov-nav{position:sticky; top:0; z-index:3; display:flex; align-items:center; gap:6px; margin:0 0 10px; padding:5px;
+  background:var(--surface); border:2px solid var(--line); border-radius:var(--r, 10px)}
+.ov-nav[hidden]{display:none}
+.ov-nav button{display:flex; align-items:center; gap:6px; min-height:40px; padding:0 10px; cursor:pointer;
+  font:inherit; font-size:12.5px; color:var(--text); background:var(--raised); border:1px solid var(--line);
+  border-radius:8px; transition:color .15s, border-color .15s}
+.ov-nav button:hover:not(:disabled){border-color:var(--accent)}
+.ov-nav button:focus-visible{outline:2px solid var(--accent); outline-offset:2px}
+.ov-nav button:disabled{opacity:.35; cursor:default}
+.ov-back{flex:0 1 auto; min-width:0; margin-right:auto}   /* it hugs the name, and the rest sit at the far end */
+.ov-nm{overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.ov-fwd, .ov-x{flex:none; justify-content:center; min-width:40px; padding:0}
+.ov-x{color:var(--muted); font-size:14px}
+.ov-x:hover{color:#F08A82; border-color:#F08A82}
+.ov-at{flex:none; font:500 11px/1 var(--mono); color:var(--faint)}
 .kwchips{display:flex; flex-wrap:wrap; align-items:center; gap:6px; margin:12px 2px 0}
 .kwchips .lbl{font-size:11px; text-transform:uppercase; letter-spacing:.08em; color:var(--faint); margin-right:4px}
 .uses{margin-top:14px; padding:14px; background:var(--surface); border:2px solid var(--line); border-radius:var(--r, 10px)}
