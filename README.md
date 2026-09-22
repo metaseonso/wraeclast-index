@@ -8,7 +8,7 @@ Search every Path of Exile 2 gem, unique, passive, base item, atlas passive and 
 ## What is in it
 
 - **Search** (home page): one search bar. Results show as live cards: requirements, stats, every mod line, live price, 7-day trend, and a link to the builds on poe.ninja that use the item.
-  Kinds: gems (lineage supports marked), uniques, passives, bases (every weapon, armour piece, shield, buckler, focus, quiver, ring, amulet, belt, jewel, flask, charm, relic and wombgift; the gold button opens the Craft tab on that base), Atlas (atlas passives, waystone tiers, tablets, keys and atlas items; the gold button opens the Atlas tab there), currency and keywords.
+  Kinds: gems (lineage supports marked), uniques, passives, bases (every weapon, armour piece, shield, buckler, focus, quiver, ring, amulet, belt, jewel, flask, charm, relic and wombgift; the gold button opens the Craft tab on that base), Atlas (atlas passives, waystone tiers, tablets, keys and atlas items; the gold button opens the Atlas tab there), currency, keywords, and concepts — our own cards for how the numbers on a mod line stack (increased and reduced, more and less, added damage), each naming where its maths comes from.
 - **Gems, Uniques, Passive tree** (`explore.html`): the full tables and detail panels, for drilling down.
 
 ## Where the data comes from
@@ -34,7 +34,7 @@ The site is static. GitHub Pages serves it; a GitHub Action (`.github/workflows/
 |---|---|
 | `index.html`, `assets/app.js`, `assets/app.css` | The app: search home page and the live card |
 | `explore.html` | The drill-down page (built from the Wraeclast Index artifact); its data sits in `data/explore/` (files named by their content) |
-| `data/index.json` | Search index, built by `tools/sync.py`; the base item, Atlas and extra currency cards come from `tools/morecards.py` (kinds `b`, `a`, `c`), and the keyword cards the artifact does not carry, plus the ascendancy notables whose whole effect is a skill, from `tools/gamelib.py` (kinds `w` and `p`); the phrases in a card's lines that name another card are marked by `tools/nodelinks.py` (`lx` on the card, `lxk` the key table). The home page loads it in two parts, `data/index-core.json` and `data/index-rest.json` (`tools/appdata.py`) |
+| `data/index.json` | Search index, built by `tools/sync.py`; the base item, Atlas and extra currency cards come from `tools/morecards.py` (kinds `b`, `a`, `c`), and the keyword cards the artifact does not carry, plus the ascendancy notables whose whole effect is a skill, from `tools/gamelib.py` (kinds `w` and `p`), and the concept cards from `tools/concepts.py` (kind `h`); the phrases in a card's lines that name another card are marked by `tools/nodelinks.py` (`lx` on the card, `lxk` the key table). The home page loads it in two parts, `data/index-core.json` and `data/index-rest.json` (`tools/appdata.py`) |
 | `sw.js` | The service worker (see Speed) |
 | `assets/fonts/` | The site's own copies of its fonts (Cinzel, IBM Plex Sans, IBM Plex Mono; SIL Open Font License) |
 | `data/kwuse.json` | What uses each keyword (the "Found on" lists on keyword cards), built by `tools/kwuse.py` |
@@ -123,7 +123,8 @@ In this order (each step reads what the one before wrote):
    this has to come after it. Running it twice adds nothing twice, and `--report` says what it would do without writing)
 5. After `tools/gamelib.py`: `python tools/grants.py`, then `python tools/nodelinks.py`
    (`data/grants.json`, the grants-skill edges both ways; it resolves against the cards the two steps above wrote, and
-   writes nothing else. `tools/nodelinks.py` after it, so the new cards' own lines get their references too)
+   writes nothing else. `tools/nodelinks.py` after it, so the new cards' own lines get their references too.
+   `python tools/concepts.py` does the same after changing a concept card's wording, without a full sync)
 6. Last, after any of the above: `python tools/kwuse.py`
    (every keyword's "Found on" lists in `data/kwuse.json`: uniques, gems, passives, bases, essences, atlas, crafting, currency,
    keywords; and the "Used by" counts in `data/index.json`; it prints its counts against the artifact's own, lower only for

@@ -11,6 +11,8 @@ The rules, and no guessing:
   * the phrase is matched exactly: same letters, same case, whole words, longest phrase first, never inside another
   * the phrases are every card's name, plus the other words a keyword card is shown as ("f", from the game's own
     markup): "Endurance Charges" is the keyword, so it wins over the notable called "Endurance" inside it
+  * a concept card's words ("f" again, tools/concepts.py: increased, reduced, more, less, Adds) count only where
+    the line uses them as a number, so "40% less Attack Damage" is a door and "no more than once" is not
   * exactly one card has that name          -> a reference to it
   * the card's own name                      -> not a door, and nothing else with that name is one either
   * several cards of one kind share the name -> nothing (two uniques called Decompose: which one?)
@@ -38,15 +40,18 @@ from collections import Counter, defaultdict
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+import concepts  # noqa: E402
 from phrases import Matcher  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent
 # The lines a player reads, per kind of card. A card has one or the other, never both.
-LINE_FIELDS = {'u': 'ls', 'b': 'ls', 'p': 'ls', 'g': 't'}
+LINE_FIELDS = {'u': 'ls', 'b': 'ls', 'p': 'ls', 'g': 't', 'h': 'ls'}
 NO_LINK = {'w'}            # keywords: the card's own chips are that door
+FORMS = {'w', 'h'}         # kinds with other words they are reached by ("f")
 # A line that declares which kind it names. "Grants Skill: Ice Nova" is a gem, whatever else shares the name.
 PREFERS = (('Grants Skill:', 'g'),)
-KIND = {'g': 'gems', 'u': 'uniques', 'p': 'passives', 'b': 'bases', 'a': 'atlas', 'c': 'currency', 'w': 'keywords'}
+KIND = {'g': 'gems', 'u': 'uniques', 'p': 'passives', 'b': 'bases', 'a': 'atlas', 'c': 'currency', 'w': 'keywords',
+        'h': 'concepts'}
 
 
 def lines_of(it):
@@ -73,7 +78,7 @@ def attach(index):
     for it in items:
         by_name[it['n']].append(it)
     for it in items:   # the other words a keyword is shown as, so a longer keyword beats a shorter card name
-        if it['k'] == 'w':
+        if it['k'] in FORMS:
             for f in it.get('f') or ():
                 if it not in by_name[f]:
                     by_name[f].append(it)
@@ -81,7 +86,8 @@ def attach(index):
 
     rep = {'refs': Counter(), 'lines': Counter(), 'cards': Counter(), 'targets': Counter(), 'seen': Counter(),
            'amb_kind': Counter(), 'amb_name': Counter(), 'amb_who': {}, 'chips': Counter(),
-           'skipped': sorted(matcher.skipped), 'phrases': Counter()}
+           'skipped': sorted(matcher.skipped), 'phrases': Counter(), 'prose': Counter(),
+           'to': Counter(), 'tocards': defaultdict(set)}   # the concept cards, and who reaches them
     keys, at = [], {}
     for it in items:
         mine = it['k'] + ':' + it['id']
@@ -109,11 +115,17 @@ def attach(index):
                         rep['amb_kind']['one kind' if len(kinds) == 1 else 'several kinds'] += 1
                         continue
                 t = cand[0]
+                if t['k'] == concepts.KIND and not concepts.gate(name, line, s):
+                    rep['prose'][name] += 1   # the word, not the maths: "no more than once every 3 seconds"
+                    continue
                 key = t['k'] + ':' + t['id']
                 if key not in at:
                     at[key] = len(keys)
                     keys.append(key)
                 spans.append([s, e - s, at[key]])
+                if t['k'] == concepts.KIND:
+                    rep['to'][t['n']] += 1
+                    rep['tocards'][t['n']].add(mine)
                 rep['refs'][it['k'] + '->' + t['k']] += 1
                 rep['targets'][t['k']] += 1
                 rep['phrases'][name] += 1
@@ -167,6 +179,12 @@ def report(index, rep):
           '%d ambiguous (%d one kind, %d several kinds)' %
           (sum(rep['chips'].values()), len(rep['chips']), sum(rep['amb_name'].values()),
            rep['amb_kind']['one kind'], rep['amb_kind']['several kinds']))
+    if rep['to']:
+        print('  concept cards (tools/concepts.py), reached from their own words:')
+        for name, c in rep['to'].most_common():
+            print('    %-24s %5d line%s on %4d cards' % (name, c, ' ' if c == 1 else 's', len(rep['tocards'][name])))
+        print('    left as plain text: %d where the word is prose, not a number (%s)' %
+              (sum(rep['prose'].values()), ', '.join('%s %d' % x for x in rep['prose'].most_common())))
     if rep['amb_name']:
         print('  ambiguous phrases, left as plain text:')
         for name, c in rep['amb_name'].most_common():

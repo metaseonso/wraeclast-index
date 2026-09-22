@@ -31,7 +31,8 @@ const LIVE = 'https://wraeclastindex.fyi';
 const TOL = 0.02;          // a kind may lose this much before it counts as broken
 const SAMPLE = 200;        // deep links tried per kind
 const PAGE_SAMPLE = 20;    // item pages fetched per kind
-const KINDS = {g: 'gems', u: 'uniques', p: 'passives', w: 'keywords', c: 'currency', b: 'bases', a: 'atlas'};
+const KINDS = {g: 'gems', u: 'uniques', p: 'passives', w: 'keywords', c: 'currency', b: 'bases', a: 'atlas',
+  h: 'concepts'};
 
 /* ---------- what counts as raw game code ---------- */
 // "(?!\(" keeps a Markdown link ("[Gems](https://...)", llms.txt) from reading as game markup
@@ -227,9 +228,13 @@ async function checkLinks(index, market){
       }
     }
   }
-  // the crawler's own pages, over the wire: the slug redirects to its canonical spelling, so this lands on the page
+  // the crawler's own pages, over the wire: the slug redirects to its canonical spelling, so this lands on the page.
+  // Only the kinds it publishes (worker/seo.js KIND); our own concept cards are not game data and have none.
+  const crawled = new Set([...(src.seo.match(/const KIND = \{[\s\S]*?\n\};/) || [''])[0].matchAll(/^ {2}(\w+): \{/gm)].map(m => m[1]));
+  if(!crawled.size) miss.push('could not read the crawler kinds out of seo.js');
   const pages = [];
-  for(const list of Object.values(byKind)) for(const it of pick(list.filter(x => !CUT.test(x.n)), PAGE_SAMPLE)) pages.push(it);
+  for(const [k, list] of Object.entries(byKind)) if(crawled.has(k))
+    for(const it of pick(list.filter(x => !CUT.test(x.n)), PAGE_SAMPLE)) pages.push(it);
   const hits = await all(pages, async it => {
     const r = await get('/item/' + seo.slugify(it.n));
     return r.status === 200 ? null : '/item/' + seo.slugify(it.n) + ' ' + r.status;

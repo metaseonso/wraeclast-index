@@ -7,8 +7,9 @@ The artifact page (gems, uniques, passive tree) is the drill-down. This script:
   2. copies the page to explore.html and adds the small bridge script that links it to the home page; the page's data
      goes to data/explore/ (see "the drill-down page's data, outside the page")
   3. builds data/index.json, the compact search index (with the base items, the Atlas and the currency the catalogue
-     lacks, from tools/morecards.py; lineage support gems are marked "li"), marks the phrases in each card's lines
-     that name another card (tools/nodelinks.py), and writes its two parts the home page loads (tools/appdata.py)
+     lacks, from tools/morecards.py; lineage support gems are marked "li"; our own concept cards, tools/concepts.py),
+     marks the phrases in each card's lines that name another card (tools/nodelinks.py), and writes its two parts
+     the home page loads (tools/appdata.py)
   4. gives every card without a sprite an official game image (see "card images" below)
 
 Usage:  python tools/sync.py path/to/artifact.html
@@ -143,7 +144,7 @@ DNT = re.compile(r'\bDNT[\w-]*')
 DNT_TAG = re.compile(r'\[DNT[\w-]*\]\s*')
 # The fields of a card a player reads. Every one is checked for raw game code and for a leftover marker
 # (build_index below, and tools/gamelib.py for the cards it adds after this tool has run).
-SHOWN_FIELDS = ('n', 's', 't', 'ls', 'pr', 'tags', 'rec', 'o', 'nt')
+SHOWN_FIELDS = ('n', 's', 't', 'ls', 'pr', 'tags', 'rec', 'o', 'nt', 'src')
 DNT_GEMS = {
     'SupportGemAtzirisCall':    ('drop', 'the trade site has no such lineage gem, and the skill it triggers is a placeholder'),
     'SupportGemDreamersKnell':  ('drop', 'the trade site has no such lineage gem; its description is the codename "Ezomyte Four"'),
@@ -543,6 +544,10 @@ def build_index(html):
     import morecards
     items += morecards.build(items, {'remote': remote, 'plain': plain, 'refs': refs, 'game_art': game_art, 'kw': kw,
                                      'REPOE': REPOE, 'IMGS': IMGS, 'plain_lines': plain_lines})
+
+    # our own cards: how the numbers on a mod line stack (tools/concepts.py). Not game text, and they say so.
+    import concepts
+    items += concepts.build()
 
     src = image_sources()
     for it in items:   # every card shows a picture: its sprite, else official game art

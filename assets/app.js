@@ -35,11 +35,17 @@ const BOSS = AFTER.then(() => getJSON('data/bosses.json', {priority: 'low'}).cat
 // the history, only when the worker split it off (the backup site's market file has no parts: it is all in NOW)
 const PAST = AFTER.then(() => NOW).then(m => m && m.part === 'now' ? getJSON('data/market.json?part=past', {priority: 'low'}).catch(() => null) : null);
 
-function prep(it, k, IMGS){   // once per card: its kind, full image link and search words
+function prep(it, k, IMGS, lxk){   // once per card: its kind, full image link, concept links and search words
   if(it._nl !== undefined) return it;
   it.k = k;
   if(it.id === undefined) it.id = it.n;   // the parts leave the id out where it is the name
   if(it.img){ const i = it.img.indexOf(':'), pre = IMGS[it.img.slice(0, i)]; if(pre) it.img = pre + it.img.slice(i + 1); }   // "<server key>:<path>"
+  // "lx" marks every phrase in a line that names another card (tools/nodelinks.py). The page draws one kind of
+  // them: the words that lead to a concept card ("h:", tools/concepts.py). The rest stays plain text, as before.
+  if(it.lx && lxk){
+    const hx = it.lx.map(r => (r || []).filter(x => (lxk[x[2]] || '').startsWith('h:')).map(x => [x[0], x[1], lxk[x[2]]]));
+    if(hx.some(r => r.length)) it.hx = hx;
+  }
   it._nl = it.n.toLowerCase();
   it._hay = [it.n, it.s, it.t, it.q, it.asc, it.reg, (it.ls || []).join(' '), (it.tags || []).join(' '), (it.o || []).join(' ')]
     .filter(Boolean).join(' ').toLowerCase();
@@ -52,12 +58,12 @@ const MB = new Map();   // the boss cards, made once
 /* The index as the pages use it: every card in the index's own order, then the market's currency and the bosses.
    Without the rest (the first cards), only the core's kinds. */
 function assemble(core, rest){
-  const IMGS = core.imgs || {}, pool = {}, at = {};
-  for(const part of [core, rest]) if(part) for(const [k] of core.order) if(Array.isArray(part[k])){ pool[k] = part[k]; at[k] = 0; }
+  const IMGS = core.imgs || {}, pool = {}, at = {}, lxk = {};   // lxk: each part's own table of the cards its lines name
+  for(const part of [core, rest]) if(part) for(const [k] of core.order) if(Array.isArray(part[k])){ pool[k] = part[k]; at[k] = 0; lxk[k] = part.lxk || []; }
   const items = [], byKey = new Map();
   for(const [k, n] of core.order){
     const list = pool[k]; if(!list) continue;
-    for(let i = 0; i < n && at[k] < list.length; i++){ const it = prep(list[at[k]++], k, IMGS); items.push(it); byKey.set(k + ':' + it.id, it); }
+    for(let i = 0; i < n && at[k] < list.length; i++){ const it = prep(list[at[k]++], k, IMGS, lxk[k]); items.push(it); byKey.set(k + ':' + it.id, it); }
   }
   if(rest) for(const [key, kw] of Object.entries(rest.ckw || {})){ const it = byKey.get(key); if(it) it.kw = kw; }
   const named = new Map();   // atlas and bulk item cards of the index, by name (the market must not repeat them)
@@ -185,7 +191,7 @@ function iconHTML(it){
 }
 
 /* ---------- the live card ---------- */
-const KIND = {g:'Gem', u:'Unique', p:'Passive', w:'Keyword', c:'Currency', b:'Base', a:'Atlas', x:'Boss'};
+const KIND = {g:'Gem', u:'Unique', p:'Passive', w:'Keyword', c:'Currency', b:'Base', a:'Atlas', x:'Boss', h:'Concept'};
 const SECTION = {g:'gems', u:'uniques', p:'tree'};
 /* the Craft tab, opened on this base (its plan lives in the address, see craft.js) */
 export const craftHref = (c, b = '') => './#/craft?s=' + encodeURIComponent(btoa(unescape(encodeURIComponent(JSON.stringify({c, b, l: 0, m: []})))));
@@ -253,14 +259,38 @@ function factsOf(it){
   }
   return f.length ? '<p class="card-facts">' + f.map(esc).join(' · ') + '</p>' : '';
 }
+/* One line as the card shows it, with the words that lead to a concept card marked (it.hx, from prep above).
+   A concept is ours, not the game's, so the mark is a word in the line and never a keyword chip: see .hlink
+   in assets/cards.css, and the source line the concept card itself carries. */
+const HLINK_TITLE = 'How it stacks — our own note, not the game’s';
+function lineHTML(it, i, text){
+  const spans = it.hx && it.hx[i];
+  if(!spans || !spans.length) return esc(text);
+  let out = '', at = 0;
+  for(const [s, n, key] of spans){
+    if(s < at) continue;
+    out += esc(text.slice(at, s)) + '<button type="button" class="hlink" title="' + HLINK_TITLE +
+      '" data-h="' + esc(key) + '">' + esc(text.slice(s, s + n)) + '</button>';
+    at = s + n;
+  }
+  return out + esc(text.slice(at));
+}
+/* The concept card behind a marked word. The index loads in two parts, so a word on one of the very first
+   cards can be tapped before the part its concept card is in has arrived: then it waits for it. */
+function openConcept(key, opts){
+  const c = D.byKey.get(key);
+  if(c) return void openDetail(c, opts, null);
+  ready.then(() => { const x = D.byKey.get(key); if(x) openDetail(x, opts, null); }, () => {});
+}
 function linesOf(it, max = 4){
   if(it.ls && it.ls.length){
-    if(max === Infinity) return '<ul class="card-ls">' + it.ls.map(x => '<li>' + esc(x) + '</li>').join('') + '</ul>';
+    const li = (x, i) => '<li>' + lineHTML(it, i, x) + '</li>';
+    if(max === Infinity) return '<ul class="card-ls">' + it.ls.map(li).join('') + '</ul>';
     const more = it.ls.length - max;
-    return '<ul class="card-ls">' + it.ls.slice(0, more > 1 ? max : it.ls.length).map(x => '<li>' + esc(x) + '</li>').join('') +
+    return '<ul class="card-ls">' + it.ls.slice(0, more > 1 ? max : it.ls.length).map(li).join('') +
       (more > 1 ? '<li class="more-n">+' + more + ' more</li>' : '') + '</ul>';
   }
-  return it.t ? '<p class="card-tx">' + esc(it.t) + '</p>' : '';
+  return it.t ? '<p class="card-tx">' + lineHTML(it, 0, it.t) + '</p>' : '';
 }
 function optionsOf(it, full){   // an atlas choice passive: what it lets you pick (in full in the popup)
   if(!it.o || !it.o.length) return '';
@@ -314,6 +344,7 @@ export function card(it, opts = {}){
     (req ? '<div class="card-req">' + req + '</div>' : '') +
     factsOf(it) +
     linesOf(it, opts.full ? Infinity : 4) + optionsOf(it, opts.full) +
+    (it.src ? '<p class="card-src">' + esc(it.src) + '</p>' : '') +   // a concept card says where its maths comes from
     (it.tags ? '<p class="card-tags">' + it.tags.map(esc).join(' · ') + '</p>' : '') +
     anointOf(it) +
     (opts.invest ? '<div class="card-inv"><span>' + esc(opts.invest.label) + '</span><b>' +
@@ -328,6 +359,8 @@ export function card(it, opts = {}){
   if(opts.detail) return el;
   // a card opens its popup; only the gold button in the popup leaves the page
   el.addEventListener('click', e => {
+    const hl = e.target.closest('.hlink');   // a word in a line: its concept card, not this one
+    if(hl){ e.preventDefault(); openConcept(hl.dataset.h, {}); return; }
     if(e.target.closest('.card-ext, .star, button')) return;
     const link = e.target.closest('.card-link');
     if(link && (e.ctrlKey || e.metaKey || e.shiftKey || e.button === 1)) return;   // new tab still works
@@ -433,6 +466,8 @@ function ensureOV(){
       if(go){ if(go.target !== '_blank') hideDetail(); return; }   // leaving the page: nothing to undo. A new tab: the card stays
       const kw = t.closest('.kwlink');
       if(kw){ const c = keywordCard(kw.dataset.kw); if(c) openDetail(c, {nested: true}, hrefOf(c)); return; }
+      const hl = t.closest('.hlink');   // a word in a line that leads to a concept card (tools/concepts.py)
+      if(hl){ openConcept(hl.dataset.h, {nested: true}); return; }
       const row = t.closest('.uses-row[data-key]');
       if(row){ const c = D.byKey.get(row.dataset.key); if(c) openDetail(c, {nested: true}, hrefOf(c)); return; }
       const tab = t.closest('.uses-tab');
@@ -870,7 +905,7 @@ export function flow(grid, list, make){
 }
 
 /* ---------- search ---------- */
-const KINDS = [['all','All'], ['g','Gems'], ['u','Uniques'], ['p','Passives'], ['b','Bases'], ['a','Atlas'], ['c','Currency'], ['w','Keywords'], ['x','Bosses']];
+const KINDS = [['all','All'], ['g','Gems'], ['u','Uniques'], ['p','Passives'], ['b','Bases'], ['a','Atlas'], ['c','Currency'], ['w','Keywords'], ['h','Concepts'], ['x','Bosses']];
 export function search(q, kind = 'all'){
   const qs = q.trim().toLowerCase();
   const toks = qs.split(/\s+/).filter(Boolean);

@@ -3,6 +3,58 @@
 The full list of changes. The public patch notes (data/changelog.json, shown on the site) stay short.
 Add the details here first, then a short public line there.
 
+## Next — How the numbers stack: three concept cards, honestly sourced
+- The follow-on to the entry below, which ended by saying what the honest fix would be: "a site-written note
+  against a named source ..., not a keyword card wearing the game's voice". That is what this is. Three cards
+  of our own, a new kind `h` with its own label (Concept), declared in one place, `tools/concepts.py`:
+  **Increased and reduced**, **More and less**, **Added damage**. Every worked example uses real mods out of
+  `data/index.json` (Honed Instincts, Deep Trance, Chakra of Rhythm, Crushing Verdict, Quill Rain,
+  Winter's Bite) with the arithmetic spelled out.
+- Where the maths comes from, read for this ticket in PathOfBuildingCommunity/PathOfBuilding-PoE2 (`dev`),
+  `src/Modules`. The lines that settle additive against multiplicative, in `CalcOffence.lua`, in the function
+  that works out a hit's damage per type:
+
+      local inc = 1 + skillModList:Sum("INC", cfg, unpack(modNames)) / 100
+      local more = skillModList:More(cfg, unpack(modNames))
+      ...
+      return  round(summedMin * inc * more * moreMinDamage + addMin),
+              round(summedMax * inc * more * moreMaxDamage + addMax)
+
+  every INC is summed and applied once; every MORE is its own multiplier. The same file says it in as many
+  words in the doc comment on the area maths: `---@param incArea number @Additive modifier` /
+  `---@param moreArea number @Multiplicative modifier`. `CalcDefence.lua` has the same shape for Life, Mana
+  and Spirit (`output[res] = override or m_max(round((base * (1 - conv/100) + extra) * (1 + inc/100) * more +
+  total), 1)`, which also shows an added `extra` landing inside the base before the increases), and
+  `CalcPerform.lua` repeats `(1 + inc / 100) * more` for buff and aura effect. `Calcs.lua` only reads INC
+  through `modDB:Sum`, and `ModStore.lua`'s `Combine` sends `MORE` to `More()` and everything else to `Sum()`.
+- **The cards name that source where a player reads it**, one line on each card: *"How it stacks: according to
+  Path of Building's own damage maths. The game never says it."* No file names on the card — the standard is
+  that nothing a player reads shows a path or an id.
+- **Not claimed:** the PoE2 wiki. It states this too according to second-hand pages, but its own host
+  (`poe2wiki.net`) turns the fetch away, so it was never read and is not named on the cards.
+- Reached from the text that needs it, through the build-time machinery that was already there
+  (`tools/nodelinks.py`), not a runtime parser. A concept card's trigger words sit in `f`, the same field a
+  keyword's other spellings use, and `FORMS` now covers both kinds. A word only becomes a door where the line
+  uses it as a number — `%` immediately before it for increased/reduced/more/less, line start for `Adds`
+  (`gate()` in `tools/concepts.py`) — which keeps prose out: 299 hits left as plain text, 211 of them *more*
+  in gem descriptions ("no more than once every 3 seconds", "Duration is lower the more times ..."), and the
+  nine real oddities like Skin of the Loyal's "Armour is increased by Uncapped Fire Resistance".
+- Counts: **2,586 references on 1,511 cards** (788 passives, 617 uniques, 104 bases, 2 concept cards
+  cross-linking). Increased and reduced 2,377 lines on 1,434 cards; Added damage 129 on 112; More and less
+  80 on 66. No gem reaches one, because a gem's text is prose and never says "20% more".
+- The page draws them as words in the line, never as keyword chips, so nobody reads them as the game's own
+  glossary: `.hlink` in `assets/cards.css` is the line's own type and colour with a dotted underline and a
+  footnote `*`, against a chip's accent-coloured pill. `assets/app.js` resolves only the `h:` spans out of
+  `lx` (`prep`, `lineHTML`); every other reference a line carries stays plain text exactly as before, which is
+  a different ticket's job.
+- The rest of it behaves like any card because it is one: searchable (a `Concepts` filter chip beside
+  Keywords, in `index.html` and `KINDS`), openable from a grid card or from inside another card, on the
+  back/forward trail both ways, and no sideways scroll at 375px. No crawler page: `worker/seo.js` publishes
+  only the game-data kinds, and `tools/dev/guard.mjs` now reads that list out of `seo.js` instead of assuming
+  every kind has one.
+- Sizes, against the standing budget of 70 KB compressed for `data/index-core.json`: 63.6 KB -> 66.6 KB
+  gzipped (the uniques' own references live in that part). `data/index-rest.json` 291.8 KB -> 296.0 KB.
+
 ## Next — The essence tables survive a poe2db redesign
 
 - poe2db took the Essence list out of its tab: the section is now plain `<div id="Essence">`, so the marker
