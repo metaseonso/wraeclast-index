@@ -542,6 +542,102 @@ function swapHTML(it, f, full){
   }).join('') + '</div>';
 }
 
+/* ---------- the bench's own fields ----------
+   The item as it stands, and the currency picked for it. Both read the card's own state, which its module
+   keeps and hands over whole; nothing about crafting is worked out here — docs/craft-sim.md holds the rules
+   and assets/engine.js runs them. Every control says what it does in `data-do`, and the popup hands that
+   word to the card's own module.
+   A modifier's weight and its share of its own side are printed where the player is choosing, and only
+   where the pool is measured: an even pool prints no share on any row and says so in a line of its own.
+   No chance is ever reported per hit, anywhere. */
+const RARITY = {normal: 'Normal', magic: 'Magic', rare: 'Rare'};
+const modLi = m => '<li' + (m.frac ? ' class="frac"' : '') + '><span class="bn-ml">' +
+  m.lines.map(esc).join('<br>') + '</span><span class="bn-mm">' +
+  [m.tier, m.lvl ? 'level ' + m.lvl : '', m.src, m.frac ? 'fractured' : ''].filter(Boolean).map(esc).join(' · ') +
+  '</span></li>';
+function sideHTML(p, a, label){
+  const rows = (p.mods || []).filter(m => m.side === a);
+  return '<div class="bn-side"><p class="bn-h4">' + label + ' <span>' + p.held[a] + '/' + p.caps[a] + '</span></p>' +
+    (rows.length ? '<ul class="bn-mods">' + rows.map(modLi).join('') + '</ul>' : '') + '</div>';
+}
+/* the pool as it stands: what one more roll can still land on. The first 40 of them, then the count of the
+   rest — the Craft tab draws the whole table for a kind of item. */
+function poolHTML(p){
+  const pool = p.pool;
+  if(!pool || !pool.rows.length) return '';
+  const cap = 40, over = Math.max(0, pool.rows.length - cap);
+  const row = r => '<li><span class="bn-ml">' + r.lines.map(esc).join('<br>') + '</span><span class="bn-mm">' +
+    [r.side === 'p' ? 'Prefix' : 'Suffix', r.tier, 'level ' + r.lvl, r.w ? r.w.toLocaleString() : '']
+      .filter(Boolean).map(esc).join(' · ') + '</span>' +
+    (r.share ? '<span class="bn-sh">' + esc(r.share) + '</span>' : '') + '</li>';
+  return '<details class="bn-pool"><summary>' + pool.rows.length.toLocaleString() +
+    ' modifiers can still roll here</summary><ul class="bn-mods bn-poolls">' +
+    pool.rows.slice(0, cap).map(row).join('') + '</ul>' +
+    (over ? '<p class="note">' + esc(FRAME.more(over)) + '</p>' : '') +
+    (pool.src ? '<p class="card-src">' + esc(pool.src) + '</p>' : '') + '</details>';
+}
+/* The item itself, on both cards: the bench draws the pickers over it, and on a run it is the thing you use
+   a currency on, which is the order the game does it in. One renderer, and the card's own state says which
+   of the two this is. */
+function benchItemHTML(p){
+  if(!p) return '';
+  const opt = (v, n, on) => '<option value="' + esc(v) + '"' + (on ? ' selected' : '') + '>' + esc(n) + '</option>';
+  const pick = !p.pickers ? '' : '<div class="bn-pickers">' +
+    '<label class="bn-lab"><span class="lbl">Kind of item</span><select class="field" data-do="kind">' +
+      p.kinds.map(k => opt(k.id, k.n, k.id === p.cls)).join('') + '</select></label>' +
+    (p.bases.length ? '<label class="bn-lab"><span class="lbl">Base</span><select class="field" data-do="base">' +
+      p.bases.map(b => opt(b.n, b.n + (b.dl > 1 ? ' · level ' + b.dl : ''), b.n === p.base)).join('') +
+      '</select></label>' : '') +
+    '<label class="bn-lab"><span class="lbl">Item level <b>' + p.ilvl + '</b></span>' +
+      '<input class="bn-range" type="range" min="' + (p.ilvlMin || 1) + '" max="' + p.ilvlMax +
+      '" value="' + p.ilvl + '" data-do="ilvl"></label>' +
+    '</div>';
+  if(!p.base) return pick;
+  const socks = (p.sockets || []).filter(Boolean);
+  const body =
+    '<p class="bn-ih"><b>' + esc(p.base) + '</b><span>' + esc((p.corrupt ? 'Corrupted ' : '') +
+      (RARITY[p.rarity] || '') + ' ' + p.kind + ' · item level ' + p.ilvl) + '</span></p>' +
+    ((p.imp || []).length ? '<ul class="bn-imp">' + p.imp.map(l => '<li>' + esc(l) + '</li>').join('') + '</ul>' : '') +
+    sideHTML(p, 'p', 'Prefixes') + sideHTML(p, 's', 'Suffixes') +
+    (p.so ? '<div class="bn-side"><p class="bn-h4">Augment sockets <span>' + socks.length + '/' + p.so + '</span></p>' +
+      (socks.length ? '<ul class="bn-mods">' + socks.map(r => '<li><span class="bn-ml">' + esc(r) +
+        '</span></li>').join('') + '</ul>' : '') + '</div>' : '') +
+    (p.quality ? '<p class="bn-qual">' + esc(p.quality) + '</p>' : '');
+  // on a run the item is the thing you use the currency on, so the whole of it is the button
+  const item = p.use
+    ? '<button type="button" class="bn-item use r-' + p.rarity + '" data-do="use" aria-label="' +
+      esc(p.use) + '">' + body + '<span class="bn-useon">' + esc(p.use) + '</span></button>'
+    : '<div class="bn-item r-' + p.rarity + '">' + body + '</div>';
+  return pick + item + poolHTML(p);
+}
+/* what the bench is holding, in the order it was picked, each one removable */
+function picksHTML(p){
+  if(!p || !p.base) return '';
+  const list = p.picks || [];
+  if(!list.length) return '<p class="note bn-nopick">Nothing picked yet — take what you want to craft with from the tab.</p>';
+  return '<div class="bn-holding"><p class="bn-h4">Picked <span>' + list.length + '</span></p><ul class="bn-picks">' +
+    list.map((x, i) => '<li class="bn-prow' + (x.omen ? ' omen' : '') + '">' +
+      '<span class="bn-ic">' + (x.img ? '<img src="' + esc(x.img) + '" alt="" loading="lazy" decoding="async">' : '') + '</span>' +
+      '<span class="bn-pn"><b>' + esc(x.n) + '</b>' + (x.t ? '<span>' + esc(x.t) + '</span>' : '') + '</span>' +
+      (x.v !== undefined && x.v !== null ? '<span class="bn-px">' + moneyHTML(x.v) + '</span>' : '') +
+      '<button type="button" class="bn-x" data-do="drop:' + i + '" aria-label="Take ' + esc(x.n) +
+      ' off the bench">Remove</button></li>').join('') + '</ul></div>';
+}
+
+/* ---------- a field the kind's own module fills ----------
+   A card that is an application rather than a row of the index leaves a box and its own module puts the
+   application in it (KINDS own), the same shape as a field whose table is a file of its own. One renderer,
+   no kind named: the module is the kind's own declaration, and the node it makes is its own to keep, so
+   Back and Forward bring the card back with whatever state it held. */
+const OWN = {};   // the modules a kind draws its card with, imported once each
+function ownFill(host, it, f, o){
+  const url = (KIND[it.k] || {}).own;
+  if(!host || !url) return;
+  const had = OWN[url];
+  if(had) return void (had.fill && had.fill(host, it, f, o));
+  import(url).then(m => { OWN[url] = m; if(host.isConnected && m.fill) m.fill(host, it, f, o); }, () => {});
+}
+
 /* ---------- one function per field type ----------
    Each answers with the words to draw, or with markup where a field is more than words ("raw"): the slot it
    sits in wraps the rest. A field whose entry says nothing answers with nothing and draws nothing, so one
@@ -610,6 +706,24 @@ export const TYPE = {
     ? '<p class="card-tags">' + it[f.at].map(esc).join(' · ') + '</p>' : ''},
   anoint: {raw: 1, v: it => anointHTML(it)},
   chips:  {raw: 1, v: (it, f, o) => o.full ? kwChips(it) : ''},
+  /* the kind's own module fills this one: the currency tab on the bench, the simulator on a run */
+  own:    {raw: 1, fill: ownFill, v: (it, f, o, name) => '<div class="card-own" data-fill="' + esc(name) + '"></div>'},
+  /* ---------- the crafting bench ----------
+     Three fields that draw a card's own state instead of a row of the index, and take a click. A control
+     says what it does in `data-do` and the card's own module answers it (opts.on, through the popup's one
+     delegated listener). docs/craft-sim.md, "The bench card and the running card". */
+  item:   {raw: 1, v: (it, f) => benchItemHTML(it[f.at])},
+  picks:  {raw: 1, v: (it, f) => picksHTML(it[f.at])},
+  note:   {raw: 1, v: (it, f) => it[f.at] ? '<p class="card-src bn-note">' + esc(it[f.at]) + '</p>' : ''},
+  launch: {raw: 1, v: (it, f) => {
+    const p = it[f.at];
+    if(!p) return '';
+    return '<div class="bn-go">' +
+      (p.again ? '<button type="button" class="btn bn-again" data-do="again">' + esc(p.again) + '</button>' : '') +
+      '<button type="button" class="btn gold bn-roll" data-do="roll"' + (p.ready ? '' : ' disabled') +
+      '>Roll it →</button>' +
+      (p.ready ? '' : '<span class="bn-why">' + esc(p.why || '') + '</span>') + '</div>';
+  }},
   spark:  {raw: 1, v: (it, f, o) => o.px ? spark(o.px.sp, o.px.ch) : ''},
   thin:   {raw: 1, v: (it, f, o) => o.px && o.px[f.at] !== undefined && o.px[f.at] < f.under
     ? '<span class="use" title="' + esc(f.note) + '">' + esc(f.is) + '</span>' : ''},
@@ -923,7 +1037,26 @@ function ensureOV(){
       const all = t.closest('.uses-all');   // "See all": the rest of that category, drawn here
       if(all){ const sec = all.closest('.uses'); sec._open.add(all.dataset.c); paintRel(sec); return; }
       const cur = CUR();
+      // an act a module of ours answers: the module and the call are in the act's own declaration (ACTS go),
+      // so one route covers every act of that shape and no module is named here
+      const own = t.closest('.btn[data-act]');
+      if(own){
+        const a = ACTS[own.dataset.act];
+        if(a && a.go && cur) import(a.own).then(m => m[a.go] && m[a.go](cur.it), () => {});
+        return;
+      }
+      // a card that is an application, answering its own controls: the control says what it does and the
+      // card's own module does it (opts.on). Nothing here knows what any of the words mean.
+      const did = t.closest('button[data-do], a[data-do]');
+      if(did && cur && cur.opts.on){ cur.opts.on(did.dataset.do, did, e); return; }
       if(t.closest('.fullstats') && cur && cur.opts.onFull){ const f = cur.opts.onFull; closeDetail(); setTimeout(f, 60); }
+    });
+    // ...and the controls that are not a click: a list, a slider. The same route, so a card's own module
+    // answers everything on it the same way.
+    for(const ev of ['change', 'input']) OV.addEventListener(ev, e => {
+      const el = e.target.closest && e.target.closest('[data-do]');
+      const cur = CUR();
+      if(el && cur && cur.opts.on) cur.opts.on(el.dataset.do, el, e);
     });
     addEventListener('keydown', e => {
       if(e.key !== 'Escape' || OV.hidden) return;
@@ -1009,7 +1142,7 @@ export function openDetail(it, opts = {}, href){
   }
   PEND = null;
   const own = (KIND[it.k] || {}).own;   // a boss: its tab has the way in and the drops, so it draws the card and calls back
-  if(own && !opts.drawn) return void import(own).then(m => m.openCard(it), () => {});
+  if(own && !opts.drawn) return void import(own).then(m => { OWN[own] = m; m.openCard(it); }, () => {});
   ensureOV();
   const cur = CUR();
   let d = 1;
@@ -1031,10 +1164,14 @@ export function openDetail(it, opts = {}, href){
 function actsHTML(it, opts, href){
   const d = KIND[it.k] || {}, out = [];
   for(const a of d.acts || []){
+    const act = ACTS[a] || {};
     if(a === 'trade' && isItem(it))
       out.push('<button type="button" class="btn ttoggle" aria-expanded="false">' + ACTS.trade.label + '</button>');
     else if(a === 'full' && opts.onFull)
       out.push('<button type="button" class="btn fullstats">' + ACTS.full.label + '</button>');
+    // an act a module of ours answers, drawn where this card carries what the act asks of its kind (ACTS only)
+    else if(act.go && (!act.only || !(it.k in act.only) || holds(it, act.only[it.k])))
+      out.push('<button type="button" class="btn" data-act="' + esc(a) + '">' + esc(act.label) + '</button>');
     else if((a === 'open' || a === 'craft') && href)
       out.push('<a class="btn gold" href="' + esc(href) + '">' + ACTS[a].label + (a === 'open' ? d.place : '') + ' →</a>');
   }
@@ -1083,6 +1220,13 @@ function paintStep(){
   if(uses) uses._then = back;
   const on = document.activeElement;
   if(!on || !box.contains(on) || on.disabled) focusBox();   // the button under the finger may have just gone
+}
+/* A card that is an application changes as it is used, and this is how its own module says so: the card is
+   drawn again where it stands, so the scroll it was at and the live parts it holds both survive. */
+export function repaint(){
+  if(!OV || OV.hidden || !CUR()) return;
+  saveStep();
+  paintStep();
 }
 /* the bar: where you are, the card behind you, the card ahead */
 function paintNav(){

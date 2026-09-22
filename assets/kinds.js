@@ -112,6 +112,7 @@ export const holds = (it, c) => {
   if(!c) return false;
   if(c.at === undefined) return true;
   const v = it[c.at];
+  if(c.of !== undefined) return c.of.includes(v);
   if(c.is !== undefined) return v === c.is;
   if(c.starts !== undefined) return typeof v === 'string' && v.startsWith(c.starts);
   return v !== undefined && v !== null && v !== '' && v !== false;
@@ -210,6 +211,19 @@ export const FIELDS = {
   anoint:   {type: 'anoint', at: 'rec', slot: 'body', every: 1},
   keywords: {type: 'chips', at: 'kw', slot: 'body', every: 1},   // the popup only: a way in, not a line of text
 
+  /* ---------- the crafting bench ----------
+     A card that holds a plan rather than a row of the index: the item, the currency and omens picked for it,
+     and the button that starts the run (docs/craft-sim.md). `item`, `picks` and `launch` are the first
+     fields on the site that take a click — they draw from the card's own state, and the card's own module
+     answers them (`own` below, and ACTS.go). `own` is the field a kind fills itself: the card leaves a box
+     and the module puts its application in it, the way `adds` leaves a box for a file. */
+  benchitem:  {type: 'item', at: 'plan', slot: 'body'},
+  benchtab:   {type: 'own', slot: 'body'},
+  benchpicks: {type: 'picks', at: 'plan', slot: 'body'},
+  benchnote:  {type: 'note', at: 'note', slot: 'body'},
+  launch:     {type: 'launch', at: 'plan', slot: 'body'},
+  runbody:    {type: 'own', slot: 'body'},
+
   spark:    {type: 'spark', slot: 'foot', every: 1},
   usage:    {type: 'usage', slot: 'foot', every: 1},
   // how thin the market behind the price is, off the price row: fewer than `under` listed says so
@@ -220,11 +234,22 @@ export const FIELDS = {
      slot, and the kinds that declare it. Nothing about prices is worked out in this file. */
 };
 
-/* The buttons under a card in the popup. "open" is the gold one: the kind's own tab. */
+/* The buttons under a card in the popup. "open" is the gold one: the kind's own tab.
+
+   `go` is an act a module of our own answers rather than a link: the act names the module and the call, so
+   one route in the popup covers every act of that shape and none of them is named in the drawing code.
+   `only` is the small test a card has to pass for the act to be drawn at all, by kind — an act a card has
+   nothing to do with is not drawn, the way a base with nothing to craft has no craft link. */
 export const ACTS = {
   trade: {label: 'Trade'},
   full:  {label: 'Full stats'},
   craft: {label: 'Open in Craft'},
+  /* Every card the bench can start from travels to it: a base item, and the currency the game crafts with —
+     orbs, essences, omens, runes and soul cores, catalysts and desecration bones, which are the groups the
+     game sorts currency into. A currency of any other group has nothing to hand the bench, so it has no
+     bench act. docs/craft-sim.md, "The bench card". */
+  bench: {label: 'Crafting bench', own: './craftsim.js', go: 'openBench',
+          only: {c: {at: 's', of: ['Currency', 'Essences', 'Omens', 'Runes', 'Soul Cores', 'Catalysts', 'Abyssal Bones']}}},
   open:  {label: 'Open in '},
 };
 
@@ -299,14 +324,14 @@ export const KINDS = [
    index: true, search: true, item: true, crawl: true,
    make: {base: 'name', ni: 'lines'},
    fields: [...HEAD, 'reqs', 'props', 'implicit', 'weights', ...SAYS, 'canroll', 'cancorrupt', ...REST, ...FOOT],
-   acts: ['trade', 'craft'],
+   acts: ['trade', 'bench', 'craft'],
    rel: ['uniques', 'grants', 'klassof', 'klass', 'named', 'namedby']},
 
   {k: 'i', one: 'Item class', tone: 'bronze', many: 'Item classes', place: 'Craft', link: 'craft',
    index: true, search: true,
    make: {cr: 'id'},
    fields: [...HEAD, 'props', ...BODY, ...FOOT],
-   acts: ['craft'],
+   acts: ['bench', 'craft'],
    rel: ['inclass', 'cat']},
 
   {k: 'a', one: 'Atlas', tone: 'int', many: 'Atlas', place: 'Atlas', link: './#/atlas?s=@at&q=@n',
@@ -320,7 +345,7 @@ export const KINDS = [
    index: true, search: true, item: true, crawl: true,
    px: {as: 'c'}, make: {nx: 'yes'}, gone: {at: 'nx'}, few: {at: 'vol', under: 1},
    fields: [...HEAD, 'droplv', ...SAYS, 'adds', ...REST, ...FOOT],
-   acts: ['trade', 'open'],
+   acts: ['trade', 'bench', 'open'],
    rel: ['named', 'namedby', 'cat']},
 
   {k: 'w', one: 'Keyword', tone: 'accent', many: 'Keywords', sec: 'keywords', index: true, search: true, crawl: true,
@@ -340,6 +365,23 @@ export const KINDS = [
    fields: [...HEAD, ...BODY, ...FOOT],
    acts: ['open'],
    rel: ['namedby', 'cat']},
+
+  /* The bench: one card, holding an item and the currency and omens picked for it before anything runs. It
+     has no rows in the index — you reach it from a base, from the currency it crafts with, or from the Craft
+     tab — so the search does not carry it and the map names it among what it left out. Its own module draws
+     the currency tab in the box `benchtab` leaves and answers the card's controls (docs/craft-sim.md). */
+  {k: 'n', one: 'Bench', many: 'Bench', place: 'Craft', own: './craftsim.js',
+   fields: [...HEAD, ...SAYS, 'benchitem', 'benchtab', 'benchpicks', 'benchnote', 'launch', ...REST, ...FOOT],
+   acts: [],
+   rel: []},
+
+  /* ...and the run the bench launches: the simulator itself, with the item and the picks in hand. A card, so
+     it is on the trail, so Back from it is the bench and Forward is the run again — and the run is written
+     down on every step, so neither throws a craft away. */
+  {k: 'r', one: 'Craft run', many: 'Craft runs', own: './craftsim.js',
+   fields: [...HEAD, ...SAYS, 'benchitem', 'runbody', ...REST, ...FOOT],
+   acts: [],
+   rel: []},
 ];
 
 /* A card a tab makes up for itself — a farm, a build's gear slot — has no kind in this table. It still

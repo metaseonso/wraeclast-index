@@ -219,6 +219,7 @@ Every case below has one answer, and the answer is the frame's, not a kind's.
 |---|---|
 | **A kind never seen** | A card with no kind in the table still draws: head, body, foot, and the kind name whichever tab passed it in (`DEFAULT`). But a kind letter the shipped index carries with no declaration **fails the guard**, so it never reaches a player unseen. |
 | **A field type with no renderer** | The field is skipped and the card draws without it — one missing renderer never costs a card. The build **fails** on it, both ways round: a type with no renderer, and a renderer no field asks for. |
+| **A card that is an application** | Still one card in the frame. Its kind names the module that draws it (`own`), and a field of type `own` leaves a box the module fills, the way a field whose table is a file of its own leaves one. A control on it says what it does in `data-do` and the module answers it, so the drawing code names no kind and no card gets a route of its own. The module keeps the node it made, so Back and Forward bring the card back with its state, the way the Trade panel already does. |
 | **Text far longer than its slot** | Never truncated mid-word. A long line wraps. The list it sits in is cut to 4 lines with a `+N more` row; the popup draws every line; the gold button opens the whole thing on its own page. |
 | **No art** | The sprite cell off the sheet the kind names; failing that, the first letter of the name as a glyph. The art box keeps its place either way, so a grid of cards never goes ragged. |
 | **No price** | The price box is not drawn and the head closes up. Everything downstream of a price — the sparkline, the thin-market mark, the chart, the "biggest movers" list — draws nothing rather than drawing a zero. A price is only ever a real one — the in-game Currency Exchange or live trade listings, never an estimate — so no price is the answer when there is none. |
@@ -245,6 +246,7 @@ Every case below has one answer, and the answer is the frame's, not a kind's.
 | `KINDS`, `DECL` | `assets/kinds.js` | one entry per kind, and the whole list of declarations a kind may carry |
 | `REL`, `MAPS` | `assets/kinds.js` | the groups under Connections, and the maps the index is turned into for them |
 | `MAKE` | `assets/kinds.js` | the answers a kind can work out from an entry itself |
+| `ACTS` | `assets/kinds.js` | the buttons under a card: a label, and for an act a module of ours answers, the module and the call (`own`, `go`) and the small test a card must pass for it to be drawn (`only`, by kind) |
 | `TYPE` | `assets/app.js` | one function per field type. No function here knows what a gem or a unique is |
 | `EDGE` | `assets/edges.js` | one function per edge. Reads the maps `MAPS` declares |
 | — | `tools/map.py` | draws the map off `many`, `tone` and `mark`. No kind is named in it |
