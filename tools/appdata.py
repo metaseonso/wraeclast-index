@@ -5,7 +5,8 @@ data/index.json; run it by hand after editing data/index.json):
                          own details (version, sprites, image servers), the order of every kind, and the names the
                          rest has cards for (so a price in the market file is never shown on the wrong card)
   data/index-rest.json   everything else: gems, passives, keywords, bases and the Atlas, the keystone keywords,
-                         and each core card's keyword chips
+                         each core card's keyword chips and flavour line, and the official text for a priced
+                         name no card covers
 
 The home page shows its first cards as soon as the core and the prices are in; search, the popups and the other
 tabs wait for the rest (assets/app.js). Both parts carry the same id (from data/index.json), so the page never mixes
@@ -54,11 +55,13 @@ def split(index, raw):
         else:
             runs.append([it['k'], 1])
     core = {'id': ident, 'v': index.get('v'), 'gen': index.get('gen'), 'sprites': index.get('sprites'),
-            'imgs': index.get('imgs'), 'order': runs,
+            'imgs': index.get('imgs'), 'order': runs, 'ws': index.get('ws') or '',
             # the market's currency by these names belongs to a card in the rest (an atlas item), or is a lineage gem
             'skip': sorted({it['n'] for it in index['items'] if it['k'] == 'a'}),
             'li': sorted({it['n'] for it in index['items'] if it['k'] == 'g' and it.get('li')})}
-    rest = {'id': ident, 'kwx': index.get('kwx') or {}, 'ckw': {}}
+    rest = {'id': ident, 'kwx': index.get('kwx') or {}, 'ckw': {}, 'cqt': {}, 'ws': index.get('ws') or '',
+            # the official text for a name the market prices but no card covers (tools/carddata.py)
+            'ix': index.get('ix') or {}}
     keys = index.get('lxk') or []
     tables = {'core': ([], {}), 'rest': ([], {})}
     for it in index['items']:
@@ -70,6 +73,8 @@ def split(index, raw):
         if k in CORE_KINDS:
             if o.get('kw'):   # keyword chips show in the popup, which waits for the rest
                 rest['ckw'][k + ':' + it['id']] = o.pop('kw')
+            if o.get('qt'):   # the flavour line, likewise: it keeps the core under the size the first cards need
+                rest['cqt'][k + ':' + it['id']] = o.pop('qt')
             core.setdefault(k, []).append(o)
         else:
             rest.setdefault(k, []).append(o)
