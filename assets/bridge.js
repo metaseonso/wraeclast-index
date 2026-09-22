@@ -62,6 +62,7 @@ import {SECTIONS} from './kinds.js';   // what each section is called: the one t
     const n = tr.querySelector('.nmtxt');
     return (n ? n.textContent : (tr.cells[0] ? tr.cells[0].innerText.split('\n')[0] : '')).trim();
   }
+  const flat = s => (s || '').replace(/\s+/g, ' ').trim();   // one line of text, whatever it was wrapped as
   async function open(){
     await navReady();
     try { await openHash(); } finally { reveal(); }   // the page shows once it is on the right section and row
@@ -114,7 +115,7 @@ import {SECTIONS} from './kinds.js';   // what each section is called: the one t
 
   /* ---------- rows and keywords open the site's card popup ----------
      Caught on the way down (window, capture) so the page's own row and keyword handlers don't also run.
-     Anything the app has no card for (a small passive) still opens the page's own panel. */
+     Anything the app has no card for still opens the page's own panel. */
   const ROWS = Object.values(BODY).map(b => b + ' tr').join(', ');
   let byName = null;
   function itemFor(tr){
@@ -126,8 +127,18 @@ import {SECTIONS} from './kinds.js';   // what each section is called: the one t
       return D.byKey.get('u:' + name + ' | ' + base) || D.byKey.get('u:' + name) || null;
     }
     if(tr.closest(BODY.tree)){
-      if(!byName){ byName = new Map(); for(const it of D.index.items) if(it.k === 'p' && !byName.has(it.n)) byName.set(it.n, it); }
-      return byName.get(name) || null;
+      if(!byName){
+        byName = new Map();   // a name can stand for several cards: the tree carries "Armour" in eight strengths
+        for(const it of D.index.items) if(it.k === 'p'){
+          if(!byName.has(it.n)) byName.set(it.n, []);
+          byName.get(it.n).push(it);
+        }
+      }
+      const list = byName.get(name) || [];
+      if(list.length < 2) return list[0] || null;
+      // same name, different numbers: the row's own effect lines say which of them this row is
+      const said = flat((tr.querySelector('.blurb') || {}).innerText);
+      return list.find(it => flat((it.ls || []).join(' ')) === said) || list[0];
     }
     return null;
   }

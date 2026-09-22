@@ -4,7 +4,7 @@
   "kinds": {
     "g": 1072,
     "u": 710,
-    "p": 1219,
+    "p": 2112,
     "w": 693,
     "b": 1554,
     "a": 368,
@@ -12,9 +12,9 @@
     "h": 4
   },
   "pages": {
-    "sitemap": 6298,
+    "sitemap": 7191,
     "llms": 16,
-    "llmsFull": 6289
+    "llmsFull": 7182
   },
   "phoneWide": {
     "/": 0,
@@ -70,7 +70,7 @@
     "data/explore/uniques.*.json .items[].pr[] [[Tag] markup]": 380,
     "data/explore/uniques.*.json .items[].pr[] [[a|b] markup]": 843,
     "data/index.json .items[].id [stat id]": 365,
-    "data/index.json .items[].img [stat id]": 2,
+    "data/index.json .items[].img [stat id]": 4,
     "data/index.json .items[].kw[] [stat id]": 1,
     "data/index.json .items[].q [stat id]": 512,
     "data/index.json .kwx.{key} [stat id]": 9,

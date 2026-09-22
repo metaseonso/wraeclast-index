@@ -54,8 +54,8 @@ function prep(it, k, IMGS, lxk){   // once per card: its kind, full image link, 
     if(rx.size) it.rx = [...rx];
   }
   it._nl = it.n.toLowerCase();
-  it._hay = [it.n, it.s, it.t, it.q, it.asc, it.reg, (it.ls || []).join(' '), (it.tags || []).join(' '), (it.o || []).join(' ')]
-    .filter(Boolean).join(' ').toLowerCase();
+  it._hay = [it.n, it.s, it.t, it.q, it.asc, it.reg, (it.ls || []).join(' '), (it.pr || []).join(' '),
+    (it.tags || []).join(' '), (it.o || []).join(' ')].filter(Boolean).join(' ').toLowerCase();
   if(k === 'b'){ it.base = it.n; if(it.ls) it.ni = it.ls.length; }   // a base: every line is an implicit
   if(k === 'c') it.nx = true;   // nx: not in the catalogue (yet)
   return it;
@@ -1207,7 +1207,12 @@ export function search(q, kind = 'all'){
     const u = usageOf(it); if(u) s += Math.min(40, u * 2);
     out.push({it, s: s - it.n.length * 0.2});
   }
-  out.sort((a, b) => b.s - a.s);
+  /* Two bands, and the low one is always second: a card marked "lo" is the tree's own wording for a stat
+     ("Attack Speed", "Armour" — the 893 small passives tools/treecards.py cards), so the words match it every
+     time and it would crowd out what the words actually name. Nothing low ever sits above something else the
+     same words matched: typing "life" still puts the notable and the unique first. Inside the low band they
+     sort by the same score as everything else, so the one the words really name leads it. */
+  out.sort((a, b) => (a.it.lo ? 1 : 0) - (b.it.lo ? 1 : 0) || b.s - a.s);
   return out.map(x => x.it);
 }
 

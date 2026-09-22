@@ -22,6 +22,9 @@ The rules, and no guessing:
                                                 its size budget, and the page marks those words itself as the
                                                 card is drawn (assets/marks.js), off the keyword cards it
                                                 already holds
+  * a card ranked low ("lo": the tree's small passives, tools/treecards.py) is never a phrase to look for: its
+    name is the stat's own wording ("Attack Speed", "Minion Damage"), so every mod line that says the words
+    would open it, and nothing in the line is naming a node. Their own lines are read as any other card's.
   * no card has that name                    -> plain text, as before
 
 What is written, beside the lines (never in place of them, so every page still reads the plain text):
@@ -91,6 +94,8 @@ class Doors:
     def __init__(self, index):
         by_name = defaultdict(list)
         for it in index['items']:
+            if it.get('lo'):   # a low-ranked card's name is the stat's own wording, not a name: see the rules above
+                continue
             by_name[it['n']].append(it)
         for it in index['items']:   # the other words a keyword is shown as, so a longer keyword beats a shorter card name
             if it['k'] in FORMS:
@@ -180,7 +185,7 @@ LABEL = re.compile(r'\b(?:Grants|Supports|Supported)\b')   # what a mod line cal
 
 def unresolved(index, top=20):
     """Phrases that read like a name but open nothing: two or more capitalised words no card is called."""
-    known = {it['n'] for it in index['items']}
+    known = {it['n'] for it in index['items'] if not it.get('lo')}   # the same names attach() looks for
     for it in index['items']:
         if it['k'] == 'w':
             known.update(it.get('f') or ())

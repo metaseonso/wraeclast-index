@@ -198,7 +198,7 @@ async function checkLinks(index, market){
   const rows = {
     gems: new Set(gems.gems.map(g => g.n)),
     uniques: new Set(uniques.items.map(u => u.n)),
-    tree: new Set(tree.passives.map(p => p.n)),
+    tree: new Set(tree.passives.map(p => (p.n || '').trim())),   // trimmed, as the page reads a row (bridge.js)
   };
   const bases = new Set(uniques.items.map(u => u.b).filter(Boolean));   // the base items that list filters by
   const baseCards = new Set(index.items.filter(x => x.k === 'b').map(x => x.n));

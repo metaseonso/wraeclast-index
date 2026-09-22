@@ -6,13 +6,14 @@ A keyword's card lists what uses it ("Found on"). A use is found two ways:
   2. the keyword's words in plain text: its title and the forms the markup shows it as (Ignites, Ignited...),
      whole words, case-sensitive, 3 letters or more
 Sources: every gem (description, stat lines, per-level and quality text), every unique (all variants), every
-passive (keystones, notables and anoints as cards; small passives grouped: the same name and text is one row
-with how many are on the tree), the Atlas (waystone mods with their tiers, desecrated waystone mods, liquid
-emotions, tablets, unique tablets, tablet mods, keys, atlas items, atlas tree nodes and their choices; a row
-names the card it opens when the index or the currency catalogue has one), base items (implicit lines and
-properties, and the keywords tools/sync.py marked on the card), essences (the mod each one guarantees, per kind
-of item, from data/craft), currency and other bulk items (their game text), crafting mods (each mod line once,
-with the item kinds it rolls on) and other keywords' descriptions.
+passive (keystones, notables, anoints and small passives as cards, a small passive's card with how many of it
+are on the tree; a group the index has no card for stays a plain row, "sp"), the Atlas (waystone mods with
+their tiers, desecrated waystone mods, liquid emotions, tablets, unique tablets, tablet mods, keys, atlas
+items, atlas tree nodes and their choices; a row names the card it opens when the index or the currency
+catalogue has one), base items (implicit lines and properties, and the keywords tools/sync.py marked on the
+card), essences (the mod each one guarantees, per kind of item, from data/craft), currency and other bulk items
+(their game text), crafting mods (each mod line once, with the item kinds it rolls on) and other keywords'
+descriptions.
 
 Which markup forms count as a keyword's words: a form that holds every word of the keyword's name or id
 (Ignites, Critically Hit, Power Charges), or a form only this keyword is ever shown as that the markup links
@@ -278,17 +279,21 @@ def main():
         for k in ks:
             use[k]['u'].append(((u['n'].casefold(), (u.get('b') or '').casefold()), uid))
 
-    # passives: keystones, notables and anoints are cards; small passives are grouped by name and text
+    # passives: keystones, notables and anoints are cards, and so is every small passive the index carries
+    # (tools/treecards.py: one card per name and effect). A group with no card of its own stays a plain row.
     card_of, card_n, small = {}, Counter(), {}
+    small_card = {(it['n'], ' · '.join(it.get('ls') or [])): it['id']
+                  for it in index['items'] if it['k'] == 'p' and it.get('lo')}
     for p in tr['passives']:
-        name, asc = p.get('n') or '', p.get('a') or ''
+        # stripped, as a card's name is: eight nodes on the tree are spelt with a space on the end
+        name, asc = (p.get('n') or '').strip(), p.get('a') or ''
         if not name or name.startswith('[DNT') or asc.startswith('[DNT') or not p.get('t'):
             continue
         texts = [y for x in p['t'] for y in lines(x)]
         card = p['k'] in ('keystone', 'notable', 'anoint')
         ks = found(texts if card else [name] + texts, p, p.get('kw') or ())   # a small passive's name says what it does
-        if card:
-            pid = card_of.setdefault((name, asc), p['id'])
+        pid = card_of.setdefault((name, asc), p['id']) if card else small_card.get((name, ' · '.join(texts)))
+        if pid:
             card_n[pid] += 1   # a card can stand for more than one node of the same name
             if 'p:' + pid not in cards:
                 missing.append('passive ' + name)

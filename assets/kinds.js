@@ -140,7 +140,7 @@ export const KINDS = [
 
   {k: 'p', one: 'Passive', many: 'Passives', place: 'Passive tree', sec: 'tree', link: 'explore#tree=@n', mark: 'ls',
    index: true, search: true, crawl: true,
-   fields: [...HEAD, 'asc', 'region', ...BODY, ...FOOT],
+   fields: [...HEAD, 'asc', 'region', 'ontree', ...BODY, ...FOOT],
    acts: ['full', 'open'],
    rel: [...KWUSE, 'grants', 'named', 'namedby', 'cat']},
 

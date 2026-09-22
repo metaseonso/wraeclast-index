@@ -95,6 +95,65 @@ Add the details here first, then a short public line there.
   price, its chart and the drop level still draw on the same card, nothing scrolls sideways, no console errors.
 - **95 essences now carry per-kind lines, 9.0 kinds of item each on average** (Essence of the Abyss 27, Perfect
   Essence of the Mind 1).
+## Next — The three things we ship that a player could not reach
+
+- The owner's call on all three: *"add them, ranked low in search, in the second data file"*, so the first screen
+  stays as fast as today.
+- **The tree's small passives, counted first.** 3,760 small nodes sit on the tree. 112 have no name and 383 no
+  effect text (the masteries and the blank plates), which leaves **3,265 nodes** — and those are **893 different
+  passives** once the same name with the same effect is counted once. They were in the drill-down's tree table and
+  nowhere else: no card, and search found nothing. `tools/treecards.py` now cards all 893. Passive cards go from
+  1,219 to 2,112.
+- **A declaration, not card code.** The card comes from the kind table: `ontree` (the pill `assets/kinds.js`
+  already declared for the Atlas, "11 on the tree") added to kind `p`'s field list, and nothing else. Each card
+  carries what its nodes hold — the effect in the game's own words, the keywords marked in it, the region or the
+  ascendancy when there is one of them, the node's own picture, and how many of it are on the tree — and joins the
+  edges: its lines are read for the cards they name ("Named on this card"), it turns up under a keyword's "Found
+  on", and it can reach the rest of its list. Jewel sockets, ascendancy starts and anything the files mark [DNT]
+  get nothing: a card has to say something a player can use.
+- **Ranked low, and it means low.** A card marked `lo` sorts in a second band, after every other card the same
+  words matched (`search()` in `assets/app.js`). Measured over 18 queries, today's first ten results move **0
+  places** on every one of them: "life" still gives Lifetap, Lifesprig, Life Drain; "armour" still gives the
+  keyword, then Armourer's Scrap and Armoured Cap. Inside the low band they sort by the usual score, so the one
+  the words really name leads it. A gentler rule that dropped only the phrase bonus was tried first and thrown
+  away: it put five small passives above "Tenfold Attacks" for "attack speed" and pushed today's results down as
+  much as 41 places.
+- **The way in is the table they were always in.** A row of the drill-down's tree table now opens its card
+  (`assets/bridge.js`). Where one name stands for several cards — the tree carries "Armour" in eight strengths —
+  the row's own effect lines pick which: **406 of the 407 ambiguous rows** land on the right card, and the odd one
+  out is a notable the index has never had a card for, which behaves exactly as it did before.
+- **Timeless jewels name every conqueror they roll.** `data/explore/jewels.*.json` holds 28 conqueror rows over
+  seven factions, and two of the seven are items in the game: **Heroic Tragedy** (Kalguur) and **Undying Hate**
+  (Abyssals). The item's own line carries only the first conqueror, so the cards said Vorana and Amanamu and
+  search knew no others. Both cards now carry the lot — "Conquerors: Amanamu, Kulemak, Kurgal, Tecrod or Ulaman" —
+  and typing **Kurgal** brings Undying Hate up fourth. No card kind for the other five factions: there is no jewel
+  in the game to hold, so there is nothing to card, and a row the files mark as only on older items is dropped.
+  Properties now count in the search's haystack (`_hay`), which is what makes a conqueror's name findable.
+- **The 900 item descriptions: 562 already reach a player, 339 are Path of Exile 1.** `data/info.json` has 1,086
+  entries and **901 of them have no card in `data/index.json`** — the number the framework ticket left open. But
+  **562** of those 901 are rows of the live currency catalogue (`data/market.json`), which `assemble()` in
+  `assets/app.js` turns into searchable currency cards as the page loads, with a real price on them. That leaves
+  **339 that reach nothing, and none of them becomes a card**: the official trade site's own item lists
+  (`tools/tradedata.py`) do not carry them. They are items the export still marks "released" from the first game —
+  178 currency (fossils, sextants, Breach splinters and blessings, Legion splinters, Incursion vials, Bestiary
+  nets, Harvest lifeforce, Heist markers and artifacts, Delirium scouting reports, Eldritch embers and ichors, the
+  influence exalts), 114 fragments (the Sacrifice and Mortal sets, the Elder guardian fragments, the Conquerors'
+  crests, the Timeless emblems, the Labyrinth offerings, 64 scarabs, Divine Vessel, the Maven's Writ), 25
+  Breachstones (five older tiers for each of five Breachlords; the one Path of Exile 2 has is simply
+  "Breachstone", and it is in the catalogue already), 8 resonators, and 4 runes and soul cores the trade site does
+  not list — plus 9 the game files mark [DNT] and one lineage support the export gives no text for. Nine of the
+  339 are on the trade site's list at all and **seven of those nine say "This item is no longer usable"**.
+- Sizes, against the standing budget of 70 KB compressed for `data/index-core.json`: **66.6 KB → 66.7 KB** (raw
+  336.7 KB → 336.8 KB). The 893 new cards are all in the second file, as the owner asked: `data/index-rest.json`
+  328.1 KB → 352.5 KB compressed (raw 1,763.3 KB → 1,975.6 KB). Core grows by 45 compressed bytes, and every one
+  of them is the conqueror line on the two jewel cards. First paint, cold cache on the 8 Mbps profile, median of
+  seven, run back to back against `origin/main` on the same machine: **388 ms → 388 ms**.
+- Checked: guard 6 ok, 0 failed, baseline blessed (passives 1,219 → 2,112, sitemap 6,298 → 7,191). Both builders
+  run twice, byte for byte the same the second time. `tools/kwuse.py` now reads a node's name stripped, as a card's
+  name is — eight nodes on the tree are spelt with a space on the end — which takes the keyword lists' leftover
+  plain rows from 893 to **one** (a Lich jewel socket, which is not a small passive). 375×812 touch and desktop: a
+  small passive found by name and its card opened, a tree row opened, "Kurgal" opening Undying Hate, no console
+  errors, nothing scrolls sideways.
 
 ## Next — Cards built from the index: one table, one renderer, everything the entry carries
 
