@@ -339,13 +339,12 @@ function mechHTML(){
 }
 
 /* ---------- the mod pool ---------- */
-/* "Weights: Craft of Exile", where they come from and when they were pulled: the game does not publish them,
-   so the pool says who does. */
+/* "Weights: Craft of Exile", where they come from and when they were pulled. Name the source, nothing more. */
 function wsrcHTML(){
   const s = X.wsrc;
   if(!s) return '';
   return 'Weights: <a href="' + esc(s.u) + '" target="_blank" rel="noopener">' + esc(s.n) + '</a> — ' + esc(s.how) +
-    ', not in the game files. Pulled ' + esc(nice(s.d)) + (s.p ? ' for their patch ' + esc(s.p) : '') + '.';
+    '. Pulled ' + esc(nice(s.d)) + (s.p ? ' for their patch ' + esc(s.p) : '') + '.';
 }
 function poolHTML(){
   const fams = families('');

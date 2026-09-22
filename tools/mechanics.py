@@ -83,8 +83,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 KIND = 'h'          # a mechanics card: ours, never the game's
 SUB = 'Mechanics'
-# Named on every one of these cards, where the player reads it. The game does not state any of this.
-SOURCE = "According to Path of Building's own damage maths. The game never states it."
+# Named on every one of these cards, where the player reads it.
+SOURCE = "According to Path of Building's own damage maths."
 # The flowchart card names the game for every step it takes from the game — and the game's own Damage
 # Conversion and "Damage Gained as extra X" entries settle most of that block — and Path of Building for what
 # the game leaves out: the order, the conversion chain, the caps, and what a copy is taken from.
