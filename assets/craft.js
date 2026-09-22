@@ -631,10 +631,13 @@ function baseCard(){
     [['Str', 'r'], ['Dex', 'g'], ['Int', 'b']].forEach(([a, c], i) => { if(B.rq[i + 1]) pills.push('<span class="pill a-' + c + '">' + B.rq[i + 1] + ' ' + a + '</span>'); });
   }
   if(B.dl > 1) pills.push('<span class="pill">Drops from level ' + B.dl + '</span>');
-  const it = {k: 'b', id: B.n, n: B.n, base: B.n, s: CL.n + (B.d ? ' · ' + defName(B.d) : ''),
+  // cr is the item class: the card's own fields read this base's table off it — what a corruption can add,
+  // and the switches this kind of item carries (assets/kinds.js). The mods it rolls are the table below,
+  // so the card leaves that field off rather than drawing the same list twice.
+  const it = {k: 'b', id: B.n, n: B.n, base: B.n, cr: CL.id, s: CL.n + (B.d ? ' · ' + defName(B.d) : ''),
     img: B.ic ? X.img + B.ic + '.webp' : '', ls: [...(B.pr || []), ...(B.im || [])]};
   if(!it.ls.length) delete it.ls;
-  return card(it, {href: null, builds: false, price: null, kind: 'Base', full: true,
+  return card(it, {href: null, builds: false, price: null, kind: 'Base', full: true, without: ['canroll'],
     extra: pills.length ? '<div class="card-req">' + pills.join('') + '</div>' : ''});
 }
 

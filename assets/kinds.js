@@ -53,6 +53,8 @@
      lines    how many lines it draws in the grid, where it is itself a list (FRAME.lines otherwise)
      file     a table of its own, fetched the first time a card asks for it and kept for the visit. Nothing of
               it is in the index or in first paint, and a card whose name the table does not hold draws nothing.
+              It may carry @field, filled in from the entry the way a gold button's link is, so one field can
+              read a table per item class without naming one.
    A field draws nothing when the entry carries nothing for it, so one declaration covers a full entry and a
    bare one. Fields a player must never read (the search words, internal ids) are in no declaration.
 
@@ -165,6 +167,11 @@ export const FIELDS = {
      armour, and the game's one line says none of it. Anything else that adds a known modifier reads the same
      table, keyed by whatever "at" names (tools/essences.py). */
   adds:     {type: 'adds', at: 'n', slot: 'body', file: 'data/essences.json', label: 'What it adds'},
+  /* what an item can already have, off its own item class's table: the modifiers its pool rolls, and the
+     ones a corruption can add instead. `of` picks which list of the pool it reads. The table is a file per
+     item class, so the field's own "file" carries the class the entry names (tools/craft.py). */
+  canroll:  {type: 'pool', at: 'n', slot: 'body', file: 'data/craft/@cr.json', of: 'm', label: 'Modifiers it can roll'},
+  cancorrupt: {type: 'pool', at: 'n', slot: 'body', file: 'data/craft/@cr.json', of: 'c', label: 'A corruption can add'},
   quote:    {type: 'quote', at: 'qt', slot: 'body', every: 1},   // the game's own flavour line
   options:  {type: 'options', at: 'o', slot: 'body', every: 1},
   flow:     {type: 'flow', at: 'fl', slot: 'body', every: 1},
@@ -179,6 +186,14 @@ export const FIELDS = {
      is: 'How damage works', sub: 'the order it is worked out in'},
     {card: 'h:HowDefences', when: /\b(?:armour|evasion|block|energy shield|resistance)/,
      is: 'How defences work', sub: 'the order a hit you take runs through'},
+  ]},
+  /* A switch on the card for something outside the item that changes what the item is while it is worn —
+     the Monk notable that turns a pair of gloves into something else. It sits where the player is reading
+     the item, not in a panel of its own, and it is off until it is pressed. Each one is `on` (which entries
+     carry it), the word on the switch, and the `card` it comes from: what it does is that card's own lines,
+     so nothing of the game's wording is written down twice. A card the index does not carry draws nothing. */
+  swaps:    {type: 'swap', slot: 'body', every: 1, of: [
+    {on: {at: 'cr', is: 'gloves'}, label: 'Stonefist', card: 'p:AscendancyMonk1Notable8'},
   ]},
   tags:     {type: 'tags', at: 'tags', slot: 'body', every: 1},
   anoint:   {type: 'anoint', at: 'rec', slot: 'body', every: 1},
@@ -237,7 +252,7 @@ export const REL = {
 const HEAD = ['art', 'name', 'sub', 'price'];
 // the words first, then the rest of the body: a kind with more to say puts it between the two (the currency)
 const SAYS = ['lines', 'text'];
-const REST = ['quote', 'options', 'flow', 'source', 'offer', 'tags', 'anoint', 'keywords'];
+const REST = ['quote', 'options', 'flow', 'source', 'offer', 'swaps', 'tags', 'anoint', 'keywords'];
 const BODY = [...SAYS, ...REST];
 const FOOT = ['spark', 'usage', 'thin', 'builds'];
 const KWUSE = ['kwu', 'kwg', 'kwp', 'kwb', 'kwe', 'kwa', 'kwm', 'kwc', 'kww'];
@@ -270,7 +285,7 @@ export const KINDS = [
   {k: 'b', one: 'Base', tone: 'muted', many: 'Bases', place: 'Craft', link: 'craft', mark: 'ls',
    index: true, search: true, item: true, crawl: true,
    make: {base: 'name', ni: 'lines'},
-   fields: [...HEAD, 'reqs', 'props', 'implicit', 'weights', ...BODY, ...FOOT],
+   fields: [...HEAD, 'reqs', 'props', 'implicit', 'weights', ...SAYS, 'canroll', 'cancorrupt', ...REST, ...FOOT],
    acts: ['trade', 'craft'],
    rel: ['uniques', 'grants', 'klass', 'named', 'namedby']},
 

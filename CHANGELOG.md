@@ -3,6 +3,41 @@
 The full list of changes. The public patch notes (data/changelog.json, shown on the site) stay short.
 Add the details here first, then a short public line there.
 
+## Next — What a base can already have, and a switch where the player is
+
+- From the suggestion box: *"gloves need a stonefist toggle and existing available modifiers to a base need
+  to be shown for base as well as corruption options intuitively designed and presented. lightweight but
+  responsive UI."*
+- **A base item's card now lists what it can already have.** Its implicits and its properties were already
+  on it; under them are **Modifiers it can roll** — every modifier family its own pool rolls, with which
+  side it lands on, how many tiers it has here and the item level the first one needs — and **A corruption
+  can add**, the outcomes a Vaal Orb can put on that base. Stocky Mitts: 27 modifiers and 9 corruption
+  outcomes. Sapphire Ring: 31 and 12. Crescent Quarterstaff: 23 and 13.
+- **It came out of the frame, not out of card code.** Both are the same new field type (`pool`), one entry
+  each in `FIELDS` with `of` saying which list of the base's pool it reads, so a third list is one more line
+  and no code. The data is the one the Craft tab already works from (`data/craft/<class>.json`,
+  `tools/craft.py`) — nothing new was pulled, and the corruption outcomes were already shipped.
+- **A field's table may now be one file per item class.** `file` takes `@field` and fills it in from the
+  entry the way a gold button's link already does, so `data/craft/@cr.json` reaches every base of every
+  class with no class named in the code. A base whose class has no table draws nothing rather than
+  breaking — the 27 relics and wombgifts among the base cards are exactly that.
+- **Nothing of it is in first paint.** Both fields draw on an opened card only, so the grid keeps its shape
+  and the widest card is where it was (body 3 of 6). The class table and the small reader that shapes it
+  (`assets/basepool.js`) are both fetched the first time a card is opened on a base, and a card that is
+  never opened asks for neither. Checked in a headless Chrome: the home page asks for no craft file.
+- **The Stonefist toggle is a switch on the card, not a panel.** A new field type (`swap`): the declaration
+  says which entries carry it (gloves), the word on the switch, and the card it comes from. What it does is
+  that card's own lines — Way of the Stonefist's own three lines, read off the passive card the site
+  already has — so the game's wording is never written down twice, and the passive is one tap away under
+  it. Every kind carries the field, so the next switch is one more line in the table.
+- **On the Craft tab too.** The base card there is the same card, so it gained the corruption list and the
+  switch with no work; it leaves the "modifiers it can roll" field off, because the whole table with tiers
+  and roll chances is right under it. That is a caller's own call (`without`), like a card drawn with no
+  price, never a rule about a kind.
+- `tools/dev/frame.mjs` now fails a switch with no rule, no word or no card, and a switch from a card whose
+  kind the table does not have. `docs/frame.md` settles three more cases: a table that is one file per item
+  class, a switch on a card, and a page that already draws a field in full.
+
 ## Next — The frame: one card, one map, and a loop with two moves
 
 - The owner's call: *"we want cards and map to be a frame populated with predetermined items with a

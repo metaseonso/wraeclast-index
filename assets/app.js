@@ -243,7 +243,8 @@ function iconHTML(it){
    league's items, a new list — draws a full card with no code of its own.
 
    opts.full: the popup, where nothing is clipped · opts.invest {label, div, note}: the cost line on build
-   cards · opts.rank: the order badge · opts.why: why this card is on screen */
+   cards · opts.rank: the order badge · opts.why: why this card is on screen · opts.without: fields this
+   caller leaves off, because the page the card sits on already draws them in full */
 
 /* the Craft tab, opened on this base — or, with no base, on this kind of item. The plan lives in the address
    in words (assets/craft.js): a base belongs to one kind, so a base link needs nothing else. */
@@ -450,6 +451,17 @@ export function buildsHref(it){
    side it lands on. A kind of item opens the Craft tab on it, where the whole table for that kind is. */
 const TABLES = {};   // file -> a promise of it, asked for once
 const tableOf = file => TABLES[file] || (TABLES[file] = getJSON(file, {priority: 'low'}).catch(() => null));
+/* a field's table, with @field filled in from the entry the way a gold button's link is, so one field can
+   read a table per item class. An entry with nothing for one of them has no table at all. */
+function fileOf(f, it){
+  if(!f.file) return null;
+  let have = true;
+  const url = f.file.replace(/@(\w+)/g, (_, k) => {
+    if(it[k] === undefined || it[k] === null || it[k] === '') have = false;
+    return encodeURIComponent(it[k]);
+  });
+  return have ? url : null;
+}
 const SIDE = {p: 'Prefix', s: 'Suffix'};
 function addsHTML(it, t, rows){
   const cl = t.cl || {}, lxk = t.lxk || [];
@@ -471,6 +483,60 @@ function addsFill(host, it, f){
     host.innerHTML = (f.label ? '<p class="card-facts">' + esc(f.label) + '</p>' : '') + addsHTML(it, t, rows);
     host.hidden = false;
   });
+}
+
+/* ---------- what a base item can already have ----------
+   Its own item class's table says which modifiers its pool rolls and which ones a corruption adds instead
+   (data/craft/<class>.json, tools/craft.py — the same table the Craft tab works from, and assets/basepool.js
+   is the one place that reads its shape). The field's "file" carries the class the entry names, so one
+   declaration reaches every base of every class and no class is written down here.
+   It is drawn on an opened card only: the grid keeps its shape, nothing of it is in first paint, and the
+   table is asked for the first time a card is opened on it. One row per modifier, in the order the game data
+   ships them, with how many tiers it has here and the item level the first of them needs. */
+function poolHTML(rows, f){
+  return '<p class="card-facts">' + esc(f.label || '') + ' · ' + rows.length + '</p>' +
+    '<ul class="card-pool">' + rows.map(r => {
+      const meta = [SIDE[r.side] || '', r.tiers.length > 1 ? r.tiers.length + ' tiers' : '',
+        r.lvl > 1 ? 'item level ' + r.lvl + '+' : ''].filter(Boolean).join(' · ');
+      return '<li><span class="pool-ml">' + r.lines.map(esc).join('<br>') + '</span>' +
+        (meta ? '<span class="pool-rs">' + esc(meta) + '</span>' : '') + '</li>';
+    }).join('') + '</ul>';
+}
+/* the reader of that table comes with the table, not with the page: neither is in first paint, and a card
+   that is never opened on a base item asks for neither */
+function poolFill(host, it, f){
+  const url = host && fileOf(f, it);
+  if(!url) return;
+  Promise.all([import('./basepool.js'), tableOf(url)]).then(([bp, P]) => {
+    const rows = bp.famsOf(P, bp.baseOf(P, it[f.at]), f.of);
+    if(!rows.length || !host.isConnected) return;
+    host.innerHTML = poolHTML(rows, f);
+    host.hidden = false;
+  }).catch(() => {});
+}
+
+/* ---------- a switch on the card ----------
+   Something outside the item changes what the item is while it is worn. The switch sits on the card the
+   player is already reading, off until it is pressed, and what it does is the granting card's own lines —
+   the declaration names that card and nothing of the game's wording is written down twice (assets/kinds.js,
+   the "swaps" field). It is on for the visit, so it stays on as you walk from card to card. */
+const SWAPPED = new Set();
+const flipSwap = name => { SWAPPED.has(name) ? SWAPPED.delete(name) : SWAPPED.add(name); };
+const swapsOf = (it, f) => (f.of || []).filter(s => holds(it, s.on) && D.byKey.get(s.card));
+function swapHTML(it, f, full){
+  if(!full) return '';
+  const list = swapsOf(it, f);
+  if(!list.length) return '';
+  return '<div class="card-swaps">' + list.map(s => {
+    const c = D.byKey.get(s.card), on = SWAPPED.has(s.label);
+    return '<div class="card-swap' + (on ? ' on' : '') + '">' +
+      '<button type="button" class="swap" data-swap="' + esc(s.label) + '" aria-pressed="' + on + '"><i aria-hidden="true"></i>' +
+        esc(s.label) + '</button>' +
+      (on ? '<ul class="card-ls swap-ls">' + (c.ls || []).map(l => '<li>' + esc(l) + '</li>').join('') + '</ul>' +
+        '<button type="button" class="uses-row swap-src" data-key="' + esc(s.card) + '">' +
+        '<span class="uses-ic">' + iconHTML(c) + '</span><span class="uses-t"><b>' + esc(c.n) + '</b>' +
+        '<span>' + esc(c.s || '') + '</span></span></button>' : '') + '</div>';
+  }).join('') + '</div>';
 }
 
 /* ---------- one function per field type ----------
@@ -531,6 +597,9 @@ export const TYPE = {
   }},
   adds:   {raw: 1, fill: addsFill, v: (it, f, o, name) => o.full && it[f.at]
     ? '<div class="card-addsbox" data-fill="' + esc(name) + '" hidden></div>' : ''},
+  pool:   {raw: 1, fill: poolFill, v: (it, f, o, name) => o.full && it[f.at] && fileOf(f, it)
+    ? '<div class="card-addsbox" data-fill="' + esc(name) + '" hidden></div>' : ''},
+  swap:   {raw: 1, v: (it, f, o) => swapHTML(it, f, o.full)},
   flow:   {raw: 1, v: (it, f, o) => flowHTML(it, o.full)},
   source: {raw: 1, v: (it, f) => it[f.at] ? '<p class="card-src">' + esc(it[f.at]) + '</p>' : ''},
   offer:  {raw: 1, v: (it, f, o) => offerHTML(it, f, o.full)},
@@ -561,6 +630,7 @@ export const TYPE = {
 function slotHTML(it, slot, o){
   const out = [];
   for(const name of fieldsOf(it.k, slot)){
+    if(o.without && o.without.includes(name)) continue;   // a page that already draws this field in full
     const f = FIELDS[name], t = TYPE[f.type];
     if(!t) continue;
     const v = t.v(it, f, o, name);
@@ -660,6 +730,10 @@ export function card(it, opts = {}){
   el.addEventListener('click', e => {
     const mk = e.target.closest('.hlink, .kwmark');   // a marked word: the card it names, not this one
     if(mk){ e.preventDefault(); openMark(mk, {}); return; }
+    const sw = e.target.closest('[data-swap]');       // a switch on the card: redraw this card, not the page
+    if(sw){ e.preventDefault(); flipSwap(sw.dataset.swap); el.replaceWith(card(it, opts)); return; }
+    const src = e.target.closest('.uses-row[data-key]');   // a card named on this one
+    if(src){ e.preventDefault(); const c = D.byKey.get(src.dataset.key); if(c) openDetail(c, {}, hrefOf(c)); return; }
     if(e.target.closest('.card-ext, .star, button')) return;
     const link = e.target.closest('.card-link');
     if(link && (e.ctrlKey || e.metaKey || e.shiftKey || e.button === 1)) return;   // new tab still works
@@ -839,6 +913,8 @@ function ensureOV(){
       if(kw){ const c = keywordCard(kw.dataset.kw); if(c) openDetail(c, {nested: true}, hrefOf(c)); return; }
       const hl = t.closest('.hlink, .card-offer');   // a word in a line, or the offer: a mechanics card (tools/mechanics.py)
       if(hl){ openMech(hl.dataset.h, {nested: true}); return; }
+      const sw = t.closest('[data-swap]');   // a switch on the card: the same card again, with it on
+      if(sw){ flipSwap(sw.dataset.swap); saveStep(); paintStep(); return; }
       const row = t.closest('.uses-row[data-key]');
       if(row){ const c = D.byKey.get(row.dataset.key); if(c) openDetail(c, {nested: true}, hrefOf(c)); return; }
       const all = t.closest('.uses-all');   // "See all": the rest of that category, drawn here
