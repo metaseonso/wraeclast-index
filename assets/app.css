@@ -150,6 +150,9 @@ label.note{display:inline-flex; gap:6px; align-items:center; cursor:pointer}
 .bs-grid dt{font-size:10.5px; text-transform:uppercase; letter-spacing:.08em; color:var(--faint)}
 .bs-grid dd{margin:2px 0 0; font:600 16px var(--mono); font-variant-numeric:tabular-nums}
 .bs-grid dd small{font-size:11px; font-weight:500; color:var(--faint)}
+/* a guide somebody else wrote, linked from the Build tab (assets/build.js) */
+.guide{margin:10px 2px 0}
+.guide a{color:var(--accent); text-underline-offset:2px}
 
 .foot{border-top:1px solid var(--line); margin-top:30px}
 .foot p{max-width:1400px; margin:0 auto; padding:18px 16px 30px; color:var(--faint); font-size:11.5px; line-height:1.6}
