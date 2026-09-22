@@ -3,6 +3,53 @@
 The full list of changes. The public patch notes (data/changelog.json, shown on the site) stay short.
 Add the details here first, then a short public line there.
 
+## Next — Nothing on the Craft tab is a dead end
+
+- Two things were wrong with the Craft tab. It prints **486 named things** — orbs, essences, bones, catalysts,
+  omens, runes and soul cores — and 401 of them already carried a live price and a card everywhere else on the
+  site, but not one of them opened from here. And a row whose **Add** was off said why in a `title=`, which a
+  phone never shows, while the filter narrowing the pool sat above the table and scrolled away.
+- **Every name opens its card, through the card layer, with no card code on this tab.** `cardOf`
+  (`assets/craft.js`) builds one table out of the index the browser already holds — name to card, once a visit.
+  Where two kinds answer to the same name the currency card wins, because everything named here is something
+  you use on an item. `rowHTML` then draws every row the same way: the icon and the words are a button that
+  hands that row's card to `openDetail`, exactly as a row anywhere else on the site would. A chip that names
+  something else — an orb's Greater and Perfect versions, an omen that holds an orb to one side — keeps its own
+  job and carries the card against it (`chipPair`), and the essence or rune a mod on the item came from opens
+  its card from the item preview (`.cr-tag`). No per-kind code, and no card drawn here.
+- **482 of the 486 open a card.** The four that do not are **Lesser Tempered Rune**, **Tempered Rune**,
+  **Greater Tempered Rune** and **Soul Core of Vizoma**: the index carries no card for them and the market no
+  price, so they stay plain text, as a name the index does not carry should.
+- **A row that cannot be added says why, on the row**, in the same short wording everywhere: what blocks it,
+  then what takes the block away. The `title=` is gone; the reason is its own line under the words and the
+  button, at every width, so a phone reads it without a hover.
+
+  | What blocks it | What the row says |
+  | --- | --- |
+  | The mod needs a higher item level | Needs item level 82 · raise the item level |
+  | The orb only adds from a level | This orb only adds mods from level 70 · clear the orb |
+  | That side of the item is full | Prefixes full · remove one to add this |
+  | Another mod of the group is on | A mod of this group is on the item · remove it to add this |
+  | The sockets are used up | Sockets full · remove a rune to add this |
+  | The item has no sockets | No sockets on this item |
+
+  The last one names no way out because there is none: an item without sockets never takes a rune.
+- **What is narrowing the pool is at the head of the table, and stays there.** One line above the two columns —
+  the orb's level, the side it holds to, the filter box, the tag — each as a chip that comes off with a tap.
+  It is sticky, under the top bar, so it holds while the table scrolls; the tab measures the bar itself
+  (`--crtop`), because the bar wraps to two rows on a phone. An orb that adds from level 1 and holds to neither
+  side takes nothing out of the pool, so it is not listed as narrowing anything.
+- **The share link is words.** It carried the plan as base64 JSON with the game's own mod ids in it
+  (`{"m":[["p","IncreasedLife13"]]}`), which put a raw game id in front of a player. It now reads as the item
+  it makes: `#/craft?base=Vaal+Cuirass&ilvl=80&mods=iron-rune,t2-life-regeneration-per-second,desecrated-lightning-and-chaos-resistances`.
+  A mod is its tier and its own line; where it does not come from a roll the word for where it does comes first
+  (`desecrated-`, `corrupted-`); where two mods of one base read alike the side tells them apart (`prefix-`,
+  `suffix-`); an essence or a rune is simply its own name. A base belongs to one kind, so the kind is only in a
+  link that has no base yet (`?kind=Amulet`, what a card's "Craft" and an essence's per-kind rows now point at).
+  **Old links keep working:** a `?s=` link is still unpacked, and the tab writes the plan back in words, so it
+  is shared on in the new shape. `craftHref` in `assets/app.js` and `appHref` in `worker/seo.js` write the same
+  form, and `tools/dev/guard.mjs` names it in the report.
+
 ## Next — Connections, and a past league in its own colour
 
 - Two calls from the owner. First: *"instead of the word 'Found on' we need a more universally applicable

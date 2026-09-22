@@ -237,7 +237,7 @@ const SECTION = {g: 'gems', u: 'uniques', p: 'tree'};
 function appHref(m, it){
   if(SECTION[it.k]) return '/explore#' + SECTION[it.k] + '=' + encodeURIComponent(it.n);
   if(it.k === 'c' && m.M && m.M['c:' + it.id]) return '/#/currency?c=' + encodeURIComponent(it.id);   // the tab lists the catalogue
-  if(it.k === 'b' && it.cr) return '/#/craft?s=' + encodeURIComponent(btoa(unescape(encodeURIComponent(JSON.stringify({c: it.cr, b: it.n, l: 0, m: []})))));
+  if(it.k === 'b' && it.cr) return '/#/craft?base=' + encodeURIComponent(it.n).replace(/%20/g, '+');   // the plan in words (assets/craft.js)
   if(it.k === 'a' && it.at) return '/#/atlas?s=' + it.at + '&q=' + encodeURIComponent(it.n);
   return '/#/?q=' + encodeURIComponent(it.n);   // keywords and the rest: the search, with the thing's own card on top
 }

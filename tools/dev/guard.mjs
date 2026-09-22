@@ -226,7 +226,7 @@ async function checkLinks(index, market){
       if(k === 'p') want(rows.tree.has(it.n), 'explore#tree=', it);
       // the Currency tab filters its catalogue by the id in the address, against the card's own words (app.js _hay)
       if(k === 'c' && priced.has('c:' + it.id)) want(hay(it).includes(it.id.toLowerCase()), '#/currency?c=', it);
-      if(k === 'b' && it.cr) want(craft.has(it.cr) && craft.get(it.cr).has(it.n), '#/craft?s=', it);
+      if(k === 'b' && it.cr) want(craft.has(it.cr) && craft.get(it.cr).has(it.n), '#/craft?base=', it);
       if(k === 'a' && it.at) want(!!atNames[it.at] && atNames[it.at].has(it.n), '#/atlas?s=' + it.at + '&q=', it);
       if(k === 'w'){   // the "See all in ..." button under Connections
         for(const [g, sec] of [['gems', 'gems'], ['uniques', 'uniques'], ['passives', 'tree']])

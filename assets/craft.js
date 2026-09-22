@@ -4,8 +4,10 @@
    and orb levels checked on poe2db). Prices and icons: data/market.json (Currency Exchange hourly, trade listings over the day).
    The weights are the one thing here the game does not publish: they come from Craft of Exile (tools/craftweights.py)
    and the pool names them. One mod's share of its own pool only — never the odds of a whole item.
-   The plan (base, item level, mods) lives in the address (#/craft?s=...), so it can be shared. */
-import { D, $, esc, card, moneyHTML } from './app.js';
+   The plan (base, item level, mods) lives in the address, in the page's own words, so it can be shared.
+   Every name on this tab — orbs, essences, bones, catalysts, omens, runes, soul cores — opens the card the
+   site already has for it (assets/kinds.js says what a card carries; nothing here draws one). */
+import { D, $, esc, card, moneyHTML, params, openDetail, hrefOf } from './app.js';
 import { tradeData, key, searchURL, valHTML, syncVal } from './trade.js';
 
 const TAGS = [['life', 'Life'], ['mana', 'Mana'], ['defences', 'Defence'], ['resistance', 'Resistance'], ['attribute', 'Attribute'],
@@ -25,17 +27,81 @@ const FILES = new Map();
 const UI = {q: '', tag: '', mech: '', f: null, rq: '', rt: ''};   // page filters (not in the address)
 const V = {};   // slider values per family, while picking a tier
 
-/* ---------- state in the address ---------- */
-function load(){
-  const m = location.hash.match(/[?&]s=([^&]+)/);
-  if(m){ try { return {...blank(), ...JSON.parse(decodeURIComponent(escape(atob(decodeURIComponent(m[1])))))}; } catch {} }
-  try { const x = localStorage.getItem('wi.craft'); if(x) return {...blank(), ...JSON.parse(x)}; } catch {}
-  return blank();
+/* ---------- state in the address ----------
+   The plan is in the address in the words the page itself uses, so a link reads as the item it makes:
+     #/craft?base=Vaal+Cuirass&ilvl=80&mods=t2-life-regeneration-per-second,essence-of-the-body,iron-rune
+   A mod is its tier and its own line. Where it does not come from a roll the word for where it does comes
+   first (desecrated, corrupted), and where two mods read alike the side tells them apart (prefix, suffix).
+   An essence or a rune is its own name. A base belongs to one kind, so the kind is only in a link that has
+   no base yet. Links made before this shape carry the plan packed into "s=" and still open (packed). */
+const enc = s => encodeURIComponent(s).replace(/%20/g, '+');
+const slug = s => String(s).toLowerCase().replace(/[#%+]/g, '')
+  .replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').replace(/^to-/, '');
+const SRCW = {d: 'desecrated', c: 'corrupted'};   // where a mod comes from, where that is not a roll
+const SIDEW = {p: 'prefix', s: 'suffix'};
+const poolList = kind => { const p = P.pools[B.p]; return kind === 'd' ? p.d : kind === 'c' ? p.c : p.m; };
+const famSlug = f => slug(P.fam[f][1].join(' '));
+function modToken(src, i){
+  const m = P.mods[i], mine = famSlug(m[1]);
+  const twin = poolList(src).some(j => P.mods[j][1] !== m[1] && famSlug(P.mods[j][1]) === mine);
+  return [SRCW[src], twin ? SIDEW[P.fam[m[1]][0]] : '', tierOfMod(i).toLowerCase(), mine].filter(Boolean).join('-');
 }
+function tokenOf(e){
+  if(e[0] === 'r') return slug(e[1]);
+  if(e[0] === 'e') return slug(e[2] || '');
+  const i = P.at.get(e[1]);
+  return i === undefined ? '' : modToken(e[0], i);
+}
+/* and back: the same words read as the mod they name. Nothing here carries it: the mod is left out. */
+function entryOf(tok){
+  let s = tok, src = '';
+  for(const k in SRCW) if(s.startsWith(SRCW[k] + '-')){ src = k; s = s.slice(SRCW[k].length + 1); }
+  if(!src){
+    const es = P.ess.find(([n]) => slug(n) === s);
+    if(es) return ['e', P.mods[es[2]][0], es[0]];
+    const au = P.aug.find(a => slug(a[0]) === s);
+    if(au) return ['r', au[0]];
+    src = 'p';
+  }
+  let side = '';
+  for(const k in SIDEW) if(s.startsWith(SIDEW[k] + '-')){ side = k; s = s.slice(SIDEW[k].length + 1); }
+  const t = s.match(/^t(\d+)-/);
+  const tier = t ? 'T' + t[1] : '';
+  if(t) s = s.slice(t[0].length);
+  for(const i of poolList(src)){
+    const m = P.mods[i];
+    if(famSlug(m[1]) === s && (!side || P.fam[m[1]][0] === side) && tierOfMod(i) === tier) return [src, m[0]];
+  }
+  return null;
+}
+/* the plan a link names: the kind it is on, and the mods as words, read once the base's own file is in */
+function linked(){
+  const q = params(), base = q.get('base'), kind = (q.get('kind') || '').toLowerCase();
+  if(!base && !kind) return null;
+  const cl = base ? X.classes.find(c => c.b.some(b => b[0] === base))
+    : X.classes.find(c => c.n.toLowerCase() === kind || c.id === kind);
+  if(!cl) return null;
+  return {c: cl.id, b: base || '', l: Math.max(0, Math.min(X.ilvl, Math.round(+q.get('ilvl')) || 0)), m: [],
+    t: (q.get('mods') || '').split(',').filter(Boolean)};
+}
+function packed(){   // a link made before the plan was in words
+  const m = location.hash.match(/[?&]s=([^&]+)/);
+  if(!m) return null;
+  try { return {...blank(), ...JSON.parse(decodeURIComponent(escape(atob(decodeURIComponent(m[1])))))}; } catch { return null; }
+}
+function stored(){
+  try { const x = localStorage.getItem('wi.craft'); if(x) return {...blank(), ...JSON.parse(x)}; } catch {}
+  return null;
+}
+function load(){ return linked() || packed() || stored() || blank(); }
+let HREF = '';   // the address this page last wrote, so a link from anywhere else is told apart from our own
 function save(){
-  const packed = encodeURIComponent(btoa(unescape(encodeURIComponent(JSON.stringify(S)))));
-  history.replaceState(history.state, '', '#/craft?s=' + packed);
-  try { localStorage.setItem('wi.craft', JSON.stringify(S)); } catch {}
+  const q = ['base=' + enc(S.b), 'ilvl=' + S.l];
+  const mods = S.m.map(tokenOf).filter(Boolean);
+  if(mods.length) q.push('mods=' + mods.join(','));
+  HREF = '#/craft?' + q.join('&');
+  history.replaceState(history.state, '', HREF);
+  try { localStorage.setItem('wi.craft', JSON.stringify({c: S.c, b: S.b, l: S.l, m: S.m})); } catch {}
 }
 
 /* ---------- data ---------- */
@@ -54,12 +120,49 @@ async function classData(id){
 const priceOf = n => { const M = D.market && D.market.items; return M ? M['c:' + n] || null : null; };
 const px = n => { const p = priceOf(n); return p && p.v !== undefined ? '<span class="cr-px">' + moneyHTML(p.v) + '</span>' : ''; };
 const icon = n => { const p = priceOf(n); return '<span class="cr-ic">' + (p && p.ic ? '<img src="' + esc(p.ic) + '" alt="" loading="lazy" decoding="async">' : '') + '</span>'; };
+/* ---------- the card behind a name ----------
+   Nothing on this tab is a dead end: every orb, essence, bone, catalyst, omen, rune and soul core opens the
+   card the rest of the site opens for it, drawn by the card layer from the index's own row. A name the index
+   does not carry stays plain text. */
+let NAMED = null;
+function cardOf(n){
+  if(!NAMED){
+    NAMED = new Map();
+    const rank = {c: 0, u: 1, g: 2, a: 3};   // all of these are things you use on an item: the currency card wins
+    for(const it of (D.index && D.index.items) || []){
+      const had = NAMED.get(it.n);
+      if(!had || (rank[it.k] ?? 9) < (rank[had.k] ?? 9)) NAMED.set(it.n, it);
+    }
+  }
+  return (n && NAMED.get(n)) || null;
+}
+function openCard(n){
+  const it = cardOf(n);
+  if(it) openDetail(it, {}, hrefOf(it));
+}
+/* a row: the icon and the words, then whatever button the row carries, then why that button is off. The
+   words open the card; the reason is its own line on the row, outside the words, so it is read, not tapped. */
+function rowHTML(n, body, act = '', why = ''){
+  const inner = icon(n) + '<span class="cr-rt">' + body + '</span>';
+  return '<div class="cr-row">' + (cardOf(n)
+    ? '<button type="button" class="cr-open" data-card="' + esc(n) + '">' + inner + '</button>' : inner) +
+    act + (why ? whyHTML(why) : '') + '</div>';
+}
+/* a chip that names something else: the chip keeps its own job, and the card is one tap beside it */
+function chipPair(chip, n){
+  return cardOf(n) ? '<span class="cr-pair">' + chip + '<button type="button" class="cr-card" data-card="' + esc(n) +
+    '" aria-label="' + esc(n) + ' card">Card</button></span>' : chip;
+}
+/* why something cannot go on: what is blocking it, then what would take the block away. Short, and both. */
+const needLvl = lv => 'Needs item level ' + lv + ' · raise the item level';
+const orbLow = () => 'This orb only adds mods from level ' + (UI.f ? UI.f.ml : 0) + ' · clear the orb';
+const whyHTML = w => '<span class="cr-why">' + esc(w || '') + '</span>';
 const defName = d => d ? d.split('+').map(x => DEF[x]).join(' + ') : '';
 const words = q => q.trim().toLowerCase().split(/\s+/).filter(Boolean);
 
 /* families of the current base: kind '' rolls, 'd' desecrated, 'c' corruption. Tiers low to high (T1 is the last). */
 function families(kind){
-  const pool = P.pools[B.p], list = kind === 'd' ? pool.d : kind === 'c' ? pool.c : pool.m, by = new Map();
+  const list = poolList(kind), by = new Map();
   for(const i of list){
     const m = P.mods[i];
     let f = by.get(m[1]);
@@ -87,7 +190,7 @@ function info(e){
   const m = P.mods[i], f = P.fam[m[1]];
   const pool = P.pools[B.p];
   const rolls = src === 'p' ? pool.m.includes(i) : src === 'd' ? pool.d.includes(i) : src === 'c' ? pool.c.includes(i) : true;
-  const why = !rolls ? 'This base cannot roll it' : src !== 'e' && m[2] > S.l ? 'Needs item level ' + m[2] : '';
+  const why = !rolls ? 'This base cannot roll it' : src !== 'e' && m[2] > S.l ? needLvl(m[2]) : '';
   return {src, i, m, f, a: src === 'c' ? 'c' : f[0], lines: m[3], tier: tierOfMod(i), from, groups: f[3], ok: !why, why};
 }
 function counts(except){
@@ -104,7 +207,8 @@ function counts(except){
 function check(src, i){
   if(src === 'r'){
     const c = counts();
-    return c.r < CL.so ? {ok: true} : {ok: false, why: CL.so ? 'Sockets full' : 'No sockets on this item'};
+    return c.r < CL.so ? {ok: true}
+      : {ok: false, why: CL.so ? 'Sockets full · remove a rune to add this' : 'No sockets on this item'};
   }
   const m = P.mods[i], f = P.fam[m[1]];
   if(src === 'c'){
@@ -114,10 +218,10 @@ function check(src, i){
   let c = counts();
   const same = c.fam.get(m[1]);
   if(same !== undefined) c = counts(same);
-  if(src !== 'e' && m[2] > S.l) return {ok: false, why: 'Needs item level ' + m[2]};
-  if(f[3].some(g => c.g.has(g))) return {ok: false, why: 'A mod of this group is on the item'};
+  if(src !== 'e' && m[2] > S.l) return {ok: false, why: needLvl(m[2])};
+  if(f[3].some(g => c.g.has(g))) return {ok: false, why: 'A mod of this group is on the item · remove it to add this'};
   const max = CL.mx[f[0] === 'p' ? 0 : 1];
-  if(c[f[0]] >= max) return {ok: false, why: (f[0] === 'p' ? 'Prefixes' : 'Suffixes') + ' full'};
+  if(c[f[0]] >= max) return {ok: false, why: (f[0] === 'p' ? 'Prefixes' : 'Suffixes') + ' full · remove one to add this'};
   return {ok: true, replace: same};
 }
 function add(src, i, from){
@@ -197,7 +301,7 @@ function famHTML(f, kind){
   const k = slider ? pick(f, v) : Math.max(0, best);
   const r = check(kind === '' ? 'p' : kind, f.tiers[k]);
   const lvlOk = ok[k];
-  const why = !lvlOk ? (P.mods[f.tiers[k]][2] > S.l ? 'Needs item level ' + P.mods[f.tiers[k]][2] : 'Below this orb’s level') : r.why;
+  const why = !lvlOk ? (P.mods[f.tiers[k]][2] > S.l ? needLvl(P.mods[f.tiers[k]][2]) : orbLow()) : r.why;
   const tiers = slider ? t.map(m => [m[5], m[6], m[2]]) : null;
   let ctl = '';
   if(slider){
@@ -215,8 +319,8 @@ function famHTML(f, kind){
       '<span class="cr-tn">' + tierCount(t, ok.filter(Boolean).length) +
       (fs ? ' · <b>' + fs + '</b> of ' + (fam[0] === 'p' ? 'prefixes' : 'suffixes') : '') + '</span></div>' +
     '<div class="cr-fctl">' + ctl + (kind === '' ? tierWeightHTML(f, k, lvlOk) : '') +
-      '<button type="button" class="btn cr-add" data-add="' + (kind || 'p') + '"' + (lvlOk && r.ok ? '' : ' disabled title="' + esc(why) + '"') + '>' +
-      (onItem !== undefined ? 'Change' : 'Add') + '</button></div></div>';
+      '<button type="button" class="btn cr-add" data-add="' + (kind || 'p') + '"' + (lvlOk && r.ok ? '' : ' disabled') + '>' +
+      (onItem !== undefined ? 'Change' : 'Add') + '</button>' + whyHTML(lvlOk && r.ok ? '' : why) + '</div></div>';
 }
 /* the tier the slider is on: its weight, and what that is of its side of the pool right now */
 function tierWeightHTML(f, k, lvlOk){
@@ -239,24 +343,26 @@ function mechList(){
 }
 function omensFor(orb){ return X.omens.filter(o => o.orb === orb); }
 function omenRow(o, filter){
-  return '<div class="cr-row">' + icon(o.n) + '<div class="cr-rt"><b>' + esc(o.n) + '</b>' + px(o.n) +
-    '<span class="cr-rs">' + esc(o.t) + '</span></div>' +
-    (filter && o.only ? '<button type="button" class="btn cr-use" data-only="' + o.only + '" data-orb="' + esc(o.orb) + '" aria-pressed="' +
-      !!(UI.f && UI.f.orb === o.orb && UI.f.only === o.only) + '">' + (o.only === 'p' ? 'Prefixes only' : 'Suffixes only') + '</button>' : '') + '</div>';
+  return rowHTML(o.n, '<b>' + esc(o.n) + '</b>' + px(o.n) + '<span class="cr-rs">' + esc(o.t) + '</span>',
+    filter && o.only ? '<button type="button" class="btn cr-use" data-only="' + o.only + '" data-orb="' + esc(o.orb) + '" aria-pressed="' +
+      !!(UI.f && UI.f.orb === o.orb && UI.f.only === o.only) + '">' + (o.only === 'p' ? 'Prefixes only' : 'Suffixes only') + '</button>' : '');
 }
 function orbsHTML(){
   return X.orbs.filter(o => o.n !== "Artificer's Orb" || CL.so).map(o => {
     const adds = ADDS.includes(o.n);
     const vers = adds ? [[o.n, 0], ...(o.up || [])] : [];
     const on = n => UI.f && UI.f.n === n;
-    return '<div class="cr-orb">' + '<div class="cr-row">' + icon(o.n) + '<div class="cr-rt"><b>' + esc(o.n) + '</b>' + px(o.n) +
-      '<span class="cr-rs">' + esc(o.t) + (o.n === "Artificer's Orb" ? ' · up to ' + CL.so + ' on this item' : '') + '</span></div></div>' +
-      (vers.length ? '<div class="cr-vers">' + vers.map(([n, ml]) =>
-        '<button type="button" class="chip" data-orb="' + esc(o.n) + '" data-v="' + esc(n) + '" data-ml="' + ml + '" aria-pressed="' + on(n) + '">' +
-        esc(n === o.n ? n : n.split(' ')[0] + ' · level ' + ml + '+') + (n !== o.n ? px(n) : '') + '</button>').join('') +
-        omensFor(o.n).filter(x => x.only).sort((a, b) => a.only > b.only ? 1 : -1).map(x => '<button type="button" class="chip" data-only="' + x.only + '" data-orb="' + esc(o.n) +
+    return '<div class="cr-orb">' +
+      rowHTML(o.n, '<b>' + esc(o.n) + '</b>' + px(o.n) + '<span class="cr-rs">' + esc(o.t) +
+        (o.n === "Artificer's Orb" ? ' · up to ' + CL.so + ' on this item' : '') + '</span>') +
+      (vers.length ? '<div class="cr-vers">' + vers.map(([n, ml]) => {
+        const chip = '<button type="button" class="chip" data-orb="' + esc(o.n) + '" data-v="' + esc(n) + '" data-ml="' + ml + '" aria-pressed="' + on(n) + '">' +
+          esc(n === o.n ? n : n.split(' ')[0] + ' · level ' + ml + '+') + (n !== o.n ? px(n) : '') + '</button>';
+        return n === o.n ? chip : chipPair(chip, n);   // the orb's own chip: its card is on the row above
+      }).join('') +
+        omensFor(o.n).filter(x => x.only).sort((a, b) => a.only > b.only ? 1 : -1).map(x => chipPair('<button type="button" class="chip" data-only="' + x.only + '" data-orb="' + esc(o.n) +
           '" aria-pressed="' + !!(UI.f && UI.f.orb === o.n && UI.f.only === x.only) + '" title="' + esc(x.n) + '">' +
-          (x.only === 'p' ? 'Prefixes only' : 'Suffixes only') + px(x.n) + '</button>').join('') + '</div>' : '') + '</div>';
+          (x.only === 'p' ? 'Prefixes only' : 'Suffixes only') + px(x.n) + '</button>', x.n)).join('') + '</div>' : '') + '</div>';
   }).join('') + '<p class="note">Pick an orb to see what it can add.</p>';
 }
 function essHTML(){
@@ -267,11 +373,11 @@ function essHTML(){
     if(!list.length) return '';
     return '<h4 class="cr-h4">' + title + '</h4>' + list.map(r => {
       const f = P.fam[r.m[1]], c = check('e', r.i), tier = tierOfMod(r.i);
-      return '<div class="cr-row">' + icon(r.n) + '<div class="cr-rt"><b>' + esc(r.n) + '</b>' + px(r.n) +
+      return rowHTML(r.n, '<b>' + esc(r.n) + '</b>' + px(r.n) +
         '<span class="cr-ml">' + r.m[3].map(esc).join('<br>') + '</span>' +
-        '<span class="cr-rs">' + (f[0] === 'p' ? 'Prefix' : 'Suffix') + (tier ? ' · ' + tier : '') + (r.lvl ? ' · level ' + r.lvl : '') + '</span></div>' +
+        '<span class="cr-rs">' + (f[0] === 'p' ? 'Prefix' : 'Suffix') + (tier ? ' · ' + tier : '') + (r.lvl ? ' · level ' + r.lvl : '') + '</span>',
         '<button type="button" class="btn cr-add" data-add="e" data-i="' + r.i + '" data-from="' + esc(r.n) + '"' +
-        (c.ok ? '' : ' disabled title="' + esc(c.why) + '"') + '>' + (c.replace !== undefined ? 'Change' : 'Add') + '</button></div>';
+        (c.ok ? '' : ' disabled') + '>' + (c.replace !== undefined ? 'Change' : 'Add') + '</button>', c.ok ? '' : c.why);
     }).join('');
   };
   return part('m', 'Magic to rare') + part('r', 'On a rare: replaces a random mod');
@@ -286,18 +392,19 @@ function augHTML(){
     '<div class="kinds cr-chips">' + ['', ...types].map(t => '<button type="button" class="chip" data-rt="' + esc(t) + '" aria-pressed="' + (UI.rt === t) + '">' +
       esc(t || 'All') + '</button>').join('') + '</div></div>' +
     '<p class="note">Sockets: ' + counts().r + ' of ' + CL.so + ' used.</p>' +
-    '<div class="cr-list">' + list.map(({a, i}) => '<div class="cr-row">' + icon(a[0]) + '<div class="cr-rt"><b>' + esc(a[0]) + '</b>' + px(a[0]) +
+    '<div class="cr-list">' + list.map(({a, i}) => rowHTML(a[0], '<b>' + esc(a[0]) + '</b>' + px(a[0]) +
       '<span class="cr-ml">' + a[3].map(esc).join('<br>') + '</span>' +
       (a[4].length ? '<span class="cr-rs">Bonded: ' + a[4].map(esc).join(' · ') + '</span>' : '') +
-      '<span class="cr-rs">' + esc(a[1]) + (a[2] ? ' · level ' + a[2] : '') + (a[5] ? ' · limited to ' + esc(a[5]) : '') + '</span></div>' +
-      '<button type="button" class="btn cr-add" data-add="r" data-i="' + i + '"' + (c.ok ? '' : ' disabled title="' + esc(c.why) + '"') + '>Add</button></div>').join('') +
+      '<span class="cr-rs">' + esc(a[1]) + (a[2] ? ' · level ' + a[2] : '') + (a[5] ? ' · limited to ' + esc(a[5]) : '') + '</span>',
+      '<button type="button" class="btn cr-add" data-add="r" data-i="' + i + '"' + (c.ok ? '' : ' disabled') + '>Add</button>',
+      c.ok ? '' : c.why)).join('') +
     (list.length ? '' : '<p class="note">Nothing matches.</p>') + '</div>';
 }
 function desHTML(){
   const bones = X.bones.filter(b => b.on.includes(CL.id));
   const fams = families('d');
-  return '<div class="cr-list">' + bones.map(b => '<div class="cr-row">' + icon(b.n) + '<div class="cr-rt"><b>' + esc(b.n) + '</b>' + px(b.n) +
-      '<span class="cr-rs">' + esc(b.t) + (b.mi ? ' · item level ' + b.mi + ' or less' : '') + (b.ml ? ' · mods level ' + b.ml + '+' : '') + '</span></div></div>').join('') +
+  return '<div class="cr-list">' + bones.map(b => rowHTML(b.n, '<b>' + esc(b.n) + '</b>' + px(b.n) +
+      '<span class="cr-rs">' + esc(b.t) + (b.mi ? ' · item level ' + b.mi + ' or less' : '') + (b.ml ? ' · mods level ' + b.ml + '+' : '') + '</span>')).join('') +
     omensFor('Desecrate').map(o => omenRow(o)).join('') + '</div>' +
     (X.wsrc ? '<p class="note">No weights here: what is measured is the pool an orb rolls from, not what a bone adds.</p>' : '') +
     ['p', 's'].map(a => {
@@ -307,7 +414,7 @@ function desHTML(){
 }
 function corHTML(){
   return '<div class="cr-list">' + ['Vaal Orb'].map(n => { const o = X.orbs.find(x => x.n === n) || {n, t: ''};
-      return '<div class="cr-row">' + icon(n) + '<div class="cr-rt"><b>' + esc(n) + '</b>' + px(n) + '<span class="cr-rs">' + esc(o.t) + '</span></div></div>'; }).join('') +
+      return rowHTML(n, '<b>' + esc(n) + '</b>' + px(n) + '<span class="cr-rs">' + esc(o.t) + '</span>'); }).join('') +
     omensFor('Vaal Orb').map(o => omenRow(o)).join('') + '</div>' +
     '<h4 class="cr-h4">Can add one of these</h4>' +
     (X.wsrc ? '<p class="note">No weights here: what is measured is the pool an orb rolls from, not what a Vaal Orb adds.</p>' : '') +
@@ -324,9 +431,8 @@ function catHTML(){
   const fams = families('');
   return '<div class="cr-list">' + X.cats.filter(c => c.on === on).map(c => {
     const n = fams.filter(f => f.fam[2].includes(c.tag)).length;
-    return '<div class="cr-row">' + icon(c.n) + '<div class="cr-rt"><b>' + esc(c.n) + '</b>' + px(c.n) +
-      '<span class="cr-rs">' + esc(c.t) + ' · ' + n + ' here</span></div>' +
-      (n ? '<button type="button" class="btn cr-use" data-tag="' + esc(c.tag) + '" aria-pressed="' + (UI.tag === c.tag) + '">Show</button>' : '') + '</div>';
+    return rowHTML(c.n, '<b>' + esc(c.n) + '</b>' + px(c.n) + '<span class="cr-rs">' + esc(c.t) + ' · ' + n + ' here</span>',
+      n ? '<button type="button" class="btn cr-use" data-tag="' + esc(c.tag) + '" aria-pressed="' + (UI.tag === c.tag) + '">Show</button>' : '');
   }).join('') + '</div>';
 }
 function mechHTML(){
@@ -346,6 +452,20 @@ function wsrcHTML(){
   return 'Weights: <a href="' + esc(s.u) + '" target="_blank" rel="noopener">' + esc(s.n) + '</a> — ' + esc(s.how) +
     '. Pulled ' + esc(nice(s.d)) + (s.p ? ' for their patch ' + esc(s.p) : '') + '.';
 }
+/* What is narrowing the pool right now, at the head of the table and pinned there while the table scrolls:
+   the orb's level, the side it holds to, the filter box, the tag. Each one comes off with a tap. An orb that
+   adds from level 1 and holds to neither side takes nothing out of the pool, so it is not listed here. */
+function narrowHTML(){
+  const bits = [];
+  if(UI.f && UI.f.ml) bits.push(['orb', UI.f.n + ' · mods level ' + UI.f.ml + '+']);
+  if(UI.f && UI.f.only) bits.push(['only', UI.f.only === 'p' ? 'Prefixes only' : 'Suffixes only']);
+  if(UI.q.trim()) bits.push(['q', 'Filter: ' + UI.q.trim()]);
+  if(UI.tag) bits.push(['tag', (TAGS.find(t => t[0] === UI.tag) || [0, UI.tag])[1]]);
+  if(!bits.length) return '';
+  return '<p class="cr-fnote"><span class="cr-flab">Narrowed by</span>' + bits.map(([k, l]) =>
+    '<button type="button" class="cr-foff" data-off="' + k + '" aria-label="Clear ' + esc(l) + '">' + esc(l) +
+    '<i aria-hidden="true">✕</i></button>').join('') + '</p>';
+}
 function poolHTML(){
   const fams = families('');
   TOT = totals();
@@ -364,9 +484,6 @@ function poolHTML(){
       (list.length ? '<div class="cr-fams">' + list.map(f => famHTML(f, '')).join('') + '</div>' : '<p class="note">None.</p>') + '</section>';
   };
   return '<h3 class="cr-h">Every mod it can roll <span class="note">item level ' + S.l + '</span></h3>' +
-    (UI.f ? '<p class="cr-fnote"><span>' + esc(UI.f.n) + (UI.f.ml ? ' · mods level ' + UI.f.ml + '+' : '') +
-      (UI.f.only ? ' · ' + (UI.f.only === 'p' ? 'prefixes' : 'suffixes') + ' only' : '') + '</span>' +
-      '<button type="button" class="linkbtn" data-act="nofilter">Show all</button></p>' : '') +
     '<div class="cr-bar"><input class="field" type="search" data-k="q" placeholder="Filter mods (e.g. life, fire res)" value="' + esc(UI.q) + '" autocomplete="off">' +
     '<div class="kinds cr-chips" role="group" aria-label="Tags">' + [['', 'All'], ...tags].map(([t, l]) =>
       '<button type="button" class="chip" data-tag="' + t + '" aria-pressed="' + (UI.tag === t) + '">' + l + '</button>').join('') + '</div></div>' +
@@ -376,7 +493,8 @@ function poolHTML(){
       (someUnweighted() ? 'Mods they have no number for sit at the bottom, outside the shares. ' : '') + wsrcHTML() + '</p>'
       : '<p class="note">No roll chances for this kind: the game files say which mods a base can roll at an item level, not how often each ' +
       'one comes up, and ' + (X.wsrc ? esc(X.wsrc.n) + ' has no measured weights for it either.' : 'nothing measured is published for it.') + '</p>') +
-    '<div class="cr-cols">' + (only !== 's' ? col('p') : '') + (only !== 'p' ? col('s') : '') + '</div>';
+    '<div class="cr-tbl">' + narrowHTML() +
+    '<div class="cr-cols">' + (only !== 's' ? col('p') : '') + (only !== 'p' ? col('s') : '') + '</div></div>';
 }
 
 /* ---------- the item ---------- */
@@ -445,9 +563,11 @@ function itemLine(e, k){
   const x = info(e);
   if(!x) return '';
   const tag = e[0] === 'r' ? x.n : e[0] === 'e' ? x.from : e[0] === 'p' ? x.m[4] || SRC.p : SRC[e[0]];
-  return '<li class="cr-il' + (x.ok ? '' : ' bad') + '"' + (x.ok ? '' : ' title="' + esc(x.why) + '"') + '>' +
+  // the essence or the rune a mod came from is a name like any other here: it opens its own card
+  const tagHTML = cardOf(tag) ? '<button type="button" class="cr-tag" data-card="' + esc(tag) + '">' + esc(tag) + '</button>' : esc(tag);
+  return '<li class="cr-il' + (x.ok ? '' : ' bad') + '">' +
     '<span class="cr-lines">' + x.lines.map(l => '<span' + (T && statFor(l, e[0]) === null ? ' class="nt" title="Not on the trade site"' : '') + '>' + esc(l) + '</span>').join('') + '</span>' +
-    '<span class="cr-lmeta">' + (x.tier ? '<b>' + x.tier + '</b>' : '') + esc(tag) + (x.ok ? '' : ' · ' + esc(x.why)) + '</span>' +
+    '<span class="cr-lmeta">' + (x.tier ? '<b>' + x.tier + '</b>' : '') + tagHTML + (x.ok ? '' : ' · ' + esc(x.why)) + '</span>' +
     '<button type="button" class="linkbtn cr-rm" data-rm="' + k + '">Remove</button></li>';
 }
 function previewHTML(){
@@ -531,6 +651,8 @@ export async function mount(el){
     return {};
   }
   tradeData().then(t => { T = t; if(B) paint('item'); }).catch(() => {});
+  topOffset();
+  addEventListener('resize', topOffset);
   wire();
   S = load();
   await draw();
@@ -539,10 +661,15 @@ export async function mount(el){
 function head(){
   return '<div class="pagehd"><h2>Craft</h2><p>Every mod a base can roll at its item level. Plan the item, then find it on trade.</p></div>';
 }
+/* the top bar is sticky and wraps on a phone: the head of the table has to know how tall it is to sit under it */
+function topOffset(){
+  const t = document.querySelector('.top');
+  EL.style.setProperty('--crtop', Math.round(t ? t.getBoundingClientRect().height : 0) + 'px');
+}
 async function update(){
-  const s = load();
-  if(JSON.stringify(s) !== JSON.stringify(S)){ S = s; await draw(); }
-  else if(B && !/[?&]s=/.test(location.hash)) save();   // the Craft tab link: keep the plan in the address
+  if(location.hash === HREF) return;   // the address we wrote ourselves
+  if(/[?&](base|kind|ilvl|mods|s)=/.test(location.hash)){ S = load(); await draw(); }
+  else if(B) save();   // the Craft tab link: keep the plan in the address
 }
 async function draw(){
   CL = X.classes.find(c => c.id === S.c) || null;
@@ -553,6 +680,7 @@ async function draw(){
       B = P.bases.find(b => b.n === S.b) || P.bases[P.bases.length - 1];
       S.b = B.n;
       if(!S.l) S.l = X.ilvl;
+      if(S.t){ S.m = S.t.map(entryOf).filter(Boolean); delete S.t; }   // the mods a link names, now the base's file is in
     }
   }
   if(!B){ S = {...blank(), l: S.l}; CL = null; }
@@ -641,11 +769,20 @@ function wire(){
     const b = e.target.closest('button, a.btn.gold');
     if(!b || !EL.contains(b)) return;
     if(b.matches('a.btn.gold')) return;
+    if(b.dataset.card){ openCard(b.dataset.card); return; }
     if(b.dataset.class){ S = {...blank(), c: b.dataset.class, l: S.l || 0}; save(); draw(); return; }
     if(!B) return;
     if(b.dataset.act === 'kind'){ S = {...blank(), l: S.l}; save(); draw(); EL.querySelector('.cr-pick input').focus(); return; }
     if(b.dataset.act === 'clear'){ S.m = []; commit(); return; }
-    if(b.dataset.act === 'nofilter'){ UI.f = null; paint('mech'); paint('pool'); return; }
+    if(b.dataset.off){   // one filter off, from the head of the table
+      const k = b.dataset.off;
+      if(k === 'orb') UI.f = null;
+      else if(k === 'only') UI.f = {...UI.f, only: ''};
+      else if(k === 'q') UI.q = '';
+      else if(k === 'tag') UI.tag = '';
+      paint('mech'); paint('pool');
+      return;
+    }
     if(b.dataset.act === 'share'){
       save();
       navigator.clipboard && navigator.clipboard.writeText(location.href).then(() => { b.textContent = 'Copied'; setTimeout(() => b.textContent = 'Copy link', 1400); });
@@ -695,7 +832,8 @@ function refreshRow(row){
   const i = fam.tiers[k], ok = eligible(i, kind), r = check(kind || 'p', i);
   const btn = row.querySelector('.cr-add');
   btn.disabled = !(ok && r.ok);
-  btn.title = ok ? (r.why || '') : P.mods[i][2] > S.l ? 'Needs item level ' + P.mods[i][2] : 'Below this orb’s level';
+  const why = row.querySelector('.cr-why');
+  if(why) why.textContent = btn.disabled ? (ok ? r.why || '' : P.mods[i][2] > S.l ? needLvl(P.mods[i][2]) : orbLow()) : '';
   const w = row.querySelector('.cr-fw');
   if(w && kind === '') w.outerHTML = tierWeightHTML(fam, k, ok);
 }

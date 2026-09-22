@@ -225,8 +225,10 @@ function iconHTML(it){
    opts.full: the popup, where nothing is clipped · opts.invest {label, div, note}: the cost line on build
    cards · opts.rank: the order badge · opts.why: why this card is on screen */
 
-/* the Craft tab, opened on this base (its plan lives in the address, see craft.js) */
-export const craftHref = (c, b = '') => './#/craft?s=' + encodeURIComponent(btoa(unescape(encodeURIComponent(JSON.stringify({c, b, l: 0, m: []})))));
+/* the Craft tab, opened on this base — or, with no base, on this kind of item. The plan lives in the address
+   in words (assets/craft.js): a base belongs to one kind, so a base link needs nothing else. */
+const crEnc = s => encodeURIComponent(s).replace(/%20/g, '+');
+export const craftHref = (c, b = '', kind = '') => './#/craft?' + (b ? 'base=' + crEnc(b) : 'kind=' + crEnc(kind || c));
 /* Where a card's gold button goes: the kind's own "link", with @field filled in from the entry. A field the
    entry has nothing for means no link at all. Two kinds need more than a template: a base carries a whole
    craft plan, and a currency the catalogue does not list yet has nowhere to go. */
@@ -418,7 +420,7 @@ function addsHTML(it, t, rows){
   // game wording like any other line: the file's own marks are drawn, and its keywords are worked out here
   const line = (x, spans) => drawLine(it, x, mechSpans(spans, lxk), spans);
   return '<ul class="card-adds">' + rows.map(([side, lv, kinds, lines, lx]) =>
-    '<li><span class="adds-on">' + kinds.map(c => '<a class="uses-go" href="' + craftHref(c) + '">' +
+    '<li><span class="adds-on">' + kinds.map(c => '<a class="uses-go" href="' + craftHref(c, '', cl[c]) + '">' +
         esc(cl[c] || c) + '</a>').join(', ') + '</span>' +
       '<span class="adds-ml">' + lines.map((x, i) => line(x, (lx || [])[i])).join('<br>') + '</span>' +
       '<span class="adds-rs">' + (SIDE[side] || '') + (lv ? ' · level ' + lv : '') + '</span></li>').join('') + '</ul>';
@@ -1061,7 +1063,7 @@ function relRow(r){
   const times = n => n > 1 ? ' <span class="uses-x">×' + n + '</span>' : '';
   const kinds = r.craft && r.craft.length
     ? '<span class="uses-kinds">' + r.craft.map((c, j) =>
-        '<a class="uses-go" href="' + craftHref(c) + '">' + esc((r.kinds || [])[j] || c) + '</a>').join(', ') + '</span>'
+        '<a class="uses-go" href="' + craftHref(c, '', (r.kinds || [])[j]) + '">' + esc((r.kinds || [])[j] || c) + '</a>').join(', ') + '</span>'
     : (r.kinds || []).length ? '<span class="uses-kinds">' + esc(r.kinds.join(', ')) + '</span>' : '';
   const wrap = kinds ? ' uses-wrap' : '';
   if(it){
@@ -1087,7 +1089,8 @@ function relRow(r){
 const SEEALL = {
   kw(it, of){ const id = keywordIdOf(it); return id && of && of.sec ? ['#' + of.sec + '?kw=' + encodeURIComponent(id), of.place] : null; },
   base(it, of){ const b = it.k === 'b' ? it.n : edges.baseName(it); return b ? ['#uniques?base=' + encodeURIComponent(b), of.place] : null; },
-  craft(it){ return it.cr ? [craftHref(it.cr), 'Craft'] : null; },
+  // the base's own card says which kind it is, so the link to the whole kind carries that name
+  craft(it){ return it.cr ? [craftHref(it.cr, '', (it.s || '').split('·')[0].trim()), 'Craft'] : null; },
   atlas(it){ return it.at ? ['./#/atlas?s=' + encodeURIComponent(it.at), 'Atlas'] : null; },
 };
 function seeAllHTML(it, cat){
