@@ -72,6 +72,9 @@ export const FIELDS = {
   usage:    {type: 'usage', slot: 'foot'},
   thin:     {type: 'thin', slot: 'foot'},
   builds:   {type: 'builds', slot: 'foot'},
+  /* Room for the price's own history: today the popup draws it under the card from the market row
+     (detailExtras in assets/app.js), and a chart of it is a field like any other here — a name, a type, a
+     slot, and the kinds that declare it. Nothing about prices is worked out in this file. */
 };
 
 /* The buttons under a card in the popup. "open" is the gold one: the kind's own tab. */
