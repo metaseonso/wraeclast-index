@@ -618,8 +618,12 @@ function keepInView(el){
 // chart's own ground: the faintest still reads at 3.1 to 1, so the oldest league holds up on a phone. A past
 // league with a colour of its own is drawn at full strength instead, and keeps its place on the width ladder,
 // so the chart reads the same way without colour.
-const FADE = [null, '.74', '.54', '.4'];
-const WIDE = [2, 1.6, 1.4, 1.2];
+/* how far back a league is, drawn as a line: this league solid, then the dashes pull further apart the older
+   the league is. Colour says which league it is, the dashes say how far back, so the chart reads without
+   colour too. A league with no colour of its own also fades. */
+const DASH = [null, '7 4', '3 4', '1 5'];
+const FADE = [null, null, null, '.72'];
+const WIDE = [2, 1.7, 1.6, 1.5];
 const realDays = v => v.reduce((n, x) => n + (x !== null && x !== undefined && isFinite(x) ? 1 : 0), 0);
 /* h leaves out a day nothing was checked, so its prices sit next to each other however far apart the days
    are; lh.g says where those days were ([place in the line, days missing before it], worker/prices.js gapsOf).
@@ -662,21 +666,24 @@ function bigLine(vals, label, lh){
   // league without one is faded back into the ladder
   const own = s => s.b ? LEAGUE_COLOUR.get(s.n) || '' : '';
   const col = s => s.b ? own(s) || 'var(--text)' : mine;
-  const dim = s => own(s) ? null : FADE[s.b];
+  const dim = s => own(s) ? FADE[s.b] : (FADE[s.b] || '.6');   // no colour of its own: the old faded ladder
+  const dash = s => DASH[s.b];
   const paths = lines.map(s => {
     const d = linePath(s.v, s.d0, x0, xw, lo, span, w, h);
     return d ? '<path d="' + d + '" fill="none" stroke="' + col(s) + '"' + (dim(s) ? ' style="stroke-opacity:' + dim(s) + '"' : '') +
+      (dash(s) ? ' stroke-dasharray="' + dash(s) + '"' : '') +
       ' stroke-width="' + WIDE[s.b] + '" vector-effect="non-scaling-stroke" stroke-linejoin="round" stroke-linecap="round"/>' : '';
   }).reverse().join('');   // the oldest league first, so this league is drawn on top of them
   // the key: every league with prices, newest first, each in the colour its line is drawn in. A few days says
   // so rather than reading as a whole league.
   const key = lines.map(s => {
     const n = realDays(s.v);
-    return n ? '<li><i style="border-color:' + col(s) + (dim(s) ? ';opacity:' + dim(s) : '') + '"></i>' + esc(s.n) +
+    return n ? '<li><i style="border-color:' + col(s) + (dim(s) ? ';opacity:' + dim(s) : '') +
+      (dash(s) ? ';border-top-style:dashed' : '') + '"></i>' + esc(s.n) +
       (n < 14 ? '<span>' + n + (n === 1 ? ' day' : ' days') + '</span>' : '') + '</li>' : '';
   }).join('');
-  const said = [back.length ? 'Daily price in each league.' +
-      (back.some(own) ? ' A past league is drawn in its own colour, from GGG’s art for that league.' : '') : '',
+  const said = [back.length ? 'Daily price in this league and the three before it. A past league is dashed, and' +
+      (back.some(own) ? ' drawn in its own colour, from GGG’s art for that league.' : ' the older it is the further apart its dashes are.') : '',
     (lh && lh.note) || ''].filter(Boolean).join(' ');
   return '<figure class="chart"><figcaption>' + label + '</figcaption><svg viewBox="0 0 ' + w + ' ' + h +
     '" preserveAspectRatio="none" aria-hidden="true">' + paths + '</svg><ul class="chart-key">' + key + '</ul>' +
