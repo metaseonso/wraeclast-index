@@ -653,7 +653,10 @@ function orbKey(blank){
       (blank==='unknown' ? 'not stated in the files' : 'requires no attribute')+'</span>'+
   '</div>';
 }
-return { KW, esc, plain, rich, term, kwPicker, pickers, openKeyword, setSectionResolver, orb, orbKey, attrOf, ATTRN };
+/* deep: a filter a card's "see all" carried in the address, applied by the section that owns it
+   (assets/bridge.js fills in the keyword itself; each section below registers its own here). */
+return { KW, esc, plain, rich, term, kwPicker, pickers, openKeyword, setSectionResolver, orb, orbKey,
+         attrOf, ATTRN, deep: {} };
 })();
 
 });</script>
@@ -1657,6 +1660,7 @@ function ubuild(){
     ],
     match:(i,S)=>{
       if(S.filters.g && i.g!==S.filters.g) return false;
+      if(S.filters.b && i.b!==S.filters.b) return false;
       if(S.filters.minv && !(i.v>=S.filters.minv)) return false;
       if(S.filters.maxv!==null && S.filters.maxv!==undefined && !(i.v<=S.filters.maxv)) return false;
       if(UKW && !UKW.match(i)) return false;
@@ -1669,6 +1673,7 @@ function ubuild(){
     },
     count:(n,S)=>{
       const bits=[n.toLocaleString()+' of '+UQ.items.length.toLocaleString()+' uniques'];
+      if(S.filters.b) bits.push('on '+S.filters.b);
       if(S.filters.g) bits.push(S.filters.g.toLowerCase());
       if(S.filters.minv) bits.push('≥ '+S.filters.minv+' div');
       if(S.filters.maxv!==null && S.filters.maxv!==undefined) bits.push('≤ '+S.filters.maxv+' div');
@@ -1704,6 +1709,12 @@ function ubuild(){
   UKW = PoE.kwPicker('ukw', {section:'uniques', field:'kw', rows:()=>UQ.items,
     onChange:()=>{ U.S.shown=120; U.render(); }});
   $('#uq').oninput = e=>{ U.S.q=e.target.value.toLowerCase().trim(); U.S.shown=120; U.render(); };
+  /* explore#uniques?base=Stellar Amulet — the list a card's "Uniques on this base" was showing */
+  PoE.deep.uniques = p=>{
+    const b = p.get('base');
+    if(!b) return;
+    U.S.filters.b = b; U.S.shown=120; U.render();
+  };
   $('#ureset').onclick = ()=>{
     $('#uq').value='';
     setSeg('ugroups','');
@@ -1948,5 +1959,5 @@ function tbuild(){
 
 });</script>
 
-<script src="assets/bridge.js" defer></script>
+<script src="assets/bridge.js" type="module"></script>
 </body></html>

@@ -29,7 +29,7 @@ import lastgood  # noqa: E402
 from uniques import clean_lines  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent
-BRIDGE = '<script src="assets/bridge.js" defer></script>'
+BRIDGE = '<script src="assets/bridge.js" type="module"></script>'   # it reads the kind table (assets/kinds.js)
 # On a phone the keyboard shrinks the page instead of covering it, so a card's own boxes stay in view
 # (the card sheet is sized in dvh, assets/cards.css).
 VIEWPORT_OLD = '<meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover">'

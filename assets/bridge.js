@@ -1,15 +1,22 @@
 /* Bridge between the home page and the drill-down page (explore.html).
    - mounts the top search (the header itself is written into the page by tools/sync.py)
    - opens a deep link: explore#gems=Untether, #uniques=Headhunter, #tree=Zealot's Oath (the row is shown and marked),
-     and explore#uniques?kw=Ignite (the list filtered by that keyword)
+     and the filtered forms a card's "see all" sends: explore#gems?kw=Ignite (the list filtered by that keyword,
+     every gem type in it) and explore#uniques?base=Stellar Amulet (the list filtered to one base item).
+     A filter the page itself owns is handed to the page (PoE.deep)
    - rows and keywords open the same card popup as the rest of the site (price, trade, builds, what uses a keyword);
      the page's own panel stays one click away ("Full stats")
    - makes the list rows fly into place when a list filters or sorts   */
+import {SECTIONS} from './kinds.js';   // what each section is called: the one table the site reads
 (function(){
   'use strict';
-  const SECTIONS = {gems:'Gems', uniques:'Uniques', tree:'Passive tree'};
-  const INPUT = {gems:'#q', uniques:'#uq', tree:'#tq'};
-  const BODY = {gems:'#tbody', uniques:'#utbody', tree:'#ttbody'};
+  /* the three sections of this page: the box that filters the list, the rows themselves, and the keyword picker */
+  const SEC = {
+    gems:    {input: '#q',  body: '#tbody',  kw: '#gkw'},
+    uniques: {input: '#uq', body: '#utbody', kw: '#ukw'},
+    tree:    {input: '#tq', body: '#ttbody', kw: '#tkw'},
+  };
+  const BODY = Object.fromEntries(Object.entries(SEC).map(([k, v]) => [k, v.body]));   // the rows, by section
 
   // the header (crest, app tabs, search box) is written into the page by tools/sync.py,
   // so nothing here changes how the page first looks
@@ -60,18 +67,15 @@
     try { await openHash(); } finally { reveal(); }   // the page shows once it is on the right section and row
   }
   async function openHash(){
-    const f = location.hash.match(/^#(gems|uniques|tree)\?kw=(.+)$/);
-    if(f) return filterBy(f[1], decodeURIComponent(f[2]));
+    const f = location.hash.match(/^#(gems|uniques|tree)\?(.+)$/);
+    if(f) return filterBy(f[1], new URLSearchParams(f[2]));
     const m = location.hash.match(/^#(gems|uniques|tree)(?:=(.*))?$/);
     if(!m) return;
     const sec = m[1], name = m[2] ? decodeURIComponent(m[2]) : '';
     navTo(SECTIONS[sec]);
     if(!name) return;
-    if(sec === 'gems'){   // a deep link may name a support or spirit gem, so search across every gem type
-      const every = [...document.querySelectorAll('#modeseg button')].find(b => /Everything/.test(b.textContent));
-      if(every && every.getAttribute('aria-pressed') !== 'true') every.click();
-    }
-    const input = document.querySelector(INPUT[sec]);
+    if(sec === 'gems') everyGem();
+    const input = document.querySelector(SEC[sec].input);
     if(input){ input.value = name; input.dispatchEvent(new Event('input', {bubbles:true})); }
     await sleep(60);
     const rows = [...document.querySelectorAll(BODY[sec] + ' tr')];
@@ -83,17 +87,28 @@
       hit.animate && hit.animate([{background: 'rgba(140,203,63,.18)'}, {background: 'transparent'}], {duration: 1600, easing: 'ease-out'});
     }
   }
-  // the list, filtered by one keyword: the page's own keyword picker does the filtering
-  async function filterBy(sec, k){
+  // a keyword names gems of every type, so the list has to hold every type before it is filtered
+  function everyGem(){
+    const every = [...document.querySelectorAll('#modeseg button')].find(b => /Everything/.test(b.textContent));
+    if(every && every.getAttribute('aria-pressed') !== 'true') every.click();
+  }
+  /* The list, filtered the way the card that sent us here had it. A keyword goes through the page's own
+     keyword picker; anything else is the page's to apply (PoE.deep), so this file never knows what a base
+     item is. */
+  async function filterBy(sec, p){
     navTo(SECTIONS[sec]);
     await sleep(60);
-    const wrap = document.querySelector({gems: '#gkw', uniques: '#ukw', tree: '#tkw'}[sec]);
-    if(!wrap) return;
-    let chip = wrap.querySelector('.kwchip[data-k="' + CSS.escape(k) + '"]');
-    if(!chip){ const more = wrap.querySelector('.kwmore'); if(more){ more.click(); await sleep(30); chip = wrap.querySelector('.kwchip[data-k="' + CSS.escape(k) + '"]'); } }
-    if(chip && chip.getAttribute('aria-pressed') !== 'true') chip.click();
+    if(sec === 'gems') everyGem();
+    const k = p.get('kw');
+    if(k){
+      const wrap = document.querySelector(SEC[sec].kw);
+      let chip = wrap && wrap.querySelector('.kwchip[data-k="' + CSS.escape(k) + '"]');
+      if(wrap && !chip){ const more = wrap.querySelector('.kwmore'); if(more){ more.click(); await sleep(30); chip = wrap.querySelector('.kwchip[data-k="' + CSS.escape(k) + '"]'); } }
+      if(chip && chip.getAttribute('aria-pressed') !== 'true') chip.click();
+    }
+    if(window.PoE && PoE.deep && PoE.deep[sec]) PoE.deep[sec](p);
     history.replaceState(null, '', '#' + sec);
-    const list = document.querySelector(BODY[sec]);
+    const list = document.querySelector(SEC[sec].body);
     if(list) list.closest('table').scrollIntoView({block: 'start'});
   }
 
