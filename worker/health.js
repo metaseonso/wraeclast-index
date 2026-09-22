@@ -4,12 +4,16 @@
      fine      it came in on time
      late      it has missed a run
      stopped   it has missed several, or nothing has ever come in
-     unknown   the file came from the backup site, which does not tell us when it was made
+     unknown   nothing says how old it is: no file has come in and the backup's copy gives no time either
    Used by the owner's dashboard (worker/dash.js, one line at the top) and by:
      GET /api/health   the same as JSON, no sign-in: times only, nothing about anyone. Kept for a minute.
-   Until the data jobs move off GitHub, the hourly files still come from the backup site: there is no arrival
-   time for those, so they read "unknown" rather than pretending to be fresh. The prices on the pages are
-   stamped with the file's own time instead (worker/prices.js), so a stale feed still shows its real age there.
+   Until the data jobs move off GitHub, the hourly files still come from the backup site, which does not say
+   when its copy arrived. The age then comes from the file itself: every job writes the hour of its data at
+   the top of what it sends (worker/files.js ownTime), and that hour is never newer than the moment the file
+   arrived, so a feed that froze goes late and then stopped like any other job. Which time is used: the arrival
+   time whenever a job has sent the file in, the file's own hour only while the backup is the one answering.
+   Once the move is done the arrival time is always there and the fallback never runs. The prices on the
+   pages are stamped the same way (worker/prices.js), so a stale feed shows its real age there too.
    Watched the same way: a section still showing an older copy because its source failed (data/faults.json,
    written by tools/lastgood.py). The job came in; what it brought did not, so it reads late on the first day
    and stopped after that, with the reason in the owner's own words. */
@@ -97,8 +101,9 @@ export async function health(env, origin){
     (RANK[b.state] === RANK[a.state] && age(b) > age(a)) ? b : a);
   const line = worst.note ? worst.note                          // a stale section says it in its own words
     : worst.state === 'ok' ? 'Every data job is on time.'
-    : worst.state === 'unknown' ? worst.what + ': from the backup site, age not known here.'
+    : worst.state === 'unknown' ? worst.what + ': the file does not say when it was made.'
     : worst.minutes === null ? worst.what + ': nothing has come in yet.'
+    : worst.from === 'backup' ? worst.what + ': from ' + since(worst.minutes) + '.'   // the file's own hour, not an arrival
     : worst.what + ' last came in ' + since(worst.minutes) + '.';
   return {state: worst.state, ok: worst.state === 'ok', at: new Date(now).toISOString(), line, jobs};
 }
