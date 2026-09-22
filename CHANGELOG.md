@@ -3,6 +3,77 @@
 The full list of changes. The public patch notes (data/changelog.json, shown on the site) stay short.
 Add the details here first, then a short public line there.
 
+## Next — The frame: one card, one map, and a loop with two moves
+
+- The owner's call: *"we want cards and map to be a frame populated with predetermined items with a
+  sequencing rule for when there is overflow to facilitate and frame appropriately for our purpose… nothing
+  should have to be built in the future if we see all future edge cases now and build accordingly."* And the
+  loop: *"every new dataset or entry that the current framework does not support is simply considered and
+  addressed so it does. thats our loop once its built."*
+- **`docs/frame.md`** is the frame, written down. It opens with the loop as exactly two moves — the frame
+  supports it, so add the data and stop; or it does not, so extend the frame once and it is supported for
+  good. (b) is a procedure: the four things a new dataset can need (a field type, a slot rule, a
+  relationship, a kind declaration), the test that says which, what each costs, what to check before and
+  after, what the guard proves, and a worked example of each. Then every slot in order with what may fill it,
+  which field wins when two could, the sequencing rule for overflow, and the absence rule. Then the same for
+  the map. Then eleven cases settled now, from a kind never seen to data from an older build.
+- **The frame's numbers are in one place** (`FRAME`, `assets/kinds.js`): the cap per slot (pill 6, fact 8,
+  body 6, foot 4), the slack of 1 that keeps a "+1 more" off a card, the 4 lines a list draws in the grid,
+  and Connections (8 rows, slack 2, a filter box over 30). The caps were measured, not guessed: over 6,613
+  cards the widest fills 4 pills, 3 facts, 3 body blocks and 1 mark, so nothing is cut today and the rule is
+  there for the day something is. `tools/dev/frame.mjs` measures it again every run.
+- **The map's rules are the frame's; its numbers are the drawing's.** The spec was first written with six
+  numbers for a map drawn in the browser. The map that shipped is not that: `tools/map.py` lays the whole
+  index out once with the data and the page is given a finished picture. So those six numbers are gone —
+  a number no code obeys is the worst thing to leave in a frame. `FRAME.map` now names the file the page
+  reads and states the rules the picture is held to, which are the card's rules at another scale: a region
+  per kind off `many` and `tone`, a dot per card and every one of them, a line per edge the site can already
+  follow, nothing thinned, and what is left out counted and named (1,317,426 group pairs today). The guard
+  holds the picture to them.
+- **A slot now draws the first n pieces and counts the rest.** One piece is one field that drew something.
+  The popup draws all of them, so the count in the grid is the way to the rest: open the card. Each slot puts
+  its count in its own shape — a pill, another ` · ` on the fact line, a muted line, a foot mark — all of
+  them existing styles, so nothing was restyled.
+- **The head is four boxes, not four lines of markup.** A head field lands in the box its declaration names
+  (`box`), and `BOXES` gives the order. Two fields in one box both draw. The markup is byte-for-byte what it
+  was.
+- **Every per-kind special case moved out of the drawing code and into the table.** The rules left the code
+  as declarations: `tone` (the colour a kind is told apart by, which `tools/map.py` already read),
+  `sprite` (which sheet the art is cut from), `px` (where else a price may be listed),
+  `gone` (an entry with nowhere to go), `notitem` (on the Atlas but not an item), `few` (how thin a market is
+  ignored on the movers list), `rank` (what the search takes off a kind), `builds` (which of poe.ninja's
+  lists, first test wins), `kw` (where a keyword id is), `words` (whose words are doors, and whether only in
+  a line doing maths), `make` (fields worked out from an entry itself), and `MAPS` (the maps the index is
+  turned into, once, for Connections). `assets/app.js`, `assets/edges.js` and `assets/marks.js` now hold no
+  kind letter at all in the card path.
+- **The offered mechanics cards are a declaration, not a table in the drawing code.** `OFFERS` in
+  `assets/app.js` became `FIELDS.offer.cards`: each line is the card it leads to, what the card's own words
+  have to read for it to be offered, and what the button says. A third of them is a third line and no code,
+  a card about two of them is offered both in the order declared, and none of them is ever offered on a card
+  of a kind one of them leads to. Same buttons on the same 2,160 and 2,404 cards, 535 of them with both.
+- **`DECL` closes the list.** A kind may carry those declarations and nothing else, so a rule that would
+  reach one kind cannot be slipped onto it — the guard fails the build over an unknown key.
+- **A new guard check: `frame`.** `tools/dev/frame.mjs`, called by `tools/dev/guard.mjs` and runnable on its
+  own. The table half: a kind the index carries with no declaration, a declaration the frame does not know, a
+  field whose slot, box or type the frame does not have, a field type with no renderer or a renderer no field
+  asks for, a field every card carries that one kind drops, a slot with no cap, a box no field fills, an edge
+  whose map or kind is not declared. The map half: a kind drawn in a palette token `assets/theme.css` does
+  not have, and a kind that is in neither the map's key nor what the picture says it left out. The card half,
+  in a real headless Chrome over all 7,369 cards: a slot over its cap, a slot or a list that cut something and
+  did not say how many, and a card that is its own connection or carries a mark that opens the card you are
+  already on. Each was proved to bite by breaking it in a scratch copy: all eight named the right card and
+  the right rule.
+- **Proved the frame takes new things.** In a scratch copy, a kind that did not exist (Relics: one `KINDS`
+  entry, three rows) and a field type that did not exist (`stars`, a rank out of five: one `FIELDS` entry,
+  one `TYPE` function) both landed with no per-kind code — full cards, a search chip, the keyword and
+  mechanics doors already worked out in their lines, and the frame check green at 10 kinds and 39 fields.
+- **Nothing a player sees moved.** Every one of the 7,369 cards drawn before and after, in the grid and in
+  the popup, at 375×812 touch and at desktop: identical markup, identical links, identical prices;
+  6,918 Connections sections identical; 24,790 marks in lines identical; ten searches identical. The eight
+  mechanics cards draw the same flowcharts, the same sources and the same offers, the gated words open on the
+  same lines and stay plain in the same prose, and the map tab draws the same picture, the same key and the
+  same counts.
+
 ## Next — Nothing on the Craft tab is a dead end
 
 - Two things were wrong with the Craft tab. It prints **486 named things** — orbs, essences, bones, catalysts,

@@ -2,19 +2,36 @@
 
 Checks to run by hand. Nothing here ships (`.assetsignore`) and nothing here touches the live site.
 
-**`node tools/dev/guard.mjs` — before every push.** About 11 seconds. It starts a local server on this
+**`node tools/dev/guard.mjs` — before every push.** About 85 seconds. It starts a local server on this
 worktree (the static files plus `worker/seo.js`, same process, no wrangler) and prints one line per check,
 `ok` or `FAIL`; non-zero exit on any FAIL.
 
 - **cards** how many of each kind, against `guard-baseline.json` · **links** every deep link the code emits
   lands on a real row · **pages** every public page 200, sitemap and llms.txt did not shrink · **rawcode**
-  no stat ids, `[Word|Word]` markup or `{0}` placeholders where a player reads them · **dash** the owner's
-  dashboard opens and all eight tabs fill · **phone** 375x812 with touch: a card and a boss card stay open
-  through a tap, a drag and a selection, the Bosses table fits, no sideways scroll, no console errors
+  no stat ids, `[Word|Word]` markup or `{0}` placeholders where a player reads them · **frame** every card
+  and the map keep to the frame · **dash** the owner's dashboard opens and all eight tabs fill · **phone**
+  375x812 with touch: a card and a boss card stay open through a tap, a drag and a selection, the Bosses
+  table fits, no sideways scroll, no console errors
 - `--live` check wraeclastindex.fyi instead (or pass any `http://...`) · `--no-phone` skip both Chrome
   checks · `CHROME=<path to chrome.exe>` if Chrome is somewhere odd
 - `--bless` rewrite the baseline: the counts, and what the site is allowed to be wrong about today.
   Only after a data rebuild, and read what it says it added.
+
+`frame.mjs`: the frame (`docs/frame.md`), enforced. Three parts.
+
+- **the table**, read straight out of `assets/kinds.js`: a kind the index carries with no declaration, a
+  declaration the frame does not know, a field whose slot, box or type the frame does not have, a field type
+  with no renderer or a renderer no field asks for, a field every card carries that one kind drops, a slot
+  with no cap, a box no field fills, an edge whose map or kind is not declared.
+- **the map**: a kind drawn in a palette token `assets/theme.css` does not have, and a kind that is in
+  neither the map's key nor what `data/map.json` says the picture left out.
+- **the cards**, drawn in headless Chrome over the whole index: a slot over its cap, a slot or a list that
+  cut something and did not say how many, and a card that is its own connection or carries a mark that opens
+  the card you are already on. It also prints the widest card per slot, which is what the caps are set
+  against.
+
+`guard.mjs` runs all three; `node tools/dev/frame.mjs` on its own does the table and the map, and needs no
+browser.
 
 `dash-fixture/`: what the live site answered on 21 Sep 2026 for the dashboard's four reads, saved as it came
 (the notes list is empty in it: that is the answer the paging bug gave). The **dash** check serves these

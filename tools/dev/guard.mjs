@@ -6,11 +6,13 @@
      node tools/dev/guard.mjs --bless         the same, then write today's numbers into the baseline
      node tools/dev/guard.mjs --no-phone      skip the headless Chrome pass
 
-   Six checks, one line each, non-zero exit on any FAIL:
+   Seven checks, one line each, non-zero exit on any FAIL:
      cards   how many cards of each kind, against tools/dev/guard-baseline.json
      links   every deep link the code emits lands on a real row in the data
      pages   every public page answers 200; the sitemap and llms.txt did not shrink
      rawcode no stat ids, [Word|Word] markup or {0} placeholders where a player can read them
+     frame   every card and the map keep to the frame: slots, caps, counts, one rule for every kind
+             (tools/dev/frame.mjs)
      dash    the owner's dashboard: all eight tabs fill, no block is left empty (tools/dev/dash-fixture)
      phone   a real phone-sized Chrome: cards stay open, nothing scrolls sideways, no console errors
 
@@ -24,7 +26,9 @@ import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import * as seo from '../../worker/seo.js';
 // the one table the site itself reads: what each kind is called, its tab and its section
-import { KINDS, NAMES, ROUTES, SECTIONS } from '../../assets/kinds.js';
+import { KINDS, NAMES, ROUTES, SECTIONS, FRAME } from '../../assets/kinds.js';
+// the frame itself: the slots, the caps and the rules that hold for every kind alike
+import { checkTable, checkMap, checkCards as drawCards } from './frame.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(HERE, '..', '..');
@@ -353,7 +357,28 @@ async function checkRaw(index, files, pages, want){
   return {found, text: [...seen.keys()]};
 }
 
-/* ---------- 5. a real phone ---------- */
+/* ---------- 5. the frame ----------
+   The card is one frame with the same slots for every kind, and the map is drawn off the same table
+   (assets/kinds.js, docs/frame.md). This says so: the table on its own, the map's picture against the
+   declarations it was drawn from, and, where there is a browser, every card in the index drawn against it.
+   tools/dev/frame.mjs holds the rules; this only reports them. */
+async function checkFrame(index, run){
+  const seen = [...new Set(index.items.map(it => it.k))];
+  let cards = null;
+  if(run){
+    try { cards = await drawCards(run); }
+    catch(e){ cards = {bad: ['could not draw the cards: ' + clip(e.message, 100)], types: null, kinds: [], said: ''}; }
+    for(const k of cards.kinds || []) if(!seen.includes(k)) seen.push(k);
+  }
+  const table = checkTable(seen, cards && cards.types);
+  const map = checkMap(await readFile(join(ROOT, 'assets', 'theme.css'), 'utf8').catch(() => null),
+    await getJSON('/' + FRAME.map.key).catch(() => null));
+  const bad = [...table.bad, ...map.bad, ...(cards ? cards.bad : [])];
+  say('frame', !bad.length, bad.length ? bad.length + ' broken: ' + clip(bad.slice(0, 4).join(' | '), 200)
+    : table.said + ' · ' + map.said + ' · ' + (cards ? cards.said : 'the table only: no browser'));
+}
+
+/* ---------- 6. a real phone ---------- */
 function chromePaths(){
   const env = [process.env.CHROME, process.env.CHROME_PATH].filter(Boolean);
   if(process.platform === 'win32') return [...env,
@@ -436,15 +461,16 @@ async function go(page, url){
 const OPEN = 'document.querySelector(".ov") && !document.querySelector(".ov").hidden';
 const BOX = '(() => { const b = document.querySelector(".ov-box"); const r = b.getBoundingClientRect(); return {x: r.x, y: r.y, w: r.width, h: r.height}; })()';
 
-async function checkPhone(bigKeyword, want){
+async function checkPhone(bigKeyword, want, index){
   const wide = {};   // how far each page scrolls sideways at 375px, this run
   const chrome = await findChrome();
   if(!chrome){
+    await checkFrame(index, null);
     say('phone', true, 'skipped: no Chrome found. Point at one with CHROME=<full path to chrome.exe>, or pass --no-phone.');
     say('dash', true, 'skipped: no Chrome found.');
     return wide;
   }
-  let dashDone = false;
+  let dashDone = false, frameDone = false;
   const dir = await mkdtemp(join(tmpdir(), 'wi-guard-'));
   const proc = spawn(chrome, ['--headless=new', '--remote-debugging-port=0', '--user-data-dir=' + dir, '--no-first-run',
     '--no-default-browser-check', '--disable-gpu', '--disable-extensions', '--hide-scrollbars', 'about:blank'],
@@ -539,6 +565,17 @@ async function checkPhone(bigKeyword, want){
     await wait(600);
     wide['/explore'] = await evalJS(two, 'document.documentElement.scrollWidth - document.documentElement.clientWidth');
 
+    /* --- the frame: every card in the index, drawn against the rules --- */
+    const framePage = await phonePage(browser, port, errs);
+    await go(framePage, SITE + '/');
+    await checkFrame(index, expr => evalJS(framePage, expr));
+    frameDone = true;
+    // its own tab: drawing every card in the index leaves a lot behind, so it goes when it is done
+    try {
+      const who = await framePage.send('Target.getTargetInfo');
+      await browser.send('Target.closeTarget', {targetId: who.targetInfo.targetId});
+    } catch {}
+
     /* --- the owner's dashboard, on a desktop-sized page, against the saved answers --- */
     if(base) say('dash', true, 'skipped: it reads this worktree’s own server, not ' + base + '.');
     else await checkDash(browser, port);
@@ -549,6 +586,7 @@ async function checkPhone(bigKeyword, want){
     proc.kill();
     await rm(dir, {recursive: true, force: true}).catch(() => {});
   }
+  if(!frameDone) await checkFrame(index, null);
   if(!dashDone) say('dash', true, 'skipped: Chrome did not open.');
   // /explore is 190px too wide on a phone today; that number is in the baseline, so only a new or a
   // worse sideways scroll fails
@@ -566,7 +604,7 @@ async function checkPhone(bigKeyword, want){
   return wide;
 }
 
-/* ---------- 6. the owner's dashboard: every tab fills ---------- */
+/* ---------- 7. the owner's dashboard: every tab fills ---------- */
 /* Every block each tab shows. A block may say "No data." or that it failed, but it may never be empty:
    a pane is filled while it is still hidden, and one that stays empty leaves the owner with a blank tab. */
 const DASH_BOX = {
@@ -673,8 +711,11 @@ try {
   if(!noPhone){
     const kws = index.items.filter(it => it.k === 'w' && it.use);
     kws.sort((a, b) => Object.values(b.use).reduce((x, y) => x + y, 0) - Object.values(a.use).reduce((x, y) => x + y, 0));
-    wide = await checkPhone((kws[0] || {n: 'Critical'}).n, want);
-  } else { say('phone', true, 'skipped (--no-phone)'); say('dash', true, 'skipped (--no-phone)'); }
+    wide = await checkPhone((kws[0] || {n: 'Critical'}).n, want, index);
+  } else {
+    await checkFrame(index, null);
+    say('phone', true, 'skipped (--no-phone)'); say('dash', true, 'skipped (--no-phone)');
+  }
 } finally {
   if(server) await server.stop();
 }

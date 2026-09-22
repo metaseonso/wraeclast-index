@@ -33,7 +33,7 @@ The site is static. GitHub Pages serves it; a GitHub Action (`.github/workflows/
 | File | What it is |
 |---|---|
 | `index.html`, `assets/app.js`, `assets/app.css` | The app: search home page and the live card |
-| `assets/kinds.js` | Every kind of thing the site cards, in one table: what it is called, which fields its cards carry, which buttons they offer, which groups of connections they can build, and where its gold button goes. `assets/app.js` draws a card by walking it — one function per field type, none of them per kind — and `assets/bridge.js` and `tools/dev/guard.mjs` read the same table. A field may name a table of its own (`file`), fetched the first time a card asks for it and never in first paint, which is how an essence card lists what it adds per kind of item. A new kind is one entry here plus its rows in the index, and no card code |
+| `assets/kinds.js` | Every kind of thing the site cards, in one table: what it is called, which fields its cards carry, which buttons they offer, which groups of connections they can build, and where its gold button goes. `assets/app.js` draws a card by walking it — one function per field type, none of them per kind — and `assets/bridge.js` and `tools/dev/guard.mjs` read the same table. A field may name a table of its own (`file`), fetched the first time a card asks for it and never in first paint, which is how an essence card lists what it adds per kind of item. A new kind is one entry here plus its rows in the index, and no card code. It also holds the frame itself — the slots a card has, how many pieces each draws and what it says about the rest — written out in [`docs/frame.md`](docs/frame.md) and enforced by `tools/dev/frame.mjs` |
 | `assets/edges.js` | What else belongs with a card: every group under Connections, worked out from the index itself and followed both ways (a unique names its base, a base names its uniques). Answers per list how many there are altogether and the first few, so a card draws eight rows and says the true total |
 | `assets/marks.js` | The doors inside a line: every keyword a card's own lines name, marked on the word where it is read and opening that keyword's card. Worked out as the card is drawn from the keyword cards the browser already holds, so the index ships nothing for it. A keyword's own name counts wherever it is read; its other spellings count only on a card whose own keyword list names it (`kw`, the game's markup, and the list the chips are made from); a phrase two cards answer to is left plain. The index's own build-time marks (`lx`, `tools/nodelinks.py`) keep the ground they hold |
 | `explore.html` | The drill-down page (built from the Wraeclast Index artifact); its data sits in `data/explore/` (files named by their content) |
@@ -70,10 +70,10 @@ dashboard's Data jobs block and in `/api/health`, in the same fine/late/stopped 
 outside source to lose; the live prices (`pricepull.py`) are watched as jobs of their own. Proved without the
 network by `node tools/dev/faults.mjs`.
 
-**Before every push: `node tools/dev/guard.mjs`** (about 5 seconds). It starts a local copy of the site and
-checks the card counts, every deep link the code emits, every public page, that no raw game code shows where a
-player reads it, and that a phone-sized Chrome still opens a card without it snapping shut. See
-[`tools/dev/README.md`](tools/dev/README.md).
+**Before every push: `node tools/dev/guard.mjs`**. It starts a local copy of the site and checks the card
+counts, every deep link the code emits, every public page, that no raw game code shows where a player reads
+it, that every card keeps to the frame (`tools/dev/frame.mjs`), and that a phone-sized Chrome still opens a
+card without it snapping shut. See [`tools/dev/README.md`](tools/dev/README.md).
 
 ## Speed
 

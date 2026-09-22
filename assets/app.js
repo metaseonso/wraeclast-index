@@ -5,7 +5,7 @@
                        trade site listings (worker/prices.js); trends from the site's own daily prices
    Build usage links to poe.ninja's own builds page: their builds API is not open to other sites. */
 import {initKeys, setCardKeys, keyLabel} from './keys.js';
-import {KIND, DEFAULT, FIELDS, ACTS, CHIPS, NAMES, ROUTES, fieldsOf} from './kinds.js';
+import {KIND, DEFAULT, FIELDS, ACTS, CHIPS, NAMES, ROUTES, fieldsOf, FRAME, SLOTS, BOXES, MAKE, KW, holds, markOf, ours} from './kinds.js';
 import * as edges from './edges.js';
 import * as marks from './marks.js';
 
@@ -50,10 +50,11 @@ function prep(it, k, IMGS, lxk){   // once per card: its kind, full image link, 
   it.k = k;
   if(it.id === undefined) it.id = it.n;   // the parts leave the id out where it is the name
   if(it.img){ const i = it.img.indexOf(':'), pre = IMGS[it.img.slice(0, i)]; if(pre) it.img = pre + it.img.slice(i + 1); }   // "<server key>:<path>"
-  // "lx" marks every phrase in a line that names another card (tools/nodelinks.py). The page draws one kind of
-  // them: the words that lead to a mechanics card ("h:", tools/mechanics.py). The rest stays plain text, as before.
+  // "lx" marks every phrase in a line that names another card (tools/nodelinks.py). The page draws the ones
+  // that lead to a card we wrote ourselves (KINDS words.mark 'ours'); the game's own words are worked out as
+  // the card is drawn, and the rest of a line stays plain text.
   if(it.lx && lxk){
-    const hx = it.lx.map(r => (r || []).filter(x => (lxk[x[2]] || '').startsWith('h:')).map(x => [x[0], x[1], lxk[x[2]]]));
+    const hx = it.lx.map(r => (r || []).filter(x => ours(lxk[x[2]])).map(x => [x[0], x[1], lxk[x[2]]]));
     if(hx.some(r => r.length)) it.hx = hx;
     // every card its lines name, once each: the related lists follow these both ways (assets/edges.js)
     const rx = new Set();
@@ -63,8 +64,14 @@ function prep(it, k, IMGS, lxk){   // once per card: its kind, full image link, 
   it._nl = it.n.toLowerCase();
   it._hay = [it.n, it.s, it.t, it.q, it.asc, it.reg, (it.ls || []).join(' '), (it.pr || []).join(' '),
     (it.tags || []).join(' '), (it.o || []).join(' ')].filter(Boolean).join(' ').toLowerCase();
-  if(k === 'b'){ it.base = it.n; if(it.ls) it.ni = it.ls.length; }   // a base: every line is an implicit
-  if(k === 'c') it.nx = true;   // nx: not in the catalogue (yet)
+  // the fields a kind works out from the entry itself: a base item is its own base and every line of it is an
+  // implicit, a currency is not in the catalogue until the market says so. The kind declares them (KINDS make)
+  const make = (KIND[k] || {}).make;
+  if(make) for(const [at, how] of Object.entries(make)){
+    const f = MAKE[how];
+    const v = f ? f(it) : undefined;
+    if(v !== undefined) it[at] = v;
+  }
   return it;
 }
 const MC = new Map();   // the market's own currency cards, made once
@@ -82,18 +89,27 @@ function assemble(core, rest){
   if(rest) for(const [key, kw] of Object.entries(rest.ckw || {})){ const it = byKey.get(key); if(it) it.kw = kw; }
   // the core's own cards keep their keyword chips and flavour line in the rest, so the first cards stay small
   if(rest) for(const [key, qt] of Object.entries(rest.cqt || {})){ const it = byKey.get(key); if(it) it.qt = qt; }
-  const named = new Map();   // atlas and bulk item cards of the index, by name (the market must not repeat them)
-  for(const it of items) if(it.k === 'a' || it.k === 'c') named.set(it.n, it);
+  /* A kind whose prices are listed under another kind says so once (KINDS px). There are two ways of meeting
+     the market there, and the declaration says which: a kind listed there whole keeps its own card, and the
+     market must not repeat it; a kind only some of whose entries are listed there (px carries a test: a
+     lineage support gem) leaves the market its card and lends it the words the index holds. A third case is a
+     third declaration, not a third branch. */
+  const named = new Map();     // index cards the market must not repeat, by name
+  const itemText = new Map();  // our own words for a market card of the same name
+  for(const it of items){
+    const px = (KIND[it.k] || {}).px;
+    if(!px) continue;
+    if(px.at === undefined) named.set(px.as + ':' + it.n, it);
+    else if(holds(it, px) && it.t) itemText.set(px.as + ':' + it.n, it.t);
+  }
   const skip = rest ? new Set() : new Set(core.skip || []);   // cards the rest has: their prices wait for it
   const lineage = new Set(core.li || []);   // lineage support gems: the market lists them too (the gem card shows that price)
-  const itemText = new Map();   // a lineage gem's own words, for the market's card of the same name
-  for(const it of items) if(it.k === 'g' && it.li && it.t) itemText.set(it.n, it.t);
   // currencies live in the market file; they join the search as their own kind
   const market = D.market;
   if(market && market.items){
     for(const [key, m] of Object.entries(market.items)){
       if(!key.startsWith('c:') || skip.has(m.n)) continue;
-      const own = named.get(m.n);
+      const own = named.get('c:' + m.n);
       if(own){ own.nx = false; if(!own.img) own.img = m.ic; continue; }   // the index has it: its card, with the market's price
       let it = MC.get(key);
       if(!it){
@@ -106,7 +122,7 @@ function assemble(core, rest){
       // rest the official text is in the index — a lineage support gem's own card, or "ix" for a name no card
       // covers at all (tools/carddata.py). Both are in the rest, so this fills in when the rest lands.
       if(!it.t && rest){
-        it.t = itemText.get(m.n) || (rest.ix || {})[m.n] || '';
+        it.t = itemText.get('c:' + m.n) || (rest.ix || {})[m.n] || '';
         if(it.t) it._hay += ' ' + it.t.toLowerCase();
       }
       items.push(it); byKey.set('c:' + it.id, it);
@@ -151,10 +167,14 @@ export const ready = (async () => {
 ready.catch(() => { D.failed = true; });
 
 /* ---------- market lookups ---------- */
+/* A card's own row first, then the row its kind says its price may be listed under (KINDS px: the Atlas's
+   tablets and the lineage support gems are priced as currency). */
 export function priceOf(it){
   const M = D.market && D.market.items;
   if(!M) return null;
-  return M[it.k + ':' + it.id] || M[it.k + ':' + it.n] || (it.k === 'a' || it.li ? M['c:' + it.n] : null) || null;
+  const px = (KIND[it.k] || {}).px;
+  return M[it.k + ':' + it.id] || M[it.k + ':' + it.n] ||
+    (px && holds(it, px) ? M[px.as + ':' + it.n] : null) || null;
 }
 export function usageOf(it){
   const U = D.usage && D.usage[NAMES[it.k]];
@@ -206,7 +226,7 @@ function iconHTML(it){
   if(it.img) return '<img src="' + esc(it.img) + '" alt="" loading="lazy" decoding="async">';
   const S = D.index && D.index.sprites;
   if(it.ic && S){
-    const sp = it.k === 'u' ? S.uniques : S.gems;
+    const sp = S[(KIND[it.k] || {}).sprite];   // the sheet this kind's art is cut from (KINDS sprite)
     if(sp){
       const sc = Math.min(34 / sp.cw, 38 / sp.ch), w = sp.cw * sc, h = sp.ch * sc;
       return '<span class="ic" style="width:' + w + 'px;height:' + h + 'px;background-image:url(sprites/' + sp.file +
@@ -229,14 +249,19 @@ function iconHTML(it){
    in words (assets/craft.js): a base belongs to one kind, so a base link needs nothing else. */
 const crEnc = s => encodeURIComponent(s).replace(/%20/g, '+');
 export const craftHref = (c, b = '', kind = '') => './#/craft?' + (b ? 'base=' + crEnc(b) : 'kind=' + crEnc(kind || c));
-/* Where a card's gold button goes: the kind's own "link", with @field filled in from the entry. A field the
-   entry has nothing for means no link at all. Two kinds need more than a template: a base carries a whole
-   craft plan, and a currency the catalogue does not list yet has nowhere to go. */
+/* The forms a gold button can take that a template cannot write: one entry each, named by a kind's "link".
+   A whole craft plan is one of them, so a second thing that carries a plan is a second entry and no code. */
+const LINKS = {
+  craft: it => it.cr && D.byKey.get('b:' + it.id) === it ? craftHref(it.cr, it.n) : null,
+};
+/* Where a card's gold button goes: the kind's own "link", with @field filled in from the entry, or one of the
+   forms above. A field the entry has nothing for means no link at all, and so does an entry its kind calls
+   gone — one with nowhere to go yet (KINDS gone: a currency the catalogue does not list). */
 export function hrefOf(it){
   const d = KIND[it.k];
   if(!d || !d.link) return null;
-  if(d.link === 'craft') return it.cr && D.byKey.get('b:' + it.id) === it ? craftHref(it.cr, it.n) : null;
-  if(it.k === 'c' && it.nx) return null;
+  if(d.gone && holds(it, d.gone)) return null;
+  if(LINKS[d.link]) return LINKS[d.link](it);
   let have = true;
   const href = d.link.replace(/@(\w+)/g, (_, f) => {
     if(it[f] === undefined || it[f] === '') have = false;
@@ -244,8 +269,9 @@ export function hrefOf(it){
   });
   return have ? href : null;
 }
-/* an item is something that can be traded; an Atlas passive is on the Atlas but is not an item */
-const isItem = it => { const d = KIND[it.k]; return !!(d && d.item) && !(it.k === 'a' && it.at === 'tree'); };
+/* an item is something that can be traded, unless its kind says this entry is not one (KINDS notitem: an
+   Atlas passive is on the Atlas but is not an item) */
+const isItem = it => { const d = KIND[it.k]; return !!(d && d.item) && !(d.notitem && holds(it, d.notitem)); };
 
 /* ---------- requirements ----------
    Gem level -> character level, and the attribute formula, from the official game data.
@@ -267,24 +293,28 @@ function reqPills(rq, note){
   if(!out.length) out.push(pill('No requirements'));
   return out.join('') + (note ? '<span class="pill-note">' + note + '</span>' : '');
 }
-marks.setup({D, keywordIdOf});   // the keyword cards are its vocabulary: assets/marks.js
+marks.setup({D, keywordIdOf, kindOf: k => KIND[k], kwKey: id => KW.own + ':' + id});   // the keyword cards are its vocabulary: assets/marks.js
 /* One line as the card shows it, with its doors marked. Two kinds of mark, and they never overlap: the words
    marked when the data was built (tools/nodelinks.py — it.hx from prep above, or a table file's own spans) and
    the keywords worked out as the card is drawn (assets/marks.js), which never land on ground the build already
    took. A mechanics card is ours, not the game's, so its mark is the word with a footnote; a keyword is the
    game's own word, so its mark is the word underlined. Neither is a keyword chip: the chips under the card are
    the summary, these are the detail. See .hlink and .kwmark in assets/cards.css. */
-const HLINK_TITLE = 'How it works — our own note, not the game’s';
-const KWMARK_TITLE = 'Keyword — the game’s own words';
+/* the two shapes a mark takes, by whose words they are (KINDS words.mark): one entry each, so a third kind
+   of card whose words are doors is a declaration and not a branch */
+const MARK = {
+  ours: {cls: 'hlink',  data: 'h',  title: 'How it works — our own note, not the game’s', id: key => key},
+  game: {cls: 'kwmark', data: 'kw', title: 'Keyword — the game’s own words', id: key => key.slice(2)},
+};
 function spansHTML(text, spans){
   if(!spans || !spans.length) return esc(text);
   let out = '', at = 0;
   for(const [s, n, key] of spans){
     if(s < at) continue;
-    const word = esc(text.slice(s, s + n));
-    out += esc(text.slice(at, s)) + (key[0] === 'h'
-      ? '<button type="button" class="hlink" title="' + HLINK_TITLE + '" data-h="' + esc(key) + '">' + word + '</button>'
-      : '<button type="button" class="kwmark" title="' + KWMARK_TITLE + '" data-kw="' + esc(key.slice(2)) + '">' + word + '</button>');
+    const m = MARK[markOf(key)];
+    if(!m) continue;
+    out += esc(text.slice(at, s)) + '<button type="button" class="' + m.cls + '" title="' + m.title +
+      '" data-' + m.data + '="' + esc(m.id(key)) + '">' + esc(text.slice(s, s + n)) + '</button>';
     at = s + n;
   }
   return out + esc(text.slice(at));
@@ -297,9 +327,9 @@ function drawLine(it, text, fixed, block){
   return spansHTML(text, fixed && fixed.length ? [...fixed, ...found].sort((a, b) => a[0] - b[0]) : found);
 }
 /* A line marked in a file of its own, the way the index marks its own cards' lines (tools/nodelinks.py): the
-   phrases that lead to a mechanics card, off that file's key table. */
+   phrases that lead to a card we wrote, off that file's key table. */
 const mechSpans = (spans, lxk) => (spans || [])
-  .filter(x => (lxk[x[2]] || '').startsWith('h:')).map(x => [x[0], x[1], lxk[x[2]]]);
+  .filter(x => ours(lxk[x[2]])).map(x => [x[0], x[1], lxk[x[2]]]);
 /* A card is drawn again every time it is opened, stepped back to, filtered or scrolled past, and its lines do
    not change between draws: each line keeps the form it was marked into, until the index itself moves on. */
 function lineHTML(it, at, i, text, marked){
@@ -347,8 +377,9 @@ function richHTML(it, at, max){
   if(!v.length) return '';
   const li = (x, i) => '<li data-mk="' + at + ':' + i + '">' + lineHTML(it, at, i, x, marked) + '</li>';
   const more = v.length - max;
-  return '<ul class="card-ls">' + v.slice(0, more > 1 ? max : v.length).map(li).join('') +
-    (more > 1 ? '<li class="more-n">+' + more + ' more</li>' : '') + '</ul>';
+  const cut = more > FRAME.slack;   // the same slack a slot keeps: one line left over is drawn, not counted
+  return '<ul class="card-ls">' + v.slice(0, cut ? max : v.length).map(li).join('') +
+    (cut ? '<li class="more-n">' + esc(FRAME.more(more)) + '</li>' : '') + '</ul>';
 }
 /* ---------- the damage card ----------
    The flowchart a mechanics card can carry ("fl", tools/mechanics.py). A group is either a run of steps
@@ -370,21 +401,19 @@ function flowHTML(it, full){
   return '<div class="flow">' + it.fl.map(g => '<p class="flow-hd">' + esc(g.h) + '</p>' +
     (g.st ? run(g.st) : '') + (g.cols ? cols(g.cols) : '')).join('') + '</div>';
 }
-/* The two flowchart cards, each offered on every card whose text is about what it lays out: the one a hit you
-   deal runs through, and the one a hit you take runs through. Read off the card's own search text, so nothing
-   has to be marked per card; the mechanics cards themselves already say it and never offer it. A card that is
-   about both — a body armour that adds damage — is offered both, in this order. tools/mechanics.py declares
-   them; the words that lead to the other mechanics cards are marked in the lines instead. */
-const OFFERS = [
-  ['h:HowDamage', /\bdamage\b/, 'How damage works', 'the order it is worked out in'],
-  ['h:HowDefences', /\b(?:armour|evasion|block|energy shield|resistance)/, 'How defences work',
-    'the order a hit you take runs through'],
-];
-function offerHTML(it, full){
-  if(!full || it.k === 'h' || !it._hay) return '';
-  return OFFERS.filter(([, word]) => word.test(it._hay)).map(([key, , name, note]) =>
-    '<button type="button" class="card-offer" data-h="' + key + '">' +
-    '<b>' + esc(name) + '</b><small>' + esc(note) + '</small></button>').join('');
+/* The mechanics cards a card can be offered: which card, when it is offered and what the button says are all
+   in the field's own declaration (FIELDS.offer). Read off the card's own search text, so nothing has to be
+   marked per card, and never on a card of a kind one of them leads to — a mechanics card already says it.
+   A card about two of them is offered both, in the order they are declared. A third is a third line in that
+   declaration and no code. */
+function offerHTML(it, f, full){
+  if(!full || !it._hay) return '';
+  const list = f.cards || [];
+  // never on a card of a kind one of them leads to: a mechanics card already says it
+  if(list.some(o => it.k === o.card.slice(0, o.card.indexOf(':')))) return '';
+  return list.filter(o => o.when.test(it._hay)).map(o =>
+    '<button type="button" class="card-offer" data-h="' + esc(o.card) + '">' +
+    '<b>' + esc(o.is) + '</b><small>' + esc(o.sub) + '</small></button>').join('');
 }
 function anointHTML(it){
   if(!it.rec || !it.rec.length) return '';
@@ -398,15 +427,15 @@ function anointHTML(it){
   return '<div class="card-inv"><span title="' + esc(it.rec.join(' + ')) + '">Anoint with 3 emotions</span><b>' +
     (div !== null ? moneyHTML(div) : '') + '</b></div>';
 }
-/* poe.ninja's builds page, filtered to characters that use this thing (its own link format) */
+/* poe.ninja's builds page, filtered to characters that use this thing (its own link format). Which of their
+   lists a kind is in is the kind's own "builds": the first test an entry answers wins, and an entry that
+   answers none of them is in no list and gets no link. */
 export function buildsHref(it){
   const lg = D.market && D.market.builds;
   if(!lg) return null;
   const q = v => encodeURIComponent(v).replaceAll('%20', '+');
   let key = null;
-  if(it.k === 'g') key = it.w ? 'skills' : 'allskills';
-  else if(it.k === 'u') key = 'items';
-  else if(it.k === 'p') key = /^Keystone/.test(it.s) || it.asc ? 'keypassives' : (it.rec ? 'anointed' : null);
+  for(const t of (KIND[it.k] || {}).builds || []) if(holds(it, t)){ key = t.key; break; }
   return key ? 'https://poe.ninja/poe2/builds/' + lg + '?' + key + '=' + q(it.n) : null;
 }
 
@@ -450,7 +479,7 @@ function addsFill(host, it, f){
    declaration covers a full entry and a bare one.
    A type whose table is a file of its own answers with an empty box and a "fill" as well: card() calls it once
    the card is built, and it fills its own box when the file lands. */
-const TYPE = {
+export const TYPE = {
   art:    {raw: 1, v: it => iconHTML(it)},
   name:   {raw: 1, v: (it, f, o) => o.href ? '<a class="card-link" href="' + esc(o.href) + '">' + esc(it.n) + '</a>' : esc(it.n)},
   text:   {v: (it, f) => it[f.at] ? (f.pre || '') + it[f.at] + (f.post || '') : ''},
@@ -491,7 +520,7 @@ const TYPE = {
     return reqPills(r20, '<span title="' + esc(one) + '">at gem level 20</span>');
   }},
   reqs:   {raw: 1, v: (it, f) => reqPills(it[f.at])},
-  rich:   {raw: 1, v: (it, f, o) => richHTML(it, f.at, o.full ? Infinity : 4)},
+  rich:   {raw: 1, v: (it, f, o) => richHTML(it, f.at, o.full ? Infinity : (f.lines || FRAME.lines))},
   quote:  {raw: 1, v: (it, f) => it[f.at] ? '<p class="card-fl">' + esc(it[f.at]) + '</p>' : ''},
   options: {raw: 1, v: (it, f, o) => {   // an atlas choice passive: what it lets you pick (in full in the popup)
     const list = it[f.at];
@@ -504,14 +533,14 @@ const TYPE = {
     ? '<div class="card-addsbox" data-fill="' + esc(name) + '" hidden></div>' : ''},
   flow:   {raw: 1, v: (it, f, o) => flowHTML(it, o.full)},
   source: {raw: 1, v: (it, f) => it[f.at] ? '<p class="card-src">' + esc(it[f.at]) + '</p>' : ''},
-  offer:  {raw: 1, v: (it, f, o) => offerHTML(it, o.full)},
+  offer:  {raw: 1, v: (it, f, o) => offerHTML(it, f, o.full)},
   tags:   {raw: 1, v: (it, f) => (it[f.at] || []).length
     ? '<p class="card-tags">' + it[f.at].map(esc).join(' · ') + '</p>' : ''},
   anoint: {raw: 1, v: it => anointHTML(it)},
   chips:  {raw: 1, v: (it, f, o) => o.full ? kwChips(it) : ''},
   spark:  {raw: 1, v: (it, f, o) => o.px ? spark(o.px.sp, o.px.ch) : ''},
-  thin:   {raw: 1, v: (it, f, o) => o.px && o.px.ls !== undefined && o.px.ls < 3
-    ? '<span class="use" title="Only a few listed">few listed</span>' : ''},
+  thin:   {raw: 1, v: (it, f, o) => o.px && o.px[f.at] !== undefined && o.px[f.at] < f.under
+    ? '<span class="use" title="' + esc(f.note) + '">' + esc(f.is) + '</span>' : ''},
   usage:  {raw: 1, v: it => {
     const u = usageOf(it);
     return u === null ? '' : '<span class="use">in ' + (u >= 10 ? Math.round(u) : trim(u, 1)) + '% of builds</span>';
@@ -522,7 +551,13 @@ const TYPE = {
       esc(D.market.league) + ' that use this, on poe.ninja">Builds ↗</a>' : '';
   }},
 };
-/* the fields of one slot, drawn in the order the kind declares them */
+/* ---------- the slot rule ----------
+   The fields of one slot, drawn in the order the kind declares them. A field that drew nothing is not in the
+   slot at all, so a slot holds the pieces the entry really has.
+
+   The grid keeps its shape: a slot draws the first FRAME.cap[slot] pieces and says how many it did not draw.
+   The popup draws all of them, so the count is the way to the rest — open the card. `more` is where each slot
+   puts that count, in its own shape and with no style of its own. */
 function slotHTML(it, slot, o){
   const out = [];
   for(const name of fieldsOf(it.k, slot)){
@@ -532,9 +567,62 @@ function slotHTML(it, slot, o){
     if(v === null || v === undefined || v === '') continue;
     out.push({name, f, html: t.raw ? v : esc(v), text: t.raw ? '' : v});
   }
+  const cap = FRAME.cap[slot];
+  if(!o.full && cap && out.length - cap > FRAME.slack){
+    const left = out.length - cap;
+    out.length = cap;
+    out.over = left;
+  }
   return out;
 }
-const oneOf = (list, name) => (list.find(x => x.name === name) || {}).html || '';
+/* What a card's slots came to: what each one had to draw, what it drew, and what it counted instead. The
+   same call the card itself makes, so tools/dev/frame.mjs reads the frame rather than the markup. */
+export function slotsOf(it, opts = {}){
+  const o = {...opts};
+  o.px = opts.price !== undefined ? opts.price : priceOf(it);
+  o.href = opts.href !== undefined ? opts.href : hrefOf(it);
+  const out = {};
+  for(const slot of SLOTS){
+    const list = slotHTML(it, slot, o);
+    out[slot] = {drew: list.length, over: list.over || 0, cap: FRAME.cap[slot] || 0};
+  }
+  return out;
+}
+/* what a slot that did not draw everything says, in that slot's own shape. Always a count, never an "etc." */
+const MORE = {
+  pill:  n => pill(FRAME.more(n)),
+  fact:  n => FRAME.more(n),
+  body:  n => '<p class="card-facts">' + esc(FRAME.more(n)) + '</p>',
+  foot:  n => '<span class="use">' + esc(FRAME.more(n)) + '</span>',
+};
+const overHTML = (list, slot) => list.over ? MORE[slot](list.over) : '';
+/* ---------- the head ----------
+   Four boxes, in the order BOXES gives them; a head field lands in the box its own declaration names, so a
+   second field in a box joins it and no box is ever written per kind. A box marked `always` keeps its place
+   whether or not it has anything in it — the art and the name hold the card's shape — and one that is not
+   draws nothing when it is empty. */
+const HEADBOX = {
+  art:   {open: '<span class="card-ic">', close: '</span>', always: 1},
+  name:  {open: '<h3>', close: '</h3>', always: 1, group: 'card-id'},
+  sub:   {open: '<p class="card-sub">', close: '</p>', always: 1, group: 'card-id'},
+  price: {open: '<div class="card-px">', close: '</div>'},
+};
+function headHTML(head){
+  let out = '', group = null;
+  for(const b of BOXES){
+    const w = HEADBOX[b];
+    if(!w) continue;
+    const v = head.filter(x => x.f.box === b).map(x => x.html).join('');
+    if(!v && !w.always) continue;
+    if((w.group || null) !== group){
+      if(group) out += '</div>';
+      group = w.group || null;
+      if(group) out += '<div class="' + group + '">';
+    }
+    out += w.open + v + w.close;
+  }
+  return '<div class="card-hd">' + out + (group ? '</div>' : '') + '</div>';
+}
 
 export function card(it, opts = {}){
   const o = {...opts};
@@ -546,22 +634,21 @@ export function card(it, opts = {}){
   if(!o.href) el.tabIndex = 0;
   const head = slotHTML(it, 'head', o), pills = slotHTML(it, 'pill', o);
   const facts = slotHTML(it, 'fact', o), body = slotHTML(it, 'body', o), foot = slotHTML(it, 'foot', o);
+  // a pill slot's own fields are plain words and the slot wraps each in a pill; a field that draws its own
+  // markup (the requirement pills) is already a pill and goes in whole
   el.innerHTML =
     (o.rank ? '<span class="card-rank">' + o.rank + '</span>' : '') +
-    '<div class="card-hd"><span class="card-ic">' + oneOf(head, 'art') + '</span>' +
-      '<div class="card-id"><h3>' + oneOf(head, 'name') + '</h3>' +
-      '<p class="card-sub">' + oneOf(head, 'sub') + '</p></div>' +
-      (oneOf(head, 'price') ? '<div class="card-px">' + oneOf(head, 'price') + '</div>' : '') +
-    '</div>' +
+    headHTML(head) +
     (o.why ? '<p class="card-why">' + esc(o.why) + '</p>' : '') +
     (pills.length ? '<div class="card-req">' + pills.map(x =>
-      x.f.type === 'reqs' || x.f.type === 'gemreq' ? x.html : pill(x.text, x.f.tone)).join('') + '</div>' : '') +
-    (facts.length ? '<p class="card-facts">' + facts.map(x => x.html).join(' · ') + '</p>' : '') +
-    body.map(x => x.html).join('') +
+      TYPE[x.f.type].raw ? x.html : pill(x.text, x.f.tone)).join('') + overHTML(pills, 'pill') + '</div>' : '') +
+    (facts.length ? '<p class="card-facts">' + [...facts.map(x => x.html), overHTML(facts, 'fact')]
+      .filter(Boolean).join(' · ') + '</p>' : '') +
+    body.map(x => x.html).join('') + overHTML(body, 'body') +
     (o.invest ? '<div class="card-inv"><span>' + esc(o.invest.label) + '</span><b>' +
       (o.invest.div !== undefined && o.invest.div !== null ? moneyHTML(o.invest.div) : esc(o.invest.note || '')) + '</b></div>' : '') +
     (o.extra || '') +
-    '<div class="card-ft">' + (o.action || '') + foot.map(x => x.html).join('') +
+    '<div class="card-ft">' + (o.action || '') + foot.map(x => x.html).join('') + overHTML(foot, 'foot') +
       '<span class="kind">' + (o.kind || d.one || '') + '</span></div>';
   // the fields whose table is a file of its own: each fills the box it left, once its file is in
   for(const x of [...head, ...pills, ...facts, ...body, ...foot]){
@@ -1021,16 +1108,20 @@ setCardKeys(id => {
    Every gem, unique, passive and keyword lists the keywords its game text marks (the index's "kw"). The chips
    are the way to them; which cards a keyword is itself found on is the related section below. */
 export function keywordCard(id){
-  const name = D.index.kwx && D.index.kwx[id];   // a keystone stands for its own keyword
-  return D.byKey.get('w:' + id) || (name && D.index.items.find(x => x.k === 'p' && x.n === name)) || null;
+  const name = D.index.kwx && D.index.kwx[id];   // a keystone stands for its own keyword (KINDS kw)
+  return D.byKey.get(KW.own + ':' + id) ||
+    (name && D.index.items.find(x => KW.named.includes(x.k) && x.n === name)) || null;
 }
-/* Kept on the card: every line of it asks, and the answer is a walk over the keystones (assets/marks.js). */
+/* Kept on the card: every line of it asks, and the answer is a walk over the keystones (assets/marks.js).
+   Where a kind's keyword id is, is the kind's own "kw": its own id, or the keyword that goes by its name. */
+const KWID = {
+  id:   it => it.id,
+  name: it => { for(const [k, n] of Object.entries(D.index.kwx || {})) if(n === it.n) return k; return null; },
+};
 export function keywordIdOf(it){
   if(it._kwid !== undefined) return it._kwid;
-  let id = null;
-  if(it.k === 'w') id = it.id;
-  else if(it.k === 'p' && D.index.kwx) for(const [k, n] of Object.entries(D.index.kwx)) if(n === it.n){ id = k; break; }
-  return it._kwid = id;
+  const how = KWID[(KIND[it.k] || {}).kw];
+  return it._kwid = (how ? how(it) : null) || null;
 }
 function kwChips(it){
   const own = keywordIdOf(it);
@@ -1058,9 +1149,9 @@ function needFiles(names){
   return Promise.all(names.map(f => JOB[f] || (JOB[f] =
     getJSON(REL_FILES[f]).then(j => { HAVE[f] = j; }, () => { relBad = true; }))));
 }
-const CAP = 8;             // rows drawn per category before the "See all"
-const SLACK = 2;           // ...unless no more than this many would be left over
-const USE_FILTER = 30;     // a section with more rows than this gets its filter box from the start
+// rows per category before the "See all", the slack that is not worth a button, and the width a section
+// gets its filter box at: the frame's own numbers, the same on every card (assets/kinds.js FRAME.rel)
+const {cap: CAP, slack: SLACK, filter: USE_FILTER} = FRAME.rel;
 edges.setup({D, keywordCard, keywordIdOf, kindOf: k => KIND[k]});
 
 /* one row: anything with a card of its own opens it, an Atlas row without one goes to its tab, and the rest
@@ -1095,7 +1186,7 @@ function relRow(r){
    A category with no filter of its own has no link, only the button that draws the rest here. */
 const SEEALL = {
   kw(it, of){ const id = keywordIdOf(it); return id && of && of.sec ? ['#' + of.sec + '?kw=' + encodeURIComponent(id), of.place] : null; },
-  base(it, of){ const b = it.k === 'b' ? it.n : edges.baseName(it); return b ? ['#uniques?base=' + encodeURIComponent(b), of.place] : null; },
+  base(it, of){ return it.base ? ['#uniques?base=' + encodeURIComponent(it.base), of.place] : null; },
   // the base's own card says which kind it is, so the link to the whole kind carries that name
   craft(it){ return it.cr ? [craftHref(it.cr, '', (it.s || '').split('·')[0].trim()), 'Craft'] : null; },
   atlas(it){ return it.at ? ['./#/atlas?s=' + encodeURIComponent(it.at), 'Atlas'] : null; },
@@ -1232,7 +1323,7 @@ export function search(q, kind = 'all'){
     else if(it._nl.startsWith(qs)) s += 600;
     else if(wordStart.test(it._nl)) s += 380;
     else if(it._nl.includes(qs)) s += 220;
-    if(it.k === 'w') s -= 25;                       // glossary entries rank below the things they describe
+    s += (KIND[it.k] || {}).rank || 0;              // a kind that should not rank beside the rest says so once
     if(priceOf(it)) s += 12;
     const u = usageOf(it); if(u) s += Math.min(40, u * 2);
     out.push({it, s: s - it.n.length * 0.2});
@@ -1254,8 +1345,10 @@ function movers(){
   for(const it of D.index.items){
     const m = M[it.k + ':' + it.id] || M[it.k + ':' + it.n];
     if(!m || m.ch === undefined || m.ch === null) continue;
-    if(it.k === 'u' && (m.ls ?? 0) < 10) continue;   // thin markets swing on one listing
-    if(it.k === 'c' && (m.vol ?? 0) < 1) continue;
+    // a thin market swings on one listing: how thin is too thin is the kind's own "few", and a kind that
+    // does not say is never held back
+    const few = (KIND[it.k] || {}).few;
+    if(few && (m[few.at] ?? 0) < few.under) continue;
     list.push({it, s: Math.abs(m.ch) * Math.log10(10 + (m.ls ?? m.vol ?? 10))});
   }
   list.sort((a, b) => b.s - a.s);

@@ -21,7 +21,8 @@
        card, the same rule the index used): "pct" after a percentage ("40% less Attack Damage"), "start"
        opening the line with a number behind it ("Adds 8 to 18 Cold Damage"), "any" wherever it is read,
        which is for a phrase that only ever means the mechanic ("Damage taken", "Converted to"). So a word
-       that is also a plain English word is never a door in prose ("no more than once", "Adds a Rune Socket")
+       that is also a plain English word is never a door in prose ("no more than once", "Adds a Rune Socket").
+       Which kinds gate their words that way is the kind's own declaration (assets/kinds.js words.only)
      * never a door to the card you are already on
 
    One table is built per index, the first time a card asks for a mark, and assets/app.js keeps what each line
@@ -51,21 +52,24 @@ let VOC = null, SEEN = 0;
 /* The phrases, by their first word, longest first. Each one is [phrase, key, other], where key is the card it
    opens (0: two cards answer to it, so it opens nothing and still holds its ground) and other says the phrase
    is one of the card's other spellings, which counts only where the card being drawn carries that keyword.
-   `gates` holds each mechanics phrase's rule beside it. */
+   `gates` holds each gated phrase's own rule beside it. */
 function vocab(){
   const D = X.D;
   if(VOC && VOC.ix === D.index) return VOC;
   const own = new Map(), other = new Map(), gates = new Map();
+  const box = {own, alt: other};
   const add = (map, p, key) => { if(p && p.length > 1) map.set(p, map.has(p) && map.get(p) !== key ? 0 : key); };
+  /* which of a card's own words are doors into it is the kind's own "words" (assets/kinds.js): its name, its
+     other spellings, each of them always a door or only on a card that carries that keyword. A kind that says
+     nothing puts no word in the vocabulary, so nothing here knows what a keyword or a mechanics card is. */
   for(const it of D.index.items){
-    if(it.k === 'w'){
-      add(own, it.n, 'w:' + it.id);
-      for(const f of it.f || NONE) add(other, f, 'w:' + it.id);
-    } else if(it.k === 'h'){
-      for(const f of it.f || NONE){   // the words a mechanics card is reached by, and when each one counts
-        add(own, f, 'h:' + it.id);
-        gates.set(f, it.fg || '');
-      }
+    const w = (X.kindOf(it.k) || {}).words;
+    if(!w) continue;
+    const key = it.k + ':' + it.id;
+    if(w.n && box[w.n]) add(box[w.n], it.n, key);
+    if(w.f) for(const f of it.f || NONE){
+      if(box[w.f]) add(box[w.f], f, key);
+      if(w.only) gates.set(f, it.fg || '');   // a gated kind: this word's own rule for when it counts
     }
   }
   const first = new Map();
@@ -105,10 +109,12 @@ export function scan(it, text, block){
       if(!text.startsWith(p, s) || (e < text.length && WORDY.test(text[e]))) continue;
       if(key){
         if(alt && !(kw && kw.includes(key.slice(2)))) continue;   // the game does not mark this keyword here
-        if(key[0] === 'h' && !mechOK(gates.get(p), text, s, e)) continue;
+        // a kind whose words each carry their own rule for when they count (KINDS words.only)
+        const only = ((X.kindOf(key[0]) || {}).words || {}).only;
+        if(only === 'gate' && !mechOK(gates.get(p), text, s, e)) continue;
       }
       at = e;   // the phrase holds its ground whether or not it opens anything
-      if(key && key !== mine && !(self && key === 'w:' + self) && !(block && held(block, s, e))) out.push([s, p.length, key]);
+      if(key && key !== mine && !(self && key === X.kwKey(self)) && !(block && held(block, s, e))) out.push([s, p.length, key]);
       break;
     }
   }
