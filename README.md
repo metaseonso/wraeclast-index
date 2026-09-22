@@ -33,7 +33,7 @@ The site is static. GitHub Pages serves it; a GitHub Action (`.github/workflows/
 | File | What it is |
 |---|---|
 | `index.html`, `assets/app.js`, `assets/app.css` | The app: search home page and the live card |
-| `assets/kinds.js` | Every kind of thing the site cards, in one table: what it is called, which fields its cards carry, which buttons they offer, which related lists they can build, and where its gold button goes. `assets/app.js` draws a card by walking it — one function per field type, none of them per kind — and `assets/bridge.js` and `tools/dev/guard.mjs` read the same table. A new kind is one entry here plus its rows in the index, and no card code |
+| `assets/kinds.js` | Every kind of thing the site cards, in one table: what it is called, which fields its cards carry, which buttons they offer, which related lists they can build, and where its gold button goes. `assets/app.js` draws a card by walking it — one function per field type, none of them per kind — and `assets/bridge.js` and `tools/dev/guard.mjs` read the same table. A field may name a table of its own (`file`), fetched the first time a card asks for it and never in first paint, which is how an essence card lists what it adds per kind of item. A new kind is one entry here plus its rows in the index, and no card code |
 | `assets/edges.js` | What else belongs with a card: every list under "Found on", worked out from the index itself and followed both ways (a unique names its base, a base names its uniques). Answers per list how many there are altogether and the first few, so a card draws eight rows and says the true total |
 | `explore.html` | The drill-down page (built from the Wraeclast Index artifact); its data sits in `data/explore/` (files named by their content) |
 | `data/index.json` | Search index, built by `tools/sync.py`; the base item, Atlas and extra currency cards come from `tools/morecards.py` (kinds `b`, `a`, `c`), and the keyword cards the artifact does not carry, plus the ascendancy notables whose whole effect is a skill, from `tools/gamelib.py` (kinds `w` and `p`), and the concept cards from `tools/concepts.py` (kind `h`); the phrases in a card's lines that name another card are marked by `tools/nodelinks.py` (`lx` on the card, `lxk` the key table). `tools/carddata.py` then joins on everything a card can say that was shipped but never reached one: the game's flavour line for uniques and keystones (`qt`), what an Atlas key or item is for (`t`), how many mods can roll on a base and whether their weights are measured (`cw`), and the official text for a name the market prices but no card covers (`ix`). The home page loads it in two parts, `data/index-core.json` and `data/index-rest.json` (`tools/appdata.py`) |
@@ -41,6 +41,7 @@ The site is static. GitHub Pages serves it; a GitHub Action (`.github/workflows/
 | `assets/fonts/` | The site's own copies of its fonts (Cinzel, IBM Plex Sans, IBM Plex Mono; SIL Open Font License) |
 | `data/kwuse.json` | What uses each keyword (the nine lists under "Found on" on a keyword card), built by `tools/kwuse.py`. Loaded the first time a card that needs it opens |
 | `data/grants.json` | What grants a skill and what each skill is granted by (base items, ascendancy notables and uniques), both directions, built by `tools/grants.py`. Loaded the first time a card that needs it opens, like `data/kwuse.json` |
+| `data/essences.json` | What an essence adds, on each kind of item: one row per modifier, the game's own wording for it, the kinds of item that get that same one (each opening the Craft tab there), which side it lands on and its level. Built by `tools/essences.py` from the essence tables in `data/craft/`, 24 kB; the `adds` field declares it in `assets/kinds.js` and it is fetched the first time a card that needs it opens, so the 1.6 MB behind it stays on the Craft tab |
 | `data/info.json`, `data/reqs.json` | Item text and requirements, built by `tools/gameinfo.py` |
 | `data/market.json` | Prices, rebuilt every hour by `tools/market.py` |
 | `data/atlas.json` | Atlas tab: waystones, tablets, keys, atlas items and the Atlas tree, built by `tools/atlas.py` (run after a game patch) |
@@ -62,7 +63,7 @@ reused (where the `gh` CLI is signed in), and the run exits non-zero. The owner 
 dashboard's Data jobs block and in `/api/health`, in the same fine/late/stopped style as the jobs. Applies to
 `sync.py`, `craft.py`, `uniques.py`, `leagues.py`, `market.py`, `exchange.py`, `gamepull.py`, `tradedata.py`,
 `gameinfo.py`, `atlas.py`, `bosses.py` and `farms.py`. The tools that build only from files already on disk
-(`appdata.py`, `concepts.py`, `kwuse.py`, `nodelinks.py`, `grants.py`, `gamelib.py`, `rollprices.py`) have no
+(`appdata.py`, `concepts.py`, `kwuse.py`, `nodelinks.py`, `essences.py`, `grants.py`, `gamelib.py`, `rollprices.py`) have no
 outside source to lose; the live prices (`pricepull.py`) are watched as jobs of their own. Proved without the
 network by `node tools/dev/faults.mjs`.
 
@@ -146,10 +147,14 @@ In this order (each step reads what the one before wrote):
    (`data/grants.json`, the grants-skill edges both ways; it resolves against the cards the two steps above wrote, and
    writes nothing else. `tools/nodelinks.py` after it, so the new cards' own lines get their references too.
    `python tools/concepts.py` does the same after changing a concept card's wording, without a full sync)
-6. Last, after any of the above: `python tools/kwuse.py`
+6. After `tools/nodelinks.py`, and after any `tools/craft.py`: `python tools/essences.py`
+   (`data/essences.json`, what each essence adds per kind of item, off the essence tables in `data/craft/`; it marks
+   the phrases in those modifier lines the same way a card's own lines are marked, so it reads `data/index.json` and
+   writes nothing else)
+7. Last, after any of the above: `python tools/kwuse.py`
    (every keyword's "Found on" lists in `data/kwuse.json`: uniques, gems, passives, bases, essences, atlas, crafting, currency,
    keywords; and the "Used by" counts in `data/index.json`; it prints its counts against the artifact's own, lower only for
    things the site leaves out)
-7. Commit and push to `main`. The site republishes in about a minute.
+8. Commit and push to `main`. The site republishes in about a minute.
 
 Path of Exile is a trademark of Grinding Gear Games. This is a fan project and is not affiliated with them.

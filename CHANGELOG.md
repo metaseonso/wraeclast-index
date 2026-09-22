@@ -3,6 +3,50 @@
 The full list of changes. The public patch notes (data/changelog.json, shown on the site) stay short.
 Add the details here first, then a short public line there.
 
+## Next — An essence card says what it adds, per kind of item
+
+- The owner's call, with a screenshot of the Currency tab: *"I still don't see essence information. as you can
+  see they all say that. but each one modifies items differently depending on what item. i need to ensure you
+  are aware of that."* Every essence card carried the game's own one line — "Upgrades a Magic item to a Rare
+  item, adding a guaranteed modifier" — and nothing about the modifier, although the game gives a different one
+  to a bow than to a body armour.
+- **The data was already in the repo and reached nothing.** `data/craft/<class>.json` carries an `ess` table per
+  kind of item: **857 essence-to-modifier rows over 27 kinds of item**, each one pointing at that file's own mod
+  list. The Craft tab reads it a class at a time and no card ever did.
+- **One new field, no code per kind.** `assets/kinds.js` gains `adds` (`{type: 'adds', at: 'n', slot: 'body',
+  file: 'data/essences.json', label: 'What it adds'}`) and the currency kind declares it between what the thing
+  says and the rest of its body. `assets/app.js` gains one function per *type*, as everything else there does:
+  `addsHTML` draws the rows and `addsFill` fills them in. A field type may now name a `file` of its own and
+  answer with an empty box plus a `fill`; `card()` calls every fill once the card is built, so any later field
+  whose table is a file of its own — an orb that adds a known modifier, say — is a declaration and no new code.
+  The table is keyed by whatever `at` names, so anything else that adds a known modifier joins the same file.
+- **One row per modifier, not per kind of item.** The 857 rows collapse to **178 modifiers**: a row carries the
+  game's own wording once and lists every kind of item that gets that same one, in the Craft tab's order, with
+  the side it lands on and its level. Lesser Essence of Ice reads as two rows, not thirteen. Each kind of item is
+  a link that opens the **Craft tab on that class**, the same link the "Found on" rows already use.
+- **The modifier text gets the same doors as any other card text.** `tools/nodelinks.py` now exposes its rules as
+  `Doors`, so lines that are not in the index are marked by the same code, with the same key table: `attach()`
+  itself is one call to it and marks `data/index.json` byte for byte as before (checked: 0 of 5,716 cards'
+  `lx` rows changed, same 137 keys). **98 of the 178 modifiers** name a mechanics card in their own words
+  (Increased and reduced 74, Added damage 24), drawn as the footnote mark the rest of the site uses.
+- **The payload.** A file of its own, `data/essences.json`, **23.9 kB (4.2 kB over the wire)**, built by
+  `tools/essences.py` and fetched the first time a currency card is opened, then kept for the visit. Nothing of
+  it is in `data/index.json` or in first paint, and the 1.6 MB of `data/craft/` stays where it was: on the Craft
+  tab, a class at a time. A name the table says nothing about — Chaos Orb — leaves an empty box, and an empty box
+  draws nothing.
+- **Sources.** The wording and its rolls are the game's own (RePoE's export); which modifier an essence adds on
+  which kind of item is read from poe2db, which datamines the same files, as `tools/craft.py` already says. No
+  weights are shown here: an essence's modifier is guaranteed, so a share of a pool would mean nothing.
+- Checked: all 857 rows round-trip from `data/craft` to the card, none missing and none added. Three tiers by
+  hand against `data/craft/*.json` — Lesser Essence of the Mind (6 kinds, +(25-34) to maximum Mana, prefix,
+  level 12), Greater Essence of Ice (13 kinds, two rows: (31-38) to (47-59) and (46-57) to (70-88) Cold Damage,
+  prefix, level 48) and Perfect Essence of Ruin (Body Armour only, (10-15)% of Physical Damage from Hits taken as
+  Chaos Damage, prefix, level 57) — each matches the file exactly. Guard 6 ok, 0 failed. 375×812 touch and
+  desktop: the rows read, an item class closes the card and lands on the Craft tab with that class loaded, the
+  price, its chart and the drop level still draw on the same card, nothing scrolls sideways, no console errors.
+- **95 essences now carry per-kind lines, 9.0 kinds of item each on average** (Essence of the Abyss 27, Perfect
+  Essence of the Mind 1).
+
 ## Next — Cards built from the index: one table, one renderer, everything the entry carries
 
 - The owner's call: *"many of the cards have the price and yet no actual description of what they do which means

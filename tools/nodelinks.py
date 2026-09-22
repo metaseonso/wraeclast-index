@@ -71,64 +71,92 @@ def prefers(line):
     return None
 
 
+def blank_rep():
+    """The counters a run fills in, so report() can say what it did."""
+    return {'refs': Counter(), 'lines': Counter(), 'cards': Counter(), 'targets': Counter(), 'seen': Counter(),
+            'amb_kind': Counter(), 'amb_name': Counter(), 'amb_who': {}, 'chips': Counter(),
+            'skipped': [], 'phrases': Counter(), 'prose': Counter(),
+            'to': Counter(), 'tocards': defaultdict(set)}   # the mechanics cards, and who reaches them
+
+
+class Doors:
+    """The rules at the top of this file, over any line at all.
+
+    attach() marks the index's own lines with one of these. A builder whose lines are not in the index — the
+    essence tables, tools/essences.py — marks its own the same way, so one mod line reads the same wherever the
+    site shows it. `keys` is the key table that file writes out ("lxk"), filled as the lines are marked.
+    """
+
+    def __init__(self, index):
+        by_name = defaultdict(list)
+        for it in index['items']:
+            by_name[it['n']].append(it)
+        for it in index['items']:   # the other words a keyword is shown as, so a longer keyword beats a shorter card name
+            if it['k'] in FORMS:
+                for f in it.get('f') or ():
+                    if it not in by_name[f]:
+                        by_name[f].append(it)
+        self.matcher = Matcher(by_name, what='card name', skip_bad=True)
+        self.skipped = self.matcher.skipped
+        self.keys, self.at = [], {}
+
+    def key(self, node):
+        """Where this card sits in the key table, adding it the first time it is asked for."""
+        if node not in self.at:
+            self.at[node] = len(self.keys)
+            self.keys.append(node)
+        return self.at[node]
+
+    def spans(self, line, mine=None, want=None, rep=None, k=''):
+        """One line's references: [[start, length, key], ...], key an index into self.keys. [] where it has none.
+
+        mine: the card the line is on, which is never a door to itself. want: the kind the line declares.
+        """
+        rep = blank_rep() if rep is None else rep
+        spans = []
+        for s, e, name, hit in self.matcher.scan(line):
+            rep['seen'][k] += 1
+            cand = list(hit)
+            if mine and any(x['k'] + ':' + x['id'] == mine for x in cand):
+                continue   # the card's own name: a card is not a door to itself
+            if all(x['k'] in NO_LINK for x in cand):
+                rep['chips'][name] += 1   # a keyword, whichever one: the card's chips are that door
+                continue
+            if len(cand) > 1:
+                kinds = {x['k'] for x in cand}
+                pick = [x for x in cand if x['k'] == want] if want else []
+                if len(pick) == 1:
+                    cand = pick
+                else:
+                    rep['amb_name'][name] += 1
+                    rep['amb_who'][name] = sorted(x['k'] + ':' + x['id'] for x in cand)
+                    rep['amb_kind']['one kind' if len(kinds) == 1 else 'several kinds'] += 1
+                    continue
+            t = cand[0]
+            if t['k'] == mechanics.KIND and not mechanics.gate(name, line, s):
+                rep['prose'][name] += 1   # the word, not the maths: "no more than once every 3 seconds"
+                continue
+            spans.append([s, e - s, self.key(t['k'] + ':' + t['id'])])
+            if t['k'] == mechanics.KIND:
+                rep['to'][t['n']] += 1
+                rep['tocards'][t['n']].add(mine or k)
+            rep['refs'][k + '->' + t['k']] += 1
+            rep['targets'][t['k']] += 1
+            rep['phrases'][name] += 1
+        return spans
+
+
 def attach(index):
     """Find every reference in the index's own lines and write them onto the cards. Returns the report."""
-    items = index['items']
-    by_name = defaultdict(list)
-    for it in items:
-        by_name[it['n']].append(it)
-    for it in items:   # the other words a keyword is shown as, so a longer keyword beats a shorter card name
-        if it['k'] in FORMS:
-            for f in it.get('f') or ():
-                if it not in by_name[f]:
-                    by_name[f].append(it)
-    matcher = Matcher(by_name, what='card name', skip_bad=True)
-
-    rep = {'refs': Counter(), 'lines': Counter(), 'cards': Counter(), 'targets': Counter(), 'seen': Counter(),
-           'amb_kind': Counter(), 'amb_name': Counter(), 'amb_who': {}, 'chips': Counter(),
-           'skipped': sorted(matcher.skipped), 'phrases': Counter(), 'prose': Counter(),
-           'to': Counter(), 'tocards': defaultdict(set)}   # the mechanics cards, and who reaches them
-    keys, at = [], {}
-    for it in items:
+    doors = Doors(index)
+    rep = blank_rep()
+    rep['skipped'] = sorted(doors.skipped)
+    for it in index['items']:
         mine = it['k'] + ':' + it['id']
         rows, found = [], False
         for line in lines_of(it):
             rep['lines'][it['k']] += 1
-            want = prefers(line)
-            spans = []
-            for s, e, name, hit in matcher.scan(line):
-                rep['seen'][it['k']] += 1
-                cand = list(hit)
-                if any(x['k'] + ':' + x['id'] == mine for x in cand):
-                    continue   # the card's own name: a card is not a door to itself
-                if all(x['k'] in NO_LINK for x in cand):
-                    rep['chips'][name] += 1   # a keyword, whichever one: the card's chips are that door
-                    continue
-                if len(cand) > 1:
-                    kinds = {x['k'] for x in cand}
-                    pick = [x for x in cand if x['k'] == want] if want else []
-                    if len(pick) == 1:
-                        cand = pick
-                    else:
-                        rep['amb_name'][name] += 1
-                        rep['amb_who'][name] = sorted(x['k'] + ':' + x['id'] for x in cand)
-                        rep['amb_kind']['one kind' if len(kinds) == 1 else 'several kinds'] += 1
-                        continue
-                t = cand[0]
-                if t['k'] == mechanics.KIND and not mechanics.gate(name, line, s):
-                    rep['prose'][name] += 1   # the word, not the maths: "no more than once every 3 seconds"
-                    continue
-                key = t['k'] + ':' + t['id']
-                if key not in at:
-                    at[key] = len(keys)
-                    keys.append(key)
-                spans.append([s, e - s, at[key]])
-                if t['k'] == mechanics.KIND:
-                    rep['to'][t['n']] += 1
-                    rep['tocards'][t['n']].add(mine)
-                rep['refs'][it['k'] + '->' + t['k']] += 1
-                rep['targets'][t['k']] += 1
-                rep['phrases'][name] += 1
+            spans = doors.spans(line, mine=mine, want=prefers(line), rep=rep, k=it['k'])
             if spans:
                 found = True
                 rep['lines'][it['k'] + ' linked'] += 1
@@ -138,8 +166,8 @@ def attach(index):
             rep['cards'][it['k']] += 1
         else:
             it.pop('lx', None)
-    if keys:
-        index['lxk'] = keys
+    if doors.keys:
+        index['lxk'] = doors.keys
     else:
         index.pop('lxk', None)
     return rep

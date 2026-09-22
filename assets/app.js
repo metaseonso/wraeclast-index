@@ -261,8 +261,7 @@ function reqPills(rq, note){
    A mechanics card is ours, not the game's, so the mark is a word in the line and never a keyword chip: see
    .hlink in assets/cards.css, and the source line the mechanics card itself carries. */
 const HLINK_TITLE = 'How it works — our own note, not the game’s';
-function lineHTML(it, i, text, marked){
-  const spans = marked && it.hx && it.hx[i];
+function spansHTML(text, spans){
   if(!spans || !spans.length) return esc(text);
   let out = '', at = 0;
   for(const [s, n, key] of spans){
@@ -273,6 +272,13 @@ function lineHTML(it, i, text, marked){
   }
   return out + esc(text.slice(at));
 }
+function lineHTML(it, i, text, marked){
+  return spansHTML(text, marked && it.hx && it.hx[i]);
+}
+/* A line marked in a file of its own, the way the index marks its own cards' lines (tools/nodelinks.py): the
+   phrases that lead to a mechanics card, off that file's key table. */
+const mechSpans = (spans, lxk) => (spans || [])
+  .filter(x => (lxk[x[2]] || '').startsWith('h:')).map(x => [x[0], x[1], lxk[x[2]]]);
 /* The mechanics card behind a marked word, or behind the offer on a card about damage. The index loads in
    two parts, so one of the very first cards can be tapped before the part the mechanics cards are in has
    arrived: then it waits for it. */
@@ -346,10 +352,44 @@ export function buildsHref(it){
   return key ? 'https://poe.ninja/poe2/builds/' + lg + '?' + key + '=' + q(it.n) : null;
 }
 
+/* ---------- what a thing adds to an item, per kind of item ----------
+   The game's own line on an essence says a guaranteed modifier and stops there, while the modifier itself is a
+   different one on a bow than on a body armour. The table is a file of its own (the field's "file",
+   assets/kinds.js), 24 kB, fetched the first time a card asks for it and kept for the rest of the visit — the
+   full mod tables behind it are 1.6 MB and stay on the Craft tab, a class at a time.
+   It is keyed by whatever the field reads (FIELDS.adds.at: an essence is keyed by its name), so anything else
+   that adds a known modifier joins the same table without a line of code here.
+   One row per modifier: every kind of item that gets that same one, the game's own wording for it, and which
+   side it lands on. A kind of item opens the Craft tab on it, where the whole table for that kind is. */
+const TABLES = {};   // file -> a promise of it, asked for once
+const tableOf = file => TABLES[file] || (TABLES[file] = getJSON(file, {priority: 'low'}).catch(() => null));
+const SIDE = {p: 'Prefix', s: 'Suffix'};
+function addsHTML(t, rows){
+  const cl = t.cl || {}, lxk = t.lxk || [];
+  return '<ul class="card-adds">' + rows.map(([side, lv, kinds, lines, lx]) =>
+    '<li><span class="adds-on">' + kinds.map(c => '<a class="uses-go" href="' + craftHref(c) + '">' +
+        esc(cl[c] || c) + '</a>').join(', ') + '</span>' +
+      '<span class="adds-ml">' + lines.map((line, i) => spansHTML(line, mechSpans((lx || [])[i], lxk))).join('<br>') + '</span>' +
+      '<span class="adds-rs">' + (SIDE[side] || '') + (lv ? ' · level ' + lv : '') + '</span></li>').join('') + '</ul>';
+}
+/* the card is drawn before the table is in, so the field leaves a box and fills it once the file lands. A name
+   the table says nothing about leaves the box empty, and an empty box draws nothing. */
+function addsFill(host, it, f){
+  if(!host) return;
+  tableOf(f.file).then(t => {
+    const rows = t && t.e && t.e[it[f.at]];
+    if(!rows || !rows.length || !host.isConnected) return;
+    host.innerHTML = (f.label ? '<p class="card-facts">' + esc(f.label) + '</p>' : '') + addsHTML(t, rows);
+    host.hidden = false;
+  });
+}
+
 /* ---------- one function per field type ----------
    Each answers with the words to draw, or with markup where a field is more than words ("raw"): the slot it
    sits in wraps the rest. A field whose entry says nothing answers with nothing and draws nothing, so one
-   declaration covers a full entry and a bare one. */
+   declaration covers a full entry and a bare one.
+   A type whose table is a file of its own answers with an empty box and a "fill" as well: card() calls it once
+   the card is built, and it fills its own box when the file lands. */
 const TYPE = {
   art:    {raw: 1, v: it => iconHTML(it)},
   name:   {raw: 1, v: (it, f, o) => o.href ? '<a class="card-link" href="' + esc(o.href) + '">' + esc(it.n) + '</a>' : esc(it.n)},
@@ -398,6 +438,8 @@ const TYPE = {
     return '<p class="card-facts">' + (o.full ? 'Choose one:' : list.length + ' options to choose from') + '</p>' +
       (o.full ? '<ul class="card-ls">' + list.map(x => '<li>' + esc(x) + '</li>').join('') + '</ul>' : '');
   }},
+  adds:   {raw: 1, fill: addsFill, v: (it, f, o, name) => o.full && it[f.at]
+    ? '<div class="card-addsbox" data-fill="' + esc(name) + '" hidden></div>' : ''},
   flow:   {raw: 1, v: (it, f, o) => flowHTML(it, o.full)},
   source: {raw: 1, v: (it, f) => it[f.at] ? '<p class="card-src">' + esc(it[f.at]) + '</p>' : ''},
   offer:  {raw: 1, v: (it, f, o) => offerHTML(it, o.full)},
@@ -424,7 +466,7 @@ function slotHTML(it, slot, o){
   for(const name of fieldsOf(it.k, slot)){
     const f = FIELDS[name], t = TYPE[f.type];
     if(!t) continue;
-    const v = t.v(it, f, o);
+    const v = t.v(it, f, o, name);
     if(v === null || v === undefined || v === '') continue;
     out.push({name, f, html: t.raw ? v : esc(v), text: t.raw ? '' : v});
   }
@@ -459,6 +501,11 @@ export function card(it, opts = {}){
     (o.extra || '') +
     '<div class="card-ft">' + (o.action || '') + foot.map(x => x.html).join('') +
       '<span class="kind">' + (o.kind || d.one || '') + '</span></div>';
+  // the fields whose table is a file of its own: each fills the box it left, once its file is in
+  for(const x of [...head, ...pills, ...facts, ...body, ...foot]){
+    const t = TYPE[x.f.type];
+    if(t.fill) t.fill(el.querySelector('[data-fill="' + x.name + '"]'), it, x.f, o);
+  }
   if(o.detail) return el;
   // a card opens its popup; only the gold button in the popup leaves the page
   el.addEventListener('click', e => {

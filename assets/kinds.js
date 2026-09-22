@@ -21,6 +21,8 @@
      at       the field on the index entry it reads, where it reads one
      slot     where it lands on the card: head, pill, fact, body or foot
      label    the words beside the value
+     file     a table of its own, fetched the first time a card asks for it and kept for the visit. Nothing of
+              it is in the index or in first paint, and a card whose name the table does not hold draws nothing.
    A field draws nothing when the entry carries nothing for it, so one declaration covers a full entry and a
    bare one. Fields a player must never read (the search words, internal ids) are in no declaration.
 
@@ -59,6 +61,10 @@ export const FIELDS = {
 
   lines:    {type: 'rich', at: 'ls', slot: 'body'},          // the effect lines: mods, stats, what it adds
   text:     {type: 'rich', at: 't', slot: 'body'},           // what it does, in the game's own words
+  /* the modifier it puts on an item, per kind of item: an essence adds a different one to a bow than to a body
+     armour, and the game's one line says none of it. Anything else that adds a known modifier reads the same
+     table, keyed by whatever "at" names (tools/essences.py). */
+  adds:     {type: 'adds', at: 'n', slot: 'body', file: 'data/essences.json', label: 'What it adds'},
   quote:    {type: 'quote', at: 'qt', slot: 'body'},         // the game's own flavour line
   options:  {type: 'options', at: 'o', slot: 'body'},
   flow:     {type: 'flow', at: 'fl', slot: 'body'},
@@ -112,7 +118,10 @@ export const REL = {
 };
 
 const HEAD = ['art', 'name', 'sub', 'price'];
-const BODY = ['lines', 'text', 'quote', 'options', 'flow', 'source', 'offer', 'tags', 'anoint', 'keywords'];
+// the words first, then the rest of the body: a kind with more to say puts it between the two (the currency)
+const SAYS = ['lines', 'text'];
+const REST = ['quote', 'options', 'flow', 'source', 'offer', 'tags', 'anoint', 'keywords'];
+const BODY = [...SAYS, ...REST];
 const FOOT = ['spark', 'usage', 'thin', 'builds'];
 const KWUSE = ['kwu', 'kwg', 'kwp', 'kwb', 'kwe', 'kwa', 'kwm', 'kwc', 'kww'];
 
@@ -149,7 +158,7 @@ export const KINDS = [
 
   {k: 'c', one: 'Currency', many: 'Currency', place: 'Currency', link: './#/currency?c=@id',
    index: true, search: true, item: true, crawl: true,
-   fields: [...HEAD, 'droplv', ...BODY, ...FOOT],
+   fields: [...HEAD, 'droplv', ...SAYS, 'adds', ...REST, ...FOOT],
    acts: ['trade', 'open'],
    rel: ['named', 'namedby', 'cat']},
 
