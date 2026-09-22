@@ -67,10 +67,40 @@ entries rule damage over time out, and the card says so.
   ModStore.lua's Combine sends MORE to More() and everything else to Sum(), which is the additive-against-
   multiplicative split the other three cards rest on.
 
+What was read for the defences flowchart, in src/Modules/CalcDefence.lua, and what it settles:
+  the order a Hit you take runs through. takenHitFromDamage() cuts the raw damage down first, through
+  damageMitigationMultiplierForType(), which it calls and which ends —
+      local totalDRMulti = 1 - m_max(m_min(output[damageType .. "DamageReductionMax"], totalDRPercent
+                                           - enemyOverwhelmPercent), 0) / 100
+      local totalResistMult = output[type .. "ResistTakenHitMulti"]
+      return totalResistMult * totalDRMulti
+    Armour and Resistance are two multipliers on the damage, so neither runs "before" the other, and a
+    Resistance's multiplier does not read the damage at all where the Armour one does — which is the whole
+    of "the same share off every Hit, large or small". Only then does reducePoolsByDamage() hand what is
+    left to the pools, in the order its loop spends them: Energy Shield, then Mana under Mind Over Matter,
+    then Life.
+  the Armour curve the game will not give. armourReductionF():
+      return (armour / (armour + raw * data.misc.ArmourRatio) * 100)
+    with src/Modules/Data.lua's ArmourRatio = 10: the reduction is Armour over Armour plus ten times the
+    Hit. That is the whole of "more effective at reducing smaller hits", which is as far as the game's
+    entry goes.
+  the caps, from the game's own character metadata as src/Data/Misc.lua carries it in data.characterConstants
+  (-- From Metadata/Characters/Character.ot): ["maximum_physical_damage_reduction_%"] = 90 and
+  ["base_maximum_all_resistances_%"] = 75, with src/Modules/Data.lua's MaxResistCap = 90.
+  Evasion: monsterHitChance() is what the player is checked against, and it is held at 5% at the bottom
+  (m_max(m_min(round(rawChance), 100), 5)); the same number from the other end is data.misc.EvadeChanceCap,
+  src/Data/Misc.lua's ["DefaultMaxEvadeChancePercent"] = 95. So a Hit's chance to land never falls to nothing.
+The three cards that are nothing but the game's own entries (resistances, where a modifier lands, damage over
+time) name the game and no one else. Nothing was taken from the wiki for any of them: its host turns the
+fetch away.
+
 The words a card is reached by sit in "f", which tools/nodelinks.py already reads as the other spellings of a
-keyword. A word is only a door where the line uses it as a number — "40% less Attack Damage", "Adds 8 to 18
-Cold Damage" — never in prose ("no more than once every 3 seconds"): see gate(). The flowchart card has no
-such words: a card whose text is about damage offers it instead, which assets/app.js does at the card itself.
+keyword, and the rule for when one counts sits beside them in "fg" — the card's gate, which assets/marks.js
+applies as it draws. A single word that is also a plain English word is only a door where the line uses it as
+a number: "40% less Attack Damage" ("pct"), "Adds 8 to 18 Cold Damage" ("start"), never prose ("no more than
+once every 3 seconds"). A phrase that only ever means the mechanic ("Damage taken", "Converted to", "damage
+over time") is a door wherever it is read ("any"). See gate(). The damage flowchart card has no such words:
+a card whose text is about damage offers it instead, which assets/app.js does at the card itself.
 
 Usage:  python tools/mechanics.py    put these cards in data/index.json, relink it, write the two parts
 tools/sync.py calls build() while it builds the index, so a full sync needs no extra step.
@@ -85,6 +115,12 @@ KIND = 'h'          # a mechanics card: ours, never the game's
 SUB = 'Mechanics'
 # Named on every one of these cards, where the player reads it.
 SOURCE = "According to Path of Building's own damage maths."
+# A card assembled out of the game's own entries and nothing else.
+GAME = "According to the game's own entries."
+# The defences flowchart: the game for each step, Path of Building for the order, the curve and the caps.
+DEF_SOURCE = ("Each step and what it does: as the game states it. The order they run in, how Armour and "
+              "Resistances each cut the damage, and the caps: according to Path of Building's own damage "
+              "maths.")
 # The flowchart card names the game for every step it takes from the game — and the game's own Damage
 # Conversion and "Damage Gained as extra X" entries settle most of that block — and Path of Building for what
 # the game leaves out: the order, the conversion chain, the caps, and what a copy is taken from.
@@ -93,10 +129,12 @@ FLOW_SOURCE = ("The steps, which modifiers converted and gained damage scale wit
                "caps and what a copy is taken from: according to Path of Building's own damage maths.")
 DAMAGE = KIND + ':HowDamage'   # assets/app.js offers this card wherever a card's text is about damage
 
-# A word only counts where the line uses it as a number. PCT: "(30-40)% more", "5% reduced". START: the word
-# opens the line, which is the only way the game writes an added-damage mod.
+# When a word counts. PCT: "(30-40)% more", "5% reduced". START: the word opens the line, which is the only
+# way the game writes an added-damage mod. ANY: a phrase that only ever means the mechanic, so the line does
+# not have to prove it ("Damage taken", "Converted to", "damage over time").
 PCT = re.compile(r'%\s*$')
-GATES = {'pct': lambda line, s: bool(PCT.search(line[:s])), 'start': lambda line, s: s == 0}
+GATES = {'pct': lambda line, s: bool(PCT.search(line[:s])), 'start': lambda line, s: s == 0,
+         'any': lambda line, s: True}
 
 # The cards themselves. "words" are what a mod line has to say to reach them, "gate" when it counts; "q" the
 # extra words a search for this card is likely to use; "fl" the flowchart, drawn by assets/app.js.
@@ -180,6 +218,110 @@ CARDS = [
             "For example, Winter's Bite adds 8 to 18 Cold Damage, an average of 13. At 100% increased Cold "
             'Damage that damage is 26. At 300% increased it is 52.',
             'Added damage is scaled by every increased and more modifier to its damage type.']},
+    # the mirror of the damage card. The Armour numbers: The Brass Dome's own Armour (data/index.json)
+    # against what one monster of that level deals (data/gamestats.json, the official export).
+    {'id': 'HowDefences', 'n': 'How defences work', 'words': ['Damage taken', 'Damage Reduction'],
+     'gate': 'any', 'src': DEF_SOURCE,
+     'q': 'defence defences defense flowchart order hit taken evade evasion block armour armor resistance '
+          'resistances energy shield mind over matter mana life damage reduction mitigation tanky survive '
+          'how defences work',
+     'ls': ['Damage you take is worked out in order. Each step works on what the step before it left.',
+            'Evasion and Block decide whether any damage arrives. Armour and Resistances cut down what does. '
+            'Energy Shield, Mana and Life take what is left.',
+            'For example, The Brass Dome has Armour: (2676-3091). At 3,091 Armour a Hit of 334 Physical '
+            'damage, what one level 80 monster deals, is reduced by 48%. The same Armour reduces a Hit of '
+            '584, one level 100 monster’s, by 35%.'],
+     'fl': [
+         {'h': 'Does any damage arrive', 'st': [
+             ['Evasion', 'Evasion Rating grants a chance to Evade enemy Hits, preventing them from Hitting '
+                         'you at all. The chance also depends on the attacker’s Accuracy, and a Hit’s chance '
+                         'to land never falls below 5%.'],
+             ['Block', 'Blocking completely prevents the damage of an incoming Hit. You still take the Stun '
+                       'from it, and you cannot Block while Stunned or Frozen.'],
+         ]},
+         # the two that get read as the same thing. Side by side on a wide card, stacked on a phone.
+         {'h': 'Armour is not a Resistance', 'cols': [
+             {'h': 'Armour', 'ls': [
+                 'Armour reduces damage taken from Hits. By default it applies only to Physical damage.',
+                 'Damage reduction from Armour is proportional to the amount of damage, and is more '
+                 'effective at reducing smaller hits.',
+                 'The reduction is your Armour divided by your Armour plus ten times the Hit.',
+                 'Damage reduction is capped at 90%.',
+                 'Armour Break lowers your Armour. Brought to 0 it is Fully Broken for 4 seconds.',
+             ]},
+             {'h': 'Resistances', 'ls': [
+                 'Resistances reduce damage taken of the matching damage type — Fire, Cold, Lightning or '
+                 'Chaos — up to a Maximum.',
+                 'A Resistance takes the same share off every Hit, large or small.',
+                 'The default Maximum is 75%. It cannot be raised above 90%.',
+                 'Physical damage has no Resistance. Armour is what reduces it.',
+                 'Fire, Cold and Lightning Resistances are Elemental Resistances. Chaos Resistance is not.',
+             ]},
+         ]},
+         {'h': 'What takes what is left', 'st': [
+             ['Energy Shield', 'Energy Shield protects your Life by taking damage instead. Chaos damage '
+                               'removes twice as much. Damage from Bleeding and Poison bypasses it to '
+                               'remove Life directly.'],
+             ['Mind Over Matter', 'Mind Over Matter takes all damage from Mana before Life. It takes what '
+                                  'Energy Shield did not.'],
+             ['Life', 'What is left comes off Life.'],
+         ]},
+     ]},
+    {'id': 'ResistanceMax', 'n': 'Resistances and the maximum',
+     'words': ['to Fire', 'to Cold', 'to Lightning', 'to Chaos', 'to all', 'to Maximum Fire',
+               'to Maximum Cold', 'to Maximum Lightning', 'to Maximum Chaos', 'to Maximum Resistances'],
+     'gate': 'pct', 'src': GAME,
+     'q': 'resistance resistances maximum max cap capped uncapped 75 90 penetration penetrate ignore '
+          'ignoring elemental fire cold lightning chaos how much resistance is enough overcap',
+     'ls': ['Resistances reduce damage taken of the matching damage type — Fire, Cold, Lightning or Chaos — '
+            'up to a Maximum.',
+            'The default Maximum for Elemental or Chaos Resistance is 75%. Maximum Resistances cannot be '
+            'raised above 90%.',
+            'Resistance above your Maximum reduces nothing further. What it would be without the Maximum is '
+            'your Uncapped Resistance, shown in parentheses at the top of the Character Panel.',
+            'Your Elemental Resistances are lowered as you progress through the game.',
+            'Penetration treats the target’s Resistance as lower than it is when working out damage taken '
+            'from your Hits, down to 0% by default. It applies to the target’s defensive stats rather than '
+            'your own offensive stats, and only to Hits, so it does nothing for Ailments.',
+            'Ignoring Resistances means your damage cannot be modified in any way by the target’s '
+            'Resistance stats.',
+            'For example, Rise of the Phoenix grants +5% to Maximum Fire Resistance. At 80% you take 20% of '
+            'a Fire Hit where 75% leaves 25%: a fifth less.']},
+    {'id': 'ModifierLands', 'n': 'Where a modifier lands in a stat',
+     'words': ['Converted to', 'as extra', 'as Extra'], 'gate': 'any', 'src': GAME,
+     'q': 'added to total stat totals adding conversion converted convert gained gain as extra additional '
+          'maximum which increases apply modifier stat base value scales with',
+     'ls': ['The Total value of a stat is the value after all calculations. Modifiers to the Total apply '
+            'after all other modifiers.',
+            'Adding to the Total value of a stat occurs after all other calculations, so the added value '
+            'does not benefit from percentage modifiers to the stat.',
+            'Converting stat A to stat B applies the base value of stat A to stat B instead. The converted '
+            'stat scales with percentage modifiers to stat B, not with percentage modifiers to stat A.',
+            'Gaining a percentage of stat A as stat B is calculated from the base value of stat A. The '
+            'portion gained scales with percentage modifiers to stat B, not with percentage modifiers to '
+            'stat A.',
+            'Where a modifier has a maximum, the maximum is applied to the whole modifier, including the '
+            'constant part.',
+            'For example, Decree of Acuity has Evasion Rating: (408-554) and grants Gain (15-30)% of '
+            'Evasion Rating as extra Armour. At 554 and 30% that is 166 Armour, and the 166 scales with '
+            'increased Armour, not with increased Evasion Rating.',
+            'Ghostwrithe has 35% of Maximum Life Converted to Energy Shield. That portion scales with '
+            'increased Energy Shield, and no longer with increased maximum Life.']},
+    {'id': 'DamageOverTime', 'n': 'Damage over time',
+     'words': ['damage over time', 'Damage over Time', 'Damage over time'], 'gate': 'any', 'src': GAME,
+     'q': 'damage over time dot degen ignite ignited burning bleeding poison ailment ailments magnitude hit '
+          'modifiers penetration conversion converted gain killing blow why do my modifiers do nothing',
+     'ls': ['Any damage that isn’t damage over time is Hit damage.',
+            'Damage over time cannot be converted, and cannot benefit from damage Gain.',
+            'A Damaging Ailment which results from a Hit calculates its damage from that Hit, and does not '
+            'subsequently have Damage modifiers applied directly to it. Raising Hit damage raises the '
+            'Ailment with it.',
+            'Modifiers that apply to Hit damage, such as Penetration, do not affect Ailment damage. '
+            'Modifiers that affect how much damage the enemy takes, such as Shock, do.',
+            'Damage over time cannot cause Killing Blows.',
+            'For example, The Sentry adds (25-32) to (40-50) Fire Damage. At its best roll that is an '
+            'average of 41 Fire damage on the Hit, and an Ignite from it deals 20% of that per second for 4 '
+            'seconds: 8.2 a second, 32.8 in all.']},
 ]
 
 
@@ -189,8 +331,9 @@ def build():
     for c in CARDS:
         it = {'k': KIND, 'id': c['id'], 'n': c['n'], 's': SUB, 'ls': list(c['ls']),
               'q': c.get('q') or ' '.join(c['words']).lower(), 'src': c.get('src') or SOURCE}
-        if c['words']:   # the flowchart card has none: a card about damage offers it instead
+        if c['words']:   # the damage flowchart card has none: a card about damage offers it instead
             it['f'] = list(c['words'])
+            it['fg'] = c['gate']   # when one of them counts, for assets/marks.js to apply as it draws
         if c.get('fl'):
             it['fl'] = []
             for g in c['fl']:

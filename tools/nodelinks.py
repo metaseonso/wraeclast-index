@@ -11,8 +11,9 @@ The rules, and no guessing:
   * the phrase is matched exactly: same letters, same case, whole words, longest phrase first, never inside another
   * the phrases are every card's name, plus the other words a keyword card is shown as ("f", from the game's own
     markup): "Endurance Charges" is the keyword, so it wins over the notable called "Endurance" inside it
-  * a mechanics card's words ("f" again, tools/mechanics.py: increased, reduced, more, less, Adds) count only where
-    the line uses them as a number, so "40% less Attack Damage" is a door and "no more than once" is not
+  * a mechanics card's words ("f" again, tools/mechanics.py) count where that card's own gate says they do: a word
+    that is also a plain English word only where the line uses it as a number, so "40% less Attack Damage" is a
+    door and "no more than once" is not; a phrase that only ever means the mechanic ("Converted to") wherever it is
   * exactly one card has that name          -> a reference to it
   * the card's own name                      -> not a door, and nothing else with that name is one either
   * several cards of one kind share the name -> nothing (two uniques called Decompose: which one?)

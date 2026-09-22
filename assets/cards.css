@@ -107,9 +107,10 @@
 .flow-col li{position:relative; padding-left:10px; margin-top:4px; font-size:11.5px; line-height:1.45; color:var(--muted)}
 .flow-col li::before{content:''; position:absolute; left:0; top:.6em; width:4px; height:4px; border-radius:50%;
   background:var(--line-soft); border:1px solid var(--line)}
-/* the damage card, offered on a card whose text is about damage (offerHTML in assets/app.js) */
+/* a flowchart card, offered on a card whose text is about what it lays out (offerHTML in assets/app.js) */
 .card-offer{display:block; width:100%; text-align:left; font:inherit; font-size:12px; color:var(--text);
   background:var(--sunken); border:1px solid var(--line); border-radius:6px; padding:6px 9px; cursor:pointer}
+.card-offer + .card-offer{margin-top:6px}   /* a card offered both of them */
 .card-offer b{font-weight:600}
 .card-offer b::after{content:' \2192'; color:var(--faint); font-weight:500}
 .card-offer small{display:block; margin-top:1px; font-size:11px; color:var(--faint)}

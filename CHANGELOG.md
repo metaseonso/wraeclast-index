@@ -49,6 +49,61 @@ Add the details here first, then a short public line there.
   **Old links keep working:** a `?s=` link is still unpacked, and the tab writes the plan back in words, so it
   is shared on in the new shape. `craftHref` in `assets/app.js` and `appHref` in `worker/seo.js` write the same
   form, and `tools/dev/guard.mjs` names it in the report.
+## Next — Four more mechanics cards: defences, resistances, where a modifier lands, damage over time
+
+- The ticket from `docs/mechanics-cards.md`: the next four the page said were worth building, in the order
+  it gave them. Twelve cards were judged worth building; eight are now live.
+- **How defences work** is the mirror of the damage card, and it is drawn by the same code: `"fl"` on the
+  card, `.flow` in `assets/cards.css`, no markup in the index. Three groups — the two steps that decide
+  whether any damage arrives (Evasion, Block), the pair of columns for the two that get read as the same
+  thing (Armour against Resistances), then the three pools that take what is left (Energy Shield, Mana under
+  Mind Over Matter, Life). On a phone the pair stacks; on a wide card it sits side by side.
+- **The order on that card is the order the code runs, not the order the ticket listed.** The ticket asked for
+  evade, block, Energy Shield and Mind over Matter, armour, resistances, life. `CalcDefence.lua` does not do
+  that. `takenHitFromDamage()` cuts the raw damage down first, through the
+  `damageMitigationMultiplierForType()` it calls, which ends `return totalResistMult * totalDRMulti` — Armour
+  and Resistance are two multipliers on the damage, so neither runs before the other — and only then does
+  `reducePoolsByDamage()` spend the pools, Energy Shield first, then Mana under Mind Over Matter, then Life.
+  The card follows the code and `docs/mechanics-cards.md` records the correction.
+- **The Armour curve the game will not give.** The game's own entry stops at "more effective at reducing
+  smaller hits". `armourReductionF()` is `armour / (armour + raw * data.misc.ArmourRatio) * 100` with
+  `ArmourRatio = 10`, so the card says it in words: your Armour divided by your Armour plus ten times the
+  Hit. The worked case is The Brass Dome's own Armour against what a monster of that level deals, both read
+  out of our own files: at 3,091 Armour a Hit of 334 (level 80) is cut by 48%, a Hit of 584 (level 100) by
+  35%. The caps are the game's own character metadata as Path of Building carries it: 90% damage reduction,
+  75% default maximum resistance, 90% ceiling. A Hit's chance to land never falls below 5%
+  (`monsterHitChance()`, and `DefaultMaxEvadeChancePercent = 95` from the other end).
+- **The other three cards are the game's own entries and nothing else**, and say so: *"According to the
+  game's own entries."*
+  - **Resistances and the maximum** — the 75% default and the 90% ceiling (Maximum Resistances), Uncapped
+    Resistance in parentheses on the Character Panel, the penalties as you progress (Resistances),
+    Penetration applying to the target's defensive stats and only to Hits, so it does nothing for Ailments
+    (Resistance Penetration), and Ignoring Resistances. Worked with Rise of the Phoenix's +5% to Maximum
+    Fire Resistance.
+  - **Where a modifier lands in a stat** — Stat Totals, Adding to Stat Totals, Stat Conversion, Gaining Stats
+    from other Stats and Maximum, in that order. Worked with Decree of Acuity (554 Evasion Rating, 30%
+    gained as extra Armour → 166 Armour that scales with increased Armour) and Ghostwrithe.
+  - **Damage over time** — why no hit modifier helps an Ignite. Hit Damage, Damage Conversion and Damage
+    Gained as extra X for what damage over time is shut out of, and the Ignite entry for the rest: a Damaging
+    Ailment takes its damage from the Hit and has no Damage modifier applied to it afterwards; a modifier
+    that applies to Hit damage (Penetration) does nothing to it, and one that changes how much damage the
+    enemy takes (Shock) does. Worked with The Sentry: 41 Fire damage on the Hit, 20% of it a second for 4
+    seconds.
+- **Each card is reached from the words that need it**, and each card now carries its own rule for when one
+  of its words counts (`"fg"`, `tools/mechanics.py`), which both `tools/nodelinks.py` and `assets/marks.js`
+  apply. Two rules existed already — `pct` ("40% less Attack Damage") and `start` ("Adds 8 to 18 Cold
+  Damage") — and the new cards needed a third: `any`, for a phrase that only ever means the mechanic
+  ("Damage taken", "Converted to", "damage over time"), which does not have to prove itself against the
+  line. Built into the index: **Resistances and the maximum** 397 lines on 312 cards, **Where a modifier
+  lands in a stat** 141 on 123, **How defences work** 42 on 38, **Damage over time** 35 on 26. The page adds
+  more as it draws (`assets/marks.js`): 18 more lines on 12 cards, 15 on 15, 2 on 2, 14 on 14.
+- **The defences card is offered too, the way the damage card is.** `offerHTML()` in `assets/app.js` was one
+  card and one word; it is now a table of two, each with the words that call for it, and a card about both
+  (a body armour that adds damage) gets both buttons, damage first.
+- `node tools/dev/guard.mjs`: 6 ok, 0 failed. The card count moved 4 → 8 mechanics cards and the baseline was
+  blessed for that one line. Checked in a real headless Chrome at 375×812 with touch and at 1280×900: each
+  of the four opens from search and from a marked word, Back returns from both, the defences flowchart fits
+  (327px in a 375px card stacked, 559px in a 640px card side by side), no sideways scroll, no console errors.
 
 ## Next — Connections, and a past league in its own colour
 

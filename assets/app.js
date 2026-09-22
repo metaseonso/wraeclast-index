@@ -370,14 +370,21 @@ function flowHTML(it, full){
   return '<div class="flow">' + it.fl.map(g => '<p class="flow-hd">' + esc(g.h) + '</p>' +
     (g.st ? run(g.st) : '') + (g.cols ? cols(g.cols) : '')).join('') + '</div>';
 }
-/* The damage card, offered on every card whose text is about damage. Read off the card's own search text, so
-   nothing has to be marked per card; the mechanics cards themselves already say it and never offer it. */
-const DAMAGE_CARD = 'h:HowDamage';   // tools/mechanics.py declares it
-const DAMAGE_WORD = /\bdamage\b/;
+/* The two flowchart cards, each offered on every card whose text is about what it lays out: the one a hit you
+   deal runs through, and the one a hit you take runs through. Read off the card's own search text, so nothing
+   has to be marked per card; the mechanics cards themselves already say it and never offer it. A card that is
+   about both — a body armour that adds damage — is offered both, in this order. tools/mechanics.py declares
+   them; the words that lead to the other mechanics cards are marked in the lines instead. */
+const OFFERS = [
+  ['h:HowDamage', /\bdamage\b/, 'How damage works', 'the order it is worked out in'],
+  ['h:HowDefences', /\b(?:armour|evasion|block|energy shield|resistance)/, 'How defences work',
+    'the order a hit you take runs through'],
+];
 function offerHTML(it, full){
-  if(!full || it.k === 'h' || !it._hay || !DAMAGE_WORD.test(it._hay)) return '';
-  return '<button type="button" class="card-offer" data-h="' + DAMAGE_CARD + '">' +
-    '<b>How damage works</b><small>the order it is worked out in</small></button>';
+  if(!full || it.k === 'h' || !it._hay) return '';
+  return OFFERS.filter(([, word]) => word.test(it._hay)).map(([key, , name, note]) =>
+    '<button type="button" class="card-offer" data-h="' + key + '">' +
+    '<b>' + esc(name) + '</b><small>' + esc(note) + '</small></button>').join('');
 }
 function anointHTML(it){
   if(!it.rec || !it.rec.length) return '';

@@ -17,9 +17,11 @@
        leeches and is left alone on one that only grants Life
      * a phrase two cards answer to is left plain, and nothing shorter is marked under it, unless one of them
        is actually called that and the other is only also known as it
-     * a mechanics word (increased, reduced, more, less, Adds: tools/mechanics.py) is a door only where the
-       line uses it as a number, the rule the index uses: after a percentage, or opening the line with a
-       number behind it — never in prose ("no more than once", "Adds a Rune Socket")
+     * a mechanics word (tools/mechanics.py) is a door only where its own card's rule says so ("fg" on the
+       card, the same rule the index used): "pct" after a percentage ("40% less Attack Damage"), "start"
+       opening the line with a number behind it ("Adds 8 to 18 Cold Damage"), "any" wherever it is read,
+       which is for a phrase that only ever means the mechanic ("Damage taken", "Converted to"). So a word
+       that is also a plain English word is never a door in prose ("no more than once", "Adds a Rune Socket")
      * never a door to the card you are already on
 
    One table is built per index, the first time a card asks for a mark, and assets/app.js keeps what each line
@@ -35,21 +37,35 @@ const PCT = /%\s*$/;            // "(30-40)% more Attack Damage": the line is do
 const NUM = /^\s*\(?[-+]?\d/;   // "Adds 8 to 18 Cold Damage": the word opens the line and a number follows
 const NONE = [];
 
+/* When a mechanics card's word counts, by that card's own rule ("fg", tools/mechanics.py). An index written
+   before the cards carried a rule keeps the old one: either of the first two. */
+function mechOK(g, text, s, e){
+  const pct = PCT.test(text.slice(0, s)), start = !s && NUM.test(text.slice(e));
+  if(g === 'any') return true;
+  if(g === 'pct') return pct;
+  if(g === 'start') return start;
+  return pct || start;
+}
+
 let VOC = null, SEEN = 0;
 /* The phrases, by their first word, longest first. Each one is [phrase, key, other], where key is the card it
    opens (0: two cards answer to it, so it opens nothing and still holds its ground) and other says the phrase
-   is one of the card's other spellings, which counts only where the card being drawn carries that keyword. */
+   is one of the card's other spellings, which counts only where the card being drawn carries that keyword.
+   `gates` holds each mechanics phrase's rule beside it. */
 function vocab(){
   const D = X.D;
   if(VOC && VOC.ix === D.index) return VOC;
-  const own = new Map(), other = new Map();
+  const own = new Map(), other = new Map(), gates = new Map();
   const add = (map, p, key) => { if(p && p.length > 1) map.set(p, map.has(p) && map.get(p) !== key ? 0 : key); };
   for(const it of D.index.items){
     if(it.k === 'w'){
       add(own, it.n, 'w:' + it.id);
       for(const f of it.f || NONE) add(other, f, 'w:' + it.id);
     } else if(it.k === 'h'){
-      for(const f of it.f || NONE) add(own, f, 'h:' + it.id);   // the words a mechanics card is reached by
+      for(const f of it.f || NONE){   // the words a mechanics card is reached by, and when each one counts
+        add(own, f, 'h:' + it.id);
+        gates.set(f, it.fg || '');
+      }
     }
   }
   const first = new Map();
@@ -62,7 +78,7 @@ function vocab(){
   for(const [p, key] of own) put(p, key, 0);
   for(const [p, key] of other) if(!own.has(p)) put(p, key, 1);
   for(const list of first.values()) list.sort((a, b) => b[0].length - a[0].length);
-  VOC = {ix: D.index, first, v: ++SEEN};
+  VOC = {ix: D.index, first, gates, v: ++SEEN};
   return VOC;
 }
 /* which vocabulary a line was marked with: the index loads in two parts, so the first cards are drawn before
@@ -77,7 +93,7 @@ const held = (block, s, e) => {
 /* The marks in one line of a card: [start, length, key], left to right and never overlapping. `block` is the
    ground the index's own marks already hold on this line ("lx"), or nothing. */
 export function scan(it, text, block){
-  const first = vocab().first;
+  const {first, gates} = vocab();
   const mine = it.k + ':' + it.id, kw = it.kw;
   const self = X.keywordIdOf(it);   // a keystone stands for its own keyword: not a door to itself either
   const out = [];
@@ -89,7 +105,7 @@ export function scan(it, text, block){
       if(!text.startsWith(p, s) || (e < text.length && WORDY.test(text[e]))) continue;
       if(key){
         if(alt && !(kw && kw.includes(key.slice(2)))) continue;   // the game does not mark this keyword here
-        if(key[0] === 'h' && !(PCT.test(text.slice(0, s)) || (!s && NUM.test(text.slice(e))))) continue;
+        if(key[0] === 'h' && !mechOK(gates.get(p), text, s, e)) continue;
       }
       at = e;   // the phrase holds its ground whether or not it opens anything
       if(key && key !== mine && !(self && key === 'w:' + self) && !(block && held(block, s, e))) out.push([s, p.length, key]);
