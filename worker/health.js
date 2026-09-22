@@ -9,8 +9,11 @@
      GET /api/health   the same as JSON, no sign-in: times only, nothing about anyone. Kept for a minute.
    Until the data jobs move off GitHub, the hourly files still come from the backup site: there is no arrival
    time for those, so they read "unknown" rather than pretending to be fresh. The prices on the pages are
-   stamped with the file's own time instead (worker/prices.js), so a stale feed still shows its real age there. */
-import { fileWhen } from './files.js';
+   stamped with the file's own time instead (worker/prices.js), so a stale feed still shows its real age there.
+   Watched the same way: a section still showing an older copy because its source failed (data/faults.json,
+   written by tools/lastgood.py). The job came in; what it brought did not, so it reads late on the first day
+   and stopped after that, with the reason in the owner's own words. */
+import { fileWhen, published } from './files.js';
 
 const CACHE = 60;   // seconds a data centre keeps its answer
 
@@ -47,6 +50,24 @@ function since(m){
   return Math.round(h / 24) + ' days ago';
 }
 
+/* Sections still showing an older copy, from data/faults.json. A builder that could not trust what its source
+   gave it kept the last good file and wrote the reason there, in plain words; this puts those words in the
+   same list as the jobs. Late on the first day, stopped after that: a source that has been dead a day is dead. */
+async function stale(env, origin, now){
+  let record = null;
+  try { record = await published(env, origin, 'faults.json'); } catch {}
+  const list = Array.isArray(record && record.faults) ? record.faults : [];
+  return list.filter(f => f && f.section).map(f => {
+    const t = Date.parse(f.since || f.at || '') || null;
+    const minutes = t ? Math.max(0, Math.round((now - t) / 60000)) : null;
+    return {where: 'data', name: f.section, what: f.section, every: 0,
+      state: minutes !== null && minutes < 24 * 60 ? 'late' : 'stopped', from: 'stale',
+      at: t ? new Date(t).toISOString() : null, minutes,
+      note: typeof f.line === 'string' && f.line ? f.line
+        : f.section + ': still showing the copy from ' + (f.good || 'before') + ', ' + (f.why || 'the source failed') + '.'};
+  });
+}
+
 /* every job's state, and one line for the worst of them */
 export async function health(env, origin){
   const now = Date.now(), at = {file: {}, price: {}};
@@ -65,10 +86,12 @@ export async function health(env, origin){
       : got.from === 'backup' ? 'unknown' : 'stopped';
     return {where, name, what, every, state, from: got.from, at: t ? new Date(t).toISOString() : null, minutes};
   });
+  jobs.push(...await stale(env, origin, now));
   const age = j => j.minutes === null ? Infinity : j.minutes;   // nothing at all is the oldest there is
   const worst = jobs.reduce((a, b) => RANK[b.state] > RANK[a.state] ||
     (RANK[b.state] === RANK[a.state] && age(b) > age(a)) ? b : a);
-  const line = worst.state === 'ok' ? 'Every data job is on time.'
+  const line = worst.note ? worst.note                          // a stale section says it in its own words
+    : worst.state === 'ok' ? 'Every data job is on time.'
     : worst.state === 'unknown' ? worst.what + ': from the backup site, age not known here.'
     : worst.minutes === null ? worst.what + ': nothing has come in yet.'
     : worst.what + ' last came in ' + since(worst.minutes) + '.';
@@ -88,6 +111,8 @@ export async function serveHealth(request, env, url, ctx){
     state: h.state, ok: h.ok, checked: h.at, note: h.line,
     data: pick('file', j => j.name),
     prices: pick('price', j => KIND[j.name] || j.name),
+    // sections serving an older copy because their source failed; {} when nothing is stale
+    stale: Object.fromEntries(h.jobs.filter(j => j.where === 'data').map(j => [j.name, {...one(j), since: j.at, note: j.note}])),
   }, {'Cache-Control': 'public, max-age=' + CACHE, 'Access-Control-Allow-Origin': '*'});
   ctx.waitUntil(caches.default.put(key, res.clone()));
   return res;

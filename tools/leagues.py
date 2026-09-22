@@ -15,13 +15,15 @@ import re
 import sys
 import urllib.request
 
+import lastgood
 import sitedata
 
 URL = 'https://poe2db.tw/us/League'
 UA = 'wraeclast-index/1.0 (contact: https://wraeclastindex.fyi/)'
 
 
-def main():
+def build():
+    """The league list as the site reads it. Anything wrong in here is a fault: main() keeps the last file."""
     req = urllib.request.Request(URL, headers={'User-Agent': UA})
     with urllib.request.urlopen(req, timeout=30) as r:
         page = r.read().decode('utf-8', 'replace')
@@ -38,14 +40,20 @@ def main():
             name, sub = m.group(1), m.group(2)
         leagues.append({'v': cells[0], 'name': name, 'sub': sub, 'start': cells[3],
                         'weeks': int(cells[2]) if cells[2].isdigit() else None})
-    if len(leagues) < 3:
-        sys.exit('league list not found; keeping the last file')
     leagues.sort(key=lambda x: x['start'], reverse=True)
-    out = {'source': 'poe2db', 'url': URL, 'updated': dt.datetime.now(dt.timezone.utc).isoformat(timespec='minutes'),
-           'leagues': leagues}
-    sitedata.publish('leagues.json', out)
-    print(len(leagues), 'leagues; newest:', leagues[0])
+    return {'source': 'poe2db', 'url': URL, 'updated': dt.datetime.now(dt.timezone.utc).isoformat(timespec='minutes'),
+            'leagues': leagues}
+
+
+def main():
+    # Last good wins: a page that stopped answering or stopped listing leagues never blanks the home page.
+    # Three is the floor because the game has never had fewer, so anything under it is the page, not the game.
+    out = lastgood.pull('League dates', build, file='leagues.json', url=URL, at='leagues', floor=3)
+    if out is not None:
+        sitedata.publish('leagues.json', out)
+        print(len(out['leagues']), 'leagues; newest:', out['leagues'][0])
+    return lastgood.report()
 
 
 if __name__ == '__main__':
-    main()
+    sys.exit(lastgood.guarded(main, 'League dates', file='leagues.json', url=URL))

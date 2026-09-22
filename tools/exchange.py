@@ -26,6 +26,7 @@ import time
 import urllib.error
 import urllib.request
 
+import lastgood
 import sitedata
 
 FEED = 'https://web.poecdn.com/api/currency-exchange/poe2/'
@@ -84,7 +85,8 @@ def hour_totals(markets, league):
     return rate, out, pairs
 
 
-def main():
+def build():
+    """The prices as the site reads them. Anything wrong in here is a fault: main() keeps the last file."""
     cat = sitedata.latest('market.json')
     league = cat['league']
     names = {k: v.get('name') for k, v in (get(REPOE) or {}).items() if v.get('name')}
@@ -135,7 +137,7 @@ def main():
     pairs24 = {k: v for k, v in pairs24.items() if k >= cut}
     days = dict(sorted(days.items())[-KEEP_DAYS:])
     if not hours:
-        sys.exit('no Currency Exchange data for %s; keeping the last file' % league)
+        raise lastgood.Stale('the feed published no hours for %s' % league)
     state = {'league': league, 'next': nxt, 'hours': {str(k): v for k, v in hours.items()}, 'days': days,
              'rates': {str(k): v for k, v in rates.items()}, 'pairs': {str(k): v for k, v in pairs24.items()}}
     sitedata.save(kept, json.dumps(state, separators=(',', ':')))
@@ -190,9 +192,18 @@ def main():
            'rate': float('%.4g' % (sum(r24) / len(r24))) if r24 else None, 'items': items, 'markets': markets[:80]}
     if items.get('Exalted Orb') and items['Exalted Orb'].get('v'):
         out['rate'] = float('%.4g' % (1 / items['Exalted Orb']['v']))
-    sitedata.publish('exchange.json', out)
     print(league, 'hours read:', read, 'currencies:', len(items), 'rate:', out['rate'], 'ex/div')
+    return out
+
+
+def main():
+    # Last good wins: an hour GGG does not publish, or a feed that stops, never blanks the prices on the site.
+    # 20 is the floor: even the quietest hour of a dead league trades more currencies than that.
+    out = lastgood.pull('Currency prices', build, file='exchange.json', url=FEED, at='items', floor=20)
+    if out is not None:
+        sitedata.publish('exchange.json', out)
+    return lastgood.report()
 
 
 if __name__ == '__main__':
-    main()
+    sys.exit(lastgood.guarded(main, 'Currency prices', file='exchange.json', url=FEED))

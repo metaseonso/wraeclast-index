@@ -12,6 +12,8 @@ import sys
 import urllib.request
 from pathlib import Path
 
+import lastgood
+
 ROOT = Path(__file__).resolve().parent.parent
 REPOE = 'https://repoe-fork.github.io/poe2/'
 CLASSES = {'StackableCurrency', 'Omen', 'MapFragment', 'Breachstone', 'PinnacleKeyStackable', 'SoulCore',
@@ -54,8 +56,11 @@ def main():
         r = b.get('requirements')
         if b.get('release_state') == 'released' and r and b['name'] not in reqs['bases']:
             reqs['bases'][b['name']] = [r.get('level', 0), r.get('strength', 0), r.get('dexterity', 0), r.get('intelligence', 0)]
-    (ROOT / 'data' / 'reqs.json').write_text(json.dumps(reqs, separators=(',', ':')), encoding='utf-8')
-    print(len(reqs['bases']), 'bases with requirements -> data/reqs.json')
+    # Last good wins (tools/lastgood.py): an export that came back short never strips the cards of their
+    # requirements or their item text. 500 is the floor both lists have always cleared.
+    if lastgood.pull('Item requirements', lambda: reqs, file='reqs.json', url=REPOE, at='bases', floor=500) is not None:
+        lastgood.save(ROOT / 'data' / 'reqs.json', json.dumps(reqs, separators=(',', ':')))
+        print(len(reqs['bases']), 'bases with requirements -> data/reqs.json')
     info = {}
     for path, b in bases.items():
         if b.get('release_state') != 'released' or b.get('item_class') not in CLASSES:
@@ -89,9 +94,11 @@ def main():
                 and b['name'] not in info and not b['name'].startswith('[')):
             info[b['name']] = {'cls': b['item_class'], 'a': art[:-4]}
     out = ROOT / 'data' / 'info.json'
-    out.write_text(json.dumps(info, ensure_ascii=False, separators=(',', ':')), encoding='utf-8')
-    print(len(info), 'items described ->', out.relative_to(ROOT))
+    if lastgood.pull('Item text', lambda: info, file='info.json', url=REPOE, floor=500) is not None:
+        lastgood.save(out, json.dumps(info, ensure_ascii=False, separators=(',', ':')))
+        print(len(info), 'items described ->', out.relative_to(ROOT))
+    return lastgood.report()
 
 
 if __name__ == '__main__':
-    sys.exit(main())
+    sys.exit(lastgood.guarded(main, {'Item requirements': 'reqs.json', 'Item text': 'info.json'}, url=REPOE))

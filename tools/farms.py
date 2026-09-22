@@ -45,6 +45,8 @@ from pathlib import Path
 
 import openpyxl
 
+import lastgood
+
 ROOT = Path(__file__).resolve().parent.parent
 SHEET_ID = '1slfzZiehPZLnR7ADk6LouuTMb8KRZDVTAUmWdjMc2Dk'
 BASE = 'https://docs.google.com/spreadsheets/d/' + SHEET_ID
@@ -640,21 +642,26 @@ def main():
         'url': BASE + '/edit' + ('?gid=' + gids['tierlist'] if 'tierlist' in gids else ''),
         'fetched': dt.date.today().isoformat(),
     }
+    # Last good wins (tools/lastgood.py). The two files go together — a farm's items point at the searches
+    # in farmqueries.json — so a thin read of the sheet keeps both committed files, not one of each.
+    # The sheet is a community source, named on the Farms tab; 10 is the fewest strategies it has ever had.
+    if lastgood.pull('Farm strategies', lambda: {'source': source, 'farms': farms}, file='farms.json',
+                     url=BASE, at='farms', floor=10) is None:
+        return lastgood.report()
     body = ',\n'.join(json.dumps(f, ensure_ascii=False, separators=(',', ':')) for f in farms)
-    with open(OUT, 'w', encoding='utf-8', newline='\n') as fh:
-        fh.write('{"source":' + json.dumps(source, ensure_ascii=False, separators=(',', ':')) +
-                 ',\n"farms":[\n' + body + '\n]}\n')
+    lastgood.save(OUT, '{"source":' + json.dumps(source, ensure_ascii=False, separators=(',', ':')) +
+                  ',\n"farms":[\n' + body + '\n]}\n')
     queries = sorted(Q.by_key.values(), key=lambda x: x['key'])
-    with open(QUERIES, 'w', encoding='utf-8', newline='\n') as fh:
-        fh.write('{"updated":"%s","queries":[\n' % source['fetched'] +
-                 ',\n'.join(json.dumps(x, ensure_ascii=False, separators=(',', ':')) for x in queries) + '\n]}\n')
+    lastgood.save(QUERIES, '{"updated":"%s","queries":[\n' % source['fetched'] +
+                  ',\n'.join(json.dumps(x, ensure_ascii=False, separators=(',', ':')) for x in queries) + '\n]}\n')
     print('%d farms (%s), league %s, updated %s -> %s' % (
         len(farms), ' '.join('%s:%d' % kv for kv in collections.Counter(f['tier'] for f in farms).items()),
         source['league'], source['updated'], OUT.relative_to(ROOT)))
     print('%d trade searches -> %s' % (len(queries), QUERIES.relative_to(ROOT)))
     for p in problems:
         print('  note:', p)
+    return lastgood.report()
 
 
 if __name__ == '__main__':
-    main()
+    sys.exit(lastgood.guarded(main, 'Farm strategies', file='farms.json', url=BASE))

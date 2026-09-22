@@ -709,9 +709,11 @@ function planBox(){
     '<p class="note dv-links">Exact numbers on Cloudflare: ' + link(links.traffic, 'Traffic') + ' · ' +
       link(links.workers, 'Workers &amp; Pages') + ' · ' + link(links.d1, 'Database') + '</p>';
 }
-/* the data jobs: fine, late or stopped, worked out by the site (worker/health.js) */
+/* the data jobs: fine, late or stopped, worked out by the site (worker/health.js). A row with a note is a
+   section still showing an older copy because its source failed: the note says which copy and why, in the
+   words the builder wrote when it kept it (data/faults.json, tools/lastgood.py). */
 const STATE = {ok: ['fine', 'good'], unknown: ['unknown', 'ok'], late: ['late', 'ok'], stopped: ['stopped', 'poor']};
-const FROM = {backup: 'backup site', none: '—'};   // where a file came from, when it has no time of its own
+const FROM = {backup: 'backup site', none: '—', stale: 'stale since'};   // where a file came from, when it has no time of its own
 const TOP = {late: ' v-late', stopped: ' v-stopped'};   // how the line at the top of the page reads
 function jobsBox(){
   const list = arr(obj(obj(S.data).jobs).jobs).map(obj);
@@ -719,7 +721,12 @@ function jobsBox(){
   return '<div class="tablewrap dv-tw"><table class="dv-t"><thead><tr><th>What</th><th class="n">State</th><th class="n">Last in</th></tr></thead><tbody>' +
     list.map(x => {
       const [word, tone] = STATE[x.state] || STATE.stopped;
-      return '<tr><td>' + esc(x.what) + '</td><td class="n"><span class="dv-g g-' + tone + '">' + word + '</span></td>' +
+      // the note reads on its own in /api/health ("Currency prices: still showing ..."); here the name is
+      // already in the row above it, so it comes off
+      const full = typeof x.note === 'string' ? x.note : '';
+      const said = full.startsWith(x.what + ': ') ? full.slice(String(x.what).length + 2) : full;
+      const note = said ? '<span class="dv-sub">' + esc(said) + '</span>' : '';
+      return '<tr><td>' + esc(x.what) + note + '</td><td class="n"><span class="dv-g g-' + tone + '">' + word + '</span></td>' +
         '<td class="n">' + (x.at ? esc(ago(x.at)) : esc(FROM[x.from] || '—')) + '</td></tr>';
     }).join('') + '</tbody></table></div>';
 }

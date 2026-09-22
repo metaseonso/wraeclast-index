@@ -22,6 +22,15 @@ to `admin.html` in headless Chrome, three times over — those numbers, an answe
 that fail — clicks all eight tabs each time, and fails if any block is left empty or draws nothing. A block
 saying "No data." or that it failed is fine; a blank one is not.
 
+`faults.mjs`: the last-good rule (`tools/lastgood.py`) without the network. It runs a fake builder four
+ways — a source that gives nothing, one that gives 60% of its rows, one that throws, and a builder that dies
+before its pull is even checked — and each time checks that the committed file is untouched, the loud line was
+printed, the fault landed in `data/faults.json`, the run went red, and the dashboard's Data jobs block and
+`/api/health` name the section in plain English. A fifth run proves a good pull still writes, twice over, byte
+for byte, and clears the fault behind it.
+Writes only inside a temporary folder; `node tools/dev/faults.mjs` (add `--keep` to leave that folder behind).
+Not part of `guard.mjs`: it runs Python, so it is its own line.
+
 `cfcheck.mjs`: every Cloudflare query the owner's dashboard makes, against the real API. Needs `CF_ANALYTICS_TOKEN`.
 
 `dash.mjs`: set `WI_OWNER_KEY` to the owner key (only its SHA-256 lives in the `OWNER_HASH` secret), then

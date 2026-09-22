@@ -37,6 +37,8 @@ import urllib.error
 import urllib.request
 from pathlib import Path
 
+import lastgood
+
 ROOT = Path(__file__).resolve().parent.parent
 CACHE = ROOT / 'tools' / 'cache' / 'official'
 PULLED = CACHE / 'pulled.json'
@@ -387,9 +389,23 @@ def main():
     when = max((email.utils.parsedate_to_datetime(d) for d in dated), default=None)
     stamp = {'patch': patch(), 'dated': when.strftime('%Y-%m-%d') if when else '',
              'pulled': datetime.datetime.now(datetime.UTC).strftime('%Y-%m-%d')}
-    (ROOT / 'data' / 'gamedata.json').write_text(json.dumps(stamp, separators=(',', ':')), encoding='utf-8', newline='\n')
+
+    # Last good wins (tools/lastgood.py). The cache already keeps a file the export would not give; this is
+    # what makes that loud. A file kept, or a build number the listing page would not show, means the patch
+    # stamp cannot be trusted, so the one already committed stays and a ticket goes up for it.
+    kept = (pulls or {}).get('kept', 0)
+
+    def fresh():
+        if kept:
+            raise lastgood.Stale('the export would not give %d of its %d files' % (kept, len(PULL)))
+        return stamp
+
+    if lastgood.pull('Game export', fresh, file='gamedata.json', url=REPOE, at='patch', floor=1) is None:
+        return lastgood.report()
+    lastgood.save(ROOT / 'data' / 'gamedata.json', json.dumps(stamp, separators=(',', ':')))
     print('\n-> data/gamedata.json, tools/dev/gaps.txt')
+    return lastgood.report()
 
 
 if __name__ == '__main__':
-    sys.exit(main())
+    sys.exit(lastgood.guarded(main, 'Game export', file='gamedata.json', url=REPOE))

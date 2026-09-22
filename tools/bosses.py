@@ -36,6 +36,8 @@ import urllib.parse
 import urllib.request
 from pathlib import Path
 
+import lastgood
+
 ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / 'data' / 'bosses.json'
 UA = 'wraeclast-index/1.0 (contact: https://wraeclastindex.fyi/)'
@@ -425,18 +427,21 @@ def main():
 
     areas = json.loads(fetch(AREAS))
     named = pob_areas(fetch(POB_AREAS))
+    # a source that came back thin is a fault, not a smaller file: lastgood.guarded() below keeps the
+    # committed bosses.json, says why and raises a ticket for it
     if len(named) < 100 or len(areas) < 100:
-        sys.exit('the area sources came back too small: %d areas, %d with boss names' % (len(areas), len(named)))
+        raise lastgood.Stale('the area sources came back too small: %d areas, %d with boss names'
+                             % (len(areas), len(named)))
 
     listing = json.loads(fetch(POB_UNIQUES))
     files = [fetch(f['download_url']) for f in listing if f['name'].endswith('.lua')]
     sources = pob_sources(files)
     if not sources:
-        sys.exit('no unique carried a source line; the Path of Building files may have moved')
+        raise lastgood.Stale('no unique carried a source line; the Path of Building files may have moved')
 
     pool_list = pools(json.loads(fetch(DROPS)))
     if not pool_list:
-        sys.exit('no access pool in the Exiled Exchange 2 file; its shape may have changed')
+        raise lastgood.Stale('no access pool in the Exiled Exchange 2 file; its shape may have changed')
 
     rows = boss_rows(areas, named)
     # the trial bosses: the endgame fights the area files still file under their campaign act, kept because
@@ -489,14 +494,22 @@ def main():
         'bosses': rows,
         'notes': notes,
     }
-    # nothing goes out half built: a feed that came back thin is a failure, not a smaller file
+    # Nothing goes out half built: a feed that came back thin is a failure, not a smaller file.
+    # Last good wins (tools/lastgood.py) keeps the committed file, says so, and raises a ticket.
     pools_on = sum(1 for r in rows if r.get('drops'))
     rates_on = sum(1 for r in rows if r.get('rates'))
-    if len(rows) < 80 or pools_on < 5 or rates_on < 5:
-        sys.exit('too thin to write: %d bosses, %d with a pool, %d with rates' % (len(rows), pools_on, rates_on))
+
+    def fresh():
+        if pools_on < 5 or rates_on < 5:
+            raise lastgood.Stale('only %d bosses came back with a drop pool and %d with rates'
+                                 % (pools_on, rates_on))
+        return out
+
+    if lastgood.pull('Bosses', fresh, file='bosses.json', url=AREAS, at='bosses', floor=80) is None:
+        return lastgood.report()
     body = ',\n'.join(json.dumps(r, ensure_ascii=False, separators=(',', ':')) for r in rows)
     head = json.dumps({k: v for k, v in out.items() if k != 'bosses'}, ensure_ascii=False, separators=(',', ':'))
-    OUT.write_text(head[:-1] + ',"bosses":[\n' + body + '\n]}\n', encoding='utf-8')
+    lastgood.save(OUT, head[:-1] + ',"bosses":[\n' + body + '\n]}\n')
 
     print('%d bosses, %d with a drop pool, %d with community rates, %d pinnacle -> %s (%.0f KB)'
           % (len(rows), pools_on, rates_on, sum(1 for r in rows if r['pinnacle']),
@@ -510,10 +523,9 @@ def main():
         print('  nothing listed when last looked at, so no price: ' + ', '.join(quiet))
     if gaps:
         print('  nothing prices these yet: ' + ', '.join(gaps) + '; write a search for them in data/bossqueries.json')
+    return lastgood.report()
 
 
 if __name__ == '__main__':
-    try:
-        main()
-    except RuntimeError as e:
-        sys.exit(str(e))
+    # a fetch that gave up raises RuntimeError; guarded() makes that the same fault as any other
+    sys.exit(lastgood.guarded(main, 'Bosses', file='bosses.json', url=AREAS))

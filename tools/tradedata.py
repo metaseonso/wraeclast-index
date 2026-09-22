@@ -24,6 +24,8 @@ import time
 import urllib.request
 from pathlib import Path
 
+import lastgood
+
 ROOT = Path(__file__).resolve().parent.parent
 API = 'https://www.pathofexile.com/api/trade2/data/'
 UA = 'wraeclast-index/1.0 (contact: https://wraeclastindex.fyi/)'
@@ -279,9 +281,16 @@ def main():
                 out['exchange'][e['text']] = e['id']
     add_ranges(out)
     typings(out)
-    (ROOT / 'data' / 'trade.json').write_text(json.dumps(out, ensure_ascii=False, separators=(',', ':')), encoding='utf-8')
+    # Last good wins (tools/lastgood.py): the trade site going quiet or changing a list never thins the
+    # Trade buttons, the Craft tab's base lists or the mod sliders. The floors are what each list has
+    # always cleared; everything else is checked against the committed file.
+    if lastgood.pull('Trade lists', lambda: out, file='trade.json', url=API,
+                     at={'mods': 1000, 'exchange': 100, 'uniques': 100, 'bases': 5, 'tiers': 50}) is None:
+        return lastgood.report()
+    lastgood.save(ROOT / 'data' / 'trade.json', json.dumps(out, ensure_ascii=False, separators=(',', ':')))
     print({k: len(v) for k, v in out.items()}, 'states:', [x[1] for x in out['states']])
+    return lastgood.report()
 
 
 if __name__ == '__main__':
-    sys.exit(main())
+    sys.exit(lastgood.guarded(main, 'Trade lists', file='trade.json', url=API))

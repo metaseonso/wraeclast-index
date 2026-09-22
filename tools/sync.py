@@ -25,6 +25,7 @@ import urllib.request
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+import lastgood  # noqa: E402
 from uniques import clean_lines  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -842,10 +843,15 @@ def main():
           % (len(cleaned), len(dropped), (' (' + ', '.join(dropped) + ')') if dropped else ''))
     index = build_index(html)
     (ROOT / 'data').mkdir(exist_ok=True)
-    (ROOT / 'data' / 'index.json').write_text(
-        json.dumps(index, ensure_ascii=False, separators=(',', ':')), encoding='utf-8')
-    import appdata   # the index in two parts for the home page (data/index-core.json, data/index-rest.json)
-    appdata.write(index)
+    # Last good wins (tools/lastgood.py). The cards the artifact does not carry — the bases, the Atlas and the
+    # currency — come from RePoE (tools/morecards.py), which answers with nothing rather than failing, so a
+    # source that went quiet used to thin the search index in silence. The index and its two parts go out
+    # together or not at all. 4,000 is the floor: the artifact's own cards are about 3,700, so under that
+    # those sources gave nothing. explore.html is the artifact itself, so it is written either way.
+    if lastgood.pull('Search index', lambda: index, file='index.json', url=REPOE, at='items', floor=4000) is not None:
+        lastgood.save(ROOT / 'data' / 'index.json', json.dumps(index, ensure_ascii=False, separators=(',', ':')))
+        import appdata   # the index in two parts for the home page (data/index-core.json, data/index-rest.json)
+        appdata.write(index)
     (ROOT / 'explore.html').write_text(explore_page(html), encoding='utf-8', newline='')
     counts, bare = {}, {}
     for it in index['items']:
@@ -855,6 +861,7 @@ def main():
     print('explore.html written (its data in data/explore/); index.json:', counts)
     for k, v in bare.items():
         print('  no image for %d %s cards:' % (len(v), k), ', '.join(v[:12]), file=sys.stderr)
+    return lastgood.report()
 
 
 def explore_page(html):
@@ -877,4 +884,4 @@ def explore_page(html):
 
 
 if __name__ == '__main__':
-    main()
+    sys.exit(lastgood.guarded(main, 'Search index', file='index.json', url=REPOE, at='items'))

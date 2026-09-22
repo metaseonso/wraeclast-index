@@ -48,6 +48,8 @@ import urllib.parse
 import urllib.request
 from pathlib import Path
 
+import lastgood
+
 ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / 'data' / 'craft.json'
 OUT_DIR = ROOT / 'data' / 'craft'
@@ -456,19 +458,20 @@ def main():
                 print('  no metadata for', cls, e, file=sys.stderr)
                 meta[cls] = {}
 
-    # ---- essences (poe2db). Nothing, or far less than data/craft already holds, counts as not loaded.
+    # ---- essences (poe2db), under the last-good rule (tools/lastgood.py): nothing, or far less than data/craft
+    # already holds, is a fault. ESS is None then, and each kind keeps the essences in its own committed file.
     had = on_disk_essences()
-    try:
-        ESS = essences(plural)
-        got = {e['n'] for e in ESS}
-        if len(got) < max(1, len(had) * 4 // 5):
-            raise LookupError('only %d essences read, data/craft already has %d' % (len(got), len(had)))
+
+    def fresh_essences():
+        got = essences(plural)
+        gone = had - {e['n'] for e in got}
+        if gone:
+            print('  gone from poe2db since the last run: %s' % ', '.join(sorted(gone)), file=sys.stderr)
+        return got
+
+    ESS = lastgood.pull('Essences', fresh_essences, file='craft/*.json', url=POE2DB + 'Essence', old=sorted(had))
+    if ESS is not None:
         print('essences from poe2db:', len(ESS))
-        if had - got:
-            print('  gone from poe2db since the last run: %s' % ', '.join(sorted(had - got)), file=sys.stderr)
-    except Exception as e:
-        print('  poe2db essences not loaded (%s); keeping the ones in data/craft' % e, file=sys.stderr)
-        ESS = None
 
     # ---- mods by text, for matching the essence tables
     by_text = collections.defaultdict(list)
@@ -493,7 +496,7 @@ def main():
 
     # ---- per kind of item
     OUT_DIR.mkdir(parents=True, exist_ok=True)
-    classes, top_ilvl = [], 1
+    classes, top_ilvl, built = [], 1, {}   # built: every kind's file, held until the whole tab is known good
     for cls, cid, cat in CLASSES:
         if not bases.get(cls):
             continue
@@ -620,7 +623,7 @@ def main():
                 p[k] = T.ordered(p[k])
         data = {'bases': out_bases, 'fam': T.fam, 'mods': T.mods, 'pools': pools, 'ess': ess, 'aug': aug}
         check(data, cid)
-        (OUT_DIR / (cid + '.json')).write_text(json.dumps(data, ensure_ascii=False, separators=(',', ':')), encoding='utf-8')
+        built[cid] = data
         classes.append({'id': cid, 'c': cls, 'n': 'Jewel' if cat == 'jewel' else cat_name.get(cat, cls), 'g': GROUP.get(cls, ''), 'cat': cat, 'so': so,
                         'mx': [mx, mx], 'rare': rare, 'loc': cls in LOCAL_GEAR,
                         'b': [[b['n'], b['dl']] for b in out_bases]})
@@ -716,10 +719,25 @@ def main():
 
     out = {'patch': patch, 'img': REPOE, 'ilvl': top_ilvl, 'classes': classes, 'orbs': orbs, 'omens': omens, 'bones': bones, 'cats': cats}
     check(out, 'craft.json')
-    OUT.write_text(json.dumps(out, ensure_ascii=False, separators=(',', ':')), encoding='utf-8')
-    size = OUT.stat().st_size + sum(f.stat().st_size for f in OUT_DIR.glob('*.json'))
-    print('orbs %d, omens %d, bones %d, catalysts %d · %d kinds · %.0f KB in all -> data/craft.json, data/craft/' % (
-        len(orbs), len(omens), len(bones), len(cats), len(classes), size / 1024))
+
+    # Last good wins (tools/lastgood.py). The Craft tab is one section: craft.json and the per-kind files point
+    # at each other, so a new craft.json beside an old kind file would be wrong. Either every file goes out or
+    # none does, and a thin pull leaves the whole tab on the copy already committed.
+    def whole():
+        for cid, data in built.items():
+            bad = lastgood.look(data, lastgood.committed('craft/' + cid + '.json', quiet=True), 'mods')
+            if bad:
+                raise lastgood.Stale('%s in craft/%s.json' % (bad['why'], cid))
+        return out
+
+    if lastgood.pull('Craft data', whole, file='craft.json', url=REPOE, at='classes') is not None:
+        for cid, data in built.items():
+            lastgood.save(OUT_DIR / (cid + '.json'), json.dumps(data, ensure_ascii=False, separators=(',', ':')))
+        lastgood.save(OUT, json.dumps(out, ensure_ascii=False, separators=(',', ':')))
+        size = OUT.stat().st_size + sum(f.stat().st_size for f in OUT_DIR.glob('*.json'))
+        print('orbs %d, omens %d, bones %d, catalysts %d · %d kinds · %.0f KB in all -> data/craft.json, data/craft/' % (
+            len(orbs), len(omens), len(bones), len(cats), len(classes), size / 1024))
+    return lastgood.report()
 
 
 def check(data, name):
@@ -747,4 +765,4 @@ def check(data, name):
 
 
 if __name__ == '__main__':
-    sys.exit(main())
+    sys.exit(lastgood.guarded(main, 'Craft data', file='craft.json', url=REPOE, at='classes'))

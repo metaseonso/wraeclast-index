@@ -21,6 +21,7 @@ import time
 import urllib.parse
 import urllib.request
 
+import lastgood
 import sitedata
 
 API = 'https://poe.ninja/poe2/api/economy/'
@@ -87,11 +88,12 @@ def line(sp):
     return [None if p is None else round(p, 2) for p in pts]
 
 
-def main():
+def build():
+    """The catalogue as the site reads it. Anything wrong in here is a fault: main() keeps the last file."""
     leagues = get('leagues') or []
     league = next((l['id'] for l in leagues if l.get('id') and 'Standard' not in l['id'] and not l['id'].startswith('HC ')), None)
     if not league:
-        sys.exit('could not find the current league')
+        raise lastgood.Stale('poe.ninja does not name a current league')
     info = sitedata.site_file('info.json')
     items, rates = {}, None
 
@@ -188,23 +190,29 @@ def main():
             items['u:' + n] = e
         time.sleep(1)
 
-    if len(items) < 100:
-        sys.exit('too few prices (%d); keeping the previous file' % len(items))
     # the league's page name on poe.ninja's builds site, so cards can link to "builds using this"
     state = get_state() or {}
     slug = next((v.get('url') for v in state.get('snapshotVersions') or [] if v.get('name') == league), None)
     # the catalogue only: names, pictures, text, drop level. No prices of any kind (see the top of this file).
     keep = ('n', 'cat', 'ic', 'did', 'u', 'dl')
     catalogue = {k: {f: v[f] for f in keep if f in v} for k, v in items.items() if k.startswith('c:')}
-    out = {'league': league, 'updated': dt.datetime.now(dt.timezone.utc).isoformat(timespec='minutes'),
-           'source': 'catalogue (names and pictures); prices come from the Currency Exchange and trade listings',
-           'builds': slug, 'items': catalogue}
-    sitedata.publish('market.json', out)
-    kinds = {}
+    seen = {}
     for k in items:
-        kinds[k[0]] = kinds.get(k[0], 0) + 1
-    print(league, kinds, 'rates', rates)
+        seen[k[0]] = seen.get(k[0], 0) + 1
+    print(league, seen, 'rates', rates)
+    return {'league': league, 'updated': dt.datetime.now(dt.timezone.utc).isoformat(timespec='minutes'),
+            'source': 'catalogue (names and pictures); prices come from the Currency Exchange and trade listings',
+            'builds': slug, 'items': catalogue}
+
+
+def main():
+    # Last good wins: a poe.ninja outage, or one of its types going quiet, never empties the Currency tab.
+    # 100 is the floor the catalogue has always cleared; a type that went missing is caught by the kind check.
+    out = lastgood.pull('Currency list', build, file='market.json', url=API, at='items', floor=100)
+    if out is not None:
+        sitedata.publish('market.json', out)
+    return lastgood.report()
 
 
 if __name__ == '__main__':
-    main()
+    sys.exit(lastgood.guarded(main, 'Currency list', file='market.json', url=API))

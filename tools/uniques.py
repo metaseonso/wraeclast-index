@@ -18,6 +18,8 @@ import urllib.parse
 import urllib.request
 from pathlib import Path
 
+import lastgood
+
 ROOT = Path(__file__).resolve().parent.parent
 LIST = 'https://poe2db.tw/us/Unique_item'
 UA = 'Mozilla/5.0 (compatible; wraeclast-index/1.0; contact: https://wraeclastindex.fyi/)'
@@ -100,10 +102,9 @@ def from_summary(page, name):
     return {name + ' | ' + base: {'ls': lines, 'ni': 0}}
 
 
-def main():
+def build():
+    """Every unique with official lines. Anything wrong in here is a fault: main() keeps the last file."""
     out = parse(fetch(LIST))
-    if len(out) < 300:
-        sys.exit('only %d uniques found; the page layout may have changed' % len(out))
     # uniques the index knows that the list page leaves out (older items): read their own pages
     names = {k.split(' | ')[0] for k in out}
     index = ROOT / 'data' / 'index.json'
@@ -123,9 +124,18 @@ def main():
         for k, v in got.items():
             out.setdefault(k, v)
         print('  older unique:', n, 'found' if got else 'not found', file=sys.stderr)
-    (ROOT / 'data' / 'uniques.json').write_text(json.dumps(out, ensure_ascii=False, separators=(',', ':')), encoding='utf-8')
-    print(len(out), 'uniques with official lines -> data/uniques.json')
+    return out
+
+
+def main():
+    # Last good wins: a poe2db layout change never leaves the cards without their roll ranges.
+    # 300 is the floor the list page has always cleared, so under it is the page, not the game.
+    out = lastgood.pull('Unique lines', build, file='uniques.json', url=LIST, floor=300)
+    if out is not None:
+        lastgood.save(ROOT / 'data' / 'uniques.json', json.dumps(out, ensure_ascii=False, separators=(',', ':')))
+        print(len(out), 'uniques with official lines -> data/uniques.json')
+    return lastgood.report()
 
 
 if __name__ == '__main__':
-    main()
+    sys.exit(lastgood.guarded(main, 'Unique lines', file='uniques.json', url=LIST))

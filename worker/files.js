@@ -1,5 +1,6 @@
 /* Data files the hourly jobs send in: the Currency Exchange prices (exchange.json, tools/exchange.py), the
-   currency catalogue (market.json, tools/market.py) and the league dates (leagues.json, tools/leagues.py).
+   currency catalogue (market.json, tools/market.py), the league dates (leagues.json, tools/leagues.py) and
+   the list of sections serving an older copy (faults.json, tools/lastgood.py).
    The jobs run on the data server (tools/vm/) and send each file here when it is done. Kept in D1 (table files).
      POST /api/data/put?name=<file>        the file as the body, signed with the data server's key
      published(env, origin, name, ctx)     a file, parsed; each data centre keeps a copy for 5 minutes
@@ -14,7 +15,7 @@
    That copy comes with no arrival time: its age is not known here ("from: backup"). */
 import { same } from './dash.js';
 
-const NAMES = new Set(['exchange.json', 'market.json', 'leagues.json']);
+const NAMES = new Set(['exchange.json', 'market.json', 'leagues.json', 'faults.json']);
 const MAX = 1.5e6;                // bytes
 const TTL = 300;                  // seconds a data centre keeps its copy
 const PAGES = 'https://metaseonso.github.io/wraeclast-index/data/';

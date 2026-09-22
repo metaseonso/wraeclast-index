@@ -21,6 +21,8 @@ import hashlib
 import json
 from pathlib import Path
 
+import lastgood
+
 ROOT = Path(__file__).resolve().parent.parent
 CORE_KINDS = ('u', 'c')   # uniques and currency: every card the home page's "biggest price moves" can show
 
@@ -86,7 +88,7 @@ def write(index=None):
     sizes = []
     for name, part in (('index-core.json', core), ('index-rest.json', rest)):
         body = json.dumps(part, ensure_ascii=False, separators=(',', ':'))
-        (ROOT / 'data' / name).write_text(body, encoding='utf-8')
+        lastgood.save(ROOT / 'data' / name, body)   # in one step: the home page never reads half of one
         sizes.append('%s %d KB' % (name, len(body.encode('utf-8')) // 1024))
     print('data/' + ', data/'.join(sizes))
 

@@ -38,6 +38,8 @@ import urllib.parse
 import urllib.request
 from pathlib import Path
 
+import lastgood
+
 ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / 'data' / 'atlas.json'
 REPOE = 'https://repoe-fork.github.io/poe2/'
@@ -394,8 +396,8 @@ def main():
         c = [(k, v) for k, v in BASE.items() if v['name'] == name and v['item_class'] != 'QuestItem']
         if hint:
             c = [kv for kv in c if hint in kv[0]] or c
-        if not c:
-            sys.exit('no base item named ' + name)
+        if not c:   # the export lost a base the Atlas tab names by hand: a fault, so the old file stays
+            raise lastgood.Stale('the export has no base item named ' + name)
         return c[0]
 
     def art(v):
@@ -676,13 +678,19 @@ def main():
         if missing:
             print('  icons missing:', missing, file=sys.stderr)
 
-    OUT.write_text(json.dumps(out, ensure_ascii=False, separators=(',', ':')), encoding='utf-8')
+    # Last good wins (tools/lastgood.py): the Atlas tab is one file, so a thin pull of any of its lists
+    # keeps the whole committed file. The floors are the least each list has ever held.
+    if lastgood.pull('Atlas data', lambda: out, file='atlas.json', url=REPOE,
+                     at={'ways': 5, 'wmods': 10, 'tabs': 3, 'tmods': 20, 'keys': 5, 'items': 5, 'tree': 1}) is None:
+        return lastgood.report()
+    lastgood.save(OUT, json.dumps(out, ensure_ascii=False, separators=(',', ':')))
     print('waystones', len(ways), 'mod groups', len(wmods), 'desecrated', len(wdes), 'emotions', len(wemo))
     print('tablets', len(tabs), 'unique tablets', len(tuniq), 'tablet mods', len(tmods))
     print('keys', len(keys), 'atlas items', len(items))
     print('tree nodes', total, {g['n']: sum(n.get('x', 1) for n in g['nodes']) for g in tree_out})
     print('->', OUT.relative_to(ROOT), OUT.stat().st_size // 1024, 'KB')
+    return lastgood.report()
 
 
 if __name__ == '__main__':
-    main()
+    sys.exit(lastgood.guarded(main, 'Atlas data', file='atlas.json', url=REPOE))

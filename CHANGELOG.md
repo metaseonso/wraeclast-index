@@ -54,6 +54,49 @@ Add the details here first, then a short public line there.
   every kind has one.
 - Sizes, against the standing budget of 70 KB compressed for `data/index-core.json`: 63.6 KB -> 66.6 KB
   gzipped (the uniques' own references live in that part). `data/index-rest.json` 291.8 KB -> 296.0 KB.
+## Next — Data faults: the last good copy stays, and the run says so
+
+- The rule, in one place: `tools/lastgood.py`. Every builder that fills the index from an outside source runs
+  its pull through it. A pull that throws, comes back empty or collapses against what is committed keeps the
+  committed copy, says so on stderr the moment it happens, writes the fault to `data/faults.json`, opens or
+  reuses a GitHub issue labelled `data-fault`, and exits non-zero. Nothing is half-written: every file the rule
+  guards now goes out through one `os.replace`, the index's two parts included (`tools/appdata.py`).
+- What counts as a fault, and why those numbers. Empty: no entries at all. Under a floor: fewer than a working
+  source has ever given, where one is known (uniques 300, the search index 4,000, the currency catalogue 100,
+  the trade mod list 1,000, bosses 80, farms 10, the Currency Exchange 20 currencies, item text and
+  requirements 500). Collapsed: more than a fifth of the committed rows gone — an ordinary game patch moves a
+  list by a few percent, so a fifth is never a patch, it is the source or the parsing breaking. A kind gone: a
+  group that had rows has none now, by the field that names the kind (`cat`, `k`) or the letter a key starts
+  with. A file with several lists is only as good as its worst one.
+- Four calls, and no copy of the rule in any tool: `pull()` checks one outside pull, `keep()` does the same for
+  one section inside a file the builder writes anyway (the essences), `guarded()` wraps a whole builder so a
+  source that dies halfway through is the same fault rather than a traceback, and `report()` prints the story
+  and is the exit code.
+- Covered: `sync.py` (the search index — the bases, the Atlas and the currency come from RePoE through
+  `morecards.py`, which answers with nothing rather than failing, so this one could thin the index in silence),
+  `craft.py` (the tab's 32 files go out together or not at all; the essences are their own section),
+  `uniques.py`, `leagues.py`, `market.py`, `exchange.py`, `gamepull.py`, `tradedata.py`, `gameinfo.py`,
+  `atlas.py`, `bosses.py`, `farms.py`. The tools that build only from files already on disk have no outside
+  source to lose; the live prices are watched as jobs of their own.
+- The per-tool copies of this check are gone: `bosses.py` stopped the run with a message on three thin sources,
+  `atlas.py` on a base the export no longer names, `craft.py` counted its own essence names, and
+  `leagues.py`, `market.py`, `uniques.py` and `exchange.py` each had their own "keeping the last file" exit.
+  All of them now raise `lastgood.Stale` with the same words, so the fault is recorded and ticketed instead of
+  only printed.
+- What the owner sees: a stale section joins the dashboard's Data jobs block and the public `/api/health` in
+  the same fine/late/stopped style as the jobs — late on the first day, stopped after that, with the reason in
+  the builder's own words ("Currency prices: still showing the copy from 19 Sep, the source answered with
+  nothing."). `data/faults.json` is served like the other hourly files (`worker/files.js`), so the site can name
+  what is stale whether the file came from the data server or the backup.
+- The record only moves when what is stale moves, so a good run leaves the same bytes behind it every time and
+  the repo stays clean.
+- `node tools/dev/faults.mjs` proves it with no network: a fake builder four ways (a source with nothing, one
+  down to 60% of its rows, one that throws, and a builder that dies before its pull is checked) and a fifth good
+  run. Each fault keeps the committed file, prints the loud line, lands in the record, goes red, and is named by
+  both the dashboard and `/api/health`; the good run writes, twice over byte for byte, and clears the fault. The
+  same three faults were run against the real `leagues.py` and `uniques.py` with every read dead, against a copy
+  of the committed data: unchanged every time. `tools/dev/guard.mjs`: 6 ok, 0 failed.
+- Nothing a player sees changes, so there is no public patch note for this.
 
 ## Next — The essence tables survive a poe2db redesign
 

@@ -47,6 +47,22 @@ The site is static. GitHub Pages serves it; a GitHub Action (`.github/workflows/
 | `data/craft.json`, `data/craft/` | Craft tab: every base and the mods it can roll (all tiers, item levels, groups), essences, runes and soul cores, desecrated and corruption mods, orbs, omens and catalysts, built by `tools/craft.py` from the game files (essence tables and orb levels checked on poe2db; run after a game patch, after `tools/tradedata.py`) |
 | `data/gamedata.json` | Which patch the shipped data is from, written by `tools/gamepull.py` (one daily pull of the official export; it also writes the gap report `tools/dev/gaps.txt` — what the game files hold against what we card) |
 | `data/gamestats.json` | One monster of each level (life, damage, accuracy, armour, evasion) and what each class starts with, from the game files by `tools/gamelib.py`. Nothing reads it yet |
+| `data/faults.json` | Which sections are showing an older copy right now, and why, written by `tools/lastgood.py` (see below). The dashboard's Data jobs block and `/api/health` read it |
+
+### Last good wins
+
+Every builder that fills the index from an outside source runs its pull through `tools/lastgood.py`. A pull that
+throws, comes back empty or collapses against what is committed (an empty list, under a floor that source has
+always cleared, a fifth of its rows gone, or a whole kind gone) never overwrites the good file. The committed
+copy stays, the run prints what went stale with the counts before and after, how old the kept copy is and the
+likely cause, the fault is written to `data/faults.json`, a GitHub issue labelled `data-fault` is opened or
+reused (where the `gh` CLI is signed in), and the run exits non-zero. The owner sees the section in the
+dashboard's Data jobs block and in `/api/health`, in the same fine/late/stopped style as the jobs. Applies to
+`sync.py`, `craft.py`, `uniques.py`, `leagues.py`, `market.py`, `exchange.py`, `gamepull.py`, `tradedata.py`,
+`gameinfo.py`, `atlas.py`, `bosses.py` and `farms.py`. The tools that build only from files already on disk
+(`appdata.py`, `concepts.py`, `kwuse.py`, `nodelinks.py`, `grants.py`, `gamelib.py`, `rollprices.py`) have no
+outside source to lose; the live prices (`pricepull.py`) are watched as jobs of their own. Proved without the
+network by `node tools/dev/faults.mjs`.
 
 **Before every push: `node tools/dev/guard.mjs`** (about 5 seconds). It starts a local copy of the site and
 checks the card counts, every deep link the code emits, every public page, that no raw game code shows where a
