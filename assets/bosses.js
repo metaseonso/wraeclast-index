@@ -4,7 +4,7 @@
    Exchange 2 and Path of Building, joined to a boss on item names and nothing else (three of them were checked
    by hand against the game's drop limits, nothing more); the drop rates are the PoE2 Wiki's community samples,
    and every rate says so where it is shown. Nothing in the game files states a drop rate.
-   Prices: data/bossprices.json (worker/prices.js) resolves every name at once from the hourly unique checks, the
+   Prices: data/bossprices.json (worker/prices.js) resolves every name at once from the unique checks, the
    in-game Currency Exchange and the trade searches in data/bossqueries.json; a name it does not carry falls back to
    the card's own market price. Real prices only, and a rate never meets one: no value per kill, here or anywhere. */
 import { D, $, esc, card, openDetail, priceOf, hrefOf, moneyHTML, change, spark, ago, params } from './app.js';
@@ -283,7 +283,7 @@ export async function mount(el){
           (k === 'way' ? ' title="Cheapest way in first"' : '') + '>' + l + '</button>').join('') + '</div></div>' +
     '</div>' +
     '<div class="bo-list" id="bolist"></div>' +
-    '<p class="note bo-foot">Prices: the in-game Currency Exchange and live trade site listings, every hour.' +
+    '<p class="note bo-foot">Prices: the in-game Currency Exchange every hour, live trade site listings over the day.' +
       (BP && BP.updated ? ' Last check ' + esc(ago(BP.updated)) + '.' : '') + '</p>' +
     '<p class="note">Only the bosses a drop feed covers have a way in and a drop list. Pinnacle is the game’s own ' +
       'marking, so a few fights players call pinnacle are not marked. Drop rates are community samples from the ' +

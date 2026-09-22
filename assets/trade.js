@@ -136,7 +136,7 @@ export function syncVal(src){
 export function heatNote(priced, tiered = true){
   const when = T && T.roll && T.roll.updated ? ' Last check ' + ago(T.roll.updated) + '.' : '';
   return '<p class="note theat"><span class="theat-bar"></span> ' + (priced
-    ? 'Colour and price: the cheapest items with at least that roll, from the trade site. Updated every hour.' + when
+    ? 'Colour and price: the cheapest items with at least that roll, from the trade site. Checked over the day.' + when
     : tiered ? 'T1 is the best roll. Redder is a higher tier.' : 'Redder is a better roll.') + '</p>';
 }
 const ITEM_KINDS = /Weapon|Armour|Shield|Buckler|Focus|Quiver|Sword|Axe|Mace|Bow|Crossbow|Spear|Staff|Wand|Sceptre|Dagger|Claw|Flail|Talisman|Helmet|Gloves|Boots|Body/;

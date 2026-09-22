@@ -571,6 +571,10 @@ const DASH_N = Object.values(DASH_BOX).reduce((a, b) => a + b.length, 0);
    nobody arrived from another site in that week, and the notes list is empty in the saved answer. */
 const DASH_WANT = {overview: 8, visitors: 4, traffic: 2, clicks: 6, speed: 3, notes: 1, jobs: 2, plan: 3};
 const allFilled = ids => '!' + JSON.stringify(ids) + '.some(id => { const el = document.querySelector(id); return !el || !el.innerHTML.trim(); })';
+/* a block can be filled and still say "Loading" while its own read is in flight (the heatmap draws its page
+   preview when its tab opens), so wait for the words to go before reading the tab */
+const allDrawn = ids => '!' + JSON.stringify(ids) + '.some(id => { const el = document.querySelector(id); ' +
+  'return !el || !el.innerHTML.trim() || /^Loading/.test(el.textContent.replace(/\s+/g, " ").trim()); })';
 /* what one tab is holding: how many have numbers, say nothing, say they failed; which are empty, drew
    nothing, or are still waiting on an answer that came in long ago */
 const tabLook = ids => `(() => {
@@ -611,6 +615,7 @@ async function checkDash(browser, port){
         '"); if(b) b.click(); })()');
       await until(page, 'document.querySelector("#t-' + tab + '") && !document.querySelector("#t-' + tab + '").hidden', 4000);
       await until(page, allFilled(ids), 4000);   // the click spots wait on their own read
+      await until(page, allDrawn(ids), 6000);    // and their own read has to land before we judge the tab
       const r = JSON.parse(await evalJS(page, tabLook(ids)));
       full += r.full; none += r.none; failed += r.bad;
       if(r.empty.length) bad.push(what + ': ' + tab + ' left ' + r.empty.length + ' of ' + ids.length + ' blocks empty (' + r.empty.join(' ') + ')');

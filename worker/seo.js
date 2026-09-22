@@ -12,7 +12,7 @@
    keyword, currency, base, atlas; the others add their kind ("fulmination-passive"). Same name, same kind: "-2". */
 
 const SITE = 'https://wraeclastindex.fyi';
-const AGE = 3600;                 // pages and files: an hour (prices refresh hourly)
+const AGE = 3600;                 // pages and files: an hour (currency refreshes hourly, listings daily)
 const MARKET_TTL = 300e3;         // the market copy in memory: 5 minutes, like /data/market.json
 
 /* ---------- kinds ---------- */
@@ -617,7 +617,7 @@ ${data ? '<script type="application/ld+json">' + JSON.stringify(data).replace(/<
 ${body}
 </main>
 <footer class="foot">
-  <p>Game data: patch <b>${esc(m.patch || '')}</b>. Prices: the in-game Currency Exchange (currency) and live trade site listings (everything else), every hour.
+  <p>Game data: patch <b>${esc(m.patch || '')}</b>. Prices: the in-game Currency Exchange (currency) and live trade site listings (everything else, checked over the day).
   This product isn't affiliated with or endorsed by Grinding Gear Games in any way. <a href="/privacy">Privacy</a></p>
 </footer>
 </body>
@@ -661,7 +661,7 @@ function llms(m){
 
 > Path of Exile 2, made easier for every kind of player. Live prices, build checks, trade search in plain words, and every gem, unique, passive, currency and keyword. Game data from the official game files; prices from the in-game Currency Exchange and live trade site listings.
 
-Game data: patch ${m.patch} (${m.gen}). Prices: ${m.league || 'current'} league, the in-game Currency Exchange (currency) and live trade site listings (everything else), every hour (last ${when(m.updated)}). Prices are in divine orbs (div), or exalted orbs (ex) below one divine. This product isn\'t affiliated with or endorsed by Grinding Gear Games in any way.
+Game data: patch ${m.patch} (${m.gen}). Prices: ${m.league || 'current'} league, the in-game Currency Exchange (currency) and live trade site listings (everything else, checked over the day) (last ${when(m.updated)}). Prices are in divine orbs (div), or exalted orbs (ex) below one divine. This product isn\'t affiliated with or endorsed by Grinding Gear Games in any way.
 
 Every item has its own plain page at ${SITE}/item/<name>, for example ${SITE}/item/divine-orb: requirements, the official mod lines, price and 7-day change, and a link into the app.
 
@@ -686,7 +686,7 @@ Every item has its own plain page at ${SITE}/item/<name>, for example ${SITE}/it
 ## Data
 
 - [Item index](${SITE}/data/index.json): every gem, unique, passive, base item, atlas thing and keyword, as JSON
-- [Prices](${SITE}/data/market.json): real prices (Currency Exchange and live trade listings) and trends, as JSON, every hour
+- [Prices](${SITE}/data/market.json): real prices (Currency Exchange hourly, live trade listings over the day) and trends, as JSON
 - [Sitemap](${SITE}/sitemap.xml): every page
 
 ## Optional

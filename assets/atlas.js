@@ -120,7 +120,7 @@ function treeList(q){
 export async function mount(el){
   EL = el;
   el.innerHTML = '<div class="pagehd"><h2>Atlas</h2><p>Waystones, tablets, keys and the Atlas tree.' +
-    (D.market ? ' Prices: ' + esc(D.market.league) + ', every hour.' : '') + '</p></div><p class="note">Loading…</p>';
+    (D.market ? ' Prices: ' + esc(D.market.league) + ', checked over the day.' : '') + '</p></div><p class="note">Loading…</p>';
   try {
     const r = await fetch('data/atlas.json');
     if(!r.ok) throw new Error(r.status);
@@ -132,7 +132,7 @@ export async function mount(el){
   build();
   el.innerHTML =
     '<div class="pagehd"><h2>Atlas</h2><p>Waystones, tablets, keys and the Atlas tree. Patch ' + esc(A.patch) +
-      (D.market ? ' · prices ' + esc(D.market.league) + ', every hour.' : '.') + '</p></div>' +
+      (D.market ? ' · prices ' + esc(D.market.league) + ', checked over the day.' : '.') + '</p></div>' +
     '<div class="at-more"><a class="btn gold" href="#/bosses">Bosses →</a>' +
       '<p class="note">Every endgame boss: what it drops, and what the way in costs.</p></div>' +
     '<div class="kinds at-secs" id="atsec" role="group" aria-label="Section">' + SECTS.map(([k, l]) =>

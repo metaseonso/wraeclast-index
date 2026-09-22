@@ -119,7 +119,7 @@ function links(f){
   return '<div class="fm-links">' + L.map(l => '<a class="btn gold" href="' + esc(l.k === 'trade' ? tradeLeague(l.u) : l.u) +
     '" target="_blank" rel="noopener">' + esc(l.k === 'trade' ? 'Trade: ' + l.t : l.t) + ' ↗</a>').join('') + '</div>';
 }
-const HOURLY = 'Currency: the in-game Currency Exchange. Rolled tablets and waystones: middle of the 5 cheapest trade listings. Prices update every hour.';
+const HOURLY = 'Currency: the in-game Currency Exchange. Rolled tablets and waystones: middle of the 5 cheapest trade listings, checked over the day.';
 
 /* ---------- the farm card, in the grid ---------- */
 function farmCard(r){

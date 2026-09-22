@@ -1,7 +1,7 @@
 /* Craft tab: pick a base, see every mod it can roll at its item level and how often each one rolls, add mods by
    hand or by mechanic (essences, runes and soul cores, desecration, corruption), then find the item on trade.
    Game data: data/craft.json and data/craft/<kind>.json (tools/craft.py: the game files via RePoE; essence tables
-   and orb levels checked on poe2db). Prices and icons: data/market.json (poe.ninja, hourly).
+   and orb levels checked on poe2db). Prices and icons: data/market.json (Currency Exchange hourly, trade listings over the day).
    The weights are the one thing here the game does not publish: they come from Craft of Exile (tools/craftweights.py)
    and the pool names them. One mod's share of its own pool only — never the odds of a whole item.
    The plan (base, item level, mods) lives in the address (#/craft?s=...), so it can be shared. */
