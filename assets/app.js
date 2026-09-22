@@ -682,8 +682,7 @@ function bigLine(vals, label, lh){
       (dash(s) ? ';border-top-style:dashed' : '') + '"></i>' + esc(s.n) +
       (n < 14 ? '<span>' + n + (n === 1 ? ' day' : ' days') + '</span>' : '') + '</li>' : '';
   }).join('');
-  const said = [back.length ? 'Daily price in this league and the three before it. A past league is dashed, and' +
-      (back.some(own) ? ' drawn in its own colour, from GGG’s art for that league.' : ' the older it is the further apart its dashes are.') : '',
+  const said = [back.length ? 'Daily price in this league and the three before it.' : '',
     (lh && lh.note) || ''].filter(Boolean).join(' ');
   return '<figure class="chart"><figcaption>' + label + '</figcaption><svg viewBox="0 0 ' + w + ' ' + h +
     '" preserveAspectRatio="none" aria-hidden="true">' + paths + '</svg><ul class="chart-key">' + key + '</ul>' +
