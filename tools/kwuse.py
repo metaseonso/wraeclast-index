@@ -1,5 +1,9 @@
 """Build data/kwuse.json: for every keyword, everything that uses it, from every source, in order.
 
+Every keyword the site cards, not only the ones the drill-down page carries: tools/gamelib.py cards the rest
+of the game's glossary, and those cards would otherwise open with no Connections at all. Their wording is the
+card's own, and the keywords their text marks are the list the card already carries.
+
 A keyword's card lists what uses it (the Connections groups). A use is found two ways:
   1. the game-text markup: [Ignite] or [Ignite|Ignites] in a gem, unique, passive or keyword description
      (and the artifact's own keyword list for each gem, unique and passive)
@@ -199,6 +203,16 @@ def main():
     html = src.read_text(encoding='utf-8')
     gems, uq, tr, kw = (block(html, b) for b in ('gemdata', 'uqdata', 'trdata', 'kwdata'))
     index = json.loads((ROOT / 'data' / 'index.json').read_text(encoding='utf-8'))
+    # Every keyword the site really cards, not only the drill-down page's own block: tools/gamelib.py adds the
+    # rest of the game's glossary as cards, and a card with no entry here would open with no Connections at
+    # all. Their wording is the card's own (the markup is already taken out of it), and the keywords their
+    # text marks are the list that card already carries.
+    page, added = set(kw), 0    # what the drill-down page itself carries, before the index's own are added in
+    for it in index['items']:
+        if it['k'] == 'w' and it['id'] not in kw:
+            kw[it['id']] = {'t': it['n'], 'd': ' '.join(it.get('ls') or []) or (it.get('t') or ''),
+                            'kw': it.get('kw') or []}
+            added += 1
     atlas = json.loads((ROOT / 'data' / 'atlas.json').read_text(encoding='utf-8'))
     info = json.loads((ROOT / 'data' / 'info.json').read_text(encoding='utf-8'))
     market = json.loads((ROOT / 'data' / 'market.json').read_text(encoding='utf-8')).get('items') or {}
@@ -451,7 +465,7 @@ def main():
     # other keywords whose description shows this one
     has_card = lambda k: ('w:' + k) in cards or k in kwx
     for k2 in live:
-        for k in found(lines(kw[k2].get('d') or ''), kw[k2].get('d') or ''):
+        for k in found(lines(kw[k2].get('d') or ''), kw[k2].get('d') or '', kw[k2].get('kw') or ()):
             if k != k2:
                 use[k]['w'].append((sort_key(kw[k2]['t']), k2))
 
@@ -480,7 +494,11 @@ def main():
             out_k[k] = entry
 
     kn = {k: kw[k]['t'] for k in live if not has_card(k)}   # keywords with no card of their own: just the name
-    out = {'v': index.get('v'), 'sp': sp, 'at': at_out, 'cu': cu, 'cr': cr, 'es': es, 'ck': kinds, 'kn': kn, 'k': out_k}
+    # the keywords the drill-down page can filter its own lists by, which is the block it carries itself: a
+    # card's "See all in Gems" is only offered for one of these, because nothing else filters that page
+    dd = sorted(k for k in live if k in page)
+    out = {'v': index.get('v'), 'sp': sp, 'at': at_out, 'cu': cu, 'cr': cr, 'es': es, 'ck': kinds, 'kn': kn,
+           'dd': dd, 'k': out_k}
 
     # the standard: nothing visible may read as game code
     for s in strings({x: out[x] for x in ('sp', 'at', 'cu', 'cr', 'es', 'ck', 'kn')}):
@@ -496,6 +514,8 @@ def main():
     print('data/kwuse.json: %d keywords, %d KB (small passive groups %d, atlas %d (%d with a card), currency %d, crafting %d, '
           'essence lines %d)' % (len(out_k), len(raw.encode('utf-8')) // 1024, len(sp), len(at_out), sum(len(a) > 3 for a in at_out),
                                   len(cu), len(cr), len(es)))
+    print('  %d from the drill-down page, %d more that the index cards (tools/gamelib.py); %d can filter that '
+          'page\'s own lists' % (len(kw) - added, added, len(dd)))
     print('  keywords used by bases: %d, by essences: %d' % (sum(1 for e in out_k.values() if e.get('b')),
                                                             sum(1 for e in out_k.values() if e.get('e'))))
     if missing:

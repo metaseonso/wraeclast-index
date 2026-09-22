@@ -52,19 +52,26 @@ function turn(){
 }
 function push(map, k, v){ const a = map.get(k); if(a) a.push(v); else map.set(k, [v]); }
 const others = (list, key) => (list || []).filter(x => x !== key);
+/* the one card this card's own field names, as that field's map declares it: the field it reads ("at") and the
+   kind that answers to the name ("of"). A card is never a row of its own, and a name no card answers to is no
+   row at all, so one line covers a unique's base item and a base item's class alike. */
+const to = (it, m) => {
+  const g = MAPS[m], v = it[g.at], t = v ? g.of + ':' + v : '';
+  return t && t !== it.k + ':' + it.id && X.D.byKey.get(t) ? [{key: t}] : [];
+};
 /* a key with no card behind it draws nothing, so it is never a row (the tree carries small passives the
    index has no card for, and kwuse names them by id) */
 const cardRows = keys => keys.filter(key => X.D.byKey.get(key)).map(key => ({key}));
 
 /* ---------- one edge each ---------- */
 const EDGE = {
-  base(it){
-    const t = 'b:' + it.base;
-    return it.base && t !== it.k + ':' + it.id && X.D.byKey.get(t) ? [{key: t}] : [];
-  },
+  base(it){ return to(it, 'base'); },
   variants(it){ return cardRows(others(turn().base.get(it.base), it.k + ':' + it.id)); },
   uniques(it){ return cardRows(turn().base.get(it.base) || []); },
   klass(it){ return cardRows(others(turn().klass.get(it.cr), it.k + ':' + it.id)); },
+  klassof(it){ return to(it, 'klass'); },
+  // an item class is its own class (KINDS make), so the whole class reads the same map from the other end
+  inclass(it){ return cardRows(turn().klass.get(it.cr) || []); },
   section(it){ return cardRows(others(turn().place.get(it.at), it.k + ':' + it.id)); },
   cat(it){ return cardRows(others(turn().cat.get(it.k + '/' + it.s), it.k + ':' + it.id)); },
   // which item grants which skill, both ways round, as tools/grants.py worked it out

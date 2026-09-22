@@ -58,7 +58,7 @@ where the new number was meant to bite, and that difference has to be named.
 **What the guard proves.** Every slot has a cap and every cap belongs to a slot. No card draws more pieces in
 a slot than its cap. Everything a slot cut is counted, and the count says the right number.
 
-> **Worked.** The body slot. Measured over 6,613 index cards: the widest draws 3 blocks in the grid and 5 in
+> **Worked.** The body slot. Measured over 6,676 index cards: the widest draws 3 blocks in the grid and 5 in
 > the popup. The cap is 6 — above the widest, with room. Nothing is cut today, and a kind that grows past it
 > is cut and counted instead of growing the card.
 
@@ -75,9 +75,12 @@ saying which field. One function in `EDGE`. Then the kinds that build it name it
 fails. A group of a kind that is not a kind fails. A row that is the card it sits on fails.
 
 > **Worked.** "Shares its class with." The class is already on a base item (`cr`). So: `MAPS.klass =
-> {at: 'cr'}`, `REL.klass = {label: 'Shares its class with', of: 'b', edge: 'klass', map: 'klass', filter:
-> 'craft'}`, `EDGE.klass` reads that map, and the base kind names `klass` in its `rel`. The map is built for
-> every kind alike — no kind letter anywhere in it.
+> {at: 'cr', of: 'i'}`, `REL.klass = {label: 'Shares its class with', of: 'b', edge: 'klass', map: 'klass',
+> filter: 'craft'}`, `EDGE.klass` reads that map, and the base kind names `klass` in its `rel`. The map is
+> built for every kind alike — no kind letter anywhere in it. Once the classes were cards of their own, the
+> same map answered from both ends with nothing new in it: `of: 'i'` says which kind answers to the name, so
+> `REL.klassof` ("Item class", one row) and `REL.inclass` ("Bases of this class", all of them) are two more
+> `REL` entries and two more `EDGE` lines — the same pair a unique and its base item already had.
 
 #### 4. A new kind declaration
 
@@ -195,13 +198,13 @@ draw it counts.
 | | Rule |
 |---|---|
 | **Regions** | One per kind, named and coloured off this table: `many` for the name, `tone` for the palette token (`assets/theme.css`). **Nothing about a kind is written into the tool.** A kind with no `tone` gets a colour worked out from its letter, so it still lands in the picture, the key and the count with nobody editing anything. |
-| **Node** | One dot per card, every one of them — 6,613 today. Its size is how many edges it has. |
-| **Edge** | A line per edge the site can already follow, and no other: the keyword lists, the marks a card's own lines carry, the build's own marks, a unique and its base item, and what grants a skill both ways. 25,005 today. A card is never joined to itself. |
+| **Node** | One dot per card, every one of them — 6,676 today. Its size is how many edges it has. |
+| **Edge** | A line per edge the site can already follow, and no other: the keyword lists, the marks a card's own lines carry, the build's own marks, a unique and its base item, and what grants a skill both ways. 25,477 today. A card is never joined to itself. |
 | **Density** | Nothing is thinned and no dot is dropped. |
-| **What is left out** | A *group* is not a link between two things — "Listed with", "Shares its class with", "Shares its base with" put everything in one bag, and one group of 967 cards is 467,000 lines that all say the same thing. Those are left out, **counted**, and the page says how many (1,317,426 pairs today). Same rule as a slot: what is not drawn is a number, never an "etc." |
+| **What is left out** | A *group* is not a link between two things — "Listed with", "Shares its class with", "Shares its base with" put everything in one bag, and one group of 967 cards is 467,000 lines that all say the same thing. Those are left out, **counted**, and the page says how many (1,340,252 pairs today). Same rule as a slot: what is not drawn is a number, never an "etc." |
 | **Key** | Every kind, with its colour and its count. A kind the index holds no rows for — the bosses, which are cards at runtime out of their own file — is named among what the picture left out instead. Every kind is in one list or the other, and the guard fails if one is in neither. |
 | **Growth** | A new kind lands in the picture, the key and the count with nobody editing `tools/map.py`. Redraw it (`python tools/map.py`) and the new kind is there. |
-| **Lights** | Up to 18 real edges travel, spread over the picture so no two are taken within an eighth of it (15 today — the spacing rule, not the number, decides). They are picked with the layout and shipped in `data/map.json`, so the page draws one frame in well under a millisecond and never runs the maths. |
+| **Lights** | Up to 18 real edges travel, spread over the picture so no two are taken within an eighth of it (16 today — the spacing rule, not the number, decides). They are picked with the layout and shipped in `data/map.json`, so the page draws one frame in well under a millisecond and never runs the maths. |
 
 `FRAME.map` in `assets/kinds.js` names the file the page reads and states the rules above; `tools/dev/frame.mjs`
 holds the picture to them.

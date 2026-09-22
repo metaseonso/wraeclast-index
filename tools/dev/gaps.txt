@@ -1,8 +1,8 @@
 Wraeclast Index · the official game data, and what we ship of it
 
   export  patch 0.5.5, files dated 11 Sep 2026
-  pulled  2026-09-21 18:38 UTC · 18 files, 0 downloaded
-  index   5,712 cards over 5,437 names
+  pulled  2026-09-22 20:45 UTC · 18 files, 18 downloaded
+  index   6,613 cards over 6,110 names
 
   Counts are names, not cards: one name can be several cards.
 
@@ -11,7 +11,7 @@ Wraeclast Index · the official game data, and what we ship of it
   uniques           441     441       0  +18 we card that the export has no name for
   notables         1192    1185       7  Brew Concoction, Crystalline Phylactery, Implanted Gems …
   keystones          33      33       0  -
-  small passives    784       1     783  Accuracy, Accuracy Mastery, Accuracy Rating …
+  small passives    784     665     119  Accuracy Mastery, Acidic Concoction, Acolyte of Chayula …
   keywords          759     690      69  Adaptive Rune, Ancestral Bond, Arcane Rune …
   bases            1555    1554       1  Timeless Jewel
   currency          667     651      16  Albino Rhoa Feather, Black Scythe Artifact, Broken Circle Artifact …

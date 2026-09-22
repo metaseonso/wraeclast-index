@@ -26,6 +26,9 @@ The rules, and no guessing:
   * a card ranked low ("lo": the tree's small passives, tools/treecards.py) is never a phrase to look for: its
     name is the stat's own wording ("Attack Speed", "Minion Damage"), so every mod line that says the words
     would open it, and nothing in the line is naming a node. Their own lines are read as any other card's.
+  * a kind whose name is what a thing is rather than the name of one (NOT_A_NAME: the item classes) is left
+    out for the same reason — "Gloves" in a mod line is the kind of item the mod rolls on, and "Shield" and
+    "Ring" are a keyword and a base item before they are a class. Its own lines are read as any other card's.
   * no card has that name                    -> plain text, as before
 
 What is written, beside the lines (never in place of them, so every page still reads the plain text):
@@ -52,11 +55,12 @@ ROOT = Path(__file__).resolve().parent.parent
 # The lines a player reads, per kind of card. A card has one or the other, never both.
 LINE_FIELDS = {'u': 'ls', 'b': 'ls', 'p': 'ls', 'g': 't', 'h': 'ls'}
 NO_LINK = {'w'}            # keywords: the page marks those itself, as the card is drawn (assets/marks.js)
+NOT_A_NAME = {'i'}         # item classes: the words say what a thing is, never which card is meant
 FORMS = {'w', 'h'}         # kinds with other words they are reached by ("f")
 # A line that declares which kind it names. "Grants Skill: Ice Nova" is a gem, whatever else shares the name.
 PREFERS = (('Grants Skill:', 'g'),)
 KIND = {'g': 'gems', 'u': 'uniques', 'p': 'passives', 'b': 'bases', 'a': 'atlas', 'c': 'currency', 'w': 'keywords',
-        'h': 'mechanics'}
+        'h': 'mechanics', 'i': 'item classes'}
 
 
 def lines_of(it):
@@ -95,7 +99,9 @@ class Doors:
     def __init__(self, index):
         by_name = defaultdict(list)
         for it in index['items']:
-            if it.get('lo'):   # a low-ranked card's name is the stat's own wording, not a name: see the rules above
+            # a low-ranked card's name is the stat's own wording and an item class's is what a thing is, not
+            # the name of one: neither is a phrase to look for (see the rules above)
+            if it.get('lo') or it['k'] in NOT_A_NAME:
                 continue
             by_name[it['n']].append(it)
         for it in index['items']:   # the other words a keyword is shown as, so a longer keyword beats a shorter card name

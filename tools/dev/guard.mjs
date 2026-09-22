@@ -207,6 +207,11 @@ async function checkLinks(index, market){
   const bases = new Set(uniques.items.map(u => u.b).filter(Boolean));   // the base items that list filters by
   const baseCards = new Set(index.items.filter(x => x.k === 'b').map(x => x.n));
   const kw = new Set(Object.keys(keywords));
+  // the keyword filters a card's "See all" can carry: the drill-down page's own list, as tools/kwuse.py
+  // wrote it. The site cards more keywords than that page knows, and those offer no such link at all.
+  const dd = (await getJSON('/data/kwuse.json')).dd || [];
+  if(!dd.length) miss.push('data/kwuse.json names no keyword the drill-down page can filter by');
+  for(const id of dd) if(!kw.has(id) && miss.length < 12) miss.push('explore#gems?kw=' + id + ' → no such row');
   const craft = new Map(JSON.parse(await readFile(join(ROOT, 'data', 'craft.json'), 'utf8')).classes.map(c => [c.id, new Set(c.b.map(b => b[0]))]));
   const atlas = JSON.parse(await readFile(join(ROOT, 'data', 'atlas.json'), 'utf8'));
   // the lists each Atlas section really shows (assets/atlas.js): tablets carry the unique tablets too,
@@ -232,10 +237,9 @@ async function checkLinks(index, market){
       if(k === 'c' && priced.has('c:' + it.id)) want(hay(it).includes(it.id.toLowerCase()), '#/currency?c=', it);
       if(k === 'b' && it.cr) want(craft.has(it.cr) && craft.get(it.cr).has(it.n), '#/craft?base=', it);
       if(k === 'a' && it.at) want(!!atNames[it.at] && atNames[it.at].has(it.n), '#/atlas?s=' + it.at + '&q=', it);
-      if(k === 'w'){   // the "See all in ..." button under Connections
-        for(const [g, sec] of [['gems', 'gems'], ['uniques', 'uniques'], ['passives', 'tree']])
-          if(it.use && it.use[g]) want(kw.has(it.id), 'explore#' + sec + '?kw=', it);
-      }
+      // the "See all in ..." button under Connections, for the keywords that page can filter by (dd above)
+      if(k === 'w' && dd.includes(it.id))
+        for(const sec of ['gems', 'uniques', 'tree']) want(kw.has(it.id), 'explore#' + sec + '?kw=', it);
       // "Uniques on this base": the card's own see-all, the same list on the drill-down page. A unique whose
       // base item the files do not name carries its item class there instead, and an item class is not a base,
       // so it never offers the link (assets/edges.js).

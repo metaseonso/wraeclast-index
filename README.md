@@ -37,10 +37,10 @@ The site is static. GitHub Pages serves it; a GitHub Action (`.github/workflows/
 | `assets/edges.js` | What else belongs with a card: every group under Connections, worked out from the index itself and followed both ways (a unique names its base, a base names its uniques). Answers per list how many there are altogether and the first few, so a card draws eight rows and says the true total |
 | `assets/marks.js` | The doors inside a line: every keyword a card's own lines name, marked on the word where it is read and opening that keyword's card. Worked out as the card is drawn from the keyword cards the browser already holds, so the index ships nothing for it. A keyword's own name counts wherever it is read; its other spellings count only on a card whose own keyword list names it (`kw`, the game's markup, and the list the chips are made from); a phrase two cards answer to is left plain. The index's own build-time marks (`lx`, `tools/nodelinks.py`) keep the ground they hold |
 | `explore.html` | The drill-down page (built from the Wraeclast Index artifact); its data sits in `data/explore/` (files named by their content) |
-| `data/index.json` | Search index, built by `tools/sync.py`; the base item, Atlas and extra currency cards come from `tools/morecards.py` (kinds `b`, `a`, `c`), and the keyword cards the artifact does not carry, plus the ascendancy notables whose whole effect is a skill, from `tools/gamelib.py` (kinds `w` and `p`), and the mechanics cards from `tools/mechanics.py` (kind `h`), and the tree's small passives plus the conquerors a timeless jewel rolls from `tools/treecards.py` (kind `p`, marked `lo`: they rank below every other card the same words match); the phrases in a card's lines that name another card are marked by `tools/nodelinks.py` (`lx` on the card, `lxk` the key table). `tools/carddata.py` then joins on everything a card can say that was shipped but never reached one: the game's flavour line for uniques and keystones (`qt`), what an Atlas key or item is for (`t`), how many mods can roll on a base and whether their weights are measured (`cw`), and the official text for a name the market prices but no card covers (`ix`). The home page loads it in two parts, `data/index-core.json` and `data/index-rest.json` (`tools/appdata.py`) |
+| `data/index.json` | Search index, built by `tools/sync.py`; the base item, Atlas and extra currency cards come from `tools/morecards.py` (kinds `b`, `a`, `c`), and the keyword cards the artifact does not carry, the item classes, plus the ascendancy notables whose whole effect is a skill, from `tools/gamelib.py` (kinds `w`, `i` and `p`), and the mechanics cards from `tools/mechanics.py` (kind `h`), and the tree's small passives plus the conquerors a timeless jewel rolls from `tools/treecards.py` (kind `p`, marked `lo`: they rank below every other card the same words match); the phrases in a card's lines that name another card are marked by `tools/nodelinks.py` (`lx` on the card, `lxk` the key table). `tools/carddata.py` then joins on everything a card can say that was shipped but never reached one: the game's flavour line for uniques and keystones (`qt`), what an Atlas key or item is for (`t`), how many mods can roll on a base and whether their weights are measured (`cw`), and the official text for a name the market prices but no card covers (`ix`). The home page loads it in two parts, `data/index-core.json` and `data/index-rest.json` (`tools/appdata.py`) |
 | `sw.js` | The service worker (see Speed) |
 | `assets/fonts/` | The site's own copies of its fonts (Cinzel, IBM Plex Sans, IBM Plex Mono; SIL Open Font License) |
-| `data/kwuse.json` | What uses each keyword (the nine groups under Connections on a keyword card), built by `tools/kwuse.py`. Loaded the first time a card that needs it opens |
+| `data/kwuse.json` | What uses each keyword (the nine groups under Connections on a keyword card), built by `tools/kwuse.py` for every keyword the site cards, not only the ones the drill-down page carries. It also names the keywords that page can filter its own lists by (`dd`), which is what decides whether a card's "See all in Gems" has a list to send anyone to. Loaded the first time a card that needs it opens |
 | `data/grants.json` | What grants a skill and what each skill is granted by (base items, ascendancy notables and uniques), both directions, built by `tools/grants.py`. Loaded the first time a card that needs it opens, like `data/kwuse.json` |
 | `data/essences.json` | What an essence adds, on each kind of item: one row per modifier, the game's own wording for it, the kinds of item that get that same one (each opening the Craft tab there), which side it lands on and its level. Built by `tools/essences.py` from the essence tables in `data/craft/`, 24 kB; the `adds` field declares it in `assets/kinds.js` and it is fetched the first time a card that needs it opens, so the 1.6 MB behind it stays on the Craft tab |
 | `data/info.json`, `data/reqs.json` | Item text and requirements, built by `tools/gameinfo.py` |
@@ -143,9 +143,12 @@ In this order (each step reads what the one before wrote):
    if it fails it keeps the last good file, says so and exits 1, and `tools/craft.py` then keeps the weights already
    in `data/craft/` — so run it first and read what it says, but a bad pull never empties the page)
 4. After every `tools/sync.py`: `python tools/gamelib.py`
-   (the keyword cards the artifact does not carry, the keyword links that reach them, the 33 ascendancy notables whose
-   whole effect is a skill, and `data/gamestats.json`; `tools/sync.py` rebuilds `data/index.json` from the artifact, so
-   this has to come after it. Running it twice adds nothing twice, and `--report` says what it would do without writing)
+   (the keyword cards the artifact does not carry and the keyword links that reach them, the item classes as cards of
+   their own, the 33 ascendancy notables whose whole effect is a skill, and `data/gamestats.json`; `tools/sync.py`
+   rebuilds `data/index.json` from the artifact, so this has to come after it, and the item classes need
+   `tools/craft.py` to have run. Every keyword card the export still holds is reworded to it each run, so a term
+   reworded upstream lands here on the next pull. Running it twice adds nothing twice, and `--report` says what it
+   would do without writing)
 5. After `tools/gamelib.py`: `python tools/treecards.py`
    (the 893 small passives of the tree as cards, ranked low, and every conqueror a timeless jewel rolls on that
    jewel's card; `--report` says what it would do without writing. Running it twice adds nothing twice)
@@ -159,8 +162,8 @@ In this order (each step reads what the one before wrote):
    writes nothing else)
 7. Last, after any of the above: `python tools/kwuse.py`
    (every keyword's Connections lists in `data/kwuse.json`: uniques, gems, passives, bases, essences, atlas, crafting, currency,
-   keywords; and the "Used by" counts in `data/index.json`; it prints its counts against the artifact's own, lower only for
-   things the site leaves out)
+   keywords — for every keyword the index cards, not only the ones the drill-down page carries; and the "Used by" counts in
+   `data/index.json`; it prints its counts against the artifact's own, lower only for things the site leaves out)
 8. After `tools/kwuse.py`: `python tools/map.py`
    (`data/map.png` and the two files beside it: the whole index as one picture. It reads the finished index and
    the finished keyword lists, so it goes last; about two and a half minutes, and `--report` counts what it

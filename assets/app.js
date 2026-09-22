@@ -252,7 +252,10 @@ export const craftHref = (c, b = '', kind = '') => './#/craft?' + (b ? 'base=' +
 /* The forms a gold button can take that a template cannot write: one entry each, named by a kind's "link".
    A whole craft plan is one of them, so a second thing that carries a plan is a second entry and no code. */
 const LINKS = {
-  craft: it => it.cr && D.byKey.get('b:' + it.id) === it ? craftHref(it.cr, it.n) : null,
+  /* A card that names an item class: the class itself opens the Craft tab on the whole class, a base item on
+     that base. An item class is its own class (KINDS make), which is what tells the two apart. */
+  craft: it => !it.cr ? null : it.cr === it.id ? craftHref(it.cr, '', it.n)
+    : D.byKey.get('b:' + it.id) === it ? craftHref(it.cr, it.n) : null,
 };
 /* Where a card's gold button goes: the kind's own "link", with @field filled in from the entry, or one of the
    forms above. A field the entry has nothing for means no link at all, and so does an entry its kind calls
@@ -1144,6 +1147,11 @@ function kwChips(it){
 const REL_FILES = {kwuse: 'data/kwuse.json', grants: 'data/grants.json'};
 const HAVE = {};            // what is in
 const JOB = {};             // what is on its way
+let DRILL = null;           // the keywords the drill-down page can filter by, once its file is in
+function drillKw(){
+  if(!HAVE.kwuse) return null;
+  return DRILL || (DRILL = new Set(HAVE.kwuse.dd || []));
+}
 let relBad = false;         // a fetch that failed: the card says so instead of waiting for ever
 function needFiles(names){
   return Promise.all(names.map(f => JOB[f] || (JOB[f] =
@@ -1185,10 +1193,15 @@ function relRow(r){
    here is one the page knows (assets/bridge.js): a keyword, a base item, an item class, an Atlas section.
    A category with no filter of its own has no link, only the button that draws the rest here. */
 const SEEALL = {
-  kw(it, of){ const id = keywordIdOf(it); return id && of && of.sec ? ['#' + of.sec + '?kw=' + encodeURIComponent(id), of.place] : null; },
+  /* the drill-down page filters its lists by the keywords it carries itself (data/kwuse.json "dd"), so a
+     keyword the site cards and that page does not know has its rows here and no list to send anyone to */
+  kw(it, of){
+    const id = keywordIdOf(it), dd = drillKw();
+    return id && of && of.sec && dd && dd.has(id) ? ['#' + of.sec + '?kw=' + encodeURIComponent(id), of.place] : null;
+  },
   base(it, of){ return it.base ? ['#uniques?base=' + encodeURIComponent(it.base), of.place] : null; },
-  // the base's own card says which kind it is, so the link to the whole kind carries that name
-  craft(it){ return it.cr ? [craftHref(it.cr, '', (it.s || '').split('·')[0].trim()), 'Craft'] : null; },
+  // the link to the whole kind carries its name: a class card is that name, a base item says it in its sub line
+  craft(it){ return it.cr ? [craftHref(it.cr, '', it.cr === it.id ? it.n : (it.s || '').split('·')[0].trim()), 'Craft'] : null; },
   atlas(it){ return it.at ? ['./#/atlas?s=' + encodeURIComponent(it.at), 'Atlas'] : null; },
 };
 function seeAllHTML(it, cat){
