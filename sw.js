@@ -20,7 +20,7 @@ const META = 'wi-meta';   // which deploy each open page was loaded with
 // page (tools/sync.py names them). Anything else of the site's is kept the first time a page of this deploy asks.
 const SHELL = ['./', 'explore', 'privacy',
   'assets/app.css', 'assets/cards.css', 'assets/theme.css', 'assets/look.css', 'assets/bridge.css',
-  'assets/app.js', 'assets/kinds.js', 'assets/edges.js', 'assets/keys.js', 'assets/suggest.js', 'assets/notes.js',
+  'assets/app.js', 'assets/kinds.js', 'assets/edges.js', 'assets/marks.js', 'assets/keys.js', 'assets/suggest.js', 'assets/notes.js',
   'assets/support.js', 'assets/track.js',
   'assets/league.js', 'assets/bridge.js', 'assets/build.js', 'assets/currency.js', 'assets/trade.js', 'assets/tradepage.js',
   'assets/farms.js', 'assets/atlas.js', 'assets/bosses.js', 'assets/craft.js',

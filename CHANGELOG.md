@@ -3,6 +3,55 @@
 The full list of changes. The public patch notes (data/changelog.json, shown on the site) stay short.
 Add the details here first, then a short public line there.
 
+## Next — Every keyword a card names, linked on the word itself
+
+- The owner's call: *"The card for all listings need to have descriptions providing links to the cards for the
+  respective mechanic."* On Temporalis the three mod lines were plain text while the keywords they name —
+  Energy Shield, Resistances, Recoup — sat as chips at the bottom. The words were known; the lines did not
+  lead anywhere.
+- **Worked out as the card is drawn, not shipped.** `assets/marks.js` builds one table per index out of what
+  the browser already holds: every keyword card, the other spellings the game shows each one as (`f`), and the
+  mechanics cards' own words. A line is scanned once and the card keeps what it drew, so opening a card,
+  stepping back to it or filtering it scans nothing. `data/index.json` and its two parts are **byte for byte
+  unchanged** — the build-time marks that started this (`lx`/`lxk`, `tools/nodelinks.py`) skipped keywords
+  because 11,457 spans would have pushed `data/index-core.json` past its budget, and nothing was added to it.
+- **The rules, and no guessing.** Whole words, the phrase's own letters and case, longest phrase first, never
+  inside another mark. A keyword's own name is a door wherever it is read. Its other spellings are doors only
+  on a card whose own keyword list names it (`kw`, the game's own markup, and the list the chips are made
+  from), so "Life" opens Life Leech on a card that leeches and is left alone on one that only grants Life. A
+  phrase two cards answer to is left plain and nothing shorter is marked under it, unless one of them is
+  actually called that and the other is only also known as it — so "Fire Resistance", which is both Fire
+  Damage's word and Resistances', stays plain on the line. A mechanics word (increased, reduced, more, less,
+  Adds) is a door only where the line uses it as a number, the rule the index already uses: after a percentage,
+  or opening the line with a number behind it — never "Adds a Rune Socket" on a tablet. Never the card you are
+  already on, and never on ground the index's own marks hold: a word is marked once.
+- **Every kind, every line a player reads.** Effect lines, the "what it does" text, an Atlas passive's options,
+  a base item's properties, the grid card's short text, and the prose in the damage card's own chart. Marked
+  words, before → after: gems 0 → 3,676 · uniques 1,265 → 6,575 · passives 1,214 → 4,475 · bases 104 → 3,133 ·
+  Atlas 0 → 610 · currency and essences 0 → 839 · keywords 0 → 1,999 · mechanics 6 → 17. **2,589 → 21,324
+  marks on 5,528 of 6,293 cards**, from 1,511. The 2,589 the index itself marked are all still there and still
+  say the same thing. A boss card carries no game text of its own, so it gains nothing and its rows were
+  already cards.
+- **Two marks, and neither is a chip.** A mechanics card is ours, not the game's, so it keeps the footnote it
+  had (`.hlink`: the word, a dotted hairline and a `*`). A keyword is the game's own word, so it takes a plain
+  hairline in the accent and the word's own colour (`.kwmark`), and lights up on hover. Both now sit above the
+  card's own stretched link, which they did not: in a card's effect lines a mark was already on top, but in
+  its description or its properties line a tap landed on the card and opened the card the word was on.
+- **The chips stay.** They are the summary, the marks are the detail, and they are not the same list: of
+  15,450 chips, 12,909 also appear in the lines (uniques 91%, bases 98%, passives 90%, keywords 83%, gems
+  63%), and on **1,372 of 4,875 cards with a chip row** at least one chip is named nowhere in the text —
+  Temporalis' own Elemental Damage Types among them. A card whose chips all appear inline still reads better
+  with the row: it is the one place the whole list is.
+- Checked: guard 6 ok, 0 failed. 375×812 touch and desktop, Chrome over CDP — Temporalis, a gem, a passive, a
+  base, a currency card, a keyword card and the damage card; a real tap on a marked word in the grid and in
+  the popup opens the right card, Back returns to the card behind it and a second Back closes; no console
+  errors, nothing scrolls sideways. Every mark on every card of every kind resolves to a card and none points
+  at the card it is on. Draw time per card, median of eleven: a six-line unique 0.13 ms → 0.20 ms, 0.17 ms
+  drawn again; a passive 0.09 → 0.13 ms; a 30-card grid 0.11 → 0.18 ms; the longest keyword text 0.11 →
+  0.19 ms. The biggest "Found on" there is (Hit Damage, 69 rows drawn) opens in 17 ms, as before: its rows are
+  names, not lines, and nothing scans them. Payload: the data files unchanged, `assets/marks.js` 2.4 KB gzip
+  and `assets/app.js` +1.0 KB, `assets/cards.css` +0.2 KB.
+
 ## Next — An essence card says what it adds, per kind of item
 
 - The owner's call, with a screenshot of the Currency tab: *"I still don't see essence information. as you can

@@ -7,6 +7,7 @@
 import {initKeys, setCardKeys, keyLabel} from './keys.js';
 import {KIND, DEFAULT, FIELDS, ACTS, CHIPS, NAMES, ROUTES, fieldsOf} from './kinds.js';
 import * as edges from './edges.js';
+import * as marks from './marks.js';
 
 export const $ = (s, el = document) => el.querySelector(s);
 export const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -257,45 +258,85 @@ function reqPills(rq, note){
   if(!out.length) out.push(pill('No requirements'));
   return out.join('') + (note ? '<span class="pill-note">' + note + '</span>' : '');
 }
-/* One line as the card shows it, with the words that lead to a mechanics card marked (it.hx, from prep above).
-   A mechanics card is ours, not the game's, so the mark is a word in the line and never a keyword chip: see
-   .hlink in assets/cards.css, and the source line the mechanics card itself carries. */
+marks.setup({D, keywordIdOf});   // the keyword cards are its vocabulary: assets/marks.js
+/* One line as the card shows it, with its doors marked. Two kinds of mark, and they never overlap: the words
+   marked when the data was built (tools/nodelinks.py — it.hx from prep above, or a table file's own spans) and
+   the keywords worked out as the card is drawn (assets/marks.js), which never land on ground the build already
+   took. A mechanics card is ours, not the game's, so its mark is the word with a footnote; a keyword is the
+   game's own word, so its mark is the word underlined. Neither is a keyword chip: the chips under the card are
+   the summary, these are the detail. See .hlink and .kwmark in assets/cards.css. */
 const HLINK_TITLE = 'How it works — our own note, not the game’s';
+const KWMARK_TITLE = 'Keyword — the game’s own words';
 function spansHTML(text, spans){
   if(!spans || !spans.length) return esc(text);
   let out = '', at = 0;
   for(const [s, n, key] of spans){
     if(s < at) continue;
-    out += esc(text.slice(at, s)) + '<button type="button" class="hlink" title="' + HLINK_TITLE +
-      '" data-h="' + esc(key) + '">' + esc(text.slice(s, s + n)) + '</button>';
+    const word = esc(text.slice(s, s + n));
+    out += esc(text.slice(at, s)) + (key[0] === 'h'
+      ? '<button type="button" class="hlink" title="' + HLINK_TITLE + '" data-h="' + esc(key) + '">' + word + '</button>'
+      : '<button type="button" class="kwmark" title="' + KWMARK_TITLE + '" data-kw="' + esc(key.slice(2)) + '">' + word + '</button>');
     at = s + n;
   }
   return out + esc(text.slice(at));
 }
-function lineHTML(it, i, text, marked){
-  return spansHTML(text, marked && it.hx && it.hx[i]);
+/* One line, with the marks the build gave it and the keywords worked out here. `fixed` is what the build
+   marked and this draws; `block` is all the ground the build's marks hold, whether or not they are drawn, so
+   a keyword is never marked inside a name the build already read. */
+function drawLine(it, text, fixed, block){
+  const found = marks.scan(it, text, block);
+  return spansHTML(text, fixed && fixed.length ? [...fixed, ...found].sort((a, b) => a[0] - b[0]) : found);
 }
 /* A line marked in a file of its own, the way the index marks its own cards' lines (tools/nodelinks.py): the
    phrases that lead to a mechanics card, off that file's key table. */
 const mechSpans = (spans, lxk) => (spans || [])
   .filter(x => (lxk[x[2]] || '').startsWith('h:')).map(x => [x[0], x[1], lxk[x[2]]]);
-/* The mechanics card behind a marked word, or behind the offer on a card about damage. The index loads in
-   two parts, so one of the very first cards can be tapped before the part the mechanics cards are in has
-   arrived: then it waits for it. */
+/* A card is drawn again every time it is opened, stepped back to, filtered or scrolled past, and its lines do
+   not change between draws: each line keeps the form it was marked into, until the index itself moves on. */
+function lineHTML(it, at, i, text, marked){
+  const v = marks.version();
+  if(it._mkv !== v){ it._mkv = v; it._mk = {}; }
+  const key = at + i;
+  let html = it._mk[key];
+  if(html === undefined) it._mk[key] = html =
+    drawLine(it, text, marked && it.hx && it.hx[i], marked && it.lx && it.lx[i]);
+  return html;
+}
+/* The keyword cards land with the rest of the index, so the home page's very first cards can be drawn with
+   nothing to mark yet. They take their marks in place the moment it lands: only the lines are drawn again, so
+   a card keeps its place, its price and its buttons. */
+function remark(host){
+  for(const el of host.querySelectorAll('[data-mk]')){
+    const c = el.closest('.card');
+    const it = c && c.dataset.key ? D.byKey.get(c.dataset.key) : null;
+    if(!it) continue;
+    const [at, i] = el.dataset.mk.split(':');
+    const v = it[at];
+    el.innerHTML = lineHTML(it, at, +i, Array.isArray(v) ? v[+i] : v, (KIND[it.k] || {}).mark === at);
+  }
+}
+/* The card behind a marked word: a keyword's, or a mechanics card's. The index loads in two parts, so one of
+   the very first cards can be tapped before the part the mechanics cards are in has arrived: then it waits. */
+function openMark(el, opts){
+  const id = el.dataset.kw;
+  if(id !== undefined){ const c = keywordCard(id); if(c) openDetail(c, opts, hrefOf(c)); return; }
+  openMech(el.dataset.h, opts);
+}
 function openMech(key, opts){
   const c = D.byKey.get(key);
   if(c) return void openDetail(c, opts, null);
   ready.then(() => { const x = D.byKey.get(key); if(x) openDetail(x, opts, null); }, () => {});
 }
 /* A field of lines — one string, or a list of them — with the marked words in whichever of them the index
-   marked (the kind's own "mark", assets/kinds.js). A list longer than max says how many are left. */
+   marked (the kind's own "mark", assets/kinds.js). A list longer than max says how many are left.
+   Every drawn line says which field and which line it is ("data-mk"), so remark above can find it again. */
 function richHTML(it, at, max){
   const v = it[at];
   if(v === undefined || v === null || v === '') return '';
   const marked = (KIND[it.k] || {}).mark === at;
-  if(!Array.isArray(v)) return '<p class="card-tx">' + lineHTML(it, 0, v, marked) + '</p>';
+  if(!Array.isArray(v)) return '<p class="card-tx" data-mk="' + at + ':0">' + lineHTML(it, at, 0, v, marked) + '</p>';
   if(!v.length) return '';
-  const li = (x, i) => '<li>' + lineHTML(it, i, x, marked) + '</li>';
+  const li = (x, i) => '<li data-mk="' + at + ':' + i + '">' + lineHTML(it, at, i, x, marked) + '</li>';
   const more = v.length - max;
   return '<ul class="card-ls">' + v.slice(0, more > 1 ? max : v.length).map(li).join('') +
     (more > 1 ? '<li class="more-n">+' + more + ' more</li>' : '') + '</ul>';
@@ -310,11 +351,12 @@ function richHTML(it, at, max){
    Only in the popup: it is taller than a card in the grid, and every card opens its popup first. */
 function flowHTML(it, full){
   if(!it.fl || !it.fl.length || !full) return '';
+  // the chart's own labels stay plain; what a step says is a line like any other, and carries its marks
   const run = st => '<ol class="flow-run">' + st.map(([n, note]) =>
-    '<li class="flow-st"><b>' + esc(n) + '</b>' + (note ? '<span>' + esc(note) + '</span>' : '') + '</li>'
+    '<li class="flow-st"><b>' + esc(n) + '</b>' + (note ? '<span>' + drawLine(it, note) + '</span>' : '') + '</li>'
   ).join('') + '</ol>';
   const cols = cs => '<div class="flow-cols">' + cs.map(c =>
-    '<div class="flow-col"><b>' + esc(c.h) + '</b><ul>' + (c.ls || []).map(x => '<li>' + esc(x) + '</li>').join('') +
+    '<div class="flow-col"><b>' + esc(c.h) + '</b><ul>' + (c.ls || []).map(x => '<li>' + drawLine(it, x) + '</li>').join('') +
     '</ul></div>').join('') + '</div>';
   return '<div class="flow">' + it.fl.map(g => '<p class="flow-hd">' + esc(g.h) + '</p>' +
     (g.st ? run(g.st) : '') + (g.cols ? cols(g.cols) : '')).join('') + '</div>';
@@ -364,12 +406,14 @@ export function buildsHref(it){
 const TABLES = {};   // file -> a promise of it, asked for once
 const tableOf = file => TABLES[file] || (TABLES[file] = getJSON(file, {priority: 'low'}).catch(() => null));
 const SIDE = {p: 'Prefix', s: 'Suffix'};
-function addsHTML(t, rows){
+function addsHTML(it, t, rows){
   const cl = t.cl || {}, lxk = t.lxk || [];
+  // game wording like any other line: the file's own marks are drawn, and its keywords are worked out here
+  const line = (x, spans) => drawLine(it, x, mechSpans(spans, lxk), spans);
   return '<ul class="card-adds">' + rows.map(([side, lv, kinds, lines, lx]) =>
     '<li><span class="adds-on">' + kinds.map(c => '<a class="uses-go" href="' + craftHref(c) + '">' +
         esc(cl[c] || c) + '</a>').join(', ') + '</span>' +
-      '<span class="adds-ml">' + lines.map((line, i) => spansHTML(line, mechSpans((lx || [])[i], lxk))).join('<br>') + '</span>' +
+      '<span class="adds-ml">' + lines.map((x, i) => line(x, (lx || [])[i])).join('<br>') + '</span>' +
       '<span class="adds-rs">' + (SIDE[side] || '') + (lv ? ' · level ' + lv : '') + '</span></li>').join('') + '</ul>';
 }
 /* the card is drawn before the table is in, so the field leaves a box and fills it once the file lands. A name
@@ -379,7 +423,7 @@ function addsFill(host, it, f){
   tableOf(f.file).then(t => {
     const rows = t && t.e && t.e[it[f.at]];
     if(!rows || !rows.length || !host.isConnected) return;
-    host.innerHTML = (f.label ? '<p class="card-facts">' + esc(f.label) + '</p>' : '') + addsHTML(t, rows);
+    host.innerHTML = (f.label ? '<p class="card-facts">' + esc(f.label) + '</p>' : '') + addsHTML(it, t, rows);
     host.hidden = false;
   });
 }
@@ -403,7 +447,8 @@ const TYPE = {
   }},
   duration: {v: (it, f) => it[f.at] ? trim(it[f.at] / 1000, 2) + ' s' + (f.post || '') : ''},
   cost:   {v: (it, f) => { const c = it[f.at]; return c ? c[0] + ' ' + c[1] + ' at gem level 20' : ''; }},
-  lines:  {v: (it, f) => (it[f.at] || []).join(' · ')},
+  lines:  {raw: 1, v: (it, f) => (it[f.at] || []).map((x, i) =>
+    '<span data-mk="' + f.at + ':' + i + '">' + lineHTML(it, f.at, i, x, false) + '</span>').join(' · ')},
   money:  {raw: 1, v: (it, f, o) => o.px && o.px.v !== undefined
     ? '<b>' + moneyHTML(o.px.v) + '</b>' + change(o.px.ch) : ''},
   uses:   {v: (it, f) => {   // a keyword: how much of the game it touches, from the index's own count
@@ -436,7 +481,8 @@ const TYPE = {
     const list = it[f.at];
     if(!list || !list.length) return '';
     return '<p class="card-facts">' + (o.full ? 'Choose one:' : list.length + ' options to choose from') + '</p>' +
-      (o.full ? '<ul class="card-ls">' + list.map(x => '<li>' + esc(x) + '</li>').join('') + '</ul>' : '');
+      (o.full ? '<ul class="card-ls">' + list.map((x, i) =>
+        '<li data-mk="' + f.at + ':' + i + '">' + lineHTML(it, f.at, i, x, false) + '</li>').join('') + '</ul>' : '');
   }},
   adds:   {raw: 1, fill: addsFill, v: (it, f, o, name) => o.full && it[f.at]
     ? '<div class="card-addsbox" data-fill="' + esc(name) + '" hidden></div>' : ''},
@@ -509,8 +555,8 @@ export function card(it, opts = {}){
   if(o.detail) return el;
   // a card opens its popup; only the gold button in the popup leaves the page
   el.addEventListener('click', e => {
-    const hl = e.target.closest('.hlink');   // a word in a line: its mechanics card, not this one
-    if(hl){ e.preventDefault(); openMech(hl.dataset.h, {}); return; }
+    const mk = e.target.closest('.hlink, .kwmark');   // a marked word: the card it names, not this one
+    if(mk){ e.preventDefault(); openMark(mk, {}); return; }
     if(e.target.closest('.card-ext, .star, button')) return;
     const link = e.target.closest('.card-link');
     if(link && (e.ctrlKey || e.metaKey || e.shiftKey || e.button === 1)) return;   // new tab still works
@@ -673,7 +719,7 @@ function ensureOV(){
       }
       const go = t.closest('a.btn.gold, a.uses-go');
       if(go){ if(go.target !== '_blank') hideDetail(); return; }   // leaving the page: nothing to undo. A new tab: the card stays
-      const kw = t.closest('.kwlink');
+      const kw = t.closest('.kwlink, .kwmark');   // a keyword chip, or a marked word in a line
       if(kw){ const c = keywordCard(kw.dataset.kw); if(c) openDetail(c, {nested: true}, hrefOf(c)); return; }
       const hl = t.closest('.hlink, .card-offer');   // a word in a line, or the offer: a mechanics card (tools/mechanics.py)
       if(hl){ openMech(hl.dataset.h, {nested: true}); return; }
@@ -949,10 +995,13 @@ export function keywordCard(id){
   const name = D.index.kwx && D.index.kwx[id];   // a keystone stands for its own keyword
   return D.byKey.get('w:' + id) || (name && D.index.items.find(x => x.k === 'p' && x.n === name)) || null;
 }
+/* Kept on the card: every line of it asks, and the answer is a walk over the keystones (assets/marks.js). */
 export function keywordIdOf(it){
-  if(it.k === 'w') return it.id;
-  if(it.k === 'p' && D.index.kwx) for(const [k, n] of Object.entries(D.index.kwx)) if(n === it.n) return k;
-  return null;
+  if(it._kwid !== undefined) return it._kwid;
+  let id = null;
+  if(it.k === 'w') id = it.id;
+  else if(it.k === 'p' && D.index.kwx) for(const [k, n] of Object.entries(D.index.kwx)) if(n === it.n){ id = k; break; }
+  return it._kwid = id;
 }
 function kwChips(it){
   const own = keywordIdOf(it);
@@ -1239,6 +1288,8 @@ function homeRender(){
   $('#quote').hidden = has || !list.length;
   const shown = list.slice(0, H.shown);
   flow($('#cards'), shown.map(it => ({key: it.k + ':' + it.id, it})), x => card(x.it));
+  // these are the only cards drawn before the whole index is in: they take their keyword marks when it lands
+  if(!D.full && !H.marked){ H.marked = true; ready.then(() => remark($('#cards')), () => {}); }
   more.hidden = list.length <= H.shown;
   if(has && !list.length){
     $('#cards').innerHTML = '<div class="empty" style="grid-column:1/-1"><h3>Nothing matches</h3><p>Try fewer words.</p></div>';

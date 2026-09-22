@@ -64,6 +64,18 @@
 .hlink::after{content:'*'; font-size:.8em; vertical-align:super; line-height:0; margin-left:1px; opacity:.75}
 .hlink:hover, .hlink:focus-visible{text-decoration-style:solid; text-decoration-color:var(--muted)}
 .hlink:focus-visible{outline:2px solid var(--accent); outline-offset:2px; border-radius:2px}
+/* A word in a line the game itself marks as a keyword (assets/marks.js): the door to that keyword's card,
+   on the word where it is read. The word keeps the line's own colour and takes a hairline in the accent, so
+   it is neither the mechanics footnote above nor a keyword chip — the chips under the card are the summary,
+   these are the detail. */
+.kwmark{display:inline; font:inherit; color:inherit; background:none; border:0; padding:0; margin:0; cursor:pointer;
+  text-decoration:underline; text-decoration-thickness:1px; text-underline-offset:2px;
+  text-decoration-color:var(--accent); text-decoration-skip-ink:auto}
+.kwmark:hover, .kwmark:focus-visible{color:var(--accent)}
+.kwmark:focus-visible{outline:2px solid var(--accent); outline-offset:2px; border-radius:2px}
+/* Both marks sit above the card's own stretched link (.card-link::after), so a tap on a marked word opens
+   the word's card and not the card the word is on. */
+.hlink, .kwmark{position:relative; z-index:1}
 /* where a mechanics card's maths was read off. It is not game text, and the card says so where it is read. */
 /* the game's own flavour line on a unique or a keystone ("qt", tools/carddata.py): the game prints it apart
    from the modifiers, and so do we */
@@ -99,7 +111,7 @@
 .card-offer{display:block; width:100%; text-align:left; font:inherit; font-size:12px; color:var(--text);
   background:var(--sunken); border:1px solid var(--line); border-radius:6px; padding:6px 9px; cursor:pointer}
 .card-offer b{font-weight:600}
-.card-offer b::after{content:' 92'; color:var(--faint); font-weight:500}
+.card-offer b::after{content:' \2192'; color:var(--faint); font-weight:500}
 .card-offer small{display:block; margin-top:1px; font-size:11px; color:var(--faint)}
 .card-offer:hover, .card-offer:focus-visible{border-color:var(--accent); color:var(--text)}
 .card-offer:focus-visible{outline:2px solid var(--accent); outline-offset:2px}
