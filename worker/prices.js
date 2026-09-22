@@ -12,6 +12,10 @@
      roll:<stat>@<value>        trade sliders: the 10 cheapest items with at least that roll
      farm:<key>                 rolled tablets and waystones for the Farms tab
      boss:<key>                 boss entry items the in-game Currency Exchange does not trade (data/bossqueries.json)
+   The job runs hourly and every kind gets a share of every run, but the trade site turns most of some runs
+   away, so any one of these prices comes round about once a day, not once an hour (every: 'day' below). The
+   Currency Exchange prices are hourly and are not in that budget. Every price carries its own age (at), so
+   a price is never shown as newer than it is.
    A price is the middle of the 5 cheapest of those listings, in divines, worked out when it arrives (v), plus one
    price per day (h).
    Listings priced in any currency are turned into divines at the Currency Exchange's own rates.
@@ -212,7 +216,7 @@ export async function servePrices(request, env, ctx, kind){
   const cat = (await published(env, url.origin, 'market.json', ctx)) || {};
   const rows = await env.DB.prepare('SELECT key, v, total, at FROM trade_prices WHERE key LIKE ? AND league = ?')
     .bind(kind + ':%', cat.league || '').all();
-  const out = {updated: null, league: cat.league || null, every: 'hour'};
+  const out = {updated: null, league: cat.league || null, every: 'day'};   // one of these comes round in a day
   if(kind === 'roll') out.mods = {}; else out.items = {};
   for(const r of rows.results || []){
     const name = r.key.slice(kind.length + 1), price = r.v === undefined ? null : r.v;
@@ -234,7 +238,8 @@ export async function servePrices(request, env, ctx, kind){
 /* What the things on the Bosses tab cost, in one file, so a page never has to work it out from three.
    Every name in data/bosses.json (what a boss drops, what it costs to get in, and anything only the wiki's
    rate table names: the tab draws a price cell for all three) is looked up in:
-     the uniques    our own hourly unique checks (uniq:). A unique that comes on more than one base keeps
+     the uniques    our own unique checks (uniq:), which give the names a boss card shows a share of their
+                    own so they are not queued behind the rest. A unique that comes on more than one base keeps
                     each base's own price: the cheapest one that is really listed is the one given, with
                     the base it is on, the way the site says "from" elsewhere.
      the rest       the in-game Currency Exchange (exchange.json), by name: the lineage gems, the
@@ -309,7 +314,7 @@ export async function serveBossPrices(request, env, ctx){
     for(const d of b.drops || []) add(d.name, d.kind);
     for(const r of (b.rates && b.rates.rows) || []) add(r.item, null);
   }
-  const out = {league, updated: older(currencyAt, tradeAt), every: 'hour',
+  const out = {league, updated: older(currencyAt, tradeAt), every: 'day',
     late: stale(currencyAt, 'file', 'exchange.json') || (!!tradeAt && stale(tradeAt, 'price', 'uniq')),
     times: {currency: currencyAt, trade: tradeAt},
     primary: 'divine', source: 'Currency Exchange and trade site listings', items};

@@ -1,8 +1,8 @@
 """Build data/pricejobs.json: which mods get live roll prices, and at which values.
 
-The Cloudflare worker (worker/prices.js) works through this list slowly: one or two official trade searches
-a minute, all of them once an hour, and serves the results at /data/rollprices.json. The trade sliders colour
-their track by those prices and show "from ~X" beside the box.
+tools/pricepull.py works through this list slowly, a share of every run, and the site serves the results at
+/data/rollprices.json. One point comes round in about a day, not an hour. The trade sliders colour their
+track by those prices and show "from ~X" beside the box.
 
 Each job is a mod and a few of its tier breakpoints (always the lowest and the best tier). Run it after
 tools/tradedata.py (it reads data/trade.json):
@@ -17,8 +17,9 @@ from tradedata import key
 
 ROOT = Path(__file__).resolve().parent.parent
 
-# (trade id or the mod's wording, how many breakpoints). Keep the total near 55: the trade site allows about
-# 100 searches an hour, and farm prices share that.
+# (trade id or the mod's wording, how many breakpoints). The total decides how long one point waits: every
+# kind gets a share of the hour in proportion to how many it has waiting (tools/pricepull.py), so 55 points
+# come round in about 9 hours. Doubling them would double that wait, not the load on the trade site.
 MODS = [
     ('pseudo.pseudo_total_life', 6),
     ('pseudo.pseudo_total_fire_resistance', 4),
@@ -61,7 +62,7 @@ def main():
         jobs.append([m[0], values])
         print(m[1], values)
     (ROOT / 'data' / 'pricejobs.json').write_text(json.dumps({'roll': jobs}, separators=(',', ':')), encoding='utf-8')
-    print(len(jobs), 'mods,', sum(len(v) for _, v in jobs), 'searches an hour')
+    print(len(jobs), 'mods,', sum(len(v) for _, v in jobs), 'points to check')
 
 
 if __name__ == '__main__':

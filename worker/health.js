@@ -18,17 +18,22 @@ import { fileWhen, published } from './files.js';
 const CACHE = 60;   // seconds a data centre keeps its answer
 
 /* [where, the file or kind of price, plain name, every (hours), late after (hours), stopped after (hours)]
-   The trade price jobs spread their checks over the hour and give up for the hour when the trade site says so,
-   so a kind of price is given longer than a file before it counts as late.
+   A file comes in on the hour. A kind of trade price comes round on a day, not an hour: the job runs hourly
+   and gives every kind a share of every run, but the trade site turns away most of some runs, so one price
+   of a kind is seen about once a day (tools/pricepull.py). What is watched here is whether that share is
+   still landing, which is why the price kinds read 24 hours: late once several runs in a row have brought
+   nothing of a kind, stopped once a whole day has gone by with nothing, because by then the oldest price of
+   that kind is older than the day it promises. Every price also carries its own age on the page, so a slow
+   cycle shows itself there whatever this says.
    Currency listings (cur) are not watched: the Currency Exchange feed replaced those checks (tools/pricepull.py). */
 export const JOBS = [
   ['file', 'exchange.json', 'Currency prices', 1, 2, 6],
   ['file', 'market.json', 'Currency list', 1, 2, 6],
   ['file', 'leagues.json', 'League dates', 6, 13, 26],
-  ['price', 'uniq', 'Unique prices', 1, 3, 8],
-  ['price', 'roll', 'Mod roll prices', 1, 3, 8],
-  ['price', 'farm', 'Farm prices', 1, 3, 8],
-  ['price', 'boss', 'Boss entry prices', 1, 3, 8],
+  ['price', 'uniq', 'Unique prices', 24, 6, 26],
+  ['price', 'roll', 'Mod roll prices', 24, 6, 26],
+  ['price', 'farm', 'Farm prices', 24, 6, 26],
+  ['price', 'boss', 'Boss entry prices', 24, 6, 26],
 ];
 const KIND = {uniq: 'uniques', roll: 'rolls', farm: 'farms', boss: 'bosses'};   // what each kind of price is called in /api/health
 const RANK = {ok: 0, unknown: 1, late: 2, stopped: 3};

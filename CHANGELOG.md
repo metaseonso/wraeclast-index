@@ -3,6 +3,62 @@
 The full list of changes. The public patch notes (data/changelog.json, shown on the site) stay short.
 Add the details here first, then a short public line there.
 
+## Next — Prices: a fair share of the hour for every kind, and a day to come round
+- **What was wrong.** `tools/pricepull.py` picked each kind's oldest and then poured all of them into one
+  pile sorted oldest first. The uniques are the long list (710 of them against 55 slider points, 32 farm
+  inputs and 1 boss entry item), so at 57 an hour they take over 12 hours to come round and every unique
+  the run selects is older than anything else waiting. The pile therefore began with 57 uniques, and the
+  trade site has been cutting runs off after as few as 16 searches: all 16 went to uniques, every time.
+  Measured on the live database: `uniq:` 695 rows newest 8 minutes old, `roll:` 55 rows and `farm:` 32 rows
+  newest **9 hours**, `boss:` its 1 row the same. Nothing was broken; the order was.
+- Proved on a fixture, no network and no live database: a saved `/api/prices/state` holding that exact
+  spread, run against the committed code, gives a 16-search run **13 uniques, 3 of them ones a boss card
+  shows, and nothing at all for rolls, farms or boss entry items**.
+- **A share per kind, in proportion to what it has waiting** (`share()`), so every kind comes round in the
+  same time and one number is the cycle for the whole site: 71 uniques, 7 boss uniques, 6 slider points,
+  3 farm inputs, 1 boss entry item — 88 searches, the same as before, paced one every 38 seconds across the
+  55 minutes as before. Every kind has a floor of one search, so none can starve. A kind that wants less
+  than its share hands the rest to the longest list, so the budget is spent but never overspent.
+- **The kinds are spread through the run** (`plan()`) instead of queued behind one another, with every
+  kind's first check at the front. On the same fixture a 16-search run now gives 1 boss entry item, 1 farm
+  input, 1 slider point, 2 boss uniques and 11 uniques. Inside a kind it stays oldest first, and nothing is
+  carried over: the next run asks the site what is oldest, which is where the last one stopped. Two cut runs
+  in a row walk forward — second run takes `farm:abyss-tablet-pits`, `roll:…@30`, the next uniques.
+- **The Bosses tab has a share of its own.** The 66 unique names a boss card prices (the way in, the drops,
+  and the items only a drop rate table names) are read out of `data/bosses.json` and checked on their own
+  share, under the same `uniq:` keys and the same one row each — nothing is checked twice. They used to wait
+  behind the other 644. `boss:` is still one row and that is right: `data/bossqueries.json` holds exactly one
+  query, Djinn Barya, and its own `unlisted` block records the other five entry items as having nothing
+  listed and no bulk offer as of 21 Sep. Fabricating checks for those would make rows, not prices.
+- **A day, not an hour.** 798 things to check; seeing all of them inside 24 hours needs 798/24 = 34 checks an
+  hour to land, against a budget of 88 — a full pass every 9 to 11 hours when the site lets us through, so
+  most of a run can be turned away and the day still holds. A whole day of nothing but 16-search runs is 384
+  checks, a 50-hour pass: the run says that in as many words rather than hiding it.
+- **The run ends by saying what happened**: per kind, how many it checked of its share, how many it skipped,
+  why, and what a full pass takes at the rate it actually got. Plus the line that currency is not in this
+  budget at all — those prices come from the Currency Exchange feed, hourly.
+- `/data/rollprices.json`, `/data/farmprices.json` and `/data/bossprices.json` now say `every: "day"`, which
+  is what one of those prices really is. Every price still carries its own `at`, so nothing is ever shown as
+  newer than it is.
+- **The watch was calling hourly** (`worker/health.js`): the four trade kinds read `every` 1 hour, late at 3,
+  stopped at 8. They are a day's cycle now, so: `every` 24, **late at 6 hours** (several runs in a row with
+  nothing of that kind) and **stopped at 26** (a whole cycle gone by with nothing, which means the oldest
+  price of that kind is older than the day it promises). Same numbers for all four: every kind gets a share
+  of every run, so the thing being watched is identical. The words are unchanged (fine / late / stopped).
+- **Still claims hourly about trade prices, left for the copy pass.** Every one of these says "every hour"
+  about listings, which is now a day: `worker/seo.js` 620 (the page footer), 664 (`llms-full.txt`) and 689
+  (the `/data/market.json` line in `llms.txt`); `index.html` 136 (`#foot`); `assets/trade.js` 139 (the
+  slider note); `assets/farms.js` 122 (`HOURLY`); `assets/bosses.js` 286 (the tab footer) and its comment on
+  line 7; `assets/atlas.js` 123 and 135; `assets/craft.js` 4, which also still names poe.ninja; and the
+  shipped public notes in `data/changelog.json`, 0.20 ("updated every hour") and 0.24 ("fill in every hour
+  again"). **Correct as they stand**, because the Currency Exchange feed really is hourly:
+  `assets/currency.js` 249 and 268, `worker/seo.js` 522, `index.html` 119.
+- `python tools/pricepull.py --offline --state <file>` walks a run against a saved state with no trade calls
+  at all, and `--cut 16` makes it act as if the site cut the run short, so the split can be read off without
+  touching the network.
+
+## Next — How the numbers stack: three concept cards, honestly sourced
+- The follow-on to the entry below, which ended by saying what the honest fix would be: "a site-written note
 ## Next — Mechanics cards, and how damage works
 
 - **The kind is Mechanics, not Concept.** The owner's word: they are mechanics cards. `tools/concepts.py` is
