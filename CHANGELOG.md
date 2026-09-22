@@ -3,6 +3,75 @@
 The full list of changes. The public patch notes (data/changelog.json, shown on the site) stay short.
 Add the details here first, then a short public line there.
 
+## Next — Craft: how often a mod rolls, from the source that measures it
+- The follow-on to "Craft: mod weights, and what the game files really carry" below, which ended with the weights
+  being the owner's call. The call: *"crafting weights should be from official sources, and if not available the next
+  most reliable. craft of exile is one of such."* Official still has nothing — the export's spawn weights are 1 or 0,
+  can roll or cannot (`weight()`) — so the numbers now come from **Craft of Exile**, and the pool names them.
+- **What was actually available, checked this week.** Craft of Exile runs two sites: the old one
+  (`www.craftofexile.com`), whose PoE2 data is for patch 0.5.0, and the current one (`beta.craftofexile.com`), whose
+  own pages load `json/poe2/<game build>/data.json` — **build 4.5.5.3, patch 0.5.5.3 "Forbidden Rites", last changed
+  20 Sep 2026**, against our 4.5.5.2/0.5.5. That file carries a weight for every mod of every kind of item, keyed by
+  the game's own mod key, so it is what `tools/craftweights.py` reads. Neither host publishes a robots.txt at all
+  (every path, `/robots.txt` included, answers 200 with the app page), so nothing there is disallowed; they publish no
+  terms of use, and their privacy notice is about personal data only. Three requests per patch, 1.5 s apart, our own
+  User-Agent, the same files a visitor's browser loads.
+- **poe2db was the cross-check and cannot be the source.** Its own `/us/weightings` page credits the same work —
+  Krakenbul and the Prohibited Library Discord, recombinators, trade listings for bases that cannot be recombined —
+  but every mod table it serves still prints weight 1 with "Modifier weight information cannot be obtained from game
+  files" (checked on `/us/Rings` and `/us/Spears`: every weight it prints reads 1). Nothing numeric to pull. Its wiki text is
+  CC BY-NC-SA 3.0; the weights themselves are not its own.
+- **The join is exact, not matched on wording.** Their mod keys are the game's mod keys, which are the ids
+  `data/craft/*.json` already carries: 9,782 mods looked up across every pool, 0 not found. Every one of our 1,527
+  bases resolves to exactly one of their item classes, and each of our mod pools maps to exactly one of them — their
+  classes split the way the game's spawn tags do (`Body Armours (STR/DEX)`, `Wands (Fire)`, `Grasping Mail`). Their
+  minimum level for a mod agrees with the game files on all 10,634 pool entries, which is the check that the two data
+  sets are on the same patch.
+- **Coverage: 70 of their item classes carry measured weights** (every armour, weapon, shield, quiver and jewellery
+  pool we show), 34 are flat — every weight in the table is 1, which is their "can roll, not measured". Flat means no
+  number here: jewels, life and mana flasks and charms show no chances at all, and the page says so naming them.
+  Grasping Mail is the one base with a mix: 79 of its 407 rollable mods (the minion and spell lines) are unmeasured,
+  so those rows read "No weight", sort to the bottom, and stay out of the shares — the page says that too.
+  Desecration and corruption keep no weights: their tables for those are 1s as well, and each panel says one line.
+- **What the page shows.** Per mod row: the tier the slider is on with its weight and that weight's share of its own
+  side of the pool ("Weight 500 · 1.8%"), and in the corner the whole mod's share, all its reachable tiers together
+  ("8 of 12 tiers · 17% of prefixes"). Prefixes against prefixes, suffixes against suffixes; both columns sorted
+  likeliest first. Everything answers the item-level control and the orb chips — at item level 40 an Iron Ring's
+  "+# to maximum Life" is 15% of prefixes and top of the column, at 82 it is 12% and third — and moving a tier
+  slider rewrites that row's weight without a repaint. **No whole-item odds anywhere:** one mod's share of its pool
+  is the only number, and the note says so.
+- **The source line, inline over the pool:** "Likeliest first. Shares are out of what this item level can roll on that
+  side — prefixes against prefixes, suffixes against suffixes. One mod at a time, not the odds for a whole item.
+  Weights: Craft of Exile — measured with recombinators by Krakenbul and the Prohibited Library, not in the game files.
+  Pulled 22 Sept 2026 for their patch 0.5.5.3." The name links to their PoE2 page, and the date and the patch come
+  from the pull, not from a hand-typed line.
+- **Hand-checked against their data.json for three classes at item level 82**, top five mods a side, weights read
+  straight out of the source: Iron Ring (their "Rings") prefixes total 69,500 — maximum Mana 12,000 = 17.3%, Evasion
+  Rating 9,000 = 12.9%, maximum Life 8,000 = 11.5%, Physical Damage to Attacks 7,800 = 11.2%, Accuracy 6,000 = 8.6%;
+  Vaal Cuirass ("Body Armours (STR)") prefixes total 54,000 — maximum Life 13,000 = 24.1%, Armour 11,000 = 20.4%,
+  increased Armour 8,000 = 14.8%, Physical Thorns 7,000 = 13.0%, Armour and Life 6,000 = 11.1%; Gothic Quarterstaff
+  ("Quarterstaves") prefixes total 44,655 — Lightning 8,085 = 18.1%, Cold 6,615 = 14.8%, Physical 6,300 = 14.1%, Fire
+  5,880 = 13.2%, Accuracy 5,700 = 12.8%. Every weight matches the source mod for mod, and the shares add up to
+  100.000000% on each side of each base, counted per mod and per tier. The page shows those same numbers.
+- **A bad pull cannot empty the page.** `tools/craftweights.py` writes `tools/craftweights.json` (617 KB, one mod per line so a patch shows which weights moved, not part of
+  the website) only when the pull holds at least 80% of the classes and weights the file already has; otherwise it
+  keeps the last good file, prints why on stderr, leaves the reason and the time in a `faults` list inside the file,
+  and exits 1. `tools/craft.py` prints that fault on its next run, and with no weights file at all it keeps the
+  weights already in `data/craft/` and says so. Both paths were run: with the file hidden, the rebuild came out
+  byte-identical, source line and all; with the host pointed at nothing, the 70 classes and 13,840 weights stayed put
+  and the fault was recorded. No shared helper for this exists in the repo yet, so this follows what
+  `tools/craft.py` and `tools/exchange.py` already do, per tool.
+- **+44,726 bytes of data in all** (+43.7 KB) across `data/craft.json` and the 27 kinds that have weights, as one `w`
+  array per pool beside the mod list — biggest single file `data/craft/body-armour.json`, +6,794 bytes. Still loaded
+  one kind at a time, only when that kind is opened, exactly as before; `data/craft/jewel.json` and the three flask
+  files are unchanged. `assets/craft.js` +3,973 bytes, `assets/app.css` +132.
+- Phone: 375×812 headless Chrome on `#/craft` for Iron Ring at 82 and at 40, Vaal Cuirass, Gothic Quarterstaff,
+  Grasping Mail (with the Desecrate panel open) and a Diamond jewel — nothing scrolls sideways (375px, no element past
+  the edge), the weights and shares are readable in the corner and next to the slider, no console errors.
+  Guard: 6 ok, 0 failed, baseline untouched.
+- Not done: no public patch-notes line yet — that goes in with the next `data/changelog.json` batch, in one sentence:
+  the Craft page now shows how often each mod rolls, and who measured it. Essences, runes and soul cores show no
+  weights either; they are not rolled from a pool.
 ## Next — Prices: a fair share of the hour for every kind, and a day to come round
 - **What was wrong.** `tools/pricepull.py` picked each kind's oldest and then poured all of them into one
   pile sorted oldest first. The uniques are the long list (710 of them against 55 slider points, 32 farm

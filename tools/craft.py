@@ -18,6 +18,12 @@ Sources, all official game data:
   far fewer than data/craft already holds, or a missing level), the essences and levels already in data/craft
   are kept and the reason is printed on stderr. An empty table is never published.
 
+Not official, and named on the page where it is shown:
+  tools/craftweights.json (tools/craftweights.py, run this after it) holds how often each mod rolls. The game
+  files do not carry that (weight()); Craft of Exile does, measured with recombinators by Krakenbul and the
+  Prohibited Library. A weight of 1 is their "can roll, not measured" — it becomes no number, not a claim.
+  No weights file, or a base they do not cover: the weights already in data/craft are kept, and the run says so.
+
 Hand-kept facts (not in the game data exports):
   AFFIX_MAX  jewels take 2 prefixes and 2 suffixes; other rares 3 and 3; magic items 1 and 1.
   KEYWORDS   what the game's words "Armour", "Martial Weapon", ... cover, as the essence tables on poe2db expand them
@@ -26,12 +32,13 @@ Hand-kept facts (not in the game data exports):
 Output (compact; every string is the game's own wording with the markup taken out):
   craft.json        patch, img (art prefix), ilvl (highest mod level), classes [{id, n, g group, cat trade category,
                     so max augment sockets, mx [prefixes, suffixes], rare, b [[base, drop level]]}],
-                    orbs, omens, bones, cats (catalysts)
+                    orbs, omens, bones, cats (catalysts), wsrc (who the weights come from, shown on the page)
   craft/<id>.json   bases [{n, dl, rq [level, str, dex, int], d defences, pr property lines, im implicit lines, p pool, ic art, ca catalyst quality}]
                     fam   mod families: [prefix/suffix, wording with #, tags, exclusive groups (numbers), kind, lord]
                           kind: '' rolls normally, 'e' essence only, 'd' desecrated, 'c' Vaal Orb corruption
                     mods  [mod id (for links), family, level, lines, affix name, low, high] (low/high: the slider's number)
-                    pools per base tag set: {m rolling mods, d desecrated, c corruption} as indexes into mods
+                    pools per base tag set: {m rolling mods, d desecrated, c corruption} as indexes into mods,
+                          w the weight of each mod in m (same order; 0 where the source has no number)
                     ess   [essence, 'm' magic to rare or 'r' rare (removes a random mod), mod index, level in the essence table]
                     aug   [name, type, level, lines, bonded lines, limit]
 """
@@ -53,6 +60,7 @@ import lastgood
 ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / 'data' / 'craft.json'
 OUT_DIR = ROOT / 'data' / 'craft'
+WEIGHTS = Path(__file__).resolve().parent / 'craftweights.json'
 REPOE = 'https://repoe-fork.github.io/poe2/'
 POE2DB = 'https://poe2db.tw/us/'
 UA = 'wraeclast-index/1.0 (contact: https://wraeclastindex.fyi/)'
@@ -235,10 +243,9 @@ def weight(m, tags):
     """The game's rule: the first spawn tag the item has decides.
 
     The export states every weight as 1 (can roll) or 0 (cannot) — the numbers the game rolls with are not in
-    the files, and poe2db says the same ("Weight information cannot be obtained from game file"; theirs is
-    measured with recombinators, not read out of the client). So a pool here is the set of mods a base can
-    roll, with nothing to say which of them comes up more often, and the page shows no roll chances.
-    scale() below prints the day that changes."""
+    the files, and poe2db says the same ("Weight information cannot be obtained from game file"). So this
+    builds the pool: the set of mods a base can roll. How often each one comes up is not official and comes
+    from Craft of Exile (pulled_weights() below, tools/craftweights.py). scale() prints the day that changes."""
     for w in m.get('spawn_weights') or []:
         if w['tag'] in tags:
             return w['weight']
@@ -246,10 +253,41 @@ def weight(m, tags):
 
 
 def scale(MODS):
-    """What the export's spawn weights look like. If real weights ever appear, the Craft page can show them."""
+    """What the export's spawn weights look like. If real weights ever appear, they beat the pulled ones."""
     vals = sorted({w['weight'] for m in MODS.values() for w in m.get('spawn_weights') or []})
     print('spawn weights in the export:', vals,
-          '(can roll / cannot: no real weights to show)' if set(vals) <= {0, 1} else '· REAL WEIGHTS — the Craft page can show how often a mod rolls')
+          '(can roll / cannot: no official numbers)' if set(vals) <= {0, 1} else '· REAL WEIGHTS — the Craft page can drop the pulled ones')
+
+
+# ---------------------------------------------------------------- how often a mod rolls (not official)
+def pulled_weights():
+    """tools/craftweights.json: (source, {base: their item class}, {their item class: {mod id: weight}}).
+    No file, or one this cannot read: nothing, and main() keeps the weights already in data/craft."""
+    try:
+        w = json.loads(WEIGHTS.read_text(encoding='utf-8'))
+        src, bases, mods = w['src'], w['bases'], w['weights']
+    except Exception as e:
+        print('  no mod weights (%s: %s); keeping the ones in data/craft' % (WEIGHTS.name, e), file=sys.stderr)
+        return None, {}, {}
+    print('mod weights from %s, pulled %s for their patch %s: %d item classes, %d mods' % (
+        src['n'], src['d'], src.get('patch') or '?', len(mods), sum(len(x) for x in mods.values())))
+    for f in w.get('faults') or []:
+        print('  the last pull failed (%s: %s); these weights are older than the data' % (f['d'], f['why']), file=sys.stderr)
+    return src, bases, mods
+
+
+def on_disk_weights(cid):
+    """The weights already published for one kind of item: {base: {mod id: weight}}. The last good ones."""
+    out = {}
+    try:
+        pj = json.loads((OUT_DIR / (cid + '.json')).read_text(encoding='utf-8'))
+    except Exception:
+        return out
+    for b in pj.get('bases', []):
+        p = pj['pools'][b['p']]
+        if p.get('w'):
+            out[b['n']] = {pj['mods'][i][0]: x for i, x in zip(p['m'], p['w']) if x}
+    return out
 
 
 class ClassMods:
@@ -431,6 +469,8 @@ def main():
             old = json.loads(OUT.read_text(encoding='utf-8'))
         except Exception:
             old = {}
+    WSRC, WBASE, WMODS = pulled_weights()
+    no_w = []
 
     # ---- bases: in the game today, one entry per name (names whose variants differ are left out: Runemastered)
     by_name = collections.defaultdict(list)
@@ -507,12 +547,16 @@ def main():
         mx = AFFIX_MAX.get(cls, 3) if rare else 1
         so = socket_limit(md)
         T = ClassMods()
+        kept_w = on_disk_weights(cid) if WSRC is None else {}    # no pull: the last good weights
         pools, pool_at, pool_sig, out_bases = [], {}, {}, []
         for path, v in sorted(bases[cls], key=lambda x: (x[1]['drop_level'], x[1]['name'])):
             tags = set(v['tags'])
             for imp in v['implicits']:
                 tags |= set((MODS.get(imp) or {}).get('adds_tags') or [])
-            key = tuple(sorted(tags))
+            # bases that roll the same mods can still roll them at different rates: their item class is part of the key
+            wcls = WBASE.get(v['name']) if WSRC else ('on disk: ' + v['name'] if v['name'] in kept_w else None)
+            wmap = (WMODS.get(wcls) or {}) if WSRC else kept_w.get(v['name'], {})
+            key = (tuple(sorted(tags)), wcls)
             if key not in pool_at:
                 roll, des, cor = [], [], []
                 for mid, m in MODS.items():
@@ -532,10 +576,14 @@ def main():
                         into.append(i)
                         if kind == '':
                             top_ilvl = max(top_ilvl, m['required_level'])
-                sig = (tuple(sorted(roll)), tuple(sorted(des)), tuple(sorted(cor)))   # many tag sets roll the same mods
+                # their 1 is "can roll, not measured" (every weight in their flat tables is 1): no number, not a claim
+                wt = {i: wmap.get(T.mods[i][0], 0) for i in roll}
+                wt = {i: x for i, x in wt.items() if x > 1}
+                sig = (tuple(sorted(roll)), tuple(sorted(des)), tuple(sorted(cor)),   # many tag sets roll the same mods
+                       tuple(sorted(wt.items())))
                 if sig not in pool_sig:
                     pool_sig[sig] = len(pools)
-                    pools.append({'m': roll, 'd': des, 'c': cor})
+                    pools.append({'m': roll, 'd': des, 'c': cor, 'w': wt})
                 pool_at[key] = pool_sig[sig]
             implicit = [x for imp in v['implicits'] for x in lines((MODS.get(imp) or {}).get('text'))]
             rq = v.get('requirements') or {}
@@ -619,16 +667,23 @@ def main():
             aug.sort(key=lambda x: (x[1] != 'Rune', x[1], x[2], x[0]))
 
         for p in pools:
+            wt = p.pop('w')
             for k in p:
                 p[k] = T.ordered(p[k])
+            if wt:
+                p['w'] = [wt.get(i, 0) for i in p['m']]     # one weight per mod in m, in the same order
         data = {'bases': out_bases, 'fam': T.fam, 'mods': T.mods, 'pools': pools, 'ess': ess, 'aug': aug}
         check(data, cid)
         built[cid] = data
         classes.append({'id': cid, 'c': cls, 'n': 'Jewel' if cat == 'jewel' else cat_name.get(cat, cls), 'g': GROUP.get(cls, ''), 'cat': cat, 'so': so,
                         'mx': [mx, mx], 'rare': rare, 'loc': cls in LOCAL_GEAR,
                         'b': [[b['n'], b['dl']] for b in out_bases]})
-        print('  %-16s %3d bases  %4d mods  %2d pools  %2d essences  %3d augments  sockets %d  %s' % (
-            cls, len(out_bases), len(T.mods), len(pools), len(ess), len(aug), so, 'rare %d/%d' % (mx, mx) if rare else 'magic'))
+        wp = sum(1 for p in pools if p.get('w'))
+        print('  %-16s %3d bases  %4d mods  %2d pools  %2d essences  %3d augments  sockets %d  %s  %s' % (
+            cls, len(out_bases), len(T.mods), len(pools), len(ess), len(aug), so, 'rare %d/%d' % (mx, mx) if rare else 'magic',
+            'weights %d/%d pools' % (wp, len(pools)) if wp else 'no weights'))
+        if not wp:
+            no_w.append(cid)
 
     # ---- orbs, omens, bones, catalysts
     cur = {}
@@ -718,6 +773,15 @@ def main():
                          'on': 'jewel' if 'jewel' in desc(n).split('on a')[-1] else 'jewellery'})
 
     out = {'patch': patch, 'img': REPOE, 'ilvl': top_ilvl, 'classes': classes, 'orbs': orbs, 'omens': omens, 'bones': bones, 'cats': cats}
+    # who the weights come from, for the line the Craft page shows over the pool. Kept from the last build if
+    # this run had no pull, because the weights in data/craft are then that build's.
+    wsrc = {k: WSRC[k] for k in ('n', 'u', 'how', 'd') if WSRC.get(k)} if WSRC else dict(old.get('wsrc') or {})
+    if WSRC and WSRC.get('patch'):
+        wsrc['p'] = WSRC['patch']
+    if wsrc and len(no_w) < len(classes):
+        out['wsrc'] = wsrc
+        if no_w:
+            print('  no weights for: %s (their table for those is flat)' % ', '.join(no_w))
     check(out, 'craft.json')
 
     # Last good wins (tools/lastgood.py). The Craft tab is one section: craft.json and the per-kind files point

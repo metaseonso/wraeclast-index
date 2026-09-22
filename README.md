@@ -44,7 +44,7 @@ The site is static. GitHub Pages serves it; a GitHub Action (`.github/workflows/
 | `data/atlas.json` | Atlas tab: waystones, tablets, keys, atlas items and the Atlas tree, built by `tools/atlas.py` (run after a game patch) |
 | `data/farms.json`, `data/farmqueries.json` | Farms tab: strategies from BawLoch's public tier list sheet and the trade searches for their rolled tablets and waystones, by hand with `python tools/farms.py` (`data/farmprices.json` holds those searches' prices) |
 | `data/bosses.json`, `data/bossqueries.json` | Bosses tab (`assets/bosses.js`, at `#/bosses`, in the top bar and linked from the Atlas page): every endgame boss, what it drops and what it costs to fight, by hand with `python tools/bosses.py`; the entry items the in-game Currency Exchange does not trade get a trade search of their own here. The site serves `/data/bossprices.json`: every one of those items' real price, from the hourly unique checks, the Currency Exchange and those searches (`worker/prices.js`). The search reads this file too, so every boss is a card of its own kind (`x`) without a `tools/sync.py` rebuild |
-| `data/craft.json`, `data/craft/` | Craft tab: every base and the mods it can roll (all tiers, item levels, groups), essences, runes and soul cores, desecrated and corruption mods, orbs, omens and catalysts, built by `tools/craft.py` from the game files (essence tables and orb levels checked on poe2db; run after a game patch, after `tools/tradedata.py`) |
+| `data/craft.json`, `data/craft/` | Craft tab: every base and the mods it can roll (all tiers, item levels, groups), how often each mod rolls, essences, runes and soul cores, desecrated and corruption mods, orbs, omens and catalysts, built by `tools/craft.py` from the game files (essence tables and orb levels checked on poe2db; run after a game patch, after `tools/tradedata.py`). The weights are the one thing the game files do not carry — every spawn weight in the export is 1 or 0, can roll or cannot — so they come from Craft of Exile, pulled into `tools/craftweights.json` by `tools/craftweights.py` and named on the page where they are shown |
 | `data/gamedata.json` | Which patch the shipped data is from, written by `tools/gamepull.py` (one daily pull of the official export; it also writes the gap report `tools/dev/gaps.txt` — what the game files hold against what we card) |
 | `data/gamestats.json` | One monster of each level (life, damage, accuracy, armour, evasion) and what each class starts with, from the game files by `tools/gamelib.py`. Nothing reads it yet |
 | `data/faults.json` | Which sections are showing an older copy right now, and why, written by `tools/lastgood.py` (see below). The dashboard's Data jobs block and `/api/health` read it |
@@ -131,8 +131,11 @@ In this order (each step reads what the one before wrote):
    (builds `data/index.json`: the artifact's gems, uniques, passives and keywords, plus base items, the Atlas and the currency the
    catalogue lacks, and the references inside each card's lines; the first run checks each new image link once, up to 20 minutes;
    lists are cached a day in `tools/cache/`)
-3. After a game patch: `python tools/atlas.py` and `python tools/craft.py`, then `python tools/sync.py` again
-   (the Atlas cards come from `data/atlas.json`, and a base's Craft link only where the Craft tab has that base)
+3. After a game patch: `python tools/atlas.py`, then `python tools/craftweights.py` and `python tools/craft.py`, then `python tools/sync.py` again
+   (the Atlas cards come from `data/atlas.json`, and a base's Craft link only where the Craft tab has that base.
+   `tools/craftweights.py` pulls the mod weights Craft of Exile publishes, three requests, into `tools/craftweights.json`;
+   if it fails it keeps the last good file, says so and exits 1, and `tools/craft.py` then keeps the weights already
+   in `data/craft/` — so run it first and read what it says, but a bad pull never empties the page)
 4. After every `tools/sync.py`: `python tools/gamelib.py`
    (the keyword cards the artifact does not carry, the keyword links that reach them, the 33 ascendancy notables whose
    whole effect is a skill, and `data/gamestats.json`; `tools/sync.py` rebuilds `data/index.json` from the artifact, so

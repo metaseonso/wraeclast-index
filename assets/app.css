@@ -431,6 +431,8 @@ small.at-bonus{display:block}
 .cr-fhd{display:flex; gap:8px; align-items:baseline; min-width:0}
 .cr-ft{flex:1; min-width:0; font-size:13px; line-height:1.4; overflow-wrap:anywhere}
 .cr-tn{flex:none; font:500 10.5px var(--mono); color:var(--faint); white-space:nowrap}
+.cr-tn b{font-weight:600; color:var(--text)}
+.cr-fw{flex:none; font:500 10.5px var(--mono); color:var(--muted); white-space:nowrap}
 .cr-fctl{display:flex; flex-wrap:wrap; gap:6px 10px; align-items:center; min-width:0}
 .cr-fctl .tval{flex:1 1 240px}
 .cr-fctl .ttier{white-space:normal}

@@ -1,7 +1,9 @@
-/* Craft tab: pick a base, see every mod it can roll at its item level, add mods by hand or by mechanic
-   (essences, runes and soul cores, desecration, corruption), then find the item on the official trade site.
+/* Craft tab: pick a base, see every mod it can roll at its item level and how often each one rolls, add mods by
+   hand or by mechanic (essences, runes and soul cores, desecration, corruption), then find the item on trade.
    Game data: data/craft.json and data/craft/<kind>.json (tools/craft.py: the game files via RePoE; essence tables
    and orb levels checked on poe2db). Prices and icons: data/market.json (poe.ninja, hourly).
+   The weights are the one thing here the game does not publish: they come from Craft of Exile (tools/craftweights.py)
+   and the pool names them. One mod's share of its own pool only — never the odds of a whole item.
    The plan (base, item level, mods) lives in the address (#/craft?s=...), so it can be shared. */
 import { D, $, esc, card, moneyHTML } from './app.js';
 import { tradeData, key, searchURL, valHTML, syncVal } from './trade.js';
@@ -44,6 +46,7 @@ async function classData(id){
   }).then(d => {
     d.at = new Map(d.mods.map((m, i) => [m[0], i]));
     d.augAt = new Map(d.aug.map((a, i) => [a[0], i]));
+    d.pools.forEach(p => { if(p.w) p.wat = new Map(p.m.map((i, k) => [i, p.w[k]])); });   // mod -> its weight here
     return d;
   }));
   return FILES.get(id);
@@ -125,6 +128,33 @@ function add(src, i, from){
   commit();
 }
 
+/* ---------- how often a mod rolls ---------- */
+/* Weights come from Craft of Exile, not the game files (see the top of this file). 0 means they have no number
+   for that mod. A share is of the weight one side of the pool adds up to right now — at this item level, and
+   with the orb picked, if any. Prefixes against prefixes, suffixes against suffixes, one mod at a time. */
+let TOT = null;   // {p, s} the weight each side can roll now · null: no weights for this base
+const wOf = i => { const p = P.pools[B.p]; return p.wat ? p.wat.get(i) || 0 : 0; };
+const famWeight = f => f.tiers.reduce((a, i) => a + (eligible(i, '') ? wOf(i) : 0), 0);
+function totals(){
+  const pool = P.pools[B.p];
+  if(!pool.wat) return null;
+  const t = {p: 0, s: 0};
+  pool.m.forEach((i, k) => { const a = P.fam[P.mods[i][1]][0]; if(pool.w[k] && t[a] !== undefined && eligible(i, '')) t[a] += pool.w[k]; });
+  return t;
+}
+/* a pool with weights can still hold mods they have no number for (a new base they have not measured) */
+function someUnweighted(){
+  const pool = P.pools[B.p];
+  return !!pool.w && pool.w.some((x, k) => !x && eligible(pool.m[k], ''));
+}
+function share(w, side){
+  if(!TOT || !w || !TOT[side]) return '';
+  const v = w / TOT[side] * 100;
+  return v >= 10 ? Math.round(v) + '%' : v >= 1 ? v.toFixed(1) + '%' : v < 0.01 ? '<0.01%' : v.toFixed(2) + '%';
+}
+const nice = d => { const t = Date.parse(d + 'T00:00:00Z');   // the day of the pull, written as assets/league.js writes a date
+  return Number.isFinite(t) ? new Date(t).toLocaleDateString('en-GB', {day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC'}) : String(d || ''); };
+
 /* ---------- mod rows ---------- */
 function orbMin(){ return UI.f ? UI.f.ml || 0 : 0; }
 function eligible(i, kind){
@@ -145,8 +175,8 @@ function lockHTML(f, ok, lo, hi){   // grey over the tiers this item cannot get
   if(last < n - 1) out += '<i class="cr-lock" style="left:' + at(edges[last + 1]) + ';right:0"></i>';
   return out;
 }
-/* the corner of a family row: how many of its tiers this item level can actually get.
-   Not a chance: the game files carry no spawn weights, only which mods a base can roll (tools/craft.py). */
+/* the corner of a family row: how many of its tiers this item level can get, and how much of its side of the
+   pool the whole mod is worth (all the tiers it can still roll together). */
 function tierCount(t, live){
   if(t.length < 2) return 'level ' + t[0][2];
   return (live < t.length ? live + ' of ' + t.length : t.length) + ' tiers';
@@ -179,12 +209,20 @@ function famHTML(f, kind){
     ctl = '<span class="ttier">' + (t.length > 1 ? t.length + ' tiers · ' : '') + esc(tierLine(t[k], t.length - k, t.length < 2)) + '</span>';
   }
   const lord = fam[5] ? '<span class="pill">' + esc(fam[5]) + '</span>' : '';
+  const fs = kind === '' ? share(famWeight(f), fam[0]) : '';
   return '<div class="cr-fam' + (best < 0 ? ' off' : '') + (onItem !== undefined ? ' on' : '') + '" data-f="' + f.f + '" data-kind="' + kind + '">' +
     '<div class="cr-fhd"><span class="cr-ft">' + fam[1].map(esc).join('<br>') + '</span>' + lord +
-      '<span class="cr-tn">' + tierCount(t, ok.filter(Boolean).length) + '</span></div>' +
-    '<div class="cr-fctl">' + ctl +
+      '<span class="cr-tn">' + tierCount(t, ok.filter(Boolean).length) +
+      (fs ? ' · <b>' + fs + '</b> of ' + (fam[0] === 'p' ? 'prefixes' : 'suffixes') : '') + '</span></div>' +
+    '<div class="cr-fctl">' + ctl + (kind === '' ? tierWeightHTML(f, k, lvlOk) : '') +
       '<button type="button" class="btn cr-add" data-add="' + (kind || 'p') + '"' + (lvlOk && r.ok ? '' : ' disabled title="' + esc(why) + '"') + '>' +
       (onItem !== undefined ? 'Change' : 'Add') + '</button></div></div>';
+}
+/* the tier the slider is on: its weight, and what that is of its side of the pool right now */
+function tierWeightHTML(f, k, lvlOk){
+  if(!TOT) return '';
+  const w = wOf(f.tiers[k]), s = w && lvlOk ? share(w, f.fam[0]) : '';
+  return '<span class="cr-fw">' + (w ? 'Weight ' + w.toLocaleString() + (s ? ' · ' + s : '') : 'No weight') + '</span>';
 }
 function tierLine(m, n, one){ return (one ? '' : 'T' + n + ' · ') + m[3].join(' / ') + (m[2] > 1 ? ' · item level ' + m[2] + '+' : ''); }
 
@@ -261,6 +299,7 @@ function desHTML(){
   return '<div class="cr-list">' + bones.map(b => '<div class="cr-row">' + icon(b.n) + '<div class="cr-rt"><b>' + esc(b.n) + '</b>' + px(b.n) +
       '<span class="cr-rs">' + esc(b.t) + (b.mi ? ' · item level ' + b.mi + ' or less' : '') + (b.ml ? ' · mods level ' + b.ml + '+' : '') + '</span></div></div>').join('') +
     omensFor('Desecrate').map(o => omenRow(o)).join('') + '</div>' +
+    (X.wsrc ? '<p class="note">No weights here: what is measured is the pool an orb rolls from, not what a bone adds.</p>' : '') +
     ['p', 's'].map(a => {
       const list = fams.filter(f => f.fam[0] === a);
       return list.length ? '<h4 class="cr-h4">' + (a === 'p' ? 'Prefixes' : 'Suffixes') + '</h4><div class="cr-fams">' + list.map(f => famHTML(f, 'd')).join('') + '</div>' : '';
@@ -270,7 +309,9 @@ function corHTML(){
   return '<div class="cr-list">' + ['Vaal Orb'].map(n => { const o = X.orbs.find(x => x.n === n) || {n, t: ''};
       return '<div class="cr-row">' + icon(n) + '<div class="cr-rt"><b>' + esc(n) + '</b>' + px(n) + '<span class="cr-rs">' + esc(o.t) + '</span></div></div>'; }).join('') +
     omensFor('Vaal Orb').map(o => omenRow(o)).join('') + '</div>' +
-    '<h4 class="cr-h4">Can add one of these</h4><div class="cr-fams">' + families('c').map(f => famHTML(f, 'c')).join('') + '</div>';
+    '<h4 class="cr-h4">Can add one of these</h4>' +
+    (X.wsrc ? '<p class="note">No weights here: what is measured is the pool an orb rolls from, not what a Vaal Orb adds.</p>' : '') +
+    '<div class="cr-fams">' + families('c').map(f => famHTML(f, 'c')).join('') + '</div>';
 }
 function omenHTML(){
   const by = new Map();
@@ -298,8 +339,17 @@ function mechHTML(){
 }
 
 /* ---------- the mod pool ---------- */
+/* "Weights: Craft of Exile", where they come from and when they were pulled: the game does not publish them,
+   so the pool says who does. */
+function wsrcHTML(){
+  const s = X.wsrc;
+  if(!s) return '';
+  return 'Weights: <a href="' + esc(s.u) + '" target="_blank" rel="noopener">' + esc(s.n) + '</a> — ' + esc(s.how) +
+    ', not in the game files. Pulled ' + esc(nice(s.d)) + (s.p ? ' for their patch ' + esc(s.p) : '') + '.';
+}
 function poolHTML(){
   const fams = families('');
+  TOT = totals();
   const tags = TAGS.filter(([t]) => fams.some(f => f.fam[2].includes(t)));
   if(UI.tag && !tags.some(t => t[0] === UI.tag)) UI.tag = '';
   const q = words(UI.q);
@@ -308,6 +358,7 @@ function poolHTML(){
     q.every(w => (f.fam[1].join(' ') + ' ' + f.tiers.map(i => P.mods[i][4]).join(' ')).toLowerCase().includes(w)));
   const col = a => {
     const list = shown.filter(f => f.fam[0] === a);
+    if(TOT) list.sort((x, y) => famWeight(y) - famWeight(x) || x.f - y.f);   // likeliest roll on top, at this item level
     const live = list.filter(f => f.tiers.some(i => eligible(i, '')));
     return '<section class="cr-col"><h4 class="cr-h4">' + (a === 'p' ? 'Prefixes' : 'Suffixes') + ' <span>' + live.length +
       (live.length !== list.length ? ' of ' + list.length : '') + '</span></h4>' +
@@ -321,7 +372,11 @@ function poolHTML(){
     '<div class="kinds cr-chips" role="group" aria-label="Tags">' + [['', 'All'], ...tags].map(([t, l]) =>
       '<button type="button" class="chip" data-tag="' + t + '" aria-pressed="' + (UI.tag === t) + '">' + l + '</button>').join('') + '</div></div>' +
     '<p class="note">T1 is the best roll. Drag to pick a tier, then Add. Grey tiers need a higher item level.</p>' +
-    '<p class="note">No roll chances here: the game files say which mods a base can roll at an item level, not how often each one comes up.</p>' +
+    (TOT ? '<p class="note">Likeliest first. Shares are out of what this item level can roll on that side — prefixes against prefixes, ' +
+      'suffixes against suffixes. One mod at a time, not the odds for a whole item. ' +
+      (someUnweighted() ? 'Mods they have no number for sit at the bottom, outside the shares. ' : '') + wsrcHTML() + '</p>'
+      : '<p class="note">No roll chances for this kind: the game files say which mods a base can roll at an item level, not how often each ' +
+      'one comes up, and ' + (X.wsrc ? esc(X.wsrc.n) + ' has no measured weights for it either.' : 'nothing measured is published for it.') + '</p>') +
     '<div class="cr-cols">' + (only !== 's' ? col('p') : '') + (only !== 'p' ? col('s') : '') + '</div>';
 }
 
@@ -633,7 +688,7 @@ function jump(){
   const pool = EL.querySelector('.cr-pool');
   if(pool && pool.getBoundingClientRect().top > innerHeight * 0.6) pool.scrollIntoView({behavior: 'smooth', block: 'start'});
 }
-/* a tier moved: only the Add button's state changes */
+/* a tier moved: only the Add button's state and the tier's weight change */
 function refreshRow(row){
   const kind = row.dataset.kind, fam = families(kind).find(f => f.f === +row.dataset.f);
   if(!fam) return;
@@ -642,4 +697,6 @@ function refreshRow(row){
   const btn = row.querySelector('.cr-add');
   btn.disabled = !(ok && r.ok);
   btn.title = ok ? (r.why || '') : P.mods[i][2] > S.l ? 'Needs item level ' + P.mods[i][2] : 'Below this orb’s level';
+  const w = row.querySelector('.cr-fw');
+  if(w && kind === '') w.outerHTML = tierWeightHTML(fam, k, ok);
 }
