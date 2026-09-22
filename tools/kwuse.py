@@ -1,6 +1,6 @@
 """Build data/kwuse.json: for every keyword, everything that uses it, from every source, in order.
 
-A keyword's card lists what uses it ("Found on"). A use is found two ways:
+A keyword's card lists what uses it (the Connections groups). A use is found two ways:
   1. the game-text markup: [Ignite] or [Ignite|Ignites] in a gem, unique, passive or keyword description
      (and the artifact's own keyword list for each gem, unique and passive)
   2. the keyword's words in plain text: its title and the forms the markup shows it as (Ignites, Ignited...),

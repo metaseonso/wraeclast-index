@@ -14,7 +14,7 @@
      own      a module that draws its card instead of us
      fields   the fields its card draws, in order (FIELDS)
      acts     the buttons under it (ACTS)
-     rel      the related lists it can build (REL), each one worked out from the index itself
+     rel      the groups under Connections it can build (REL), each one worked out from the index itself
 
    FIELDS, per field:
      type     which function draws it (TYPE in app.js)
@@ -26,8 +26,8 @@
    A field draws nothing when the entry carries nothing for it, so one declaration covers a full entry and a
    bare one. Fields a player must never read (the search words, internal ids) are in no declaration.
 
-   REL, per related list: what it is called, which kind its rows are, which edge builds it, and the filter its
-   "see all" link carries to the drill-down (assets/bridge.js reads those names). */
+   REL, per group under Connections: what it is called, which kind its rows are, which edge builds it, and the
+   filter its "see all" link carries to the drill-down (assets/bridge.js reads those names). */
 
 export const ROUTES = ['home', 'build', 'currency', 'trade', 'farms', 'atlas', 'bosses', 'craft'];
 export const SECTIONS = {gems: 'Gems', uniques: 'Uniques', tree: 'Passive tree'};
@@ -91,29 +91,33 @@ export const ACTS = {
   open:  {label: 'Open in '},
 };
 
-/* Related lists, one per category the card shows. `of` is the kind its rows are, `edge` how they are found
-   (assets/edges.js), `g` which group of a keyword's own list it is, `filter` the drill-down filter the
-   "see all" carries. */
-export const REL = {
-  kwu:      {label: 'Uniques', of: 'u', edge: 'kwuse', g: 'u', filter: 'kw'},
-  kwg:      {label: 'Gems', of: 'g', edge: 'kwuse', g: 'g', filter: 'kw'},
-  kwp:      {label: 'Passives', of: 'p', edge: 'kwuse', g: 'p', filter: 'kw'},
-  kwb:      {label: 'Bases', of: 'b', edge: 'kwuse', g: 'b'},
-  kwe:      {label: 'Essences', of: 'c', edge: 'kwuse', g: 'e'},
-  kwa:      {label: 'Atlas', of: 'a', edge: 'kwuse', g: 'a'},
-  kwm:      {label: 'Crafting', edge: 'kwuse', g: 'm'},
-  kwc:      {label: 'Currency', of: 'c', edge: 'kwuse', g: 'c', filter: 'currency'},
-  kww:      {label: 'Keywords', of: 'w', edge: 'kwuse', g: 'w'},
+/* The groups under Connections, one per category the card shows. `of` is the kind its rows are, `edge` how
+   they are found (assets/edges.js), `g` which group of a keyword's own list it is, `filter` the drill-down
+   filter the "see all" carries.
 
-  base:     {label: 'Base item', of: 'b', edge: 'base'},
-  variants: {label: 'Other uniques on this base', of: 'u', edge: 'variants', filter: 'base'},
-  uniques:  {label: 'Uniques on this base', of: 'u', edge: 'uniques', filter: 'base'},
-  klass:    {label: 'Bases of this kind', of: 'b', edge: 'klass', filter: 'craft'},
-  grants:   {label: 'Skills it grants', of: 'g', edge: 'grants', needs: 'grants'},
-  granted:  {label: 'Items that grant it', edge: 'granted', needs: 'grants'},
-  section:  {label: 'The rest of this list', of: 'a', edge: 'section', filter: 'atlas'},
-  cat:      {label: 'The rest of this list', edge: 'cat'},
-  named:    {label: 'Named on this card', edge: 'named'},
+   A label names the relationship as it reads from the card you are on, so the same edge says the right thing
+   from either end: a unique "Sits on" its base, a base is "Used by uniques"; an item "Grants" a skill, a gem
+   is "Granted by" items. An edge that runs both ways alike ("Listed with") keeps the one label. */
+export const REL = {
+  kwu:      {label: 'Used by uniques', of: 'u', edge: 'kwuse', g: 'u', filter: 'kw'},
+  kwg:      {label: 'Used by gems', of: 'g', edge: 'kwuse', g: 'g', filter: 'kw'},
+  kwp:      {label: 'Used by passives', of: 'p', edge: 'kwuse', g: 'p', filter: 'kw'},
+  kwb:      {label: 'Used by bases', of: 'b', edge: 'kwuse', g: 'b'},
+  kwe:      {label: 'Used by essences', of: 'c', edge: 'kwuse', g: 'e'},
+  kwa:      {label: 'Used on the Atlas', of: 'a', edge: 'kwuse', g: 'a'},
+  kwm:      {label: 'Used by crafting mods', edge: 'kwuse', g: 'm'},
+  kwc:      {label: 'Used by currency', of: 'c', edge: 'kwuse', g: 'c', filter: 'currency'},
+  kww:      {label: 'Used by keywords', of: 'w', edge: 'kwuse', g: 'w'},
+
+  base:     {label: 'Sits on', of: 'b', edge: 'base'},
+  variants: {label: 'Shares its base with', of: 'u', edge: 'variants', filter: 'base'},
+  uniques:  {label: 'Used by uniques', of: 'u', edge: 'uniques', filter: 'base'},
+  klass:    {label: 'Shares its class with', of: 'b', edge: 'klass', filter: 'craft'},
+  grants:   {label: 'Grants', of: 'g', edge: 'grants', needs: 'grants'},
+  granted:  {label: 'Granted by', edge: 'granted', needs: 'grants'},
+  section:  {label: 'Listed with', of: 'a', edge: 'section', filter: 'atlas'},
+  cat:      {label: 'Listed with', edge: 'cat'},
+  named:    {label: 'Names', edge: 'named'},
   namedby:  {label: 'Named by', edge: 'namedby'},
 };
 

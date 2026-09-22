@@ -37,6 +37,13 @@ const REST = AFTER.then(() => getJSON('data/index-rest.json', {priority: 'low'})
 const BOSS = AFTER.then(() => getJSON('data/bosses.json', {priority: 'low'}).catch(() => null));
 // the history, only when the worker split it off (the backup site's market file has no parts: it is all in NOW)
 const PAST = AFTER.then(() => NOW).then(m => m && m.part === 'now' ? getJSON('data/market.json?part=past', {priority: 'low'}).catch(() => null) : null);
+/* Each league's own colour, by name (data/leagues.json, tools/leagues.py): GGG's colour for that league,
+   sampled from their art for it and already lifted to read on the chart's ground. A card's price chart
+   draws a retired league in it (bigLine). A league without one keeps the faded ladder, and so does every
+   league until this lands — it loads with the rest, long before a card can be opened. */
+const LEAGUE_COLOUR = new Map();
+AFTER.then(() => getJSON('data/leagues.json', {priority: 'low'}))
+  .then(f => { for(const l of (f && f.leagues) || []) if(l.colour) LEAGUE_COLOUR.set(l.name, l.colour); }, () => {});
 
 function prep(it, k, IMGS, lxk){   // once per card: its kind, full image link, mechanics links and search words
   if(it._nl !== undefined) return it;
@@ -584,7 +591,7 @@ let TRAIL = [], AT = -1, SEQ = 0, PEND = null;   // the trail, where you are on 
 const CUR = () => TRAIL[AT] || null;   // the card on show
 const focusBox = () => OV.querySelector('.ov-box').focus({preventScroll: true});
 /* Everything about the step you are leaving, so coming back to it finds it untouched: where the card was
-   scrolled, and its "Found on" list's group, filter and own scroll. The Trade panel is kept as it stands —
+   scrolled, and its Connections list's group, filter and own scroll. The Trade panel is kept as it stands —
    the same panel comes back, so Back never fires a second trade search. paintStep puts it all back. */
 function saveStep(){
   const step = CUR();
@@ -601,14 +608,16 @@ function keepInView(el){
   show();
   setTimeout(show, 260);
 }
-/* The price line on an opened card: this league solid, the leagues before it behind it, each step fainter and
-   thinner than the one in front, and a key naming them in their own shades so nobody has to guess which line
-   is which league. Every line is placed by which day of its own league it is (lh.d0 plus a day's place in the
-   line), so the shapes read against each other; a day nothing was checked is a null and breaks the line there.
-   No league's line joins another's and no day is filled in. lh is market.json's lh (worker/prices.js): without
-   it this draws the one line, as before. */
+/* The price line on an opened card: this league red or green with the price, the leagues before it behind it
+   each in its own colour, and a key naming them so nobody has to guess which line is which league. Every line
+   is placed by which day of its own league it is (lh.d0 plus a day's place in the line), so the shapes read
+   against each other; a day nothing was checked is a null and breaks the line there. No league's line joins
+   another's and no day is filled in. lh is market.json's lh (worker/prices.js): without it this draws the one
+   line, as before. */
 // this league, then one, two and three back: how faded each step is and how thick. Measured against the
-// chart's own ground: the faintest still reads at 3.1 to 1, so the oldest league holds up on a phone.
+// chart's own ground: the faintest still reads at 3.1 to 1, so the oldest league holds up on a phone. A past
+// league with a colour of its own is drawn at full strength instead, and keeps its place on the width ladder,
+// so the chart reads the same way without colour.
 const FADE = [null, '.74', '.54', '.4'];
 const WIDE = [2, 1.6, 1.4, 1.2];
 const realDays = v => v.reduce((n, x) => n + (x !== null && x !== undefined && isFinite(x) ? 1 : 0), 0);
@@ -649,20 +658,25 @@ function bigLine(vals, label, lh){
   const x0 = Math.min(...lines.map(s => s.d0)), xw = Math.max(...lines.map(s => s.d0 + s.v.length - 1)) - x0 || 1;
   const p = now.filter(v => v !== null);
   const mine = p.length < 2 ? 'var(--faint)' : p[p.length - 1] >= p[0] ? 'var(--pos)' : 'var(--neg)';
-  const col = i => i ? 'var(--text)' : mine;
+  // this league keeps the price's own red or green; a retired league takes GGG's colour for it, and only a
+  // league without one is faded back into the ladder
+  const own = s => s.b ? LEAGUE_COLOUR.get(s.n) || '' : '';
+  const col = s => s.b ? own(s) || 'var(--text)' : mine;
+  const dim = s => own(s) ? null : FADE[s.b];
   const paths = lines.map(s => {
     const d = linePath(s.v, s.d0, x0, xw, lo, span, w, h);
-    return d ? '<path d="' + d + '" fill="none" stroke="' + col(s.b) + '"' + (FADE[s.b] ? ' style="stroke-opacity:' + FADE[s.b] + '"' : '') +
+    return d ? '<path d="' + d + '" fill="none" stroke="' + col(s) + '"' + (dim(s) ? ' style="stroke-opacity:' + dim(s) + '"' : '') +
       ' stroke-width="' + WIDE[s.b] + '" vector-effect="non-scaling-stroke" stroke-linejoin="round" stroke-linecap="round"/>' : '';
   }).reverse().join('');   // the oldest league first, so this league is drawn on top of them
-  // the key: every league with prices, newest first, in its own shade. A few days says so rather than reading
-  // as a whole league.
+  // the key: every league with prices, newest first, each in the colour its line is drawn in. A few days says
+  // so rather than reading as a whole league.
   const key = lines.map(s => {
     const n = realDays(s.v);
-    return n ? '<li><i style="border-color:' + col(s.b) + (FADE[s.b] ? ';opacity:' + FADE[s.b] : '') + '"></i>' + esc(s.n) +
+    return n ? '<li><i style="border-color:' + col(s) + (dim(s) ? ';opacity:' + dim(s) : '') + '"></i>' + esc(s.n) +
       (n < 14 ? '<span>' + n + (n === 1 ? ' day' : ' days') + '</span>' : '') + '</li>' : '';
   }).join('');
-  const said = [back.length ? 'Daily price in each league. A league with no line had nothing listed then.' : '',
+  const said = [back.length ? 'Daily price in each league.' +
+      (back.some(own) ? ' A past league is drawn in its own colour, from GGG’s art for that league.' : '') : '',
     (lh && lh.note) || ''].filter(Boolean).join(' ');
   return '<figure class="chart"><figcaption>' + label + '</figcaption><svg viewBox="0 0 ' + w + ' ' + h +
     '" preserveAspectRatio="none" aria-hidden="true">' + paths + '</svg><ul class="chart-key">' + key + '</ul>' +
@@ -883,7 +897,7 @@ function paintStep(){
   paintNav();
   const back = () => { if(CUR() === step) box.scrollTop = step.top || 0; };   // back to where you had this card
   back();
-  // ...and again once the "Found on" rows are in: they come from data/kwuse.json a moment later, and until
+  // ...and again once the Connections rows are in: they come from data/kwuse.json a moment later, and until
   // they do the card is too short to scroll that far, so the browser would clamp it back to the top
   if(uses) uses._then = back;
   const on = document.activeElement;
@@ -942,12 +956,12 @@ function closeDetail(){
   if(d) history.go(-d); else hideDetail();   // popstate hides it
 }
 /* "Search this list or card" inside a card: a box for what this card holds. A keyword card filters its
-   "Found on" list; any other card filters its own lines. Typing filters the rows live; Esc empties the box
+   Connections list; any other card filters its own lines. Typing filters the rows live; Esc empties the box
    and then leaves it (the Escape handler above), so the card stays open either way. */
 function cardFilter(){
   const box = OV.querySelector('.ov-box');
   let q = box.querySelector('.uses-q');
-  if(q) q.hidden = false;                                  // a short "Found on" list keeps its box out of the way until now
+  if(q) q.hidden = false;                                  // a short Connections list keeps its box out of the way until now
   else if(box.querySelector('.uses-list')) return false;   // a list still loading, or with nothing in it to filter
   else q = lineFilter(box);
   if(!q) return false;
@@ -1117,8 +1131,8 @@ function paintRel(sec){
     ? '<p class="note">Could not load this list. Try again in a minute.</p>' : '';
   const filter = all.length > 1 ? '<input class="uses-q" type="search" autocomplete="off" spellcheck="false"' +
     (all.length > USE_FILTER ? '' : ' hidden') +
-    ' placeholder="Filter this list…" aria-label="Filter the related list">' : '';
-  sec.innerHTML = '<h4>Found on</h4>' + filter + '<div class="uses-list">' + blocks + note + '</div>' +
+    ' placeholder="Filter this list…" aria-label="Filter these connections">' : '';
+  sec.innerHTML = '<h4>Connections</h4>' + filter + '<div class="uses-list">' + blocks + note + '</div>' +
     '<p class="note uses-none" hidden>Nothing matches.</p>';
   sec._rows = all;
   const q = sec.querySelector('.uses-q');

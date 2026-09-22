@@ -186,7 +186,7 @@ body.ov-open{overflow:hidden}
   .card.detail .card-id{min-width:min(100%, 190px)}
   .card.detail .card-id h3{overflow-wrap:break-word}
   .card.detail .card-px{margin-left:auto}
-  /* one finger, one surface: the "Found on" list is part of the card here, not a scroll box inside it */
+  /* one finger, one surface: the Connections list is part of the card here, not a scroll box inside it */
   .ov-box .uses-list{max-height:none; overflow:visible}
 }
 /* the one way on to the drill-down page: a small gold-on-black button that lights up on hover */
@@ -339,7 +339,7 @@ header.top .notesbtn ~ .suggestbtn{margin-left:0}
 .sup-coin{display:grid; grid-template-columns:auto 1fr auto; gap:8px; align-items:center; margin:6px 0}
 .sup-coin code{font-size:11.5px; word-break:break-all; color:var(--text)}
 .notes-sup{margin-top:14px}
-/* popup: the card's bar, its keywords, and a keyword's "Found on" lists (app.js) */
+/* popup: the card's bar, its keywords, and a keyword's Connections lists (app.js) */
 /* the bar holds the trail: Back names the card behind you, then where you are, Forward and Close.
    It sticks to the scroll box, so it is there wherever you have scrolled the card. */
 .ov-nav{position:sticky; top:0; z-index:3; display:flex; flex-wrap:wrap; align-items:center; gap:6px; margin:0 0 10px; padding:5px;
@@ -390,7 +390,7 @@ header.top .notesbtn ~ .suggestbtn{margin-left:0}
 .uses-t span{font-size:11.5px; color:var(--muted); overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
 .uses-px{flex:none; font-size:12px}
 .uses-all{margin-top:10px}
-/* ---- keyword "Found on" lists: every row, a filter box on long lists (data/kwuse.json, usesSection in app.js) ---- */
+/* ---- keyword Connections lists: every row, a filter box on long lists (data/kwuse.json, usesSection in app.js) ---- */
 .uses-list{max-height:min(420px, 55vh); overscroll-behavior:contain}
 .uses-list > [hidden]{display:none}
 .uses-q{display:block; width:100%; box-sizing:border-box; margin:0 0 8px; padding:7px 10px; font:inherit; font-size:13px;

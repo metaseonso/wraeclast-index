@@ -169,7 +169,7 @@ function checkCards(now, want){
 }
 
 /* ---------- 2. deep links ----------
-   Every form the code emits, found in assets/app.js (hrefOf, craftHref, the "Found on" rows),
+   Every form the code emits, found in assets/app.js (hrefOf, craftHref, the Connections rows),
    assets/keys.js (the Go to ... shortcuts) and worker/seo.js (appHref, /item/<slug>). */
 async function checkLinks(index, market){
   const miss = [], forms = new Set();
@@ -228,7 +228,7 @@ async function checkLinks(index, market){
       if(k === 'c' && priced.has('c:' + it.id)) want(hay(it).includes(it.id.toLowerCase()), '#/currency?c=', it);
       if(k === 'b' && it.cr) want(craft.has(it.cr) && craft.get(it.cr).has(it.n), '#/craft?s=', it);
       if(k === 'a' && it.at) want(!!atNames[it.at] && atNames[it.at].has(it.n), '#/atlas?s=' + it.at + '&q=', it);
-      if(k === 'w'){   // the "See all in ..." button under "Found on"
+      if(k === 'w'){   // the "See all in ..." button under Connections
         for(const [g, sec] of [['gems', 'gems'], ['uniques', 'uniques'], ['passives', 'tree']])
           if(it.use && it.use[g]) want(kw.has(it.id), 'explore#' + sec + '?kw=', it);
       }
@@ -465,7 +465,7 @@ async function checkPhone(bigKeyword, want){
     const browser = await open('ws://127.0.0.1:' + port + '/devtools/browser' +
       (await (await fetch('http://127.0.0.1:' + port + '/json/version')).json())['webSocketDebuggerUrl'].split('/devtools/browser')[1]);
 
-    /* --- the home page: a card that has a "Found on" filter --- */
+    /* --- the home page: a card that has a Connections filter --- */
     const page = await phonePage(browser, port, errs);
     await go(page, SITE + '/#/?q=' + encodeURIComponent(bigKeyword));
     if(!await until(page, 'document.querySelectorAll("#cards .card").length')) bad.push('no cards on the home page');
@@ -487,7 +487,7 @@ async function checkPhone(bigKeyword, want){
           ' if(!t) return; const s = getSelection(); const r = document.createRange(); r.selectNodeContents(t); s.removeAllRanges(); s.addRange(r); })()');
         await drag(page, b.x + 20, iny, Math.min(370, b.x + b.w + 30), Math.max(6, b.y - 30));
         if(!await evalJS(page, OPEN)) bad.push('a text selection let go outside the card closed it');
-        // the "Found on" filter box
+        // the Connections filter box
         const f = await evalJS(page, '(() => { const s = document.querySelector(".ov-box .uses"); if(!s) return null;' +
           ' let q = s.querySelector(".uses-q");' +
           ' if(!q){ const tabs = [...s.querySelectorAll(".uses-tab")].filter(t => !t.disabled);' +
@@ -495,12 +495,12 @@ async function checkPhone(bigKeyword, want){
           '   if(big) big.click(); q = s.querySelector(".uses-q"); }' +
           ' if(!q) return null; q.scrollIntoView({block: "center"}); const r = q.getBoundingClientRect();' +
           ' return {x: r.x + r.width / 2, y: r.y + r.height / 2}; })()');
-        if(!f) bad.push('no "Found on" filter on this card');
+        if(!f) bad.push('no Connections filter on this card');
         else {
           await tap(page, f.x, f.y);
           await wait(300);
-          if(!await evalJS(page, OPEN)) bad.push('focusing the "Found on" filter closed the card');
-          else if(!await evalJS(page, 'document.activeElement && document.activeElement.classList.contains("uses-q")')) bad.push('the "Found on" filter did not take focus');
+          if(!await evalJS(page, OPEN)) bad.push('focusing the Connections filter closed the card');
+          else if(!await evalJS(page, 'document.activeElement && document.activeElement.classList.contains("uses-q")')) bad.push('the Connections filter did not take focus');
         }
       }
       wide['/'] = await evalJS(page, 'document.documentElement.scrollWidth - document.documentElement.clientWidth');

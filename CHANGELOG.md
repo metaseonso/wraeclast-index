@@ -3,6 +3,63 @@
 The full list of changes. The public patch notes (data/changelog.json, shown on the site) stay short.
 Add the details here first, then a short public line there.
 
+## Next — Connections, and a past league in its own colour
+
+- Two calls from the owner. First: *"instead of the word 'Found on' we need a more universally applicable
+  [name] for our new card system and what it actually is showing connections to."* Second, on the price
+  chart: *"by color coding league i meant based on GGG's marketing pallet for that league not ours"*, and
+  *"the current league will remain red or green according to price action keeping the original style. once
+  this league retires it will get its price action function shown as its own branded color."*
+- **"Found on" is now Connections.** The name fitted a keyword card, where every row really was somewhere the
+  word was found. It stopped fitting the day `assets/edges.js` started building the section for every kind and
+  following each edge both ways: a unique's base item is not somewhere the unique was found, it is what it
+  sits on. One `<h4>` in `assets/app.js`, and the word in the comments, the README, `tools/kwuse.py` and
+  `tools/dev/guard.mjs` that meant that section. Nothing else moved: the in-card search, the per-category
+  caps, the true counts and "See all" are the same code they were.
+- **Every group now names the relationship, read from the card you are on** (`REL`, `assets/kinds.js`), so the
+  same edge says the right thing from either end:
+
+  | Group | Was | Now |
+  | --- | --- | --- |
+  | `base` / `uniques` | Base item / Uniques on this base | **Sits on** / **Used by uniques** |
+  | `grants` / `granted` | Skills it grants / Items that grant it | **Grants** / **Granted by** |
+  | `named` / `namedby` | Named on this card / Named by | **Names** / **Named by** |
+  | `variants` | Other uniques on this base | **Shares its base with** |
+  | `klass` | Bases of this kind | **Shares its class with** |
+  | `section`, `cat` | The rest of this list | **Listed with** |
+  | the nine keyword groups | Uniques, Gems, Passives, … | **Used by uniques**, **Used by gems**, **Used by passives**, **Used by bases**, **Used by essences**, **Used on the Atlas**, **Used by crafting mods**, **Used by currency**, **Used by keywords** |
+
+  An edge that reads the same from both ends (`variants`, `klass`, `section`, `cat`) keeps the one label.
+- **A retired league draws in GGG's colour for that league.** The current league is untouched: red when the
+  price fell over the range, green when it rose, the same width, the same style. Behind it, a league that has
+  ended takes its own colour at full strength, and only a league without one falls back to the faded ladder.
+  The width ladder stays exactly as it was (2, 1.6, 1.4, 1.2), so the chart still reads with no colour at all.
+- **The colour is on the league, not in the chart.** `tools/leagues.py` finds GGG's reveal post for a league in
+  their Path of Exile 2 announcements forum, takes the banner that post opens with, and samples it: every pixel
+  that carries a hue at all, gathered into ten-degree bins weighted by how much colour it carries, then the
+  fullest bin and its neighbours. The result is lifted in lightness — hue and saturation held — until it clears
+  3:1 against the chart's ground (`--sunken`, `#050605`). It lands on the league in `data/leagues.json` with
+  the picture it came from and the day it was sampled, so a new league arrives with its colour and no one
+  edits code. A league that already has one is never fetched again, so the hourly run asks pathofexile.com for
+  nothing.
+
+  | League | Colour | Sampled → lifted | From |
+  | --- | --- | --- | --- |
+  | Forbidden Rites 0.5.5 | `#4b5c8a` | 1.17:1 → 3.09:1 | Forbidden Rites FAQ banner |
+  | Runes of Aldur 0.5 | `#864f2c` | 1.27:1 → 3.06:1 | Return of the Ancients reveal banner |
+  | Fate of the Vaal 0.4 | `#416449` | 1.29:1 → 3.04:1 | The Last of the Druids reveal banner |
+  | Rise of the Abyssal 0.3 | `#854f24` | 1.16:1 → 3.04:1 | The Third Edict reveal banner |
+  | Dawn of the Hunt 0.2 | `#39607a` | 1.14:1 → 3.02:1 | Dawn of the Hunt reveal banner |
+
+  Early Access 0.1 has no reveal post of its own in that forum, so it carries no colour and keeps the faded
+  ladder; so does Release 1.0, which has not started. Forbidden Rites is the current league and its colour
+  waits until it retires. Two of them land close together — Runes of Aldur and Rise of the Abyssal were both
+  marketed on bronze — which is what the art says; the width ladder and the key tell those two lines apart.
+- **The key and the line under it.** The key names every league with prices, newest first, each swatch in the
+  colour its line is drawn in, and the current league's entry in its up or down colour. The caption now reads
+  *"Daily price in each league. A past league is drawn in its own colour, from GGG's art for that league."* —
+  the source, and nothing about what is missing.
+
 ## Next — Every keyword a card names, linked on the word itself
 
 - The owner's call: *"The card for all listings need to have descriptions providing links to the cards for the
