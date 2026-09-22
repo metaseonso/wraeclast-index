@@ -43,7 +43,7 @@ function span(tok){
   if(neg){ a = -a; b = -b; }
   return [Math.min(a, b), Math.max(a, b)];
 }
-function range(line){
+export function range(line){
   const parts = (line.match(NUM) || []).map(span).filter(Boolean);
   if(!parts.length) return null;
   const avg = i => parts.reduce((a, p) => a + p[i], 0) / parts.length;

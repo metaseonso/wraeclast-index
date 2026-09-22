@@ -3,6 +3,34 @@
 The full list of changes. The public patch notes (data/changelog.json, shown on the site) stay short.
 Add the details here first, then a short public line there.
 
+## Next — The base you pick narrows the trade filters, and says so
+
+- From the suggestion box: *"trade page can be better if filter and modifier options automatically change
+  live to only show what is available for the base."*
+- **Pick a base on the Trade page and the search narrows to it.** The mod list drops to the mods that base
+  can really have, the defence types drop to the mixes it really comes in, and a slider's ends become what
+  that mod rolls on that base. A gloves base: the mod picker goes from 8,001 to what it can carry, "spell
+  damage" finds nothing there, and the type row is Armour and nothing else where before it showed none at
+  all for a base.
+- **The join was already shipped.** `data/craft/<class>.json` holds each class's pool (`tools/craft.py`)
+  and `data/trade.json` holds the trade site's own list (`tools/tradedata.py`); they meet on the wording of
+  a line with the numbers taken out, the same match the Craft tab makes when it builds a trade search. Of
+  the 956 modifier families across all 31 classes, 951 land on a trade mod; the five that do not are not on
+  the trade site at all. `assets/basepool.js` is the one place that reads the class table's shape, so a
+  base narrows a card and a search to the same thing.
+- **What a base can have is more than what it rolls.** A desecration, a corruption, a rune or soul core in
+  a socket and the base's own implicit are all on the list. Totals ("+# total to Fire Resistance") stay
+  whatever the base is: they are worked out from whatever is on the item, not rolled on it.
+- **Nothing disappears without the page saying so.** The note sits with the Mods list and with the Type
+  row — *Narrowed to what Stocky Mitts can have ✕* — and one tap puts everything back, with the way to
+  narrow it again in the same place. A mod already in a group when the base was picked stays where it is
+  and says the base cannot roll it. A defence type already ticked stays on the list whatever the base is.
+  Same shape and the same styling as the Craft tab's own "Narrowed by".
+- **The sliders keep the base's own tiers**, and where two of the base's mods read as one line on the trade
+  site the slider keeps the ends and drops the tiers rather than drawing one mod's bands over another's.
+- The class table is fetched when a base is picked, never before, and a table that does not come leaves
+  the whole list where it was rather than half of it.
+
 ## Next — What a base can already have, and a switch where the player is
 
 - From the suggestion box: *"gloves need a stonefist toggle and existing available modifiers to a base need
