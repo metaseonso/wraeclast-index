@@ -127,6 +127,18 @@ body.ov-open{overflow:hidden}
 .chart{margin:4px 0 0}
 .chart figcaption{font-size:11px; color:var(--faint); margin-bottom:4px}
 .chart svg{display:block; width:100%; height:64px; background:var(--sunken); border-radius:6px}
+/* Which line is which league. The shades match the lines on the chart, newest first; it wraps down the card
+   instead of pushing it sideways, so it holds at a phone's width. */
+.chart-key{display:flex; flex-wrap:wrap; gap:1px 12px; list-style:none; margin:5px 0 0; padding:0; min-width:0}
+.chart-key:empty{display:none}
+.chart-key li{display:flex; align-items:center; gap:5px; min-width:0; max-width:100%;
+  font-size:10.5px; line-height:1.6; color:var(--muted); white-space:nowrap}
+.chart-key li > i{flex:none; width:15px; border-top:2px solid var(--text); border-radius:2px}
+.chart-key li > span{color:var(--faint)}
+.chart-key li:first-child{color:var(--text)}
+/* what the chart is, and where it is thin: said plainly under the key (and on its own when there is too
+   little to draw a line from at all) */
+.chart-said, .chart .chart-said{margin:4px 0 0; font-size:10.5px; line-height:1.45; color:var(--faint)}
 /* phone: the card is a sheet over the whole screen — edge to edge, as tall as the browser really gives us
    (100dvh, so the keyboard shrinks it instead of covering it), clear of the notch and the home bar, with
    tighter padding and the bar at the foot of the sheet, where a thumb reaches it */

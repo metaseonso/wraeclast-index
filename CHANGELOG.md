@@ -3,6 +3,59 @@
 The full list of changes. The public patch notes (data/changelog.json, shown on the site) stay short.
 Add the details here first, then a short public line there.
 
+## Next — Prices: every league's own line, and a card that shows three back
+- The owner's ask: *"price over time in most recent league with past leagues price action line graph shown as a
+  line thats more faded up to 3 leagues back where applicable (not all items have been in every league)"*, and
+  *"lines should be progressively more faded as we go further back and notated that the price action is showing
+  that is the case so players know what they are seeing."*
+- **Why it needed a new table.** `trade_prices` is one row per priced thing: 45 days of day-by-day prices, and
+  every field on it — the league included — is overwritten on the next check. The day a league ends and the next
+  one's first check lands, that league's prices are gone. Nothing could carry a past league out of that row.
+- **The shape (`price_leagues`, `worker/migrations/0008`).** One row per thing per league, keyed `(key, league)`:
+  `s` is the same `[[day, price], ...]` the live row carries, one price a day, days nothing was checked left out.
+  Written from that live row on every check, so a run that was missed is filled in the next time that thing comes
+  round, and a day that was checked again is corrected. Days more than 400 apart are dropped: no league has run
+  that long, so that is a clock, not a price. Rows for leagues older than the last four are dropped, so the table
+  is flat in the age of the site.
+- **What it costs.** 1,412 things carry a per-league line (661 Currency Exchange currencies, 751 uniques — 710 of
+  the index plus the 41 a boss card prices). Measured in SQLite at the real price magnitudes and the real league
+  lengths: **5.0 MB for Forbidden Rites at 98 days, about 7 MB for a league of the median 20 weeks, 23 MB for the
+  four kept**, and flat from there — the fifth league back is dropped as the fifth arrives. One extra write a day
+  per thing, about 1,459 a day against the free plan's 100,000.
+- **The Currency Exchange's own currencies never went through the trade checks**, so they are rolled into their
+  league once a day from `exchange.json` itself, after the file comes in and off the file's own time rather than
+  the clock — a copy that has not moved on is rolled again next hour instead of counting as today's. The
+  drop of old leagues only runs once this league is the one being written to, so a roll against a file from the
+  wrong league cannot throw a league away.
+- **What `market.json` serves.** `?part=past` gains `lh` per item: which day of this league its line starts on,
+  where a day is missing from it, and the leagues before this one the thing **really** had prices in — at most
+  three, each with its real name, the day of its own league its line starts on, and how many leagues back it is.
+  `?part=now` is untouched, so first paint is unchanged. Nothing is averaged, filled in or carried over a league
+  boundary: a league a thing had no listings in has no row, so no line and no entry.
+- **The byte cost is the thing to watch.** `?part=past` is 0.27 MB gzipped today. With three past leagues at full
+  length on every item it is **1.86 MB gzipped, so about 1.6 MB more** (roughly 1.2 kB an item). It grows as
+  leagues accumulate rather than on this deploy, and it is the second load, never first paint. If that is too
+  much later, the fix is to serve a card's past leagues when the card is opened rather than all of them in the one
+  file — not to thin the series, which would mean dropping real measured days.
+- **On the card.** The lines are laid over each other by which day of its own league each one is, so the shapes
+  read against each other; the y scale is shared, so the heights do too. This league is solid at width 2, then
+  **.74 at 1.6, .54 at 1.4 and .4 at 1.2** going back — measured against the chart's own ground, the faintest
+  still reads at 3.1 to 1. A key names each league in its own shade, newest first, and adds how many days where a
+  league has under a fortnight. Under it, one line: the chart is the daily price in each league, and a league with
+  no line had nothing listed then. Two things that are easy to get wrong and are not: how faded a line is counts
+  **leagues**, not lines, so a thing that skipped a league is drawn in the two-back shade with the one-back shade
+  left empty; and a day nothing was checked **breaks** the line instead of being drawn straight across, for this
+  league as well as the past ones.
+- **Migration 0008** carries this league's prices in as they stand — the same days, the same shape, the league on
+  the row deciding which league the days belong to. Safe to apply twice (the primary key holds, and a row already
+  there is left alone), and `DROP TABLE price_leagues` puts it back: the file does not touch `trade_prices`.
+- Proved on a local database with the migration applied and four cases seeded: a unique with four leagues, one
+  with only this league, one with two leagues and both a missing league and a missing day, and one three days
+  old — plus a currency on all four. The served series and a headless render of each at 375px and on the desktop
+  agree, with no sideways scroll and no console errors. The migration was applied over a seeded copy of today's
+  live shape and carried all four rows, gave the same count on a second apply, and left `trade_prices` whole when
+  dropped. `guard.mjs` 6 ok, 0 failed; `wrangler deploy --dry-run` builds.
+
 ## Next — Craft: how often a mod rolls, from the source that measures it
 - The follow-on to "Craft: mod weights, and what the game files really carry" below, which ended with the weights
   being the owner's call. The call: *"crafting weights should be from official sources, and if not available the next

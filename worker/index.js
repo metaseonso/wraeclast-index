@@ -10,13 +10,14 @@
      /data/rollprices.json, /data/farmprices.json
                          live trade prices (sent in through the hour: /api/prices/ingest): worker/prices.js
      /data/bossprices.json  what every item on the Bosses tab costs: worker/prices.js
-     /api/data/put       the data server's hourly files (Currency Exchange, catalogue, league dates): worker/files.js
+     /api/data/put       the data server's hourly files (Currency Exchange, catalogue, league dates): worker/files.js.
+                         The Currency Exchange file also rolls the day's prices into its league (worker/prices.js)
      /api/health         how old every data file and every kind of price is, and whether a job is late: worker/health.js
      /api/trade/searches popular Trade page searches (GET), and counting one (POST): worker/community.js
      /api/suggest        notes from the Suggest button: worker/community.js
      /api/t, /api/admin/* page views and clicks, and the owner's dashboard (admin.html): worker/dash.js */
 import * as seo from './seo.js';
-import { servePrices, ingest, state, serveMarket, serveBossPrices } from './prices.js';
+import { servePrices, ingest, state, serveMarket, serveBossPrices, rollLeagues } from './prices.js';
 import { fileText, putFile } from './files.js';
 import { tradeSearches, suggest } from './community.js';
 import { track, admin } from './dash.js';
@@ -38,7 +39,7 @@ export default {
     if(url.pathname.startsWith('/api/admin/')) return admin(request, env, url);
     if(url.pathname === '/api/prices/ingest') return ingest(request, env, url);
     if(url.pathname === '/api/prices/state') return state(request, env, url);
-    if(url.pathname === '/api/data/put') return putFile(request, env, url, ctx);
+    if(url.pathname === '/api/data/put') return dataPut(request, env, url, ctx);
     if(url.pathname === '/data/rollprices.json') return servePrices(request, env, ctx, 'roll');
     if(url.pathname === '/data/farmprices.json') return servePrices(request, env, ctx, 'farm');
     if(url.pathname === '/data/bossprices.json') return serveBossPrices(request, env, ctx);
@@ -46,6 +47,16 @@ export default {
     return env.ASSETS.fetch(request);
   },
 };
+
+/* An hourly data file coming in (worker/files.js). When it is the Currency Exchange prices, the day's prices
+   are also put into the league they belong to, once a day, so a currency's line survives the league
+   (worker/prices.js rollLeagues). It runs after the answer has gone back: the job never waits for it. */
+async function dataPut(request, env, url, ctx){
+  const res = await putFile(request, env, url, ctx);
+  if(res.status === 200 && url.searchParams.get('name') === 'exchange.json')
+    ctx.waitUntil(rollLeagues(env, url.origin, ctx).catch(() => null));
+  return res;
+}
 
 /* The service worker keeps each deploy's files together (sw.js). Its BUILD is this deploy's version id, so every deploy
    is a new service worker with its own copy of the site. Browsers ask for it on every page load: never cached. */

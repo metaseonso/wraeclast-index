@@ -12,6 +12,7 @@
      roll:<stat>@<value>        trade sliders: the 10 cheapest items with at least that roll
      farm:<key>                 rolled tablets and waystones for the Farms tab
      boss:<key>                 boss entry items the in-game Currency Exchange does not trade (data/bossqueries.json)
+     cur:<have>|<want>          currency on the trade site's bulk exchange (the Currency Exchange feed replaced these)
    The job runs hourly and every kind gets a share of every run, but the trade site turns most of some runs
    away, so any one of these prices comes round about once a day, not once an hour (every: 'day' below). The
    Currency Exchange prices are hourly and are not in that budget. Every price carries its own age (at), so
@@ -20,12 +21,21 @@
    price per day (h).
    Listings priced in any currency are turned into divines at the Currency Exchange's own rates.
 
+   Past leagues (table price_leagues, worker/migrations/0008): trade_prices holds the live row only, 45 days,
+   and a new league overwrites it, so every league's own line is also kept in a row of its own, keyed by the
+   thing and the league. Written from the same day-by-day prices the live row carries, so a run that was missed
+   is filled in the next time that thing is checked, and never past the end of the league it belongs to. The
+   Currency Exchange's currencies are rolled in once a day from exchange.json (rollLeagues). Rows for leagues
+   older than the last four are dropped. Nothing is averaged, filled in or carried from one league to the next:
+   a league a thing had no listings in has no row, and so no line.
+
    /data/market.json   every item's price (the shape the pages read), only from these checks. Names, pictures
                        and descriptions come from the hourly catalogue (market.json); its prices are dropped.
                        updated is the real age of the data behind these prices, times says where that came from
                        and late is true once a job has missed a run (worker/health.js): the page stamps them.
                        ?part=now: the same without the day-by-day history (h) and the exchange pairs (half the size:
-                       what the first cards need); ?part=past: only those, for the charts (assets/app.js)
+                       what the first cards need); ?part=past: only those and the past leagues' lines (lh), for
+                       the charts (assets/app.js)
    /data/rollprices.json, /data/farmprices.json   the slider and farm prices
    /data/bossprices.json   what every item on the Bosses tab costs, from all three places at once */
 
@@ -36,6 +46,10 @@ const ISSUER = 'https://token.actions.githubusercontent.com';
 const REPO = 'metaseonso/wraeclast-index';
 const WORKFLOW = /^metaseonso\/wraeclast-index\/\.github\/workflows\/prices\.yml@refs\/heads\/main$/;
 const DAYS = 45;
+const KEEP = 4;      // leagues kept in price_leagues: this one and the three before it
+const BACK = 3;      // past leagues a card's chart carries
+const SPAN = 400;    // days one league's line may run to: longer than any league has been, so a wrong clock cannot run away
+const THIN = 7;      // a line shorter than this is called short on the card rather than drawn as a league
 
 export const tally = (env, kind, n = 1) => env.DB.prepare(
   'INSERT INTO load (hour, kind, n) VALUES (?, ?, ?) ON CONFLICT(hour, kind) DO UPDATE SET n = n + excluded.n')
@@ -45,6 +59,27 @@ async function meta(env, k){ const r = await env.DB.prepare('SELECT v FROM meta 
 const setMeta = (env, k, v) => env.DB.prepare('INSERT INTO meta (k, v) VALUES (?, ?) ON CONFLICT(k) DO UPDATE SET v = excluded.v').bind(k, String(v)).run();
 const median = a => { if(!a.length) return null; const s = [...a].sort((x, y) => x - y), m = s.length >> 1; return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2; };
 const round = v => v === null || !isFinite(v) ? null : +v.toPrecision(4);
+
+/* ---------- days ---------- */
+const dayNo = d => Math.floor(Date.parse(d + 'T00:00:00Z') / 864e5);   // a "2026-09-05" day as a whole number
+const parse = s => { try { const x = JSON.parse(s || '[]'); return Array.isArray(x) ? x : []; } catch { return []; } };
+const points = s => (typeof s === 'string' ? parse(s) : Array.isArray(s) ? s : [])
+  .filter(x => Array.isArray(x) && /^\d{4}-\d{2}-\d{2}$/.test(x[0]) && x[1] !== null && isFinite(x[1]));
+
+/* One league's line as price_leagues keeps it: [[day, price], ...] in day order, one price a day, days nothing
+   was checked left out. Merging the live 45-day history in puts back any day a run missed and corrects a day
+   that was checked again; a day that was never checked stays missing, and no day is worked out from its
+   neighbours. Days more than SPAN apart are dropped: a league has never run that long, so that is a clock,
+   not a price. Returns null when there is nothing to keep. */
+function mergeDays(was, add){
+  const by = new Map();
+  for(const [d, v] of points(was)) by.set(d, v);
+  for(const x of add) if(Array.isArray(x) && /^\d{4}-\d{2}-\d{2}$/.test(x[0]) && x[1] !== null && isFinite(x[1])) by.set(x[0], x[1]);
+  const days = [...by.keys()].sort();
+  if(!days.length) return null;
+  const last = dayNo(days[days.length - 1]);
+  return days.filter(d => last - dayNo(d) < SPAN).map(d => [d, by.get(d)]);
+}
 
 /* ---------- GitHub's signed token ---------- */
 const unb64 = s => Uint8Array.from(atob(s.replace(/-/g, '+').replace(/_/g, '/') + '==='.slice((s.length + 3) % 4)), c => c.charCodeAt(0));
@@ -93,26 +128,90 @@ export async function ingest(request, env, url){
     // the middle of the 5 cheapest: what you actually pay, without one bait listing or a few silly asks deciding it
     return round(median(r.p.map(([a, c]) => worth[c] ? a * worth[c] : null).filter(x => x !== null).sort((x, y) => x - y).slice(0, 5)));
   };
-  const old = {};
+  const old = {}, kept = {};
   if(rows.length){
-    const got = await env.DB.prepare('SELECT key, h FROM trade_prices WHERE key IN (' + rows.map(() => '?').join(',') + ')').bind(...rows.map(r => r.key)).all();
-    for(const r of got.results || []) old[r.key] = r.h;
+    const marks = rows.map(() => '?').join(','), keys = rows.map(r => r.key);
+    const got = await env.DB.prepare('SELECT key, league, h FROM trade_prices WHERE key IN (' + marks + ')').bind(...keys).all();
+    for(const r of got.results || []) old[r.key] = r;
+    const was = await env.DB.prepare('SELECT key, s FROM price_leagues WHERE league = ? AND key IN (' + marks + ')').bind(league, ...keys).all();
+    for(const r of was.results || []) kept[r.key] = r.s;
   }
-  const stmts = rows.map(r => {
+  const stmts = [];
+  for(const r of rows){
     const v = valueOf(r);
-    let h = [];
-    try { h = JSON.parse(old[r.key] || '[]'); } catch {}
+    // a new league starts a new line: the last league's days are never carried into this one (its own row in
+    // price_leagues already has them), so nothing on a card is ever drawn across a league boundary
+    const prev = old[r.key];
+    let h = prev && prev.league === league ? parse(prev.h) : [];
     h = h.filter(x => x[0] !== day);
     if(v !== null) h.push([day, v]);
     h = h.slice(-DAYS);
-    return env.DB.prepare(`INSERT INTO trade_prices (key, league, p, total, at, v, h) VALUES (?, ?, ?, ?, ?, ?, ?)
+    stmts.push(env.DB.prepare(`INSERT INTO trade_prices (key, league, p, total, at, v, h) VALUES (?, ?, ?, ?, ?, ?, ?)
       ON CONFLICT(key) DO UPDATE SET league = excluded.league, p = excluded.p, total = excluded.total, at = excluded.at, v = excluded.v, h = excluded.h`)
-      .bind(r.key, league, JSON.stringify(r.p), r.total, now, v, JSON.stringify(h));
-  });
+      .bind(r.key, league, JSON.stringify(r.p), r.total, now, v, JSON.stringify(h)));
+    // this league's own line, kept whole so it is still here once the league is over
+    const line = league ? mergeDays(kept[r.key], h) : null;
+    if(line) stmts.push(env.DB.prepare(`INSERT INTO price_leagues (key, league, s, at) VALUES (?, ?, ?, ?)
+      ON CONFLICT(key, league) DO UPDATE SET s = excluded.s, at = excluded.at`)
+      .bind(r.key, league, JSON.stringify(line), now));
+  }
   if(stmts.length) await env.DB.batch(stmts);
   for(const [k, n] of Object.entries(body.load || {}))
     if(/^trade_(search|fetch|exchange|limited|error)$/.test(k) && +n > 0) await tally(env, k, Math.min(1000, Math.floor(+n)));
   return json(200, {ok: true, saved: stmts.length});
+}
+
+/* ---------- keeping each league's line ---------- */
+/* The leagues price_leagues holds, newest first, by when each one was last written to: a league that has
+   finished stopped being written to, this one is being written to now. Our own rows say it, so a league is
+   never ordered by a name or a date from anywhere else. */
+async function leagueOrder(env){
+  let rows = {results: []};
+  try { rows = await env.DB.prepare('SELECT league, MAX(at) AS at FROM price_leagues GROUP BY league').all(); } catch {}   // no table yet
+  return (rows.results || []).filter(r => r.league).sort((a, b) => (a.at < b.at ? 1 : a.at > b.at ? -1 : 0)).map(r => r.league);
+}
+/* Which day of its own league a day is, from the league start dates (data/leagues.json, tools/leagues.py), so
+   the lines on a chart line up by day of league and not by date. A league that list does not name gets 0: its
+   line starts at the left of its own league, which is what it is, rather than being shifted by a guess. */
+async function leagueStarts(env, origin, ctx){
+  const f = (await published(env, origin, 'leagues.json', ctx)) || (await asset(env, origin, 'leagues.json')) || {};
+  const out = new Map();
+  for(const l of f.leagues || []) if(l && l.name && /^\d{4}-\d{2}-\d{2}$/.test(l.start || '')) out.set(l.name, dayNo(l.start));
+  return out;
+}
+
+/* Once a day: put the Currency Exchange's own day-by-day prices (exchange.json, tools/exchange.py) into this
+   league's rows, and drop the leagues older than the last KEEP. The exchange file keeps 45 days and starts
+   again each league, so this is the only place a currency's whole league is kept.
+   Driven by the file's own time, not the clock: a copy that has not moved on is rolled again next hour rather
+   than counting as today's. Called after the file comes in (worker/index.js). */
+export async function rollLeagues(env, origin, ctx){
+  const cx = await published(env, origin, 'exchange.json', ctx);
+  if(!cx || !cx.league) return {ok: false, why: 'no currency file'};
+  const mark = cx.league + ' ' + String(cx.updated || '').slice(0, 10);
+  if((await meta(env, 'cxroll')) === mark) return {ok: true, rolled: 0};
+  let was = {results: []};
+  try { was = await env.DB.prepare('SELECT key, s FROM price_leagues WHERE league = ?').bind(cx.league).all(); } catch { return {ok: false, why: 'no table'}; }
+  const kept = new Map((was.results || []).map(r => [r.key, r.s]));
+  const now = new Date().toISOString(), stmts = [];
+  for(const [name, x] of Object.entries(cx.items || {})){
+    const line = mergeDays(kept.get('cx:' + name), Array.isArray(x && x.h) ? x.h : []);
+    if(line) stmts.push(env.DB.prepare(`INSERT INTO price_leagues (key, league, s, at) VALUES (?, ?, ?, ?)
+      ON CONFLICT(key, league) DO UPDATE SET s = excluded.s, at = excluded.at`)
+      .bind('cx:' + name, cx.league, JSON.stringify(line), now));
+  }
+  for(let i = 0; i < stmts.length; i += 64) await env.DB.batch(stmts.slice(i, i + 64));
+  await setMeta(env, 'cxroll', mark);
+  // the leagues before the last KEEP: dropped, once this league is the one being written to (so a roll that
+  // ran against a file from the wrong league can never throw a league away)
+  const order = await leagueOrder(env);
+  let dropped = 0;
+  if(order[0] === cx.league && order.length > KEEP){
+    const go = order.slice(KEEP);
+    await env.DB.prepare('DELETE FROM price_leagues WHERE league IN (' + go.map(() => '?').join(',') + ')').bind(...go).run();
+    dropped = go.length;
+  }
+  return {ok: true, rolled: stmts.length, dropped};
 }
 
 async function exchangeWorth(env, origin){
@@ -141,6 +240,94 @@ function fields(r){
   return out;
 }
 
+/* ---------- lh: the price line per league, the shape a card's chart reads (assets/app.js) ----------
+   lh.d0     which day of this league h[0] is: 0 is the day the league started
+   lh.g      where a day is missing from h: [[place in h, days missing before it], ...], left out when every
+             day is there. h leaves a day nothing was checked out altogether, so without this the chart would
+             sit this league's prices side by side however far apart their days are
+   lh.past   the leagues before this one this thing really had prices in, newest first, at most BACK:
+               n   the league's name, as the game calls it
+               b   how many leagues back it is, 1 to BACK: how faded its line is on the card. It counts
+                   leagues, not entries, so a thing that skipped a league is not drawn as if it had not
+               d0  which day of that league its own first price is
+               v   one price a day from there, null on a day nothing was checked
+   lh.note   what to say where the data is thin: a line under a week old, and which of the last BACK leagues
+             this thing has nothing from
+   Every line is placed by which day of its own league it is, never by date, so a chart can lay them over each
+   other. A day with no check is a null and breaks the line there. A league a thing had no prices in has no
+   entry and so no line. Nothing is averaged, filled in, or joined from one league to the next. */
+
+// one league's row -> its first day and one price a day from there. `start` is that league's own first day.
+function dense(s, start){
+  const pts = points(s);
+  if(!pts.length) return null;
+  const from = dayNo(pts[0][0]), v = [];
+  for(const [d, x] of pts){
+    const i = dayNo(d) - from;
+    if(i < 0 || i >= SPAN) continue;
+    while(v.length < i) v.push(null);
+    v[i] = x;
+  }
+  return {d0: start === null ? 0 : Math.max(0, from - start), v};
+}
+// the days missing from a compacted line, as the chart needs them back (lh.g). Nothing is filled in: a missing
+// day is a break in the line, not a price.
+const gapsOf = pts => {
+  const out = [];
+  for(let i = 1; i < pts.length; i++){
+    const n = dayNo(pts[i][0]) - dayNo(pts[i - 1][0]) - 1;
+    if(n > 0 && n < SPAN) out.push([i, n]);
+  }
+  return out;
+};
+const orList = a => a.length < 2 ? a.join('') : a.slice(0, -1).join(', ') + ' or ' + a[a.length - 1];
+// said plainly on the card, so a short line is never read as a whole league's price action
+function thinNote(days, mine, back){
+  const bits = [];
+  if(days > 0 && days < THIN) bits.push(days === 1 ? 'One day of prices this league so far.' : days + ' days of prices this league so far.');
+  const gone = back.filter(n => !mine.some(m => m.n === n));
+  if(gone.length) bits.push('Nothing from ' + orList(gone) + '.');
+  return bits.join(' ');
+}
+/* Put lh on every item that has a league line. `own` says, for each item, which price_leagues key it is
+   (k), which day this league's own line starts on (f), how many days it has (n) and which days it is missing
+   (g). An item with no past league still gets lh when its own line has a day missing, so the chart breaks
+   there rather than drawing straight over it. */
+async function addLeagueLines(env, origin, ctx, league, items, own){
+  const order = await leagueOrder(env);
+  const back = order.filter(l => l && l !== league).slice(0, BACK);
+  const starts = await leagueStarts(env, origin, ctx);
+  const startOf = l => (starts.has(l) ? starts.get(l) : null);
+  const here = startOf(league);
+  const by = new Map();
+  if(back.length){
+    let rows = {results: []};
+    try {
+      rows = await env.DB.prepare('SELECT key, league, s FROM price_leagues WHERE league IN (' + back.map(() => '?').join(',') + ')')
+        .bind(...back).all();
+    } catch { return; }   // no table yet: cards carry this league only, as before
+    for(const r of rows.results || []){
+      const line = dense(r.s, startOf(r.league));
+      if(!line) continue;
+      const list = by.get(r.key) || [];
+      list.push({n: r.league, b: back.indexOf(r.league) + 1, ...line});
+      by.set(r.key, list);
+    }
+  }
+  for(const [k, it] of Object.entries(items)){
+    const mine = own.get(k);
+    if(!mine) continue;
+    const past = (by.get(mine.k) || []).sort((a, b) => a.b - b.b);   // newest league first
+    const note = thinNote(mine.n, past, back);
+    const gaps = mine.g || [];
+    if(!past.length && !note && !gaps.length) continue;
+    it.lh = {d0: mine.f && here !== null ? Math.max(0, dayNo(mine.f) - here) : 0};
+    if(gaps.length) it.lh.g = gaps;
+    if(past.length) it.lh.past = past;
+    if(note) it.lh.note = note;
+  }
+}
+
 /* How old prices really are. The Currency Exchange feed's own time, but never newer than the moment its file
    came in (the backup site's copy does not say when it came in, so the feed's own time stands); and the newest
    trade check. A page stamps the older of the two, so a job that has stopped cannot hide behind one that is
@@ -151,7 +338,7 @@ const stale = (t, where, name) => !t || Date.now() - Date.parse(t) >= lateAfter(
 
 /* ---------- /data/market.json ---------- */
 const DROP = ['v', 'ch', 'sp', 'vol', 'pair', 'gap', 'routes', 'arb', 'h', 'ls'];   // the catalogue's own prices: never shown
-const LATER = ['h', 'pairs'];   // the fields ?part=past carries and ?part=now leaves out
+const LATER = ['h', 'lh', 'pairs'];   // the fields ?part=past carries and ?part=now leaves out
 export async function serveMarket(request, env, ctx){
   const url = new URL(request.url), part = ({now: 'now', past: 'past'})[url.searchParams.get('part')] || '';
   const ck = new Request(url.origin + '/data/market.json?from=trade' + (part ? '&part=' + part : ''));
@@ -174,6 +361,7 @@ export async function serveMarket(request, env, ctx){
   for(const r of rows.results || []) if(!tradeAt || r.at > tradeAt) tradeAt = r.at;
   const updated = older(currencyAt, tradeAt);
   const late = stale(currencyAt, 'file', 'exchange.json') || (!!tradeAt && stale(tradeAt, 'price', 'uniq'));
+  const own = new Map();   // which price_leagues row each item is, and where this league's own line starts
   // currency: what it traded for on the Currency Exchange over the last 24 hours
   if(cx.league === league) for(const [name, x] of Object.entries(cx.items || {})){
     const o = {v: x.v, vol: x.vol, at: currencyAt, src: 'cx'};
@@ -185,9 +373,17 @@ export async function serveMarket(request, env, ctx){
     }
     if(x.ch !== undefined) o.ch = x.ch;
     items['c:' + name] = {...(items['c:' + name] || {n: name}), ...o};
+    const pts = points(x.h);
+    own.set('c:' + name, {k: 'cx:' + name, f: pts.length ? pts[0][0] : null, n: pts.length, g: gapsOf(pts)});
   }
   // uniques: real listings on the trade site
-  for(const r of rows.results || []) items['u:' + r.key.slice(5)] = {...fields(r), src: 'trade'};
+  for(const r of rows.results || []){
+    items['u:' + r.key.slice(5)] = {...fields(r), src: 'trade'};
+    const pts = points(r.h);
+    own.set('u:' + r.key.slice(5), {k: r.key, f: pts.length ? pts[0][0] : null, n: pts.length, g: gapsOf(pts)});
+  }
+  // the past leagues' lines. Left out of ?part=now, so the first cards never wait for them.
+  if(part !== 'now') await addLeagueLines(env, url.origin, ctx, league, items, own);
   let out = {league, updated, late, times: {currency: currencyAt, trade: tradeAt, catalogue: came(catRow)},
     primary: 'divine', rates: rate ? {exalted: rate} : {},
     source: 'Currency Exchange and trade site listings', builds: cat.builds,
@@ -249,7 +445,8 @@ export async function servePrices(request, env, ctx, kind){
    A name appears only once something real is known about it. v is a price in divines, or null when the last
    check found nobody selling: never a zero, never a number worked out here, so nothing can sort as free.
    Every row carries the day-by-day prices (h) and the 7-day line off them, the way /data/market.json does, so
-   an item opened from a boss card is no poorer than the same item anywhere else on the site.
+   an item opened from a boss card is no poorer than the same item anywhere else on the site. This league only:
+   the past leagues' lines (lh) are on /data/market.json, which is where a card gets its chart.
    The drop rates in data/bosses.json never meet these prices: no value per kill, here or anywhere. */
 async function asset(env, origin, name){   // a data file that ships with the site, parsed
   try {

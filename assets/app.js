@@ -440,22 +440,85 @@ function keepInView(el){
   show();
   setTimeout(show, 260);
 }
-function bigLine(vals, label){
-  const p = vals.filter(v => v !== null && isFinite(v));
-  if(p.length < 2) return '';
-  const lo = Math.min(...p), hi = Math.max(...p), span = hi - lo || 1, w = 300, h = 64;
-  const d = p.map((v, i) => (i ? 'L' : 'M') + ((i / (p.length - 1)) * (w - 4) + 2).toFixed(1) + ' ' + (h - 4 - ((v - lo) / span) * (h - 8)).toFixed(1)).join('');
-  const up = p[p.length - 1] >= p[0];
-  return '<figure class="chart"><figcaption>' + label + '</figcaption><svg viewBox="0 0 ' + w + ' ' + h + '" preserveAspectRatio="none" aria-hidden="true">' +
-    '<path d="' + d + '" fill="none" stroke="' + (up ? 'var(--pos)' : 'var(--neg)') + '" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linejoin="round"/></svg></figure>';
+/* The price line on an opened card: this league solid, the leagues before it behind it, each step fainter and
+   thinner than the one in front, and a key naming them in their own shades so nobody has to guess which line
+   is which league. Every line is placed by which day of its own league it is (lh.d0 plus a day's place in the
+   line), so the shapes read against each other; a day nothing was checked is a null and breaks the line there.
+   No league's line joins another's and no day is filled in. lh is market.json's lh (worker/prices.js): without
+   it this draws the one line, as before. */
+// this league, then one, two and three back: how faded each step is and how thick. Measured against the
+// chart's own ground: the faintest still reads at 3.1 to 1, so the oldest league holds up on a phone.
+const FADE = [null, '.74', '.54', '.4'];
+const WIDE = [2, 1.6, 1.4, 1.2];
+const realDays = v => v.reduce((n, x) => n + (x !== null && x !== undefined && isFinite(x) ? 1 : 0), 0);
+/* h leaves out a day nothing was checked, so its prices sit next to each other however far apart the days
+   are; lh.g says where those days were ([place in the line, days missing before it], worker/prices.js gapsOf).
+   Putting them back as nulls places this league's line by day of league, the way a past league's already is,
+   and breaks it where nothing was checked instead of drawing straight across. */
+function byDay(vals, gaps){
+  if(!gaps || !gaps.length) return vals;
+  const miss = new Map(gaps.map(([i, n]) => [i, n])), out = [];
+  for(let i = 0; i < vals.length; i++){
+    for(let k = miss.get(i) || 0; k > 0; k--) out.push(null);
+    out.push(vals[i]);
+  }
+  return out;
+}
+function linePath(v, d0, x0, xw, lo, span, w, h){
+  let d = '', on = false;
+  for(let i = 0; i < v.length; i++){
+    const y = v[i];
+    if(y === null || y === undefined || !isFinite(y)){ on = false; continue; }   // a day with no check: the line stops
+    d += (on ? 'L' : 'M') + (((d0 + i - x0) / xw) * (w - 4) + 2).toFixed(1) + ' ' + (h - 4 - ((y - lo) / span) * (h - 8)).toFixed(1);
+    on = true;
+  }
+  return d;
+}
+function bigLine(vals, label, lh){
+  const now = byDay((vals || []).map(v => v === null || v === undefined || !isFinite(v) ? null : v), lh && lh.g);
+  // s.b is how many leagues back it is, so a thing that skipped a league keeps that league's shade free
+  // instead of moving up a step (worker/prices.js lh.past)
+  const back = ((lh && lh.past) || []).map(s => ({n: s.n, b: Math.min(+s.b || 1, FADE.length - 1), d0: +s.d0 || 0, v: s.v || []}))
+    .sort((x, y) => x.b - y.b).slice(0, FADE.length - 1);
+  const lines = [{n: (D.market && D.market.league) || 'This league', b: 0, d0: (lh && +lh.d0) || 0, v: now}, ...back];
+  if(!lines.some(s => realDays(s.v) >= 2)) return '';   // one price is not a line: nothing is drawn from it
+  const real = [];
+  for(const s of lines) for(const y of s.v) if(y !== null && isFinite(y)) real.push(y);
+  const lo = Math.min(...real), hi = Math.max(...real), span = hi - lo || 1, w = 300, h = 64;
+  const x0 = Math.min(...lines.map(s => s.d0)), xw = Math.max(...lines.map(s => s.d0 + s.v.length - 1)) - x0 || 1;
+  const p = now.filter(v => v !== null);
+  const mine = p.length < 2 ? 'var(--faint)' : p[p.length - 1] >= p[0] ? 'var(--pos)' : 'var(--neg)';
+  const col = i => i ? 'var(--text)' : mine;
+  const paths = lines.map(s => {
+    const d = linePath(s.v, s.d0, x0, xw, lo, span, w, h);
+    return d ? '<path d="' + d + '" fill="none" stroke="' + col(s.b) + '"' + (FADE[s.b] ? ' style="stroke-opacity:' + FADE[s.b] + '"' : '') +
+      ' stroke-width="' + WIDE[s.b] + '" vector-effect="non-scaling-stroke" stroke-linejoin="round" stroke-linecap="round"/>' : '';
+  }).reverse().join('');   // the oldest league first, so this league is drawn on top of them
+  // the key: every league with prices, newest first, in its own shade. A few days says so rather than reading
+  // as a whole league.
+  const key = lines.map(s => {
+    const n = realDays(s.v);
+    return n ? '<li><i style="border-color:' + col(s.b) + (FADE[s.b] ? ';opacity:' + FADE[s.b] : '') + '"></i>' + esc(s.n) +
+      (n < 14 ? '<span>' + n + (n === 1 ? ' day' : ' days') + '</span>' : '') + '</li>' : '';
+  }).join('');
+  const said = [back.length ? 'Daily price in each league. A league with no line had nothing listed then.' : '',
+    (lh && lh.note) || ''].filter(Boolean).join(' ');
+  return '<figure class="chart"><figcaption>' + label + '</figcaption><svg viewBox="0 0 ' + w + ' ' + h +
+    '" preserveAspectRatio="none" aria-hidden="true">' + paths + '</svg><ul class="chart-key">' + key + '</ul>' +
+    (said ? '<figcaption class="chart-said">' + esc(said) + '</figcaption>' : '') + '</figure>';
 }
 function detailExtras(it, px){
   if(!px) return '';
   let out = '';
+  // px.lh carries the leagues before this one (worker/prices.js). sp is only reached with three days or fewer,
+  // where it is the whole of h, so lh.d0 still says which day of the league the line starts on.
   if(px.h && px.h.length > 3){
     const lo = money(Math.min(...px.h.map(x => x[1]))), hi = money(Math.max(...px.h.map(x => x[1])));
-    out += bigLine(px.h.map(x => x[1]), 'Since ' + px.h[0][0] + ' \u00b7 low ' + lo.v + ' ' + lo.u + ', high ' + hi.v + ' ' + hi.u);
-  } else if(px.sp) out += bigLine(px.sp, 'Last 7 days');
+    out += bigLine(px.h.map(x => x[1]), 'Since ' + px.h[0][0] + ' \u00b7 low ' + lo.v + ' ' + lo.u + ', high ' + hi.v + ' ' + hi.u, px.lh);
+  } else if(px.sp) out += bigLine(px.sp, 'Last 7 days', px.lh);
+  else if(px.lh && px.lh.past) out += bigLine([], 'Past leagues', px.lh);
+  // nothing to draw and something to say: one day is a price, not price action, so the card says that instead
+  if(!out && px.lh && px.lh.note) out += '<p class="chart-said">' + esc(px.lh.note) + '</p>';
   const facts = [];
   // where the price comes from, and when it was checked
   if(px.src === 'trade') facts.push((px.ls || 0).toLocaleString() + ' listed on the trade site' + (px.at ? ' \u00b7 checked ' + ago(px.at) : ''));
