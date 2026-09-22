@@ -244,12 +244,14 @@ export const ACTS = {
   trade: {label: 'Trade'},
   full:  {label: 'Full stats'},
   craft: {label: 'Open in Craft'},
-  /* Every card the bench can start from travels to it: a base item, and the currency the game crafts with —
-     orbs, essences, omens, runes and soul cores, catalysts and desecration bones, which are the groups the
-     game sorts currency into. A currency of any other group has nothing to hand the bench, so it has no
-     bench act. docs/craft-sim.md, "The bench card". */
+  /* Every card the bench can start from travels to it: a base item, and the currency the game crafts an item
+     with — orbs, essences, omens, runes, soul cores, idols, catalysts and desecration bones, which are the
+     groups the game sorts currency into. A currency of any other group has nothing to hand the bench, so it
+     has no bench act; one inside a group that the bench does not itself craft with opens the bench on the
+     item as it stands and says so in a line. docs/craft-sim.md, "The bench card". */
   bench: {label: 'Crafting bench', own: './craftsim.js', go: 'openBench',
-          only: {c: {at: 's', of: ['Currency', 'Essences', 'Omens', 'Runes', 'Soul Cores', 'Catalysts', 'Abyssal Bones']}}},
+          only: {c: {at: 's', of: ['Currency', 'Essences', 'Omens', 'Runes', 'Soul Cores', 'Idols',
+                                   'Catalysts', 'Abyssal Bones', 'Verisium']}}},
   open:  {label: 'Open in '},
 };
 
