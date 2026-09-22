@@ -23,6 +23,8 @@ import { tmpdir } from 'node:os';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import * as seo from '../../worker/seo.js';
+// the one table the site itself reads: what each kind is called, its tab and its section
+import { KINDS, NAMES, ROUTES, SECTIONS } from '../../assets/kinds.js';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(HERE, '..', '..');
@@ -31,8 +33,9 @@ const LIVE = 'https://wraeclastindex.fyi';
 const TOL = 0.02;          // a kind may lose this much before it counts as broken
 const SAMPLE = 200;        // deep links tried per kind
 const PAGE_SAMPLE = 20;    // item pages fetched per kind
-const KINDS = {g: 'gems', u: 'uniques', p: 'passives', w: 'keywords', c: 'currency', b: 'bases', a: 'atlas',
-  h: 'mechanics'};
+// the kinds this check counts and follows: every kind whose rows are in data/index.json (the bosses keep
+// their own file, so they are not in it)
+const KIND = Object.fromEntries(KINDS.filter(d => d.index).map(d => [d.k, NAMES[d.k]]));
 
 /* ---------- what counts as raw game code ---------- */
 // "(?!\(" keeps a Markdown link ("[Gems](https://...)", llms.txt) from reading as game markup
@@ -148,18 +151,18 @@ async function getJSON(path){
 /* ---------- 1. how many cards of each kind ---------- */
 function countKinds(index){
   const out = {};
-  for(const it of index.items) if(KINDS[it.k]) out[it.k] = (out[it.k] || 0) + 1;
+  for(const it of index.items) if(KIND[it.k]) out[it.k] = (out[it.k] || 0) + 1;
   return out;
 }
 function checkCards(now, want){
   const bad = [], moved = [];
   for(const [k, n] of Object.entries(want)){
     const got = now[k] || 0;
-    if(!got) bad.push(KINDS[k] + ' gone');
-    else if(got < n * (1 - TOL)) bad.push(KINDS[k] + ' ' + fmt(n) + ' \u2192 ' + fmt(got));
-    else if(got !== n) moved.push(KINDS[k] + ' ' + (got > n ? '+' : '') + fmt(got - n));
+    if(!got) bad.push(KIND[k] + ' gone');
+    else if(got < n * (1 - TOL)) bad.push(KIND[k] + ' ' + fmt(n) + ' \u2192 ' + fmt(got));
+    else if(got !== n) moved.push(KIND[k] + ' ' + (got > n ? '+' : '') + fmt(got - n));
   }
-  for(const k of Object.keys(now)) if(!(k in want)) moved.push(KINDS[k] + ' new');
+  for(const k of Object.keys(now)) if(!(k in want)) moved.push(KIND[k] + ' new');
   const total = Object.values(now).reduce((a, b) => a + b, 0);
   say('cards', !bad.length, bad.length ? bad.join(', ')
     : Object.keys(now).length + ' kinds, ' + fmt(total) + ' cards' + (moved.length ? ' \u00b7 ' + moved.join(', ') : ' \u00b7 no change'));
@@ -172,17 +175,18 @@ async function checkLinks(index, market){
   const miss = [], forms = new Set();
   const src = {
     app: await readFile(join(ROOT, 'assets', 'app.js'), 'utf8'),
+    kinds: await readFile(join(ROOT, 'assets', 'kinds.js'), 'utf8'),
+    edges: await readFile(join(ROOT, 'assets', 'edges.js'), 'utf8'),
     keys: await readFile(join(ROOT, 'assets', 'keys.js'), 'utf8'),
     bridge: await readFile(join(ROOT, 'assets', 'bridge.js'), 'utf8'),
     seo: await readFile(join(ROOT, 'worker', 'seo.js'), 'utf8'),
   };
-  // the app's own tab names, and the drill-down page's sections
-  const routes = new Set((src.app.match(/const r = \[([^\]]+)\]/) || ['', ''])[1].match(/'(\w+)'/g)?.map(s => s.slice(1, -1)) || []);
-  const sections = new Set(Object.keys(JSON.parse((src.bridge.match(/const SECTIONS = \{([^}]*)\}/) || ['', ''])[1]
-    .replace(/(\w+):/g, '"$1":').replace(/'/g, '"').replace(/^/, '{').replace(/$/, '}'))));
-  if(!routes.size || !sections.size) miss.push('could not read the tab or section names out of app.js / bridge.js');
+  // the app's own tab names and the drill-down page's sections, from the table the site itself reads
+  const routes = new Set(ROUTES);
+  const sections = new Set(Object.keys(SECTIONS));
+  if(!routes.size || !sections.size) miss.push('could not read the tab or section names out of assets/kinds.js');
   // every "#/tab" and "explore#section" written anywhere in those files
-  for(const f of ['app', 'keys', 'seo']) if(routes.size && sections.size){
+  for(const f of ['app', 'kinds', 'edges', 'keys', 'seo']) if(routes.size && sections.size){
     for(const m of src[f].matchAll(/#\/(\w+)/g)){ forms.add('#/' + m[1]); if(!routes.has(m[1])) miss.push(f + '.js emits #/' + m[1] + ', no such tab'); }
     for(const m of src[f].matchAll(/explore#(\w+)/g)){ forms.add('explore#' + m[1]); if(!sections.has(m[1])) miss.push(f + '.js emits explore#' + m[1] + ', no such section'); }
   }
@@ -196,6 +200,8 @@ async function checkLinks(index, market){
     uniques: new Set(uniques.items.map(u => u.n)),
     tree: new Set(tree.passives.map(p => p.n)),
   };
+  const bases = new Set(uniques.items.map(u => u.b).filter(Boolean));   // the base items that list filters by
+  const baseCards = new Set(index.items.filter(x => x.k === 'b').map(x => x.n));
   const kw = new Set(Object.keys(keywords));
   const craft = new Map(JSON.parse(await readFile(join(ROOT, 'data', 'craft.json'), 'utf8')).classes.map(c => [c.id, new Set(c.b.map(b => b[0]))]));
   const atlas = JSON.parse(await readFile(join(ROOT, 'data', 'atlas.json'), 'utf8'));
@@ -210,7 +216,7 @@ async function checkLinks(index, market){
   const hay = it => [it.n, it.s, it.t, it.q, (it.ls || []).join(' ')].filter(Boolean).join(' ').toLowerCase();
 
   const byKind = {};
-  for(const it of index.items) if(KINDS[it.k]) (byKind[it.k] = byKind[it.k] || []).push(it);
+  for(const it of index.items) if(KIND[it.k]) (byKind[it.k] = byKind[it.k] || []).push(it);
   let tried = 0;
   const want = (ok, form, it) => { tried++; if(!ok && miss.length < 12) miss.push(form + ' \u2192 ' + it.n); };
   for(const [k, list] of Object.entries(byKind)){
@@ -225,6 +231,13 @@ async function checkLinks(index, market){
       if(k === 'w'){   // the "See all in ..." button under "Found on"
         for(const [g, sec] of [['gems', 'gems'], ['uniques', 'uniques'], ['passives', 'tree']])
           if(it.use && it.use[g]) want(kw.has(it.id), 'explore#' + sec + '?kw=', it);
+      }
+      // "Uniques on this base": the card's own see-all, the same list on the drill-down page. A unique whose
+      // base item the files do not name carries its item class there instead, and an item class is not a base,
+      // so it never offers the link (assets/edges.js).
+      if(k === 'u'){
+        const base = (it.s || '').split('\u00b7')[0].trim();
+        if(base && baseCards.has(base)) want(bases.has(base), 'explore#uniques?base=', it);
       }
     }
   }

@@ -40,6 +40,7 @@ for(var k in WI_FIRST) WI_FIRST[k].catch(function(){});</script>
 <link rel="preload" href="assets/fonts/cinzel-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="assets/fonts/ibmplexsans-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="modulepreload" href="assets/app.js"><link rel="modulepreload" href="assets/keys.js">
+<link rel="modulepreload" href="assets/kinds.js"><link rel="modulepreload" href="assets/edges.js">
 <link rel="icon" type="image/png" sizes="64x64" href="assets/brand/favicon-64.png">
 <link rel="icon" type="image/png" sizes="32x32" href="assets/brand/favicon-32.png">
 </head>
@@ -99,6 +100,8 @@ document.body.dataset.route = (function(r){ return ['build','currency','trade','
         <input id="q" type="search" placeholder="Search anything — a gem, a unique, a keystone, a currency…" autocomplete="off" spellcheck="false" aria-label="Search the index">
         <kbd class="searchbox-kbd" aria-hidden="true">/</kbd>
       </div>
+      <!-- the kinds in assets/kinds.js, drawn here so the bar never changes shape on the first paint;
+           assets/app.js puts them back in order if the table has moved on -->
       <div class="kinds" id="kinds" role="group" aria-label="Show only"><button type="button" class="chip" data-k="all" aria-pressed="true">All<span class="ct"></span></button><button type="button" class="chip" data-k="g" aria-pressed="false">Gems<span class="ct"></span></button><button type="button" class="chip" data-k="u" aria-pressed="false">Uniques<span class="ct"></span></button><button type="button" class="chip" data-k="p" aria-pressed="false">Passives<span class="ct"></span></button><button type="button" class="chip" data-k="b" aria-pressed="false">Bases<span class="ct"></span></button><button type="button" class="chip" data-k="a" aria-pressed="false">Atlas<span class="ct"></span></button><button type="button" class="chip" data-k="c" aria-pressed="false">Currency<span class="ct"></span></button><button type="button" class="chip" data-k="w" aria-pressed="false">Keywords<span class="ct"></span></button><button type="button" class="chip" data-k="h" aria-pressed="false">Mechanics<span class="ct"></span></button><button type="button" class="chip" data-k="x" aria-pressed="false">Bosses<span class="ct"></span></button></div>
     </div>
     <figure class="quote" id="quote"><blockquote>Make Leapslam Great again.</blockquote><figcaption>Seonso</figcaption></figure>

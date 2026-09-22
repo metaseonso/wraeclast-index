@@ -5,6 +5,8 @@
                        trade site listings (worker/prices.js); trends from the site's own daily prices
    Build usage links to poe.ninja's own builds page: their builds API is not open to other sites. */
 import {initKeys, setCardKeys, keyLabel} from './keys.js';
+import {KIND, DEFAULT, FIELDS, ACTS, CHIPS, NAMES, ROUTES, fieldsOf} from './kinds.js';
+import * as edges from './edges.js';
 
 export const $ = (s, el = document) => el.querySelector(s);
 export const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -45,6 +47,10 @@ function prep(it, k, IMGS, lxk){   // once per card: its kind, full image link, 
   if(it.lx && lxk){
     const hx = it.lx.map(r => (r || []).filter(x => (lxk[x[2]] || '').startsWith('h:')).map(x => [x[0], x[1], lxk[x[2]]]));
     if(hx.some(r => r.length)) it.hx = hx;
+    // every card its lines name, once each: the related lists follow these both ways (assets/edges.js)
+    const rx = new Set();
+    for(const r of it.lx) for(const x of r || []) if(lxk[x[2]]) rx.add(lxk[x[2]]);
+    if(rx.size) it.rx = [...rx];
   }
   it._nl = it.n.toLowerCase();
   it._hay = [it.n, it.s, it.t, it.q, it.asc, it.reg, (it.ls || []).join(' '), (it.tags || []).join(' '), (it.o || []).join(' ')]
@@ -66,10 +72,14 @@ function assemble(core, rest){
     for(let i = 0; i < n && at[k] < list.length; i++){ const it = prep(list[at[k]++], k, IMGS, lxk[k]); items.push(it); byKey.set(k + ':' + it.id, it); }
   }
   if(rest) for(const [key, kw] of Object.entries(rest.ckw || {})){ const it = byKey.get(key); if(it) it.kw = kw; }
+  // the core's own cards keep their keyword chips and flavour line in the rest, so the first cards stay small
+  if(rest) for(const [key, qt] of Object.entries(rest.cqt || {})){ const it = byKey.get(key); if(it) it.qt = qt; }
   const named = new Map();   // atlas and bulk item cards of the index, by name (the market must not repeat them)
   for(const it of items) if(it.k === 'a' || it.k === 'c') named.set(it.n, it);
   const skip = rest ? new Set() : new Set(core.skip || []);   // cards the rest has: their prices wait for it
   const lineage = new Set(core.li || []);   // lineage support gems: the market lists them too (the gem card shows that price)
+  const itemText = new Map();   // a lineage gem's own words, for the market's card of the same name
+  for(const it of items) if(it.k === 'g' && it.li && it.t) itemText.set(it.n, it.t);
   // currencies live in the market file; they join the search as their own kind
   const market = D.market;
   if(market && market.items){
@@ -83,6 +93,13 @@ function assemble(core, rest){
         if(lineage.has(m.n)) it.dup = true;   // kept for the Currency tab; the search shows the gem card
         it._nl = it.n.toLowerCase(); it._hay = (it.n + ' ' + it.s + ' ' + it.t).toLowerCase();
         MC.set(key, it);
+      }
+      // A priced card must still say what the thing does. The market file says so for most of them; for the
+      // rest the official text is in the index — a lineage support gem's own card, or "ix" for a name no card
+      // covers at all (tools/carddata.py). Both are in the rest, so this fills in when the rest lands.
+      if(!it.t && rest){
+        it.t = itemText.get(m.n) || (rest.ix || {})[m.n] || '';
+        if(it.t) it._hay += ' ' + it.t.toLowerCase();
       }
       items.push(it); byKey.set('c:' + it.id, it);
     }
@@ -99,7 +116,8 @@ function assemble(core, rest){
     }
     items.push(it); byKey.set('x:' + it.id, it);
   }
-  D.index = {v: core.v, gen: core.gen, sprites: core.sprites, imgs: IMGS, kwx: rest ? rest.kwx || {} : {}, items};
+  D.index = {v: core.v, gen: core.gen, sprites: core.sprites, imgs: IMGS, kwx: rest ? rest.kwx || {} : {},
+    ws: (rest && rest.ws) || core.ws || '', items};
   D.byKey = byKey;
 }
 export const first = (async () => {
@@ -131,7 +149,7 @@ export function priceOf(it){
   return M[it.k + ':' + it.id] || M[it.k + ':' + it.n] || (it.k === 'a' || it.li ? M['c:' + it.n] : null) || null;
 }
 export function usageOf(it){
-  const U = D.usage && D.usage[{g:'gems', u:'uniques', p:'passives'}[it.k]];
+  const U = D.usage && D.usage[NAMES[it.k]];
   return U ? (U[it.n] ?? null) : null;
 }
 
@@ -190,19 +208,35 @@ function iconHTML(it){
   return '<span class="glyph">' + esc((it.n || '?').replace(/^[^A-Za-z]+/, '').charAt(0)) + '</span>';
 }
 
-/* ---------- the live card ---------- */
-const KIND = {g:'Gem', u:'Unique', p:'Passive', w:'Keyword', c:'Currency', b:'Base', a:'Atlas', x:'Boss', h:'Mechanics'};
-const SECTION = {g:'gems', u:'uniques', p:'tree'};
+/* ---------- the live card ----------
+   One layout for everything on the site. The kind says which fields its cards carry, which buttons they
+   offer and which related lists they can build (assets/kinds.js); each field says what type it is; and there
+   is one function per type below. Nothing here knows what a gem or a unique is, so a new kind — a new
+   league's items, a new list — draws a full card with no code of its own.
+
+   opts.full: the popup, where nothing is clipped · opts.invest {label, div, note}: the cost line on build
+   cards · opts.rank: the order badge · opts.why: why this card is on screen */
+
 /* the Craft tab, opened on this base (its plan lives in the address, see craft.js) */
 export const craftHref = (c, b = '') => './#/craft?s=' + encodeURIComponent(btoa(unescape(encodeURIComponent(JSON.stringify({c, b, l: 0, m: []})))));
+/* Where a card's gold button goes: the kind's own "link", with @field filled in from the entry. A field the
+   entry has nothing for means no link at all. Two kinds need more than a template: a base carries a whole
+   craft plan, and a currency the catalogue does not list yet has nowhere to go. */
 export function hrefOf(it){
-  if(SECTION[it.k]) return 'explore#' + SECTION[it.k] + '=' + encodeURIComponent(it.n);
-  if(it.k === 'c') return it.nx ? null : './#/currency?c=' + encodeURIComponent(it.id);   // the Currency tab lists the catalogue
-  if(it.k === 'b' && it.cr && D.byKey.get('b:' + it.id) === it) return craftHref(it.cr, it.n);
-  if(it.k === 'a' && it.at) return './#/atlas?s=' + it.at + '&q=' + encodeURIComponent(it.n);
-  if(it.k === 'x') return './#/bosses?q=' + encodeURIComponent(it.n);
-  return null;
+  const d = KIND[it.k];
+  if(!d || !d.link) return null;
+  if(d.link === 'craft') return it.cr && D.byKey.get('b:' + it.id) === it ? craftHref(it.cr, it.n) : null;
+  if(it.k === 'c' && it.nx) return null;
+  let have = true;
+  const href = d.link.replace(/@(\w+)/g, (_, f) => {
+    if(it[f] === undefined || it[f] === '') have = false;
+    return encodeURIComponent(it[f]);
+  });
+  return have ? href : null;
 }
+/* an item is something that can be traded; an Atlas passive is on the Atlas but is not an item */
+const isItem = it => { const d = KIND[it.k]; return !!(d && d.item) && !(it.k === 'a' && it.at === 'tree'); };
+
 /* ---------- requirements ----------
    Gem level -> character level, and the attribute formula, from the official game data.
    Checked against poe2db on 48 random skill and spirit gems: every value matched.
@@ -214,57 +248,21 @@ export function gemReq(w, gemLevel = 20){
   return [lv, attr(w[0]), attr(w[1]), attr(w[2])];
 }
 const ATTR = [['Str','r'], ['Dex','g'], ['Int','b']];
+const pill = (text, tone) => '<span class="pill' + (tone ? ' ' + tone : '') + '">' + esc(text) + '</span>';
 function reqPills(rq, note){
   if(!rq) return '';
   const out = [];
-  if(rq[0] > 1) out.push('<span class="pill">Lv ' + rq[0] + '</span>');
-  ATTR.forEach(([a, c], i) => { if(rq[i + 1]) out.push('<span class="pill a-' + c + '">' + rq[i + 1] + ' ' + a + '</span>'); });
-  if(!out.length) out.push('<span class="pill">No requirements</span>');
+  if(rq[0] > 1) out.push(pill('Lv ' + rq[0]));
+  ATTR.forEach(([a, c], i) => { if(rq[i + 1]) out.push(pill(rq[i + 1] + ' ' + a, 'a-' + c)); });
+  if(!out.length) out.push(pill('No requirements'));
   return out.join('') + (note ? '<span class="pill-note">' + note + '</span>' : '');
-}
-function reqsOf(it){
-  if(it.k === 'g'){
-    const lin = it.li ? '<span class="pill lin">Lineage</span>' : '';
-    if(!it.w) return lin + '<span class="pill">No requirements</span>';
-    const r20 = gemReq(it.w, 20), r1 = gemReq(it.w, 1);
-    const one = 'At gem level 1: ' + (r1[0] ? 'level ' + r1[0] + ', ' : '') + ATTR.map((a, i) => r1[i + 1] ? r1[i + 1] + ' ' + a[0] : '').filter(Boolean).join(', ');
-    return lin + reqPills(r20, '<span title="' + esc(one) + '">at gem level 20</span>');
-  }
-  if(it.k === 'u') return reqPills(it.rq) + (it.cor ? '<span class="pill warn">Corrupted</span>' : '');
-  if(it.k === 'b') return reqPills(it.rq);
-  if(it.k === 'a') return (it.ty ? '<span class="pill">' + ({c: 'Choice', n: 'Notable', s: 'Small'}[it.ty] || '') + '</span>' : '') +
-    (it.x > 1 ? '<span class="pill">' + it.x + ' on the tree</span>' : '') + (it.nt ? '<span class="pill warn">' + esc(it.nt) + '</span>' : '');
-  if(it.k === 'p'){
-    const out = [];
-    if(it.asc) out.push('<span class="pill">' + esc(it.asc) + ' ascendancy</span>');
-    else if(it.reg) out.push('<span class="pill">' + esc(it.reg) + ' region</span>');
-    return out.join('');
-  }
-  if(it.k === 'c' && it.dl) return '<span class="pill">Drops from area level ' + it.dl + '</span>';
-  return '';
-}
-function factsOf(it){
-  const f = [];
-  if(it.k === 'g'){
-    if(it.ct) f.push(trim(it.ct / 1000, 2) + ' s use time');
-    if(it.cost) f.push(it.cost[0] + ' ' + it.cost[1] + ' at gem level 20');
-    if(it.sp !== undefined) f.push(it.sp + ' Spirit');
-  }
-  if((it.k === 'u' || it.k === 'b') && it.pr) f.push(...it.pr);
-  if(it.k === 'w' && it.use){
-    const u = it.use, parts = [];
-    for(const [k, one, many] of [['gems','gem','gems'], ['uniques','unique','uniques'], ['passives','passive','passives']])
-      if(u[k]) parts.push(u[k] + ' ' + (u[k] === 1 ? one : many));
-    if(parts.length) f.push('Used by ' + parts.join(', '));
-  }
-  return f.length ? '<p class="card-facts">' + f.map(esc).join(' · ') + '</p>' : '';
 }
 /* One line as the card shows it, with the words that lead to a mechanics card marked (it.hx, from prep above).
    A mechanics card is ours, not the game's, so the mark is a word in the line and never a keyword chip: see
    .hlink in assets/cards.css, and the source line the mechanics card itself carries. */
 const HLINK_TITLE = 'How it works — our own note, not the game’s';
-function lineHTML(it, i, text){
-  const spans = it.hx && it.hx[i];
+function lineHTML(it, i, text, marked){
+  const spans = marked && it.hx && it.hx[i];
   if(!spans || !spans.length) return esc(text);
   let out = '', at = 0;
   for(const [s, n, key] of spans){
@@ -283,15 +281,18 @@ function openMech(key, opts){
   if(c) return void openDetail(c, opts, null);
   ready.then(() => { const x = D.byKey.get(key); if(x) openDetail(x, opts, null); }, () => {});
 }
-function linesOf(it, max = 4){
-  if(it.ls && it.ls.length){
-    const li = (x, i) => '<li>' + lineHTML(it, i, x) + '</li>';
-    if(max === Infinity) return '<ul class="card-ls">' + it.ls.map(li).join('') + '</ul>';
-    const more = it.ls.length - max;
-    return '<ul class="card-ls">' + it.ls.slice(0, more > 1 ? max : it.ls.length).map(li).join('') +
-      (more > 1 ? '<li class="more-n">+' + more + ' more</li>' : '') + '</ul>';
-  }
-  return it.t ? '<p class="card-tx">' + lineHTML(it, 0, it.t) + '</p>' : '';
+/* A field of lines — one string, or a list of them — with the marked words in whichever of them the index
+   marked (the kind's own "mark", assets/kinds.js). A list longer than max says how many are left. */
+function richHTML(it, at, max){
+  const v = it[at];
+  if(v === undefined || v === null || v === '') return '';
+  const marked = (KIND[it.k] || {}).mark === at;
+  if(!Array.isArray(v)) return '<p class="card-tx">' + lineHTML(it, 0, v, marked) + '</p>';
+  if(!v.length) return '';
+  const li = (x, i) => '<li>' + lineHTML(it, i, x, marked) + '</li>';
+  const more = v.length - max;
+  return '<ul class="card-ls">' + v.slice(0, more > 1 ? max : v.length).map(li).join('') +
+    (more > 1 ? '<li class="more-n">+' + more + ' more</li>' : '') + '</ul>';
 }
 /* ---------- the damage card ----------
    The flowchart a mechanics card can carry ("fl", tools/mechanics.py). A group is either a run of steps
@@ -321,12 +322,7 @@ function offerHTML(it, full){
   return '<button type="button" class="card-offer" data-h="' + DAMAGE_CARD + '">' +
     '<b>How damage works</b><small>the order it is worked out in</small></button>';
 }
-function optionsOf(it, full){   // an atlas choice passive: what it lets you pick (in full in the popup)
-  if(!it.o || !it.o.length) return '';
-  return '<p class="card-facts">' + (full ? 'Choose one:' : it.o.length + ' options to choose from') + '</p>' +
-    (full ? '<ul class="card-ls">' + it.o.map(x => '<li>' + esc(x) + '</li>').join('') + '</ul>' : '');
-}
-function anointOf(it){
+function anointHTML(it){
   if(!it.rec || !it.rec.length) return '';
   let div = null;
   const M = D.market && D.market.items;
@@ -338,7 +334,6 @@ function anointOf(it){
   return '<div class="card-inv"><span title="' + esc(it.rec.join(' + ')) + '">Anoint with 3 emotions</span><b>' +
     (div !== null ? moneyHTML(div) : '') + '</b></div>';
 }
-
 /* poe.ninja's builds page, filtered to characters that use this thing (its own link format) */
 export function buildsHref(it){
   const lg = D.market && D.market.builds;
@@ -351,43 +346,120 @@ export function buildsHref(it){
   return key ? 'https://poe.ninja/poe2/builds/' + lg + '?' + key + '=' + q(it.n) : null;
 }
 
-/* The live card. One layout for every object on the site.
-   opts.invest {label, div, note}: the cost line on build cards; opts.rank: the order badge */
+/* ---------- one function per field type ----------
+   Each answers with the words to draw, or with markup where a field is more than words ("raw"): the slot it
+   sits in wraps the rest. A field whose entry says nothing answers with nothing and draws nothing, so one
+   declaration covers a full entry and a bare one. */
+const TYPE = {
+  art:    {raw: 1, v: it => iconHTML(it)},
+  name:   {raw: 1, v: (it, f, o) => o.href ? '<a class="card-link" href="' + esc(o.href) + '">' + esc(it.n) + '</a>' : esc(it.n)},
+  text:   {v: (it, f) => it[f.at] ? (f.pre || '') + it[f.at] + (f.post || '') : ''},
+  enum:   {v: (it, f) => (f.of || {})[it[f.at]] || ''},
+  flag:   {v: (it, f) => it[f.at] ? f.is : ''},
+  number: {v: (it, f) => {
+    const n = it[f.at];
+    if(n === undefined || n === null || !isFinite(n) || (f.from !== undefined && n < f.from)) return '';
+    return (f.pre || '') + n.toLocaleString() + (n === 1 ? (f.post || '') : (f.many || f.post || ''));
+  }},
+  duration: {v: (it, f) => it[f.at] ? trim(it[f.at] / 1000, 2) + ' s' + (f.post || '') : ''},
+  cost:   {v: (it, f) => { const c = it[f.at]; return c ? c[0] + ' ' + c[1] + ' at gem level 20' : ''; }},
+  lines:  {v: (it, f) => (it[f.at] || []).join(' · ')},
+  money:  {raw: 1, v: (it, f, o) => o.px && o.px.v !== undefined
+    ? '<b>' + moneyHTML(o.px.v) + '</b>' + change(o.px.ch) : ''},
+  uses:   {v: (it, f) => {   // a keyword: how much of the game it touches, from the index's own count
+    const u = it[f.at] || {}, parts = [];
+    for(const [k, one, many] of [['gems','gem','gems'], ['uniques','unique','uniques'], ['passives','passive','passives']])
+      if(u[k]) parts.push(u[k].toLocaleString() + ' ' + (u[k] === 1 ? one : many));
+    return parts.length ? 'Used by ' + parts.join(', ') : '';
+  }},
+  /* how many mods can roll on this base item, and who measured how often each one does (tools/carddata.py,
+     the numbers the Craft tab works from). */
+  weights: {v: (it, f) => {
+    const w = it[f.at];
+    if(!w) return '';
+    const n = (w[0] || 0) + (w[1] || 0);
+    if(!n) return '';
+    return n.toLocaleString() + ' mods can roll here' + (w[0] && w[1] ? ' (' + w[0] + ' prefix, ' + w[1] + ' suffix)' : '') +
+      (w[2] && D.index.ws ? ' · how often each one rolls: ' + D.index.ws : '');
+  }},
+  gemreq: {raw: 1, v: (it, f) => {
+    if(!it[f.at]) return reqPills([0, 0, 0, 0]);
+    const r20 = gemReq(it[f.at], 20), r1 = gemReq(it[f.at], 1);
+    const one = 'At gem level 1: ' + (r1[0] ? 'level ' + r1[0] + ', ' : '') +
+      ATTR.map((a, i) => r1[i + 1] ? r1[i + 1] + ' ' + a[0] : '').filter(Boolean).join(', ');
+    return reqPills(r20, '<span title="' + esc(one) + '">at gem level 20</span>');
+  }},
+  reqs:   {raw: 1, v: (it, f) => reqPills(it[f.at])},
+  rich:   {raw: 1, v: (it, f, o) => richHTML(it, f.at, o.full ? Infinity : 4)},
+  quote:  {raw: 1, v: (it, f) => it[f.at] ? '<p class="card-fl">' + esc(it[f.at]) + '</p>' : ''},
+  options: {raw: 1, v: (it, f, o) => {   // an atlas choice passive: what it lets you pick (in full in the popup)
+    const list = it[f.at];
+    if(!list || !list.length) return '';
+    return '<p class="card-facts">' + (o.full ? 'Choose one:' : list.length + ' options to choose from') + '</p>' +
+      (o.full ? '<ul class="card-ls">' + list.map(x => '<li>' + esc(x) + '</li>').join('') + '</ul>' : '');
+  }},
+  flow:   {raw: 1, v: (it, f, o) => flowHTML(it, o.full)},
+  source: {raw: 1, v: (it, f) => it[f.at] ? '<p class="card-src">' + esc(it[f.at]) + '</p>' : ''},
+  offer:  {raw: 1, v: (it, f, o) => offerHTML(it, o.full)},
+  tags:   {raw: 1, v: (it, f) => (it[f.at] || []).length
+    ? '<p class="card-tags">' + it[f.at].map(esc).join(' · ') + '</p>' : ''},
+  anoint: {raw: 1, v: it => anointHTML(it)},
+  chips:  {raw: 1, v: (it, f, o) => o.full ? kwChips(it) : ''},
+  spark:  {raw: 1, v: (it, f, o) => o.px ? spark(o.px.sp, o.px.ch) : ''},
+  thin:   {raw: 1, v: (it, f, o) => o.px && o.px.ls !== undefined && o.px.ls < 3
+    ? '<span class="use" title="Only a few listed">few listed</span>' : ''},
+  usage:  {raw: 1, v: it => {
+    const u = usageOf(it);
+    return u === null ? '' : '<span class="use">in ' + (u >= 10 ? Math.round(u) : trim(u, 1)) + '% of builds</span>';
+  }},
+  builds: {raw: 1, v: (it, f, o) => {
+    const bh = o.builds === false ? null : buildsHref(it);
+    return bh ? '<a class="card-ext" href="' + esc(bh) + '" target="_blank" rel="noopener" title="Characters in ' +
+      esc(D.market.league) + ' that use this, on poe.ninja">Builds ↗</a>' : '';
+  }},
+};
+/* the fields of one slot, drawn in the order the kind declares them */
+function slotHTML(it, slot, o){
+  const out = [];
+  for(const name of fieldsOf(it.k, slot)){
+    const f = FIELDS[name], t = TYPE[f.type];
+    if(!t) continue;
+    const v = t.v(it, f, o);
+    if(v === null || v === undefined || v === '') continue;
+    out.push({name, f, html: t.raw ? v : esc(v), text: t.raw ? '' : v});
+  }
+  return out;
+}
+const oneOf = (list, name) => (list.find(x => x.name === name) || {}).html || '';
+
 export function card(it, opts = {}){
-  const px = opts.price !== undefined ? opts.price : priceOf(it);
-  const use = usageOf(it);
-  const href = opts.href !== undefined ? opts.href : hrefOf(it);
-  const bh = opts.builds === false ? null : buildsHref(it);
+  const o = {...opts};
+  o.px = opts.price !== undefined ? opts.price : priceOf(it);
+  o.href = opts.href !== undefined ? opts.href : hrefOf(it);
+  const d = KIND[it.k] || DEFAULT;
   const el = document.createElement('article');
-  el.className = 'card k-' + it.k + (href ? ' linked' : '');
-  if(!href) el.tabIndex = 0;
-  const req = reqsOf(it);
-  const title = href ? '<a class="card-link" href="' + esc(href) + '">' + esc(it.n) + '</a>' : esc(it.n);
+  el.className = 'card k-' + it.k + (o.href ? ' linked' : '');
+  if(!o.href) el.tabIndex = 0;
+  const head = slotHTML(it, 'head', o), pills = slotHTML(it, 'pill', o);
+  const facts = slotHTML(it, 'fact', o), body = slotHTML(it, 'body', o), foot = slotHTML(it, 'foot', o);
   el.innerHTML =
-    (opts.rank ? '<span class="card-rank">' + opts.rank + '</span>' : '') +
-    '<div class="card-hd"><span class="card-ic">' + iconHTML(it) + '</span>' +
-      '<div class="card-id"><h3>' + title + '</h3><p class="card-sub">' + esc(it.s || '') + '</p></div>' +
-      (px && px.v !== undefined ? '<div class="card-px"><b>' + moneyHTML(px.v) + '</b>' + change(px.ch) + '</div>' : '') +
+    (o.rank ? '<span class="card-rank">' + o.rank + '</span>' : '') +
+    '<div class="card-hd"><span class="card-ic">' + oneOf(head, 'art') + '</span>' +
+      '<div class="card-id"><h3>' + oneOf(head, 'name') + '</h3>' +
+      '<p class="card-sub">' + oneOf(head, 'sub') + '</p></div>' +
+      (oneOf(head, 'price') ? '<div class="card-px">' + oneOf(head, 'price') + '</div>' : '') +
     '</div>' +
-    (opts.why ? '<p class="card-why">' + esc(opts.why) + '</p>' : '') +
-    (req ? '<div class="card-req">' + req + '</div>' : '') +
-    factsOf(it) +
-    linesOf(it, opts.full ? Infinity : 4) + optionsOf(it, opts.full) +
-    flowHTML(it, opts.full) +
-    (it.src ? '<p class="card-src">' + esc(it.src) + '</p>' : '') +   // a mechanics card says where its maths comes from
-    offerHTML(it, opts.full) +
-    (it.tags ? '<p class="card-tags">' + it.tags.map(esc).join(' · ') + '</p>' : '') +
-    anointOf(it) +
-    (opts.invest ? '<div class="card-inv"><span>' + esc(opts.invest.label) + '</span><b>' +
-      (opts.invest.div !== undefined && opts.invest.div !== null ? moneyHTML(opts.invest.div) : esc(opts.invest.note || '')) + '</b></div>' : '') +
-    (opts.extra || '') +
-    '<div class="card-ft">' + (opts.action || '') + (px ? spark(px.sp, px.ch) : '') +
-      (use !== null ? '<span class="use">in ' + (use >= 10 ? Math.round(use) : trim(use, 1)) + '% of builds</span>' : '') +
-      (px && px.ls !== undefined && px.ls < 3 ? '<span class="use" title="Only a few listed">few listed</span>' : '') +
-      (bh ? '<a class="card-ext" href="' + esc(bh) + '" target="_blank" rel="noopener" title="Characters in ' +
-        esc(D.market.league) + ' that use this, on poe.ninja">Builds ↗</a>' : '') +
-      '<span class="kind">' + (opts.kind || KIND[it.k] || '') + '</span></div>';
-  if(opts.detail) return el;
+    (o.why ? '<p class="card-why">' + esc(o.why) + '</p>' : '') +
+    (pills.length ? '<div class="card-req">' + pills.map(x =>
+      x.f.type === 'reqs' || x.f.type === 'gemreq' ? x.html : pill(x.text, x.f.tone)).join('') + '</div>' : '') +
+    (facts.length ? '<p class="card-facts">' + facts.map(x => x.html).join(' · ') + '</p>' : '') +
+    body.map(x => x.html).join('') +
+    (o.invest ? '<div class="card-inv"><span>' + esc(o.invest.label) + '</span><b>' +
+      (o.invest.div !== undefined && o.invest.div !== null ? moneyHTML(o.invest.div) : esc(o.invest.note || '')) + '</b></div>' : '') +
+    (o.extra || '') +
+    '<div class="card-ft">' + (o.action || '') + foot.map(x => x.html).join('') +
+      '<span class="kind">' + (o.kind || d.one || '') + '</span></div>';
+  if(o.detail) return el;
   // a card opens its popup; only the gold button in the popup leaves the page
   el.addEventListener('click', e => {
     const hl = e.target.closest('.hlink');   // a word in a line: its mechanics card, not this one
@@ -396,14 +468,13 @@ export function card(it, opts = {}){
     const link = e.target.closest('.card-link');
     if(link && (e.ctrlKey || e.metaKey || e.shiftKey || e.button === 1)) return;   // new tab still works
     e.preventDefault();
-    openDetail(it, opts, href);
+    openDetail(it, opts, o.href);
   });
-  if(!href) el.addEventListener('keydown', e => {
-    if(e.target === el && (e.key === 'Enter' || e.key === ' ')){ e.preventDefault(); openDetail(it, opts, href); }
+  if(!o.href) el.addEventListener('keydown', e => {
+    if(e.target === el && (e.key === 'Enter' || e.key === ' ')){ e.preventDefault(); openDetail(it, opts, o.href); }
   });
   return el;
 }
-
 /* ---------- the popup ----------
    Every card opens here first. The gold button is the one way on to the drill-down page.
 
@@ -412,9 +483,6 @@ export function card(it, opts = {}){
    saveStep); AT says which step is on show. Every open pushes one history entry carrying that step's id,
    so the phone's Back and Forward both land on a real step and nothing dead is left behind. Opening a card
    from the middle of the trail drops the steps after it. Step 51 drops the oldest one. */
-const PLACE = {g: 'Gems', u: 'Uniques', p: 'Passive tree', c: 'Currency', b: 'Craft', a: 'Atlas', x: 'Bosses'};
-/* a kind whose card its own tab draws: the popup asks that module for it instead of drawing a bare one */
-const OWN_CARD = {x: './bosses.js'};
 const typing = el => el && (/^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName) || el.isContentEditable);   // same guard as keys.js
 const TAP = 10;   // px a finger may slide and still count as a tap, not a drag
 const TRAIL_MAX = 50;   // cards kept on the trail; all of it is in this browser, so nothing is paid for it
@@ -430,7 +498,7 @@ function saveStep(){
   if(!step || !OV || OV.hidden) return;
   const box = OV.querySelector('.ov-box'), sec = box.querySelector('.uses');
   step.top = box.scrollTop;
-  step.uses = sec && sec.dataset.on ? {on: sec.dataset.on, q: (sec.querySelector('.uses-q') || {}).value || '',
+  step.uses = sec && !sec.hidden ? {open: [...(sec._open || [])], q: (sec.querySelector('.uses-q') || {}).value || '',
     top: (sec.querySelector('.uses-list') || {}).scrollTop || 0} : null;
   step.trade = box.querySelector('.trade') || null;
 }
@@ -564,8 +632,8 @@ function ensureOV(){
       if(hl){ openMech(hl.dataset.h, {nested: true}); return; }
       const row = t.closest('.uses-row[data-key]');
       if(row){ const c = D.byKey.get(row.dataset.key); if(c) openDetail(c, {nested: true}, hrefOf(c)); return; }
-      const tab = t.closest('.uses-tab');
-      if(tab){ const sec = tab.closest('.uses'); sec.dataset.on = tab.dataset.g; paintUses(sec); return; }
+      const all = t.closest('.uses-all');   // "See all": the rest of that category, drawn here
+      if(all){ const sec = all.closest('.uses'); sec._open.add(all.dataset.c); paintRel(sec); return; }
       const cur = CUR();
       if(t.closest('.fullstats') && cur && cur.opts.onFull){ const f = cur.opts.onFull; closeDetail(); setTimeout(f, 60); }
     });
@@ -652,7 +720,7 @@ export function openDetail(it, opts = {}, href){
     return;
   }
   PEND = null;
-  const own = OWN_CARD[it.k];   // a boss: its tab has the way in and the drops, so it draws the card and calls back
+  const own = (KIND[it.k] || {}).own;   // a boss: its tab has the way in and the drops, so it draws the card and calls back
   if(own && !opts.drawn) return void import(own).then(m => m.openCard(it), () => {});
   ensureOV();
   const cur = CUR();
@@ -669,6 +737,21 @@ export function openDetail(it, opts = {}, href){
   history.pushState({ov: TRAIL[AT].id, d}, '', location.href);   // one entry per card, both ways
   paintStep();
 }
+/* The buttons under a card, from the kind's own list (assets/kinds.js ACTS). Each one draws only when it
+   has something to do: Trade for an item, Full stats where the page behind the card has a panel, and the
+   gold button where the kind has a tab and this card has an address in it. */
+function actsHTML(it, opts, href){
+  const d = KIND[it.k] || {}, out = [];
+  for(const a of d.acts || []){
+    if(a === 'trade' && isItem(it))
+      out.push('<button type="button" class="btn ttoggle" aria-expanded="false">' + ACTS.trade.label + '</button>');
+    else if(a === 'full' && opts.onFull)
+      out.push('<button type="button" class="btn fullstats">' + ACTS.full.label + '</button>');
+    else if((a === 'open' || a === 'craft') && href)
+      out.push('<a class="btn gold" href="' + esc(href) + '">' + ACTS[a].label + (a === 'open' ? d.place : '') + ' →</a>');
+  }
+  return out.join('');
+}
 function paintStep(){
   const step = CUR();
   const {it, opts, href} = step;
@@ -679,17 +762,13 @@ function paintStep(){
   const c = card(it, {...opts, href: null, rank: undefined, full: true, detail: true, extra: (opts.extra || '') + detailExtras(it, px)});
   c.classList.add('detail');
   body.replaceChildren(c);
-  const chips = kwChips(it);
-  if(chips) body.insertAdjacentHTML('beforeend', chips);
-  const uses = usesSection(it, step.uses);
-  if(uses) body.appendChild(uses);
-  const tradeable = /^[ugcb]$/.test(it.k) || (it.k === 'a' && it.at !== 'tree');   // atlas passives are not items
-  if((href && PLACE[it.k]) || tradeable || opts.onFull){
+  const uses = relSection(it, step.uses);
+  body.appendChild(uses);
+  const acts = actsHTML(it, opts, href);
+  if(acts){
     const row = document.createElement('div');
     row.className = 'ov-go';
-    row.innerHTML = (tradeable ? '<button type="button" class="btn ttoggle" aria-expanded="false">Trade</button>' : '') +
-      (opts.onFull ? '<button type="button" class="btn fullstats">Full stats</button>' : '') +
-      (href && PLACE[it.k] ? '<a class="btn gold" href="' + esc(href) + '">Open in ' + PLACE[it.k] + ' \u2192</a>' : '');
+    row.innerHTML = acts;
     body.appendChild(row);
     const tb = row.querySelector('.ttoggle');
     if(tb) tb.addEventListener('click', async () => {
@@ -816,24 +895,14 @@ setCardKeys(id => {
   return false;
 });
 
-/* ---------- keywords: what uses what ----------
-   Every gem, unique, passive and keyword lists the keywords its game text marks (data/index.json "kw": the chips).
-   A keyword's card turns that around with data/kwuse.json (tools/kwuse.py, loaded the first time a keyword opens):
-   everything that uses it, from every source (the game's markup and the keyword's words in plain text), each
-   list in alphabetical order and in full. Anything with a card opens it (gems, uniques, passives, bases, essences,
-   atlas things, currency, keywords); small passives and crafting mods are plain rows; other atlas rows and item kinds
-   link to their tab. */
-let KWUSE = null;
-const SEC = {g: 'gems', u: 'uniques', p: 'tree'};
-function kwUse(){
-  if(!KWUSE) KWUSE = getJSON('data/kwuse.json').catch(() => { KWUSE = null; return null; });
-  return KWUSE;
-}
+/* ---------- keywords: the chips on a card ----------
+   Every gem, unique, passive and keyword lists the keywords its game text marks (the index's "kw"). The chips
+   are the way to them; which cards a keyword is itself found on is the related section below. */
 export function keywordCard(id){
   const name = D.index.kwx && D.index.kwx[id];   // a keystone stands for its own keyword
   return D.byKey.get('w:' + id) || (name && D.index.items.find(x => x.k === 'p' && x.n === name)) || null;
 }
-function keywordIdOf(it){
+export function keywordIdOf(it){
   if(it.k === 'w') return it.id;
   if(it.k === 'p' && D.index.kwx) for(const [k, n] of Object.entries(D.index.kwx)) if(n === it.n) return k;
   return null;
@@ -845,117 +914,136 @@ function kwChips(it){
   return '<div class="kwchips"><span class="lbl">Keywords</span>' + ids.map(k =>
     '<button type="button" class="chip kwlink" data-kw="' + esc(k) + '">' + esc(keywordCard(k).n) + '</button>').join('') + '</div>';
 }
-const USE_KINDS = [['u', 'Uniques'], ['g', 'Gems'], ['p', 'Passives'], ['b', 'Bases'], ['e', 'Essences'], ['a', 'Atlas'],
-  ['m', 'Crafting'], ['c', 'Currency'], ['w', 'Keywords']];
-const USE_FILTER = 30;   // a list longer than this gets a filter box
-const USE_TAB = new Map();   // keyword -> the tab last shown
-/* want: the group, filter and scroll this step was left on (saveStep), put back once the rows are in */
-function usesSection(it, want){
-  const id = keywordIdOf(it);
-  if(!id) return null;
+
+/* ---------- the related section ----------
+   Built from the edges the index already holds, followed both ways (assets/edges.js), in the categories the
+   kind declares (assets/kinds.js). Per category: the first CAP rows, the true total, and a "See all" that
+   draws the rest here on demand — a keyword like Hit is on 1,448 things and nobody wants all of them at once.
+   Where the drill-down page can show the same list, the gold link carries the filter that makes it the same
+   list rather than the default view.
+   A keyword's own nine categories come from data/kwuse.json (tools/kwuse.py), fetched the first time one of
+   them is needed. */
+/* The two files some of the lists are worked out from, each fetched the first time a card asks for one and
+   kept for the rest of the visit. A card that needs neither never asks for either. */
+const REL_FILES = {kwuse: 'data/kwuse.json', grants: 'data/grants.json'};
+const HAVE = {};            // what is in
+const JOB = {};             // what is on its way
+let relBad = false;         // a fetch that failed: the card says so instead of waiting for ever
+function needFiles(names){
+  return Promise.all(names.map(f => JOB[f] || (JOB[f] =
+    getJSON(REL_FILES[f]).then(j => { HAVE[f] = j; }, () => { relBad = true; }))));
+}
+const CAP = 8;             // rows drawn per category before the "See all"
+const SLACK = 2;           // ...unless no more than this many would be left over
+const USE_FILTER = 30;     // a section with more rows than this gets its filter box from the start
+edges.setup({D, keywordCard, keywordIdOf, kindOf: k => KIND[k]});
+
+/* one row: anything with a card of its own opens it, an Atlas row without one goes to its tab, and the rest
+   is a plain row. `hay` is what the filter box searches — the same words the search itself uses. */
+function relRow(r){
+  const it = r.key ? D.byKey.get(r.key) : null;
+  const times = n => n > 1 ? ' <span class="uses-x">×' + n + '</span>' : '';
+  const kinds = r.craft && r.craft.length
+    ? '<span class="uses-kinds">' + r.craft.map((c, j) =>
+        '<a class="uses-go" href="' + craftHref(c) + '">' + esc((r.kinds || [])[j] || c) + '</a>').join(', ') + '</span>'
+    : (r.kinds || []).length ? '<span class="uses-kinds">' + esc(r.kinds.join(', ')) + '</span>' : '';
+  const wrap = kinds ? ' uses-wrap' : '';
+  if(it){
+    const p = priceOf(it), sub = r.sub === undefined ? (it.s || '') : r.sub;
+    return {hay: ((it._hay || '') + ' ' + sub).toLowerCase(),
+      html: '<button type="button" class="uses-row' + wrap + '" data-key="' + esc(r.key) + '">' +
+        '<span class="uses-ic">' + iconHTML(it) + '</span>' +
+        '<span class="uses-t"><b>' + esc(it.n) + times(r.x) + '</b><span>' + esc(sub) + '</span>' + kinds + '</span>' +
+        (p && p.v !== undefined ? '<span class="uses-px">' + moneyHTML(p.v) + '</span>' : '') + '</button>'};
+  }
+  const sub = r.sub || '';
+  const hay = [r.n, sub, (r.kinds || []).join(' '), r.hay].filter(Boolean).join(' ').toLowerCase();
+  if(r.go) return {hay, html: '<a class="uses-row uses-go" href="' + esc(r.go) + '" title="' + esc(sub) + '">' +
+    '<span class="uses-t"><b>' + esc(r.n) + '</b><span>' + esc(sub) + '</span></span></a>'};
+  return {hay, html: '<div class="uses-row uses-plain' + wrap + '" title="' +
+    esc(sub + (r.x > 1 ? ' · ' + r.x + ' on the tree' : '')) + '">' +
+    (r.ic ? '<span class="uses-ic"></span>' : '') +
+    '<span class="uses-t"><b>' + esc(r.n) + times(r.x) + '</b><span>' + esc(sub) + '</span>' + kinds + '</span></div>'};
+}
+/* "See all" on the drill-down page, with the filter that makes it the list the card was showing. Each name
+   here is one the page knows (assets/bridge.js): a keyword, a base item, an item class, an Atlas section.
+   A category with no filter of its own has no link, only the button that draws the rest here. */
+const SEEALL = {
+  kw(it, of){ const id = keywordIdOf(it); return id && of && of.sec ? ['#' + of.sec + '?kw=' + encodeURIComponent(id), of.place] : null; },
+  base(it, of){ const b = it.k === 'b' ? it.n : edges.baseName(it); return b ? ['#uniques?base=' + encodeURIComponent(b), of.place] : null; },
+  craft(it){ return it.cr ? [craftHref(it.cr), 'Craft'] : null; },
+  atlas(it){ return it.at ? ['./#/atlas?s=' + encodeURIComponent(it.at), 'Atlas'] : null; },
+};
+function seeAllHTML(it, cat){
+  const f = SEEALL[cat.filter], got = f && f(it, KIND[cat.of]);
+  if(!got) return '';
+  const href = got[0].startsWith('#') ? (/explore/.test(location.pathname) ? '' : 'explore') + got[0] : got[0];
+  return '<a class="btn gold uses-go" href="' + esc(href) + '">See all ' + cat.total.toLocaleString() +
+    ' in ' + esc(got[1]) + ' →</a>';
+}
+/* want: the categories the player had opened, the filter and the scroll (saveStep), put back once the rows
+   are in */
+function relSection(it, want){
   const sec = document.createElement('section');
   sec.className = 'uses';
-  sec._id = id;
+  sec._it = it;
+  sec._open = new Set((want && want.open) || []);
   sec._want = want || null;
-  paintUses(sec);
-  kwUse().then(U => {
-    sec._g = U ? useGroups(U, U.k[id] || {}) : 'err';
-    const was = (sec._want && sec._want.on) || USE_TAB.get(id);   // Back to this keyword: the tab it was on
-    if(U) sec.dataset.on = was && sec._g[was] && sec._g[was].length ? was : (USE_KINDS.find(([k]) => sec._g[k].length) || ['u'])[0];
-    paintUses(sec);
-    if(sec._then) sec._then();   // the rows are in: the card can go back to where it was scrolled
-  });
+  const need = paintRel(sec);
+  if(need.length) needFiles(need).then(() => { paintRel(sec); if(sec._then) sec._then(); });
   return sec;
 }
-/* the rows of each group, in the file's order: {html, h: the words the filter box searches} */
-function useGroups(U, e){
-  const card = key => D.byKey.get(key);
-  const times = n => n > 1 ? ' <span class="uses-x">\u00d7' + n + '</span>' : '';   // how many of it are on the tree
-  const cardRow = (x, sub, n, more = '') => { const p = priceOf(x);   // more: extra lines under the sub line (they wrap)
-    return '<button type="button" class="uses-row' + (more ? ' uses-wrap' : '') + '" data-key="' + esc(x.k + ':' + x.id) + '">' +
-      '<span class="uses-ic">' + iconHTML(x) + '</span>' +
-      '<span class="uses-t"><b>' + esc(x.n) + times(n) + '</b><span>' + esc(sub) + '</span>' + more + '</span>' +
-      (p && p.v !== undefined ? '<span class="uses-px">' + moneyHTML(p.v) + '</span>' : '') + '</button>'; };
-  const plainRow = (name, sub, o = {}) => '<div class="uses-row uses-plain' + (o.wrap ? ' uses-wrap' : '') + '" title="' + esc(o.title || sub) + '">' +
-    (o.ic ? '<span class="uses-ic"></span>' : '') + '<span class="uses-t"><b>' + esc(name) + times(o.n) + '</b><span>' + esc(sub) + '</span>' +
-    (o.more || '') + '</span></div>';
-  const row = (html, ...h) => ({html, h: h.filter(Boolean).join(' ').toLowerCase()});
-  const G = {};   // a card row is found by anything its card says (name, lines, tags), as in the search
-  G.u = (e.u || []).map(id => card('u:' + id)).filter(Boolean).map(x => row(cardRow(x, x.s || ''), x._hay));
-  G.g = (e.g || []).map(id => card('g:' + id)).filter(Boolean).map(x => row(cardRow(x, x.s || ''), x._hay));
-  G.p = (e.p || []).map(x => {
-    if(typeof x !== 'number'){   // a card: its id, or [id, how many of it are on the tree]
-      const [id, k] = Array.isArray(x) ? x : [x, 1], c = card('p:' + id), r = c && row(cardRow(c, c.s || '', k), c._hay);
-      if(r) r.n = k;
-      return r;
-    }
-    const [n, t, k, where] = U.sp[x] || [];   // a small passive: one row, counted each time it is on the tree
-    const sub = t + (where ? ' \u00b7 ' + where : '');
-    const r = n && row(plainRow(n, sub, {ic: 1, n: k, title: sub + ' \u00b7 ' + k + ' on the tree'}), n, t, where, 'small passive');
-    if(r) r.n = k;
-    return r;
-  }).filter(Boolean);
-  G.b = (e.b || []).map(id => card('b:' + id)).filter(Boolean).map(x => row(cardRow(x, x.s || ''), x._hay));
-  G.e = (e.e || []).map(i => { const [n, line, kinds] = (U.es || [])[i] || [];   // an essence and the mod it guarantees
-    const c = n && card('c:' + n), names = (kinds || []).map(k => U.ck[k] || k).join(', ');
-    return n && row(c ? cardRow(c, line, 0, '<span class="uses-kinds">' + esc(names) + '</span>')
-      : plainRow(n, line, {ic: 1, wrap: 1, title: line + ' \u00b7 ' + names, more: '<span class="uses-kinds">' + esc(names) + '</span>'}), n, line, names); }).filter(Boolean);
-  G.a = (e.a || []).map(([i, line]) => { const [s, n, what, key] = U.at[i] || [];
-    const c = key && card(key);   // an atlas thing with a card opens it; the rest open the Atlas tab
-    if(c) return row(cardRow(c, what + ' \u00b7 ' + line), n, what, line);
-    return n && row('<a class="uses-row uses-go" href="./#/atlas?s=' + esc(s) + '&q=' + encodeURIComponent(n) + '" title="' + esc(line) + '">' +
-      '<span class="uses-t"><b>' + esc(n) + '</b><span>' + esc(what) + ' \u00b7 ' + esc(line) + '</span></span></a>', n, what, line); }).filter(Boolean);
-  G.m = (e.m || []).map(i => { const [line, what, kinds] = U.cr[i] || [];
-    const names = (kinds || []).map(c => U.ck[c] || c);
-    return line && row(plainRow(line, what, {title: line + ' \u00b7 ' + what + ' \u00b7 ' + names.join(', '),
-      more: '<span class="uses-kinds">' + (kinds || []).map((c, j) => '<a class="uses-go" href="' + craftHref(c) + '">' + esc(names[j]) + '</a>').join(', ') + '</span>'}),
-      line, what, names.join(' ')); }).filter(Boolean);
-  G.c = (e.c || []).map(i => { const [n, cat, t] = U.cu[i] || [];
-    const c = card('c:' + n);   // a card when the market lists it
-    return n && row(c ? cardRow(c, cat + ' \u00b7 ' + t) : plainRow(n, cat + ' \u00b7 ' + t, {ic: 1}), n, cat, t); }).filter(Boolean);
-  G.w = (e.w || []).map(k => { const c = keywordCard(k);
-    return c ? row(cardRow(c, c.k === 'w' ? 'Keyword' : c.s || ''), c._hay)
-      : U.kn && U.kn[k] ? row(plainRow(U.kn[k], 'Keyword'), U.kn[k]) : null; }).filter(Boolean);
-  return G;
-}
-function paintUses(sec){
-  const G = sec._g, ok = G && G !== 'err', on = sec.dataset.on, list = ok ? G[on] : null;
-  if(ok) USE_TAB.set(sec._id, on);
-  const count = k => G[k].reduce((a, x) => a + (x.n || 1), 0);   // passives: every one on the tree
-  const tabs = USE_KINDS.map(([k, l]) => '<button type="button" class="chip uses-tab" data-g="' + k + '" aria-pressed="' + (k === on) + '"' +
-    (ok ? '' : ' disabled') + (ok && count(k) !== G[k].length ? ' title="' + count(k) + ' on the tree, ' + G[k].length + ' different"' : '') + '>' +
-    l + ' <span class="ct">' + (ok ? count(k).toLocaleString() : G ? '\u2013' : '\u2026') + '</span></button>').join('');
-  let rows;
-  if(G === 'err') rows = '<p class="note">Could not load this list. Try again in a minute.</p>';
-  else if(!list) rows = '<p class="note">Looking\u2026</p>';
-  else if(!list.length) rows = '<p class="note">Nothing here uses it.</p>';
-  else rows = list.map(x => x.html).join('');
-  const kind = {u: 'uniques', g: 'gems', p: 'passives', b: 'bases', e: 'essences', a: 'atlas entries', m: 'mods', c: 'items', w: 'keywords'}[on] || '';
-  // a long list shows its filter box from the start; a short one keeps it hidden until the card's own key asks for it
-  const filter = list && list.length ? '<input class="uses-q" type="search" autocomplete="off" spellcheck="false"' +
-    (list.length > USE_FILTER ? '' : ' hidden') + ' placeholder="Filter ' + kind + '\u2026" aria-label="Filter the ' + kind + '">' : '';
-  const here = /explore/.test(location.pathname) ? '' : 'explore';   // on the drill-down already: stay on the page
-  const all = SEC[on] ? '<a class="btn gold" href="' + here + '#' + SEC[on] + '?kw=' + encodeURIComponent(sec._id) + '">See all in ' +
-    {g: 'Gems', u: 'Uniques', p: 'Passive tree'}[on] + ' \u2192</a>' : '';
-  sec.innerHTML = '<h4>Found on</h4><div class="uses-tabs">' + tabs + '</div>' + filter + '<div class="uses-list">' + rows + '</div>' +
-    '<p class="note uses-none" hidden>Nothing matches.</p>' + (all && list && list.length ? '<div class="uses-all">' + all + '</div>' : '');
+function paintRel(sec){
+  const it = sec._it;
+  // what the player had typed and where they had scrolled: a "See all" redraws the whole section
+  const was = sec.querySelector('.uses-q');
+  const keep = was ? {q: was.value, top: (sec.querySelector('.uses-list') || {}).scrollTop || 0} : null;
+  const got = edges.categories(it, HAVE);
+  const cats = got.list, waiting = got.need.length && !relBad;
+  sec.hidden = !cats.length && !waiting;
+  if(sec.hidden){ sec.innerHTML = ''; sec._rows = []; return got.need; }
+  const all = [];   // every row drawn, in order, for the filter box
+  const blocks = cats.map(c => {
+    const show = sec._open.has(c.id) || c.total <= CAP + SLACK ? c.total : CAP;
+    const drawn = c.rows.slice(0, show).map(relRow);
+    all.push(...drawn);
+    const left = c.total - show, more = seeAllHTML(it, c);
+    return '<div class="uses-cat" data-c="' + esc(c.id) + '">' +
+      '<p class="uses-hd"><b>' + esc(c.label) + '</b><span class="ct"' + (c.note ? ' title="' + esc(c.note) + '"' : '') +
+      '>' + c.total.toLocaleString() + '</span></p>' +
+      drawn.map(x => x.html).join('') +
+      (left > 0 || more ? '<p class="uses-more">' +
+        (left > 0 ? '<button type="button" class="uses-all" data-c="' + esc(c.id) + '">See all ' +
+          c.total.toLocaleString() + '</button>' : '') + more + '</p>' : '') +
+      '</div>';
+  }).join('');
+  const note = waiting ? '<p class="note">Looking…</p>' : relBad && !cats.length
+    ? '<p class="note">Could not load this list. Try again in a minute.</p>' : '';
+  const filter = all.length > 1 ? '<input class="uses-q" type="search" autocomplete="off" spellcheck="false"' +
+    (all.length > USE_FILTER ? '' : ' hidden') +
+    ' placeholder="Filter this list…" aria-label="Filter the related list">' : '';
+  sec.innerHTML = '<h4>Found on</h4>' + filter + '<div class="uses-list">' + blocks + note + '</div>' +
+    '<p class="note uses-none" hidden>Nothing matches.</p>';
+  sec._rows = all;
   const q = sec.querySelector('.uses-q');
   if(q) q.addEventListener('input', () => {
-    const words = q.value.trim().toLowerCase().split(/\s+/).filter(Boolean), els = sec.querySelector('.uses-list').children;
+    const words = q.value.trim().toLowerCase().split(/\s+/).filter(Boolean);
+    const els = [...sec.querySelectorAll('.uses-row')];
     let shown = 0;
-    list.forEach((x, i) => { const hit = words.every(w => x.h.includes(w)); els[i].hidden = !hit; shown += hit; });
+    els.forEach((el, i) => { const hit = words.every(w => (all[i] || {hay: ''}).hay.includes(w)); el.hidden = !hit; shown += hit; });
+    for(const cat of sec.querySelectorAll('.uses-cat'))
+      cat.hidden = ![...cat.querySelectorAll('.uses-row')].some(r => !r.hidden);
     sec.querySelector('.uses-none').hidden = shown > 0;
   });
-  // Back to this card: the filter you had typed and where you had scrolled the list, once only — a tab you
-  // press after that starts clean
-  const want = sec._want;
-  if(ok && want){
+  // Back to this card, or a category just opened: the filter it had and where the list was scrolled
+  const want = sec._want || keep;
+  if(want && !waiting){
     sec._want = null;
     if(q && want.q){ q.value = want.q; q.dispatchEvent(new Event('input')); }
     sec.querySelector('.uses-list').scrollTop = want.top || 0;
   }
+  return got.need;
 }
-
 /* Render a list of cards into a grid. Cards that stay glide to their new place, new cards fly in,
    and cards that leave fade out where they stood (FLIP, Web Animations API). */
 export function flow(grid, list, make){
@@ -999,7 +1087,6 @@ export function flow(grid, list, make){
 }
 
 /* ---------- search ---------- */
-const KINDS = [['all','All'], ['g','Gems'], ['u','Uniques'], ['p','Passives'], ['b','Bases'], ['a','Atlas'], ['c','Currency'], ['w','Keywords'], ['h','Mechanics'], ['x','Bosses']];
 export function search(q, kind = 'all'){
   const qs = q.trim().toLowerCase();
   const toks = qs.split(/\s+/).filter(Boolean);
@@ -1049,7 +1136,10 @@ const PAGE = 30;   // cards added each time the list reaches the bottom of the s
 const H = {q:'', kind:'all', shown:PAGE, list:[]};
 function homeInit(){
   const q = $('#q'), kinds = $('#kinds');
-  if(!kinds.children.length) kinds.innerHTML = KINDS.map(([k, l]) => '<button type="button" class="chip" data-k="' + k + '" aria-pressed="' + (k === 'all') + '">' + l + '<span class="ct"></span></button>').join('');
+  // index.html draws these chips itself, so the bar never changes shape on the first paint; the table is the
+  // one in assets/kinds.js, and a kind that is in the table but not in the page puts them all back in order
+  if([...kinds.children].map(c => c.dataset.k).join(' ') !== CHIPS.map(([k]) => k).join(' '))
+    kinds.innerHTML = CHIPS.map(([k, l]) => '<button type="button" class="chip" data-k="' + k + '" aria-pressed="' + (k === 'all') + '">' + l + '<span class="ct"></span></button>').join('');
   kinds.addEventListener('click', e => {
     const b = e.target.closest('button'); if(!b) return;
     H.kind = b.dataset.k; H.shown = PAGE;
@@ -1161,7 +1251,7 @@ function route(){ const m = location.hash.match(/^#\/(\w+)/); return m ? m[1] : 
 export function params(){ const i = location.hash.indexOf('?'); return new URLSearchParams(i >= 0 ? location.hash.slice(i + 1) : ''); }
 const loaded = {};
 async function show(){
-  const r = ['home', 'build', 'currency', 'trade', 'farms', 'atlas', 'bosses', 'craft'].includes(route()) ? route() : 'home';
+  const r = ROUTES.includes(route()) ? route() : 'home';
   document.body.dataset.route = r;
   document.querySelectorAll('.view').forEach(v => v.hidden = v.dataset.view !== r);
   document.querySelectorAll('.tabs a[data-route]').forEach(a => { if(a.dataset.route === r) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current'); });
