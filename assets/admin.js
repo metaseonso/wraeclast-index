@@ -6,6 +6,8 @@
    try/catch, and whatever breaks also goes in one line at the top of the page. A tab draws its blocks
    again when it opens - a pane is first filled while it is still hidden - and anything still empty says
    "No data.", so no tab can come up blank. */
+import { PAGES, SECTIONS } from './kinds.js';   // what each page is called, from the one table the site reads
+
 const $ = (s, el = document) => el.querySelector(s);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c]));
 const num = n => (+n || 0).toLocaleString('en');
@@ -17,8 +19,7 @@ const share = (a, b) => fin(b) > 0 ? Math.round(fin(a) / fin(b) * 100) : 0;
 const NONE = '<p class="note dv-none">No data.</p>';
 const WAIT = '<p class="note dv-wait">Loading…</p>';
 
-const PAGES = {home: 'Search', build: 'Build', currency: 'Currency', trade: 'Trade', farms: 'Farms', atlas: 'Atlas',
-  'explore-gems': 'Gems', 'explore-uniques': 'Uniques', 'explore-tree': 'Passive tree'};
+const SEC = Object.keys(SECTIONS);
 const KINDS = {direct: 'Direct', search: 'Search engines', ai: 'AI search', social: 'Social', other: 'Other sites'};
 const DEVICES = {phone: 'Phone', tablet: 'Tablet', desktop: 'Desktop'};
 const WIDTH = {phone: 390, tablet: 820, desktop: 1366};   // the heatmap shows the page at this width
@@ -306,9 +307,9 @@ function pretty(label){
 }
 function pageName(p){
   const s = String(p ?? '');
-  const e = s.match(/explore(?:\.html)?#(gems|uniques|tree)/);
+  const e = s.match(new RegExp('explore(?:\.html)?#(' + SEC.join('|') + ')'));
   if(e) return PAGES['explore-' + e[1]];
-  if(/explore/.test(s)) return 'Gems';
+  if(/explore/.test(s)) return PAGES['explore-' + SEC[0]];
   const m = s.match(/#\/(\w+)/);
   return (m && PAGES[m[1]]) || 'Search';
 }

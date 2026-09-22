@@ -3,9 +3,8 @@
    What is sent: the page, how the visit arrived (the other site's name, or "direct"), phone/tablet/desktop,
    what was clicked (a tab, a button's words, "card:gem", the host of a link out) and where on the page.
    Nothing is sent when the browser asks not to be tracked (Do Not Track or Global Privacy Control). */
+import {ROUTES, SECTIONS, KIND} from './kinds.js';   // the pages and the kinds, from the one table the site reads
 const URL_T = 'api/t';
-const APP = ['home', 'build', 'currency', 'trade', 'farms', 'atlas'];
-const KIND = {g: 'gem', u: 'unique', p: 'passive', w: 'keyword', c: 'currency', b: 'build item', f: 'farm'};
 const CAP = {v: 50, c: 200, h: 200};
 const SEP = '\u0001';
 
@@ -21,11 +20,11 @@ function off(){
 
 export function routeOf(loc = location){
   if(/\/explore(\.html)?$/.test(loc.pathname)){
-    const m = loc.hash.match(/^#(gems|uniques|tree)\b/);
-    return 'explore-' + (m ? m[1] : 'gems');
+    const sec = (loc.hash.match(/^#(\w+)/) || [])[1];
+    return 'explore-' + (SECTIONS[sec] ? sec : Object.keys(SECTIONS)[0]);
   }
   const m = loc.hash.match(/^#\/(\w+)/);
-  return m && APP.includes(m[1]) ? m[1] : 'home';
+  return m && ROUTES[m[1]] ? m[1] : 'home';
 }
 const device = () => innerWidth < 640 ? 'phone' : innerWidth < 1024 ? 'tablet' : 'desktop';
 
@@ -73,7 +72,7 @@ export function labelOf(t){
   const card = t.closest('.card:not(.detail)');
   const ctl = t.closest('button, a[href], [role="button"], summary, label, .chip');
   if(card && (!ctl || !card.contains(ctl) || ctl.matches('.card-link'))) return pop + 'card:' + (card.classList.contains('fm') ? 'farm' :
-    KIND[(card.className.match(/\bk-(\w)\b/) || [])[1]] || 'other');
+    ((KIND[(card.className.match(/\bk-(\w)\b/) || [])[1]] || {}).one || 'other').toLowerCase());
   if(ctl){
     const w = words(ctl);
     if(!w) return null;

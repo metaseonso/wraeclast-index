@@ -60,8 +60,17 @@
    filter its "see all" link carries to the drill-down (assets/bridge.js reads those names). An edge that
    groups cards by a field of their own names the map it reads in MAPS. */
 
-export const ROUTES = ['home', 'build', 'currency', 'trade', 'farms', 'atlas', 'bosses', 'craft', 'map'];
+/* The app's own tabs and the drill-down's sections, each with the words it is called by, in the order they
+   are offered. Everything that names a page reads these and keeps no list of its own: the router
+   (assets/app.js), the deep links (assets/bridge.js), the count of what was looked at (assets/track.js,
+   worker/dash.js) and the owner's dashboard (assets/admin.js). A new tab is one line here.
+   tools/dev/frame.mjs fails a build where a second copy of this list has drifted from it. */
+export const ROUTES = {home: 'Search', build: 'Build', trade: 'Trade', farms: 'Farms', craft: 'Craft',
+  currency: 'Currency', atlas: 'Atlas', bosses: 'Bosses', map: 'Map'};
 export const SECTIONS = {gems: 'Gems', uniques: 'Uniques', tree: 'Passive tree'};
+/* every page that is counted, in one list: the tabs, then the sections under the names the count gives them */
+export const PAGES = {...ROUTES,
+  ...Object.fromEntries(Object.entries(SECTIONS).map(([k, words]) => ['explore-' + k, words]))};
 
 /* ---------- the frame ----------
    The slots a card has, in the order they are drawn, and the boxes the head is divided into. A field lands in
