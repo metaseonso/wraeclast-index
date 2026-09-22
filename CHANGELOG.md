@@ -3,10 +3,92 @@
 The full list of changes. The public patch notes (data/changelog.json, shown on the site) stay short.
 Add the details here first, then a short public line there.
 
-## Next — How the numbers stack: three concept cards, honestly sourced
-- The follow-on to the entry below, which ended by saying what the honest fix would be: "a site-written note
+## Next — Mechanics cards, and how damage works
+
+- **The kind is Mechanics, not Concept.** The owner's word: they are mechanics cards. `tools/concepts.py` is
+  `tools/mechanics.py`, the kind's label is **Mechanics** everywhere a player reads it (the filter chip in
+  `index.html`, the badge on the card, the sub-line on each card, `KIND`/`KINDS` in `assets/app.js`), and the
+  build tools, their comments and `tools/dev/guard.mjs` say mechanics too. The kind letter stays `h`: every
+  reference already written into `data/index.json` is keyed `h:<id>` and `lxk` carries those keys into both
+  parts, so changing the letter would buy nothing and break every existing link. 2,589 marked words on 1,591
+  cards still open the same cards.
+- **The voice was wrong and is rewritten.** Every line on all four cards now reads the way the game writes:
+  declarative, present tense, one fact a line, `For example, ...` for a worked case, the game's capitalised
+  nouns, and nothing that explains itself to the reader. What went: "That sum gets crowded", "you are on
+  x 4.00", "still under where you started", "which is why they are rare", "So a flat roll is worth more the
+  more increases you already have". The register was read off the game's own text before rewriting —
+  `data/info.json` and the 437 glossary entries in `data/explore/keywords.*.json` — and `tools/mechanics.py`
+  says so at the top, so the next edit has the same yardstick.
+- **A fourth card: How damage works**, with a flowchart. Three groups, drawn by `flowHTML` in
+  `assets/app.js` from `"fl"` on the card: a seven-step run for the hit (base, added, conversion, gained as
+  extra, the increased sum, the more multipliers, crit), a two-column block for conversion against extra
+  damage, and a four-step run for what reduces it (Evasion, Block, Armour, Resistances). The index holds the
+  chart as text only — no markup in `data/index.json`; the boxes, the arrows and the columns are `.flow` in
+  `assets/cards.css`. Plain markup, no library, no SVG text that cannot wrap: the columns are
+  `repeat(auto-fit, minmax(210px, 1fr))`, so a phone gets one column and a wide popup gets two with no media
+  query to keep in step, and every colour is a theme token.
+- **Conversion and extra damage get their own block** because the two read as the same thing and are not.
+  The game settles more of this than the first draft credited it with: the **Damage Conversion** entry gives
+  the two step process and that converted damage "scale[s] with modifiers to the new damage type, and no
+  longer scale[s] with modifiers to the old damage type", and **Damage Gained as extra X** gives the same
+  rule for copies ("only scales with modifiers to the new type, not with modifiers to the source damage's
+  type") plus "Damage Gain occurs in the same two step process as Damage Conversion". Both rule damage over
+  time out. Those lines are the game's, and the card credits the game for them.
+- **What Path of Building settles, read for this ticket** in PathOfBuildingCommunity/PathOfBuilding-PoE2
+  (`dev`), `src/Modules/CalcOffence.lua`:
+  - the conversion chain, in the file's own comments: `-- First step: Process skill conversion`, then
+    `-- Second step: Process global conversion and gains`, and inside it
+    `-- Process global conversion on skill-converted damage`, which runs `processDamageConversion()` again
+    over every destination the skill already converted to. One portion can change type twice.
+  - the cap: `-- Scale if over 100%` in `processDamageConversion()`, which scales a type's conversions down
+    to total 100%. There is no such step for gains.
+  - what a copy is taken from, in `calcGainedDamage()`:
+    `local baseMin = output[otherType.."MinBase"] * activeSkill.conversionTable[otherType].mult`, then
+    `gainedMin = gainedMin + (baseMin + convertedMin) * gainMult` — the source type's base after conversion
+    has settled, including what was converted into it, and the source keeps its own damage.
+  - **the order**, which is the part the chart turns on:
+    `local summedMin = baseMin * convMult + convertedMin + gainedMin`, and only then does `calcDamage()`
+    apply `inc` and `more` to `output[damageType.."SummedMinBase"]`. Conversion and gain land on the base,
+    **before** the increased sum — not after it.
+  - which modifiers a converted portion takes: `calcDamage()` is called once per damage type with
+    `typeFlags` 0, so `damageStatsForTypes` hands it `"Damage"` and that one type's `"<Type>Damage"` and
+    nothing else. Converted damage does not keep the modifiers of the type it came from.
+  - crit after both: `output.PreEffectiveCritMultiplier = 1 + extraDamage` is applied to the per-type hit
+    damage `calcDamage()` already returned.
+  - `CalcPerform.lua` only feeds gain mods in (Unholy Might writes `DamageGainAsChaos`) and sets no order;
+    `ModStore.lua`'s `Combine` sends `MORE` to `More()` and everything else to `Sum()`, the additive-against-
+    multiplicative split the other three cards rest on.
+- **Two things the brief asked for that the sources do not support, so the card does not say them.** Both are
+  in the ticket report in full. Increases for the type damage came *from* do **not** still apply after
+  conversion — the game's own Damage Conversion entry says the opposite in as many words, and PoB's
+  `typeFlags` 0 call agrees; and conversion does not sit after the more multipliers, it sits on the base
+  before the increased sum. Where PoB's single-pass gain table disagrees with the game's "same two step
+  process", the card follows the game and says nothing about a copy being copied again.
+- **The card is offered, not linked from 2,000 words.** `offerHTML` in `assets/app.js` draws one row at the
+  foot of any card whose own search text matches a whole-word `damage` — read off `_hay`, which `prep`
+  already builds, so nothing has to be marked per card and `data/index.json` carries no flag for it. Popup
+  only: every card opens its popup first, and a chart that tall in the search grid would be noise. Mechanics
+  cards never offer it. The word boundary keeps the internal stat ids in `"q"` out of it (`spell_damage_+%`
+  has no word boundary before `damage`).
+- **The flowchart card has no trigger words**, so `"f"` is left off it entirely and `build()` only writes
+  that field where a card has words. Nothing else about the link machinery changed.
+- Sizes: `data/index-rest.json` 1,686 KB -> 1,689 KB. `data/index-core.json` unchanged — mechanics cards live
+  in the rest, which is where the popups already wait for them.
+- `docs/mechanics-cards.md`: the full set scoped, with the test a card has to pass (the game ships 437
+  glossary entries and every one is already a keyword card, so a mechanics card earns its place only where
+  the game has no entry, never puts the pieces in order, or contradicts itself). Twelve worth building, the
+  four live ones included; the five next are How defences work, Resistances and the maximum, Where a
+  modifier lands in a stat, Damage over time, and Chance over 100%. Four of those five are pure official
+  game data.
+- The word the owner has banned on this project is cleared from the two code comments that held it
+  (`assets/admin.js`, `tools/gamepull.py`) and from the entry below, which this one supersedes. Five older
+  entries in this file still carry it; they are left as the record of what was written at the time, and are
+  the ticket report's one open item.
+
+## Next — How the numbers stack: three mechanics cards, sourced
+- The follow-on to the entry below, which ended by saying what the right fix would be: "a site-written note
   against a named source ..., not a keyword card wearing the game's voice". That is what this is. Three cards
-  of our own, a new kind `h` with its own label (Concept), declared in one place, `tools/concepts.py`:
+  of our own, a new kind `h` with its own label, declared in one place, `tools/mechanics.py`:
   **Increased and reduced**, **More and less**, **Added damage**. Every worked example uses real mods out of
   `data/index.json` (Honed Instincts, Deep Trance, Chakra of Rhythm, Crushing Verdict, Quill Rain,
   Winter's Bite) with the arithmetic spelled out.

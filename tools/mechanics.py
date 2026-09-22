@@ -1,0 +1,232 @@
+"""Our own cards: the mechanics the game never writes down.
+
+A player asked why a passive saying "increased" shows no keyword chip. It shows none because the game's own
+glossary has no entry for increased, reduced, more or less, and the game never marks those words. The
+behaviour is real all the same, and 1,700-odd cards in the index are written in those words, so the words
+themselves are the door: these cards say what the maths does, and the lines that use the words lead to them.
+
+They are not game text, so they never pretend to be:
+  * their own kind ("h"), their own label (Mechanics), and no keyword chips
+  * each one carries the source it was read off ("src"), shown on the card itself (assets/app.js)
+  * the page draws the words that lead here differently from the game's keyword chips (.hlink, cards.css)
+
+Written in the game's own register: declarative, present tense, one fact a line, "For example, ..." for a
+worked case, and the game's capitalised nouns where the game has a word for the thing. Read data/info.json
+and the keyword text in data/explore/keywords.*.json before changing a line here — that is the voice to match.
+
+What was read for these, in PathOfBuilding-PoE2 (src/Modules), and what it says:
+  CalcOffence.lua, the damage a hit deals:
+      local inc = 1 + skillModList:Sum("INC", cfg, unpack(modNames)) / 100
+      local more = skillModList:More(cfg, unpack(modNames))
+      return round(summedMin * inc * more * moreMinDamage + addMin), ...
+    every INC is summed and applied once; every MORE is its own multiplier; the added damage (BASE) is
+    already inside summedMin, so the increases work on it too.
+  CalcOffence.lua, in as many words, on the area maths:
+      ---@param incArea number @Additive modifier
+      ---@param moreArea number @Multiplicative modifier
+  CalcDefence.lua, Life, Mana and Spirit, the same shape:
+      output[res] = override or m_max(round((base * (1 - conv/100) + extra) * (1 + inc/100) * more + total), 1)
+  CalcPerform.lua, buff and aura effect, the same shape again: (1 + inc / 100) * more
+The PoE2 wiki was not readable (its host turns the fetch away), so it is not named on the cards.
+
+The flowchart card is the one card here the game does most of the talking on: every step it names is a step
+the game has a glossary entry for, quoted down to the game's own wording. The order, the conversion chain and
+what extra damage copies come off Path of Building (see "read for conversion" below). "fl" holds the chart as
+steps and notes, never as markup — assets/app.js draws the boxes and the arrows (.flow in cards.css), so the
+index stays text. A group is either a run of steps ("st", one box each, an arrow between them) or a pair of
+columns ("cols", side by side on a wide card and stacked on a phone): conversion and extra damage get the
+pair, because the two read as the same thing and are not.
+
+What was read for conversion, in the same repo, and what settles it:
+  CalcOffence.lua, the conversion table, in its own comments: "-- First step: Process skill conversion",
+    then "-- Second step: Process global conversion and gains", and inside that second step
+    "-- Process global conversion on skill-converted damage", which runs processDamageConversion() again
+    over each destination the skill already converted to: that is the chain, and a portion can change type
+    twice. processDamageConversion() caps a type's conversion at 100% ("-- Scale if over 100%").
+  CalcOffence.lua, calcGainedDamage(), extra damage as:
+      local baseMin = output[otherType.."MinBase"] * activeSkill.conversionTable[otherType].mult
+      local convertedMin, convertedMax = calcConvertedDamage(activeSkill, output, cfg, otherType)
+      gainedMin = gainedMin + (baseMin + convertedMin) * gainMult
+    the copy is taken off the source type's base after conversion has settled, the source keeps its own
+    damage, and the gain table is built by adding skill and global gains in one pass with no cap and no
+    second round, so a copy is never copied again.
+  CalcOffence.lua, the base every type is left with, and the proof that all of this lands before the
+  increases: summedMin = baseMin * convMult + convertedMin + gainedMin, and only then does calcDamage()
+  apply inc and more to output[damageType.."SummedMinBase"].
+  CalcOffence.lua, which modifiers a converted or copied portion takes: calcDamage() is called once per
+  damage type with typeFlags 0, so damageStatsForTypes gives it "Damage" and that one type's "<Type>Damage"
+  and nothing else. The damage does not keep the modifiers of the type it came from.
+The game states that last part itself, so the card credits the game for it and not the code: the Damage
+Conversion entry ("scale with modifiers to the new damage type, and no longer scale with modifiers to the old
+damage type"), and "Damage Gained as extra X" for the copies ("only scales with modifiers to the new type,
+not with modifiers to the source damage's type"). That same entry says gain "occurs in the same two step
+process as Damage Conversion", where the code instead adds skill and global gains in one pass — the card
+follows the game, and says nothing about a copy being copied again, which the two do not agree on. Both
+entries rule damage over time out, and the card says so.
+  CalcPerform.lua only feeds the gain mods in (Unholy Might writes "DamageGainAsChaos"); it sets no order.
+  ModStore.lua's Combine sends MORE to More() and everything else to Sum(), which is the additive-against-
+  multiplicative split the other three cards rest on.
+
+The words a card is reached by sit in "f", which tools/nodelinks.py already reads as the other spellings of a
+keyword. A word is only a door where the line uses it as a number — "40% less Attack Damage", "Adds 8 to 18
+Cold Damage" — never in prose ("no more than once every 3 seconds"): see gate(). The flowchart card has no
+such words: a card whose text is about damage offers it instead, which assets/app.js does at the card itself.
+
+Usage:  python tools/mechanics.py    put these cards in data/index.json, relink it, write the two parts
+tools/sync.py calls build() while it builds the index, so a full sync needs no extra step.
+"""
+import json
+import re
+import sys
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parent.parent
+KIND = 'h'          # a mechanics card: ours, never the game's
+SUB = 'Mechanics'
+# Named on every one of these cards, where the player reads it. The game does not state any of this.
+SOURCE = "According to Path of Building's own damage maths. The game never states it."
+# The flowchart card names the game for every step it takes from the game — and the game's own Damage
+# Conversion and "Damage Gained as extra X" entries settle most of that block — and Path of Building for what
+# the game leaves out: the order, the conversion chain, the caps, and what a copy is taken from.
+FLOW_SOURCE = ("The steps, which modifiers converted and gained damage scale with, and the two step "
+               "process: as the game states them. Where they sit in the order, the conversion chain, the "
+               "caps and what a copy is taken from: according to Path of Building's own damage maths.")
+DAMAGE = KIND + ':HowDamage'   # assets/app.js offers this card wherever a card's text is about damage
+
+# A word only counts where the line uses it as a number. PCT: "(30-40)% more", "5% reduced". START: the word
+# opens the line, which is the only way the game writes an added-damage mod.
+PCT = re.compile(r'%\s*$')
+GATES = {'pct': lambda line, s: bool(PCT.search(line[:s])), 'start': lambda line, s: s == 0}
+
+# The cards themselves. "words" are what a mod line has to say to reach them, "gate" when it counts; "q" the
+# extra words a search for this card is likely to use; "fl" the flowchart, drawn by assets/app.js.
+CARDS = [
+    {'id': 'HowDamage', 'n': 'How damage works', 'words': [], 'gate': 'pct', 'src': FLOW_SOURCE,
+     'q': 'damage calculator flowchart order hit crit critical conversion converted convert extra gained '
+          'gain as armour resistance evasion block base added increased more less how damage works',
+     'ls': ['Damage is worked out in order. Each step works on the result of the step before it.',
+            "Any damage that isn't damage over time is Hit damage.",
+            'Conversion and extra damage are settled on the base damage, before any increase is applied.'],
+     'fl': [
+         {'h': 'The hit', 'st': [
+             ['Base damage', 'Attacks use your Martial Weapon’s stats unless the skill says otherwise. '
+                             'Spells use the damage listed on the skill.'],
+             ['Added damage', 'An Adds line goes into the base damage for its own type.'],
+             ['Damage Conversion', 'The damage changes type. Worked out on the base, before any increase.'],
+             ['Gained as extra damage', 'A copy is added as another damage type. The original is still '
+                                        'dealt, and the copy scales with the new type only.'],
+             ['Increased and reduced', 'Per damage type: every increased and reduced modifier to it is added '
+                                       'into one sum, and the sum is applied once. Conversion has already '
+                                       'settled which type the damage is, so this is the new type’s sum.'],
+             ['More and less', 'Each more and less modifier is its own multiplier, applied after that sum.'],
+             ['Critical Hits', 'Critical Hits deal +100% extra damage by default. Critical Damage Bonuses '
+                               'modify that.'],
+         ]},
+         # the two that get read as the same thing. Side by side on a wide card, stacked on a phone.
+         {'h': 'Conversion is not extra damage', 'cols': [
+             {'h': 'Damage Conversion', 'ls': [
+                 'The damage changes type. The type it came from keeps only the part that was not converted.',
+                 'Converted damage scales with modifiers to the new damage type, and no longer with '
+                 'modifiers to the old one.',
+                 'Conversion is a two step process. Conversion inherent to Skills occurs first, then '
+                 'Conversion from all other sources.',
+                 'That second step also converts what the Skill already converted, so one portion can change '
+                 'type twice: Physical to Cold on the Skill, then Cold to Fire from an item, is Physical '
+                 'dealt as Fire.',
+                 'Conversion out of one damage type is capped at 100%. More than that is scaled down to fit.',
+                 'Damage over time cannot be converted.',
+             ]},
+             {'h': 'Gained as extra damage', 'ls': [
+                 'The damage does not change type. A copy of it is added as the new type, and the original '
+                 'is dealt as well.',
+                 'Damage gained as a damage type only scales with modifiers to the new type, not with '
+                 'modifiers to the source damage’s type.',
+                 'Damage Gain occurs in the same two step process as Damage Conversion.',
+                 'The copy is taken from the base the source type is left with after conversion, including '
+                 'damage converted into that type.',
+                 'Gain is not capped at 100% the way conversion is.',
+                 'Damage over time cannot benefit from damage Gain.',
+             ]},
+         ]},
+         {'h': 'What reduces it', 'st': [
+             ['Evasion', 'Accuracy is checked against the target’s Evasion. An Evaded Hit does not Hit '
+                         'at all.'],
+             ['Block', 'Blocking completely prevents the damage of an incoming Hit.'],
+             ['Armour', 'Armour reduces damage taken from Hits. By default it applies only to Physical '
+                        'damage, and it is more effective against smaller hits.'],
+             ['Resistances', 'Resistances reduce damage taken of the matching damage type — Fire, Cold, '
+                             'Lightning or Chaos — up to a Maximum.'],
+         ]},
+     ]},
+    {'id': 'IncreasedReduced', 'n': 'Increased and reduced', 'words': ['increased', 'reduced'], 'gate': 'pct',
+     'ls': ['Increased and reduced modifiers to the same stat are added into one sum. The sum is applied once.',
+            'A reduced modifier counts against that sum, as a negative increase.',
+            'For example, Honed Instincts, Deep Trance and Chakra of Rhythm grant 8%, 8% and 6% increased '
+            'Attack Speed, and Crushing Verdict grants 5% reduced Attack Speed. The sum is 17% increased, so '
+            'Attack Speed is multiplied by 1.17.',
+            'Each further increase is a smaller part of the total. At 300% increased the stat is multiplied '
+            'by 4.00, and a further 20% increased makes it 4.20.']},
+    {'id': 'MoreLess', 'n': 'More and less', 'words': ['more', 'less'], 'gate': 'pct',
+     'ls': ['More and less modifiers are not added into the increased sum. Each one is its own multiplier, '
+            'applied to everything else.',
+            'For example, Quill Rain has 40% less Attack Damage, a multiplier of 0.60. With 50% increased '
+            'Attack Damage as well the result is 1.50 × 0.60 = 0.90.',
+            'A reduced modifier would join the sum instead: 50% increased and 40% reduced sum to 10% '
+            'increased, a multiplier of 1.10.',
+            'More and less modifiers multiply each other. 20% more and 50% more is 1.20 × 1.50 = 1.80.']},
+    {'id': 'AddedDamage', 'n': 'Added damage', 'words': ['Adds'], 'gate': 'start',
+     'ls': ['An Adds line goes into the base damage. The increased sum and the more multipliers then work on '
+            'that larger base.',
+            "For example, Winter's Bite adds 8 to 18 Cold Damage, an average of 13. At 100% increased Cold "
+            'Damage that damage is 26. At 300% increased it is 52.',
+            'Added damage is scaled by every increased and more modifier to its damage type.']},
+]
+
+
+def build():
+    """The mechanics cards, as the index holds them."""
+    out = []
+    for c in CARDS:
+        it = {'k': KIND, 'id': c['id'], 'n': c['n'], 's': SUB, 'ls': list(c['ls']),
+              'q': c.get('q') or ' '.join(c['words']).lower(), 'src': c.get('src') or SOURCE}
+        if c['words']:   # the flowchart card has none: a card about damage offers it instead
+            it['f'] = list(c['words'])
+        if c.get('fl'):
+            it['fl'] = []
+            for g in c['fl']:
+                one = {'h': g['h']}
+                if g.get('st'):
+                    one['st'] = [list(s) for s in g['st']]
+                if g.get('cols'):
+                    one['cols'] = [{'h': col['h'], 'ls': list(col['ls'])} for col in g['cols']]
+                it['fl'].append(one)
+        out.append(it)
+    return out
+
+
+_GATE = {w: GATES[c['gate']] for c in CARDS for w in c['words']}
+
+
+def gate(word, line, s):
+    """Does this line use the word as a number, here? (tools/nodelinks.py asks before making it a door)"""
+    g = _GATE.get(word)
+    return g(line, s) if g else True
+
+
+def main():
+    import nodelinks
+    f = ROOT / 'data' / 'index.json'
+    index = json.loads(f.read_text(encoding='utf-8'))
+    was = len(index['items'])
+    index['items'] = [it for it in index['items'] if it['k'] != KIND] + build()
+    print('cards: %d -> %d (%d mechanics cards)' % (was, len(index['items']), len(CARDS)))
+    rep = nodelinks.attach(index)
+    f.write_text(json.dumps(index, ensure_ascii=False, separators=(',', ':')), encoding='utf-8')
+    nodelinks.report(index, rep)
+    import appdata   # the two parts the home page loads
+    appdata.write(index)
+    return 0
+
+
+if __name__ == '__main__':
+    sys.exit(main())

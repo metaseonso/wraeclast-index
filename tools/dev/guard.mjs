@@ -32,7 +32,7 @@ const TOL = 0.02;          // a kind may lose this much before it counts as brok
 const SAMPLE = 200;        // deep links tried per kind
 const PAGE_SAMPLE = 20;    // item pages fetched per kind
 const KINDS = {g: 'gems', u: 'uniques', p: 'passives', w: 'keywords', c: 'currency', b: 'bases', a: 'atlas',
-  h: 'concepts'};
+  h: 'mechanics'};
 
 /* ---------- what counts as raw game code ---------- */
 // "(?!\(" keeps a Markdown link ("[Gems](https://...)", llms.txt) from reading as game markup
@@ -229,7 +229,7 @@ async function checkLinks(index, market){
     }
   }
   // the crawler's own pages, over the wire: the slug redirects to its canonical spelling, so this lands on the page.
-  // Only the kinds it publishes (worker/seo.js KIND); our own concept cards are not game data and have none.
+  // Only the kinds it publishes (worker/seo.js KIND); our own mechanics cards are not game data and have none.
   const crawled = new Set([...(src.seo.match(/const KIND = \{[\s\S]*?\n\};/) || [''])[0].matchAll(/^ {2}(\w+): \{/gm)].map(m => m[1]));
   if(!crawled.size) miss.push('could not read the crawler kinds out of seo.js');
   const pages = [];

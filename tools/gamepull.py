@@ -1,4 +1,4 @@
-"""One daily pull of the official game data, and an honest gap report.
+"""One daily pull of the official game data, and a straight gap report.
 
 Every other tool fetches its own copy of the export whenever it runs, so nothing ever says when the game
 data moved on, or how much of it we do not ship yet. This is the one place that pulls it and counts.
@@ -6,7 +6,7 @@ data moved on, or how much of it we do not ship yet. This is the one place that 
 Source: the RePoE fork's PoE2 export of the game files (https://repoe-fork.github.io/poe2/).
 Two rows of the report are measured against the official trade site's lists instead (data/trade.json,
 tools/tradedata.py): the export marks hundreds of old and unused items "released", so for bases and
-currency the trade site is the only honest answer to "is this in the game today".
+currency the trade site is the only straight answer to "is this in the game today".
 
 Usage:
   python tools/gamepull.py            pull what changed, then print the report

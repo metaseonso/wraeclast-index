@@ -35,13 +35,13 @@ const BOSS = AFTER.then(() => getJSON('data/bosses.json', {priority: 'low'}).cat
 // the history, only when the worker split it off (the backup site's market file has no parts: it is all in NOW)
 const PAST = AFTER.then(() => NOW).then(m => m && m.part === 'now' ? getJSON('data/market.json?part=past', {priority: 'low'}).catch(() => null) : null);
 
-function prep(it, k, IMGS, lxk){   // once per card: its kind, full image link, concept links and search words
+function prep(it, k, IMGS, lxk){   // once per card: its kind, full image link, mechanics links and search words
   if(it._nl !== undefined) return it;
   it.k = k;
   if(it.id === undefined) it.id = it.n;   // the parts leave the id out where it is the name
   if(it.img){ const i = it.img.indexOf(':'), pre = IMGS[it.img.slice(0, i)]; if(pre) it.img = pre + it.img.slice(i + 1); }   // "<server key>:<path>"
   // "lx" marks every phrase in a line that names another card (tools/nodelinks.py). The page draws one kind of
-  // them: the words that lead to a concept card ("h:", tools/concepts.py). The rest stays plain text, as before.
+  // them: the words that lead to a mechanics card ("h:", tools/mechanics.py). The rest stays plain text, as before.
   if(it.lx && lxk){
     const hx = it.lx.map(r => (r || []).filter(x => (lxk[x[2]] || '').startsWith('h:')).map(x => [x[0], x[1], lxk[x[2]]]));
     if(hx.some(r => r.length)) it.hx = hx;
@@ -191,7 +191,7 @@ function iconHTML(it){
 }
 
 /* ---------- the live card ---------- */
-const KIND = {g:'Gem', u:'Unique', p:'Passive', w:'Keyword', c:'Currency', b:'Base', a:'Atlas', x:'Boss', h:'Concept'};
+const KIND = {g:'Gem', u:'Unique', p:'Passive', w:'Keyword', c:'Currency', b:'Base', a:'Atlas', x:'Boss', h:'Mechanics'};
 const SECTION = {g:'gems', u:'uniques', p:'tree'};
 /* the Craft tab, opened on this base (its plan lives in the address, see craft.js) */
 export const craftHref = (c, b = '') => './#/craft?s=' + encodeURIComponent(btoa(unescape(encodeURIComponent(JSON.stringify({c, b, l: 0, m: []})))));
@@ -259,10 +259,10 @@ function factsOf(it){
   }
   return f.length ? '<p class="card-facts">' + f.map(esc).join(' · ') + '</p>' : '';
 }
-/* One line as the card shows it, with the words that lead to a concept card marked (it.hx, from prep above).
-   A concept is ours, not the game's, so the mark is a word in the line and never a keyword chip: see .hlink
-   in assets/cards.css, and the source line the concept card itself carries. */
-const HLINK_TITLE = 'How it stacks — our own note, not the game’s';
+/* One line as the card shows it, with the words that lead to a mechanics card marked (it.hx, from prep above).
+   A mechanics card is ours, not the game's, so the mark is a word in the line and never a keyword chip: see
+   .hlink in assets/cards.css, and the source line the mechanics card itself carries. */
+const HLINK_TITLE = 'How it works — our own note, not the game’s';
 function lineHTML(it, i, text){
   const spans = it.hx && it.hx[i];
   if(!spans || !spans.length) return esc(text);
@@ -275,9 +275,10 @@ function lineHTML(it, i, text){
   }
   return out + esc(text.slice(at));
 }
-/* The concept card behind a marked word. The index loads in two parts, so a word on one of the very first
-   cards can be tapped before the part its concept card is in has arrived: then it waits for it. */
-function openConcept(key, opts){
+/* The mechanics card behind a marked word, or behind the offer on a card about damage. The index loads in
+   two parts, so one of the very first cards can be tapped before the part the mechanics cards are in has
+   arrived: then it waits for it. */
+function openMech(key, opts){
   const c = D.byKey.get(key);
   if(c) return void openDetail(c, opts, null);
   ready.then(() => { const x = D.byKey.get(key); if(x) openDetail(x, opts, null); }, () => {});
@@ -291,6 +292,34 @@ function linesOf(it, max = 4){
       (more > 1 ? '<li class="more-n">+' + more + ' more</li>' : '') + '</ul>';
   }
   return it.t ? '<p class="card-tx">' + lineHTML(it, 0, it.t) + '</p>' : '';
+}
+/* ---------- the damage card ----------
+   The flowchart a mechanics card can carry ("fl", tools/mechanics.py). A group is either a run of steps
+   ("st"): one box each, an arrow drawn in the gap between them; or a pair of columns ("cols"): conversion
+   against extra damage, side by side where there is room and stacked on a phone.
+   Plain markup, no library: the boxes wrap, so a long step still reads at 375px, and every colour is a theme
+   token, so it draws in either theme. The index holds the chart as text and this draws it, which keeps the
+   markup out of the data.
+   Only in the popup: it is taller than a card in the grid, and every card opens its popup first. */
+function flowHTML(it, full){
+  if(!it.fl || !it.fl.length || !full) return '';
+  const run = st => '<ol class="flow-run">' + st.map(([n, note]) =>
+    '<li class="flow-st"><b>' + esc(n) + '</b>' + (note ? '<span>' + esc(note) + '</span>' : '') + '</li>'
+  ).join('') + '</ol>';
+  const cols = cs => '<div class="flow-cols">' + cs.map(c =>
+    '<div class="flow-col"><b>' + esc(c.h) + '</b><ul>' + (c.ls || []).map(x => '<li>' + esc(x) + '</li>').join('') +
+    '</ul></div>').join('') + '</div>';
+  return '<div class="flow">' + it.fl.map(g => '<p class="flow-hd">' + esc(g.h) + '</p>' +
+    (g.st ? run(g.st) : '') + (g.cols ? cols(g.cols) : '')).join('') + '</div>';
+}
+/* The damage card, offered on every card whose text is about damage. Read off the card's own search text, so
+   nothing has to be marked per card; the mechanics cards themselves already say it and never offer it. */
+const DAMAGE_CARD = 'h:HowDamage';   // tools/mechanics.py declares it
+const DAMAGE_WORD = /\bdamage\b/;
+function offerHTML(it, full){
+  if(!full || it.k === 'h' || !it._hay || !DAMAGE_WORD.test(it._hay)) return '';
+  return '<button type="button" class="card-offer" data-h="' + DAMAGE_CARD + '">' +
+    '<b>How damage works</b><small>the order it is worked out in</small></button>';
 }
 function optionsOf(it, full){   // an atlas choice passive: what it lets you pick (in full in the popup)
   if(!it.o || !it.o.length) return '';
@@ -344,7 +373,9 @@ export function card(it, opts = {}){
     (req ? '<div class="card-req">' + req + '</div>' : '') +
     factsOf(it) +
     linesOf(it, opts.full ? Infinity : 4) + optionsOf(it, opts.full) +
-    (it.src ? '<p class="card-src">' + esc(it.src) + '</p>' : '') +   // a concept card says where its maths comes from
+    flowHTML(it, opts.full) +
+    (it.src ? '<p class="card-src">' + esc(it.src) + '</p>' : '') +   // a mechanics card says where its maths comes from
+    offerHTML(it, opts.full) +
     (it.tags ? '<p class="card-tags">' + it.tags.map(esc).join(' · ') + '</p>' : '') +
     anointOf(it) +
     (opts.invest ? '<div class="card-inv"><span>' + esc(opts.invest.label) + '</span><b>' +
@@ -359,8 +390,8 @@ export function card(it, opts = {}){
   if(opts.detail) return el;
   // a card opens its popup; only the gold button in the popup leaves the page
   el.addEventListener('click', e => {
-    const hl = e.target.closest('.hlink');   // a word in a line: its concept card, not this one
-    if(hl){ e.preventDefault(); openConcept(hl.dataset.h, {}); return; }
+    const hl = e.target.closest('.hlink');   // a word in a line: its mechanics card, not this one
+    if(hl){ e.preventDefault(); openMech(hl.dataset.h, {}); return; }
     if(e.target.closest('.card-ext, .star, button')) return;
     const link = e.target.closest('.card-link');
     if(link && (e.ctrlKey || e.metaKey || e.shiftKey || e.button === 1)) return;   // new tab still works
@@ -466,8 +497,8 @@ function ensureOV(){
       if(go){ if(go.target !== '_blank') hideDetail(); return; }   // leaving the page: nothing to undo. A new tab: the card stays
       const kw = t.closest('.kwlink');
       if(kw){ const c = keywordCard(kw.dataset.kw); if(c) openDetail(c, {nested: true}, hrefOf(c)); return; }
-      const hl = t.closest('.hlink');   // a word in a line that leads to a concept card (tools/concepts.py)
-      if(hl){ openConcept(hl.dataset.h, {nested: true}); return; }
+      const hl = t.closest('.hlink, .card-offer');   // a word in a line, or the offer: a mechanics card (tools/mechanics.py)
+      if(hl){ openMech(hl.dataset.h, {nested: true}); return; }
       const row = t.closest('.uses-row[data-key]');
       if(row){ const c = D.byKey.get(row.dataset.key); if(c) openDetail(c, {nested: true}, hrefOf(c)); return; }
       const tab = t.closest('.uses-tab');
@@ -905,7 +936,7 @@ export function flow(grid, list, make){
 }
 
 /* ---------- search ---------- */
-const KINDS = [['all','All'], ['g','Gems'], ['u','Uniques'], ['p','Passives'], ['b','Bases'], ['a','Atlas'], ['c','Currency'], ['w','Keywords'], ['h','Concepts'], ['x','Bosses']];
+const KINDS = [['all','All'], ['g','Gems'], ['u','Uniques'], ['p','Passives'], ['b','Bases'], ['a','Atlas'], ['c','Currency'], ['w','Keywords'], ['h','Mechanics'], ['x','Bosses']];
 export function search(q, kind = 'all'){
   const qs = q.trim().toLowerCase();
   const toks = qs.split(/\s+/).filter(Boolean);

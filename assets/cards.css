@@ -43,7 +43,7 @@
 .card-ls li::before{content:''; position:absolute; left:0; top:.62em; width:4px; height:4px; border-radius:50%; background:var(--accent); opacity:.7}
 .card-ls li.more-n{color:var(--faint); font-size:11.5px}
 .card-ls li.more-n::before{display:none}
-/* A word in a line that leads to a concept card (tools/concepts.py): the game never marks these words, so
+/* A word in a line that leads to a mechanics card (tools/mechanics.py): the game never marks these words, so
    neither do we — no chip, no accent, just the line's own word with a footnote mark. The note itself is the
    source line on the card it opens (.card-src). */
 .hlink{display:inline; font:inherit; color:inherit; background:none; border:0; padding:0; margin:0; cursor:pointer;
@@ -51,8 +51,41 @@
 .hlink::after{content:'*'; font-size:.8em; vertical-align:super; line-height:0; margin-left:1px; opacity:.75}
 .hlink:hover, .hlink:focus-visible{text-decoration-style:solid; text-decoration-color:var(--muted)}
 .hlink:focus-visible{outline:2px solid var(--accent); outline-offset:2px; border-radius:2px}
-/* where a concept card's maths was read off. It is not game text, and the card says so where it is read. */
+/* where a mechanics card's maths was read off. It is not game text, and the card says so where it is read. */
 .card-src{margin:0; font-size:11px; line-height:1.45; color:var(--faint); border-left:2px solid var(--line); padding-left:8px}
+/* The flowchart on the damage card ("fl", tools/mechanics.py; flowHTML in assets/app.js): one box a step,
+   an arrow drawn in the gap between them, two runs. No fixed widths and no SVG text, so a long step wraps
+   and still reads at 375px, and every colour is a theme token, so it draws in either theme. */
+.flow{display:flex; flex-direction:column; gap:10px}
+.flow-hd{margin:0; font:11px/1.3 var(--mono); text-transform:uppercase; letter-spacing:.08em; color:var(--faint)}
+.flow-run{margin:0; padding:0; list-style:none; display:flex; flex-direction:column; gap:19px; counter-reset:flow}
+.flow-st{position:relative; counter-increment:flow; border:1px solid var(--line); border-radius:6px;
+  padding:6px 9px 7px; background:var(--sunken)}
+.flow-st b{display:block; font-size:12.5px; font-weight:600; color:var(--text)}
+.flow-st b::before{content:counter(flow) '. '; font-weight:500; color:var(--faint)}
+.flow-st span{display:block; margin-top:2px; font-size:11.5px; line-height:1.45; color:var(--muted)}
+/* the arrow into a step: a hairline up into the gap, with a head on it */
+.flow-st + .flow-st::before{content:''; position:absolute; left:50%; top:-19px; width:1px; height:12px;
+  background:var(--line)}
+.flow-st + .flow-st::after{content:''; position:absolute; left:50%; top:-8px; transform:translateX(-50%);
+  border-left:4px solid transparent; border-right:4px solid transparent; border-top:6px solid var(--line)}
+/* conversion against extra damage: two columns where there is room, stacked on a phone. auto-fit at 210px
+   means a 375px card gets one column and a wide popup gets two, with no media query to keep in step. */
+.flow-cols{display:grid; grid-template-columns:repeat(auto-fit, minmax(210px, 1fr)); gap:10px}
+.flow-col{border:1px solid var(--line); border-radius:6px; padding:6px 9px 7px; background:var(--sunken)}
+.flow-col > b{display:block; font-size:12.5px; font-weight:600; color:var(--text)}
+.flow-col ul{margin:3px 0 0; padding:0; list-style:none}
+.flow-col li{position:relative; padding-left:10px; margin-top:4px; font-size:11.5px; line-height:1.45; color:var(--muted)}
+.flow-col li::before{content:''; position:absolute; left:0; top:.6em; width:4px; height:4px; border-radius:50%;
+  background:var(--line-soft); border:1px solid var(--line)}
+/* the damage card, offered on a card whose text is about damage (offerHTML in assets/app.js) */
+.card-offer{display:block; width:100%; text-align:left; font:inherit; font-size:12px; color:var(--text);
+  background:var(--sunken); border:1px solid var(--line); border-radius:6px; padding:6px 9px; cursor:pointer}
+.card-offer b{font-weight:600}
+.card-offer b::after{content:' 92'; color:var(--faint); font-weight:500}
+.card-offer small{display:block; margin-top:1px; font-size:11px; color:var(--faint)}
+.card-offer:hover, .card-offer:focus-visible{border-color:var(--accent); color:var(--text)}
+.card-offer:focus-visible{outline:2px solid var(--accent); outline-offset:2px}
 .card-tags{margin:0; font-size:11px; color:var(--faint); letter-spacing:.02em}
 .card-ft{margin-top:auto; display:flex; align-items:center; gap:10px; min-height:22px; font-size:11px; color:var(--faint)}
 .card-ft .spark{width:84px; height:22px; flex:none}
@@ -69,7 +102,7 @@
 .k-u .card-ic{background:color-mix(in srgb, var(--accent) 14%, var(--sunken))}
 .k-p .card-ic{background:color-mix(in srgb, var(--dex) 10%, var(--sunken))}
 .k-c .card-ic{background:color-mix(in srgb, var(--accent) 10%, var(--sunken))}
-.k-h .card-ic{background:color-mix(in srgb, var(--muted) 8%, var(--sunken))}   /* a concept card: ours, no game art */
+.k-h .card-ic{background:color-mix(in srgb, var(--muted) 8%, var(--sunken))}   /* a mechanics card: ours, no game art */
 .ic{display:inline-block; background-repeat:no-repeat}
 .dot{width:8px; height:8px; border-radius:50%; display:inline-block; flex:none}
 .dot.r{background:var(--str)} .dot.g{background:var(--dex)} .dot.b{background:var(--int)} .dot.w{background:var(--any)}

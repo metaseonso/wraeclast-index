@@ -870,7 +870,7 @@ function drawSpeed(c){
         '</td></tr>').join('') +
       '</tbody></table></div><p class="note">Green is good, amber needs work, red is poor (Google’s own lines).</p>';
   });
-  // a step can honestly be 0 ms (too fast to measure, or nothing to do), so only a missing number is a dash
+  // a step can really be 0 ms (too fast to measure, or nothing to do), so only a missing number is a dash
   safe('#cfparts', () => {
     const p = arr(R.parts).map(obj), time = v => !Number.isFinite(+v) ? '—' : +v >= 1000 ? (+v / 1000).toFixed(2) + ' s' : num(v) + ' ms';
     if(!p.length) return NONE;

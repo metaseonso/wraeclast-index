@@ -11,7 +11,7 @@ The rules, and no guessing:
   * the phrase is matched exactly: same letters, same case, whole words, longest phrase first, never inside another
   * the phrases are every card's name, plus the other words a keyword card is shown as ("f", from the game's own
     markup): "Endurance Charges" is the keyword, so it wins over the notable called "Endurance" inside it
-  * a concept card's words ("f" again, tools/concepts.py: increased, reduced, more, less, Adds) count only where
+  * a mechanics card's words ("f" again, tools/mechanics.py: increased, reduced, more, less, Adds) count only where
     the line uses them as a number, so "40% less Attack Damage" is a door and "no more than once" is not
   * exactly one card has that name          -> a reference to it
   * the card's own name                      -> not a door, and nothing else with that name is one either
@@ -40,7 +40,7 @@ from collections import Counter, defaultdict
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-import concepts  # noqa: E402
+import mechanics  # noqa: E402
 from phrases import Matcher  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -51,7 +51,7 @@ FORMS = {'w', 'h'}         # kinds with other words they are reached by ("f")
 # A line that declares which kind it names. "Grants Skill: Ice Nova" is a gem, whatever else shares the name.
 PREFERS = (('Grants Skill:', 'g'),)
 KIND = {'g': 'gems', 'u': 'uniques', 'p': 'passives', 'b': 'bases', 'a': 'atlas', 'c': 'currency', 'w': 'keywords',
-        'h': 'concepts'}
+        'h': 'mechanics'}
 
 
 def lines_of(it):
@@ -87,7 +87,7 @@ def attach(index):
     rep = {'refs': Counter(), 'lines': Counter(), 'cards': Counter(), 'targets': Counter(), 'seen': Counter(),
            'amb_kind': Counter(), 'amb_name': Counter(), 'amb_who': {}, 'chips': Counter(),
            'skipped': sorted(matcher.skipped), 'phrases': Counter(), 'prose': Counter(),
-           'to': Counter(), 'tocards': defaultdict(set)}   # the concept cards, and who reaches them
+           'to': Counter(), 'tocards': defaultdict(set)}   # the mechanics cards, and who reaches them
     keys, at = [], {}
     for it in items:
         mine = it['k'] + ':' + it['id']
@@ -115,7 +115,7 @@ def attach(index):
                         rep['amb_kind']['one kind' if len(kinds) == 1 else 'several kinds'] += 1
                         continue
                 t = cand[0]
-                if t['k'] == concepts.KIND and not concepts.gate(name, line, s):
+                if t['k'] == mechanics.KIND and not mechanics.gate(name, line, s):
                     rep['prose'][name] += 1   # the word, not the maths: "no more than once every 3 seconds"
                     continue
                 key = t['k'] + ':' + t['id']
@@ -123,7 +123,7 @@ def attach(index):
                     at[key] = len(keys)
                     keys.append(key)
                 spans.append([s, e - s, at[key]])
-                if t['k'] == concepts.KIND:
+                if t['k'] == mechanics.KIND:
                     rep['to'][t['n']] += 1
                     rep['tocards'][t['n']].add(mine)
                 rep['refs'][it['k'] + '->' + t['k']] += 1
@@ -180,7 +180,7 @@ def report(index, rep):
           (sum(rep['chips'].values()), len(rep['chips']), sum(rep['amb_name'].values()),
            rep['amb_kind']['one kind'], rep['amb_kind']['several kinds']))
     if rep['to']:
-        print('  concept cards (tools/concepts.py), reached from their own words:')
+        print('  mechanics cards (tools/mechanics.py), reached from their own words:')
         for name, c in rep['to'].most_common():
             print('    %-24s %5d line%s on %4d cards' % (name, c, ' ' if c == 1 else 's', len(rep['tocards'][name])))
         print('    left as plain text: %d where the word is prose, not a number (%s)' %
