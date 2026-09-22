@@ -22,6 +22,21 @@ to `admin.html` in headless Chrome, three times over — those numbers, an answe
 that fail — clicks all eight tabs each time, and fails if any block is left empty or draws nothing. A block
 saying "No data." or that it failed is fine; a blank one is not.
 
+`simcheck.mjs`: the crafting bench's maths, against the committed data (`docs/craft-sim.md`). It rolls
+250,000 modifiers on each of three kinds of item — two whose weights are measured, one whose are not — and
+prints, per modifier, the share the weights say it should take and the share it took, with the gap in
+percentage points and in standard deviations. Then twelve guards: a full side never gains another modifier and
+a full item refuses; nothing above the item level is ever reached and an orb whose floor is out of reach
+refuses; no modifier or group lands twice; a class with no weights takes the even path, says so and prints no
+share on any row; a step whose whole effect is an unpublished number refuses instead of guessing; every omen in
+the game data is accounted for and the six the game removed cannot craft; a currency the item state does not
+take refuses in the game's own words; every rolled number lands inside the range the game prints; an essence
+refuses rather than half-run; Omen of Whittling always takes a lowest-level modifier; Omen of Homogenising
+Exaltation only adds a modifier sharing a tag; and no omen grants its currency a permission it lacks.
+`node tools/dev/simcheck.mjs` (about 10 seconds); `--rolls`, `--seed`, `--quiet` for the verdicts alone and
+`--craft` for one craft printed step by step. Seeded, so the same seed prints the same table. Reads the data
+files and nothing else, writes nothing, no network. Not part of `guard.mjs`: it is the bench's own check.
+
 `faults.mjs`: the last-good rule (`tools/lastgood.py`) without the network. It runs a fake builder four
 ways — a source that gives nothing, one that gives 60% of its rows, one that throws, and a builder that dies
 before its pull is even checked — and each time checks that the committed file is untouched, the loud line was
