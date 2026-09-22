@@ -429,7 +429,7 @@ function runIt(run){
 }
 const SRC = {p: '', e: 'Essence', d: 'Desecrated', c: 'Corrupted'};
 
-function onRun(run, what, el, e){
+function onRun(run, what, _el, e){
   if(e && e.type === 'input') return;
   const [verb, rest] = split(what);
   // picking a currency does not unpick it: in the game you take one and keep clicking the item with it
@@ -442,7 +442,6 @@ function onRun(run, what, el, e){
   if(verb === 'shut'){ run.offer = null; return void runPaint(run); }
   if(verb === 'grip'){ run.up = !run.up; return void runPaint(run); }
   if(verb === 'card'){ const c = indexCard(rest); if(c) openDetail(c, {nested: true}, hrefOf(c)); return; }
-  void el;
 }
 /* one use of the currency that is picked, with whatever omens are armed for it riding on it */
 function use(run){
