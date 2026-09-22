@@ -18,8 +18,10 @@ Three rules run through everything below.
 3. **No expected value.** No "1 in N", no average cost, no cost to hit, no footnote that adds up to one.
    The bench shows what happened, and what a single roll can still land on. Nothing else.
 
-This file is the engine. The screens are someone else's; what they need from the engine is in
-[The bench card and the running card](#the-bench-card-and-the-running-card).
+This file is the engine. `assets/engine.js` is the one copy of it in code: the bench in the browser
+(`assets/craftsim.js`) and the check (`tools/dev/simcheck.mjs`) both import that file, so what the check
+proves over 250,000 rolls is what a player gets. The screens are someone else's; what they need from the
+engine is in [The bench card and the running card](#the-bench-card-and-the-running-card).
 
 ---
 
@@ -559,7 +561,7 @@ ever be the thing that lets a corrupted item be edited.
 The site has no random number generator today — this is the first one. It is a seeded mulberry32: 5 lines,
 no dependency, the same stream everywhere. A run mints a seed when it starts and keeps it with the run
 state, so a reload mid-craft carries on the same stream rather than starting a fresh one, and a check can
-replay a run exactly. `tools/dev/simcheck.mjs` holds the reference version.
+replay a run exactly. `assets/engine.js` holds it, and both the bench and the check draw from that one.
 
 The bench never rerolls a step behind the player's back, and there is no pity, no smoothing and no
 weighting by what the player has already hit.
@@ -589,6 +591,12 @@ thing already in hand:
 That is one act on the card you came from, the way `ACTS.craft` already works on a base card, plus the
 `it` the act carries. Nothing is passed through the address bar that the card cannot rebuild.
 
+The act is the frame's, not the bench's: `ACTS.bench` names the module and the call it makes (`own`, `go`), so
+the popup answers it with one route that names nothing, and `only` is the small test a card has to pass for
+the act to be drawn at all — for a currency, that its group is one the game crafts with. A base item always
+has one. Adding the act to a kind is one word in that kind's `acts`, which is how every crafting card got it
+at once.
+
 Orbs, essences, omens, bones and catalysts are all kind `c` on this site — there is no separate kind for
 any of them — so the bench works out what it has been handed by matching the card's name against
 `data/craft.json`'s own lists (`orbs`, `omens`, `bones`, `cats`) and the kind's `ess`. A currency in none of
@@ -598,23 +606,34 @@ them has no bench act, the way a base with nothing to craft has no craft link to
 
 ```js
 {k: 'n', one: 'Bench', many: 'Bench', place: 'Craft', own: './craftsim.js',
- fields: ['art', 'name', 'sub', 'benchitem', 'benchpicks', 'benchnote', 'launch'],
+ fields: [...HEAD, ...SAYS, 'benchitem', 'benchtab', 'benchpicks', 'benchnote', 'launch', ...REST, ...FOOT],
  acts: [], rel: []}
 ```
+
+The shared slots come in whole, as they do on every kind: a field the bench carries nothing for draws nothing,
+and the frame fails a kind that drops one of them ([the frame](frame.md), "one rule, every kind").
 
 **Field types it needs** (new `FIELDS` entries in `assets/kinds.js`, new `TYPE` functions in
 `assets/app.js`, one function each, same contract as the 28 that exist):
 
 | Field | Type | What it draws |
 |---|---|---|
-| `benchitem` | `item` | the item as it stands: rarity, base, item level, implicits, each modifier with its side and tier |
-| `benchpicks` | `picks` | the currency and omens chosen, in the order they will be used, each removable |
+| `benchitem` | `item` | the item as it stands: rarity, base, item level, implicits, each modifier with its side and tier — and, on the bench, the kind, the base and the item level to pick from, and what one more roll can still land on |
+| `benchtab` | `own` | the box the currency tab goes in: the kind's own module fills it (`KINDS own`) |
+| `benchpicks` | `picks` | the currency and omens chosen, in the order they were picked, each removable |
 | `benchnote` | `note` | the one line an even pool puts on the card, and nothing when the pool is measured |
-| `launch` | `launch` | the one button that starts the run |
+| `launch` | `launch` | the one button that starts the run, and the way back into a run this session left |
 
-`item` and `picks` are the first fields on the site that take a click. They render from the card's own
-state, not from an index row, and they answer clicks through the overlay's delegated listener
-(`ensureOV`, `assets/app.js` 729-752) — the same route the keyword chips and the Trade toggle already take.
+`item`, `picks` and `launch` are the first fields on the site that take a click. They render from the card's
+own state, not from an index row, and they answer clicks through the overlay's delegated listener (`ensureOV`
+in `assets/app.js`) — the same route the keyword chips and the Trade toggle already take. One rule carries all
+of them and names no kind: a control says what it does in `data-do`, and the card's own module answers it
+(`opts.on`, set when the module opens the card). The controls that are not a click — the kind, the base, the
+item level — go the same way, off `change`.
+
+`own` is the other half of the same idea and is not the bench's alone: a field of that type draws an empty box
+and the kind's module puts its application in it, the way `adds` leaves a box for a file. That is what keeps
+an application inside the frame instead of beside it.
 No field type on the site holds a text input today and the bench does not need one: a base is chosen from a
 list, an item level from a slider the Craft tab already draws, currency from the list of what fits.
 
@@ -626,8 +645,14 @@ run again.
 
 ```js
 {k: 'r', one: 'Craft run', many: 'Craft runs', own: './craftsim.js',
- fields: ['art', 'name', 'sub'], acts: [], rel: []}
+ fields: [...HEAD, ...SAYS, 'benchitem', 'runbody', ...REST, ...FOOT],
+ acts: [], rel: []}
 ```
+
+The item is the same field the bench draws, because it is the same item: on a run it carries no pickers and
+the whole of it is the button you use the picked currency on, which is the order the game does it in. What is
+under it — what you are holding, what each step did, the undo, the start over and what it cost — is the
+module's, in the box `runbody` leaves.
 
 Everything under the head is drawn by the module, the way a boss card is (`KIND.own` → `openCard(it)`,
 `assets/app.js` 836-837). It is an application, not a row: it holds the item, the currency the player has
@@ -646,11 +671,13 @@ to the bench, changing the plan and launching again leaves the first run where i
 
 **Back, from inside a run.** Back is `history.back()`, which lands on the `popstate` listener
 (`assets/app.js` 773-783) and repaints the previous step. A run must survive that untouched, and the site
-already has the pattern: `saveStep()` (596-604) keeps the live Trade panel node on the step and
-`paintStep()` (868-911) re-appends it, so Back never re-fires a trade search. The run node is kept the same
-way — one field on the step, `step.sim`, saved beside `step.trade` and re-appended beside it. Scroll comes
-back the same way as every other card, from `step.top`, and the run does not fight it because the run's own
-scrolling lives inside the card, not in the overlay box.
+already has the pattern: `saveStep()` keeps the live Trade panel node on the step and `paintStep()`
+re-appends it, so Back never re-fires a trade search. The run node is kept the same way, one step further
+back: the module holds one node per run id and puts that same node into the box `runbody` leaves every time
+the card is drawn, so the node — and everything in it — survives Back, Forward and a redraw, and two runs on
+the trail are two nodes that never cross. Scroll comes back the same way as every other card, from
+`step.top`, and the run does not fight it because the run's own scrolling lives inside the card, not in the
+overlay box.
 
 Leaving the run does not end it: the state is already written (below), so even a closed popup, a new trail
 or a reload finds the run where it was. What Back must never do is quietly throw a run away, and with the
