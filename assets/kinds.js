@@ -8,6 +8,9 @@
    KINDS, per kind:
      k        the letter the index marks it with
      one/many what one of it and a list of it are called
+     tone     the palette token it is drawn in where kinds are told apart by colour (assets/theme.css; the
+              map of the whole index, tools/map.py). A kind with none gets a colour of its own worked out
+              from its letter, so a new kind lands with a colour, a key entry and a count and no one edits it
      place    the tab the gold button opens, if it has one      sec    its section on the drill-down page
      search   a chip over the home page's search                item   an item: it can be traded
      index    its rows live in data/index.json                    crawl  the crawler publishes a page for it
@@ -29,7 +32,7 @@
    REL, per group under Connections: what it is called, which kind its rows are, which edge builds it, and the
    filter its "see all" link carries to the drill-down (assets/bridge.js reads those names). */
 
-export const ROUTES = ['home', 'build', 'currency', 'trade', 'farms', 'atlas', 'bosses', 'craft'];
+export const ROUTES = ['home', 'build', 'currency', 'trade', 'farms', 'atlas', 'bosses', 'craft', 'map'];
 export const SECTIONS = {gems: 'Gems', uniques: 'Uniques', tree: 'Passive tree'};
 
 export const FIELDS = {
@@ -130,53 +133,53 @@ const FOOT = ['spark', 'usage', 'thin', 'builds'];
 const KWUSE = ['kwu', 'kwg', 'kwp', 'kwb', 'kwe', 'kwa', 'kwm', 'kwc', 'kww'];
 
 export const KINDS = [
-  {k: 'g', one: 'Gem', many: 'Gems', place: 'Gems', sec: 'gems', link: 'explore#gems=@n', mark: 't',
+  {k: 'g', one: 'Gem', tone: 'c-gem', many: 'Gems', place: 'Gems', sec: 'gems', link: 'explore#gems=@n', mark: 't',
    index: true, search: true, item: true, crawl: true,
    fields: [...HEAD, 'gemreq', 'lineage', 'usetime', 'cost', 'spirit', ...BODY, ...FOOT],
    acts: ['trade', 'full', 'open'],
    rel: ['granted', 'named', 'namedby', 'cat']},
 
-  {k: 'u', one: 'Unique', many: 'Uniques', place: 'Uniques', sec: 'uniques', link: 'explore#uniques=@n', mark: 'ls',
+  {k: 'u', one: 'Unique', tone: 'c-unique', many: 'Uniques', place: 'Uniques', sec: 'uniques', link: 'explore#uniques=@n', mark: 'ls',
    index: true, search: true, item: true, crawl: true,
    fields: [...HEAD, 'reqs', 'corrupt', 'limit', 'group', 'props', 'implicit', ...BODY, ...FOOT],
    acts: ['trade', 'full', 'open'],
    rel: ['base', 'variants', 'grants', 'named', 'namedby', 'cat']},
 
-  {k: 'p', one: 'Passive', many: 'Passives', place: 'Passive tree', sec: 'tree', link: 'explore#tree=@n', mark: 'ls',
+  {k: 'p', one: 'Passive', tone: 'c-keystone', many: 'Passives', place: 'Passive tree', sec: 'tree', link: 'explore#tree=@n', mark: 'ls',
    index: true, search: true, crawl: true,
    fields: [...HEAD, 'asc', 'region', 'ontree', ...BODY, ...FOOT],
    acts: ['full', 'open'],
    rel: [...KWUSE, 'grants', 'named', 'namedby', 'cat']},
 
-  {k: 'b', one: 'Base', many: 'Bases', place: 'Craft', link: 'craft', mark: 'ls',
+  {k: 'b', one: 'Base', tone: 'muted', many: 'Bases', place: 'Craft', link: 'craft', mark: 'ls',
    index: true, search: true, item: true, crawl: true,
    fields: [...HEAD, 'reqs', 'props', 'implicit', 'weights', ...BODY, ...FOOT],
    acts: ['trade', 'craft'],
    rel: ['uniques', 'grants', 'klass', 'named', 'namedby']},
 
-  {k: 'a', one: 'Atlas', many: 'Atlas', place: 'Atlas', link: './#/atlas?s=@at&q=@n',
+  {k: 'a', one: 'Atlas', tone: 'int', many: 'Atlas', place: 'Atlas', link: './#/atlas?s=@at&q=@n',
    index: true, search: true, item: true, crawl: true,
    fields: [...HEAD, 'nodety', 'ontree', 'warn', 'implicit', ...BODY, ...FOOT],
    acts: ['trade', 'open'],
    rel: ['section', 'named', 'namedby']},
 
-  {k: 'c', one: 'Currency', many: 'Currency', place: 'Currency', link: './#/currency?c=@id',
+  {k: 'c', one: 'Currency', tone: 'c-currency', many: 'Currency', place: 'Currency', link: './#/currency?c=@id',
    index: true, search: true, item: true, crawl: true,
    fields: [...HEAD, 'droplv', ...SAYS, 'adds', ...REST, ...FOOT],
    acts: ['trade', 'open'],
    rel: ['named', 'namedby', 'cat']},
 
-  {k: 'w', one: 'Keyword', many: 'Keywords', sec: 'keywords', index: true, search: true, crawl: true,
+  {k: 'w', one: 'Keyword', tone: 'accent', many: 'Keywords', sec: 'keywords', index: true, search: true, crawl: true,
    fields: [...HEAD, 'uses', ...BODY, ...FOOT],
    acts: ['full'],
    rel: [...KWUSE, 'named', 'namedby']},
 
-  {k: 'h', one: 'Mechanics', many: 'Mechanics', index: true, search: true, mark: 'ls',
+  {k: 'h', one: 'Mechanics', tone: 'blood', many: 'Mechanics', index: true, search: true, mark: 'ls',
    fields: [...HEAD, ...BODY, ...FOOT],
    acts: [],
    rel: ['namedby', 'cat']},
 
-  {k: 'x', one: 'Boss', many: 'Bosses', place: 'Bosses', link: './#/bosses?q=@n', own: './bosses.js',
+  {k: 'x', one: 'Boss', tone: 'str', many: 'Bosses', place: 'Bosses', link: './#/bosses?q=@n', own: './bosses.js',
    search: true,
    fields: [...HEAD, ...BODY, ...FOOT],
    acts: ['open'],

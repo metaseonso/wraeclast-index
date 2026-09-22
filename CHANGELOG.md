@@ -104,6 +104,56 @@ Add the details here first, then a short public line there.
   blessed for that one line. Checked in a real headless Chrome at 375×812 with touch and at 1280×900: each
   of the four opens from search and from a marked word, Back returns from both, the defences flowchart fits
   (327px in a 375px card stacked, 559px in a 640px card side by side), no sideways scroll, no console errors.
+## Next — The index as a map
+
+- The owner: *"if we can create a visualization of the index's net-artwork, it would be nice to have for
+  anyone who wants to see. nothing to interact with just a view. can make it interactable later."* Then two
+  more: make it *alive, cheaply*, and *built once, then it populates itself*.
+- **`#/map`: every card a dot, every connection a line, in one picture.** All 6,609 cards over eight kinds and
+  the 24,541 connections the site can already follow, laid out once at build time by `tools/map.py` and shipped
+  as `data/map.png` — 1600×800, 597 kB, written with the Python standard library alone (`zlib` and `struct`,
+  no encoder, no dependency) and read by the browser as one image decode. Its own tab, linked from the footer;
+  the home page fetches none of it, and `assets/app.js` skips the wait for the index on this one route because
+  the picture needs nothing of it.
+- **The connections drawn are the site's own, all five families**, so the picture cannot say anything the
+  cards do not: `data/kwuse.json` (what uses each keyword), the marks a card's own lines carry, the build's
+  own `lx`/`lxk` marks, a unique and the base it sits on, and `data/grants.json` both ways round. An edge two
+  families both hold is drawn once. The marks are `assets/marks.js` in Python — the same vocabulary, longest
+  phrase first, a keyword's other spellings only where the card's own list names it, never the card you are
+  already on — so the lines drawn are the lines a player can really click.
+- **Laid out, not scattered.** A force layout over the part of the index edges can walk: dots push off a grid
+  (a crowded cell pushes as one weight from its middle, so the cost is the number of dots, not the square of
+  it), edges pull less the busier their two ends are, and 260 passes cool it. The web settles about twice as
+  long as it is deep, so it is turned onto its own long axis and the frame is 2:1 to match. The 241 cards no
+  edge reaches are seated evenly round the rim as a ring of islands. No clock, no random seed, no dict order
+  that moves: the same data in is the same picture out, byte for byte.
+- **Light, not ink.** Every edge lays down a little light and the picture reads that off a log scale, the way
+  a star chart does: one line lifts a pixel clear of the ground, and it takes two hundred and fifty to reach
+  the top. A pixel in the middle carries nearly two thousand, so a straight scale would leave the arms black
+  and the middle a flat pale patch.
+- **Alive, for about a quarter of a millisecond a frame.** The picture never moves against itself, so the
+  shape never smears: its drift and the haze over it are a transform and an opacity on their own layer, which
+  the compositor carries without a repaint or a frame of script. The only thing drawn per frame is a small
+  canvas over it — one clear, one breathing glow for the busiest card of each kind, and sixteen lights
+  travelling along real edges, from one pre-drawn sprite so a frame allocates nothing. Measured in headless
+  Chrome: **0.19 ms a frame on a desktop, 0.87 ms on a phone profile at 375×812 with the CPU throttled four
+  times over**, nothing scrolling sideways at either size and no console errors. It stops dead when the tab is
+  hidden and when the picture is scrolled off, and with `prefers-reduced-motion` it never starts: nought
+  frames, an empty canvas, the still picture.
+- **Nothing about a kind is written into the tool.** The kinds, their names, their colours and their counts
+  come from `assets/kinds.js` (a new `tone` field naming the palette token each kind is drawn in) and the
+  tokens in `assets/theme.css`; which of a card's fields the build marked comes from the `mark` each kind
+  already declares. A kind with no `tone` gets a colour of its own worked out from its letter. Proved on a
+  copy of the site: one more row in `KINDS` with no colour declared and forty rows of it in the index, tool
+  untouched and byte-identical, and it arrived in the key with its count, a colour of its own, forty seats,
+  a hub of its own and 136 pixels of that colour in the picture.
+- **The page says what the picture leaves out**, off the same counts: 1,317,404 pairs of the big groups a card
+  sits in, which are not links between two things; 2,739 rows in the keyword lists no card of its own answers
+  to; and any kind the site cards that the index holds no rows for — the bosses today, whatever declares
+  itself tomorrow. Everything else is drawn: none sampled, none thinned. If the index is ever rebuilt without
+  the map, the page says so rather than letting the picture's counts read as today's.
+- **`data/map-nodes.json`: every dot's seat**, kind by kind, with how many connections it has. Nothing reads
+  it today; it is there so a later pass can put a click on a dot without laying anything out again.
 
 ## Next — Connections, and a past league in its own colour
 

@@ -47,7 +47,7 @@ for(var k in WI_FIRST) WI_FIRST[k].catch(function(){});</script>
 </head>
 <body>
 <script>/* the tab first, so the top bar never changes shape on the first paint (assets/app.js show() keeps it) */
-document.body.dataset.route = (function(r){ return ['build','currency','trade','farms','atlas','bosses','craft'].indexOf(r) >= 0 ? r : 'home'; })((location.hash.match(/^#\/(\w+)/) || [])[1]);</script>
+document.body.dataset.route = (function(r){ return ['build','currency','trade','farms','atlas','bosses','craft','map'].indexOf(r) >= 0 ? r : 'home'; })((location.hash.match(/^#\/(\w+)/) || [])[1]);</script>
 
 <header class="top">
   <div class="top-in">
@@ -134,11 +134,12 @@ document.body.dataset.route = (function(r){ return ['build','currency','trade','
   <section class="view" id="view-atlas" data-view="atlas" hidden></section>
   <section class="view" id="view-bosses" data-view="bosses" hidden></section>
   <section class="view" id="view-craft" data-view="craft" hidden></section>
+  <section class="view" id="view-map" data-view="map" hidden></section>
 </main>
 
 <footer class="foot">
   <p id="foot">Game data: patch <b id="gamever">…</b>. Prices: the in-game Currency Exchange every hour, live trade site listings over the day.
-  This product isn't affiliated with or endorsed by Grinding Gear Games in any way. <a href="privacy">Privacy</a></p>
+  This product isn't affiliated with or endorsed by Grinding Gear Games in any way. <a href="#/map">The index as a map</a> · <a href="privacy">Privacy</a></p>
 </footer>
 
 <script src="assets/app.js" type="module"></script>

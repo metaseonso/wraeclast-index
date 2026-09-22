@@ -53,6 +53,7 @@ The site is static. GitHub Pages serves it; a GitHub Action (`.github/workflows/
 | `data/gamedata.json` | Which patch the shipped data is from, written by `tools/gamepull.py` (one daily pull of the official export; it also writes the gap report `tools/dev/gaps.txt` — what the game files hold against what we card) |
 | `data/gamestats.json` | One monster of each level (life, damage, accuracy, armour, evasion) and what each class starts with, from the game files by `tools/gamelib.py`. Nothing reads it yet |
 | `data/faults.json` | Which sections are showing an older copy right now, and why, written by `tools/lastgood.py` (see below). The dashboard's Data jobs block and `/api/health` read it |
+| `data/map.png`, `data/map.json`, `data/map-nodes.json` | The map of the index (`assets/map.js`, at `#/map`, linked from the footer): every card a dot and every connection a line, in one 1600×800 picture, laid out once at build time by `tools/map.py` — a force layout over all 6,609 cards and the 24,541 edges the site can follow (`data/kwuse.json`, `data/grants.json`, a unique's base, a card's own marks, `lx`). Same data in, same picture out. `map.json` is the key, the busiest card of each kind, a few edges for the travelling lights and what the picture leaves out; `map-nodes.json` is every dot's seat, so a later pass can make a dot clickable without laying anything out again. Nothing but the tab fetches any of it, and the kinds, their names, their colours and their counts come from `assets/kinds.js` and `assets/theme.css`, never a list in the tool |
 
 ### Last good wins
 
@@ -160,6 +161,10 @@ In this order (each step reads what the one before wrote):
    (every keyword's Connections lists in `data/kwuse.json`: uniques, gems, passives, bases, essences, atlas, crafting, currency,
    keywords; and the "Used by" counts in `data/index.json`; it prints its counts against the artifact's own, lower only for
    things the site leaves out)
-8. Commit and push to `main`. The site republishes in about a minute.
+8. After `tools/kwuse.py`: `python tools/map.py`
+   (`data/map.png` and the two files beside it: the whole index as one picture. It reads the finished index and
+   the finished keyword lists, so it goes last; about two and a half minutes, and `--report` counts what it
+   would draw without writing)
+9. Commit and push to `main`. The site republishes in about a minute.
 
 Path of Exile is a trademark of Grinding Gear Games. This is a fan project and is not affiliated with them.

@@ -1395,7 +1395,7 @@ async function show(){
     homeRender();
     if(!matchMedia('(pointer:coarse)').matches) $('#q').focus({preventScroll:true});
   } else {
-    await ready;
+    if(r !== 'map') await ready;   // every other tab draws cards out of the index; the map is a finished picture
     if(!loaded[r]) loaded[r] = import('./' + ({trade: 'tradepage'}[r] || r) + '.js').then(m => m.mount($('#view-' + r)));
     const m = await loaded[r];
     if(m && m.update) m.update();
