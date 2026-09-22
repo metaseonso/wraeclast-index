@@ -3,58 +3,72 @@
 The full list of changes. The public patch notes (data/changelog.json, shown on the site) stay short.
 Add the details here first, then a short public line there.
 
-## Next — Prices: every league's own line, and a card that shows three back
-- The owner's ask: *"price over time in most recent league with past leagues price action line graph shown as a
-  line thats more faded up to 3 leagues back where applicable (not all items have been in every league)"*, and
-  *"lines should be progressively more faded as we go further back and notated that the price action is showing
-  that is the case so players know what they are seeing."*
-- **Why it needed a new table.** `trade_prices` is one row per priced thing: 45 days of day-by-day prices, and
-  every field on it — the league included — is overwritten on the next check. The day a league ends and the next
-  one's first check lands, that league's prices are gone. Nothing could carry a past league out of that row.
-- **The shape (`price_leagues`, `worker/migrations/0008`).** One row per thing per league, keyed `(key, league)`:
-  `s` is the same `[[day, price], ...]` the live row carries, one price a day, days nothing was checked left out.
-  Written from that live row on every check, so a run that was missed is filled in the next time that thing comes
-  round, and a day that was checked again is corrected. Days more than 400 apart are dropped: no league has run
-  that long, so that is a clock, not a price. Rows for leagues older than the last four are dropped, so the table
-  is flat in the age of the site.
-- **What it costs.** 1,412 things carry a per-league line (661 Currency Exchange currencies, 751 uniques — 710 of
-  the index plus the 41 a boss card prices). Measured in SQLite at the real price magnitudes and the real league
-  lengths: **5.0 MB for Forbidden Rites at 98 days, about 7 MB for a league of the median 20 weeks, 23 MB for the
-  four kept**, and flat from there — the fifth league back is dropped as the fifth arrives. One extra write a day
-  per thing, about 1,459 a day against the free plan's 100,000.
-- **The Currency Exchange's own currencies never went through the trade checks**, so they are rolled into their
-  league once a day from `exchange.json` itself, after the file comes in and off the file's own time rather than
-  the clock — a copy that has not moved on is rolled again next hour instead of counting as today's. The
-  drop of old leagues only runs once this league is the one being written to, so a roll against a file from the
-  wrong league cannot throw a league away.
-- **What `market.json` serves.** `?part=past` gains `lh` per item: which day of this league its line starts on,
-  where a day is missing from it, and the leagues before this one the thing **really** had prices in — at most
-  three, each with its real name, the day of its own league its line starts on, and how many leagues back it is.
-  `?part=now` is untouched, so first paint is unchanged. Nothing is averaged, filled in or carried over a league
-  boundary: a league a thing had no listings in has no row, so no line and no entry.
-- **The byte cost is the thing to watch.** `?part=past` is 0.27 MB gzipped today. With three past leagues at full
-  length on every item it is **1.86 MB gzipped, so about 1.6 MB more** (roughly 1.2 kB an item). It grows as
-  leagues accumulate rather than on this deploy, and it is the second load, never first paint. If that is too
-  much later, the fix is to serve a card's past leagues when the card is opened rather than all of them in the one
-  file — not to thin the series, which would mean dropping real measured days.
-- **On the card.** The lines are laid over each other by which day of its own league each one is, so the shapes
-  read against each other; the y scale is shared, so the heights do too. This league is solid at width 2, then
-  **.74 at 1.6, .54 at 1.4 and .4 at 1.2** going back — measured against the chart's own ground, the faintest
-  still reads at 3.1 to 1. A key names each league in its own shade, newest first, and adds how many days where a
-  league has under a fortnight. Under it, one line: the chart is the daily price in each league, and a league with
-  no line had nothing listed then. Two things that are easy to get wrong and are not: how faded a line is counts
-  **leagues**, not lines, so a thing that skipped a league is drawn in the two-back shade with the one-back shade
-  left empty; and a day nothing was checked **breaks** the line instead of being drawn straight across, for this
-  league as well as the past ones.
-- **Migration 0008** carries this league's prices in as they stand — the same days, the same shape, the league on
-  the row deciding which league the days belong to. Safe to apply twice (the primary key holds, and a row already
-  there is left alone), and `DROP TABLE price_leagues` puts it back: the file does not touch `trade_prices`.
-- Proved on a local database with the migration applied and four cases seeded: a unique with four leagues, one
-  with only this league, one with two leagues and both a missing league and a missing day, and one three days
-  old — plus a currency on all four. The served series and a headless render of each at 375px and on the desktop
-  agree, with no sideways scroll and no console errors. The migration was applied over a seeded copy of today's
-  live shape and carried all four rows, gave the same count on a second apply, and left `trade_prices` whole when
-  dropped. `guard.mjs` 6 ok, 0 failed; `wrangler deploy --dry-run` builds.
+## Next — Cards built from the index: one table, one renderer, everything the entry carries
+
+- The owner's call: *"many of the cards have the price and yet no actual description of what they do which means
+  the card building we spoke of is not working as intended. We wanted the cards to be built from the index
+  automatically, which means not all cards are behaving the same."* And after it: *"if there is a description or
+  stats or weights or anything it should be in the card"*, and *"the found on section should populate correctly
+  and currently it does not in some cases"*.
+- **One table, not twelve.** `assets/kinds.js` now holds every kind of thing the site cards: what it is called,
+  which fields its cards carry and in what order, which buttons they offer, which related lists they can build,
+  which of its lines carry the marked words, and where its gold button goes. It replaces `KIND`, `SECTION`,
+  `PLACE`, `SEC`, `USE_KINDS`, `KINDS`, `OWN_CARD` and the kind map inside `usageOf` in `assets/app.js`, the
+  `SECTIONS`/`INPUT`/`BODY` tables in `assets/bridge.js`, the kind names in `tools/dev/guard.mjs` (which read tab
+  and section names back out of the JavaScript with a regular expression, and now imports the table), and the
+  chips written into `index.html` (still written there so the bar never changes shape on the first paint, and put
+  back in order by the app if the table has moved on).
+- **One renderer.** `card()` walks the kind's field list and calls one function per field *type* — art, name,
+  text, rich lines, quote, number, duration, money, enum, flag, cost, requirement pills, tags, chips, options,
+  flowchart, source, offer, anoint, spark, usage, builds. `prep`, `priceOf`'s kind map, `reqsOf`, `factsOf`,
+  `linesOf`, `optionsOf`, `anointOf`, `kwChips`'s placement, `hrefOf`'s five branches and the nine row builders in
+  `useGroups` are gone. A field whose entry says nothing draws nothing, so the same declaration covers a full entry
+  and a bare one, and a kind the table does not know at all (a farm card, a build's gear slot) still draws its head
+  and whatever it carries.
+- **Every description the data already held.** `tools/carddata.py` joins onto `data/index.json` what was shipped
+  but never reached a card: the game's own flavour line for **693 uniques** and **46 keystones** (`qt`, already on
+  the drill-down page), what an Atlas key or item is for (`t`, 7 more from `data/atlas.json` and `data/info.json`),
+  how many mods can roll on each of **1,527 base items** and whether their weights are measured (`cw`, from
+  `data/craft`, naming Craft of Exile where the number is theirs), and the official text for a priced name no card
+  covers (`ix`, 11 of them). The market's own currency cards fill in the same way: a **lineage support gem**'s card
+  had the words all along and its priced twin had none. Cards that carry a price and say nothing: currency
+  **661 of 748 → 747**, bases **1,525 → 1,540**. `data/info.json` itself reaches only 186 names that have a
+  card, and every one of them already had its text; its other 901 names have no card at all, which is a different
+  ticket.
+- **"Found on" is now every card's, and capped.** `assets/edges.js` follows the edges the index already holds,
+  both ways: a unique names its base and a base names its uniques, a base grants a skill and that skill's gem names
+  the items that grant it (`data/grants.json`, shipped since September and read by nothing until now), a line that
+  names another card gives "Named on this card" one way and "Named by" the other, and everything in a list can
+  reach the rest of that list. Before, the section existed on keyword cards and the 33 keystones only — 726 of
+  5,716 cards; the other 4,990 had none. Per category it now shows the first 8 rows, the true total, and a "See
+  all" that draws the rest on demand: **Hit Damage went from 1,448 rows built on open to 69**.
+- **The audit that came first.** 282 of 693 keyword cards drew nine group tabs and "Nothing here uses it.": there
+  is no entry for them in `data/kwuse.json` at all, and the section now draws nothing instead. Six of the nine
+  groups (bases, essences, Atlas, crafting, currency, keywords) had no "See all" anywhere, and every row of every
+  group was built on open, price lookup and icon and all. The counts themselves agree — the chip and the card's
+  own "Used by ..." line matched on all 411 keywords that have an entry, once a passive is counted per place on
+  the tree — so the on-tree number is now the category's tooltip and the row count is the total. No group repeats
+  a row; 1,715 of 5,046 unique rows are another variant of a name already listed, which is right, because they are
+  separate items with separate prices, and each row names its base.
+- **The drill-down lands on the list the card was showing.** `explore#gems?kw=X` opened the Gems list in its
+  default "Active skills" mode: for Ignite that is 30 of the 63 gems the card had just listed, with the 29 supports
+  and 4 spirit gems missing. It now switches the list to "Everything" first. **New filter:**
+  `explore#uniques?base=<base item>`, for "Uniques on this base" and "Other uniques on this base" — the uniques
+  list gained a base filter and says so in its count line ("4 of 712 uniques · on Stellar Amulet"). A filter the
+  page owns is handed to the page (`PoE.deep`), so the bridge never has to know what a base item is. "Bases of this
+  kind" opens the Craft tab on that item class and "The rest of this list" opens the Atlas on that section.
+- **Proof that a new kind needs no card code.** In a scratch copy, one entry in `KINDS` (`Relic`, six words of
+  declaration) plus three rows in `data/index.json`: the search grew a Relics chip, the home page found all three,
+  and the full card drew art, name, class, price with its change, requirement and drop-level pills, the trial
+  duration fact, both effect lines, the description, the flavour line, tags, keyword chips, the damage offer, the
+  Trade button and a related list — and the third relic, which carries nothing but a name and a class, drew
+  nothing extra. No card code was written.
+- Checked: field parity over 40 cards of each of the 8 kinds, before and after — nothing a card used to show is
+  gone, and `qt`, `cw` and an Atlas implicit count are new. Guard 6 ok, 0 failed. 375×812 touch and desktop: every
+  kind opens with its description, keywords, buttons and related list, Back and Forward walk the trail, marked
+  words open their mechanics card, no console errors, nothing scrolls sideways. First paint, cold cache, median of
+  seven: 236 ms → 204 ms. `data/index-core.json` 66.3 KB gzip → 66.3 KB; `data/index-rest.json` 297 KB →
+  329 KB, which is the flavour lines and the mod counts.
 
 ## Next — Craft: how often a mod rolls, from the source that measures it
 - The follow-on to "Craft: mod weights, and what the game files really carry" below, which ended with the weights
