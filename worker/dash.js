@@ -14,11 +14,12 @@
    The owner's key reads the same numbers without a password: "Authorization: Bearer <key>" on the four
    GETs above (tools/dev/dash.mjs). Only its SHA-256 (hex) is kept, in the OWNER_HASH secret; no OWNER_HASH,
    no key works. It reads only: never a write, never a sign-in. */
+import { PAGES } from '../assets/kinds.js';   // every page that is counted, from the one table the site reads
 import { sameSite, allowed } from './community.js';
 import { cloudflare } from './cfstats.js';
 import { health } from './health.js';
 
-export const ROUTES = ['home', 'build', 'currency', 'trade', 'farms', 'atlas', 'explore-gems', 'explore-uniques', 'explore-tree'];
+export const ROUTES = Object.keys(PAGES);
 const ROUTE = new Set(ROUTES), DEVICE = new Set(['phone', 'tablet', 'desktop']), STATUS = new Set(['new', 'read', 'done']);
 export const MAX = {views: 50, clicks: 200, heat: 200};
 const NOTES = 100;   // notes from players per page, here and in /api/admin/suggestions

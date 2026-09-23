@@ -15,6 +15,7 @@
        no field asks for
      * a rule applied to some kinds and not others: a field marked `every` that a kind drops
      * a slot with no cap, a box no field fills, an edge whose map or list is not declared
+     * a second list of the site's own pages, kept beside the table instead of read out of it
 
    The map, against the declarations it was drawn from (tools/map.py names no kind of its own):
      * a kind drawn in a palette token assets/theme.css does not have
@@ -28,7 +29,7 @@
 import { readFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { KINDS, KIND, DEFAULT, FIELDS, FRAME, SLOTS, BOXES, DECL, REL, MAPS } from '../../assets/kinds.js';
+import { KINDS, KIND, DEFAULT, FIELDS, FRAME, SLOTS, BOXES, DECL, REL, MAPS, ROUTES, SECTIONS, PAGES } from '../../assets/kinds.js';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(HERE, '..', '..');
@@ -134,6 +135,60 @@ export function checkTable(seen = [], types = null){
   return {bad, said: said.join(' · ')};
 }
 
+/* ---------- one table of pages ----------
+   Every page the site has is named once, in ROUTES and SECTIONS. Everything that names a page reads that
+   table and keeps no list of its own. A second copy drifts, and the copy that drifted is the one that
+   quietly counts a new tab as the home page: that is what happened to Bosses, Craft and the map, whose
+   visits were all counted as Search. Three files run before any module is there to read (the line that sets
+   the tab on the first paint, the drill-down page, the tool that writes its header), so those are held to
+   the same names and the same words instead. */
+const READS = [['assets/track.js', './kinds.js'], ['assets/admin.js', './kinds.js'], ['worker/dash.js', '../assets/kinds.js']];
+export async function checkOneTable(){
+  const bad = [];
+  const text = f => readFile(join(ROOT, f), 'utf8').catch(() => null);
+  const tabs = Object.keys(ROUTES), secs = Object.keys(SECTIONS);
+  const names = [...tabs, ...secs];
+
+  // the files that can read the table: they read it, and they keep no list beside it
+  for(const [file, from] of READS){
+    const s = await text(file);
+    if(s === null){ bad.push(file + ' is not there to read'); continue; }
+    if(!s.includes("from '" + from + "'")) bad.push(file + ' names pages and does not read the table (' + from + ')');
+    const kept = names.filter(n => s.includes("'" + n + "'") || s.includes('"' + n + '"'));
+    if(kept.length >= 3) bad.push(file + ' keeps its own list of pages: ' + kept.join(', '));
+  }
+
+  // the first paint: every tab but the one it falls back to, in any order
+  const idx = await text('index.html');
+  const m1 = idx && idx.match(/dataset\.route = \(function\(r\)\{ return \[([^\]]*)\]/);
+  if(idx && !m1) bad.push('index.html: could not find the tab it sets on the first paint');
+  else if(m1){
+    const got = [...m1[1].matchAll(/'([^']+)'/g)].map(x => x[1]).sort();
+    const want = tabs.filter(t => t !== 'home').sort();
+    if(got.join(',') !== want.join(',')) bad.push('index.html sets the tab from ' + (got.join(', ') || '(none)') +
+      ', and the table says ' + want.join(', '));
+  }
+
+  // the drill-down's own sections and the header the sync tool writes: the same sections, in the same order,
+  // under the same words
+  const want = secs.map(k => k + ' “' + SECTIONS[k] + '”').join(', ');
+  const exp = await text('explore.html');
+  if(exp){
+    const m = exp.match(/const SECTIONS = \[([\s\S]*?)\];/);
+    const got = m ? [...m[1].matchAll(/k:\s*'([^']+)'\s*,\s*label:\s*'([^']+)'/g)].map(x => x[1] + ' “' + x[2] + '”').join(', ') : '';
+    if(got !== want) bad.push('explore.html’s sections are ' + (got || '(none found)') + ', and the table says ' + want);
+  }
+  const sync = await text('tools/sync.py');
+  if(sync){
+    const m = sync.match(/NAV_BUTTONS[\s\S]*?for k, label in \(([\s\S]*?)\)\)/);
+    const got = m ? [...m[1].matchAll(/\('([^']+)', '([^']+)'/g)].map(x => x[1] + ' “' + x[2] + '”').join(', ') : '';
+    if(got !== want) bad.push('tools/sync.py writes the sections ' + (got || '(none found)') + ', and the table says ' + want);
+  }
+
+  return {bad, said: Object.keys(PAGES).length + ' pages counted (' + tabs.length + ' tabs, ' + secs.length +
+    ' sections), one table'};
+}
+
 /* ---------- the cards ----------
    What runs in the page: every card in the index, drawn in the grid, against the frame's own accounting of
    what its slots came to (assets/app.js slotsOf). */
@@ -224,10 +279,11 @@ if(import.meta.url === 'file:///' + process.argv[1].replace(/\\/g, '/').replace(
   const boss = await readFile(join(ROOT, 'data', 'bosses.json'), 'utf8').then(s => JSON.parse(s)).catch(() => null);
   if(boss && (boss.bosses || []).length) for(const d of KINDS) if(d.own && !seen.includes(d.k)) seen.push(d.k);
   const r = checkTable(seen, null);
+  const p = await checkOneTable();
   const m = checkMap(await readFile(join(ROOT, 'assets', 'theme.css'), 'utf8').catch(() => null),
     await readFile(join(ROOT, FRAME.map.key), 'utf8').then(JSON.parse).catch(() => null));
-  const bad = [...r.bad, ...m.bad];
+  const bad = [...r.bad, ...p.bad, ...m.bad];
   for(const b of bad) console.log('FAIL ' + b);
-  console.log(bad.length ? bad.length + ' broken' : 'ok   frame   ' + r.said + ' · ' + m.said + ' · the table holds');
+  console.log(bad.length ? bad.length + ' broken' : 'ok   frame   ' + r.said + ' · ' + p.said + ' · ' + m.said + ' · the table holds');
   process.exit(bad.length ? 1 : 0);
 }

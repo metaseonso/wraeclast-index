@@ -28,7 +28,7 @@ import * as seo from '../../worker/seo.js';
 // the one table the site itself reads: what each kind is called, its tab and its section
 import { KINDS, NAMES, ROUTES, SECTIONS, FRAME } from '../../assets/kinds.js';
 // the frame itself: the slots, the caps and the rules that hold for every kind alike
-import { checkTable, checkMap, checkCards as drawCards } from './frame.mjs';
+import { checkTable, checkMap, checkOneTable, checkCards as drawCards } from './frame.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(HERE, '..', '..');
@@ -186,7 +186,7 @@ async function checkLinks(index, market){
     seo: await readFile(join(ROOT, 'worker', 'seo.js'), 'utf8'),
   };
   // the app's own tab names and the drill-down page's sections, from the table the site itself reads
-  const routes = new Set(ROUTES);
+  const routes = new Set(Object.keys(ROUTES));
   const sections = new Set(Object.keys(SECTIONS));
   if(!routes.size || !sections.size) miss.push('could not read the tab or section names out of assets/kinds.js');
   // every "#/tab" and "explore#section" written anywhere in those files
@@ -371,11 +371,12 @@ async function checkFrame(index, run){
     for(const k of cards.kinds || []) if(!seen.includes(k)) seen.push(k);
   }
   const table = checkTable(seen, cards && cards.types);
+  const pages = await checkOneTable();
   const map = checkMap(await readFile(join(ROOT, 'assets', 'theme.css'), 'utf8').catch(() => null),
     await getJSON('/' + FRAME.map.key).catch(() => null));
-  const bad = [...table.bad, ...map.bad, ...(cards ? cards.bad : [])];
+  const bad = [...table.bad, ...pages.bad, ...map.bad, ...(cards ? cards.bad : [])];
   say('frame', !bad.length, bad.length ? bad.length + ' broken: ' + clip(bad.slice(0, 4).join(' | '), 200)
-    : table.said + ' · ' + map.said + ' · ' + (cards ? cards.said : 'the table only: no browser'));
+    : table.said + ' · ' + pages.said + ' · ' + map.said + ' · ' + (cards ? cards.said : 'the table only: no browser'));
 }
 
 /* ---------- 6. a real phone ---------- */
