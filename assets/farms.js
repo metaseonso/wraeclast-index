@@ -297,11 +297,10 @@ function versionHTML(){
   if(!lg) warn.push('Prices are not loaded. Try again in a minute.');
   else if(s.league && lg !== s.league) warn.push('This list is from an older league. Prices below are from ' + esc(lg) + '.');
   if(patch && s.version && patch !== s.version && !patch.startsWith(s.version + '.')) warn.push('The game is on patch ' + esc(patch) + ' now.');
+  const entries = n => n + ' entr' + (n === 1 ? 'y is' : 'ies are');
   const marked = ROWS.filter(r => r.age === 'mark').length, dried = ROWS.filter(r => r.dry).length;
-  if(marked) warn.push(marked + ' of these ' + (marked === 1 ? 'is' : 'are') + ' a point release behind. ' +
-    (marked === 1 ? 'It sorts' : 'They sort') + ' last.');
-  if(dried) warn.push(dried + ' ' + (dried === 1 ? 'is' : 'are') + ' a minor version behind. No prices are drawn for ' +
-    (dried === 1 ? 'it' : 'them') + '.');
+  if(marked) warn.push(entries(marked) + ' a point release behind.');
+  if(dried) warn.push(entries(dried) + ' a minor version behind. No prices are drawn for those.');
   if(older(s.fetched, SHEET_DAYS)) warn.push('The sheet was last read ' + esc(ago(s.fetched)) + '.');
   return '<div class="fm-ver"><p class="fm-label">Made for patch <b>' + esc(s.version) + '</b> · <b>' + esc(s.league) + '</b> league · updated <b>' +
     esc(s.updated) + '</b> · tier list by ' + by + '</p>' + retiredHTML() +
