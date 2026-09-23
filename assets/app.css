@@ -399,15 +399,11 @@ small.at-bonus{display:block}
 .cr-kinds{display:flex; flex-wrap:wrap; align-items:center; gap:6px 10px}
 .cr-kinds .lbl{min-width:76px}
 .cr-chips{justify-content:flex-start; margin:0; gap:5px}
-.cr-base{display:grid; grid-template-columns:minmax(0, 420px) minmax(0, 1fr); gap:14px; align-items:start}
-.cr-base:empty{display:none}
 .cr-bctl{display:grid; gap:12px; align-content:start}
 .cr-lab{display:grid; gap:5px; min-width:0}
 .cr-lab select{max-width:420px}
-.cr-main{display:grid; grid-template-columns:minmax(0, 1fr) 380px; grid-template-areas:"mech prev" "pool prev"; gap:14px; align-items:start}
-.cr-prev{grid-area:prev; position:sticky; top:76px; max-height:calc(100vh - 90px); overflow:auto; overscroll-behavior:contain; padding:10px 4px}
-.cr-mech{grid-area:mech; display:grid; gap:10px}
-.cr-pool{grid-area:pool; display:grid; gap:10px}
+.cr-main{display:grid; gap:14px; align-items:start}
+.cr-pool{display:grid; gap:10px}
 /* "what can this base roll": what you are crafting, the item over its pool, and what puts a mod there */
 .cr-craft{grid-template-columns:260px minmax(0, 1fr) 360px; grid-template-areas:"side mid rail"}
 .cr-side{grid-area:side; display:grid; gap:10px; align-content:start; position:sticky; top:76px;
@@ -595,8 +591,6 @@ small.at-bonus{display:block}
 .cr-onitem{grid-template-columns:repeat(auto-fit, minmax(min(100%, 220px), 1fr)); margin:8px 0 2px}
 .cr-rail .cr-go{margin-bottom:4px}
 @media (max-width:1000px){
-  .cr-main{grid-template-columns:minmax(0, 1fr); grid-template-areas:"prev" "mech" "pool"}
-  .cr-prev{position:static; max-height:none; overflow:visible; padding:10px 0}
   /* one column: the item and the level it is read at first, then the way to another base, then its pool */
   .cr-craft{grid-template-columns:minmax(0, 1fr); grid-template-areas:"item" "side" "pool" "rail"}
   .cr-mid{display:contents}
@@ -607,7 +601,6 @@ small.at-bonus{display:block}
   .cr-rail{position:static; max-height:none; overflow:visible}
 }
 @media (max-width:760px){
-  .cr-base{grid-template-columns:minmax(0, 1fr)}
   .cr-cols{grid-template-columns:minmax(0, 1fr)}
   .cr-vers{padding-left:0}
   /* the ranked table drops the one column a phone can do without: the class, the best tier, the share */
