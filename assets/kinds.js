@@ -83,8 +83,8 @@ export const PAGES = {...ROUTES,
    keys, the act that travels to it is not drawn on a card, and llms.txt does not list it. Opening one again
    is deleting a line here. tools/dev/frame.mjs fails a build where the nav and this table disagree. */
 export const SHUT = {
-  build: 'Closed while the builder is reworked.',
-  farms: 'Closed while farms are reworked into runs you set up and keep.',
+  build: 'Closed for rebuilding.',
+  farms: 'Closed for rebuilding.',
 };
 
 /* ---------- the frame ----------
