@@ -722,8 +722,12 @@ export const TYPE = {
   cost:   {v: (it, f) => { const c = it[f.at]; return c ? c[0] + ' ' + c[1] + ' at gem level 20' : ''; }},
   lines:  {raw: 1, v: (it, f) => (it[f.at] || []).map((x, i) =>
     '<span data-mk="' + f.at + ':' + i + '">' + lineHTML(it, f.at, i, x, false) + '</span>').join(' · ')},
+  /* px.as: what was really priced, where that is not the item as the card names it — a base item is priced
+     white, and a rare of that name is another item at another price. The word goes under the number, so the
+     price is never read as the wrong thing. It comes off the price row, so no kind is named here. */
   money:  {raw: 1, v: (it, f, o) => o.px && o.px.v !== undefined
-    ? '<b>' + moneyHTML(o.px.v) + '</b>' + change(o.px.ch) : ''},
+    ? '<b>' + moneyHTML(o.px.v) + '</b>' + change(o.px.ch) +
+      (o.px.as ? '<span class="card-pxa">' + esc(o.px.as) + '</span>' : '') : ''},
   uses:   {v: (it, f) => {   // a keyword: how much of the game it touches, from the index's own count
     const u = it[f.at] || {}, parts = [];
     for(const [k, one, many] of [['gems','gem','gems'], ['uniques','unique','uniques'], ['passives','passive','passives']])
@@ -1052,7 +1056,8 @@ function detailExtras(it, px){
   if(!out && px.lh && px.lh.note) out += '<p class="chart-said">' + esc(px.lh.note) + '</p>';
   const facts = [];
   // where the price comes from, and when it was checked
-  if(px.src === 'trade') facts.push((px.ls || 0).toLocaleString() + ' listed on the trade site' + (px.at ? ' \u00b7 checked ' + ago(px.at) : ''));
+  if(px.src === 'trade') facts.push((px.ls || 0).toLocaleString() + (px.as ? ' ' + px.as : '') +
+    ' listed on the trade site' + (px.at ? ' \u00b7 checked ' + ago(px.at) : ''));
   if(px.src === 'cx'){
     facts.push(Math.round(px.vol || 0).toLocaleString() + ' div traded on the Currency Exchange in 24 h' + (px.at ? ' · ' + ago(px.at) : ''));
     if(px.pairs && px.pairs.length) facts.push('Trades for: ' + px.pairs.slice(0, 3).map(([o, r]) =>
