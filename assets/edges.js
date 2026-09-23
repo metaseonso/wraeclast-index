@@ -91,6 +91,43 @@ function clusters(C){
 }
 const clusterAt = C => (C._at || (C._at = new Map(C.id.map((id, j) => [id, j]))));
 
+/* ---------- where a card sits, for the search to weigh ----------
+   The same maps the lists above are drawn from, asked a shorter question: which groups is this card in, and
+   how many cards are in each. The search reads it at both ends - the cards you opened, to see what they have
+   in common, and every card the words matched, to see whether it shares any of it (assets/app.js).
+   Both ends, so both ways round: a card is never put inside its own group, so a base item has to be asked
+   for the group that carries its name, or the unique that sits on it would answer to nothing. Ask every card
+   the same question and the two meet in the same group.
+   A group holding only this card joins it to nothing, so it is left out. The answer is kept on the card, the
+   way its search words are: a list of matches is walked on every keystroke, and this must be a lookup. */
+const MAPLIST = Object.entries(MAPS);
+export function groupsOf(it){
+  if(it._gx && it._gxv === X.D.index) return it._gx;
+  const IX = turn(), key = it.k + ':' + it.id, out = [];
+  for(const [m, g] of MAPLIST){
+    const v = it[g.at];
+    if(v === undefined || v === null || v === '') continue;
+    if(g.of){                                           // the same two tests turn() puts a card through
+      const target = g.of + ':' + v;
+      if(target === key || !X.D.byKey.get(target)) continue;
+    }
+    const gk = g.per === 'kind' ? it.k + '/' + v : v;
+    const list = IX[m].get(gk);
+    // a group named after a card holds that card as well, though the map never puts it in there: one unique
+    // on a base item is still two cards that belong together
+    const n = list ? list.length + (g.of ? 1 : 0) : 0;
+    if(n > 1) out.push([m + ':' + gk, n]);
+  }
+  // the group named after this card: the uniques that sit on this base item, the items of this item class
+  for(const [m, g] of MAPLIST){
+    if(g.of !== it.k) continue;
+    const list = IX[m].get(it.id);
+    if(list && list.length) out.push([m + ':' + it.id, list.length + 1]);
+  }
+  it._gxv = X.D.index; it._gx = out;
+  return out;
+}
+
 /* ---------- one edge each ---------- */
 const EDGE = {
   base(it){ return to(it, 'base'); },
