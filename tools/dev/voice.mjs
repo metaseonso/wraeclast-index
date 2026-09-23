@@ -61,6 +61,9 @@ export const SHAPES = [
   [/\bnote that\b/i,            'essay glue'],
   [/\bin other words\b/i,       'essay glue'],
   [/\bas you can see\b/i,       'essay glue'],
+  /* A label is a word, not a sentence. "Suffix · A desecration adds it · 3 kinds of item" reads as someone
+     explaining the row; "Suffix · Desecration · 3 kinds of item" is the row. */
+  [/\b(a|an) [\w-]+ (adds|guarantees|gives|puts|makes|carries) it\b/i, 'a sentence where a label belongs'],
 ];
 
 /* What a player never reads: the comments. Block comments go whole; a line comment goes from // to the end of

@@ -87,7 +87,7 @@ const sideWord = a => a === 'p' ? 'Prefixes' : 'Suffixes';
    them. 'even': it does not, so every modifier is as likely as every other and the card says so. A pool part
    measured is still 'even': mixing a measured weight with a made-up one for the rest would be a number we do
    not have. docs/craft-sim.md, "Measured, or even". */
-const EVEN_NOTE = 'No measured weights for this kind of item — every modifier rolls evenly here, so it will not match the game exactly.';
+const EVEN_NOTE = 'No measured weights for this item class. Every modifier rolls evenly here, so it will not match the game.';
 function poolKind(pool){
   if(!pool.w) return 'even';
   return pool.m.some((i, k) => !pool.w[k]) ? 'even' : 'measured';

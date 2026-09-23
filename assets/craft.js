@@ -480,8 +480,8 @@ function mechHTML(){
 function wsrcHTML(){
   const s = X.wsrc;
   if(!s) return '';
-  return 'Weights: <a href="' + esc(s.u) + '" target="_blank" rel="noopener">' + esc(s.n) + '</a> — ' + esc(s.how) +
-    '. Pulled ' + esc(nice(s.d)) + (s.p ? ' for their patch ' + esc(s.p) : '') + '.';
+  return 'Weights: <a href="' + esc(s.u) + '" target="_blank" rel="noopener">' + esc(s.n) + '</a>, ' +
+    esc(nice(s.d)) + '.';
 }
 /* What is narrowing the pool right now, at the head of the table and pinned there while the table scrolls:
    the orb's level, the side it holds to, the filter box, the tag. Each one comes off with a tap. An orb that
@@ -566,11 +566,10 @@ function poolHTML(){
     '<span class="cr-tally">' + live('p') + ' prefixes · ' + live('s') + ' suffixes</span></div>' +
     '<div class="cr-tbl">' + narrowHTML() +
     '<div class="cr-cols">' + (only !== 's' ? col('p') : '') + (only !== 'p' ? col('s') : '') + '</div></div>' +
-    (TOT ? '<p class="note">Shares are out of what item level ' + S.l + ' can roll on that side. One mod at a time, ' +
-      'not the odds for a whole item. ' +
-      (someUnweighted() ? 'Mods they have no number for sit at the bottom, outside the shares. ' : '') + wsrcHTML() + '</p>'
-      : '<p class="note">No roll chances for this kind: the game files say which mods a base can roll at an item level, not how often each ' +
-      'one comes up, and ' + (X.wsrc ? esc(X.wsrc.n) + ' has no measured weights for it either.' : 'nothing measured is published for it.') + '</p>');
+    (TOT ? '<p class="note">Share of that side at item level ' + S.l + ', one mod at a time. ' +
+      (someUnweighted() ? 'Mods with no measured weight sit at the bottom. ' : '') + wsrcHTML() + '</p>'
+      : '<p class="note">No weights for this item class.' + (X.wsrc ? ' None published, and none measured by ' +
+        esc(X.wsrc.n) + '.' : '') + '</p>');
 }
 
 /* ---------- the second question: how do I get this mod ----------
@@ -585,7 +584,7 @@ let ENG = null;     // the bench's own rules, for the one fact needed here: whic
 const MOD = {q: '', tag: '', key: '', open: false};
 const HITS = 40;    // rows drawn before the rest is a count
 const SIDE = {p: 'Prefix', s: 'Suffix', '': 'Implicit'};
-const KINDW = {d: 'A desecration adds it', c: 'A corruption adds it'};
+const KINDW = {d: 'Desecration', c: 'Corruption'};
 
 let EX = null;      // data/essences.json, keyed by the line an essence puts on: what guarantees a modifier
 async function essData(){
@@ -643,8 +642,8 @@ function findBarHTML(){
 }
 function hitHTML(r){
   const n = r.cls.length;
-  const bits = [SIDE[r.side], KINDW[r.kind] || '', n + (n === 1 ? ' kind of item' : ' kinds of item'),
-    r.cls.some(c => c[2]) ? 'an essence guarantees it' : ''].filter(Boolean);
+  const bits = [SIDE[r.side], KINDW[r.kind] || '', n + (n === 1 ? ' item class' : ' item classes'),
+    r.cls.some(c => c[2]) ? 'Essence' : ''].filter(Boolean);
   return '<button type="button" class="cr-tr" data-mod="' + esc(r.id) + '" aria-pressed="' + (MOD.key === r.id) + '">' +
     '<span class="cr-tl">' + r.lines.map(esc).join('<br>') + '</span>' +
     '<span class="cr-tm">' + esc(bits.join(' · ')) + '</span></button>';
@@ -723,7 +722,7 @@ function guaranteeHTML(r){
   const omens = r.side ? X.omens.filter(o => o.only === r.side &&
     (r.kind === 'd' ? ['Desecrate'] : ADDS).includes(o.orb) && !(ENG && ENG.LEGACY[o.n])) : [];
   if(!ess.length && !omens.length) return '<h4 class="cr-h4">What guarantees it</h4>' +
-    '<p class="note">Nothing guarantees it: it has to be rolled.</p>';
+    '<p class="note">Nothing guarantees it. It has to be rolled.</p>';
   return '<h4 class="cr-h4">What guarantees it <span>' + (ess.length + omens.length) + '</span></h4>' +
     '<div class="cr-guar">' + ess.map(e => rowHTML(e.n, '<b>' + esc(e.n) + '</b>' + px(e.n) +
       '<span class="cr-ml">' + e.lines.map(esc).join('<br>') + '</span>' +
@@ -837,12 +836,10 @@ function readsHTML(r){
 function shareNote(r){
   if(r.kind) return '<p class="note">No share here: what is measured is the pool an orb rolls from, not what a ' +
     (r.kind === 'd' ? 'bone adds' : 'Vaal Orb adds') + '.</p>';
-  if(!TOT) return '<p class="note">No roll chances for this kind: the game files say which mods a base can roll at an ' +
-    'item level, not how often each one comes up, and ' +
-    (X.wsrc ? esc(X.wsrc.n) + ' has no measured weights for it either.' : 'nothing measured is published for it.') + '</p>';
-  return '<p class="note">Its share is out of what this item level can roll on that side — ' +
-    (r.side === 'p' ? 'prefixes against prefixes' : 'suffixes against suffixes') +
-    ', one mod at a time, never the odds for a whole item. ' + wsrcHTML() + '</p>';
+  if(!TOT) return '<p class="note">No weights for this item class.' + (X.wsrc ? ' None published, and none ' +
+    'measured by ' + esc(X.wsrc.n) + '.' : '') + '</p>';
+  return '<p class="note">Share of ' + (r.side === 'p' ? 'prefixes' : 'suffixes') + ' at this item level, ' +
+    'one mod at a time. ' + wsrcHTML() + '</p>';
 }
 
 /* ---------- the right rail: how to get it ----------
@@ -916,7 +913,7 @@ function railHTML(){
   if(!r) return '<p class="note">No modifier selected.</p>';
   // the tiers and the ways to a modifier are the item's, so there is nothing of them until one is in hand
   if(!B || !r.cls.some(([i]) => MX.cl[i] === CL.id))
-    return modPanelHTML(r, null) + readsHTML(r) + '<p class="note">Select a kind of item.</p>';
+    return modPanelHTML(r, null) + readsHTML(r) + '<p class="note">Select an item class.</p>';
   const f = famHere(r), ess = f ? essFor(f) : [];
   return modPanelHTML(r, f) + readsHTML(r) + railHead(true, railWith(r, ess)) + planNote() +
     onItemHTML(r) + essHereHTML(ess) + addsHTML(r, f);

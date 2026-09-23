@@ -646,7 +646,7 @@ function benchItemHTML(p){
   if(!p) return '';
   const opt = (v, n, on) => '<option value="' + esc(v) + '"' + (on ? ' selected' : '') + '>' + esc(n) + '</option>';
   const pick = !p.pickers ? '' : '<div class="bn-pickers">' +
-    '<label class="bn-lab"><span class="lbl">Kind of item</span><select class="field" data-do="kind">' +
+    '<label class="bn-lab"><span class="lbl">Item class</span><select class="field" data-do="kind">' +
       p.kinds.map(k => opt(k.id, k.n, k.id === p.cls)).join('') + '</select></label>' +
     (p.bases.length ? '<label class="bn-lab"><span class="lbl">Base</span><select class="field" data-do="base">' +
       p.bases.map(b => opt(b.n, b.n + (b.dl > 1 ? ' · level ' + b.dl : ''), b.n === p.base)).join('') +
