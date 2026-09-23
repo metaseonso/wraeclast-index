@@ -5,7 +5,7 @@
                        trade site listings (worker/prices.js); trends from the site's own daily prices
    Build usage links to poe.ninja's own builds page: their builds API is not open to other sites. */
 import {initKeys, setCardKeys, keyLabel} from './keys.js';
-import {KIND, DEFAULT, FIELDS, ACTS, CHIPS, NAMES, ROUTES, SHUT, fieldsOf, FRAME, SLOTS, BOXES, MAKE, KW, holds, markOf, ours, slotList} from './kinds.js';
+import {KIND, DEFAULT, FIELDS, ACTS, CHIPS, NAMES, ROUTES, SHUT, fieldsOf, FRAME, SLOTS, BOXES, MAKE, KW, holds, markOf, ours, slotList, jobOf} from './kinds.js';
 import * as edges from './edges.js';
 import * as marks from './marks.js';
 
@@ -187,6 +187,8 @@ function assemble(core, rest){
         if(ps){ it.ps = ps.at; it.pv = ps.is; }
         const lad = rungOf(m.n);
         if(lad) it.up = lad;   // the upgrade ladder this orb stands on, drawn by the ladder field
+        const job = jobOf(m.u);
+        if(job) it.job = job;  // what it does, where several things do the same thing (assets/kinds.js JOBS)
         if(lineage.has(m.n)) it.dup = true;   // kept for the Currency tab; the search shows the gem card
         it._nl = it.n.toLowerCase(); it._hay = (it.n + ' ' + it.s + ' ' + (m.u || '')).toLowerCase();
         MC.set(key, it);
@@ -2182,6 +2184,23 @@ lazy('./notes.js').then(m => m.mountNotes()).catch(() => {});       // Patch not
 lazy('./pins.js').then(m => m.mountPins()).catch(() => {});         // the Pins button, and the list it opens
 lazy('./support.js').then(m => m.mountSupport()).catch(() => {});   // Support link, once data/support.json is filled in
 lazy('./track.js').then(m => m.mountTrack()).catch(() => {});       // page views and clicks for the owner's dashboard
+mountGuide();                                                       // the community guide under the hero
+
+/* A guide somebody else wrote, for a player who has not got to any of this yet. Linked where it helps,
+   named where it is shown, never ours. The list is data/guides.json (tools/guides.py), which reads every
+   address on every publish, so a link that rots is a fault with its own name in data/faults.json rather than
+   a dead link sitting here quietly. Another guide is one entry in that tool and no code here.
+   It sits under the hero, so it is there before a search and out of the way after one. */
+async function mountGuide(){
+  const box = $('#guide');
+  if(!box) return;
+  let list = [];
+  try { list = ((await (await fetch('data/guides.json')).json()) || {}).guides || []; } catch {}
+  if(!list.length) return;
+  box.innerHTML = list.map(g => '<p class="note">Still levelling? <a href="' + esc(g.url) +
+    '" target="_blank" rel="noopener">' + esc(g.what) + ' ↗</a> — ' + esc(g.name) + ', by ' + esc(g.by) + '.</p>').join('');
+  box.hidden = false;
+}
 
 /* ---------- router ---------- */
 function route(){ const m = location.hash.match(/^#\/(\w+)/); return m ? m[1] : 'home'; }

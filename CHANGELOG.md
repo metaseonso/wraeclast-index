@@ -37,6 +37,17 @@ Add the details here first, then a short public line there.
   — a catalyst's own line says *"Adds quality that enhances Attribute modifiers on a ring or amulet"* — and
   `setprice` reaches 2 rows of 652, one of which has no answer because the thing it makes is not traded.
 - **The exchange markets wear their art**, both ends, the last rows on the site that had none.
+- **"Others that do this"** (`REL.job`, `MAPS.job`, `JOBS` in `kinds.js`) — what competes with a currency,
+  cheapest first. The proposal wanted "cheapest in its group" and the group is the wrong basis: measured, a
+  group's own spread reaches 41,000,000× between a Scroll of Wisdom and a Mirror of Kalandra, and "the
+  cheapest Catalyst" would name the Breach Splinter, which adds quality to nothing. The line is the basis.
+  Two real sets, 13 each, 48× and 37× — and it answers the proposal's open question about the Refined
+  catalysts, which are not a step above the plain ones at all: they go on a jewel.
+- **The map said it had left out "Craft runs"**, a kind retired an hour earlier. The frame check only tested
+  one direction; it now fails on a left-out name that is no kind any more, too.
+- **The community levelling guide** lived only on the Build tab, which went off the site, so it went with it.
+  It is on the home page now, under the hero, and docks with it when a search starts. One copy, and
+  `tools/guides.py` keeps checking the address as it always did.
 
 ## Next — Build and Farms taken offline, and the table that shuts a page
 

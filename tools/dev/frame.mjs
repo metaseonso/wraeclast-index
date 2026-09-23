@@ -53,6 +53,10 @@ export function checkMap(theme, map){
   const left = new Set(((map.out || {}).kinds || []).map(n => String(n).toLowerCase()));
   const lost = KINDS.filter(d => !drawn.has(d.k) && !left.has(d.many.toLowerCase()));
   for(const d of lost) bad.push(d.many + ' is in neither the map’s key nor what it says it left out');
+  // ...and the other way round: a kind that has been retired is still named to a player as something the
+  // picture left out, which is a thing that is not a thing. The map said "Craft runs" for exactly this long.
+  const names = new Set(KINDS.map(d => d.many.toLowerCase()));
+  for(const n of left) if(!names.has(n)) bad.push('the map says it left out "' + n + '", which is no kind any more');
   return {bad, said: 'the map: ' + drawn.size + ' kinds drawn, ' + left.size + ' named as left out, ' +
     (map.cards || 0).toLocaleString() + ' dots, ' + (map.edges || 0).toLocaleString() + ' lines'};
 }

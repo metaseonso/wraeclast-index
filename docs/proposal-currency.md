@@ -120,7 +120,7 @@ types with a different word in front.
 | `perslot` | **new** | body | the item's own line, split on its own separator | a two-column list: the slot, what it gives there. 4 lines in the grid, all of them in the popup | one entry, one renderer |
 | `ladder` | **new** | body | the orb's own upgrades | three rows: plain, Greater, Perfect. A price column aged like every other price on the site, and a lowest-modifier-level column with its source. Two columns, never one sentence | one entry, one renderer |
 | `setprice` | **new** | fact | the count in a *Combine N…* line | *300 of these cost 2.93 div · the whole one costs 3.33 div* | one entry, one renderer |
-| `cheapest` | **new** | fact | prices already loaded, across the card's own group | *Cheapest in Catalysts: Flesh Catalyst, 0.023 div* | one entry, one renderer |
+| ~~`cheapest`~~ | — | — | dropped: see *What competes with it*, below | — | — |
 
 The first four come off the game files through `tools/carddata.py`, which already joins on the flavour line,
 the Atlas text and the mod weights for exactly this reason. `perslot` and `setprice` read the line the card
@@ -243,9 +243,31 @@ other is the Breach Splinter, 300 of which cost 1.635 divines — and the thing 
 Exchange, so that pair has **no answer today** and the field draws nothing. Two of 652 is not a feature; it
 is one plain fact the `setprice` field can state and otherwise stay quiet about.
 
-### 3. What competes with it
+### 3. What competes with it — built, on the line and not the group
 
-Within a group, the cheapest thing doing the same job, off prices already loaded. Catalysts, same day:
+**The group is the wrong basis and the proposal was wrong to reach for it.** Measured 24 September 2026, a
+group's own spread runs to 41,000,000× between a Scroll of Wisdom and a Mirror of Kalandra. "The cheapest
+Catalyst" would name the Breach Splinter, which the game files under Catalysts and which adds quality to
+nothing. That is the proposal's own warning — *the group is a door; the line is the answer* — aimed at the
+one field that ignored it.
+
+What shipped reads the line: `JOBS` in `assets/kinds.js` holds one pattern per job's grammar, and every
+catalyst's line is *"Adds quality that enhances &lt;something&gt; modifiers on &lt;a target&gt;"*. What they share is
+the target. That gives two real sets and nothing else in the catalogue:
+
+| The job | Rows | Spread |
+|---|---|---|
+| quality on a ring or amulet | 13 | **48×** |
+| quality on a jewel | 13 | **37×** |
+
+It is a Connections group (`REL.job`, `MAPS.job`), not a field, so it costs no renderer at all and reuses the
+rows, the cap of 8, the *See all* and the filter that every other group already has. Sorted cheapest first,
+because that is the question; a row the market has no price for today sorts last, never as free.
+
+**And it settles the open question below about the Refined catalysts.** They are not an upgrade of the plain
+ones. They go on a **jewel**, and they group with each other. There is no ladder to draw.
+
+The old table, for the spread it shows:
 
 | | Divines |
 |---|---|
@@ -356,10 +378,9 @@ already is.
   fetch returns their shell. What is said here about them is from their own descriptions and their public
   interfaces, not from reading a rendered page. Worth a look by eye before any layout is copied — though the
   recommendation here is to copy none of it.
-* **The Refined catalysts.** The catalogue holds both plain and Refined versions with a large spread — Reaver
-  0.328 against Refined Reaver 3.606, an 11× step. Nothing in the data we ship names the recipe that turns
-  one into the other, so no ladder row can be drawn for them. If a recipe exists in the game files, that is
-  eleven more ladder rows for free; I could not confirm it here.
+* ~~**The Refined catalysts.**~~ **Answered, 24 September 2026.** They are not a step above the plain ones and
+  there is no recipe to find: a plain catalyst adds quality on **a ring or amulet** and a Refined one on **a
+  jewel**. Two different jobs, read off their own lines, and each groups with its own.
 * **The Lineage Supports — settled, 24 September 2026.** The owner: *"those lineage supports ARE gems and can
   be traded in the currency market."* So the currency card stays, because the market really lists them, and
   a chip calling them "becomes a gem" was wrong about all 75 — they already are one. They have their own

@@ -139,6 +139,14 @@ const EDGE = {
   inclass(it){ return cardRows(turn().klass.get(it.cr) || []); },
   section(it){ return cardRows(others(turn().place.get(it.at), it.k + ':' + it.id)); },
   cat(it){ return cardRows(others(turn().cat.get(it.k + '/' + it.s), it.k + ':' + it.id)); },
+  /* Things whose own line says they do the same job, cheapest first — which is the whole question a player
+     choosing between them is asking. One the market has no price for today sorts last, never as free. */
+  job(it){
+    const rows = others(turn().job.get(it.k + '/' + it.job), it.k + ':' + it.id);
+    const M = (X.D.market && X.D.market.items) || {};
+    const px = key => { const r = M[key]; return r && r.v !== undefined && r.v !== null ? r.v : Infinity; };
+    return cardRows(rows.slice().sort((a, b) => px(a) - px(b)));
+  },
   // which item grants which skill, both ways round, as tools/grants.py worked it out
   grants(it, F){ return cardRows((((F.grants || {}).by || {})[it.k + ':' + it.id] || []).map(x => x[0])); },
   granted(it, F){ return cardRows((((F.grants || {}).of || {})[it.k + ':' + it.id] || []).map(x => x[0])); },

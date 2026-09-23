@@ -142,6 +142,30 @@ export function slotList(t){
   return rows.every(Boolean) ? {at: rows.map(m => m[1]), is: rows.map(m => m[2])} : null;
 }
 
+/* Things that do the same job, so a player choosing between them can see what the job costs.
+
+   The group is not the answer and must never be used as one: the game files the Breach Splinter under
+   Catalysts and the Simulacrum under Fragments, so "the cheapest Catalyst" would name a splinter that is not
+   a catalyst at all. Measured 24 September 2026, a group's own spread runs to 41,000,000× between a Scroll
+   of Wisdom and a Mirror of Kalandra, which is not competition; it is a catalogue.
+
+   The line is the answer. Each pattern below is one job's grammar, with the part that varies left out of what
+   it is keyed on — every catalyst's line is "Adds quality that enhances <something> modifiers on <a target>",
+   and what they share is the target. That gives 13 things that add quality on a ring or amulet over a 48×
+   spread, and 13 more on a jewel over 37×, which is a real question with a real answer.
+
+   A shape nothing else in the catalogue has is one line here and no code, the way a field is. */
+export const JOBS = [
+  {re: /^Adds quality that enhances .+? modifiers on (an? [A-Za-z ]+?)(?: ·|$|\.)/, say: 'quality on $1'},
+];
+export function jobOf(t){
+  for(const j of JOBS){
+    const m = j.re.exec(String(t || '').trim());
+    if(m) return j.say.replace('$1', m[1].trim());
+  }
+  return null;
+}
+
 export const holds = (it, c) => {
   if(!c) return false;
   if(c.at === undefined) return true;
@@ -173,6 +197,7 @@ export const MAPS = {
   klass: {at: 'cr', of: 'i'},     // every card of one item class, under that class's own card
   place: {at: 'at'},              // every card listed in one section of the Atlas
   cat:   {at: 's', per: 'kind'},  // every card that carries the same sub line, inside its own kind
+  job:   {at: 'job', per: 'kind'},// ...and every card whose own line says it does the same job (JOBS)
 };
 /* Every declaration a kind may carry. A key that is not here is a rule that reaches one kind, which is the
    shape the frame does not have: it belongs in FIELDS, FRAME, MAPS or REL. */
@@ -386,6 +411,7 @@ export const REL = {
   granted:  {label: 'Granted by', edge: 'granted', needs: 'grants'},
   section:  {label: 'Listed with', of: 'a', edge: 'section', map: 'place', filter: 'atlas'},
   cat:      {label: 'Listed with', edge: 'cat', map: 'cat'},
+  job:      {label: 'Others that do this', edge: 'job', map: 'job'},
   named:    {label: 'Names', edge: 'named'},
   namedby:  {label: 'Named by', edge: 'namedby'},
   /* The two ends of one edge: the nodes a cluster holds, and the cluster or clusters a node sits in. A node
@@ -465,7 +491,7 @@ export const KINDS = [
    px: {as: 'c'}, make: {nx: 'yes'}, gone: {at: 'nx'}, few: {at: 'vol', under: 1},
    fields: [...HEAD, 'droplv', ...SAYS, 'perslot', 'ladder', 'adds', ...REST, ...FOOT],
    acts: ['trade', 'pool', 'bench', 'pin', 'open'],
-   rel: ['named', 'namedby', 'cat']},
+   rel: ['named', 'namedby', 'job', 'cat']},
 
   {k: 'w', one: 'Keyword', tone: 'accent', many: 'Keywords', sec: 'keywords', index: true, search: true, crawl: true,
    kw: 'id', rank: -25, words: {n: 'own', f: 'alt', mark: 'game'},
