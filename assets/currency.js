@@ -2,6 +2,7 @@
    and a watch list. Prices: data/market.json: what each currency traded for on the in-game Currency Exchange
    (GGG's public hourly feed, tools/exchange.py). */
 import { D, $, esc, card, flow, money, moneyHTML, params, openDetail, openBox, actHTML, runAct } from './app.js';
+import { ASKS, ASK } from './kinds.js';   // the questions the page is asked, and which group answers which
 
 const WATCH_KEY = 'wi.watch';
 function loadWatch(){ try { return new Set(JSON.parse(localStorage.getItem(WATCH_KEY) || '[]')); } catch { return new Set(); } }
@@ -17,7 +18,7 @@ const MIN_VOL = 5;        // divine traded per day before a price counts as a ma
 const ROUTE_MIN = 3, ROUTE_MAX = 60, ROUTE_VOL = 25;
 const PAGE = 48;          // rows the grid adds at a time
 
-const S = {cat: 'all', trend: 'all', sort: 'move', q: '', liquid: true, shown: PAGE, watch: loadWatch()};
+const S = {ask: 'all', cat: 'all', trend: 'all', sort: 'move', q: '', liquid: true, shown: PAGE, watch: loadWatch()};
 let EL, ALL = [];
 
 /* ---------- signals ---------- */
@@ -49,9 +50,13 @@ function rows(){
 // the kinds the catalogue gives, in its own order. A handful of Exchange rows carry none: those answer to
 // the search box and to their family, rather than to a kind this page made up for them
 const cats = () => [...new Set(ALL.map(r => r.m.cat).filter(Boolean))];
+// ...and the groups inside whichever question is being asked, so the second row narrows with the first
+const askCats = () => S.ask === 'all' ? cats() : cats().filter(c => ASK[c] === S.ask);
+const askCount = k => ALL.filter(r => ASK[r.m.cat] === k).length;
 
 function match(r){
   const {it, m} = r;
+  if(S.ask !== 'all' && ASK[m.cat] !== S.ask) return false;
   if(S.cat !== 'all' && m.cat !== S.cat) return false;
   if(S.liquid && (m.vol ?? 0) < MIN_VOL && S.trend !== 'watch') return false;
   if(S.q && !it._hay.includes(S.q)) return false;
@@ -253,6 +258,13 @@ export function mount(el){
     '<div class="sect"><h3>Watch list</h3><p id="cxcount"></p><span class="grow"></span>' +
       '<button type="button" class="btn gold" id="cxpick">★ Add to watch list</button></div>' +
     '<div class="controls cx">' +
+      // what a player came with in hand, asked as a question. The groups below narrow to whatever is asked.
+      '<div class="row"><div class="kinds cx-ask" id="cxask" style="margin:0;justify-content:flex-start">' +
+        '<button type="button" class="chip" data-v="all" aria-pressed="' + (S.ask === 'all') + '">All ' +
+          ALL.length.toLocaleString() + '</button>' +
+        ASKS.map(([k, words]) => '<button type="button" class="chip" data-v="' + k + '" aria-pressed="' +
+          (k === S.ask) + '">' + esc(words) + ' <span class="chip-n">' + askCount(k) + '</span></button>').join('') +
+      '</div></div>' +
       '<div class="row"><div class="seg" id="cxcat">' + kinds.map(c => '<button type="button" data-v="' + esc(c) + '" aria-pressed="' + (c === S.cat) + '">' +
         (c === 'all' ? 'All' : esc(c)) + '</button>').join('') + '</div></div>' +
       '<div class="row"><input class="field" id="cxq" type="search" placeholder="Search currency…" autocomplete="off">' +
@@ -275,6 +287,17 @@ export function mount(el){
     render();
   });
   seg('cxcat', 'cat'); seg('cxtrend', 'trend');
+  /* a question narrows the groups under it, and the group chips are drawn again to whatever is left. The
+     group a player had chosen is kept where the new question still holds it, and dropped where it does not. */
+  $('#cxask', el).addEventListener('click', e => {
+    const b = e.target.closest('button'); if(!b) return;
+    S.ask = b.dataset.v; S.shown = PAGE;
+    if(S.cat !== 'all' && !askCats().includes(S.cat)) S.cat = 'all';
+    [...b.parentNode.children].forEach(c => c.setAttribute('aria-pressed', String(c === b)));
+    paintCats();
+    render();
+  });
+  paintCats();
   $('#cxq', el).addEventListener('input', e => { S.q = e.target.value.trim().toLowerCase(); S.shown = PAGE; render(); });
   $('#cxsort', el).addEventListener('change', e => { S.sort = e.target.value; render(); });
   $('#cxliq', el).addEventListener('change', e => { S.liquid = e.target.checked; S.shown = PAGE; render(); });
@@ -303,6 +326,12 @@ function update(){
   render();
 }
 
+/* The group chips, drawn again whenever the question changes: All, then every group the question covers. */
+function paintCats(){
+  const box = $('#cxcat', EL); if(!box) return;
+  box.innerHTML = ['all', ...askCats()].map(c => '<button type="button" data-v="' + esc(c) + '" aria-pressed="' +
+    (c === S.cat) + '">' + (c === 'all' ? 'All' : esc(c)) + '</button>').join('');
+}
 function render(){
   const list = ALL.filter(match).sort(SORTER[S.sort]);
   $('#cxcount', EL).textContent = list.length + ' item' + (list.length === 1 ? '' : 's');

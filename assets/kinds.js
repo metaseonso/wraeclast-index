@@ -220,6 +220,15 @@ export const FIELDS = {
      "Martial Weapon" heads 70 of these columns, and a keyword door repeated 70 times down one page is noise
      rather than a way anywhere. What the slot gives is a line like any other and marks like any other. */
   perslot:  {type: 'perslot', at: 'pv', beside: 'ps', slot: 'body'},
+  /* The orb upgrade ladders. The game's own line is the same on all three steps of one — the Exalted Orb,
+     the Greater and the Perfect all read "Augments a Rare item with a new random modifier" — so nothing a
+     player reads says what an upgrade buys. This draws the three steps together: what each one asks today,
+     and the lowest modifier level it guarantees, which is not the game's own number and names poe2db.
+
+     Two columns and never one sentence: the price moves by the hour and carries its own age, the level does
+     not move and carries its source (docs/frame.md, "A number that moves, beside one that does not"). A step
+     the market has no price for shows no number at all, never a stale one and never a zero. */
+  ladder:   {type: 'ladder', at: 'up', slot: 'body', label: 'The upgrades', src: 'poe2db'},
   /* the modifier it puts on an item, per kind of item: an essence adds a different one to a bow than to a body
      armour, and the game's one line says none of it. Anything else that adds a known modifier reads the same
      table, keyed by whatever "at" names (tools/essences.py). */
@@ -453,7 +462,7 @@ export const KINDS = [
   {k: 'c', one: 'Currency', tone: 'c-currency', many: 'Currency', place: 'Currency', link: './#/currency?c=@id',
    index: true, search: true, item: true, crawl: true,
    px: {as: 'c'}, make: {nx: 'yes'}, gone: {at: 'nx'}, few: {at: 'vol', under: 1},
-   fields: [...HEAD, 'droplv', ...SAYS, 'perslot', 'adds', ...REST, ...FOOT],
+   fields: [...HEAD, 'droplv', ...SAYS, 'perslot', 'ladder', 'adds', ...REST, ...FOOT],
    acts: ['trade', 'pool', 'bench', 'pin', 'open'],
    rel: ['named', 'namedby', 'cat']},
 
@@ -522,6 +531,28 @@ export const NAMES = {};         // k -> what a list of it is called: the guard'
 for(const d of KINDS) NAMES[d.k] = d.many.toLowerCase();
 /* the chips over the home page's search: All, then every kind that asked for one */
 export const CHIPS = [['all', 'All'], ...KINDS.filter(d => d.search).map(d => [d.k, d.many])];
+/* The Currency tab's way in, asked as a player's question instead of a market's word. Every chip is a
+   declared list of the game's own categories, so nothing here is a classification of ours — the game says
+   which group a thing is in and this says which question that group answers.
+
+   The line is what decides a card's shape (slotList above); the group is only the door. They disagree often
+   enough to matter: the game files the Breach Splinter under Catalysts and the Simulacrum under Fragments.
+   So a chip narrows the page, and it never decides what a card says about itself.
+
+   tools/dev/frame.mjs fails a build where the catalogue holds a category no chip names, because a category
+   nobody named is a row a player cannot reach from any question. */
+export const ASKS = [
+  ['changes', 'Changes an item',       ['Currency', 'Omens', 'Expedition']],
+  ['adds',    'Guarantees a modifier', ['Essences', 'Verisium', 'Liquid Emotions']],
+  ['socket',  'Sockets in and stays',  ['Runes', 'Soul Cores', 'Idols']],
+  ['quality', 'Adds quality',          ['Catalysts']],
+  ['bone',    'Desecrates',            ['Abyssal Bones']],
+  ['door',    'Opens a door',          ['Fragments']],
+  ['gem',     'Becomes a gem',         ['Uncut Gems', 'Lineage Supports']],
+];
+export const ASK = {};           // the question a category answers to, by the game's own name for it
+for(const [k, , cats] of ASKS) for(const c of cats) ASK[c] = k;
+
 /* Where a keyword id turns back into a card (KINDS kw): `own` the kind that is a keyword itself, `named` the
    kinds whose card stands for the keyword that goes by its name — a keystone is its own keyword. */
 export const KW = {

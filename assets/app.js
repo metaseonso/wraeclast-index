@@ -127,11 +127,24 @@ function prep(it, k, IMGS, lxk){   // once per card: its kind, full image link, 
   }
   return it;
 }
+/* Every orb on an upgrade ladder, pointing at the ladder it is on (index-core "up", tools/carddata.py).
+   Built once, from the table, so no orb name is written down here. */
+let RUNG = null;
+function rungs(up){
+  RUNG = new Map();
+  for(const lad of up || []){
+    RUNG.set(lad[0], lad);
+    for(const [n] of lad.slice(1)) RUNG.set(n, lad);
+  }
+}
+const rungOf = name => (RUNG && RUNG.get(name)) || null;
+
 const MC = new Map();   // the market's own currency cards, made once
 const MB = new Map();   // the boss cards, made once
 /* The index as the pages use it: every card in the index's own order, then the market's currency and the bosses.
    Without the rest (the first cards), only the core's kinds. */
 function assemble(core, rest){
+  rungs(core.up);   // the orb ladders, before any currency card is made
   const IMGS = core.imgs || {}, pool = {}, at = {}, lxk = {};   // lxk: each part's own table of the cards its lines name
   for(const part of [core, rest]) if(part) for(const [k] of core.order) if(Array.isArray(part[k])){ pool[k] = part[k]; at[k] = 0; lxk[k] = part.lxk || []; }
   const items = [], byKey = new Map();
@@ -172,6 +185,8 @@ function assemble(core, rest){
         it = {k:'c', id:key.slice(2), n:m.n, s:m.cat || 'Currency', t:ps ? '' : (m.u || ''),
               img:m.ic, dl:m.dl};
         if(ps){ it.ps = ps.at; it.pv = ps.is; }
+        const lad = rungOf(m.n);
+        if(lad) it.up = lad;   // the upgrade ladder this orb stands on, drawn by the ladder field
         if(lineage.has(m.n)) it.dup = true;   // kept for the Currency tab; the search shows the gem card
         it._nl = it.n.toLowerCase(); it._hay = (it.n + ' ' + it.s + ' ' + (m.u || '')).toLowerCase();
         MC.set(key, it);
@@ -198,7 +213,7 @@ function assemble(core, rest){
     }
     items.push(it); byKey.set('x:' + it.id, it);
   }
-  D.index = {v: core.v, gen: core.gen, sprites: core.sprites, imgs: IMGS, kwx: rest ? rest.kwx || {} : {},
+  D.index = {v: core.v, gen: core.gen, sprites: core.sprites, imgs: IMGS, up: core.up || [], kwx: rest ? rest.kwx || {} : {},
     ws: (rest && rest.ws) || core.ws || '', items};
   D.byKey = byKey;
 }
@@ -931,6 +946,29 @@ export const TYPE = {
   /* the same words where the game wrote them as a table: the slot on the left, what it gives there on the
      right. The grid draws four rows the way any list in a slot does, the popup draws all of them, and what
      is not drawn is a count. The right-hand side keeps the game's own middot where a slot gives two things. */
+  /* the three steps of an orb's upgrade ladder, side by side. A price column and a level column, because a
+     number that moves and a number that does not are two statements (docs/frame.md). A step with no price
+     shows no price and no multiple — never a zero, never a stale one. */
+  ladder: {raw: 1, v: (it, f) => {
+    const lad = it[f.at];
+    if(!lad || lad.length < 2) return '';
+    const M = (D.market && D.market.items) || {};
+    const at = D.market && D.market.updated;
+    const px = n => { const r = M['c:' + n]; return r && r.v !== undefined && r.v !== null ? r.v : null; };
+    const base = px(lad[0]);
+    const step = (name, floor) => {
+      const v = px(name), x = v !== null && base ? v / base : null;
+      return '<li' + (name === it.n ? ' class="lad-on"' : '') + '>' +
+        '<span class="lad-n">' + esc(name) + '</span>' +
+        '<span class="lad-p">' + (v !== null ? moneyHTML(v) : '<span class="lad-no">no price today</span>') +
+          (x !== null && x >= 1.05 ? '<em>×' + (x >= 100 ? Math.round(x).toLocaleString() : +x.toPrecision(3)) + '</em>' : '') + '</span>' +
+        '<span class="lad-f">' + (floor ? 'modifier level ' + floor + ' or higher' : '') + '</span></li>';
+    };
+    return '<div class="card-lad"><p class="card-facts">' + esc(f.label || '') + '</p><ul>' +
+      step(lad[0], 0) + lad.slice(1).map(([n, lv]) => step(n, lv)).join('') + '</ul>' +
+      '<p class="card-src">Prices from the in-game Currency Exchange' + (at ? ', checked ' + esc(ago(at)) : '') +
+      '. The modifier levels are not in the game’s own words: ' + esc(f.src || '') + '.</p></div>';
+  }},
   perslot: {raw: 1, v: (it, f, o) => {
     const vals = it[f.at] || [], at = it[f.beside] || [];
     if(!vals.length) return '';

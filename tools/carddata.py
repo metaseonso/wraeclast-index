@@ -99,13 +99,27 @@ def atlas_text(index):
     return 'atlas %d descriptions' % n
 
 
+def ladders(index, craft):
+    """up: the orb upgrade ladders — [plain, [Greater, level], [Perfect, level]] — five of them.
+
+    The game's own description is identical on all three steps of a ladder ("Augments a Rare item with a new
+    random modifier" on the Exalted Orb, the Greater and the Perfect alike), so nothing a player reads says
+    what the upgrade buys. The lowest modifier level each step guarantees is read from poe2db, and the card
+    names that source beside it. It is about 0.3 kB, so it rides in the first paint rather than costing a
+    fetch, and the prices the card puts beside it are ones the page already has."""
+    index['up'] = [[o['n']] + [[u[0], u[1]] for u in (o.get('up') or [])]
+                   for o in (craft.get('orbs') or []) if o.get('up')]
+
+
 def weights(index):
     """cw: [prefixes, suffixes, 1 if the weights are measured] for a base item.
 
     A base rolls from one pool (data/craft/<class>.json). The mods in that pool are counted per side; the
     pool's weights are the measured ones (data/craft.json names who measured them)."""
     n = meas = 0
-    index['ws'] = ((load('craft.json').get('wsrc') or {}).get('n') or '')   # who measured them, named on the card
+    craft = load('craft.json')
+    index['ws'] = ((craft.get('wsrc') or {}).get('n') or '')   # who measured them, named on the card
+    ladders(index, craft)
     for f in sorted(glob.glob(str(DATA / 'craft' / '*.json'))):
         cls = json.loads(Path(f).read_text(encoding='utf-8'))
         pools, fam, mods = cls.get('pools') or [], cls.get('fam') or [], cls.get('mods') or []

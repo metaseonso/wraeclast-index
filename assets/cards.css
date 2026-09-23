@@ -182,6 +182,17 @@
 .card-ft .spark{width:84px; height:22px; flex:none}
 .card-ft .use{white-space:nowrap}
 /* an act in a card's own corner, beside the star: a word, not a phrase (assets/app.js actHTML) */
+/* an orb's upgrade ladder: what each step asks today, and the modifier level it guarantees */
+.card-lad{margin-top:8px}
+.card-lad ul{list-style:none; margin:4px 0 0; padding:0; display:grid; gap:3px}
+.card-lad li{display:grid; grid-template-columns:1fr auto; gap:4px 10px; align-items:baseline;
+  font-size:12px; padding:3px 6px; border:1px solid transparent; border-radius:4px}
+.card-lad .lad-on{border-color:var(--line); background:var(--sunk, rgba(255,255,255,.03))}
+.card-lad .lad-n{color:var(--text)}
+.card-lad .lad-p{color:var(--text); font-variant-numeric:tabular-nums; white-space:nowrap}
+.card-lad .lad-p em{font-style:normal; color:var(--faint); margin-left:5px; font-size:11px}
+.card-lad .lad-no{color:var(--faint); font-size:11px}
+.card-lad .lad-f{grid-column:1/-1; color:var(--faint); font-size:11px}
 /* a use line the game wrote as a table: the slot, and what it gives there (assets/app.js perslot) */
 .card-slots{list-style:none; margin:6px 0 0; padding:0; display:grid; gap:3px}
 .card-slots li{display:grid; grid-template-columns:minmax(58px,auto) 1fr; gap:8px; align-items:baseline;

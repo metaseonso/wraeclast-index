@@ -30,7 +30,7 @@
 import { readFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { KINDS, KIND, DEFAULT, FIELDS, FRAME, SLOTS, BOXES, DECL, REL, MAPS, ROUTES, SECTIONS, PAGES, SHUT } from '../../assets/kinds.js';
+import { KINDS, KIND, DEFAULT, FIELDS, FRAME, SLOTS, BOXES, DECL, REL, MAPS, ROUTES, SECTIONS, PAGES, SHUT, ASKS, ASK } from '../../assets/kinds.js';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(HERE, '..', '..');
@@ -205,13 +205,31 @@ export async function checkOneTable(){
       if(s2 && s2.includes('#/' + r)) bad.push(f + ' still offers ' + r + ', and the table has it shut');
     }
   }
+  /* the Currency tab's questions: every group the catalogue holds answers exactly one of them. A group in no
+     question is a row a player cannot reach from any way in, and a new league adds groups. */
+  const mk = await text('data/market.json');
+  let loose = 0;
+  if(mk){
+    const cats = new Set();
+    for(const [key, row] of Object.entries(JSON.parse(mk).items || {})){
+      if(!key.startsWith('c:')) continue;
+      if(row.cat) cats.add(row.cat); else loose++;   // an Exchange row the catalogue files under nothing
+    }
+    const named = new Set(ASKS.flatMap(([, , cs]) => cs));
+    for(const c of [...cats].sort()) if(!ASK[c]) bad.push('the catalogue holds "' + c + '" and no question names it');
+    for(const c of [...named].sort()) if(!cats.has(c)) bad.push('a question names "' + c + '", which the catalogue does not hold');
+    const twice = ASKS.flatMap(([, , cs]) => cs).filter((c, i, a) => a.indexOf(c) !== i);
+    for(const c of new Set(twice)) bad.push('"' + c + '" answers two questions');
+  }
+
   // the keys are a module, so they are held the way the counters are: read the table, keep no list beside it
   const keys = await text('assets/keys.js');
   if(keys && !keys.includes('SHUT')) bad.push('assets/keys.js offers a key per page and does not read what is shut');
 
   return {bad, said: Object.keys(PAGES).length + ' pages counted (' + tabs.length + ' tabs, ' + secs.length +
     ' sections' + (Object.keys(SHUT).length ? ', ' + Object.keys(SHUT).length + ' shut: ' + Object.keys(SHUT).join(', ') : '') +
-    '), one table'};
+    ') · ' + ASKS.length + ' currency questions over ' + Object.keys(ASK).length + ' groups' +
+    (loose ? ', ' + loose + ' rows the game files under no group' : '') + ', one table'};
 }
 
 /* ---------- the cards ----------

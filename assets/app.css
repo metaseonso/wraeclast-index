@@ -141,6 +141,10 @@ textarea.field{width:100%; min-height:92px; resize:vertical; font:12px/1.4 var(-
   background:var(--raised); border:1px solid var(--line); box-shadow:var(--shadow); color:var(--text)}
 .controls{display:grid; gap:10px; margin-bottom:14px}
 .controls .field{min-width:180px}
+/* the Currency tab's question row: a chip per question, with how many answer it */
+.cx-ask{flex-wrap:wrap; gap:6px}
+.cx-ask .chip-n{color:var(--faint); font-size:10px; margin-left:4px; font-variant-numeric:tabular-nums}
+.cx-ask .chip[aria-pressed="true"] .chip-n{color:inherit; opacity:.7}
 .star{position:relative; z-index:1; background:none; border:0; color:var(--faint); font-size:17px; line-height:1; cursor:pointer; padding:0 2px}
 .star:hover{color:var(--text)}
 .star[aria-pressed="true"]{color:var(--accent)}

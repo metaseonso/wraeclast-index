@@ -56,6 +56,7 @@ def split(index, raw):
             runs.append([it['k'], 1])
     core = {'id': ident, 'v': index.get('v'), 'gen': index.get('gen'), 'sprites': index.get('sprites'),
             'imgs': index.get('imgs'), 'order': runs, 'ws': index.get('ws') or '',
+            'up': index.get('up') or [],   # the orb upgrade ladders: in the first paint, about 0.3 kB
             # the market's currency by these names belongs to a card in the rest (an atlas item), or is a lineage gem
             'skip': sorted({it['n'] for it in index['items'] if it['k'] == 'a'}),
             'li': sorted({it['n'] for it in index['items'] if it['k'] == 'g' and it.get('li')})}
