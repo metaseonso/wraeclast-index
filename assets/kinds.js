@@ -36,8 +36,10 @@
      kw       where its keyword id is: 'id' its own id, 'name' the keyword card of the same name
      words    which of its own words open it inside another card's line (assets/marks.js): `n` its name and
               `f` its other spellings, each 'own' (a door wherever it is read) or 'alt' (only on a card whose
-              own keyword list names it); `mark` whose words they are, 'ours' (a card we wrote, so the mark is
-              the word with a footnote) or 'game' (the game's own word, so the mark is the word underlined);
+              own keyword list names it); `mark` whose words they are, 'ours' (a card we wrote that answers
+              it, so the mark is the word with a footnote), 'game' (the game's own word, so the mark is the
+              word underlined) or 'open' (a card of ours that holds the question open, so the mark is the
+              word with a question behind it);
               `only: 'gate'` where each of its own words carries its own rule for when it counts ("fg" on
               the entry, tools/mechanics.py), instead of being a door wherever it is read
    DECL below is the whole of that list, and nothing else may sit on a kind: a rule that would reach one kind
@@ -213,6 +215,14 @@ export const FIELDS = {
   swaps:    {type: 'swap', slot: 'body', every: 1, of: [
     {on: {at: 'cr', is: 'gloves'}, label: 'Stonefist', card: 'p:AscendancyMonk1Notable8'},
   ]},
+  /* ---------- an interaction nobody has settled ----------
+     What players report about this one, and how often each open interaction gets reported at all. Both are
+     live, off the same path a note from the Suggest button already takes (worker/community.js), so nothing
+     of either is in the index or in first paint: the card leaves a box and assets/clarify.js fills it when
+     the answer lands. A visit that never opens one asks for neither. What a player wrote is drawn as
+     theirs — named, dated and under their own heading — and never as the game's own word. */
+  players:  {type: 'players', slot: 'body', api: 'api/suggest'},
+  heat:     {type: 'heat', slot: 'body', api: 'api/suggest'},
   tags:     {type: 'tags', at: 'tags', slot: 'body', every: 1},
   anoint:   {type: 'anoint', at: 'rec', slot: 'body', every: 1},
   keywords: {type: 'chips', at: 'kw', slot: 'body', every: 1},   // the popup only: a way in, not a line of text
@@ -368,6 +378,16 @@ export const KINDS = [
    acts: [],
    rel: ['namedby', 'cat']},
 
+  /* An interaction the game's wording names and nothing answers: ours, kind "q", one per open question
+     (tools/interactions.py). Its words are doors wherever they are read, like a mechanics card's, and they
+     wear a mark of their own — the word with a question behind it, not a footnote — because the card holds
+     a question open instead of answering one. What players report about it is the two live fields above. */
+  {k: 'q', one: 'Interaction', tone: 'c-rare', many: 'Interactions', index: true, search: true, mark: 'ls',
+   words: {f: 'own', mark: 'open', only: 'gate'},
+   fields: [...HEAD, ...SAYS, 'players', 'heat', ...REST, ...FOOT],
+   acts: [],
+   rel: ['namedby', 'cat']},
+
   {k: 'x', one: 'Boss', tone: 'str', many: 'Bosses', place: 'Bosses', link: './#/bosses?q=@n', own: './bosses.js',
    search: true,
    fields: [...HEAD, ...BODY, ...FOOT],
@@ -408,10 +428,12 @@ export const KW = {
   own: (KINDS.find(d => d.kw === 'id') || {}).k || '',
   named: KINDS.filter(d => d.kw === 'name').map(d => d.k),
 };
-/* Whose words a mark inside a line is: 'ours' is a card we wrote, so the mark is the word with a footnote;
-   'game' is the game's own word, so the mark is the word underlined. A key is "<kind>:<id>", so this answers
-   for any mark, wherever it was worked out. The index marks our own at build time (tools/nodelinks.py) and
-   the page draws those; the game's own are worked out as the card is drawn (assets/marks.js). */
+/* Whose words a mark inside a line is: 'ours' is a card we wrote that answers it, so the mark is the word
+   with a footnote; 'game' is the game's own word, so the mark is the word underlined; 'open' is a card of
+   ours that holds the question open (tools/interactions.py), so the mark is the word with a question behind
+   it. A key is "<kind>:<id>", so this answers for any mark, wherever it was worked out. The index marks our
+   own at build time (tools/nodelinks.py) and the page draws those; the rest are worked out as the card is
+   drawn (assets/marks.js). */
 export const markOf = key => ((KIND[(key || '')[0]] || {}).words || {}).mark || null;
 export const ours = key => markOf(key) === 'ours';
 /* the fields of one kind that land in one slot, in the order the kind declares them */

@@ -19,10 +19,10 @@ The rules, and no guessing:
   * several cards of one kind share the name -> nothing (two uniques called Decompose: which one?)
   * several kinds share the name             -> nothing, unless the line declares a preference: a "Grants Skill:"
                                                 line names a gem, so a gem wins there
-  * a keyword card                           -> nothing: 6,570 more spans would push data/index-core.json past
-                                                its size budget, and the page marks those words itself as the
-                                                card is drawn (assets/marks.js), off the keyword cards it
-                                                already holds
+  * a keyword card, or an interaction card   -> nothing: the spans would push data/index-core.json past its
+                                                size budget, and the page marks those words itself as the
+                                                card is drawn (assets/marks.js), off the cards it already
+                                                holds
   * a card ranked low ("lo": the tree's small passives, tools/treecards.py) is never a phrase to look for: its
     name is the stat's own wording ("Attack Speed", "Minion Damage"), so every mod line that says the words
     would open it, and nothing in the line is naming a node. Their own lines are read as any other card's.
@@ -53,14 +53,16 @@ from phrases import Matcher  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent
 # The lines a player reads, per kind of card. A card has one or the other, never both.
-LINE_FIELDS = {'u': 'ls', 'b': 'ls', 'p': 'ls', 'g': 't', 'h': 'ls'}
-NO_LINK = {'w'}            # keywords: the page marks those itself, as the card is drawn (assets/marks.js)
+LINE_FIELDS = {'u': 'ls', 'b': 'ls', 'p': 'ls', 'g': 't', 'h': 'ls', 'q': 'ls'}
+NO_LINK = {'w', 'q'}       # keywords and interactions: the page marks those itself as the card is drawn
+                           # (assets/marks.js) - 9,500 more spans would push data/index-core.json past its
+                           # size budget, and the browser already holds every one of those cards
 NOT_A_NAME = {'i'}         # item classes: the words say what a thing is, never which card is meant
 FORMS = {'w', 'h'}         # kinds with other words they are reached by ("f")
 # A line that declares which kind it names. "Grants Skill: Ice Nova" is a gem, whatever else shares the name.
 PREFERS = (('Grants Skill:', 'g'),)
 KIND = {'g': 'gems', 'u': 'uniques', 'p': 'passives', 'b': 'bases', 'a': 'atlas', 'c': 'currency', 'w': 'keywords',
-        'h': 'mechanics', 'i': 'item classes'}
+        'h': 'mechanics', 'i': 'item classes', 'q': 'interactions'}
 
 
 def lines_of(it):
@@ -133,7 +135,7 @@ class Doors:
             if mine and any(x['k'] + ':' + x['id'] == mine for x in cand):
                 continue   # the card's own name: a card is not a door to itself
             if all(x['k'] in NO_LINK for x in cand):
-                rep['chips'][name] += 1   # a keyword, whichever one: the page marks it itself (assets/marks.js)
+                rep['chips'][name] += 1   # a keyword or an interaction: the page marks it itself (marks.js)
                 continue
             if len(cand) > 1:
                 kinds = {x['k'] for x in cand}
@@ -216,7 +218,7 @@ def report(index, rep):
                   (KIND.get(k, k), rep['lines'][k], rep['lines'].get(k + ' linked', 0), rep['cards'][k]))
     print('  by target: ' + ', '.join('%s %d' % (KIND.get(k, k), v) for k, v in rep['targets'].most_common()))
     print('  from -> to: ' + ', '.join('%s %d' % (k, v) for k, v in sorted(rep['refs'].items())))
-    print('  left as plain text: %d keyword phrases (%d of them, and the page marks those itself), '
+    print('  left as plain text: %d phrases the page marks itself (%d of them), '
           '%d ambiguous (%d one kind, %d several kinds)' %
           (sum(rep['chips'].values()), len(rep['chips']), sum(rep['amb_name'].values()),
            rep['amb_kind']['one kind'], rep['amb_kind']['several kinds']))
