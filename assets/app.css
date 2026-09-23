@@ -455,6 +455,7 @@ small.at-bonus{display:block}
 .cr-cost{display:grid; gap:3px}
 .cr-crow{display:flex; gap:10px; justify-content:space-between; font:500 12px var(--mono); color:var(--muted)}
 .cr-crow .cr-px{font-size:12px}
+.cr-crow small{color:var(--faint)}   /* the rarity the row was priced at: a white base is not a rare one */
 /* "how do I get this mod": where it rolls, ranked, and the modifier itself beside it */
 .cr-where{border:1px solid var(--line-soft); border-radius:8px; background:var(--sunken); overflow:hidden}
 .cr-whd, .cr-wrow{display:grid; grid-template-columns:minmax(0, 1fr) minmax(0, 96px) 62px 66px; gap:10px; align-items:baseline}

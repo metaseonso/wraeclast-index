@@ -146,6 +146,12 @@ async function classData(id){
   return FILES.get(id);
 }
 const priceOf = n => { const M = D.market && D.market.items; return M ? M['c:' + n] || null : null; };
+/* the base in hand, at what a white one is really going for (worker/prices.js, key base:). Nothing back
+   from the last check is no price at all, the way it is everywhere else on the site. */
+const basePrice = () => {
+  const M = D.market && D.market.items, p = B && M ? M['b:' + B.n] : null;
+  return p && p.v !== undefined && p.v !== null ? p : null;
+};
 const px = n => { const p = priceOf(n); return p && p.v !== undefined ? '<span class="cr-px">' + moneyHTML(p.v) + '</span>' : ''; };
 const icon = n => { const p = priceOf(n); return '<span class="cr-ic">' + (p && p.ic ? '<img src="' + esc(p.ic) + '" alt="" loading="lazy" decoding="async">' : '') + '</span>'; };
 /* ---------- the card behind a name ----------
@@ -1057,15 +1063,21 @@ function orbPickHTML(){
       'and the shares are out of that.</p>' : '');
 }
 /* What the plan and the rail have named, at today's real prices and no other kind of price. A currency the
-   market does not price today is left off rather than guessed at, and nothing here is a cost to hit. */
+   market does not price today is left off rather than guessed at, and nothing here is a cost to hit.
+   The item comes first: a plan that does not say what the base itself costs is only half a cost. It is the
+   white one, and the row says so — a rare of that name is another item at another price. */
 function costHTML(){
   const want = [];
   if(UI.f && UI.f.n) want.push(UI.f.n);
   for(const e of S.m) if(e[0] === 'e' && e[2]) want.push(e[2]); else if(e[0] === 'r') want.push(e[1]);
   for(const o of addOrbs()) want.push(o.n);
   const rows = [...new Set(want)].map(n => [n, priceOf(n)]).filter(([, p]) => p && p.v !== undefined).slice(0, 8);
-  if(!rows.length) return '';
-  return '<h4 class="cr-h4">Cost right now</h4><div class="cr-cost">' + rows.map(([n, p]) =>
+  const base = basePrice();
+  if(!rows.length && !base) return '';
+  return '<h4 class="cr-h4">Cost right now</h4><div class="cr-cost">' +
+    (base ? '<div class="cr-crow"><span>' + esc(B.n) + ' <small>white</small></span>' +
+      '<span class="cr-px">' + moneyHTML(base.v) + '</span></div>' : '') +
+    rows.map(([n, p]) =>
     '<div class="cr-crow"><span>' + esc(n) + '</span><span class="cr-px">' + moneyHTML(p.v) + '</span></div>').join('') +
     '</div><p class="note">' + esc(D.market && D.market.league ? D.market.league + ': the' : 'The') +
     ' in-game Currency Exchange every hour, live trade site listings over the day.</p>';
