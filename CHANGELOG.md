@@ -3,6 +3,39 @@
 The full list of changes. The public patch notes (data/changelog.json, shown on the site) stay short.
 Add the details here first, then a short public line there.
 
+## Next — Craft: the page the canvas drew
+
+- The tab shipped with the right structure and the wrong layout. This is it laid out the way the canvas has
+  it, in the site's own tokens and components — no colour and no font came off the artboards.
+- **"What can this base roll" is three columns.** Left, *What are you crafting*: the search, the chips of the
+  kind in hand's own group, and the bases as cards (`Lv 67 · 158 mods`), the base in hand always one of them.
+  Middle, the item over its pool: the base, `Open card →`, the base's own lines, and the item level the whole
+  screen is read at. Right, *What puts it there*: what is guaranteed on this base, the orbs that can add one,
+  what each costs right now, and under them the mechanics that were the middle column before.
+- **The pool is rows, not a table of controls.** One row per modifier: the best roll this item level can
+  take, its share of its own side as the number on the right, and one line under it —
+  `weight 8,085 · 10 tiers · from ilvl 81`. Likeliest first, twelve a side, then `N more suffixes · Show all`.
+  The row opens on the tier picker and the Add button it always had, so nothing that shipped was lost.
+- **"How do I get this mod" leads with where it rolls.** A ranked table — item class, best tier, the item
+  level that tier needs, share — best first, and picking a modifier lands on the kind of item it rolls best
+  on, so the screen answers before anything is chosen. Under it, *What guarantees it*: the essences that put
+  that very line on and the omens that hold the next orb to its side, whatever the item. Beside it, *The mod*:
+  the roll, its side, its tags, the tier ladder down to T8 with the level each one needs, and the trade search
+  for the modifier alone. Then *Reads with*: the cards the line's own words lead to, found the way every other
+  line on the site finds them (assets/marks.js).
+- **The numbers for the table are built, not fetched.** `tools/craftmods.py` already turns the 31 item class
+  files inside out; it now also carries, per kind of item, the best tier's own wording, the level it needs and
+  its share of that side at the highest item level. 59 KB → 113 KB, 16 KB over the wire, and still nothing in
+  first paint — against 1.5 MB of class files the browser would otherwise have had to fetch to rank 16 kinds
+  of item. Shares are Craft of Exile's measured weights, named on screen; tiers and levels are the game files.
+- **The copy is the game's.** Empty states are "No modifier selected." and "Select a kind of item.", not a
+  sentence about what a panel is for. "Pick an orb to see what it can add", "Pick a modifier and this is
+  where…", "Try one word off the line itself" and "Drag to pick a tier, then Add" are gone.
+- Kept: the segmented switch, the plan in the address, the ways into the bench, one job per screen on a phone.
+  The phone leads with the item and its level, then the way to another base, then the pool, then the rail.
+- Checked in headless Chrome at 375×812 touch and at 1440: no console errors, nothing scrolls sideways,
+  nothing under 44px on the phone. guard 7 ok, simcheck 2 ok.
+
 ## Next — A tab left open across a deploy opens the new bench, instead of nothing at all
 
 - The fault, live on wraeclastindex.fyi minutes after the bench went out (ticket 48). A tab opened before the
