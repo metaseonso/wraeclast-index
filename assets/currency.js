@@ -210,14 +210,14 @@ function paintPick(groups){
   if(groups){ $('.cxp-cats', PEL).innerHTML = groupChips(); $('.cxp-fams', PEL).innerHTML = famChips(); }
   const list = pickList();
   $('.cxp-list', PEL).innerHTML = list.length ? list.slice(0, PICK.shown).map(pickRow).join('')
-    : '<p class="note">' + (PICK.cat === 'watch' && !PICK.q ? 'No stars yet. Search above and tap one.' : 'Nothing by that name.') + '</p>';
+    : '<p class="note">' + (PICK.cat === 'watch' && !PICK.q ? 'No stars yet.' : 'Nothing by that name.') + '</p>';
   $('.cxp-ft', PEL).innerHTML = list.length + (list.length === 1 ? ' currency' : ' currencies') +
     (list.length > PICK.shown ? ' · <button type="button" class="btn cxp-more">Show all ' + list.length + '</button>' : '');
 }
 function openPicker(){
   const box = document.createElement('section');
   box.className = 'cxpick panel';
-  box.innerHTML = '<h3>Watch list</h3><p class="note">Every currency the Exchange lists, busy or not. Tap one to watch it.</p>' +
+  box.innerHTML = '<h3>Watch list</h3><p class="note">Every currency the Exchange lists, busy or not.</p>' +
     '<input class="field cxp-q" type="search" placeholder="Search currency…" autocomplete="off" aria-label="Search currency">' +
     '<div class="cxp-chips cxp-cats"></div><div class="cxp-chips cxp-fams"></div>' +
     '<div class="cxp-list"></div><p class="note cxp-ft" aria-live="polite"></p>';
@@ -305,8 +305,8 @@ function render(){
   $('#cxcount', EL).textContent = list.length + ' item' + (list.length === 1 ? '' : 's');
   const grid = $('#cxcards', EL);
   flow(grid, list.slice(0, S.shown).map(r => ({key: 'c:' + r.it.id, r})), x => currencyCard(x.r));
-  if(!list.length) grid.innerHTML = '<div class="empty" style="grid-column:1/-1"><h3>Nothing here</h3><p>' +
-    (S.trend === 'watch' ? 'Nothing watched yet. Tap “Add to watch list”.' : 'Try fewer filters.') + '</p></div>';
+  if(!list.length) grid.innerHTML = '<div class="empty" style="grid-column:1/-1"><h3>Nothing here</h3>' +
+    (S.trend === 'watch' ? '<p>Nothing watched yet.</p>' : '') + '</div>';
   const more = $('#cxmore', EL);
   more.hidden = list.length <= S.shown;
   if(!more.hidden) $('.cx-all', more).textContent = 'Show all ' + list.length;
