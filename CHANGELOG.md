@@ -3,6 +3,36 @@
 The full list of changes. The public patch notes (data/changelog.json, shown on the site) stay short.
 Add the details here first, then a short public line there.
 
+## Next — Real prices for base items
+
+- The Craft tab's *Cost right now* priced the orbs and said nothing about the item. `data/market.json` priced
+  currency and uniques only, because nothing ever asked the trade site what a base costs. It does now, the
+  same way everything else on the site is priced: real listings, no estimate anywhere.
+- **Which bases.** 1,554 of them is more than a day of checks allows, so `tools/baseprices.py` ranks them and
+  writes `data/basequeries.json`. The rule: a shape is an item class and the defences its bases come in — a
+  body armour of evasion and energy shield is not a body armour of armour, and nobody shopping for one takes
+  the other — and the list is every base standing at the top drop level of its shape. Every base at that
+  level, so two that drop together are never split by a tiebreak. 62 shapes, **108 bases**. `LEVELS` widens
+  it: 2 takes the top two levels of each shape (201), 3 the top three (304).
+- **Which price.** The white one: rarity `normal`, sellers online. A rare of that name is another item at
+  another price on the trade site and is never counted in. The row carries `as: "white"`, so the card prints
+  the word under the price and the popup reads `7 white listed on the trade site · checked 2 h ago`. The
+  Craft tab's block names it the same way: `Aegis Quarterstaff white — 3 ex`, first, above the orbs.
+- **The budget.** The hour holds 88 checks and every kind takes a share in proportion to what it has waiting,
+  so the pass went from 798 things to 906: a full pass every 10 hours where it was 9, and a unique's share of
+  one run from 71 checks to 63. Every kind comes round about an hour and a quarter later than it did, and the
+  24 hours the site promises hold with 14 to spare. All 1,554 would not — 2,352 things is a 27-hour pass.
+- **Nothing listed is no price.** A check that finds nobody selling writes an empty row: no value, no point on
+  the day's line, no row in the Craft block and no price on the card. Never an estimate, never yesterday's
+  price drawn as today's. The list itself is under the last-good rule (`tools/lastgood.py`): a patch that
+  empties the craft tables keeps the committed list, goes red and raises a `data-fault` ticket.
+- Plumbing: `base:<name>` keys in `trade_prices` (`worker/prices.js`), a `Base item prices` job in the watch
+  (`worker/health.js`, late after 6 h like the rest), and the two trade kinds now age separately in
+  `/data/market.json` so a kind that has stopped cannot hide behind one still running. The card needed no new
+  field — `b:<name>` is the key `priceOf` already looks under.
+- Checked in headless Chrome at 375×812 touch and at 1280: the Craft block and the base card both draw the
+  price, a base with nothing listed draws none, no console errors, nothing scrolls sideways. guard 8 ok.
+
 ## Next — Craft: the page the canvas drew
 
 - The tab shipped with the right structure and the wrong layout. This is it laid out the way the canvas has
