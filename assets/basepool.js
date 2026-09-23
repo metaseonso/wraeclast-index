@@ -10,8 +10,11 @@ const FILES = {};   // url -> a promise of it, asked for once
 export const table = url => FILES[url] ||
   (FILES[url] = fetch(url, {priority: 'low'}).then(r => r.ok ? r.json() : null).catch(() => null));
 
+/* the table over all of them: the item classes, the orbs, the omens (data/craft.json). The Craft tab's rules
+   are handed this whole file, so the Trade page reads it from here rather than fetching it twice. */
+export const craft = () => table('data/craft.json');
 /* the item classes, and which trade category each one is (data/craft.json) */
-export const classes = () => table('data/craft.json').then(x => (x && x.classes) || []);
+export const classes = () => craft().then(x => (x && x.classes) || []);
 /* the class a search is on: a base type belongs to one, a whole kind is one. Anything else — a unique, a
    currency — is on no class of its own and narrows nothing. */
 export async function classFor(item){
@@ -27,7 +30,9 @@ const poolsOf = (P, base) => [...new Set((base ? [base] : P.bases).map(b => b.p)
 
 /* Every modifier family the base can have of one sort — 'm' what it rolls, 'd' what a desecration adds,
    'c' what a corruption adds — in the order the game data ships them. One row per family, with the tiers it
-   has here, lowest roll first (so the best tier is the last, the way the Craft tab reads them). */
+   has here, lowest roll first (so the best tier is the last, the way the Craft tab reads them). A tier
+   carries `i`, its modifier's own place in this file: that is what the rules in assets/engine.js are asked
+   about, so a caller can go from a line on a card to the modifier the engine knows. */
 export function famsOf(P, base, which = 'm'){
   if(!P) return [];
   const by = new Map(), had = new Set();
@@ -38,7 +43,7 @@ export function famsOf(P, base, which = 'm'){
     if(!fam) continue;
     let f = by.get(m[1]);
     if(!f) by.set(m[1], f = {f: m[1], side: fam[0], lines: fam[1], tags: fam[2], tiers: []});
-    f.tiers.push({lo: m[5], hi: m[6], lvl: m[2], lines: m[3]});
+    f.tiers.push({i, lo: m[5], hi: m[6], lvl: m[2], lines: m[3]});
   }
   const out = [...by.values()];
   for(const f of out){
