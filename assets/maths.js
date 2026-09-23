@@ -274,8 +274,25 @@ export function read(lines){
   }
   return {stats, unread, named, lines: n};
 }
-const at = (stats, k) => stats.get(k) || {flat: 0, inc: 0, more: 1};
+/* A stat nothing has touched. One of it, shared: working a hit out looks up seventy-odd stats and a build
+   carries a handful of them, so the rest used to be seventy-odd objects made and thrown away per hit, and a
+   hit is worked out hundreds of thousands of times in an optimise pass. Nothing here ever writes to what
+   `at` hands back — `read` builds its entries through its own closure — so one frozen nought does. */
+const NONE = Object.freeze({flat: 0, inc: 0, more: 1});
+const at = (stats, k) => stats.get(k) || NONE;
 const total = (stats, k, base = 0) => (base + at(stats, k).flat) * (1 + at(stats, k).inc / 100) * at(stats, k).more;
+
+/* The keys the maths looks a stat up by, built once rather than stuck together on every lookup. Working one
+   hit out is seventy-odd lookups and most of the cost was making the key and hashing it, which is paid again
+   every time; an optimise pass works a hit out hundreds of thousands of times, so they are made here. The
+   keys are the same strings as before and no number moves. */
+const KEYS = {add: {}, dmg: {}, conv: {}, gain: {}, pen: {}, res: {}, resmax: {}};
+for(const t of [...TYPES, 'all', 'elemental', 'attack', 'spell', 'melee', 'projectile', 'area']){
+  KEYS.add[t] = 'add.' + t; KEYS.dmg[t] = 'dmg.' + t; KEYS.pen[t] = 'pen.' + t;
+  KEYS.res[t] = 'res.' + t; KEYS.resmax[t] = 'resmax.' + t;
+  KEYS.conv[t] = {}; KEYS.gain[t] = {};
+  for(const u of TYPES){ KEYS.conv[t][u] = 'conv.' + t + '.' + u; KEYS.gain[t][u] = 'gain.' + t + '.' + u; }
+}
 
 /* ---------- what is not settled ----------
    One row per thing the model meets and cannot settle. Each one says how it widens the answer and what the
@@ -323,14 +340,15 @@ export function baseMana(cls, level){ return cls.mana + PER_LEVEL.mana * level; 
 export function hit(m){
   const base = {};                                                    // 1. base damage
   for(const t of TYPES) base[t] = (m.base && m.base[t]) || 0;
-  for(const t of TYPES) base[t] += at(m.stats, 'add.' + t).flat;      // 2. added damage
+  for(const t of TYPES) base[t] += at(m.stats, KEYS.add[t]).flat;     // 2. added damage
   const conv = {};                                                    // 3. conversion, capped out of a type
   for(const from of TYPES){
     let out = 0;
-    for(const to of TYPES) out += at(m.stats, 'conv.' + from + '.' + to).flat;
+    const kc = KEYS.conv[from];
+    for(const to of TYPES) out += at(m.stats, kc[to]).flat;
     const scale = out > 100 ? 100 / out : 1;
     for(const to of TYPES){
-      const part = at(m.stats, 'conv.' + from + '.' + to).flat * scale / 100;
+      const part = at(m.stats, kc[to]).flat * scale / 100;
       if(!part) continue;
       conv[to] = (conv[to] || 0) + base[from] * part;
       conv[from] = (conv[from] || 0) - base[from] * part;
@@ -339,21 +357,26 @@ export function hit(m){
   const after = {};
   for(const t of TYPES) after[t] = base[t] + (conv[t] || 0);
   const gained = {};                                                  // 4. gained as extra, never capped
-  for(const from of TYPES) for(const to of TYPES){
-    const part = at(m.stats, 'gain.' + from + '.' + to).flat;
-    if(part) gained[to] = (gained[to] || 0) + after[from] * part / 100;
+  for(const from of TYPES){
+    const kg = KEYS.gain[from];
+    for(const to of TYPES){
+      const part = at(m.stats, kg[to]).flat;
+      if(part) gained[to] = (gained[to] || 0) + after[from] * part / 100;
+    }
   }
   const out = {};
   let sum = 0;
   for(const t of TYPES){
     const raw = after[t] + (gained[t] || 0);
     if(!raw){ out[t] = 0; continue; }
-    const inc = at(m.stats, 'dmg.all').inc + at(m.stats, 'dmg.' + t).inc
-      + (ELEMENTS.includes(t) ? at(m.stats, 'dmg.elemental').inc : 0)
-      + at(m.stats, 'dmg.' + (m.kind || 'attack')).inc;                // 5. one sum, applied once
-    const more = at(m.stats, 'dmg.all').more * at(m.stats, 'dmg.' + t).more
-      * (ELEMENTS.includes(t) ? at(m.stats, 'dmg.elemental').more : 1)
-      * at(m.stats, 'dmg.' + (m.kind || 'attack')).more;              // 6. each more its own multiplier
+    const kind = KEYS.dmg[m.kind || 'attack'] || ('dmg.' + m.kind);
+    const el = ELEMENTS.includes(t);
+    const inc = at(m.stats, KEYS.dmg.all).inc + at(m.stats, KEYS.dmg[t]).inc
+      + (el ? at(m.stats, KEYS.dmg.elemental).inc : 0)
+      + at(m.stats, kind).inc;                                         // 5. one sum, applied once
+    const more = at(m.stats, KEYS.dmg.all).more * at(m.stats, KEYS.dmg[t]).more
+      * (el ? at(m.stats, KEYS.dmg.elemental).more : 1)
+      * at(m.stats, kind).more;                                       // 6. each more its own multiplier
     out[t] = raw * (1 + inc / 100) * more;
     sum += out[t];
   }
@@ -443,8 +466,8 @@ export function character(m){
     * at('life').more + at('life').flat * (1 + (BASE.lifeInc + at('life').inc) / 100));
   const res = {}, resmax = {};
   for(const e of [...ELEMENTS, 'chaos']){
-    resmax[e] = Math.min(RES_CEILING, RES_DEFAULT + at('resmax.' + e).flat);
-    res[e] = Math.min(Math.round(total('res.' + e, 0)), resmax[e]);
+    resmax[e] = Math.min(RES_CEILING, RES_DEFAULT + at(KEYS.resmax[e]).flat);
+    res[e] = Math.min(Math.round(total(KEYS.res[e], 0)), resmax[e]);
   }
   const mana = Math.round(total('mana', cls ? baseMana(cls, m.level) : 0));
   const d = {

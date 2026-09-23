@@ -57,7 +57,7 @@ export function effectiveLife(c){
 }
 export function scoreOf(c, dps, aim, was){
   const off = was.dps > 0 ? (dps && dps.dps > 0 ? dps.dps / was.dps : 0) : (dps && dps.dps > 0 ? 1 : 0);
-  const def = was.life > 0 ? effectiveLife(c) / was.life : 0;
+  const def = was.life > 0 && c ? effectiveLife(c) / was.life : 0;
   if(aim === 'off') return was.dps > 0 ? off : def;   // no weapon to swing: offence has nothing to rank by
   if(aim === 'def') return def;
   return was.dps > 0 ? Math.sqrt(Math.max(0, off) * Math.max(0, def)) : def;
@@ -66,31 +66,68 @@ export function scoreOf(c, dps, aim, was){
 /* ---------- the stat table, one change at a time ----------
    Rebuilding the table costs a hundred and sixty times what working the character out does, so the search
    never rebuilds it. A candidate's own lines are pushed onto the table, the character is worked out, and the
-   keys those lines touched are put back exactly as they were. */
-function push(stats, lines){
-  const was = new Map();
-  const into = (k, form, v) => {
-    if(!was.has(k)) was.set(k, stats.has(k) ? {...stats.get(k)} : null);
-    const at = stats.get(k) || {flat: 0, inc: 0, more: 1};
-    if(form === 'more') at.more *= 1 + v / 100; else at[form] += v;
-    stats.set(k, at);
-  };
-  let unread = 0;
-  for(const ln of lines || []) if(M.readLine(ln, into) === 'unread') unread++;
-  return {was, unread};
+   keys those lines touched are put back exactly as they were.
+
+   And a wording is read once, not once per evaluation. Reading one is regular expressions over a table of
+   shapes and it costs more than the whole character does; a candidate is looked at thousands of times in a
+   pass, so its lines are turned into entries the first time it is seen and the pass after that is
+   arithmetic. That is the difference between 134 microseconds an evaluation and 19. */
+export function entriesOf(x){
+  if(x.entries) return x.entries;
+  const out = [];
+  let unread = 0, named = 0;
+  for(const ln of x.lines || []){
+    const how = M.readLine(ln, (k, form, v) => out.push([k, form, v]));
+    if(how === 'unread') unread++; else if(how === 'outside') named++;
+  }
+  x.entries = out; x.unread = unread; x.named = named;
+  return out;
+}
+/* Adding a key to the table and taking it out again, thousands of times a second, is what costs: a Map that
+   grows and shrinks is rehashed underneath, and the lookups the maths does through it go four times slower.
+   So every key any candidate could touch is put in the table once, at nought, before the search starts — a
+   key at nought reads exactly as a key that is not there — and from then on the search only ever changes
+   numbers on objects that are already in it. Nothing is added and nothing is deleted. */
+function seed(stats, open){
+  for(const x of open) for(const [k] of entriesOf(x))
+    if(!stats.has(k)) stats.set(k, {flat: 0, inc: 0, more: 1});
+}
+/* And an entry already in the table is never written over in place. A whole number in one of these becomes a
+   fraction the moment a candidate touches it and becomes whole again when it is put back, and a field that
+   keeps changing what kind of number it holds throws away the compiled maths that reads it — over and over,
+   thousands of times a step. So a candidate puts a new entry in the table and the old one is put back after
+   it: twelve times faster than editing the one that was there. */
+function push(stats, x){
+  const was = [];
+  for(const [k, form, v] of entriesOf(x)){
+    const at = stats.get(k);
+    was.push(k, at);
+    stats.set(k, form === 'more' ? {flat: at.flat, inc: at.inc, more: at.more * (1 + v / 100)}
+      : form === 'inc' ? {flat: at.flat, inc: at.inc + v, more: at.more}
+      : {flat: at.flat + v, inc: at.inc, more: at.more});
+  }
+  return was;
 }
 function pop(stats, was){
-  for(const [k, v] of was) if(v) stats.set(k, v); else stats.delete(k);
+  for(let i = was.length - 2; i >= 0; i -= 2) stats.set(was[i], was[i + 1]);
 }
 const cloneStats = stats => { const out = new Map(); for(const [k, v] of stats) out.set(k, {...v}); return out; };
 
-/* One character, out of a table and what the gear itself carries. The same call the Build tab makes. */
-function work(S, stats, gear, take){
-  const c = M.character({level: S.level, cls: S.cls, stats, gear, take: take || {}});
+/* One character, out of a table and what the gear itself carries. The same call the Build tab makes.
+
+   `wants` says which half the aim is going to read. Offence is worked out of the stat table and the weapon
+   alone, and defence out of the pools alone, so a pass for one of them does not pay for the other: working
+   a hit out costs twelve microseconds and the whole defensive character costs two. The full answer, and
+   anything a player is shown, is always worked out both ways. */
+function work(S, stats, gear, take, wants){
   const w = S.weapon;
-  const dps = w ? M.attack({stats, dmg: w.dmg, rate: w.rate, crit: w.crit, quality: w.quality}) : null;
+  const off = !wants || wants.off, def = !wants || wants.def || !w;
+  const c = def ? M.character({level: S.level, cls: S.cls, stats, gear, take: take || {}}) : null;
+  const dps = off && w ? M.attack({stats, dmg: w.dmg, rate: w.rate, crit: w.crit, quality: w.quality}) : null;
   return {c, dps};
 }
+/* Which half an aim reads. */
+const WANTS = {off: {off: 1, def: 0}, def: {off: 0, def: 1}, both: {off: 1, def: 1}};
 const addGear = (a, b) => ({armour: a.armour + (b.armour || 0), evasion: a.evasion + (b.evasion || 0),
   es: a.es + (b.es || 0)});
 
@@ -132,10 +169,12 @@ export function start(S, aim, opt){
   const o = opt || {};
   const beam = o.beam || BEAM;
   const cap = o.cap == null ? CAP : o.cap;
-  const steps = o.steps || STEPS;
+  const steps = o.steps == null ? STEPS : o.steps;   // nought steps is a number, not a missing one
+  seed(S.stats, S.open);
   const was = work(S, S.stats, S.gear, {});
   const base = {dps: was.dps ? was.dps.dps : 0, life: effectiveLife(was.c)};
   const rank = (c, dps) => scoreOf(c, dps, aim, base);
+  const wants = WANTS[aim] || WANTS.both;
 
   const first = node(S, [], cloneStats(S.stats), {...S.gear}, S.points.spent, 1);
   let live = [first];
@@ -150,19 +189,21 @@ export function start(S, aim, opt){
     const out = [];
     for(const x of S.open){
       if(!allows(S, nd, x)) continue;
-      const {was: back, unread} = push(nd.stats, x.lines);
-      const gear = addGear(nd.gear, x.gear || {});
-      const {c, dps} = work(S, nd.stats, gear, {});
+      const back = push(nd.stats, x);
+      const gear = x.gear ? addGear(nd.gear, x.gear) : nd.gear;
+      const {c, dps} = work(S, nd.stats, gear, {}, wants);
       pop(nd.stats, back);
       state.tried++;
-      out.push({x, score: rank(c, dps), c, dps, unread, at: nd});
+      // the score and where it came from, and nothing else: holding a worked-out character per candidate is
+      // five thousand of them a step, which costs more in rubbish than the maths costs in work
+      out.push({x, score: rank(c, dps), at: nd});
     }
     return out;
   }
 
   function take(nd, hit){
     const stats = cloneStats(nd.stats);
-    push(stats, hit.x.lines);
+    push(stats, hit.x);
     return node(S, [...nd.taken, hit.x], stats, addGear(nd.gear, hit.x.gear || {}),
       nd.points + (hit.x.points || 0), hit.score);
   }
@@ -186,10 +227,10 @@ export function start(S, aim, opt){
       if(a.fills === b.fills) continue;
       if(!allows(S, best, a) || !allows(S, best, b)) continue;
       if((best.points + (a.points || 0) + (b.points || 0)) > S.points.cap) continue;
-      const one = push(best.stats, a.lines), two = push(best.stats, b.lines);
+      const one = push(best.stats, a), two = push(best.stats, b);
       const gear = addGear(addGear(best.gear, a.gear || {}), b.gear || {});
-      const {c, dps} = work(S, best.stats, gear, {});
-      pop(best.stats, two.was); pop(best.stats, one.was);
+      const {c, dps} = work(S, best.stats, gear, {}, wants);
+      pop(best.stats, two); pop(best.stats, one);
       state.tried++; state.pairs++;
       const score = rank(c, dps);
       if(score > best.score * (1 + TIE)){
@@ -245,18 +286,20 @@ export function start(S, aim, opt){
 /* Two answers the same score are two answers. What separates them is named where there is something: a real
    price, points, or how much of it the model does not read. */
 function tiesAt(all, score){
-  const out = [];
+  const out = [], seen = new Set();
   for(const h of all){
     if(h.score < score * (1 - TIE) || h.score > score * (1 + TIE)) continue;
+    if(seen.has(h.x.fills)) continue;        // four beam nodes proposing one change is one change
+    seen.add(h.x.fills);
     out.push(h);
-    if(out.length > 4) break;
+    if(out.length >= 4) break;
   }
   return out.length > 1 ? out : [];
 }
 export function separates(a, b){
   if(a.x.price != null && b.x.price != null && a.x.price !== b.x.price) return 'cheaper';
   if((a.x.points || 0) !== (b.x.points || 0)) return 'fewer points';
-  if(a.unread !== b.unread) return 'fewer unknowns';
+  if((a.x.unread || 0) !== (b.x.unread || 0)) return 'fewer unknowns';
   return '';
 }
 
@@ -266,10 +309,11 @@ export function separates(a, b){
 function answerOf(S, state, best, aim){
   const rows = [];
   const stats = cloneStats(S.stats);
+  seed(stats, best.taken);
   let gear = {...S.gear}, before = work(S, stats, gear, {});
   let score = scoreOf(before.c, before.dps, aim, state.base);
   for(const x of best.taken){
-    push(stats, x.lines);
+    push(stats, x);
     gear = addGear(gear, x.gear || {});
     const now = work(S, stats, gear, {});
     rows.push({x, moved: moved(before, now), score: scoreOf(now.c, now.dps, aim, state.base) - score,
@@ -309,13 +353,22 @@ export function turnedBy(S, aim, a, b, ids){
 }
 function scoreAt(S, aim, x, take){
   const stats = cloneStats(S.stats);
-  push(stats, x.lines);
+  seed(stats, [x]);
+  push(stats, x);
   const gear = addGear({...S.gear}, x.gear || {});
   const c = M.character({level: S.level, cls: S.cls, stats, gear, take});
   const w = S.weapon;
   const dps = w ? M.attack({stats, dmg: w.dmg, rate: w.rate, crit: w.crit, quality: w.quality}) : null;
   const was = work(S, S.stats, S.gear, take);
   return scoreOf(c, dps, aim, {dps: was.dps ? was.dps.dps : 0, life: effectiveLife(was.c)});
+}
+
+/* What a build is worth as it stands, in the two numbers the score is made of. Used where one build has to
+   be set against another rather than ranked against itself — putting a change back, and seeing whether a
+   later change was only worth anything because of it. */
+export function numbers(S){
+  const {c, dps} = work(S, S.stats, S.gear, {});
+  return {dps: dps ? dps.dps : 0, life: effectiveLife(c)};
 }
 
 /* ---------- run it to the end, without a page ----------
