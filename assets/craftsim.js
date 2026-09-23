@@ -216,6 +216,11 @@ async function handed(plan, from){
 }
 
 /* what the bench is holding, in the shape the card's own fields read */
+/* One wording for a craft you can go back to: the bench draws it, the run keeps it current, and
+   neither counts the steps its own way. */
+const stepsSaid = n => n + ' step' + (n === 1 ? '' : 's');
+const againLabel = run => run
+  ? 'Carry on the craft you left · ' + stepsSaid(run.log.filter(l => l.ok).length) : '';
 async function benchView(plan){
   const d = await classData(plan.cls), cl = cls(plan.cls), b = baseOf(d, plan.base);
   const by = new Map(allOf(shelf(d, cl, b)).map(x => [pickKey(x), x]));
@@ -238,7 +243,7 @@ async function benchView(plan){
     bases: (d.bases || []).map(x => ({n: x.n, dl: x.dl})),
     pool: rows.length ? {rows, src: cand.kind === 'measured' ? weightSrc() : ''} : null,
     picks,
-    again: again ? 'Carry on the craft you left · ' + again.log.filter(l => l.ok).length + ' steps' : '',
+    again: againLabel(again),
     ready: !!(b && picks.length),
     why: !b ? 'Pick a base first.' : !picks.length ? 'Pick at least one currency to craft with.' : '',
     note: cand ? cand.note : '',
@@ -505,7 +510,8 @@ function take(run, i){
 }
 // where the item and the stream stood before this step, so one step back is exact
 function mark(run){
-  run.undo.push({it: E.clone(run.it), at: run.at, log: run.log.length});
+  run.undo.push({it: E.clone(run.it), at: run.at, log: run.log.length,
+    used: {...run.used}, armed: [...run.armed]});   // stepping back gives the currency and the omen back
   if(run.undo.length > UNDO) run.undo.shift();
 }
 function land(run, x, on, r, why){
@@ -533,6 +539,8 @@ function undoStep(run){
   run.at = back.at;
   stream(run);
   run.log = run.log.slice(run.log.length - back.log);
+  if(back.used) run.used = back.used;              // what it cost is what you have really used
+  if(back.armed) run.armed = new Set(back.armed);  // and an omen the step ate is armed again
   run.offer = null;
   saveRun(run);
   runPaint(run);
@@ -556,7 +564,7 @@ function runPaint(run){
 function touchBench(){
   const run = RUNS.get(FRONT);
   if(!BIT || !BIT.plan) return;
-  BIT.plan.again = run ? 'Carry on the craft you left · ' + run.log.filter(l => l.ok).length + ' steps' : '';
+  BIT.plan.again = againLabel(run);
 }
 function fillRun(host, it){
   const run = RUNS.get(it.id);
@@ -672,7 +680,7 @@ const itemRec = it => ({
 function saveRun(run){
   put(KEY + '.' + run.id, {...stamp(), cls: run.it.d.id, ...itemRec(run.it), plan: run.plan, used: run.used,
     armed: [...run.armed], sel: run.sel, seed: run.seed, at: run.at, log: run.log.slice(0, LOG),
-    undo: run.undo.map(u => ({it: itemRec(u.it), at: u.at, log: u.log}))});
+    undo: run.undo.map(u => ({it: itemRec(u.it), at: u.at, log: u.log, used: u.used, armed: u.armed}))});
 }
 /* An item off a record, rebuilt from the data as it is today. A modifier whose key the data no longer holds,
    or that this base cannot roll, goes and is counted; an item that would break its caps, its groups or its
@@ -732,7 +740,7 @@ async function restore(){
   for(const u of r.undo || []){
     let back = null;
     try { back = rebuild(d, u.it); } catch { back = null; }
-    if(back) run.undo.push({it: back.it, at: u.at, log: u.log});
+    if(back) run.undo.push({it: back.it, at: u.at, log: u.log, used: u.used, armed: u.armed});
   }
   run.say = made.gone ? made.gone + ' modifier' + (made.gone === 1 ? '' : 's') +
     ' the data no longer holds went; the rest came back.' : '';
