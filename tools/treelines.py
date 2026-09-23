@@ -56,12 +56,12 @@ def main():
     args = ap.parse_args()
     out = build()
     text = json.dumps(out, ensure_ascii=False, separators=(',', ':')) + '\n'
-    was = OUT.read_text(encoding='utf-8') if OUT.exists() else ''
+    was = OUT.read_text(encoding='utf-8', newline='') if OUT.exists() else ''
     print('treelines %d passives, %d wordings, %.0f KB%s'
           % (len(out['n']), len(out['w']), len(text.encode('utf-8')) / 1024,
              '' if text == was else (' (would change)' if args.report else ' -> data/treelines.json')))
     if not args.report:
-        OUT.write_text(text, encoding='utf-8')
+        OUT.write_text(text, encoding='utf-8', newline='\n')
 
 
 if __name__ == '__main__':
