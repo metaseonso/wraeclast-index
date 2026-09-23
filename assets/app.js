@@ -2117,18 +2117,21 @@ export function search(q, kind = 'all'){
   const out = [];
   if(!ws.length) return out;
   const slipped = ws.some(w => w.near);
+  /* Where a word slipped, the whole-name bonuses are worked against the words the index really has rather
+     than the letters given, at half weight: somebody who typed "quaterstaff" wants the Quarterstaff above
+     the Aegis Quarterstaff, and the only thing that says so is the name matching the word they meant. */
+  const fixed = slipped ? ws.map(w => w.alts[0]).join(' ') : qs;
+  const fw = slipped ? 0.5 : 1;
   const wordStart = new RegExp('(^|[^a-z0-9])' + qs.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
   const near = nearness();   // no trail, and the score below is the one it always was
   for(const it of D.index.items){
     if((kind !== 'all' && it.k !== kind) || it.dup) continue;
     let s = hits(it, ws);
     if(s === null) continue;
-    // the bonuses below are for the letters as they were given, so a word that slipped never wins on them
-    if(slipped) s += 0;
-    else if(it._nl === qs) s += 1000;
-    else if(it._nl.startsWith(qs)) s += 600;
-    else if(wordStart.test(it._nl)) s += 380;
-    else if(it._nl.includes(qs)) s += 220;
+    if(it._nl === fixed) s += 1000 * fw;
+    else if(it._nl.startsWith(fixed)) s += 600 * fw;
+    else if(!slipped && wordStart.test(it._nl)) s += 380;
+    else if(it._nl.includes(fixed)) s += 220 * fw;
     s += (KIND[it.k] || {}).rank || 0;              // a kind that should not rank beside the rest says so once
     if(priceOf(it)) s += 12;
     const u = usageOf(it); if(u) s += Math.min(40, u * 2);
