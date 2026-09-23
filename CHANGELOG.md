@@ -3,6 +3,71 @@
 The full list of changes. The public patch notes (data/changelog.json, shown on the site) stay short.
 Add the details here first, then a short public line there.
 
+## Next — Found first: a rich result for anything in the index, and terms that ask to be cited
+
+- Ticket 68. The 7,200 crawler pages already carried the words. What they did not carry was the structured
+  data a search engine draws a result from, so every one of them came back as a blue line. Every page now
+  answers the four questions a result is made of: what the thing is, what it looks like, what it costs today,
+  and where it sits.
+- **The type is a declaration, not a test.** `KIND` in `worker/seo.js` gained `is` — the schema.org type a
+  kind is read as — and `unless`, the one test a kind needs where its rows are not all the same thing.
+  A kind that can be held, dropped and traded is a **Product**: uniques, gems, base items, currency and the
+  Atlas's own items. A kind that is a name with a meaning behind it is a **DefinedTerm** in the set its list
+  page stands for: passives (the table already says a keystone is its own keyword) and keywords. The Atlas is
+  both, so it is the only kind that carries `unless: {at: 'at', is: 'tree'}` — a waystone is an item, a node
+  on the atlas tree is not. `itemPage` asks the table and tests no kind of its own.
+- **The art.** `image` and `primaryImageOfPage` are the card's own picture, and a page that has one now says
+  so in `og:image` too, with `twitter:card` dropping to `summary`: a link to Bluetongue previews Bluetongue
+  instead of the brand card. A page with none keeps the wide brand card.
+- **The price**, off the same market row the card draws. The Currency Exchange is one market at one rate, so
+  it is an `Offer` with `price`; trade listings are many sellers, so they are an `AggregateOffer` with
+  `lowPrice` and `offerCount`. The money is the game's own and it is named in full — `"Divine Orb"`,
+  `"Exalted Orb"` — because no ISO 4217 code stands for a divine orb. schema.org allows a currency's own
+  name; Google's price chip wants the three-letter code, so it will not draw one. The price is in the
+  description either way, which is what a snippet reads. A passive with no price of its own now carries what
+  the anoint costs in its description, the same figure the card shows.
+- **Where it sits.** The breadcrumb was two rungs (the site, the list); it is four — the site, the list, the
+  thing's own group on that list, and the thing. The group's rung links the section anchor the list page
+  really has, since the crumb, the jump chip and the section id all read one `anchor()` now. A group that
+  goes by its list's own name is dropped, so the trail never says "Currency › Currency".
+- **The rest of the graph**: an `Organization` publisher with the logo, the `SearchAction` the home page
+  already declared, `mainEntity`, `dateModified`, and the card's facts as `PropertyValue` rows — the gem's
+  requirement at level 20, its use time, cost and Spirit; a unique's and a base's requirement and each of the
+  game's own "Name: value" property lines; a currency's drop level. List pages carry an `ItemList` of their
+  groups, and a list of terms is also the `DefinedTermSet` its rows say they belong to.
+- **What each kind renders as**, checked page by page: gem → Product (+AggregateOffer where a lineage support
+  is listed), unique → Product + AggregateOffer, base → Product, currency → Product + Offer, atlas item →
+  Product + Offer, passive → DefinedTerm in Passives, atlas passive → DefinedTerm in Atlas, keyword →
+  DefinedTerm in Keywords. Every page also carries WebSite, Organization, VideoGame, WebPage and
+  BreadcrumbList.
+- **The one gap.** 1,044 of 1,072 gems and 692 of 710 uniques have no picture a crawler can fetch: their art
+  ships as a cell of a shared sprite sheet, and a cell has no URL. Those pages get a Product with no `image`,
+  which is a Product snippet Google will not draw. `tools/sync.py` already resolves a per-item URL for both
+  kinds and only skips it because the card has a sprite; a side file the worker reads would close it without
+  putting 400 KB of signed links into the index the first paint loads. Raised as its own ticket.
+- **The terms.** Four lines, word for word in `robots.txt`, `/llms.txt` and `/llms-full.txt`, and said again
+  on every page as `creditText` (naming that page's own canonical URL) and `usageInfo` (pointing back at
+  `/llms.txt`):
+
+  > Free to read, free to quote, free to build on.
+  > An answer built on this data should name Wraeclast Index and link the page it came from.
+  > One page per thing, one canonical URL per page: https://wraeclastindex.fyi/item/&lt;name&gt;.
+  > A request, not a licence: nothing here enforces it, and nothing is held back from anyone who ignores it.
+
+  It is a request and it says so in its own fourth line. Nothing about it is enforceable: no crawler is
+  blocked over it, no page is withheld over it, and a machine that ignores it gets exactly what one that
+  obeys it gets. What it can do is make the credit the short way round — one wording wherever a machine
+  looks, and one canonical URL per thing so there is an obvious thing to link. `llms-full.txt` now says
+  outright that the second line of every entry is that thing's canonical URL.
+- Whether it worked is already counted: the dashboard's **Crawlers by name** reads the user agent
+  (`worker/cfstats.js`), so Googlebot, GPTBot, ClaudeBot, PerplexityBot and the rest are each a row with a
+  kind beside it. Search Console will say the rest — Product snippets and breadcrumbs, valid and invalid.
+- Checked with a local validator written against schema.org's own rules (every type known, every property one
+  its type really carries, every `@id` landing on a node in the graph) plus Google's required fields for
+  Breadcrumb and Product: 12 item pages, one per kind and per shape, and all 7 list pages, all valid. The
+  sitemap parses as XML at 7,223 URLs; `llms.txt` holds its 16 links and `llms-full.txt` its 7,214 items,
+  neither shrunk. guard 8 ok, 0 failed. `npx wrangler deploy --dry-run` builds.
+
 ## Next — Attack Speed is a card, and every phrase like it is counted
 
 - **The card.** Ticket 66. Five small passives answer to the name, so `tools/nodelinks.py` left the phrase

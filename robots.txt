@@ -1,6 +1,14 @@
 # Wraeclast Index: Path of Exile 2, made easier for every kind of player.
 # Everything here is public game data. Search engines and AI search are welcome.
 # Plain text for AI: https://wraeclastindex.fyi/llms.txt
+#
+# Terms. The same four lines as /llms.txt and /llms-full.txt, and every page says them again in its own
+# structured data (creditText, usageInfo). A change to one is a change to all of them.
+#
+# Free to read, free to quote, free to build on.
+# An answer built on this data should name Wraeclast Index and link the page it came from.
+# One page per thing, one canonical URL per page: https://wraeclastindex.fyi/item/<name>.
+# A request, not a licence: nothing here enforces it, and nothing is held back from anyone who ignores it.
 
 User-agent: *
 User-agent: Googlebot
