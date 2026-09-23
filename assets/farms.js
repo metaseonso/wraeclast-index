@@ -139,6 +139,7 @@ function costHTML(r){   // no total: the sheet gives no amounts per map. Just wh
   return r.missing.length ? '<p class="fm-miss">' + (r.thin ? '<span class="fm-tag off">Not priced</span>' : '') +
     'No price yet: ' + r.missing.map(esc).join(', ') + '</p>' : '';
 }
+const oldLeague = () => { const lg = D.market && D.market.league; return !!(lg && SRC && SRC.league && lg !== SRC.league); };
 /* The patch and league clocks, in one line on the entry they age. A card that looks current and is not is
    the fault this line exists for, so it is on the card and not only on the bar above them all. */
 function ageHTML(r){
@@ -150,7 +151,6 @@ function ageHTML(r){
     esc(livePatch() || '?') + (old ? ' · ' + lg : '') + '.</p>';
   return '<p class="fm-age">Setup from ' + esc(SRC.league) + '. Prices are ' + lg + '.</p>';
 }
-const oldLeague = () => { const lg = D.market && D.market.league; return !!(lg && SRC && SRC.league && lg !== SRC.league); };
 /* the trade line on a rolled tablet or waystone: listings, when it was checked, and the search itself */
 function tradeLine(x, dry){
   const t = x.trade;
