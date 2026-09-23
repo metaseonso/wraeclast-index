@@ -1,0 +1,101 @@
+{
+  "note": "Path of Building build codes, shared publicly by their authors on poe.ninja. Each one carries Path of Building own answers in its PlayerStat lines, which is what tools/dev/buildcheck.mjs reads. Nothing here is ours.",
+  "builds": [
+    {
+      "id": "19f04",
+      "what": "a character at level 1, with gear",
+      "from": "https://poe.ninja/poe2/pob/19f04",
+      "cls": "Ranger",
+      "asc": "None",
+      "level": 1
+    },
+    {
+      "id": "1bf2e",
+      "what": "a spell build early, at level 15",
+      "from": "https://poe.ninja/poe2/pob/1bf2e",
+      "cls": "Sorceress",
+      "asc": "Disciple of Varashta",
+      "level": 15
+    },
+    {
+      "id": "1c486",
+      "what": "a build halfway, at level 44",
+      "from": "https://poe.ninja/poe2/pob/1c486",
+      "cls": "Witch",
+      "asc": "Infernalist",
+      "level": 44
+    },
+    {
+      "id": "1129f",
+      "what": "an attack build: a bow, converted to lightning",
+      "from": "https://poe.ninja/poe2/pob/1129f",
+      "cls": "Ranger",
+      "asc": "Deadeye",
+      "level": 86
+    },
+    {
+      "id": "1381d",
+      "what": "a spell build on life",
+      "from": "https://poe.ninja/poe2/pob/1381d",
+      "cls": "Witch",
+      "asc": "Blood Mage",
+      "level": 88
+    },
+    {
+      "id": "2475f",
+      "what": "an energy shield build on critical hits",
+      "from": "https://poe.ninja/poe2/pob/2475f",
+      "cls": "Sorceress",
+      "asc": "Stormweaver",
+      "level": 90
+    },
+    {
+      "id": "1fba1",
+      "what": "an armour build that blocks",
+      "from": "https://poe.ninja/poe2/pob/1fba1",
+      "cls": "Warrior",
+      "asc": "Titan",
+      "level": 92
+    },
+    {
+      "id": "27230",
+      "what": "an armour build, the most armour in the set",
+      "from": "https://poe.ninja/poe2/pob/27230",
+      "cls": "Warrior",
+      "asc": "Titan",
+      "level": 90
+    },
+    {
+      "id": "12d50",
+      "what": "block and energy shield together",
+      "from": "https://poe.ninja/poe2/pob/12d50",
+      "cls": "Huntress",
+      "asc": "Ritualist",
+      "level": 90
+    },
+    {
+      "id": "22776",
+      "what": "a life build with the attributes stacked",
+      "from": "https://poe.ninja/poe2/pob/22776",
+      "cls": "Mercenary",
+      "asc": "Gemling Legionnaire",
+      "level": 90
+    },
+    {
+      "id": "19e85",
+      "what": "armour and life at level 98",
+      "from": "https://poe.ninja/poe2/pob/19e85",
+      "cls": "Druid",
+      "asc": "Shaman",
+      "level": 98
+    },
+    {
+      "id": "1a34d",
+      "what": "a character at level 100",
+      "from": "https://poe.ninja/poe2/pob/1a34d",
+      "cls": "Druid",
+      "asc": "Oracle",
+      "level": 100
+    }
+  ]
+}
