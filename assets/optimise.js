@@ -257,15 +257,27 @@ export function start(S, aim, opt){
         if(state.steps === 0) state.rejects = all.slice(1).map(h => h.x);
         const top = all[0];
         if(top.score <= best.score * (1 + TIE)){
-          state.ties = tiesAt(all, best.score);
+          // nothing here improves it, so there is nothing for two answers to be tied about
+          state.ties = [];
           phase = 'pairs';
           state.stopped = state.stopped || 'nothing';
           continue;
         }
+        /* Two changes that score the same are a choice, and the player makes it. The search shows both and
+           takes neither: it stops here, and the answer is what it had settled before the tie, with the tie
+           beside it and what separates them named. Taking one because it came first in a list would be the
+           machine making the choice quietly, which is the one thing it must not do. */
+        const tied = tiesAt(all, top.score);
+        if(tied.length > 1){
+          state.ties = tied;
+          state.stopped = state.stopped || 'tie';
+          phase = 'pairs';
+          continue;
+        }
+        state.ties = [];
         live = all.slice(0, beam).filter(h => h.score > h.at.score * (1 + TIE)).map(h => take(h.at, h));
         if(!live.length){ phase = 'pairs'; continue; }
         best = live.reduce((a, z) => z.score > a.score ? z : a, live[0]);
-        state.ties = tiesAt(all, top.score);
         state.steps++;
       } else if(phase === 'pairs'){
         if(o.pairs === false){ phase = 'done'; continue; }
@@ -283,8 +295,11 @@ export function start(S, aim, opt){
   return {tick, state, steps, cap,
     get answer(){ return answerOf(S, state, best, aim); }};
 }
-/* Two answers the same score are two answers. What separates them is named where there is something: a real
-   price, points, or how much of it the model does not read. */
+/* Two changes that score the same are only a choice where they are after the same thing. Two helmets for one
+   helmet slot is a choice; two prefixes on one item are a choice, because the item has room for so many.
+   A support and a boot modifier that happen to be worth the same are not a choice at all — the search takes
+   one now and the other next step, and nobody had to pick. */
+const groupOf = x => x.kind === 'mod' ? 'mod:' + x.slot + '/' + x.side : x.fills;
 function tiesAt(all, score){
   const out = [], seen = new Set();
   for(const h of all){
@@ -294,7 +309,16 @@ function tiesAt(all, score){
     out.push(h);
     if(out.length >= 4) break;
   }
-  return out.length > 1 ? out : [];
+  if(out.length < 2) return [];
+  // only the ones after the same thing, and only where there is more than one of them
+  const by = new Map();
+  for(const h of out){
+    const g = groupOf(h.x);
+    if(!by.has(g)) by.set(g, []);
+    by.get(g).push(h);
+  }
+  for(const list of by.values()) if(list.length > 1) return list;
+  return [];
 }
 export function separates(a, b){
   if(a.x.price != null && b.x.price != null && a.x.price !== b.x.price) return 'cheaper';
@@ -323,7 +347,8 @@ function answerOf(S, state, best, aim){
   return {
     aim, rows, tried: state.tried, steps: state.steps, of: state.steps_of, ms: state.ms,
     pairs: state.pairs, stopped: state.stopped, done: state.done,
-    ties: state.ties, was: state.was, now: before,
+    ties: state.ties.map((t, i) => ({x: t.x, by: i ? separates(state.ties[0], t) : ''})),
+    was: state.was, now: before,
     score: scoreOf(before.c, before.dps, aim, state.base),
     points: best.points,
   };

@@ -107,7 +107,23 @@ function takes(id){                     // the kinds of item one slot holds
 }
 const labelOf = id => (SLOTS.find(s => s[0] === id) || [, ''])[1];
 const clsOf = id => X.classes.find(c => c.id === id) || null;
-const classOf = it => it ? (it.cr || (it.k === 'i' ? it.id : '')) : '';
+/* Which kind of item a card is. A base says so outright and so does an item class; a unique says it in its
+   own subtitle — "Chain Tiara · Helmet" — and carries no field for it, so the word after the dot is read,
+   which settles 687 of the 707 uniques that have lines. The twenty left are flasks, relics and tablets,
+   none of which the frame gives a slot. */
+const slug = s => String(s).trim().toLowerCase().replace(/\s+/g, '-');
+function classOf(it){
+  if(!it) return '';
+  if(it.cr) return it.cr;
+  if(it.k === 'i') return it.id;
+  if(it.k !== 'u') return '';
+  if(it.bcr === undefined){
+    const said = String(it.s || '').split(' · ');
+    const k = slug(said[said.length - 1] || '');
+    it.bcr = X && X.classes.some(c => c.id === k) ? k : '';
+  }
+  return it.bcr;
+}
 /* which slots one card could fill: a slot that takes its item class, or the tree's own sockets for a jewel */
 function slotsFor(it){
   const cr = classOf(it);
@@ -979,7 +995,11 @@ function finish(why){
   RUN.done = true;
   RUN.ms = performance.now() - RUN.at;
   RUN.stopped = why;
-  for(const [a] of AIMS) RUN.answers[a] = RUN.runs[a].answer;
+  for(const [a] of AIMS){
+    const st = RUN.runs[a].state;
+    if(why === 'clock' && !st.done){ st.done = true; st.stopped = 'clock'; }
+    RUN.answers[a] = RUN.runs[a].answer;
+  }
   RUN.tried = AIMS.reduce((n, [a]) => n + RUN.runs[a].state.tried, 0);
   paint();
 }
@@ -1099,7 +1119,7 @@ function runView(){
     out.answers.push({a, label, rows: A.rows.length, steps: A.steps, of: A.of, ms: Math.round(A.ms),
       tried: A.tried, pairs: A.pairs, stopped: A.stopped,
       moved: A.rows.length ? O.moved(A.was, A.now) : null,
-      ties: (A.ties || []).map(t => ({n: t.x.to, what: t.x.what, by: ''})),
+      ties: (A.ties || []).map(t => ({n: t.x.to, what: t.x.what, by: t.by || ''})),
       points: A.points});
   }
   return out;
@@ -1125,15 +1145,19 @@ function leftOf(f, v){
   const used = new Set(rows.map(r => r.key).filter(Boolean));
   const slots = SLOTS.filter(([id]) => !f.gear[id]).map(([, n]) => n);
   const jewels = v.jewels.of - v.jewels.held;
+  /* Why a pooled card went unused, in a word. A search that stopped at the cap or at a tie did not weigh it
+     and find it wanting: it never got to it, and the word says so. */
+  const weighed = f.opt && (!f.opt.stopped || f.opt.stopped === 'nothing');
+  const open = weighed ? 'worse' : 'not reached';
   const why = it => {
     const k = it.k + ':' + it.id;
     if(used.has(k)) return '';
-    if(it.k === 't') return f.cl.some(c => c.c === it.id) ? 'taken' : 'worse';
-    if(classOf(it) === 'jewel') return jewels > 0 ? 'worse' : 'no socket open';
-    if(it.k === 'g') return isSupport(it) ? (v.link.room > v.link.held ? 'worse' : 'no socket open') : 'in the link';
+    if(it.k === 't') return f.cl.some(c => c.c === it.id) ? 'taken' : open;
+    if(classOf(it) === 'jewel') return jewels > 0 ? open : 'no socket open';
+    if(it.k === 'g') return isSupport(it) ? (v.link.room > v.link.held ? open : 'no socket open') : 'in the link';
     const s = slotsFor(it);
     if(!s.length) return 'nothing it fits';
-    return s.some(x => !f.gear[x]) ? 'worse' : 'no slot open';
+    return s.some(x => !f.gear[x]) ? open : 'no slot open';
   };
   const spare = f.pool.map(k => D.byKey.get(k)).filter(Boolean)
     .map(it => ({n: it.n, why: why(it)})).filter(x => x.why);
@@ -1211,8 +1235,8 @@ function runHTML(run, aim){
         (a.points ? ' · ' + a.points + ' points' : '') + ' · ' + a.steps + ' of ' + a.of + ' steps</p>' +
       (a.stopped === 'clock' ? '<p class="note">Stopped at the cap.</p>' : '') +
       (a.rows ? '<button type="button" class="btn" data-do="takeaim:' + a.a + '">Take</button>' : '') +
-      (a.ties.length ? '<p class="note">' + a.ties.length + ' the same: ' +
-        esc(a.ties.map(t => t.n).join(', ')) + '</p>' : '') +
+      (a.ties.length ? '<p class="note">' + a.ties.length + ' score the same, so it took none of them: ' +
+        esc(a.ties.map(t => t.n + (t.by ? ' (' + t.by + ')' : '')).join(', ')) + '</p>' : '') +
       '</li>';
   };
   return '<p class="bn-h4">Answers <span>' + esc(said) + '</span></p>' +
@@ -1230,7 +1254,8 @@ function rowsHTML(o){
       '<li class="' + (r.back ? 'no' : 'on') + '">' +
         '<span class="bn-sn">' + esc(r.what) + (r.points ? ' <i>' + r.points + ' points</i>' : '') + '</span>' +
         '<span class="bn-sw">' + esc(movedSaid(r.moved)) + '</span>' +
-        '<span class="bn-sl">' + esc(r.back ? 'Put back' : r.to) + '</span>' +
+        '<span class="bn-sl">' + esc(r.to) + '</span>' +
+        (r.back ? '<span class="bn-snote">Put back.</span>' : '') +
         (r.floor && !r.back ? '<span class="bn-snote">Counted at ' + esc(r.floor) + '</span>' : '') +
         (r.depends && !r.back ? '<span class="bn-snote">Depends on the one you put back.</span>' : '') +
         (r.back ? '' : '<button type="button" class="bn-x" data-do="back:' + i + '">Put back</button>') +
