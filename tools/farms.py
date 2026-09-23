@@ -12,6 +12,10 @@ Added on top of the cells, because the sheet has no field for them:
   - the items each strategy spends and makes, under the names the market and the official trade site use.
     The waystone tier and the tablets (one per slot) are read from their cells; the rest is listed in ITEMS,
     and each entry's wording is checked against the tab so a changed sheet shows up as a warning.
+  - the use an omen rides on (rides_on), off the omen's own line in the catalogue. An omen is spent on an orb
+    and so is the orb; the sheet names only the omen, so an input list without the orb is short of the run.
+  - the patch clock's last step (retire): an entry two minor versions behind the live game goes here, and the
+    count goes out with the file. The two milder steps are the page's, because both still show the entry.
 Fixes to the sheet text, only where the intent is certain:
   - spelling (TYPOS): "Pradise" -> "Paradise", missing apostrophes in item names ("Aldurs Saga" -> "Aldur's Saga"),
     "diminshing", "alongisde", "atleast", "ontop", "a recent patched", "complimentary mods"
@@ -53,6 +57,9 @@ BASE = 'https://docs.google.com/spreadsheets/d/' + SHEET_ID
 UA = 'wraeclast-index/1.0 (contact: https://wraeclastindex.fyi/)'
 OUT = ROOT / 'data' / 'farms.json'
 QUERIES = ROOT / 'data' / 'farmqueries.json'
+CATALOGUE = ROOT / 'data' / 'market.json'      # the items' own lines, for the use an omen rides on
+CORE = ROOT / 'data' / 'index-core.json'       # the game files' own version, for the patch clock
+LEAGUES = ROOT / 'data' / 'leagues.json'       # the league list, where the game files are not to hand
 
 TYPOS = [
     (r'\bPradise\b', 'Paradise', 0),
@@ -304,6 +311,92 @@ def slug(s):
     return re.sub(r'[^a-z0-9]+', '-', s.lower().replace("'", '')).strip('-')
 
 
+# ---------------------------------------------------------------- the use an item rides on
+# An omen does nothing on its own. Its own line reads "your next Chaos Orb will replace all Modifiers on a
+# Waystone...", so the omen is spent and so is the orb, and an input list that names one and not the other
+# understates the run. The line is the game's, out of the catalogue we already ship (data/market.json); the
+# sheet never names the orb. Only an exact catalogue currency counts: "your next Desecration attempt" and
+# "your next Logbook" name a step and a kind, not one item, so those pair with nothing and say so.
+RIDES = re.compile(r'your next ([A-Z][A-Za-z\' ]+)')
+
+
+def catalogue():
+    """The currency lines the site ships, by name. Empty when the file is not built yet."""
+    try:
+        items = json.loads(CATALOGUE.read_text(encoding='utf-8')).get('items') or {}
+    except (OSError, ValueError):
+        return {}
+    return {k[2:]: (v.get('u') or '') for k, v in items.items() if k.startswith('c:')}
+
+
+def rides_on(name, lines):
+    """The item this one is spent on, off its own line. None where it names no single item."""
+    m = RIDES.search(lines.get(name) or '')
+    if not m:
+        return None
+    words = m.group(1).split()
+    for n in range(len(words), 0, -1):          # longest name first: "Orb of Chance" before "Orb"
+        pick = ' '.join(words[:n])
+        if pick in lines and pick != name:
+            return pick
+    warn('%s rides on "%s", which is no item we price' % (name, ' '.join(words[:3])))
+    return None
+
+
+# ---------------------------------------------------------------- the patch clock
+# The third step of the staleness rule (docs/proposal-farms.md): an entry two minor versions behind the live
+# game is retired here, never on the page, and the count goes out with the file so the tab can print it.
+# One point release behind is marked on the card and one minor version behind has its prices dropped; both of
+# those are the page's to draw, because both still show the entry.
+def patch_of(farm, source):
+    return farm.get('pv') or source.get('version')
+
+
+def live_patch():
+    """The patch the game is on: the game files' own version, else the newest league."""
+    try:
+        v = json.loads(CORE.read_text(encoding='utf-8')).get('v') or ''
+        m = re.match(r'^4\.(\d+)\.(\d+)', v)        # the files count from 4; the game says 0
+        if m:
+            return '0.%s.%s' % (m.group(1), m.group(2))
+    except (OSError, ValueError):
+        pass
+    try:
+        leagues = json.loads(LEAGUES.read_text(encoding='utf-8')).get('leagues') or []
+    except (OSError, ValueError):
+        return None
+    today = dt.date.today().isoformat()
+    started = [x for x in leagues if (x.get('start') or '9999') <= today and x.get('v')]
+    return started[0]['v'] if started else None
+
+
+def minors_behind(made, live):
+    """How many minor versions an entry is behind. None where either version cannot be read."""
+    a = [int(x) for x in re.findall(r'\d+', made or '')][:2]
+    b = [int(x) for x in re.findall(r'\d+', live or '')][:2]
+    if len(a) < 2 or len(b) < 2:
+        return None
+    if b[0] != a[0]:                                # a whole release apart is further than any minor
+        return 2 if b[0] > a[0] else 0
+    return max(0, b[1] - a[1])
+
+
+def retire(farms, source, live):
+    """Drop the entries two minor versions behind and give back the count, by the patch they were made for."""
+    if not live:
+        warn('no live patch to measure the entries against: nothing retired')
+        return farms, []
+    keep, gone = [], collections.Counter()
+    for f in farms:
+        made = patch_of(f, source)
+        n = minors_behind(made, live)
+        if n is not None and n >= 2:
+            gone[made] += 1
+        else:
+            keep.append(f)
+    return keep, [{'v': v, 'n': n} for v, n in sorted(gone.items())]
+
+
 class Queries:
     """The trade searches for mod-specific inputs: one per distinct search, under a short readable key."""
     def __init__(self):
@@ -528,6 +621,9 @@ def main():
     by_norm = {norm(ws.title): ws for ws in wb.worksheets}   # the xlsx drops "/" from tab names
     tab_name = {norm(k): k for k in list(MECH) + list(ITEMS)}
     bases, uniques = trade_lists()
+    lines = catalogue()
+    if not lines:
+        warn('no catalogue to hand: no omen was paired with the orb it rides on')
     Q = Queries()
 
     tl = by_norm['tierlist']
@@ -611,6 +707,10 @@ def main():
                     item['tk'] = tk
             dest.append(item)
         ins += tabs   # waystone, then the crafting items, then the tablets
+        for x in ins:   # an omen is spent on an orb: the orb is part of the run, off the omen's own line
+            on = rides_on(x['n'], lines) if x['k'] == 'c' else None
+            if on and not any(y['n'] == on for y in ins):
+                x['on'] = {'n': on, 'k': 'c'}
         for x in ins:
             if x.get('q') == 1:
                 del x['q']
@@ -648,6 +748,12 @@ def main():
     if lastgood.pull('Farm strategies', lambda: {'source': source, 'farms': farms}, file='farms.json',
                      url=BASE, at='farms', floor=10) is None:
         return lastgood.report()
+    # The patch clock, after the gate above: the sheet came back whole, and what goes now goes by our own
+    # rule, not because a source broke. The count travels with the file — a retirement is never silent.
+    live = live_patch()
+    farms, retired = retire(farms, source, live)
+    if retired:
+        source['retired'] = retired
     body = ',\n'.join(json.dumps(f, ensure_ascii=False, separators=(',', ':')) for f in farms)
     lastgood.save(OUT, '{"source":' + json.dumps(source, ensure_ascii=False, separators=(',', ':')) +
                   ',\n"farms":[\n' + body + '\n]}\n')
@@ -657,6 +763,9 @@ def main():
     print('%d farms (%s), league %s, updated %s -> %s' % (
         len(farms), ' '.join('%s:%d' % kv for kv in collections.Counter(f['tier'] for f in farms).items()),
         source['league'], source['updated'], OUT.relative_to(ROOT)))
+    print('made for patch %s, the game is on %s%s' % (
+        source['version'], live or 'an unknown patch',
+        ''.join('; %d retired: made for patch %s' % (x['n'], x['v']) for x in retired)))
     print('%d trade searches -> %s' % (len(queries), QUERIES.relative_to(ROOT)))
     for p in problems:
         print('  note:', p)
