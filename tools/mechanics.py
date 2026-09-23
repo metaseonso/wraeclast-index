@@ -94,6 +94,33 @@ The three cards that are nothing but the game's own entries (resistances, where 
 time) name the game and no one else. Nothing was taken from the wiki for any of them: its host turns the
 fetch away.
 
+What was read for Attack Speed, in the same repo, and what settles it:
+  CalcOffence.lua, the rate a Skill is used at, in one line:
+      output.Speed = 1 / (baseTime / round((1 + inc/100) * more, 2) + skillModList:Sum("BASE", cfg,
+                          "TotalAttackTime") + skillModList:Sum("BASE", cfg, "TotalCastTime"))
+    with baseTime = 1 / source.AttackRate + skillModList:Sum("BASE", cfg, "Speed") for an Attack. The
+    increased sum and the more multipliers divide the time; the Skill's own added use time is added after
+    them and is never divided, which is the game's Added Skill Use Time entry in the code. Common.lua's
+    round(x, 2) is floor(x * 100 + 0.5) / 100, so the combined multiplier is held to two decimal places.
+  Item.lua, the Attacks per Second the Weapon itself shows:
+      weaponData.AttackRate = round(self.base.weapon.AttackRateBase * (1 + weaponData.AttackSpeedInc / 100), 2)
+    a Weapon's own increased Attack Speed lands there, before any of the above, and is rounded the same way.
+    The site's own data shows it: a Shortbow is 1.25 Attacks per Second, and Quill Rain, a Shortbow with 100%
+    increased Attack Speed, is 2.5.
+  CalcOffence.lua, where the rate stops:
+      output.Speed = m_min(output.Speed, data.misc.ServerTickRate * output.Repeats)
+    for a Skill that is not Channelled, with Modules/Data.lua's ServerTickRate = 1 / 0.033: about 30 a
+    second. A Cooldown holds it lower — m_min(output.Speed, 1 / output.Cooldown * output.Repeats).
+  CalcOffence.lua on the Crossbow reload:
+      local reloadTimeMulti = calcLib.mod(boltSkill.skillModList, boltSkill.skillCfg, "ReloadSpeed", "Speed")
+    "Speed" is the stat an increased Attack Speed modifier writes, so the reload reads it too.
+  ModParser.lua, which is that stat both times: ["attack speed"] = { "Speed", flags = ModFlag.Attack } and
+    ["skill speed"] = { "Speed", "WarcrySpeed", "TotemPlacementSpeed" } — one sum, which is the game's own
+    "stack additively" in the code.
+  CalcPerform.lua's actionSpeedMod(): a Slow is its own multiplier on the finished rate, outside that sum.
+The game says the rest itself and the card credits it there: Attacks and Spells for what an Attack's speed
+comes off and what a Spell's does not, Base Skill Attack Time, Added Skill Use Time, Skill Speed and Slow.
+
 The words a card is reached by sit in "f", which tools/nodelinks.py already reads as the other spellings of a
 keyword, and the rule for when one counts sits beside them in "fg" — the card's gate, which assets/marks.js
 applies as it draws. A single word that is also a plain English word is only a door where the line uses it as
@@ -127,6 +154,12 @@ DEF_SOURCE = ("Each step and what it does: as the game states it. The order they
 FLOW_SOURCE = ("The steps, which modifiers converted and gained damage scale with, and the two step "
                "process: as the game states them. Where they sit in the order, the conversion chain, the "
                "caps and what a copy is taken from: according to Path of Building's own damage maths.")
+# Attack Speed: the game for where the base time comes from and what stacks with what, Path of Building for
+# the order it is all applied in, the rounding, the reload and where the rate stops.
+SPEED_SOURCE = ("What an Attack's base time is taken from, what Skill Speed stacks with, the fixed part of "
+                "a use time and how Slows multiply: as the game states them. The order they are applied "
+                "in, the rounding, the reload and where the rate stops: according to Path of Building's "
+                "own damage maths.")
 DAMAGE = KIND + ':HowDamage'   # assets/app.js offers this card wherever a card's text is about damage
 
 # When a word counts. PCT: "(30-40)% more", "5% reduced". START: the word opens the line, which is the only
@@ -322,6 +355,35 @@ CARDS = [
             'For example, The Sentry adds (25-32) to (40-50) Fire Damage. At its best roll that is an '
             'average of 41 Fire damage on the Hit, and an Ignite from it deals 20% of that per second for 4 '
             'seconds: 8.2 a second, 32.8 in all.']},
+    # Five small passives answer to this name, so the phrase used to stay plain. The card is where it goes.
+    # The example is the site's own data, on the unique the more and less card already uses.
+    {'id': 'AttackSpeed', 'n': 'Attack Speed', 'words': ['Attack Speed'], 'gate': 'any', 'src': SPEED_SOURCE,
+     'q': 'attack speed aps attacks per second attack time faster attacks weapon base skill attack time '
+          'added skill use time skill speed cast speed warcry speed slow onslaught crossbow reload cap '
+          'breakpoint rounding how fast can i attack',
+     'ls': ["The base damage, attack speed and Critical Hit chance of an Attack are determined using your "
+            "Martial Weapon's stats unless the skill says otherwise. Spells do not benefit from a Weapon's "
+            'attack speed.',
+            'Base Skill Attack Time accounts only for the Attacks per Second value of the relevant Weapon '
+            'and the percentage of Base Attack Speed listed on the Attack gem.',
+            'Increases and reductions to Attack Speed are added into one sum, and the sum is applied once. '
+            'Each more or less modifier is its own multiplier. Both work on the time an Attack takes, and '
+            'neither changes the damage of the Hit.',
+            'Increases and reductions to Skill Speed stack additively with increases and reductions to '
+            'Attack Speed, Cast Speed, Warcry Speed, and similar stats.',
+            'An Added Skill Use Time is fixed and is not modified by skill use speed stats. It is added '
+            'after the increases, so nothing shortens it.',
+            'A Slow is a modifier from a Debuff that causes actions to take longer. It is its own '
+            'multiplier on the finished rate, and Slows are always multiplicative with each other.',
+            "Modifiers to Attack Speed also apply to a Crossbow's reload.",
+            "A Weapon's Attacks per Second and a Skill's combined multiplier are each held to two decimal "
+            'places, so an increase small enough changes neither.',
+            'A Skill that is not Channelled is used at most about 30 times a second. A Skill with a '
+            'Cooldown is held to its Cooldown.',
+            'For example, a Shortbow has Attacks per Second: 1.25. Quill Rain is a Shortbow with 100% '
+            'increased Attack Speed, and its Attacks per Second is 2.5 — an Attack every 0.40 seconds. A '
+            'further 20% increased Attack Speed on the character makes it 3.00, an Attack every 0.33 '
+            'seconds.']},
 ]
 
 
