@@ -15,16 +15,39 @@ const SITE = 'https://wraeclastindex.fyi';
 const AGE = 3600;                 // pages and files: an hour (currency refreshes hourly, listings daily)
 const MARKET_TTL = 300e3;         // the market copy in memory: 5 minutes, like /data/market.json
 
-/* ---------- kinds ---------- */
+/* ---------- the terms ----------
+   What we ask of anything that reads this data, in four lines. It is a request and nothing more: no crawler
+   is blocked over it, no page is held back over it, and there is nothing here that could enforce it. What it
+   can do is make the credit the short way round — the same four lines wherever a machine looks, and one
+   canonical URL per thing to link. robots.txt carries the same four lines word for word; a change to one is a
+   change to both. Every page says it again in its own data: creditText, and usageInfo pointing back here. */
+const TERMS = [
+  'Free to read, free to quote, free to build on.',
+  'An answer built on this data should name Wraeclast Index and link the page it came from.',
+  'One page per thing, one canonical URL per page: ' + SITE + '/item/<name>.',
+  'A request, not a licence: nothing here enforces it, and nothing is held back from anyone who ignores it.',
+].join('\n');
+
+/* ---------- kinds ----------
+   What one of a kind is called, the word for it, the list it sits in, the order it claims a name in, and what
+   it is in schema.org's words — `is` the type a search engine reads the thing as, and `unless` the one test a
+   kind needs where its rows are not all the same thing. A kind that can be held, dropped and traded is a
+   Product; a kind that is a name with a meaning behind it is a DefinedTerm, and its list is the set it belongs
+   to. The Atlas is both: a waystone is an item, a node on the atlas tree is not.
+   The type is declared here and nowhere else — itemPage asks the table rather than testing a kind of its own. */
 const KIND = {
-  u: {one: 'Unique', word: 'unique', list: 'uniques', rank: 0},
-  g: {one: 'Gem', word: 'gem', list: 'gems', rank: 1},
-  p: {one: 'Passive', word: 'passive', list: 'passives', rank: 2},
-  w: {one: 'Keyword', word: 'keyword', list: 'keywords', rank: 3},
-  c: {one: 'Currency', word: 'currency', list: 'currency', rank: 4},   // the market's own come last: it changes
-  b: {one: 'Base', word: 'base', list: 'bases', rank: 5},
-  a: {one: 'Atlas', word: 'atlas', list: 'atlas', rank: 6},
+  u: {one: 'Unique', word: 'unique', list: 'uniques', rank: 0, is: 'Product'},
+  g: {one: 'Gem', word: 'gem', list: 'gems', rank: 1, is: 'Product'},
+  p: {one: 'Passive', word: 'passive', list: 'passives', rank: 2, is: 'DefinedTerm'},
+  w: {one: 'Keyword', word: 'keyword', list: 'keywords', rank: 3, is: 'DefinedTerm'},
+  c: {one: 'Currency', word: 'currency', list: 'currency', rank: 4, is: 'Product'},   // the market's own come last: it changes
+  b: {one: 'Base', word: 'base', list: 'bases', rank: 5, is: 'Product'},
+  a: {one: 'Atlas', word: 'atlas', list: 'atlas', rank: 6, is: 'Product', unless: {at: 'at', is: 'tree', then: 'DefinedTerm'}},
 };
+// what one entry is, off the table: its kind's type, or the other one where the kind's own test answers
+const typeOf = e => { const u = KIND[e.k].unless; return u && e.it[u.at] === u.is ? u.then : KIND[e.k].is; };
+// a kind whose rows can be terms: its list page stands for the set they are in
+const isSet = k => KIND[k].is === 'DefinedTerm' || !!KIND[k].unless;
 const LISTS = {
   gems: {k: 'g', h1: 'Gems', title: 'PoE2 Gems: every skill, spirit and support gem', app: '/explore#gems'},
   uniques: {k: 'u', h1: 'Uniques', title: 'PoE2 Uniques: mod lines, requirements and prices', app: '/explore#uniques'},
@@ -270,11 +293,12 @@ function reqText(rq){
   ATTR.forEach(([a], i) => { if(rq[i + 1]) out.push(rq[i + 1] + ' ' + a); });
   return out.length ? out.join(', ') : 'none';
 }
-function costText([v, res]){   // "ManaPerMinute" and the like, in words
+function costWords([v, res]){   // "ManaPerMinute" and the like, in words
   const pct = /Percent/.test(res);
   const words = res.replace('Percent', '').replace(/([a-z])([A-Z])/g, '$1 $2').split(' ');
-  return v + (pct ? '%' : '') + ' ' + words.map((w, i) => i ? w.toLowerCase() : w).join(' ') + ' at gem level 20';
+  return v + (pct ? '%' : '') + ' ' + words.map((w, i) => i ? w.toLowerCase() : w).join(' ');
 }
+const costText = c => costWords(c) + ' at gem level 20';
 function factsOf(it){
   const f = [];
   if(it.k === 'g'){
@@ -309,6 +333,8 @@ function groupRank(e, g){
   if(e.k === 'c') return (g === 'Currency' ? '0 ' : '1 ') + g;
   return g;
 }
+// a group's own place on its list page: the section's id, the jump chip and the breadcrumb all read this one
+const anchor = g => slugify(g) || 'other';
 function groups(list){
   const out = new Map();
   for(const e of list){
@@ -388,11 +414,75 @@ function titleOf(e, px){
   return it.n + ' – PoE2 Keyword';
 }
 
+/* ---------- the thing itself, as a search engine reads it ----------
+   The same four answers the card gives a player, in the words a crawler understands: what it is (the kind's
+   own type), what it looks like (the card's art, where the art is a picture of its own and not a cell of a
+   sprite sheet), what it does (its own lines, and its facts one by one) and what it costs today (the live
+   price row, in the game's own money). Nothing is worked out here that the card does not already show. */
+const artOf = it => it.img && /^https?:/.test(it.img) ? it.img : null;
+
+/* The price, off the same row the card draws. The Currency Exchange is one market and one rate, so it is one
+   offer; trade listings are many sellers, so they are the lowest real listing and how many there are. The
+   money is the game's own and it is named in full: no three-letter code stands for a divine orb. */
+function offerOf(m, px, url){
+  if(!px || !(px.v > 0)) return null;
+  const x = money(m, px.v);
+  if(!x) return null;
+  const price = x.v.replace(/,/g, '');
+  const cur = x.u === 'div' ? 'Divine Orb' : 'Exalted Orb';
+  if(px.src === 'cx') return {'@type': 'Offer', price, priceCurrency: cur, url};
+  const o = {'@type': 'AggregateOffer', lowPrice: price, priceCurrency: cur, url};
+  if(px.ls !== undefined) o.offerCount = px.ls;
+  return o;
+}
+
+/* The card's facts, one name and one value at a time, so an answer can quote a number without reading prose.
+   A line the game already writes as "Name: value" splits where the game split it; everything else is named
+   here the way the card labels it. */
+function propsOf(e){
+  const it = e.it, out = [];
+  const add = (name, value) => { if(value !== undefined && value !== null && value !== '') out.push({'@type': 'PropertyValue', name, value: String(value)}); };
+  if(e.k === 'g'){
+    if(it.w) add('Requires at gem level 20', reqText(gemReq(it.w, 20)));
+    if(it.ct) add('Use time', +(it.ct / 1000).toFixed(2) + ' s');
+    if(it.cost) add('Cost at gem level 20', costWords(it.cost));
+    if(it.sp !== undefined) add('Spirit', it.sp);
+  }
+  if((e.k === 'u' || e.k === 'b') && it.rq) add('Requires', reqText(it.rq));
+  if(e.k === 'u' && it.cor) add('Corrupted', 'Yes');
+  if(e.k === 'c' && it.dl) add('Drops from area level', it.dl);
+  if(e.k === 'a' && it.x > 1) add('On the atlas tree', it.x);
+  for(const line of ((e.k === 'u' || e.k === 'b') && it.pr) || []){
+    const i = line.indexOf(': ');
+    if(i > 0) add(line.slice(0, i), line.slice(i + 2));
+  }
+  return out.slice(0, 12);
+}
+
+function thingOf(m, e, px){
+  const it = e.it, K = KIND[e.k], type = typeOf(e), url = SITE + '/item/' + e.slug;
+  const words = (it.ls || []).length ? it.ls.map(sentence).join(' ') : sentence(it.t);
+  const t = {'@type': type, name: it.n, url, description: clip(words || lead(m, e), 500)};
+  const art = artOf(it);
+  if(art) t.image = art;
+  if(type === 'Product'){
+    if(it.s) t.category = it.s;
+    const props = propsOf(e);
+    if(props.length) t.additionalProperty = props;
+    const offer = offerOf(m, px, url);
+    if(offer) t.offers = offer;
+  } else t.inDefinedTermSet = {'@type': 'DefinedTermSet', '@id': SITE + '/' + K.list + '#terms',
+    name: LISTS[K.list].h1, url: SITE + '/' + K.list};
+  return t;
+}
+
 function itemPage(m, e){
   const it = e.it, K = KIND[e.k], px = priceOf(m, e), path = '/item/' + e.slug, g = groupOf(e);
   const lines = it.ls || [], ni = it.ni || 0;
   const an = e.k === 'p' ? anoint(m, it) : null;
-  const priceLine = px && px.v !== undefined ? 'Price ' + moneyText(m, px.v) + (changeText(px.ch) ? ', ' + changeText(px.ch) : '') + '.' : '';
+  // what it costs today, in the first words a result shows: its own price, or what the anoint costs
+  const priceLine = px && px.v !== undefined ? 'Price ' + moneyText(m, px.v) + (changeText(px.ch) ? ', ' + changeText(px.ch) : '') + '.'
+    : an && an.div !== null ? 'Anoint with ' + an.parts.map(p => p.n).join(' + ') + ': ' + moneyText(m, an.div) + '.' : '';
   const desc = clip([lead(m, e), priceLine, lines.length ? lines.slice(0, 3).map(sentence).join(' ') : sentence(it.t)].filter(Boolean).join(' '));
   const title = titleOf(e, px) + ' | Wraeclast Index';
 
@@ -481,13 +571,14 @@ function itemPage(m, e){
     more += section(otherTitle(e, g), ring.sort(byName), m);
   }
 
-  const crumbs = [['Wraeclast Index', '/'], [LISTS[K.list].h1, '/' + K.list], [it.n, path]];
-  const thing = {'@type': e.k === 'w' ? 'DefinedTerm' : 'Thing', name: it.n, description: clip((lines.length ? lines.map(sentence).join(' ') : sentence(it.t)) || lead(m, e), 500), url: SITE + path};
-  if(e.k === 'w') thing.inDefinedTermSet = SITE + '/keywords';
-  if(it.img) thing.image = it.img;
+  // where the thing sits: the site, its list, its own group on that list, and the thing. A group that goes
+  // by the list's own name is the list, and a trail never says the same word twice.
+  const crumbs = [['Wraeclast Index', '/'], [LISTS[K.list].h1, '/' + K.list]];
+  if(g !== LISTS[K.list].h1) crumbs.push([g, '/' + K.list + '#' + anchor(g)]);
+  crumbs.push([it.n, path]);
   return page(m, {
-    title, desc, path, list: K.list,
-    ld: ld(m, path, title, desc, crumbs, thing, px ? m.day : m.gen),
+    title, desc, path, list: K.list, art: artOf(it), alt: it.n,
+    ld: ld(m, {path, title, desc, crumbs, thing: thingOf(m, e, px), day: px ? m.day : m.gen, art: artOf(it)}),
     body: crumbsHTML(crumbs) + card + more + browse(),
   });
 }
@@ -532,12 +623,19 @@ function listPage(m, name){
   const body = crumbsHTML(crumbs) +
     '<div class="pagehd"><h1>' + L.h1 + '</h1><p>' + esc(intro(m, name)) + '</p></div>' +
     '<div class="seo-go"><a class="btn gold" href="' + L.app + '">Open in Wraeclast Index →</a></div>' +
-    (gs.length > 1 ? '<nav class="jump" aria-label="Groups">' + gs.map(([g, l]) => '<a class="chip" href="#' + slugify(g) + '">' + esc(g) +
+    (gs.length > 1 ? '<nav class="jump" aria-label="Groups">' + gs.map(([g, l]) => '<a class="chip" href="#' + anchor(g) + '">' + esc(g) +
       '<span class="ct">' + l.length + '</span></a>').join('') + '</nav>' : '') +
-    gs.map(([g, l]) => '<section id="' + slugify(g) + '"><h2>' + esc(g) + '<small>' + l.length + '</small></h2><ul class="ilist">' +
+    gs.map(([g, l]) => '<section id="' + anchor(g) + '"><h2>' + esc(g) + '<small>' + l.length + '</small></h2><ul class="ilist">' +
       l.map(x => entryHTML(m, x)).join('') + '</ul></section>').join('') + browse();
+  /* the groups, in the order the page draws them: what a thing's breadcrumb points at, said once more where
+     the list itself is the page. A list of terms is also the set its own rows say they belong to. */
+  const list = {'@type': 'ItemList', '@id': SITE + path + '#groups', name: L.h1, numberOfItems: all.length,
+    itemListElement: gs.map(([g, l], i) => ({'@type': 'ListItem', position: i + 1, name: g,
+      item: SITE + path + '#' + anchor(g)}))};
+  const more = [list];
+  if(isSet(L.k)) more.push({'@type': 'DefinedTermSet', '@id': SITE + path + '#terms', name: L.h1, url: SITE + path, description: desc});
   return page(m, {title, desc, path, list: name, body,
-    ld: ld(m, path, title, desc, crumbs, null, L.k === 'c' || L.k === 'u' ? m.day : m.gen)});
+    ld: ld(m, {path, title, desc, crumbs, day: L.k === 'c' || L.k === 'u' ? m.day : m.gen, nodes: more})});
 }
 
 function notFound(m){
@@ -574,8 +672,13 @@ const CSS = `.seo{max-width:960px; width:100%; margin:0 auto; padding:10px 16px 
 .ilist .px small{margin-left:2px; font-size:10.5px; font-weight:500; color:var(--faint)}
 .browse{display:flex; flex-wrap:wrap; gap:6px; align-items:center; margin-top:30px; font-size:12.5px; color:var(--faint)}`;
 
-function page(m, {title, desc, path, list, body, ld: data, noindex}){
+/* `art` is the card's own picture, where the thing has one of its own. A page that has one says so instead of
+   the brand card: a share of one unique shows that unique, and a crawler is handed the same picture the
+   structured data points at. A page with none keeps the wide brand card. */
+function page(m, {title, desc, path, list, body, ld: data, noindex, art, alt}){
   const url = SITE + path;
+  const img = art || SITE + '/assets/brand/social.png';
+  const imgAlt = art ? alt || title : 'Wraeclast Index: Path of Exile 2, made easier for every kind of player.';
   const tabs = '<a href="/">Search</a>' + ORDER.map(l => '<a href="/' + l + '"' + (l === list ? ' aria-current="page"' : '') + '>' + LISTS[l].h1 + '</a>').join('');
   return `<!doctype html>
 <html lang="en">
@@ -591,11 +694,9 @@ ${noindex ? '<meta name="robots" content="noindex">' : `<link rel="canonical" hr
 <meta property="og:title" content="${esc(title)}">
 <meta property="og:description" content="${esc(desc)}">
 <meta property="og:url" content="${url}">
-<meta property="og:image" content="${SITE}/assets/brand/social.png">
-<meta property="og:image:width" content="1200">
-<meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="Wraeclast Index: Path of Exile 2, made easier for every kind of player.">
-<meta name="twitter:card" content="summary_large_image">
+<meta property="og:image" content="${esc(img)}">
+${art ? '' : '<meta property="og:image:width" content="1200">\n<meta property="og:image:height" content="630">\n'}<meta property="og:image:alt" content="${esc(imgAlt)}">
+<meta name="twitter:card" content="${art ? 'summary' : 'summary_large_image'}">
 <link rel="preload" href="/assets/fonts/ibmplexsans-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/assets/fonts/cinzel-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="/assets/app.css">
@@ -625,18 +726,34 @@ ${body}
 `;
 }
 
-function ld(m, path, title, desc, crumbs, thing, day){
+/* Everything a crawler is told about a page, in one graph: the site and who publishes it, the game it is
+   about, the page itself, the trail of crumbs down to it, the thing it is about, and whatever else the page
+   itself declares. `creditText` and `usageInfo` are the terms said once more, per page, in the place a
+   machine looks for them, and the credit names this page's own canonical URL so there is one thing to link. */
+function ld(m, {path, title, desc, crumbs, thing, day, art, nodes = []}){
   const url = SITE + path;
+  const main = thing ? url + '#item' : nodes.length ? nodes[0]['@id'] : null;
+  const self = {'@type': thing ? 'WebPage' : 'CollectionPage', '@id': url, url, name: title, description: desc,
+    inLanguage: 'en', isPartOf: {'@id': SITE + '/#website'}, publisher: {'@id': SITE + '/#org'},
+    breadcrumb: {'@id': url + '#breadcrumb'},
+    about: thing ? [{'@id': url + '#item'}, {'@id': SITE + '/#game'}] : {'@id': SITE + '/#game'},
+    mainEntity: main ? {'@id': main} : undefined,
+    primaryImageOfPage: art ? {'@type': 'ImageObject', '@id': url + '#art', url: art, contentUrl: art} : undefined,
+    dateModified: day || undefined,
+    isAccessibleForFree: true, creditText: 'Wraeclast Index, ' + url, usageInfo: SITE + '/llms.txt'};
   const graph = [
-    {'@type': 'WebSite', '@id': SITE + '/#website', url: SITE + '/', name: 'Wraeclast Index'},
+    {'@type': 'WebSite', '@id': SITE + '/#website', url: SITE + '/', name: 'Wraeclast Index',
+      publisher: {'@id': SITE + '/#org'}, potentialAction: {'@type': 'SearchAction',
+        target: {'@type': 'EntryPoint', urlTemplate: SITE + '/search?q={search_term_string}'},
+        'query-input': 'required name=search_term_string'}},
+    {'@type': 'Organization', '@id': SITE + '/#org', name: 'Wraeclast Index', url: SITE + '/',
+      logo: {'@type': 'ImageObject', url: SITE + '/assets/brand/logo-320.webp', width: 253, height: 320}},
     {'@type': 'VideoGame', '@id': SITE + '/#game', name: 'Path of Exile 2'},
-    {'@type': thing ? 'WebPage' : 'CollectionPage', '@id': url, url, name: title, description: desc, inLanguage: 'en',
-      isPartOf: {'@id': SITE + '/#website'}, breadcrumb: {'@id': url + '#breadcrumb'},
-      about: thing ? [{'@id': url + '#item'}, {'@id': SITE + '/#game'}] : {'@id': SITE + '/#game'}, dateModified: day || undefined},
+    self,
     {'@type': 'BreadcrumbList', '@id': url + '#breadcrumb', itemListElement: crumbs.map((c, i) => ({'@type': 'ListItem', position: i + 1, name: c[0], item: SITE + c[1]}))},
   ];
   if(thing) graph.push({'@id': url + '#item', ...thing});
-  return {'@context': 'https://schema.org', '@graph': graph};
+  return {'@context': 'https://schema.org', '@graph': [...graph, ...nodes]};
 }
 
 function html(body, status = 200, age = AGE){
@@ -663,7 +780,11 @@ function llms(m){
 
 Game data: patch ${m.patch} (${m.gen}). Prices: ${m.league || 'current'} league, the in-game Currency Exchange (currency) and live trade site listings (everything else, checked over the day) (last ${when(m.updated)}). Prices are in divine orbs (div), or exalted orbs (ex) below one divine. This product isn\'t affiliated with or endorsed by Grinding Gear Games in any way.
 
-Every item has its own plain page at ${SITE}/item/<name>, for example ${SITE}/item/divine-orb: requirements, the official mod lines, price and 7-day change, and a link into the app.
+Every item has its own plain page at ${SITE}/item/<name>, for example ${SITE}/item/divine-orb: requirements, the official mod lines, price and 7-day change, and a link into the app. Each page carries the same answers as structured data (schema.org): the thing, its art, today's price and the trail down to it.
+
+## Terms
+
+${TERMS}
 
 ## Lists
 
@@ -718,6 +839,12 @@ function llmsFull(m){
   let out = `# Wraeclast Index: everything in plain text
 
 > Every Path of Exile 2 gem, unique, passive, currency and keyword, from the game files (patch ${m.patch}). Prices: ${m.league || 'current'} league, the Currency Exchange and live trade listings, ${when(m.updated)}. Prices are in divine orbs (div), or exalted orbs (ex) below one divine.
+
+The second line of every entry below is that thing's canonical URL.
+
+## Terms
+
+${TERMS}
 `;
   for(const l of ORDER){
     const k = LISTS[l].k;
