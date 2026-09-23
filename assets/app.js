@@ -410,12 +410,16 @@ function flowHTML(it, full){
    marked per card, and never on a card of a kind one of them leads to — a mechanics card already says it.
    A card about two of them is offered both, in the order they are declared. A third is a third line in that
    declaration and no code. */
-/* The shapes an offer wears: a sword for what a hit does, a shield for what a hit runs into. A new offer
-   names its own here and nowhere else. */
-const MARKS = {
+/* Every mark the site wears, drawn once here and nowhere else: a sword for what a hit does, a shield for
+   what a hit runs into, a bubble for a note about this card. A new mark is one line in this table, and
+   whatever carries it draws it at the one size (.mk, assets/cards.css) in its own colour. */
+export const MARKS = {
   sword:  '<path d="M10 2.2l1.5 2.4v7.2h-3V4.6zM6.6 11.8h6.8M10 11.8v3.5M8.5 17.3h3"/>',
   shield: '<path d="M10 2.8l5.6 1.9v4.6c0 3-2.2 5.3-5.6 6.6-3.4-1.3-5.6-3.6-5.6-6.6V4.7L10 2.8z"/>',
+  say:    '<path d="M4.6 3.5h9.8c1.5 0 2.7 1.2 2.7 2.7v4.2c0 1.5-1.2 2.7-2.7 2.7H9.9l-3.6 3v-3H4.6' +
+          'c-1.5 0-2.7-1.2-2.7-2.7V6.2c0-1.5 1.2-2.7 2.7-2.7z"/>',
 };
+export const markHTML = m => '<svg class="mk" viewBox="0 0 20 20" aria-hidden="true">' + (MARKS[m] || '') + '</svg>';
 function offerHTML(it, f, full){
   if(!full || !it._hay) return '';
   const list = f.cards || [];
@@ -423,10 +427,21 @@ function offerHTML(it, f, full){
   if(list.some(o => it.k === o.card.slice(0, o.card.indexOf(':')))) return '';
   const marks = list.filter(o => o.when.test(it._hay) && MARKS[o.mark]).map(o =>
     '<button type="button" class="card-offer" data-h="' + esc(o.card) + '" title="' + esc(o.is + ' · ' + o.sub) +
-    '" aria-label="' + esc(o.is) + '"><svg viewBox="0 0 20 20" aria-hidden="true">' + MARKS[o.mark] +
-    '</svg></button>').join('');
+    '" aria-label="' + esc(o.is) + '">' + markHTML(o.mark) + '</button>').join('');
   // both of them move together, so a narrow card never leaves one mark behind on its own line
   return marks ? '<span class="card-marks">' + marks + '</span>' : '';
+}
+/* The way to say something about this card, from this card: the same mark, the same size, alone in the
+   card's own corner. Only where the card is drawn in full — a grid is for reading, and the top bar's own
+   button is there for a note about the page. And only where the index really holds that key, so it means
+   the same thing tomorrow as it does today: a card a tab made up for itself and a card that is an
+   application draw no mark, because what goes with a note is the page and this card's key and nothing
+   else, and a key nobody can look up again says no more than the page already did (assets/suggest.js). */
+function askHTML(it, full){
+  if(!full || !D.byKey.has(it.k + ':' + it.id)) return '';
+  const say = 'Suggest something about ' + it.n;
+  return '<button type="button" class="card-ask" data-ask="' + esc(it.k + ':' + it.id) + '" title="' + esc(say) +
+    '" aria-label="' + esc(say) + '">' + markHTML('say') + '</button>';
 }
 function anointHTML(it){
   if(!it.rec || !it.rec.length) return '';
@@ -712,6 +727,7 @@ export const TYPE = {
   flow:   {raw: 1, v: (it, f, o) => flowHTML(it, o.full)},
   source: {raw: 1, v: (it, f) => it[f.at] ? '<p class="card-src">' + esc(it[f.at]) + '</p>' : ''},
   offer:  {raw: 1, v: (it, f, o) => offerHTML(it, f, o.full)},
+  ask:    {raw: 1, v: (it, f, o) => askHTML(it, o.full)},
   tags:   {raw: 1, v: (it, f) => (it[f.at] || []).length
     ? '<p class="card-tags">' + it[f.at].map(esc).join(' · ') + '</p>' : ''},
   anoint: {raw: 1, v: it => anointHTML(it)},
@@ -1038,6 +1054,8 @@ function ensureOV(){
       if(go){ if(go.target !== '_blank') hideDetail(); return; }   // leaving the page: nothing to undo. A new tab: the card stays
       const kw = t.closest('.kwlink, .kwmark');   // a keyword chip, or a marked word in a line
       if(kw){ const c = keywordCard(kw.dataset.kw); if(c) openDetail(c, {nested: true}, hrefOf(c)); return; }
+      const ask = t.closest('.card-ask');   // the mark in the corner: a note about the card you are on
+      if(ask){ import('./suggest.js').then(m => m.openSuggest(ask.dataset.ask), () => {}); return; }
       const hl = t.closest('.hlink, .card-offer');   // a word in a line, or the offer: a mechanics card (tools/mechanics.py)
       if(hl){ openMech(hl.dataset.h, {nested: true}); return; }
       const sw = t.closest('[data-swap]');   // a switch on the card: the same card again, with it on

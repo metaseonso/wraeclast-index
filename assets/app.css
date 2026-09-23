@@ -593,6 +593,9 @@ small.at-bonus{display:block}
 .dv-note-t{margin:0; font-size:13.5px; line-height:1.5; cursor:pointer; white-space:pre-wrap; overflow-wrap:anywhere;
   display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:4; overflow:hidden}
 .dv-note-ft{display:flex; flex-wrap:wrap; gap:6px; align-items:center}
+/* what the note is about: the card it was sent from (worker/community.js) */
+.dv-note-c{font-size:11px; padding:1px 7px; border:1px solid var(--line); border-radius:4px; color:var(--text);
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:100%}
 .dv-note-ft .btn, .dv-pop .ov-go .btn:not(.gold){padding:3px 10px; font-size:12px}
 .dv-pop{display:grid; gap:10px; padding:18px; border:2px solid transparent; border-radius:var(--r);
   background:var(--fa-face, var(--surface)) padding-box, var(--fa-rim, var(--line)) border-box; box-shadow:var(--fa-lip, none), var(--fa-drop, var(--shadow))}

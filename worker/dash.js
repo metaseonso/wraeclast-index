@@ -7,7 +7,9 @@
      GET  /api/admin/stats?days=1|7|30   (with the data jobs: fine, late or stopped, worker/health.js)
      GET  /api/admin/heat?route=&device=&days=
      GET  /api/admin/cloudflare?days=1|7|30   Cloudflare's own numbers (worker/cfstats.js)
-     GET  /api/admin/suggestions?before=<id>  a hundred notes, newest first, and how many of each kind
+     GET  /api/admin/suggestions?before=<id>  a hundred notes, newest first, and how many of each kind.
+                                     A note carries where it came from: the page, and the key of the card
+                                     it was sent from where there was one (worker/community.js)
      POST /api/admin/suggestion      {id, status: new|read|done}
    admin.html itself holds no data: everything comes from here, behind the cookie.
    DASH_HASH is "pbkdf2$<iterations>$<salt base64>$<hash base64>" (PBKDF2-SHA256 of the password).
@@ -237,7 +239,7 @@ export async function stats(env, url){
   const [v, c, sg, sgCount, ld, ts] = (await env.DB.batch([
     env.DB.prepare('SELECT day, route, source, device, country, n FROM views WHERE day >= ?').bind(since),
     env.DB.prepare('SELECT route, label, SUM(n) AS n FROM clicks WHERE day >= ? GROUP BY route, label').bind(since),
-    env.DB.prepare('SELECT id, text, page, at, status FROM suggestions ORDER BY id DESC LIMIT ' + NOTES),
+    env.DB.prepare('SELECT id, text, page, card, at, status FROM suggestions ORDER BY id DESC LIMIT ' + NOTES),
     env.DB.prepare('SELECT status, COUNT(*) AS n FROM suggestions GROUP BY status'),
     env.DB.prepare('SELECT hour, kind, n FROM load WHERE hour >= ?').bind(since48),
     env.DB.prepare('SELECT state, n, last FROM trade_searches WHERE last >= ? ORDER BY n DESC, last DESC LIMIT 10').bind(since),
@@ -293,7 +295,7 @@ export async function stats(env, url){
     devices: top(devices, 3, 'device'),
     clicks: {total: clicks, all: top(all, 50, 'label'),
       byRoute: Object.fromEntries(Object.entries(byRoute).map(([k, m]) => [k, top(m, 50, 'label')]))},
-    suggestions: {count: status, list: sg.map(r => ({id: r.id, text: r.text, page: r.page || '', at: r.at, status: r.status}))},
+    suggestions: {count: status, list: sg.map(r => ({id: r.id, text: r.text, page: r.page || '', card: r.card || '', at: r.at, status: r.status}))},
     load: {hours, perHour, today: todayLoad, tradeLimitPerHour: 100},
     searches: ts.map(r => ({...searchName(r.state), n: r.n, last: r.last})),
     plan: {free: FREE, today: {views: todayLoad.site_view, batches: todayLoad.site_batch, requests, trackingWrites, priceWrites, writes},
@@ -319,12 +321,12 @@ async function heatmap(env, url){
 async function olderSuggestions(env, url){
   const before = int(url.searchParams.get('before'), 1, 2 ** 31) || 2 ** 31;
   const [sg, count] = (await env.DB.batch([
-    env.DB.prepare('SELECT id, text, page, at, status FROM suggestions WHERE id < ? ORDER BY id DESC LIMIT ?').bind(before, NOTES + 1),
+    env.DB.prepare('SELECT id, text, page, card, at, status FROM suggestions WHERE id < ? ORDER BY id DESC LIMIT ?').bind(before, NOTES + 1),
     env.DB.prepare('SELECT status, COUNT(*) AS n FROM suggestions GROUP BY status'),
   ])).map(r => (r && r.results) || []);
   const status = Object.fromEntries(['new', 'read', 'done'].map(s => [s, 0]));
   for(const r of count) if(r.status in status) status[r.status] = r.n;
-  return {list: sg.slice(0, NOTES).map(x => ({id: x.id, text: x.text, page: x.page || '', at: x.at, status: x.status})),
+  return {list: sg.slice(0, NOTES).map(x => ({id: x.id, text: x.text, page: x.page || '', card: x.card || '', at: x.at, status: x.status})),
     more: sg.length > NOTES, count: status};
 }
 
