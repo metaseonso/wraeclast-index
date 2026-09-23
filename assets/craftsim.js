@@ -454,7 +454,7 @@ async function tab(){
       (TAB.up ? 'Close the currency tab' : 'Open the full currency tab') + '"><span></span></button>' +
     '<div class="bn-sides">' + GROUPS.filter(g => g.mid || all[g.g].length).map(g =>
       '<button type="button" class="bn-gt" data-do="group:' + g.g + '" aria-pressed="' + (!q && TAB.open === g.g) +
-      '">' + icHTML((all[g.g][0] || {}).n || '') + '<span>' + esc(g.n) + '<i>' + all[g.g].length +
+      '">' + icHTML(((all[g.g] || []).find(x => artOf(x.n)) || all[g.g][0] || {}).n || '') + '<span>' + esc(g.n) + '<i>' + all[g.g].length +
       '</i></span></button>').join('') + '</div>' +
     '<div class="bn-mid">' +
       (run ? '<p class="bn-now">' + (sel ? icHTML(sel.n) + '<b>' + esc(sel.n) + '</b>' : '<b>Pick a currency</b>') + '</p>' +

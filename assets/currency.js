@@ -144,7 +144,7 @@ function markets(host){
       '<span class="cxm-ic">' + iconHTML(A || {n: a}) + '</span>' +
       '<b>' + esc(a) + '</b>' +
       '<span class="cxm-for">1 = ' + (r >= 100 ? Math.round(r).toLocaleString() : +r.toPrecision(3)) +
-        (B ? '<span class="cxm-ic sm">' + iconHTML(B) + '</span>' : ' ') + esc(b) + '</span>' +
+        (B ? '<span class="cxm-ic sm">' + iconHTML(B) + '</span>' : ' ') + '<b>' + esc(b) + '</b></span>' +
       '<span class="cxm-vol">' + compact(vol) + ' div traded</span></button>';
   }).join('');
   host.addEventListener('click', e => { const b = e.target.closest('.cxm-row'); const it = b && D.byKey.get('c:' + b.dataset.k); if(it) openDetail(it, {}, null); });
@@ -257,12 +257,12 @@ export function mount(el){
   if(!D.market){ el.innerHTML = '<div class="pagehd"><h2>Currency</h2><p class="err">Prices are not loaded. Try again in a minute.</p></div>'; return {}; }
   ALL = rows();
   const kinds = ['all', ...cats()];
+  /* The currency a player came for is the top of the page. The busiest markets are a thing to browse once
+     you are done, so they sit under the grid rather than 24 rows above it. */
   el.innerHTML =
-    '<div class="pagehd"><h2>Currency</h2><p>' + esc(D.market.league) + ': what each currency really traded for on the in-game Currency Exchange ' +
-      'over the last 24 hours. Updated every hour.</p></div>' +
-    '<div class="sect"><h3>Busiest exchange markets</h3><p>Last 24 hours. What one buys, and how much traded.</p></div>' +
-    '<div class="cxm" id="cxmarkets"></div>' +
-    '<div class="sect"><h3>Watch list</h3><p id="cxcount"></p><span class="grow"></span>' +
+    '<div class="pagehd"><h2>Currency</h2><p>What each currency really traded for on the in-game Currency ' +
+      'Exchange over the last 24 hours. Updated every hour.</p></div>' +
+    '<div class="sect"><h3>Every currency</h3><p id="cxcount"></p><span class="grow"></span>' +
       '<button type="button" class="btn gold" id="cxpick">★ Add to watch list</button></div>' +
     '<div class="controls cx">' +
       // what a player came with in hand, asked as a question. The groups below narrow to whatever is asked.
@@ -274,18 +274,21 @@ export function mount(el){
       '</div></div>' +
       '<div class="row"><div class="seg" id="cxcat">' + kinds.map(c => '<button type="button" data-v="' + esc(c) + '" aria-pressed="' + (c === S.cat) + '">' +
         (c === 'all' ? 'All' : esc(c)) + '</button>').join('') + '</div></div>' +
+      // the price chips were a third row of their own; one list says the same seven things in one line
       '<div class="row"><input class="field" id="cxq" type="search" placeholder="Search currency…" autocomplete="off">' +
-        '<div class="kinds" id="cxtrend" style="margin:0;justify-content:flex-start">' + TRENDS.map(([k, l]) =>
-          '<button type="button" class="chip" data-v="' + k + '" aria-pressed="' + (k === S.trend) + '">' + l + '</button>').join('') + '</div>' +
         '<span class="grow"></span>' +
         '<label class="note"><input type="checkbox" id="cxliq" checked> Hide low volume</label>' +
+        '<select class="field" id="cxtrend" aria-label="Price action">' + TRENDS.map(([k, l]) =>
+          '<option value="' + k + '">' + (k === 'all' ? 'Any price action' : l) + '</option>').join('') + '</select>' +
         '<select class="field" id="cxsort">' + SORTS.map(([k, l]) => '<option value="' + k + '">' + l + '</option>').join('') + '</select></div>' +
     '</div>' +
     '<div class="cards" id="cxcards"></div><div class="more cx-more" id="cxmore" hidden>' +
       '<button type="button" class="btn cx-next">Show more</button><button type="button" class="btn cx-all">Show all</button></div>' +
     '<p class="note" style="margin-top:18px">Rising or falling: 10%+ this week. Swinging: 12%+ in one day. Low volume: under ' + MIN_VOL + ' div a day. ' +
       '“Add to watch list” searches every currency, busy or not. ' +
-      'Source: the in-game Currency Exchange (GGG\u2019s hourly feed of real trades).</p>';
+      'Source: the in-game Currency Exchange (GGG’s hourly feed of real trades).</p>' +
+    '<div class="sect"><h3>Busiest exchange markets</h3><p>Last 24 hours. What one buys, and how much traded.</p></div>' +
+    '<div class="cxm" id="cxmarkets"></div>';
 
   const seg = (id, key) => $('#' + id, el).addEventListener('click', e => {
     const b = e.target.closest('button'); if(!b) return;
@@ -293,7 +296,8 @@ export function mount(el){
     [...b.parentNode.children].forEach(c => c.setAttribute('aria-pressed', String(c === b)));
     render();
   });
-  seg('cxcat', 'cat'); seg('cxtrend', 'trend');
+  seg('cxcat', 'cat');
+  $('#cxtrend', el).addEventListener('change', e => { S.trend = e.target.value; S.shown = PAGE; render(); });
   /* a question narrows the groups under it, and the group chips are drawn again to whatever is left. The
      group a player had chosen is kept where the new question still holds it, and dropped where it does not. */
   $('#cxask', el).addEventListener('click', e => {
@@ -328,7 +332,8 @@ function update(){
   if(c){ S.q = c.toLowerCase(); S.cat = 'all'; S.trend = 'all'; S.liquid = false;
     const q = $('#cxq', EL); if(q) q.value = c;
     const l = $('#cxliq', EL); if(l) l.checked = false;
-    EL.querySelectorAll('#cxcat button, #cxtrend button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.v === 'all')));
+    EL.querySelectorAll('#cxcat button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.v === 'all')));
+    const t = $('#cxtrend', EL); if(t) t.value = 'all';
   }
   render();
 }
