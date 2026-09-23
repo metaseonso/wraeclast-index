@@ -5,9 +5,10 @@
    names another card gives "Named on this card" one way and "Named by" the other. A keyword's own nine lists
    come from data/kwuse.json (tools/kwuse.py), loaded the first time one is needed.
 
-   Two of them read a file of their own, fetched only when a card asks for one: data/kwuse.json for a
-   keyword's nine lists, and data/grants.json for which item grants which skill, both ways round
-   (tools/kwuse.py, tools/grants.py). `categories` says which of those it still needs.
+   Three of them read a file of their own, fetched only when a card asks for one: data/kwuse.json for a
+   keyword's nine lists, data/grants.json for which item grants which skill, both ways round, and
+   data/clusters.json for the tree cut into clusters (tools/kwuse.py, tools/grants.py, tools/clusters.py).
+   `categories` says which of those it still needs.
 
    Which lists a kind shows is declared in assets/kinds.js (REL), not here. This file only answers, per list:
    how many there are altogether, and the first n of them — so a card with 1,448 of something draws eight rows
@@ -63,6 +64,33 @@ const to = (it, m) => {
    index has no card for, and kwuse names them by id) */
 const cardRows = keys => keys.filter(key => X.D.byKey.get(key)).map(key => ({key}));
 
+/* ---------- the clusters (data/clusters.json) ----------
+   One file, read both ways: the nodes a cluster holds, and the clusters a node sits in. The file is places,
+   not names — `at` the notable's place on the tree, `in` the rest of the cluster's, `node` the passive card
+   each place has and `sh` every place that is in more than one cluster (tools/clusters.py). This turns it
+   round once, the first time a card asks, so a cluster with 23 nodes is a lookup and never a search. */
+let CL = null;
+function clusters(C){
+  if(CL && CL.v === C) return CL;
+  const of = new Map();                  // a passive card -> the clusters it sits in
+  const rows = C.id.map((id, j) => {
+    const seen = new Map();              // one row per card, however many of the cluster's nodes it is
+    for(const at of [C.at[j], ...C.in[j]]){
+      const card = C.node[at] >= 0 ? 'p:' + C.cards[C.node[at]] : '';
+      if(!card) continue;                // a plate or a jewel socket: a point inside, never a row
+      const had = seen.get(card);
+      if(had) had.x++;
+      else seen.set(card, {key: card, x: 1});
+      const mine = of.get(card);
+      if(mine){ if(mine[mine.length - 1] !== j) mine.push(j); } else of.set(card, [j]);
+    }
+    return [...seen.values()].map(r => r.x > 1 ? r : {key: r.key});
+  });
+  CL = {v: C, rows, of};
+  return CL;
+}
+const clusterAt = C => (C._at || (C._at = new Map(C.id.map((id, j) => [id, j]))));
+
 /* ---------- one edge each ---------- */
 const EDGE = {
   base(it){ return to(it, 'base'); },
@@ -77,6 +105,16 @@ const EDGE = {
   // which item grants which skill, both ways round, as tools/grants.py worked it out
   grants(it, F){ return cardRows((((F.grants || {}).by || {})[it.k + ':' + it.id] || []).map(x => x[0])); },
   granted(it, F){ return cardRows((((F.grants || {}).of || {})[it.k + ':' + it.id] || []).map(x => x[0])); },
+  // the nodes a cluster holds, its own notable first, and the clusters one node sits in
+  incluster(it, F){
+    const C = F.clusters, j = C ? clusterAt(C).get(it.id) : undefined;
+    return j === undefined ? [] : clusters(C).rows[j].filter(r => X.D.byKey.get(r.key));
+  },
+  clusterof(it, F){
+    const C = F.clusters;
+    if(!C) return [];
+    return cardRows((clusters(C).of.get(it.k + ':' + it.id) || []).map(j => 't:' + C.id[j]));
+  },
   named(it){ return cardRows((it.rx || []).filter(key => X.D.byKey.get(key))); },
   namedby(it){ return cardRows(others(turn().namedby.get(it.k + ':' + it.id), it.k + ':' + it.id)); },
 };

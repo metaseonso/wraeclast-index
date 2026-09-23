@@ -167,6 +167,11 @@ export const FIELDS = {
   asc:      {type: 'text', at: 'asc', slot: 'pill', post: ' ascendancy'},
   region:   {type: 'text', at: 'reg', slot: 'pill', post: ' region'},
   droplv:   {type: 'number', at: 'dl', slot: 'pill', pre: 'Drops from area level '},
+  /* A cluster's two numbers: the points it costs to take the whole of it, and how many of its nodes are
+     also in another cluster (tools/clusters.py). Both are numbers with a word after them, so neither is a
+     renderer of its own. */
+  points:   {type: 'number', at: 'pts', slot: 'pill', post: ' point inside', many: ' points inside'},
+  shared:   {type: 'number', at: 'shr', slot: 'pill', post: ' shared with another cluster'},
 
   usetime:  {type: 'duration', at: 'ct', slot: 'fact', post: ' use time'},
   cost:     {type: 'cost', at: 'cost', slot: 'fact'},
@@ -303,6 +308,11 @@ export const REL = {
   cat:      {label: 'Listed with', edge: 'cat', map: 'cat'},
   named:    {label: 'Names', edge: 'named'},
   namedby:  {label: 'Named by', edge: 'namedby'},
+  /* The two ends of one edge: the nodes a cluster holds, and the cluster or clusters a node sits in. A node
+     the same number of steps from two notables is in both, so the second one answers with two rows and each
+     of them says it is shared (data/clusters.json, tools/clusters.py). */
+  incluster: {label: 'Nodes in this cluster', of: 'p', edge: 'incluster', needs: 'clusters'},
+  clusterof: {label: 'Cluster it sits in', of: 't', edge: 'clusterof', needs: 'clusters'},
 };
 
 const HEAD = ['art', 'name', 'sub', 'offer', 'ask', 'price'];
@@ -336,7 +346,18 @@ export const KINDS = [
    builds: [{at: 's', starts: 'Keystone', key: 'keypassives'}, {at: 'asc', key: 'keypassives'}, {at: 'rec', key: 'anointed'}],
    fields: [...HEAD, 'asc', 'region', 'ontree', ...BODY, ...FOOT],
    acts: ['full', 'open'],
-   rel: [...KWUSE, 'grants', 'named', 'namedby', 'cat']},
+   rel: [...KWUSE, 'grants', 'clusterof', 'named', 'namedby', 'cat']},
+
+  /* A cluster: the notable that makes a stretch of the tree worth walking to, and the nodes you walk through
+     to reach it. 1,017 of them, cut by tools/clusters.py out of the game's own tree, named for the notable
+     and carrying its own words. It has no colour of its own, so the map works one out from its letter.
+     A cluster ranks under the notable it is named for: the two carry the same name and the same lines, and
+     the node is what the words name. */
+  {k: 't', one: 'Cluster', many: 'Clusters', place: 'Passive tree', sec: 'tree', link: 'explore#tree=@n', mark: 'ls',
+   index: true, search: true, rank: -10,
+   fields: [...HEAD, 'region', 'points', 'shared', ...BODY, ...FOOT],
+   acts: ['full', 'open'],
+   rel: ['incluster', 'clusterof', ...KWUSE, 'cat']},
 
   {k: 'b', one: 'Base', tone: 'muted', many: 'Bases', place: 'Craft', link: 'craft', mark: 'ls',
    index: true, search: true, item: true, crawl: true,

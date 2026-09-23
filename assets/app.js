@@ -1501,9 +1501,9 @@ function kwChips(it){
    list rather than the default view.
    A keyword's own nine categories come from data/kwuse.json (tools/kwuse.py), fetched the first time one of
    them is needed. */
-/* The two files some of the lists are worked out from, each fetched the first time a card asks for one and
-   kept for the rest of the visit. A card that needs neither never asks for either. */
-const REL_FILES = {kwuse: 'data/kwuse.json', grants: 'data/grants.json'};
+/* The files some of the lists are worked out from, each fetched the first time a card asks for one and kept
+   for the rest of the visit. A card that needs none of them never asks for any. */
+const REL_FILES = {kwuse: 'data/kwuse.json', grants: 'data/grants.json', clusters: 'data/clusters.json'};
 const HAVE = {};            // what is in
 const JOB = {};             // what is on its way
 let DRILL = null;           // the keywords the drill-down page can filter by, once its file is in
