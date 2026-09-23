@@ -748,6 +748,129 @@ function ownFill(host, it, f, o){
   lazy(url).then(m => { OWN[url] = m; if(host.isConnected && m.fill) m.fill(host, it, f, o); }, () => {});
 }
 
+/* ---------- the builder's own fields ----------
+   Three fields that draw a build file's own state: the budgets, the gear preview and the tree preview. Each
+   reads the state the card's module keeps and hands over whole (assets/builder.js), the way the bench's
+   three do, and nothing about a build is worked out here.
+
+   A budget row is the bench's item panel: a heading with a count beside it, a list under it, sides labelled
+   and counted. A row a Rare is in opens on the modifiers its own pool can roll, each with the number box and
+   the slider the Craft tab and the Trade panel already draw — the control comes ready-made off the card's
+   own state, because the panel that builds it is the one that knows the tiers (assets/trade.js valHTML).
+
+   No budget is ever counted in currency: the market prices no rare, so the counts are the budget and the
+   price rides along where there is one. */
+const sideCount = (b, a) => b.caps ? '<span class="bn-h5">' + (a === 'p' ? 'Prefixes' : 'Suffixes') + ' <b>' +
+  b.held[a] + '/' + b.caps[a] + '</b></span>' : '';
+function famRow(r){
+  const said = r.lines.map(esc).join('<br>');
+  const corner = r.of > 1 ? (r.live < r.of ? r.live + ' of ' + r.of : r.of) + ' tiers' : 'level ' + r.lvl;
+  return '<div class="cr-fam' + (r.v === undefined ? '' : ' on') + '" data-f="' + esc(r.f) + '">' +
+    '<div class="cr-fhd"><span class="cr-ft">' + said + '</span><span class="cr-tn">' + esc(corner) + '</span></div>' +
+    '<div class="cr-fctl">' + (r.ctl || '') + '</div></div>';
+}
+function budgetRow(b){
+  const head = '<p class="bn-h4"><button type="button" class="bd-open" data-do="row:' + esc(b.id) + '"' +
+    ' aria-expanded="' + (b.open ? 'true' : 'false') + '">' + esc(b.n) + '</button><span>' + esc(b.count) + '</span></p>';
+  const held = !b.it ? '' :
+    '<ul class="bn-mods bd-held"><li><button type="button" class="bd-nm" data-do="see:' + esc(b.key) + '">' +
+      esc(b.it.n) + '</button><span class="bn-mm">' + esc(b.it.s) + '</span>' +
+      '<button type="button" class="bn-x" data-do="drop:' + esc(b.id) + '" aria-label="Out of the slot">Remove</button></li>' +
+      b.lines.map(l => '<li><span class="bn-ml">' + esc(l) + '</span></li>').join('') + '</ul>';
+  const counts = b.caps ? '<p class="bd-sides">' + sideCount(b, 'p') + sideCount(b, 's') +
+    (b.sockets ? '<span class="bn-h5">Augment sockets <b>0/' + b.sockets + '</b></span>' : '') + '</p>' : '';
+  const open = !b.open || !b.fams ? '' : '<div class="cr-fams bd-fams">' +
+    '<label class="bn-lab"><span class="lbl">Item level <b>' + b.ilvl + '</b></span>' +
+      '<input class="bn-range" type="range" min="' + b.ilvlMin + '" max="' + b.ilvlMax + '" value="' + b.ilvl +
+      '" data-do="ilvl:' + esc(b.id) + '"></label>' +
+    b.fams.map(famRow).join('') + '</div>';
+  return '<div class="bn-side bd-brow' + (b.open ? ' open' : '') + '">' + head + held + counts + open + '</div>';
+}
+/* A cluster in the build: what it costs to reach, what is taken inside it, and one row per node — the
+   bench's own sides, because a row here carries three things a chip cannot. A node in more than one cluster
+   carries the word on every row it is on, so turning it on is never a surprise somewhere else. */
+function clusterRow(s){
+  const cost = (s.reach === null ? 'no way there yet' : s.reach + ' to reach') + ' · ' + s.took.length +
+    ' inside · ' + s.points + (s.points === 1 ? ' point' : ' points');
+  return '<div class="bn-side bd-clus"><p class="bn-h4">' + esc(s.n) +
+    '<span>' + esc(s.took.length + '/' + s.all) + '</span></p>' +
+    '<p class="bd-cost">' + esc(cost) + '</p><ul class="bn-mods bd-nodes">' + s.nodes.map(n =>
+      '<li><button type="button" class="bd-node" data-do="node:' + esc(s.c + '/' + n.at) + '"' +
+      ' aria-pressed="' + (n.on ? 'true' : 'false') + '"><span class="bn-ml">' + esc(n.n) + '</span><span class="bn-mm">' + esc(n.said) +
+      (n.shared ? '</span><span class="bd-sh">shared' : '') + '</span></button></li>').join('') + '</ul>' +
+    '<button type="button" class="bn-x" data-do="cluster:' + esc(s.c) + '" aria-label="Out of the build">Remove</button></div>';
+}
+function budgetHTML(b, full){
+  if(!b) return '';
+  const rows = [...b.rows.map(budgetRow),
+    '<div class="bn-side bd-brow"><p class="bn-h4">Jewels<span>' + b.jewels.held + '/' + b.jewels.of + '</span></p>' +
+      '<p class="note">The sockets the tree gives.</p>' + b.jewels.rows.map(jewelRow).join('') + '</div>',
+    '<div class="bn-side bd-brow"><p class="bn-h4">Supports<span>' + b.supports + '</span></p>' +
+      '<p class="note">The game decides how many fit.</p></div>',
+    '<div class="bn-side bd-brow"><p class="bn-h4">Points<span>' + b.points.total + '</span></p>' +
+      (b.points.path ? '<p class="bd-cost">' + b.points.path +
+        (b.points.path === 1 ? ' point on the path' : ' points on the path') + '</p>' : '') +
+      (b.points.steps.length ? b.points.steps.map(clusterRow).join('') : '<p class="note">No cluster taken.</p>') +
+      '</div>'];
+  const cap = full ? rows.length : FRAME.lines;
+  const over = rows.length - cap > FRAME.slack ? rows.length - cap : 0;
+  return '<div class="bd-budget"><p class="card-facts">Budgets</p>' +
+    rows.slice(0, over ? cap : rows.length).join('') +
+    (over ? '<p class="card-facts">' + esc(FRAME.more(over)) + '</p>' : '') +
+    (b.big ? '<p class="card-src">This file came to ' + b.big.toLocaleString() +
+      ' bytes, over the 16,384 a file holds, so it stands as it was.</p>' : '') +
+    '</div>';
+}
+/* A jewel in a socket, and the cluster it is socketed against. No file we read carries a jewel's radius in
+   game units, so the player says which cluster the socket covers and the row says why it asks. */
+function jewelRow(j){
+  return '<div class="bd-jewel"><button type="button" class="bd-nm" data-do="see:' + esc(j.key) + '">' +
+    esc(j.n) + '</button>' +
+    (j.clusters.length
+      ? '<label class="bn-lab"><span class="lbl">Socketed against</span>' +
+        '<select class="field" data-do="socket:' + j.i + '"><option value="">No cluster</option>' +
+        j.clusters.map(c => '<option value="' + esc(c.c) + '"' + (c.c === j.c ? ' selected' : '') + '>' +
+          esc(c.n) + '</option>').join('') + '</select></label>'
+      : '<p class="note">No cluster taken yet.</p>') +
+    '<p class="card-src">The radius is not published, so this jewel covers the cluster it is socketed against.</p>' +
+    '</div>';
+}
+/* The gear preview: one tile per slot, filled in the frame's fixed order, with an empty box where nothing is
+   chosen. A pointer over a tile draws the card the site already draws, floated beside it; a finger taps and
+   the card opens on the trail. The same card either way — nothing here is composed, and a slot holding a
+   Rare shows the base and what that base can roll, which is the base card's own block. */
+function gearHTML(b){
+  if(!b) return '';
+  const tile = t => {
+    const it = t.it;
+    const inner = it ? iconHTML(it) : '<span class="card-ic"></span>';
+    const drop = t.jewel !== undefined ? 'dropjewel:' + t.jewel : 'drop:' + t.id;
+    return '<span class="bd-tile' + (it ? ' on' : '') + '">' +
+      '<button type="button" class="bd-slot" data-do="' + (it ? 'see:' + esc(it.k + ':' + it.id) : 'chip:' + esc(t.id)) +
+      '" aria-label="' + esc(it ? it.n : t.n) + '">' + inner + '<span class="bd-sn">' + esc(t.n) + '</span></button>' +
+      (it ? '<span class="bd-tip">' + card(it, {detail: true, href: null}).outerHTML +
+        '</span><button type="button" class="bn-x" data-do="' + esc(drop) + '" aria-label="Out of the slot">Remove</button>' : '') +
+      '</span>';
+  };
+  return '<div class="bd-gear"><p class="card-facts">Gear</p>' + b.gear.map(tile).join('') + '</div>';
+}
+/* The tree preview, beside the gear preview and filling the same way: the whole main tree behind, what is
+   allocated over it and the path between. Drawn once per change, never per frame — 4,483 dots and 5,393
+   lines is under a third of what the map draws in one picture. */
+function treeHTML(b){
+  if(!b || !b.tree) return '';
+  const t = b.tree;
+  const said = b.points.total + (b.points.total === 1 ? ' point' : ' points') +
+    (b.points.path ? ' · ' + b.points.path + ' on the path' : '');
+  return '<figure class="bd-tree"><figcaption>Passive tree</figcaption>' +
+    '<svg viewBox="0 0 ' + t.w + ' ' + t.h + '" aria-hidden="true">' +
+    '<path class="bd-back" d="' + t.back + '"/>' +
+    (t.path ? '<path class="bd-road" d="' + t.path + '"/>' : '') +
+    (t.on ? '<path class="bd-taken" d="' + t.on + '"/>' : '') +
+    '<path class="bd-start" d="' + t.start + '"/></svg>' +
+    '<p class="card-facts">' + esc(said) + '</p></figure>';
+}
+
 /* ---------- one function per field type ----------
    Each answers with the words to draw, or with markup where a field is more than words ("raw"): the slot it
    sits in wraps the rest. A field whose entry says nothing answers with nothing and draws nothing, so one
@@ -832,6 +955,10 @@ export const TYPE = {
      says what it does in `data-do` and the card's own module answers it (opts.on, through the popup's one
      delegated listener). docs/craft-sim.md, "The bench card and the running card". */
   item:   {raw: 1, v: (it, f) => benchItemHTML(it[f.at])},
+  /* the builder's three: a build file's budgets, its gear preview and its tree preview */
+  budget: {raw: 1, v: (it, f, o) => budgetHTML(it[f.at], o.full)},
+  gear:   {raw: 1, v: (it, f) => gearHTML(it[f.at])},
+  tree:   {raw: 1, v: (it, f) => treeHTML(it[f.at])},
   picks:  {raw: 1, v: (it, f) => picksHTML(it[f.at])},
   note:   {raw: 1, v: (it, f) => it[f.at] ? '<p class="card-src bn-note">' + esc(it[f.at]) + '</p>' : ''},
   launch: {raw: 1, v: (it, f) => {
@@ -1007,6 +1134,7 @@ function saveStep(){
   step.uses = sec && !sec.hidden ? {open: [...(sec._open || [])], q: (sec.querySelector('.uses-q') || {}).value || '',
     top: (sec.querySelector('.uses-list') || {}).scrollTop || 0} : null;
   step.trade = box.querySelector('.trade') || null;
+  step.panel = box.querySelector('.ov-panel') || null;   // ...and the panel one of its acts opened
 }
 // a box you are typing in, brought back above the keyboard. Twice: once now, once after the keyboard has settled
 function keepInView(el){
@@ -1259,6 +1387,21 @@ function scrimTap(){
     closeDetail();
   });
 }
+/* A panel one of the card's own acts opens under the buttons, the way the Trade panel opens under Trade:
+   the act's own module makes the node and this is where it goes, and the same act again takes it away. It is
+   the node itself that is kept, so Back and Forward bring it back with whatever was set on it (saveStep). */
+export function actPanel(node, tag){
+  if(!OV || OV.hidden || !CUR()) return null;
+  const body = OV.querySelector('.ov-body');
+  const had = body.querySelector('.ov-panel');
+  if(had) had.remove();
+  if(had && had.dataset.panel === tag) return null;
+  node.classList.add('ov-panel');
+  node.dataset.panel = tag;
+  body.appendChild(node);
+  node.scrollIntoView({block: 'nearest'});
+  return node;
+}
 /* the same popup for anything else (e.g. the Suggest box): no card, so no trail */
 export function openBox(node, label = 'Details'){
   ensureOV();
@@ -1351,6 +1494,7 @@ function paintStep(){
       if(tb) tb.setAttribute('aria-expanded', 'true');
     }
   }
+  if(step.panel) body.appendChild(step.panel);   // ...and the act's own panel, with whatever was set on it
   paintNav();
   const back = () => { if(CUR() === step) box.scrollTop = step.top || 0; };   // back to where you had this card
   back();
@@ -1501,9 +1645,9 @@ function kwChips(it){
    list rather than the default view.
    A keyword's own nine categories come from data/kwuse.json (tools/kwuse.py), fetched the first time one of
    them is needed. */
-/* The two files some of the lists are worked out from, each fetched the first time a card asks for one and
-   kept for the rest of the visit. A card that needs neither never asks for either. */
-const REL_FILES = {kwuse: 'data/kwuse.json', grants: 'data/grants.json'};
+/* The files some of the lists are worked out from, each fetched the first time a card asks for one and kept
+   for the rest of the visit. A card that needs none of them never asks for any. */
+const REL_FILES = {kwuse: 'data/kwuse.json', grants: 'data/grants.json', clusters: 'data/clusters.json'};
 const HAVE = {};            // what is in
 const JOB = {};             // what is on its way
 let DRILL = null;           // the keywords the drill-down page can filter by, once its file is in
