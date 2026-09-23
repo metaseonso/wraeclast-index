@@ -408,6 +408,80 @@ small.at-bonus{display:block}
 .cr-prev{grid-area:prev; position:sticky; top:76px; max-height:calc(100vh - 90px); overflow:auto; overscroll-behavior:contain; padding:10px 4px}
 .cr-mech{grid-area:mech; display:grid; gap:10px}
 .cr-pool{grid-area:pool; display:grid; gap:10px}
+/* "what can this base roll": what you are crafting, the item over its pool, and what puts a mod there */
+.cr-craft{grid-template-columns:260px minmax(0, 1fr) 360px; grid-template-areas:"side mid rail"}
+.cr-side{grid-area:side; display:grid; gap:10px; align-content:start; position:sticky; top:76px;
+  max-height:calc(100vh - 90px); overflow:auto; overscroll-behavior:contain}
+.cr-mid{grid-area:mid; display:grid; gap:12px; align-content:start; min-width:0}
+.cr-craft .cr-rail{grid-area:rail}
+.cr-craft .cr-pool{grid-area:auto}
+/* nothing picked yet: the kinds have the page to themselves */
+.cr-craft.solo{grid-template-columns:minmax(0, 1fr); grid-template-areas:"side"}
+.cr-craft.solo .cr-side{position:static; max-height:none; overflow:visible}
+.cr-bases{display:grid; gap:5px}
+.cr-basecard{display:flex; gap:9px; align-items:center; text-align:left; width:100%; min-width:0; padding:6px 8px;
+  border:1px solid var(--line-soft); border-radius:8px; background:var(--sunken); color:inherit; font:inherit; cursor:pointer}
+.cr-basecard:hover{border-color:var(--accent)}
+.cr-basecard[aria-pressed="true"]{border-color:var(--accent); background:var(--accent-soft)}
+.cr-bt{display:grid; gap:1px; min-width:0; font-size:12.5px; line-height:1.35}
+.cr-bt b{font-weight:600; color:var(--text); overflow-wrap:anywhere}
+/* the item, over its pool: the base's own lines, then the level the whole screen is read at */
+.cr-itemhd{min-width:0}
+.cr-props{margin:0; font:500 11.5px var(--mono); line-height:1.6; color:var(--muted)}
+.cr-ilvl{grid-template-columns:auto minmax(0, 1fr); align-items:center; gap:6px 10px}
+.cr-plan{display:grid; gap:2px}
+.cr-plan:empty{display:none}
+/* a modifier as a row: the roll, its share as the number on the right, and what that share is of */
+.cr-colhd{display:flex; gap:10px; align-items:baseline; justify-content:space-between}
+.cr-colhd .cr-h4{margin:0}
+.cr-lead{font:500 10.5px var(--mono); color:var(--faint)}
+.cr-mods2{display:grid; gap:5px}
+.cr-mod{border:1px solid var(--line-soft); border-radius:8px; background:var(--sunken); min-width:0}
+.cr-mod.on{border-color:color-mix(in srgb, var(--accent) 50%, var(--line))}
+.cr-mod.off{opacity:.5}
+.cr-mrow{display:grid; grid-template-columns:minmax(0, 1fr) auto; gap:2px 10px; width:100%; min-width:0;
+  padding:8px 10px; text-align:left; border:0; background:none; color:inherit; font:inherit; cursor:pointer}
+.cr-mline{font-size:13px; line-height:1.35; color:var(--text); overflow-wrap:anywhere}
+.cr-msh{font:600 15px var(--mono); color:var(--accent); align-self:start; white-space:nowrap}
+.cr-mbar{grid-column:1 / -1; height:4px; border-radius:2px; background:var(--line-soft); margin-top:4px}
+.cr-mbar i{display:block; height:4px; border-radius:2px; background:var(--accent)}
+.cr-mmeta{grid-column:1 / -1; font:500 10.5px var(--mono); color:var(--faint); margin-top:4px}
+.cr-mrow:hover .cr-mline{color:var(--accent)}
+.cr-mx{padding:0 10px 9px; border-top:1px dashed var(--line-soft); margin-top:2px}
+.cr-fam.bare{border:0; background:none; padding:8px 0 0}
+.cr-mall{display:flex; gap:10px; align-items:center; justify-content:space-between; width:100%;
+  padding:8px 10px; border:1px dashed var(--line); border-radius:8px; background:none;
+  color:var(--muted); font:inherit; font-size:12px; cursor:pointer}
+.cr-mall .cr-lk{color:var(--accent)}
+.cr-mall:hover{border-color:var(--accent)}
+.cr-tally{margin-left:auto; font:500 10.5px var(--mono); color:var(--faint)}
+/* the rail's own blocks: what is guaranteed here, what can add one, and what each costs today */
+.cr-cost{display:grid; gap:3px}
+.cr-crow{display:flex; gap:10px; justify-content:space-between; font:500 12px var(--mono); color:var(--muted)}
+.cr-crow .cr-px{font-size:12px}
+/* "how do I get this mod": where it rolls, ranked, and the modifier itself beside it */
+.cr-where{border:1px solid var(--line-soft); border-radius:8px; background:var(--sunken); overflow:hidden}
+.cr-whd, .cr-wrow{display:grid; grid-template-columns:minmax(0, 1fr) minmax(0, 96px) 62px 66px; gap:10px; align-items:baseline}
+.cr-whd{padding:7px 10px; border-bottom:1px solid var(--line); font:500 10px var(--mono);
+  text-transform:uppercase; letter-spacing:.08em; color:var(--faint)}
+.cr-whd span + span, .cr-wrow .cr-wv, .cr-wrow .cr-wsh{text-align:right}
+.cr-wrow{width:100%; padding:8px 10px; border:0; border-top:1px solid var(--line-soft); background:none;
+  color:inherit; font:inherit; text-align:left; cursor:pointer}
+.cr-wrow:first-of-type{border-top:0}
+.cr-wrow:hover{background:var(--accent-soft)}
+.cr-wrow[aria-pressed="true"]{background:var(--accent-soft); box-shadow:inset 3px 0 0 var(--accent)}
+.cr-wn{font-size:13px; color:var(--text); overflow-wrap:anywhere}
+.cr-wv{font:500 12px var(--mono); color:var(--muted)}
+.cr-wsh{font:600 12px var(--mono); color:var(--accent)}
+.cr-guar{display:grid; grid-template-columns:repeat(auto-fit, minmax(min(100%, 240px), 1fr)); gap:5px}
+.cr-modcard{cursor:default}
+.cr-modcard:hover{translate:none}
+.cr-modcard .card-id h3{font-family:var(--sans); font-weight:600; font-size:14px; line-height:1.4; letter-spacing:0}
+.cr-ladder{display:grid; gap:3px}
+.cr-lrow{display:flex; gap:10px; justify-content:space-between; font:500 12px var(--mono); color:var(--muted)}
+.cr-lrow.top span:first-child{color:var(--accent)}
+.cr-lrow.top span:last-child{color:var(--text)}
+.cr-lrow.off{color:var(--faint); opacity:.6}
 .cr-h{font-family:var(--disp); font-size:16px; display:flex; gap:10px; align-items:baseline; flex-wrap:wrap}
 .cr-h .note{font-family:var(--sans)}
 .cr-h4{margin:6px 0 2px; font-size:10.5px; font-weight:500; text-transform:uppercase; letter-spacing:.09em; color:var(--faint)}
@@ -523,6 +597,12 @@ small.at-bonus{display:block}
 @media (max-width:1000px){
   .cr-main{grid-template-columns:minmax(0, 1fr); grid-template-areas:"prev" "mech" "pool"}
   .cr-prev{position:static; max-height:none; overflow:visible; padding:10px 0}
+  /* one column: the item and the level it is read at first, then the way to another base, then its pool */
+  .cr-craft{grid-template-columns:minmax(0, 1fr); grid-template-areas:"item" "side" "pool" "rail"}
+  .cr-mid{display:contents}
+  .cr-craft .cr-itemhd{grid-area:item}
+  .cr-craft .cr-pool{grid-area:pool}
+  .cr-side{grid-area:side; position:static; max-height:none; overflow:visible}
   .cr-mods{grid-template-areas:"ans" "rail" "hits"}
   .cr-rail{position:static; max-height:none; overflow:visible}
 }
@@ -530,6 +610,9 @@ small.at-bonus{display:block}
   .cr-base{grid-template-columns:minmax(0, 1fr)}
   .cr-cols{grid-template-columns:minmax(0, 1fr)}
   .cr-vers{padding-left:0}
+  /* the ranked table drops the one column a phone can do without: the class, the best tier, the share */
+  .cr-whd, .cr-wrow{grid-template-columns:minmax(0, 1fr) minmax(0, 92px) 62px}
+  .cr-whd span:nth-child(3), .cr-wrow .cr-wv + .cr-wv{display:none}
   /* one job per screen: the search and every modifier until one is picked, then that modifier and how to
      get it. "Every modifier" on the card is the way back to the list. */
   .cr-mods[data-picked="0"] .cr-ans, .cr-mods[data-picked="0"] .cr-rail{display:none}
@@ -539,7 +622,8 @@ small.at-bonus{display:block}
   [data-view="craft"] .chip, [data-view="craft"] .btn, [data-view="craft"] .field,
   [data-view="craft"] .seg button, [data-view="craft"] .linkbtn, [data-view="craft"] .cr-tr,
   [data-view="craft"] .cr-open, [data-view="craft"] .cr-card, [data-view="craft"] .cr-foff,
-  [data-view="craft"] .cr-tag, [data-view="craft"] .tsearch-row,
+  [data-view="craft"] .cr-tag, [data-view="craft"] .tsearch-row, [data-view="craft"] .cr-mrow,
+  [data-view="craft"] .cr-basecard, [data-view="craft"] .cr-wrow, [data-view="craft"] .cr-mall,
   [data-view="craft"] input[type=range]{min-height:44px}
   [data-view="craft"] .chip, [data-view="craft"] .cr-foff, [data-view="craft"] .cr-tag,
   [data-view="craft"] .linkbtn{display:inline-flex; align-items:center}
