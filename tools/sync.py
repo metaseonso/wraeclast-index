@@ -507,7 +507,9 @@ def build_index(html):
             continue
         seen.add((p['n'], p.get('a')))
         label = p['k'].capitalize() + (' · ' + p['a'] if p.get('a') else '')
-        it = {'k': 'p', 'id': p['id'], 'n': p['n'], 's': label, 'q': p.get('reg', ''),
+        # stripped, as a card's name is: a few nodes on the tree are spelt with a space on the end, and a
+        # deep link built from the name has to land on the row (assets/bridge.js reads a row trimmed)
+        it = {'k': 'p', 'id': p['id'], 'n': p['n'].strip(), 's': label, 'q': p.get('reg', ''),
               'ls': [plain(y) for x in p['t'] for y in x.split('\n') if y.strip()]}
         if p.get('a'):
             it['asc'] = p['a']

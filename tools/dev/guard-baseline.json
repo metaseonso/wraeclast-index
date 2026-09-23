@@ -5,16 +5,17 @@
     "g": 1072,
     "u": 710,
     "p": 2112,
-    "w": 693,
+    "w": 725,
     "b": 1554,
+    "i": 31,
     "a": 368,
     "c": 96,
     "h": 8
   },
   "pages": {
-    "sitemap": 7191,
+    "sitemap": 7223,
     "llms": 16,
-    "llmsFull": 7182
+    "llmsFull": 7214
   },
   "phoneWide": {
     "/": 0,
@@ -78,7 +79,8 @@
     "data/info.json .*.t [DNT marker]": 1,
     "data/info.json .{key} [DNT marker]": 8,
     "data/info.json .{key} [[Tag] markup]": 1,
-    "data/kwuse.json .k.*.p[] [stat id]": 1054,
+    "data/kwuse.json .dd[] [stat id]": 9,
+    "data/kwuse.json .k.*.p[] [stat id]": 1075,
     "data/kwuse.json .k.*.w[] [stat id]": 29,
     "data/kwuse.json .k.{key} [stat id]": 9,
     "data/reqs.json .bases.{key} [[Tag] markup]": 51,

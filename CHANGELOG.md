@@ -129,6 +129,87 @@ Add the details here first, then a short public line there.
 - `tools/dev/frame.mjs` now fails a switch with no rule, no word or no card, and a switch from a card whose
   kind the table does not have. `docs/frame.md` settles three more cases: a table that is one file per item
   class, a switch on a card, and a page that already draws a field in full.
+## Next — Item classes are cards, and every keyword card has its connections
+
+- From the suggestion box: *"gloves and other item types need to be under keywords as well. Frankly we need
+  to do a full keyword listing update for card frames to pickup."* Two halves: make the item classes
+  something the frame can group on, and refresh the whole keyword listing against the current export.
+
+### Item classes are a kind
+
+- **A kind of their own, not keyword cards.** An item class is not in the game's glossary and has no
+  glossary wording, so filing 31 rows under Keywords would put words in the game's mouth and hide them
+  inside somebody else's count. It is the frame's fourth move — a new sort of thing with its own name and
+  its own rows — so it is one `KINDS` entry (`i`, *Item class* / *Item classes*, drawn in `bronze`) plus its
+  rows in the index. No card code: the card, the search chip, the map region, the count and the key all came
+  from the declaration.
+- **The `klass` map now answers from both ends.** It already grouped every card by the class it carries
+  (`cr`). Adding `of: 'i'` says which kind answers to that name, which is the same shape a unique's base
+  item already had — so a base item gets **Item class** (one row, `REL.klassof`) and the class gets **Bases
+  of this class** (`REL.inclass`, 180 on Gloves). `EDGE.base` and `EDGE.klassof` became one line each over a
+  shared `to()` that reads the map's own `at` and `of`, so neither names a kind.
+- **An item class is its own class** (`make: {cr: 'id'}`, the same declaration that makes a base item its own
+  base item). That is what keeps the class out of its own group, and what tells the gold button which of the
+  two it is drawing: a base opens the Craft tab on that base, a class on the whole class
+  (`./#/craft?kind=Gloves`). Both forms were already ones `assets/craft.js` reads.
+- **What a class card says**, all of it off `data/craft.json` and `data/craft/<id>.json`, which
+  `tools/craft.py` builds from the export's own item classes and item metadata: the group it sits in as its
+  sub line, how many bases are in it, how many modifiers can roll on it per side, how many prefixes and
+  suffixes it takes at most, and how many sockets. **Listed with** then groups the armour classes together,
+  the weapons together, and so on, with nothing new declared.
+- **Their names are not doors.** "Gloves" in a mod line is what the item is, not which card is meant, and
+  "Shield", "Focus" and "Ring" are a keyword or a base item before they are a class — so the class kind
+  declares no `words` (`assets/marks.js` never sees it) and `tools/nodelinks.py` keeps it out of the phrases
+  it looks for (`NOT_A_NAME`, the kind-level twin of the rule a low-ranked card already had). Checked: the
+  index's build-time marks are byte-for-byte what they were before the 31 cards existed.
+- A class is reached from the search chip, from any base item's Connections, and from the Craft tab.
+
+### The keyword listing, refreshed
+
+- **Re-pulled** (`tools/gamepull.py`, RePoE fork, patch 0.5.5, files dated 11 Sep 2026) and compared card by
+  card against what we ship. Nothing we carry has left the export, and not one of the 693 cards had been
+  reworded upstream: same ids, same terms, same wording.
+- **+32 cards** — the Expedition runes. They were left out because they are written as an in-game tooltip
+  rather than a sentence, and rewriting them was never the answer. `untag()` reads the game's own display
+  tags away (`<<Style>>`, `<rgb(…)>{…}`, `<font:…>{…}`, nested) and leaves the words between them untouched,
+  so the card carries the game's own lines: *Monsters gain: / Extra Fire Damage / All Damage can Ignite*. The
+  tooltip's title line is the card's name box, so it goes where it is the keyword's name — and stays where
+  the files spell it differently (Gasp Rune's tooltip is headed *Volcanic Rune*), because the wording on the
+  card is the game's and not ours. 693 → 725.
+- **Still out, and counted:** 261 entries the export holds with no term or no text at all, 8 whose name is
+  already on another card (the same monster modifier worded twice, and Power Rune), 2 names players never
+  see, 1 placeholder.
+- **The rewording rule now reaches every card.** It used to touch only the cards this tool had made itself;
+  it now reworks any keyword card the export still holds, so a term reworded upstream lands on the next pull
+  whoever built the card. Today that is 0 cards, which is the point: it says so every run.
+- **Every keyword card now has its Connections.** `tools/kwuse.py` read only the drill-down page's own
+  keyword block, so 282 of the 693 cards — every one the export had given us — opened with no connections at
+  all. Its universe is now every keyword the index really cards (451 from that page, 314 more), using the
+  card's own wording and the keyword list the card already carries. 448 → 762 keywords with lists, and 122 of
+  the 314 have something in them.
+- **A "See all" that has a list to send you to.** That page filters by the keywords it carries itself, so
+  `tools/kwuse.py` names them (`dd`) and a card only offers the button for one of those. The guard reads the
+  same list and checks every id in it is a row that page really has.
+
+### Found on the way
+
+- **One passive card was spelt with a space on the end** (`Inherited Strength `, a Marauder notable: the
+  tree node itself is spelt that way). A card's name is stripped everywhere else — `tools/kwuse.py` and
+  `assets/bridge.js` both say so and both do it — but `tools/sync.py` kept the node's own spelling, so the
+  card's own deep link landed on the first row of the tree list instead of on it. Stripped where the card is
+  built, and on the one row in the index. It also made the guard's links check fail about one run in ten,
+  because that check tries 200 passives at random.
+- **`data/essences.json` was a build behind.** The four mechanics cards added earlier never reached it, so an
+  essence's modifier lines opened two of our cards where a base item's own lines opened six. Rebuilt in the
+  documented order (`tools/nodelinks.py`, then `tools/essences.py`): 31 of the 95 essences now carry the
+  marks they should, and three more cards are reachable from them.
+
+### Counts
+
+- Cards 6,613 → 6,676: keywords 693 → 725, item classes 0 → 31.
+- `data/kwuse.json` 448 → 762 keywords, 726 KB → 773 KB (fetched only when a card asks for it).
+- The map redrew itself off the declarations: 6,676 dots, 25,477 lines, 31 item classes in the key, nothing
+  edited in `tools/map.py`.
 
 ## Next — The frame: one card, one map, and a loop with two moves
 

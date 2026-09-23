@@ -121,6 +121,8 @@ export const holds = (it, c) => {
 export const MAKE = {
   // the card is its own: a base item is its own base item
   name:  it => it.n,
+  // ...and an item class is its own item class, which is the id it is carded under
+  id:    it => it.id,
   // the first part of the sub line: the base item a unique sits on, as its own entry says it
   sub1:  it => (it.s || '').split('·')[0].trim() || undefined,
   // how many lines it carries: every line of a base item is an implicit
@@ -133,7 +135,7 @@ export const MAKE = {
    so a group with no card behind its name is no group at all. A card is never put in its own group. */
 export const MAPS = {
   base:  {at: 'base', of: 'b'},   // every card that sits on a base item, under that base item's name
-  klass: {at: 'cr'},              // every card of one item class
+  klass: {at: 'cr', of: 'i'},     // every card of one item class, under that class's own card
   place: {at: 'at'},              // every card listed in one section of the Atlas
   cat:   {at: 's', per: 'kind'},  // every card that carries the same sub line, inside its own kind
 };
@@ -250,6 +252,8 @@ export const REL = {
   variants: {label: 'Shares its base with', of: 'u', edge: 'variants', map: 'base', filter: 'base'},
   uniques:  {label: 'Used by uniques', of: 'u', edge: 'uniques', map: 'base', filter: 'base'},
   klass:    {label: 'Shares its class with', of: 'b', edge: 'klass', map: 'klass', filter: 'craft'},
+  klassof:  {label: 'Item class', of: 'i', edge: 'klassof', map: 'klass'},
+  inclass:  {label: 'Bases of this class', of: 'b', edge: 'inclass', map: 'klass', filter: 'craft'},
   grants:   {label: 'Grants', of: 'g', edge: 'grants', needs: 'grants'},
   granted:  {label: 'Granted by', edge: 'granted', needs: 'grants'},
   section:  {label: 'Listed with', of: 'a', edge: 'section', map: 'place', filter: 'atlas'},
@@ -296,7 +300,14 @@ export const KINDS = [
    make: {base: 'name', ni: 'lines'},
    fields: [...HEAD, 'reqs', 'props', 'implicit', 'weights', ...SAYS, 'canroll', 'cancorrupt', ...REST, ...FOOT],
    acts: ['trade', 'craft'],
-   rel: ['uniques', 'grants', 'klass', 'named', 'namedby']},
+   rel: ['uniques', 'grants', 'klassof', 'klass', 'named', 'namedby']},
+
+  {k: 'i', one: 'Item class', tone: 'bronze', many: 'Item classes', place: 'Craft', link: 'craft',
+   index: true, search: true,
+   make: {cr: 'id'},
+   fields: [...HEAD, 'props', ...BODY, ...FOOT],
+   acts: ['craft'],
+   rel: ['inclass', 'cat']},
 
   {k: 'a', one: 'Atlas', tone: 'int', many: 'Atlas', place: 'Atlas', link: './#/atlas?s=@at&q=@n',
    index: true, search: true, item: true, crawl: true,
