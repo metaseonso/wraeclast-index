@@ -132,15 +132,19 @@
 .flow-col li{position:relative; padding-left:10px; margin-top:4px; font-size:11.5px; line-height:1.45; color:var(--muted)}
 .flow-col li::before{content:''; position:absolute; left:0; top:.6em; width:4px; height:4px; border-radius:50%;
   background:var(--line-soft); border:1px solid var(--line)}
-/* a flowchart card, offered on a card whose text is about what it lays out (offerHTML in assets/app.js) */
-.card-offer{display:block; width:100%; text-align:left; font:inherit; font-size:12px; color:var(--text);
-  background:var(--sunken); border:1px solid var(--line); border-radius:6px; padding:6px 9px; cursor:pointer}
-.card-offer + .card-offer{margin-top:6px}   /* a card offered both of them */
-.card-offer b{font-weight:600}
-.card-offer b::after{content:' \2192'; color:var(--faint); font-weight:500}
-.card-offer small{display:block; margin-top:1px; font-size:11px; color:var(--faint)}
-.card-offer:hover, .card-offer:focus-visible{border-color:var(--accent); color:var(--text)}
+/* a flowchart card, offered beside the name of a card whose text is about what it lays out (offerHTML in
+   assets/app.js): a small mark, because it is a way out and not what the card came to say */
+.card-marks{display:inline-flex; gap:5px; margin-left:6px; vertical-align:-7px; white-space:nowrap}
+.card-offer{display:inline-flex; align-items:center; justify-content:center; width:26px; height:26px;
+  margin:0; padding:0; background:transparent; border:1px solid var(--line);
+  border-radius:7px; color:var(--faint); cursor:pointer}
+.card-offer svg{width:15px; height:15px; fill:none; stroke:currentColor; stroke-width:1.5;
+  stroke-linecap:round; stroke-linejoin:round}
+.card-offer:hover, .card-offer:focus-visible{border-color:var(--accent); color:var(--accent)}
 .card-offer:focus-visible{outline:2px solid var(--accent); outline-offset:2px}
+@media (pointer:coarse){.card-offer{width:34px; height:34px}
+  .card-marks{vertical-align:-11px}
+  .card-offer svg{width:17px; height:17px}}
 .card-tags{margin:0; font-size:11px; color:var(--faint); letter-spacing:.02em}
 .card-ft{margin-top:auto; display:flex; align-items:center; gap:10px; min-height:22px; font-size:11px; color:var(--faint)}
 .card-ft .spark{width:84px; height:22px; flex:none}

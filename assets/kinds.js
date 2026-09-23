@@ -188,15 +188,16 @@ export const FIELDS = {
   options:  {type: 'options', at: 'o', slot: 'body', every: 1},
   flow:     {type: 'flow', at: 'fl', slot: 'body', every: 1},
   source:   {type: 'source', at: 'src', slot: 'body', every: 1},
-  /* The way to a card that lays out what this one's own text is about: drawn where the card's words say so,
-     and never on a card of a kind one of them leads to — those cards already say it. Each `card` is one of
-     our own mechanics cards (tools/mechanics.py declares it) and `when` is what the card's own words have to
-     read for it to be offered, so a third of them is a third line here and no code. A card about two of them
-     is offered both, in this order. */
-  offer:    {type: 'offer', slot: 'body', every: 1, cards: [
-    {card: 'h:HowDamage', when: /\bdamage\b/,
+  /* The way to a card that lays out what this one's own text is about: a small mark beside the name, not a
+     block across the card — it is a way out, not what you came to read. Never on a card of a kind one of
+     them leads to, since those cards already say it. Each `card` is one of our own mechanics cards
+     (tools/mechanics.py declares it), `when` is what the card's own words have to read for it to be offered,
+     and `mark` is the shape it wears (MARKS in assets/app.js). A third of them is a third line here and no
+     code. A card about two of them wears both, in this order. */
+  offer:    {type: 'offer', slot: 'head', box: 'sub', every: 1, cards: [
+    {card: 'h:HowDamage', when: /\bdamage\b/, mark: 'sword',
      is: 'How damage works', sub: 'the order it is worked out in'},
-    {card: 'h:HowDefences', when: /\b(?:armour|evasion|block|energy shield|resistance)/,
+    {card: 'h:HowDefences', when: /\b(?:armour|evasion|block|energy shield|resistance)/, mark: 'shield',
      is: 'How defences work', sub: 'the order a hit you take runs through'},
   ]},
   /* A switch on the card for something outside the item that changes what the item is while it is worn —
@@ -289,10 +290,10 @@ export const REL = {
   namedby:  {label: 'Named by', edge: 'namedby'},
 };
 
-const HEAD = ['art', 'name', 'sub', 'price'];
+const HEAD = ['art', 'name', 'sub', 'offer', 'price'];
 // the words first, then the rest of the body: a kind with more to say puts it between the two (the currency)
 const SAYS = ['lines', 'text'];
-const REST = ['quote', 'options', 'flow', 'source', 'offer', 'swaps', 'tags', 'anoint', 'keywords'];
+const REST = ['quote', 'options', 'flow', 'source', 'swaps', 'tags', 'anoint', 'keywords'];
 const BODY = [...SAYS, ...REST];
 const FOOT = ['spark', 'usage', 'thin', 'builds'];
 const KWUSE = ['kwu', 'kwg', 'kwp', 'kwb', 'kwe', 'kwa', 'kwm', 'kwc', 'kww'];

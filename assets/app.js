@@ -410,14 +410,23 @@ function flowHTML(it, full){
    marked per card, and never on a card of a kind one of them leads to — a mechanics card already says it.
    A card about two of them is offered both, in the order they are declared. A third is a third line in that
    declaration and no code. */
+/* The shapes an offer wears: a sword for what a hit does, a shield for what a hit runs into. A new offer
+   names its own here and nowhere else. */
+const MARKS = {
+  sword:  '<path d="M10 2.2l1.5 2.4v7.2h-3V4.6zM6.6 11.8h6.8M10 11.8v3.5M8.5 17.3h3"/>',
+  shield: '<path d="M10 2.8l5.6 1.9v4.6c0 3-2.2 5.3-5.6 6.6-3.4-1.3-5.6-3.6-5.6-6.6V4.7L10 2.8z"/>',
+};
 function offerHTML(it, f, full){
   if(!full || !it._hay) return '';
   const list = f.cards || [];
   // never on a card of a kind one of them leads to: a mechanics card already says it
   if(list.some(o => it.k === o.card.slice(0, o.card.indexOf(':')))) return '';
-  return list.filter(o => o.when.test(it._hay)).map(o =>
-    '<button type="button" class="card-offer" data-h="' + esc(o.card) + '">' +
-    '<b>' + esc(o.is) + '</b><small>' + esc(o.sub) + '</small></button>').join('');
+  const marks = list.filter(o => o.when.test(it._hay) && MARKS[o.mark]).map(o =>
+    '<button type="button" class="card-offer" data-h="' + esc(o.card) + '" title="' + esc(o.is + ' · ' + o.sub) +
+    '" aria-label="' + esc(o.is) + '"><svg viewBox="0 0 20 20" aria-hidden="true">' + MARKS[o.mark] +
+    '</svg></button>').join('');
+  // both of them move together, so a narrow card never leaves one mark behind on its own line
+  return marks ? '<span class="card-marks">' + marks + '</span>' : '';
 }
 function anointHTML(it){
   if(!it.rec || !it.rec.length) return '';
