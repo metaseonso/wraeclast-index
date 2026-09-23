@@ -426,7 +426,7 @@ header.top .notesbtn ~ .suggestbtn{margin-left:0}
 .notes-v ul{margin:0; padding-left:18px; color:var(--muted); font-size:13px; line-height:1.5}
 @media (max-width:640px){ .notesbtn .ct{display:none} }
 .ct.wait{visibility:hidden}   /* the version's place, kept until assets/notes.js writes it (the top bar never jumps) */
-.notes, .suggest, .pins{background:var(--surface); border:2px solid var(--line); border-radius:var(--r, 10px)}
+.notes, .suggest, .pins, .runs{background:var(--surface); border:2px solid var(--line); border-radius:var(--r, 10px)}
 .tall{margin:2px 0 8px; font-weight:600}
 /* Pins (assets/pins.js): top bar button, between Suggest and the keybind button, and the box it opens */
 .pinsbtn{order:98; flex:none; align-self:center; height:34px; padding:0 10px; cursor:pointer; font:500 12px/1 var(--sans);
@@ -440,6 +440,24 @@ header.top .notesbtn ~ .suggestbtn{margin-left:0}
 .pin-row{display:flex; align-items:center; gap:8px; padding:8px 10px; border:1px solid var(--line); border-radius:8px}
 .pin-row .star{font-size:16px}
 .pin-go{flex:1; display:flex; align-items:baseline; gap:8px; min-width:0; background:none; border:0; padding:0; text-align:left; cursor:pointer; font:inherit; color:inherit}
+
+/* Runs (assets/runs.js): the same button as Pins, one place to its left, and the box it opens */
+.runsbtn{order:97; flex:none; align-self:center; height:34px; padding:0 10px; cursor:pointer; font:500 12px/1 var(--sans);
+  color:var(--muted); background:var(--surface); border:2px solid var(--line); border-radius:8px; transition:color .15s, border-color .15s}
+.runsbtn:hover, .runsbtn:focus-visible{color:var(--text); border-color:var(--accent); outline:none}
+.runsbtn .ct{font-family:var(--mono); font-size:10.5px; color:var(--accent); margin-left:4px}
+/* a press is felt without looking at the number: the button takes the accent for a moment */
+.runsbtn.hit{animation:runhit .45s ease-out}
+@keyframes runhit{0%{border-color:var(--accent); color:var(--text)} 100%{}}
+@media (prefers-reduced-motion:reduce){ .runsbtn.hit{animation:none} }
+.runs{padding:18px}
+.runs h3{margin:0 0 4px}
+.run-n{font:600 40px/1 var(--disp); color:var(--text); margin:10px 0 0; font-variant-numeric:tabular-nums}
+.run-rate{margin:6px 0 0; font:13px var(--sans); color:var(--muted)}
+.run-rate b{font:600 17px var(--sans); color:var(--accent); font-variant-numeric:tabular-nums; margin-right:5px}
+.run-rate span{display:block; color:var(--faint); font-size:11.5px; margin-top:2px}
+.run-last{margin:6px 0 0}
+.run-ctl{margin-top:14px; gap:8px; flex-wrap:wrap}
 .pin-nm{font-weight:600; font-size:13px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
 .pin-kind{font-size:11px; color:var(--faint); white-space:nowrap}
 /* Support popup (assets/support.js) */

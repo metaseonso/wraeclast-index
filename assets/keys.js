@@ -17,6 +17,8 @@ const ACTIONS = [
   {id: 'gems',     name: 'Go to Gems',              key: 'g', go: 'explore#gems'},
   {id: 'uniques',  name: 'Go to Uniques',           key: 'u', go: 'explore#uniques'},
   {id: 'tree',     name: 'Go to Passive tree',      key: 'p', go: 'explore#tree'},
+  // a key that runs wherever you are, card open or not: what it does is registered by whoever owns it
+  {id: 'run',      name: 'Count a run',            key: 'r', any: true},
   {id: 'keys',     name: 'Show keybindings',        key: '?'},
   // the open card's own keys: they run only while a card is up, and nothing else runs then
   {id: 'cardback', name: 'Card back',               key: 'ArrowLeft',  card: true},
@@ -87,8 +89,13 @@ function listTarget(){
 // says so, and answers false when it cannot — then the key falls through untouched
 let cardRun = null;
 export function setCardKeys(f){ cardRun = f; }
+/* ...and a key that belongs to a module rather than to a place: the module says what it does, once, and the
+   binding, the name in the keybindings popup and the reset are the same as every other key's. */
+const DOES = {};
+export function setKey(id, fn){ DOES[id] = fn; }
 function run(a){
   if(a.card) return cardRun && cardRun(a.id);
+  if(DOES[a.id]) return void DOES[a.id]();
   if(a.id === 'keys') return open();
   if(a.id === 'search' || a.id === 'list'){
     const q = a.id === 'list' ? listTarget() : focusTarget();
@@ -212,7 +219,8 @@ function onKey(e){
   if(!k.startsWith('ctrl+') && typing(document.activeElement)) return;   // a plain key while typing is just typing
   // a card is open: its own keys run, and "Search this list or card" filters what the card holds. Nothing else.
   if(document.body.classList.contains('ov-open')){
-    const c = ACTIONS.find(x => (x.card || x.id === 'list') && map[x.id] === k);
+    const c = ACTIONS.find(x => (x.card || x.id === 'list' || x.any) && map[x.id] === k);
+    if(c && c.any){ e.preventDefault(); e.stopImmediatePropagation(); run(c); return; }
     if(!c || !(cardRun && cardRun(c.id))) return;
     e.preventDefault(); e.stopImmediatePropagation();
     return;
