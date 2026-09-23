@@ -95,8 +95,8 @@ function cheat(){
   box.setAttribute('role', 'status');
   const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
   box.innerHTML = (still ? '' :
-    [['1', ''], ['2', ''], ['3', ''], ['2', ' m']].map(([n, mirror], i) =>
-      '<img class="cheat-gas g' + (i + 1) + mirror + '" src="assets/brand/cheat-gas-' + n +
+    ['1', '2', '3', '2'].map((n, i) =>
+      '<img class="cheat-gas g' + (i + 1) + '" src="assets/brand/cheat-gas-' + n +
       '.webp" alt="" decoding="async">').join('')) +
     '<img class="cheat-said" src="assets/brand/cheat-words.webp" alt="Cheat Code Activated" decoding="async">';
   document.body.appendChild(box);

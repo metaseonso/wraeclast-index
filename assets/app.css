@@ -889,29 +889,29 @@ small.at-bonus{display:block}
   width:min(560px, 82vw); height:auto; margin:0;
   filter:drop-shadow(0 0 30px rgba(140,203,63,.3)) drop-shadow(0 10px 34px rgba(0,0,0,.9));
   animation:cheat-in .5s cubic-bezier(.2,.8,.2,1) both}
-.cheat-gas{position:absolute; left:50%; width:min(760px, 150vw); height:auto; mix-blend-mode:screen;
+.cheat-gas{position:absolute; left:50%; top:50%; width:min(920px, 170vw); height:auto; mix-blend-mode:screen;
   opacity:0; will-change:transform, opacity; pointer-events:none}
-/* an animation's own transform wins, so a mirrored layer carries the flip in its keyframes,
-   the way the crest's fog does (assets/theme.css wi-haze-m) */
-.cheat-gas.m{animation-name:cheat-pour-m}
-.g1{animation:cheat-pour 3.6s ease-out both}
-.g2{animation:cheat-pour 3.6s ease-out .25s both}
-.g3{animation:cheat-pour 3.6s ease-out .5s both}
-.g4{animation:cheat-pour 3.6s ease-out .75s both}
-@keyframes cheat-pour-m{
-  0%{transform:scaleX(-1) translate(50%, -60vh) scale(.6); opacity:0}
-  25%{opacity:.5}
-  70%{opacity:.34}
-  100%{transform:scaleX(-1) translate(50%, 18vh) scale(1.5); opacity:0}
-}
+/* Gas does not slide. It arrives small and dense, opens out as it meets the air, and thins away — so each
+   layer grows and drifts a little rather than travelling across the screen, each on its own clock, and the
+   two that are mirrored also turn the other way. Deceleration is the whole of it: the ease-out is why it
+   settles instead of sliding past. */
+.g1{animation:cheat-bloom 3.2s cubic-bezier(.16,.7,.3,1) both}
+.g2{animation:cheat-bloom-b 4.1s cubic-bezier(.16,.7,.3,1) .18s both}
+.g3{animation:cheat-bloom 3.6s cubic-bezier(.16,.7,.3,1) .45s both}
+.g4{animation:cheat-bloom-b 4.4s cubic-bezier(.16,.7,.3,1) .1s both}
 @keyframes cheat-in{from{opacity:0; transform:translateY(8px) scale(.97)} to{opacity:1; transform:none}}
 @keyframes cheat-out{to{opacity:0}}
-/* poured from above the words, spreading as it settles over them */
-@keyframes cheat-pour{
-  0%{transform:translate(-50%, -60vh) scale(.6); opacity:0}
-  25%{opacity:.5}
-  70%{opacity:.34}
-  100%{transform:translate(-50%, 18vh) scale(1.5); opacity:0}
+@keyframes cheat-bloom{
+  0%{transform:translate(-50%, -34%) scale(.38) rotate(-4deg); opacity:0}
+  18%{opacity:.62}
+  55%{opacity:.44}
+  100%{transform:translate(-50%, -54%) scale(1.5) rotate(5deg); opacity:0}
+}
+@keyframes cheat-bloom-b{
+  0%{transform:translate(-50%, -66%) scaleX(-1) scale(.44) rotate(3deg); opacity:0}
+  20%{opacity:.5}
+  60%{opacity:.34}
+  100%{transform:translate(-50%, -46%) scaleX(-1) scale(1.62) rotate(-6deg); opacity:0}
 }
 @media (prefers-reduced-motion: reduce){
   .cheat{animation-duration:.4s; animation-delay:1.7s}
