@@ -168,13 +168,14 @@ async function ready(plan){
 }
 /* the card you came from, in hand: a base lands as the item, an item class picks that kind with no base
    yet, a currency lands picked, and an essence or a rune this kind of item takes nothing from opens the
-   bench on a kind that does take it */
+   bench on a kind that does take it. A base handed over with an item level on it — the Craft tab's own
+   item, which is a base at a level the player set — keeps that level instead of the class's top. */
 async function handed(plan, from){
   if(!from) return '';
   if(from.k === 'b' && from.cr && cls(from.cr)){
     plan.cls = from.cr;
     plan.base = from.n;
-    plan.ilvl = X.ilvl;
+    plan.ilvl = from.ilvl || X.ilvl;
     return '';
   }
   // an item class is its own class (KINDS make), so its card names the kind and nothing else
@@ -267,7 +268,22 @@ async function benchIt(v){
   return BIT;
 }
 
-export async function openBench(from){
+/* Currency handed over with the item rather than instead of it: the Craft tab opens the bench on the item it
+   is on and on what the player was reading about it, so an essence that guarantees the modifier is already
+   picked. Nothing here changes the item — the item came with the plan — and a currency this kind of item does
+   not take is named, not swapped for something else. */
+async function alsoPicked(plan, names){
+  const d = await classData(plan.cls), cl = cls(plan.cls), b = baseOf(d, plan.base);
+  const all = allOf(shelf(d, cl, b)), out = [];
+  for(const n of names){
+    const x = all.find(y => y.n === n);
+    if(!x || fits(x, cl)){ out.push(n); continue; }
+    if(!plan.picks.includes(pickKey(x))) plan.picks.push(pickKey(x));
+  }
+  return out.length ? 'A ' + cl.n + ' does not craft with ' + out.join(', ') + '.' : '';
+}
+
+export async function openBench(from, also){
   try { await craftData(); } catch { return; }
   await styles();
   if(!LOOKED){ LOOKED = true; await restore(); }
@@ -275,6 +291,11 @@ export async function openBench(from){
   let say = '';
   try { say = await handed(plan, from); } catch {}
   await ready(plan);
+  if(also && also.length){
+    let more = '';
+    try { more = await alsoPicked(plan, also); } catch {}
+    if(more) say = say ? say + ' · ' + more : more;
+  }
   const v = await benchView(plan);
   await benchIt(v);
   if(say) BIT.s += ' · ' + say;

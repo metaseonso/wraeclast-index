@@ -497,14 +497,53 @@ small.at-bonus{display:block}
 .cr-counts b{font-family:var(--mono); color:var(--text)}
 .cr-go{flex-wrap:wrap; align-items:center}
 .cr-go .linkbtn{margin-right:auto}
+/* the switch between the two questions the tab answers: the site's own segmented control */
+.cr-ask{width:max-content; max-width:100%; margin-bottom:14px}
+.cr-ask button{padding:7px 14px; font-size:13px}
+/* "how do I get this mod": the modifier and what can carry it, the rail that says how to get it, and under
+   them every modifier in the game as the thinnest row the page has */
+.cr-mods{grid-template-columns:minmax(0, 1fr) 380px; grid-template-areas:"ans rail" "hits rail"}
+.cr-hits{grid-area:hits; display:grid; gap:8px; align-content:start}
+.cr-ans{grid-area:ans; display:grid; gap:6px; align-content:start}
+.cr-rail{grid-area:rail; position:sticky; top:76px; max-height:calc(100vh - 90px); overflow:auto;
+  overscroll-behavior:contain; display:grid; gap:6px; align-content:start}
+.cr-thin{display:grid; gap:2px}
+.cr-tr{display:grid; gap:1px; width:100%; min-width:0; text-align:left; padding:7px 10px; cursor:pointer;
+  border:1px solid transparent; border-radius:8px; background:var(--sunken); color:inherit; font:inherit}
+.cr-tr:hover{border-color:var(--accent)}
+.cr-tr[aria-pressed="true"]{border-color:var(--accent); background:var(--accent-soft)}
+.cr-tl{font-size:13px; line-height:1.35; color:var(--text); overflow-wrap:anywhere}
+.cr-tm{font-size:11px; line-height:1.4; color:var(--faint)}
+.cr-more, .cr-back{justify-self:start}
+.cr-ahd{display:grid; gap:3px}
+.cr-ahd .cr-h{display:block; font-size:17px; line-height:1.35}
+.cr-ahd .note{margin:0}
+.cr-onitem{grid-template-columns:repeat(auto-fit, minmax(min(100%, 220px), 1fr)); margin:8px 0 2px}
+.cr-rail .cr-go{margin-bottom:4px}
 @media (max-width:1000px){
   .cr-main{grid-template-columns:minmax(0, 1fr); grid-template-areas:"prev" "mech" "pool"}
   .cr-prev{position:static; max-height:none; overflow:visible; padding:10px 0}
+  .cr-mods{grid-template-areas:"ans" "rail" "hits"}
+  .cr-rail{position:static; max-height:none; overflow:visible}
 }
 @media (max-width:760px){
   .cr-base{grid-template-columns:minmax(0, 1fr)}
   .cr-cols{grid-template-columns:minmax(0, 1fr)}
   .cr-vers{padding-left:0}
+  /* one job per screen: the search and every modifier until one is picked, then that modifier and how to
+     get it. "Every modifier" on the card is the way back to the list. */
+  .cr-mods[data-picked="0"] .cr-ans, .cr-mods[data-picked="0"] .cr-rail{display:none}
+  .cr-mods[data-picked="1"] .cr-hits, .cr-top:has(+ .cr-mods[data-picked="1"]){display:none}
+  /* ...and every control on this tab is a target, so none of them is under 44px — the bench's own rule
+     (assets/bench.css), kept by the tab that opens it */
+  [data-view="craft"] .chip, [data-view="craft"] .btn, [data-view="craft"] .field,
+  [data-view="craft"] .seg button, [data-view="craft"] .linkbtn, [data-view="craft"] .cr-tr,
+  [data-view="craft"] .cr-open, [data-view="craft"] .cr-card, [data-view="craft"] .cr-foff,
+  [data-view="craft"] .cr-tag, [data-view="craft"] .tsearch-row,
+  [data-view="craft"] input[type=range]{min-height:44px}
+  [data-view="craft"] .chip, [data-view="craft"] .cr-foff, [data-view="craft"] .cr-tag,
+  [data-view="craft"] .linkbtn{display:inline-flex; align-items:center}
+  [data-view="craft"] .chip{min-width:44px; justify-content:center}
 }
 /* end Craft tab */
 /* Admin: the owner's dashboard (admin.html, assets/admin.js) */

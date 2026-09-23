@@ -1,14 +1,21 @@
-/* Craft tab: pick a base, see every mod it can roll at its item level and how often each one rolls, add mods by
-   hand or by mechanic (essences, runes and soul cores, desecration, corruption), then find the item on trade.
+/* Craft tab: two questions about one item.
+   "What can this base roll" — pick a base, see every mod it can roll at its item level and how often each one
+   rolls, add mods by hand or by mechanic (essences, runes and soul cores, desecration, corruption), then find
+   the item on trade. "How do I get this mod" — the same thing asked the other way round: name the modifier and
+   the page answers which kinds of item carry it, what guarantees it, what can add one and what each costs today.
+   Either way the bench is one button away with the item already in hand (assets/craftsim.js: it is a card, so
+   it opens on the trail and Back is this page with the plan where it was).
    Game data: data/craft.json and data/craft/<kind>.json (tools/craft.py: the game files via RePoE; essence tables
-   and orb levels checked on poe2db). Prices and icons: data/market.json (Currency Exchange hourly, trade listings over the day).
+   and orb levels checked on poe2db), and data/craftmods.json for the second question (tools/craftmods.py, turned
+   out of those same files). Prices and icons: data/market.json (Currency Exchange hourly, trade listings over the day).
    The weights are the one thing here the game does not publish: they come from Craft of Exile (tools/craftweights.py)
-   and the pool names them. One mod's share of its own pool only — never the odds of a whole item.
-   The plan (base, item level, mods) lives in the address, in the page's own words, so it can be shared.
+   and the page names them wherever one is shown. One mod's share of its own pool only — never the odds of a whole item.
+   The plan (base, item level, mods) and the question live in the address, in the page's own words, so it can be shared.
    Every name on this tab — orbs, essences, bones, catalysts, omens, runes, soul cores — opens the card the
    site already has for it (assets/kinds.js says what a card carries; nothing here draws one). */
 import { D, $, esc, card, moneyHTML, params, openDetail, hrefOf } from './app.js';
 import { tradeData, key, searchURL, valHTML, syncVal } from './trade.js';
+import { table } from './basepool.js';
 
 const TAGS = [['life', 'Life'], ['mana', 'Mana'], ['defences', 'Defence'], ['resistance', 'Resistance'], ['attribute', 'Attribute'],
   ['attack', 'Attack'], ['caster', 'Caster'], ['minion', 'Minion'], ['damage', 'Damage'], ['physical', 'Physical'],
@@ -23,6 +30,7 @@ const blank = () => ({c: '', b: '', l: 0, m: []});
 
 let EL, X = null, P = null, CL = null, B = null, T = null;
 let S = blank();
+let ASK = 'base';   // which of the two questions is being asked: 'base' or 'mod'
 const FILES = new Map();
 const UI = {q: '', tag: '', mech: '', f: null, rq: '', rt: ''};   // page filters (not in the address)
 const V = {};   // slider values per family, while picking a tier
@@ -33,7 +41,9 @@ const V = {};   // slider values per family, while picking a tier
    A mod is its tier and its own line. Where it does not come from a roll the word for where it does comes
    first (desecrated, corrupted), and where two mods read alike the side tells them apart (prefix, suffix).
    An essence or a rune is its own name. A base belongs to one kind, so the kind is only in a link that has
-   no base yet. Links made before this shape carry the plan packed into "s=" and still open (packed). */
+   no base yet. The second question carries the same words, plus which question is being asked:
+     #/craft?ask=mod&find=fire+res&mod=fire-resistance&base=Gold+Ring&ilvl=80
+   Links made before this shape carry the plan packed into "s=" and still open (packed). */
 const enc = s => encodeURIComponent(s).replace(/%20/g, '+');
 const slug = s => String(s).toLowerCase().replace(/[#%+]/g, '')
   .replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').replace(/^to-/, '');
@@ -93,10 +103,22 @@ function stored(){
   try { const x = localStorage.getItem('wi.craft'); if(x) return {...blank(), ...JSON.parse(x)}; } catch {}
   return null;
 }
-function load(){ return linked() || packed() || stored() || blank(); }
+function load(){
+  const q = params();
+  ASK = q.get('ask') === 'mod' || q.get('mod') ? 'mod' : 'base';
+  if(ASK === 'mod'){ MOD.q = q.get('find') || ''; MOD.key = q.get('mod') || ''; MOD.open = false; }
+  return linked() || packed() || stored() || blank();
+}
 let HREF = '';   // the address this page last wrote, so a link from anywhere else is told apart from our own
 function save(){
-  const q = ['base=' + enc(S.b), 'ilvl=' + S.l];
+  const q = [];
+  if(ASK === 'mod'){
+    q.push('ask=mod');
+    if(MOD.q.trim()) q.push('find=' + enc(MOD.q.trim()));
+    if(MOD.key) q.push('mod=' + MOD.key);
+  }
+  if(S.b) q.push('base=' + enc(S.b));
+  q.push('ilvl=' + S.l);
   const mods = S.m.map(tokenOf).filter(Boolean);
   if(mods.length) q.push('mods=' + mods.join(','));
   HREF = '#/craft?' + q.join('&');
@@ -497,6 +519,236 @@ function poolHTML(){
     '<div class="cr-cols">' + (only !== 's' ? col('p') : '') + (only !== 'p' ? col('s') : '') + '</div></div>';
 }
 
+/* ---------- the second question: how do I get this mod ----------
+   The pool above is asked with the base in hand. This one is asked the other way round — the modifier is
+   known and the item is not — so it reads the one table that holds every modifier in the game and the kinds
+   of item it lands on: data/craftmods.json (tools/craftmods.py, turned out of the same item class files this
+   page already reads). It is fetched the first time the question is asked and never in first paint.
+   Picking a kind of item here picks the page's own item, so the two questions are two questions about one
+   item: what is found here is already on the other screen, in the plan, and on the way to the bench. */
+let MX = null;      // data/craftmods.json, once
+let ENG = null;     // the bench's own rules, for the one fact needed here: which omens the game has taken out
+const MOD = {q: '', tag: '', key: '', open: false};
+const HITS = 40;    // rows drawn before the rest is a count
+const SIDE = {p: 'Prefix', s: 'Suffix', '': 'Implicit'};
+const KINDW = {d: 'A desecration adds it', c: 'A corruption adds it'};
+
+async function modData(){
+  if(MX) return MX;
+  const d = await table('data/craftmods.json');
+  if(!d || !d.m) return null;
+  const rows = d.m.map(([side, lines, tags, kind, cls]) => ({side, lines, tags, kind, cls,
+    words: (lines.join(' ') + ' ' + tags.join(' ')).toLowerCase(), s: slug(lines.join(' '))}));
+  // two modifiers that read alike are told apart in the address the way a mod in the plan already is: where
+  // it comes from first, then the side
+  for(const r of rows){
+    const twin = rows.some(o => o !== r && o.s === r.s && o.kind === r.kind);
+    r.id = [SRCW[r.kind], twin ? SIDEW[r.side] : '', r.s].filter(Boolean).join('-');
+  }
+  MX = {cl: d.cl, rows};
+  try { ENG = await import('./engine.js'); } catch { ENG = null; }
+  return MX;
+}
+const modOf = id => (MX && MX.rows.find(r => r.id === id)) || null;
+const sameFam = (fam, r) => !!fam && fam[0] === r.side && fam[1].join('\n') === r.lines.join('\n');
+const famHere = r => P && B ? families(r.kind).find(f => sameFam(f.fam, r)) || null : null;
+const essFor = f => (P.ess || []).map(([n, k, i, lvl]) => ({n, k, i, lvl})).filter(e => P.mods[e.i][1] === f.f);
+
+/* The hits: every modifier whose own words or tags carry what was typed, in the thinnest row the page has —
+   the line, which side it is and what can carry it, and the modifier itself one tap away.
+   Order: the line that reads the way it was typed first, then the ones that roll before the ones only a
+   desecration or a corruption adds, then the ones the most kinds of item carry. Nothing is ordered by how
+   good a modifier is — that is the player's call, not ours. */
+const hitRank = (r, lead) => (r.kind ? 2 : 0) + (lead && r.words.includes(lead) ? 0 : 1);
+function modHits(){
+  const q = words(MOD.q), lead = q.join(' ');
+  return MX.rows.filter(r => (!MOD.tag || r.tags.includes(MOD.tag)) && q.every(w => r.words.includes(w)))
+    .sort((a, z) => hitRank(a, lead) - hitRank(z, lead) || z.cls.length - a.cls.length ||
+      (a.lines[0] > z.lines[0] ? 1 : a.lines[0] < z.lines[0] ? -1 : 0));
+}
+function findBarHTML(){
+  const tags = TAGS.filter(([t]) => MX.rows.some(r => r.tags.includes(t)));
+  return '<div class="cr-bar"><input class="field" type="search" data-k="find" value="' + esc(MOD.q) +
+    '" placeholder="A modifier in its own words (e.g. fire res, attack speed)" autocomplete="off" aria-label="Find a modifier">' +
+    '<div class="kinds cr-chips" role="group" aria-label="Tags">' + [['', 'All'], ...tags].map(([t, l]) =>
+      '<button type="button" class="chip" data-mtag="' + t + '" aria-pressed="' + (MOD.tag === t) + '">' + l + '</button>').join('') +
+    '</div></div>';
+}
+function hitHTML(r){
+  const n = r.cls.length;
+  const bits = [SIDE[r.side], KINDW[r.kind] || '', n + (n === 1 ? ' kind of item' : ' kinds of item'),
+    r.cls.some(c => c[2]) ? 'an essence guarantees it' : ''].filter(Boolean);
+  return '<button type="button" class="cr-tr" data-mod="' + esc(r.id) + '" aria-pressed="' + (MOD.key === r.id) + '">' +
+    '<span class="cr-tl">' + r.lines.map(esc).join('<br>') + '</span>' +
+    '<span class="cr-tm">' + esc(bits.join(' · ')) + '</span></button>';
+}
+function hitsHTML(){
+  const list = modHits(), narrowed = !!(MOD.q.trim() || MOD.tag);
+  const shown = MOD.open ? list : list.slice(0, HITS);
+  return '<h3 class="cr-h">Modifiers <span class="note">' + list.length + (narrowed ? ' match' : ' in the game') + '</span></h3>' +
+    (list.length ? '<div class="cr-thin">' + shown.map(hitHTML).join('') + '</div>' +
+      (shown.length < list.length ? '<button type="button" class="linkbtn cr-more" data-more="hits">+' +
+        (list.length - shown.length) + ' more</button>' : '')
+      : '<p class="note">Nothing matches. Try one word off the line itself — life, fire, attack speed.</p>');
+}
+
+/* the answer: which kinds of item can carry it, then the modifier on the one you are on — its tiers, its
+   weight and its share of that side at this item level, drawn by the same row the pool draws */
+function answerHTML(){
+  const r = modOf(MOD.key);
+  if(!r) return '<p class="note">Pick a modifier and this is where it says what can carry it.</p>';
+  const on = r.cls.map(([i, lvl]) => ({cl: X.classes.find(c => c.id === MX.cl[i]), lvl})).filter(x => x.cl);
+  const here = CL && B && on.some(x => x.cl.id === CL.id);
+  return '<div class="cr-ahd"><h3 class="cr-h">' + r.lines.map(esc).join('<br>') + '</h3>' +
+    '<p class="note">' + esc([SIDE[r.side], KINDW[r.kind] || ''].filter(Boolean).join(' · ')) + '</p>' +
+    '<button type="button" class="linkbtn cr-back" data-mod="">Every modifier</button></div>' +
+    '<h4 class="cr-h4">What can carry it <span>' + on.length + '</span></h4>' +
+    '<div class="kinds cr-chips" role="group" aria-label="Kinds of item">' + on.map(x =>
+      '<button type="button" class="chip" data-class="' + x.cl.id + '" aria-pressed="' + (CL && x.cl.id === CL.id) + '">' +
+      esc(x.cl.n + (x.lvl > 1 ? ' · level ' + x.lvl + '+' : '')) + '</button>').join('') + '</div>' +
+    (here ? onItemHTML(r) : '<p class="note">Pick one of them: the tiers it has, how often it rolls and how to get it all depend on the item.</p>');
+}
+/* A kind of item with 294 bases has a handful of pools, and the pool is what decides whether the modifier is
+   in it at all — so the bases are offered as their pools, by the defences they come in, and picking one picks
+   a base of it. A kind with one pool has nothing to pick. */
+function poolsWith(r){
+  const out = [];
+  P.pools.forEach((pool, i) => {
+    const list = r.kind === 'd' ? pool.d : r.kind === 'c' ? pool.c : pool.m;
+    if(!(list || []).some(j => sameFam(P.fam[P.mods[j][1]], r))) return;
+    const bases = P.bases.filter(b => b.p === i);
+    if(bases.length) out.push({i, bases, n: defName(bases[0].d) || 'No defences'});
+  });
+  return out;
+}
+/* picking a kind of item on this screen lands on a base that can actually roll the modifier: a kind with
+   several pools has bases that can and bases that cannot, and one that cannot is no answer. Picking a base
+   by hand is left alone — that one is the player's. */
+function fitBase(){
+  const r = modOf(MOD.key);
+  if(!r || !P || !B || famHere(r)) return;
+  const pools = poolsWith(r);
+  const nb = pools.length && pools[0].bases[pools[0].bases.length - 1];
+  if(nb){ B = nb; S.b = nb.n; }
+}
+function poolChipsHTML(pools){
+  const all = pools.reduce((a, p) => a + p.bases.length, 0);
+  return '<h4 class="cr-h4">Bases that roll it <span>' + all + '</span></h4>' +
+    '<div class="kinds cr-chips" role="group" aria-label="Bases that roll it">' + pools.map(p =>
+      '<button type="button" class="chip" data-pool="' + p.i + '" aria-pressed="' + (B.p === p.i) + '">' +
+      esc(p.n + ' · ' + p.bases.length) + '</button>').join('') + '</div>';
+}
+function onItemHTML(r){
+  TOT = totals();
+  const pools = poolsWith(r), f = famHere(r);
+  return '<div class="cr-bctl cr-onitem"><label class="cr-lab"><span class="lbl">Base</span>' + baseSelect() + '</label>' +
+    '<label class="cr-lab"><span class="lbl">Item level</span>' + ilvlHTML() + '</label></div>' +
+    (pools.length && (pools.length > 1 || !f) ? poolChipsHTML(pools) : '') +
+    (f ? '<h4 class="cr-h4">On this base</h4><div class="cr-fams">' + famHTML(f, r.kind) + '</div>' + shareNote(r)
+      : '<p class="note">' + (pools.length ? 'This base does not roll it. Pick one of the bases above.'
+        : 'No base of this kind rolls it.') + '</p>');
+}
+/* what the share on the row is a share of, and who measured it — the same words the pool uses, because it is
+   the same number: one mod's share of its own side at this item level, never the odds for a whole item */
+function shareNote(r){
+  if(r.kind) return '<p class="note">No share here: what is measured is the pool an orb rolls from, not what a ' +
+    (r.kind === 'd' ? 'bone adds' : 'Vaal Orb adds') + '.</p>';
+  if(!TOT) return '<p class="note">No roll chances for this kind: the game files say which mods a base can roll at an ' +
+    'item level, not how often each one comes up, and ' +
+    (X.wsrc ? esc(X.wsrc.n) + ' has no measured weights for it either.' : 'nothing measured is published for it.') + '</p>';
+  return '<p class="note">Its share is out of what this item level can roll on that side — ' +
+    (r.side === 'p' ? 'prefixes against prefixes' : 'suffixes against suffixes') +
+    ', one mod at a time, never the odds for a whole item. ' + wsrcHTML() + '</p>';
+}
+
+/* ---------- the right rail: how to get it ----------
+   What guarantees the modifier, what holds a roll to its side, and what can add one at all — each with what it
+   costs right now, from the in-game Currency Exchange and live trade listings (data/market.json). A currency
+   the market does not price today carries no price rather than a made-up one, and nothing here is a cost to hit. */
+function railHead(on, with_){
+  return '<h3 class="cr-h">How to get it' + (on ? ' <span class="note">' + esc(B.n) + ' · item level ' + S.l + '</span>' : '') + '</h3>' +
+    (on ? '<div class="tgo cr-go"><button type="button" class="btn gold" data-act="bench"' +
+      (with_.length ? ' data-with="' + esc(with_.join('|')) + '"' : '') + '>Practise at the bench →</button></div>' : '');
+}
+/* What the Practise button hands the bench: everything this rail has just named and nothing else. The orbs
+   go too, because an essence works on a Magic item and a bone on a Rare one — getting the item there is the
+   orbs' job, and the game's own lines say so. Each pick comes off the bench in one tap. */
+function railWith(r, ess){
+  const orbs = addOrbs().map(o => o.n);
+  if(r.kind === 'd') return [...X.bones.filter(b => b.on.includes(CL.id)).map(b => b.n), ...orbs];
+  if(r.kind === 'c') return ['Vaal Orb', ...orbs];
+  return [...ess.map(e => e.n), ...orbs];
+}
+/* adding a mod from this screen is not a silent act: what the plan holds now, and the way to the other question */
+function planNote(){
+  const c = counts();
+  if(!S.m.length) return '';
+  return '<p class="note">On the item: ' + c.p + ' of ' + CL.mx[0] + ' prefixes, ' + c.s + ' of ' + CL.mx[1] +
+    ' suffixes · <button type="button" class="linkbtn" data-ask="base">what this base can roll</button></p>';
+}
+function guaranteeHTML(ess){
+  if(!ess.length) return '<h4 class="cr-h4">What guarantees it</h4><p class="note">Nothing guarantees it on a ' +
+    esc(CL.n.toLowerCase()) + ': it has to be rolled.</p>';
+  return '<h4 class="cr-h4">What guarantees it <span>' + ess.length + '</span></h4><div class="cr-list">' +
+    ess.map(e => rowHTML(e.n, '<b>' + esc(e.n) + '</b>' + px(e.n) + '<span class="cr-rs">' +
+      (e.k === 'm' ? 'On a magic item: makes it rare and puts this on' : 'On a rare item: replaces a random mod with this') +
+      (e.lvl ? ' · level ' + e.lvl : '') + '</span>',
+      '<button type="button" class="btn" data-act="bench" data-with="' + esc(e.n) + '">Practise</button>')).join('') + '</div>';
+}
+/* An omen rides on the next use of one currency and holds that use to one side. Only the ones the game still
+   has: which of them it has taken out is the bench's own table (assets/engine.js) and is never copied here. */
+function omenSideHTML(r){
+  if(!r.side) return '';
+  const on = r.kind === 'd' ? ['Desecrate'] : ADDS;
+  const list = X.omens.filter(o => o.only === r.side && on.includes(o.orb) && !(ENG && ENG.LEGACY[o.n]));
+  if(!list.length) return '';
+  return '<h4 class="cr-h4">Holds it to ' + (r.side === 'p' ? 'prefixes' : 'suffixes') + ' <span>' + list.length +
+    '</span></h4><div class="cr-list">' + list.map(o => rowHTML(o.n, '<b>' + esc(o.n) + '</b>' + px(o.n) +
+      '<span class="cr-rs">' + esc(o.t) + ' · rides on ' + esc(o.orb) + '</span>')).join('') + '</div>';
+}
+// an item that cannot be Rare never takes the orbs whose own line says "Rare item", so they are not offered
+const addOrbs = () => X.orbs.filter(o => ADDS.includes(o.n) && (CL.rare || !/\bRare item\b/.test(o.t)));
+/* what can add one at all: the orbs that add a modifier, and the Greater and Perfect ones that will not go
+   below a modifier level — drawn where a tier of this modifier is inside their reach at this item level */
+function addsHTML(r, f){
+  if(r.kind === 'd') return boneHTML();
+  if(r.kind === 'c') return vaalHTML();
+  const list = addOrbs();
+  return '<h4 class="cr-h4">What can add one <span>' + list.length + '</span></h4><div class="cr-list">' +
+    list.map(o => {
+      const up = (o.up || []).filter(([, ml]) => f && f.tiers.some(i => P.mods[i][2] >= ml && eligible(i, '')));
+      return '<div class="cr-orb">' + rowHTML(o.n, '<b>' + esc(o.n) + '</b>' + px(o.n) +
+        '<span class="cr-rs">' + esc(o.t) + '</span>') +
+        (up.length ? '<div class="cr-vers">' + up.map(([n, ml]) => chipPair('<button type="button" class="chip" data-card="' +
+          esc(n) + '">' + esc(n.split(' ')[0] + ' · nothing below level ' + ml) + px(n) + '</button>', n)).join('') + '</div>' : '') +
+        '</div>';
+    }).join('') + '</div>';
+}
+function boneHTML(){
+  const bones = X.bones.filter(b => b.on.includes(CL.id));
+  return '<h4 class="cr-h4">What can add one <span>' + bones.length + '</span></h4><div class="cr-list">' +
+    bones.map(b => rowHTML(b.n, '<b>' + esc(b.n) + '</b>' + px(b.n) + '<span class="cr-rs">' + esc(b.t) +
+      (b.mi ? ' · an item of level ' + b.mi + ' or less' : '') + (b.ml ? ' · mods level ' + b.ml + '+' : '') +
+      '</span>')).join('') + '</div><p class="note">A desecration offers a few modifiers and you take one of them.</p>';
+}
+function vaalHTML(){
+  const o = X.orbs.find(x => x.n === 'Vaal Orb') || {n: 'Vaal Orb', t: ''};
+  return '<h4 class="cr-h4">What can add one <span>1</span></h4><div class="cr-list">' +
+    rowHTML(o.n, '<b>' + esc(o.n) + '</b>' + px(o.n) + '<span class="cr-rs">' + esc(o.t) + '</span>') +
+    '</div><p class="note">A corruption is one use and cannot be undone.</p>';
+}
+function railHTML(){
+  const r = modOf(MOD.key);
+  if(!r) return railHead(false, []) + '<p class="note">Pick a modifier and this says what guarantees it, what can ' +
+    'add one, and what each costs today.</p>';
+  // the ways to a modifier are the item's, so there is nothing to say until the item can carry it
+  if(!B || !r.cls.some(([i]) => MX.cl[i] === CL.id))
+    return railHead(false, []) + '<p class="note">Pick a kind of item that can carry it: what guarantees a modifier, ' +
+      'and what can add one, are the item’s own.</p>';
+  const f = famHere(r), ess = f ? essFor(f) : [];
+  return railHead(true, railWith(r, ess)) + planNote() + guaranteeHTML(ess) + omenSideHTML(r) + addsHTML(r, f);
+}
+
 /* ---------- the item ---------- */
 const NUM = /[+-]?\(?[+-]?\d+(?:\.\d+)?(?:-[+-]?\d+(?:\.\d+)?)?\)?/g;
 const PAIR = /^([+-]?\d+(?:\.\d+)?)(?:-([+-]?\d+(?:\.\d+)?))?$/;
@@ -587,6 +839,8 @@ function previewHTML(){
       (CL.so ? '<span>Sockets <b>' + c.r + '/' + CL.so + '</b></span>' : '') + '</p>' +
     '<div class="tgo cr-go">' + (S.m.length ? '<button type="button" class="linkbtn" data-act="clear">Clear mods</button>' : '') +
       '<button type="button" class="btn" data-act="share">Copy link</button>' +
+      // the bench, with this item already in hand: the base, its item level and any essence the plan names
+      '<button type="button" class="btn" data-act="bench">Practise at the bench</button>' +
       '<a class="btn gold" target="_blank" rel="noopener" href="' + esc(tradeURL()) + '">Find on trade ↗</a></div>' +
     (T && S.m.some(e => { const x = info(e); return x && x.lines.some(l => statFor(l, e[0]) === null); }) ?
       '<p class="note">Grey lines are not on the trade site; the search skips them.</p>' : '') +
@@ -662,7 +916,38 @@ export async function mount(el){
   return {update};
 }
 function head(){
-  return '<div class="pagehd"><h2>Craft</h2><p>Every mod a base can roll at its item level. Plan the item, then find it on trade.</p></div>';
+  return '<div class="pagehd"><h2>Craft</h2><p>Every mod a base can roll at its item level, and where a mod ' +
+    'you want comes from. Plan the item, practise it at the bench, then find it on trade.</p></div>';
+}
+/* Two questions, one item. The switch is the site's own segmented control, and which question is being asked
+   is in the address, so a link opens on the question it was sent about. */
+const ASKS = [['base', 'What can this base roll'], ['mod', 'How do I get this mod']];
+function askHTML(){
+  return '<div class="seg cr-ask" role="group" aria-label="What you are asking">' + ASKS.map(([k, l]) =>
+    '<button type="button" data-ask="' + k + '" aria-pressed="' + (ASK === k) + '">' + l + '</button>').join('') + '</div>';
+}
+const ilvlHTML = () => valHTML({k: 'ilvl', lo: 1, hi: X.ilvl, step: 1, v: S.l, heat: false},
+  '<input class="field tnum" type="number" data-k="ilvl" min="1" max="' + X.ilvl + '" value="' + S.l + '" aria-label="Item level">');
+/* the mod screen: the search, the hits, the answer and the rail. On a phone they are one job at a time — the
+   hits until a modifier is picked, then the modifier and how to get it (.cr-mods[data-picked], app.css). */
+function modHTML(){
+  if(!MX) return '<p class="err">Could not load the modifier list. Try again in a minute.</p>';
+  return '<div class="panel cr-top">' + findBarHTML() + '</div>' +
+    '<div class="cr-main cr-mods" data-picked="' + (MOD.key ? 1 : 0) + '">' +
+    '<section class="panel cr-hits" data-part="hits"></section>' +
+    '<section class="panel cr-ans" data-part="answer"></section>' +
+    '<aside class="panel cr-rail" data-part="rail"></aside></div>';
+}
+/* The bench, with this item in hand: the base, its item level, and whatever the player was reading about — an
+   essence off the rail, or the essences the plan already names. It is a card (assets/craftsim.js), so it opens
+   on the trail and Back is this page with the plan where it was. */
+async function bench(withName){
+  if(!B) return;
+  const also = withName ? withName.split('|') : [...new Set(S.m.filter(e => e[0] === 'e').map(e => e[2]).filter(Boolean))];
+  try {
+    const m = await import('./craftsim.js');
+    await m.openBench({k: 'b', cr: CL.id, n: B.n, ilvl: S.l}, also);
+  } catch {}
 }
 /* the top bar is sticky and wraps on a phone: the head of the table has to know how tall it is to sit under it */
 function topOffset(){
@@ -671,7 +956,7 @@ function topOffset(){
 }
 async function update(){
   if(location.hash === HREF) return;   // the address we wrote ourselves
-  if(/[?&](base|kind|ilvl|mods|s)=/.test(location.hash)){ S = load(); await draw(); }
+  if(/[?&](base|kind|ilvl|mods|s|ask|mod|find)=/.test(location.hash)){ S = load(); await draw(); }
   else if(B) save();   // the Craft tab link: keep the plan in the address
 }
 async function draw(){
@@ -687,13 +972,22 @@ async function draw(){
     }
   }
   if(!B){ S = {...blank(), l: S.l}; CL = null; }
-  else save();
-  EL.innerHTML = head() +
+  if(!S.l) S.l = X.ilvl;
+  if(ASK === 'mod'){
+    UI.f = null;             // the orb picked on the other screen narrows that screen's pool, not this question
+    await modData();
+    fitBase();
+  }
+  save();
+  EL.innerHTML = head() + askHTML() + (ASK === 'mod' ? modHTML() :
     '<div class="panel cr-top">' + pickerHTML() + (B ? '' : kindsHTML()) + '<div class="cr-base" data-part="base"></div></div>' +
     (B ? '<div class="cr-main"><aside class="cr-prev" data-part="item"></aside>' +
-      '<section class="panel cr-mech" data-part="mech"></section><section class="panel cr-pool" data-part="pool"></section></div>' : '');
-  wirePicker();
-  if(B){ paint('base'); paint('item'); paint('mech'); paint('pool'); }
+      '<section class="panel cr-mech" data-part="mech"></section><section class="panel cr-pool" data-part="pool"></section></div>' : ''));
+  if(ASK === 'mod') paintMod();
+  else {
+    wirePicker();
+    if(B){ paint('base'); paint('item'); paint('mech'); paint('pool'); }
+  }
 }
 function paint(part){
   const host = EL.querySelector('[data-part="' + part + '"]');
@@ -703,19 +997,43 @@ function paint(part){
     const ctl = document.createElement('div');
     ctl.className = 'cr-bctl';
     ctl.innerHTML = '<label class="cr-lab"><span class="lbl">Base</span>' + baseSelect() + '</label>' +
-      '<label class="cr-lab"><span class="lbl">Item level</span>' + valHTML({k: 'ilvl', lo: 1, hi: X.ilvl, step: 1, v: S.l, heat: false},
-        '<input class="field tnum" type="number" data-k="ilvl" min="1" max="' + X.ilvl + '" value="' + S.l + '" aria-label="Item level">') + '</label>' +
-      '<div class="row"><button type="button" class="btn" data-act="kind">Other kind</button></div>';
+      '<label class="cr-lab"><span class="lbl">Item level</span>' + ilvlHTML() + '</label>' +
+      '<div class="row"><button type="button" class="btn" data-act="kind">Other kind</button>' +
+      '<button type="button" class="btn" data-act="bench">Practise at the bench</button></div>';
     host.appendChild(ctl);
   }
   if(part === 'item') host.innerHTML = previewHTML();
   if(part === 'mech') host.innerHTML = mechHTML();
   if(part === 'pool') host.innerHTML = poolHTML();
 }
-function commit(){ save(); paint('item'); paint('mech'); paint('pool'); }
+/* the mod screen's three parts: the hits, the modifier itself and how to get it. All of them, or the one that
+   moved. */
+function paintMod(only){
+  const main = EL.querySelector('.cr-mods');
+  if(!main) return;
+  main.dataset.picked = MOD.key ? 1 : 0;
+  for(const p of only ? [only] : ['hits', 'answer', 'rail']){
+    const host = EL.querySelector('[data-part="' + p + '"]');
+    if(host) host.innerHTML = p === 'hits' ? hitsHTML() : p === 'answer' ? answerHTML() : railHTML();
+  }
+}
+/* the item level moved: the modifier's own row and what its share is out of, and nothing else — the slider
+   under the finger is left where it is */
+function refreshMod(){
+  const r = modOf(MOD.key), host = EL.querySelector('[data-part="answer"] .cr-fams');
+  if(!r) return;
+  if(!host) return void paintMod('answer');
+  TOT = totals();
+  const f = famHere(r);
+  host.innerHTML = f ? famHTML(f, r.kind) : '';
+  const note = host.nextElementSibling;
+  if(note && note.classList.contains('note')) note.outerHTML = shareNote(r);
+}
+function commit(){ save(); if(ASK === 'mod') paintMod(); else { paint('item'); paint('mech'); paint('pool'); } }
 
 function wirePicker(){
   const host = EL.querySelector('.cr-pick');
+  if(!host) return;
   const inp = host.querySelector('input'), drop = host.querySelector('.tsearch-drop');
   let rows = [], sel = 0;
   const show = () => {
@@ -740,14 +1058,26 @@ let raf = 0;
 function wire(){
   EL.addEventListener('input', e => {
     const t = e.target, k = t.dataset.k;
-    if(!k || !B) return;
+    if(!k) return;
+    if(k === 'find'){   // the modifier search: it is asked without an item, so it runs with no base picked
+      MOD.q = t.value;
+      MOD.open = false;
+      const pos = t.selectionStart;
+      save();
+      paintMod();
+      const again = EL.querySelector('[data-k="find"]');
+      if(again){ again.focus(); try { again.setSelectionRange(pos, pos); } catch {} }
+      return;
+    }
+    if(!B) return;
     if(k === 'ilvl'){
       const v = Math.max(1, Math.min(X.ilvl, Math.round(+t.value) || 1));
       syncVal(t);
       if(v === S.l) return;
       S.l = v; save();
       clearTimeout(raf);
-      raf = setTimeout(() => { paint('item'); paint('mech'); paint('pool'); }, 60);   // redraw once the slider rests a moment
+      // redraw once the slider rests a moment
+      raf = setTimeout(() => { if(ASK === 'mod') refreshMod(); else { paint('item'); paint('mech'); paint('pool'); } }, 60);
     }
     if(k === 'tv'){
       const row = t.closest('.cr-fam'); if(!row) return;
@@ -766,15 +1096,33 @@ function wire(){
   });
   EL.addEventListener('change', e => {
     const t = e.target;
-    if(t.dataset.k === 'base' && P){ S.b = t.value; B = P.bases.find(b => b.n === t.value) || B; save(); paint('base'); commit(); }
+    if(t.dataset.k === 'base' && P){ S.b = t.value; B = P.bases.find(b => b.n === t.value) || B; save(); if(ASK === 'mod') paintMod(); else { paint('base'); commit(); } }
+    if(t.dataset.k === 'ilvl' && ASK === 'mod') paintMod('rail');   // the rail's head and the orbs it lists read the item level
   });
   EL.addEventListener('click', e => {
     const b = e.target.closest('button, a.btn.gold');
     if(!b || !EL.contains(b)) return;
     if(b.matches('a.btn.gold')) return;
     if(b.dataset.card){ openCard(b.dataset.card); return; }
+    /* the two questions: the switch itself, and the modifier the second one is about. Neither needs a base,
+       so they answer before the rest. */
+    if(b.dataset.ask){ if(ASK !== b.dataset.ask){ ASK = b.dataset.ask; save(); draw(); } return; }
+    if(b.dataset.mod !== undefined){
+      MOD.key = b.dataset.mod === MOD.key ? '' : b.dataset.mod;
+      fitBase();                       // a base of this kind that can actually roll it
+      save(); paintMod(); jumpMod();
+      return;
+    }
+    if(b.dataset.mtag !== undefined){ MOD.tag = MOD.tag === b.dataset.mtag ? '' : b.dataset.mtag; MOD.open = false; paintMod('hits'); return; }
+    if(b.dataset.more === 'hits'){ MOD.open = true; paintMod('hits'); return; }
     if(b.dataset.class){ S = {...blank(), c: b.dataset.class, l: S.l || 0}; save(); draw(); return; }
     if(!B) return;
+    if(b.dataset.act === 'bench'){ bench(b.dataset.with || ''); return; }
+    if(b.dataset.pool !== undefined){   // a pool of bases, not 294 names: the last base of it is the item
+      const list = P.bases.filter(x => x.p === +b.dataset.pool), nb = list[list.length - 1];
+      if(nb){ S.b = nb.n; B = nb; save(); paintMod(); }
+      return;
+    }
     if(b.dataset.act === 'kind'){ S = {...blank(), l: S.l}; save(); draw(); EL.querySelector('.cr-pick input').focus(); return; }
     if(b.dataset.act === 'clear'){ S.m = []; commit(); return; }
     if(b.dataset.off){   // one filter off, from the head of the table
@@ -826,6 +1174,11 @@ function wire(){
 function jump(){
   const pool = EL.querySelector('.cr-pool');
   if(pool && pool.getBoundingClientRect().top > innerHeight * 0.6) pool.scrollIntoView({behavior: 'smooth', block: 'start'});
+}
+/* a phone shows one job at a time, so the modifier just picked is what is on the screen */
+function jumpMod(){
+  const main = EL.querySelector('.cr-mods');
+  if(main && innerWidth <= 760) main.scrollIntoView({behavior: 'smooth', block: 'start'});
 }
 /* a tier moved: only the Add button's state and the tier's weight change */
 function refreshRow(row){

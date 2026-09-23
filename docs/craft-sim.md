@@ -581,7 +581,8 @@ thing already in hand:
 
 | Reached from | What the bench opens with |
 |---|---|
-| a base card (kind `b`) | that base in hand, its kind of item chosen, item level at the class's top |
+| a base card (kind `b`) | that base in hand, its kind of item chosen, item level at the class's top — or at the level the card came with, which is how the Craft tab hands over the item it is on |
+| the Craft tab | the item that tab is on — the base and the item level — and the currency it was naming beside the modifier: the essences that guarantee it, and the orbs that can add one. Each one comes off in a tap, and one this kind of item does not craft with is named rather than swapped for something else |
 | an orb or omen card (kind `c`) | that currency picked, the item left as it was |
 | an essence card (kind `c`) | that essence picked; from one of the rows under *What it adds*, that kind of item chosen with it |
 | a bone or a rune card | that currency picked, and the kinds of item it works on offered first |
