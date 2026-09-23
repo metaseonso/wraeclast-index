@@ -1,6 +1,6 @@
 {
   "note": "Written by tools/dev/guard.mjs --bless. kinds and pages: how big the site was. raw: the internal keys that still hold raw game ids today (a later ticket clears them) - a key that is not on this list fails. rawText: the leftover game text a rendered page still shows today. phoneWide: how far a page scrolls sideways at 375px today. The last two should shrink to nothing; nothing may be added to them without a reason.",
-  "made": "2026-09-22",
+  "made": "2026-09-23",
   "kinds": {
     "g": 1072,
     "u": 710,
@@ -10,7 +10,7 @@
     "i": 31,
     "a": 368,
     "c": 96,
-    "h": 8
+    "h": 9
   },
   "pages": {
     "sitemap": 7223,

@@ -3,6 +3,33 @@
 The full list of changes. The public patch notes (data/changelog.json, shown on the site) stay short.
 Add the details here first, then a short public line there.
 
+## Next — Attack Speed is a card, and every phrase like it is counted
+
+- **The card.** Ticket 66. Five small passives answer to the name, so `tools/nodelinks.py` left the phrase
+  plain rather than guessing which one a line meant, and the Craft page's "Reads with" had nothing to offer.
+  The answer is the card: one kind `h` row in `tools/mechanics.py`, no card code, and the phrase has one
+  place to go. It is a door in 188 lines on 178 cards, and "Reads with" fills on its own.
+- **What it says**, in the game's order: where an Attack's base time comes from, that the increases sum and
+  the more multipliers multiply the *time* and not the damage, that Skill Speed joins that sum, that an
+  Added Skill Use Time is added after it and is never shortened, that a Slow is its own multiplier, that the
+  Crossbow reload reads Attack Speed too, where the two decimal places bite, and where the rate stops.
+- **Where the numbers are from.** The game for the Attacks, Spells, Base Skill Attack Time, Added Skill Use
+  Time, Skill Speed and Slow entries; Path of Building for the order, the rounding and the cap, named on the
+  card in its own line. `output.Speed = 1 / (baseTime / round((1 + inc/100) * more, 2) + added use time)`
+  with `baseTime = 1 / source.AttackRate`, the Weapon's own rate being
+  `round(AttackRateBase * (1 + AttackSpeedInc / 100), 2)` in `Item.lua`, and the cap
+  `m_min(output.Speed, data.misc.ServerTickRate * output.Repeats)` with `ServerTickRate = 1 / 0.033`. The
+  worked example is the site's own data: a Shortbow is 1.25 Attacks per Second, Quill Rain is a Shortbow
+  with 100% increased Attack Speed and is 2.5 — the same unique the more and less card already uses.
+- **The sweep that came with it.** Every phrase in the same shape — a name only the tree's small passives
+  hold, so no card opens — counted over the whole index: **94 phrases in 1,468 lines on 1,204 cards.**
+  Three are mechanics worth a card (Duration 170 cards, Area of Effect 116, Cast Speed 82), 13 are already
+  on the list in `docs/mechanics-cards.md`, 35 carry a keyword the game defines and the page already marks
+  it inside the phrase, and 43 are a stat whose behaviour the increased and more cards already give. The
+  three, their sources and the Duration and Area of Effect breakpoints are written into that doc.
+- guard 8 ok, 0 failed. Card count 8 -> 9 mechanics cards, baseline blessed for that one line.
+  `data/index-core.json` 69,530 -> 69,746 bytes gzipped, `data/index-rest.json` 366,125 -> 367,216.
+
 ## Next — Craft: the page the canvas drew
 
 - The tab shipped with the right structure and the wrong layout. This is it laid out the way the canvas has
