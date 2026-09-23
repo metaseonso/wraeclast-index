@@ -142,14 +142,14 @@ CARDS = [
     {'id': 'HowDamage', 'n': 'How damage works', 'words': [], 'gate': 'pct', 'src': FLOW_SOURCE,
      'q': 'damage calculator flowchart order hit crit critical conversion converted convert extra gained '
           'gain as armour resistance evasion block base added increased more less how damage works',
-     'ls': ['Damage is worked out in order. Each step works on the result of the step before it.',
+     'ls': ['Each step works on what the step before it left.',
             "Any damage that isn't damage over time is Hit damage.",
             'Conversion and extra damage are settled on the base damage, before any increase is applied.'],
      'fl': [
          {'h': 'The hit', 'st': [
              ['Base damage', 'Attacks use your Martial Weapon’s stats unless the skill says otherwise. '
                              'Spells use the damage listed on the skill.'],
-             ['Added damage', 'An Adds line goes into the base damage for its own type.'],
+             ['Added damage', 'An Adds line adds damage of its own type to the base, before conversion.'],
              ['Damage Conversion', 'The damage changes type. Worked out on the base, before any increase.'],
              ['Gained as extra damage', 'A copy is added as another damage type. The original is still '
                                         'dealt, and the copy scales with the new type only.'],
@@ -161,7 +161,7 @@ CARDS = [
                                'modify that.'],
          ]},
          # the two that get read as the same thing. Side by side on a wide card, stacked on a phone.
-         {'h': 'Conversion is not extra damage', 'cols': [
+         {'h': 'Conversion and extra damage', 'cols': [
              {'h': 'Damage Conversion', 'ls': [
                  'The damage changes type. The type it came from keeps only the part that was not converted.',
                  'Converted damage scales with modifiers to the new damage type, and no longer with '
@@ -225,7 +225,7 @@ CARDS = [
      'q': 'defence defences defense flowchart order hit taken evade evasion block armour armor resistance '
           'resistances energy shield mind over matter mana life damage reduction mitigation tanky survive '
           'how defences work',
-     'ls': ['Damage you take is worked out in order. Each step works on what the step before it left.',
+     'ls': ['Each step works on what the step before it left.',
             'Evasion and Block decide whether any damage arrives. Armour and Resistances cut down what does. '
             'Energy Shield, Mana and Life take what is left.',
             'For example, The Brass Dome has Armour: (2676-3091). At 3,091 Armour a Hit of 334 Physical '
@@ -240,7 +240,7 @@ CARDS = [
                        'from it, and you cannot Block while Stunned or Frozen.'],
          ]},
          # the two that get read as the same thing. Side by side on a wide card, stacked on a phone.
-         {'h': 'Armour is not a Resistance', 'cols': [
+         {'h': 'Armour and Resistances', 'cols': [
              {'h': 'Armour', 'ls': [
                  'Armour reduces damage taken from Hits. By default it applies only to Physical damage.',
                  'Damage reduction from Armour is proportional to the amount of damage, and is more '

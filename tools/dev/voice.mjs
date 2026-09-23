@@ -34,7 +34,7 @@ export const FILES = [
   'assets/bosses.js', 'assets/map.js', 'assets/basepool.js', 'assets/bridge.js', 'assets/edges.js',
   'assets/kinds.js', 'assets/keys.js', 'assets/league.js', 'assets/marks.js', 'assets/notes.js',
   'assets/suggest.js', 'assets/support.js', 'assets/track.js',
-  'worker/seo.js',
+  'worker/seo.js', 'tools/mechanics.py',
 ];
 
 /* The shapes, each with the plain reason it is wrong, because a fail that only says "no" teaches nobody. */
@@ -44,8 +44,8 @@ export const SHAPES = [
   [/\band this says\b/i,        'narrates the interface'],
   [/\bis where it says\b/i,     'narrates the interface'],
   [/\byou'?ll see\b/i,          'narrates the interface'],
-  [/\bwe'?ll\b/i,               'speaks as the author'],
-  [/\bI'?ll\b/,                 'speaks as the author'],
+  [/\bwe['’]ll\b/i,             'speaks as the author'],   // the apostrophe is required: "well" is an ordinary word
+  [/\bI['’]ll\b/,               'speaks as the author'],   // required here too: "Ill" is an ordinary word
   [/let[’']s/i,            'speaks as the author'],   // the contraction only: "lets" is an ordinary verb
   [/\bsimply\b/i,               'coaches the reader'],
   [/\bjust (click|pick|tap|choose|select)\b/i, 'coaches the reader'],
