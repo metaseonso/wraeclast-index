@@ -878,47 +878,17 @@ small.at-bonus{display:block}
   padding:5px 12px; border:1px solid var(--line); border-radius:8px; background:var(--sunken);
   color:var(--muted); font-size:12px; pointer-events:none}
 
-/* The cheat code: the words, and the crest's own gas poured over them (assets/suggest.js). The textures are
-   the ones the home page drifts, screen-blended the same way; only the direction is different, because this
-   one is poured and that one hangs. CSS alone, four layers on their own loops, and the whole thing takes
-   itself off the page when it is done. */
+/* The cheat code: the crest's own badge, and war drums a long way off (assets/suggest.js). The badge is a
+   forged plate, not a typeface, so it is drawn the way the crest is and not set in the site's heading face. */
 .cheat{position:fixed; inset:0; z-index:300; display:grid; place-items:center; pointer-events:none;   /* over everything the site draws, which tops out at 200 */
-  animation:cheat-out .45s ease-in 2.75s both}
+  animation:cheat-out .5s ease-in 3.1s both}
 /* the words are the crest's own badge, forged the same way (tools/art.py cheat-words), not a typeface */
-.cheat-said{position:relative; z-index:2;   /* the gas is poured over it, not in front of it */
+.cheat-said{position:relative; z-index:2;
   width:min(560px, 82vw); height:auto; margin:0;
   filter:drop-shadow(0 0 30px rgba(140,203,63,.3)) drop-shadow(0 10px 34px rgba(0,0,0,.9));
   animation:cheat-in .5s cubic-bezier(.2,.8,.2,1) both}
-/* A layer is one plate and its own mirror, laid edge to edge down the middle of the screen. The pair opens
-   outward from that line, so the gas radiates from behind the words instead of travelling across them, and
-   the only straight edge either half owns is the one buried in the join. */
-.cheat-pair{position:absolute; left:50%; top:50%; display:flex; align-items:center;
-  transform-origin:50% 50%; opacity:0; will-change:transform, opacity; pointer-events:none}
-.cheat-pair img{display:block; width:min(560px, 52vw); height:auto; mix-blend-mode:screen}
-.cheat-pair .flip{transform:scaleX(-1)}
-.g1{animation:cheat-out-1 2.2s cubic-bezier(.08,.72,.2,1) both}
-.g2{animation:cheat-out-2 2.9s cubic-bezier(.08,.72,.2,1) .12s both}
-.g3{animation:cheat-out-3 2.5s cubic-bezier(.08,.72,.2,1) .3s both}
-@keyframes cheat-in{from{opacity:0; transform:translateY(8px) scale(.97)} to{opacity:1; transform:none}}
+@keyframes cheat-in{from{opacity:0; transform:translateY(10px) scale(.96)} to{opacity:1; transform:none}}
 @keyframes cheat-out{to{opacity:0}}
-@keyframes cheat-out-1{
-  0%{transform:translate(-50%, -50%) scale(.08); opacity:0}
-  10%{opacity:.85}
-  50%{opacity:.55}
-  100%{transform:translate(-50%, -50%) scale(2.3); opacity:0}
-}
-@keyframes cheat-out-2{
-  0%{transform:translate(-50%, -50%) scale(.1) rotate(3deg); opacity:0}
-  12%{opacity:.7}
-  52%{opacity:.42}
-  100%{transform:translate(-50%, -50%) scale(2.9) rotate(-3deg); opacity:0}
-}
-@keyframes cheat-out-3{
-  0%{transform:translate(-50%, -50%) scale(.06); opacity:0}
-  10%{opacity:.6}
-  48%{opacity:.34}
-  100%{transform:translate(-50%, -50%) scale(3.4); opacity:0}
-}
 @media (prefers-reduced-motion: reduce){
   .cheat{animation-duration:.4s; animation-delay:1.7s}
   .cheat-said{animation:none}

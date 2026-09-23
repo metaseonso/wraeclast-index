@@ -80,29 +80,71 @@ export function mountFlag(){
 }
 
 /* ---------- the cheat code ----------
-   It does nothing yet, and that is the whole of it: the words, and the gas poured over them. The gas is its
-   own art (tools/art.py, assets/brand/cheat-gas-*.webp). Each layer is one plate and its own mirror, meeting
-   down the middle, and the pair opens outward from that line — so the gas radiates from behind the words
-   rather than travelling across them, and the one edge either half has is the one buried in the join. Three
-   pairs, screen-blended, moved by CSS alone, nothing drawn frame by frame. It clears itself.
-   The words are the crest's own hand, forged the same way and made the same way (tools/art.py): dark metal,
-   bone bevels, green stone lit from inside it. A typeface would have been the site's headings, not its badge.
-   Where the reader has asked for less motion, the words come up and the gas does not. */
+   The words, and war drums a long way off. The words are the crest's own hand, forged the same way and made
+   the same way (tools/art.py): dark metal, bone bevels, green stone lit from inside it. A typeface would
+   have been the site's headings, not its badge.
+
+   The drums are not a file. A hit is a low tone that drops as it sounds, with a breath of noise on its front
+   for the skin, put through a filter that takes the top off and a delay that answers it — which is what
+   distance does to a drum. So there is nothing to fetch, nothing to licence, and the pattern is four lines
+   below rather than a waveform nobody can change. It only ever plays off the keys that were just typed, so
+   the browser has its gesture, and it is stopped the moment the words go.
+
+   Where the reader has asked for less motion, the words come up without their entrance. */
+const BEATS = [0, .44, 1.05, 1.49, 2.1, 2.54];   // two, rest, two, rest, two: a march, not a roll
+const FAR = 190;        // hertz the air leaves of a drum this far off
+const LOUD = .16;       // as loud as it ever gets
+
+function drums(){
+  const AC = window.AudioContext || window.webkitAudioContext;
+  if(!AC) return () => {};
+  let ac;
+  try { ac = new AC(); } catch { return () => {}; }
+  const out = ac.createGain();
+  out.gain.value = LOUD;
+  const air = ac.createBiquadFilter();   // distance takes the top off
+  air.type = 'lowpass';
+  air.frequency.value = FAR;
+  const echo = ac.createDelay(1);        // ...and gives it back a moment later, quieter
+  echo.delayTime.value = .27;
+  const back = ac.createGain();
+  back.gain.value = .3;
+  air.connect(out);
+  air.connect(echo);
+  echo.connect(back);
+  back.connect(echo);
+  back.connect(out);
+  out.connect(ac.destination);
+  const now = ac.currentTime + .04;
+  for(let i = 0; i < BEATS.length; i++){
+    const t = now + BEATS[i], loud = .5 + i / BEATS.length * .5;   // it comes closer as it goes
+    const skin = ac.createOscillator(), g = ac.createGain();
+    skin.type = 'sine';
+    skin.frequency.setValueAtTime(78, t);
+    skin.frequency.exponentialRampToValueAtTime(41, t + .22);
+    g.gain.setValueAtTime(0, t);
+    g.gain.linearRampToValueAtTime(loud, t + .008);
+    g.gain.exponentialRampToValueAtTime(.001, t + .5);
+    skin.connect(g);
+    g.connect(air);
+    skin.start(t);
+    skin.stop(t + .55);
+  }
+  out.gain.setValueAtTime(LOUD, now + BEATS[BEATS.length - 1]);
+  out.gain.linearRampToValueAtTime(0, now + BEATS[BEATS.length - 1] + .8);
+  return () => { try { ac.close(); } catch {} };
+}
+
 function cheat(){
   if(document.querySelector('.cheat')) return;
   const box = document.createElement('div');
   box.className = 'cheat';
   box.setAttribute('role', 'status');
   const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
-  box.innerHTML = (still ? '' :
-    ['1', '2', '3'].map((n, i) =>
-      '<span class="cheat-pair g' + (i + 1) + '">' +
-      '<img src="assets/brand/cheat-gas-' + n + '.webp" alt="" decoding="async">' +
-      '<img class="flip" src="assets/brand/cheat-gas-' + n + '.webp" alt="" decoding="async">' +
-      '</span>').join('')) +
-    '<img class="cheat-said" src="assets/brand/cheat-words.webp" alt="Cheat Code Activated" decoding="async">';
+  box.innerHTML = '<img class="cheat-said" src="assets/brand/cheat-words.webp" alt="Cheat Code Activated" decoding="async">';
   document.body.appendChild(box);
-  setTimeout(() => box.remove(), still ? 2000 : 3200);
+  const quiet = drums();
+  setTimeout(() => { box.remove(); quiet(); }, still ? 2400 : 3600);
 }
 
 function open(card){

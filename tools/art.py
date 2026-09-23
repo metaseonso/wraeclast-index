@@ -57,19 +57,9 @@ BADGE = ('Dark fantasy game logo in the style of Path of Exile, drawn as one pie
 # never a finished thing on its own, which is why every one of them is loose and off-centre rather than posed.
 GLOW, CUT = 'glow', 'cut'
 PLATES = {
-    'cheat-gas-1': LOOK + ' One billowing cloud of poisonous green smoke floating in the middle of the frame, '
-                          'dense and bright at its heart, breaking into curling wisps at its outside. It sits '
-                          'well inside the frame with a wide margin of empty black all the way around it, and '
-                          'touches no edge. Sickly toxic green.',
-    'cheat-gas-2': LOOK + ' One low rolling cloud of poisonous green vapour, wider than it is tall, heavy in '
-                          'the middle and breaking into tendrils at either side. It sits well inside the frame '
-                          'with empty black all the way around it and touches no edge. Sickly toxic green.',
     'cheat-words': (CUT, BADGE + ' Two lines of capitals, centred, the first line reading exactly '
                     '"CHEAT CODE" and the second line reading exactly "ACTIVATED". Spelled exactly that way '
                     'and nothing else written anywhere.'),
-    'cheat-gas-3': LOOK + ' A few thin ragged wisps of poisonous green gas, torn and uneven, drifting apart, '
-                          'nothing solid. They sit in the middle of the frame with empty black all around '
-                          'them and touch no edge. Sickly toxic green, very soft.',
 }
 
 
