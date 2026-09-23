@@ -21,7 +21,7 @@ Three rules run through everything below.
 This file is the engine. `assets/engine.js` is the one copy of it in code: the bench in the browser
 (`assets/craftsim.js`) and the check (`tools/dev/simcheck.mjs`) both import that file, so what the check
 proves over 250,000 rolls is what a player gets. The screens are someone else's; what they need from the
-engine is in [The bench card and the running card](#the-bench-card-and-the-running-card).
+engine is in [The bench card](#the-bench-card).
 
 ---
 
@@ -141,7 +141,7 @@ share taken from the weights would not be the bench's own odds, so the rows that
 sight with the rows that do not. That is what keeps the two cases from ever reading alike — one has shares
 everywhere, the other has shares nowhere and a line saying why.
 
-**The running card prints no share at all**, in either case. The pool with its shares belongs to the bench
+**A craft that is rolling prints no share at all**, in either case. The pool with its shares belongs to the bench
 card, where the player is choosing; a share shown beside a modifier that has just landed is a chance reported
 per hit, and this bench reports none.
 
@@ -568,10 +568,16 @@ weighting by what the player has already hit.
 
 ---
 
-## The bench card and the running card
+## The bench card
 
-Two cards, both reached the way every card on this site is reached: `openDetail` in `assets/app.js`, the
-trail, Back and Forward, 50 steps deep.
+**One card, and the craft runs on it.** It is reached the way every card on this site is reached:
+`openDetail` in `assets/app.js`, the trail, Back and Forward, 50 steps deep.
+
+It was two — a bench you loaded and a run you were sent to — and the owner, 24 September 2026: *"lets make it
+so bench and the prescreen where we load the materials to take into bench is one screen with a little drawer
+that brings out the materials to bring into the crafting session."* So there is one card. **Roll it** rolls
+in place, the drawer that held the materials keeps holding them, and a currency can be brought in in the
+middle of a craft without leaving it.
 
 ### The bench card
 
@@ -638,36 +644,32 @@ an application inside the frame instead of beside it.
 No field type on the site holds a text input today and the bench does not need one: a base is chosen from a
 list, an item level from a slider the Craft tab already draws, currency from the list of what fits.
 
-### The running card
+### The craft, on the same card
 
-One button on the bench — **Roll it** — opens a second card: the simulator itself, with the item in it and
-the picks ready. It is a card, so it is on the trail, so Back from it means the bench and Forward means the
-run again.
+**Roll it** does not open anything. It mints a run, opens the drawer, and draws the same card again — the
+item panel becomes the item as the craft has left it, the roll button is gone, and the craft's own controls
+and log appear under the drawer.
 
-```js
-{k: 'r', one: 'Craft run', many: 'Craft runs', own: './craftsim.js',
- fields: [...HEAD, ...SAYS, 'benchitem', 'runbody', ...REST, ...FOOT],
- acts: [], rel: []}
-```
-
-The item is the same field the bench draws, because it is the same item: on a run it carries no pickers and
-the whole of it is the button you use the picked currency on, which is the order the game does it in. What is
-under it — what you are holding, what each step did, the undo, the start over and what it cost — is the
-module's, in the box `runbody` leaves.
-
-Everything under the head is drawn by the module, the way a boss card is (`KIND.own` → `openCard(it)`,
-`assets/app.js` 836-837). It is an application, not a row: it holds the item, the currency the player has
-left to use, the step history, an undo stack and the run's seed.
-
-**What passes from the bench to the run.** The `it` the bench pushes onto the trail carries the plan and
-nothing else:
+One view function each, and the card takes whichever fits:
 
 ```js
-{k: 'r', id: 'run-<time>-<n>', n: '<base name>', s: '<kind of item>',
- plan: {cls, base, ilvl, rarity, picks: [...], seed}}
+const v = live() ? runView(live()) : await benchView(BENCH);
 ```
 
-The run mints its own id at launch. Two runs on the trail are two ids and two saved states, so going Back
+`live()` is the craft rolling on the item the bench is set to — same class, same base, same item level. Change
+any of the three and the craft is not this card's any more: the bench view comes back, with *Carry on the
+craft you left* to set the bench back to it.
+
+**The drawer holds both halves.** While a craft is rolling it draws *In hand* — what can be used on the item
+now — then the omens, then *Bring more in*: the search box and the whole shelf. Picking there adds to the
+craft as well as to the plan, which is the one thing the two-card version could not do.
+
+`runView` carries `running: true`, and two fields read it: the **Roll it** button draws nothing over a craft
+that is already rolling, and the picked list draws nothing because the drawer is saying it better.
+
+**What the craft is.** It holds the item, the currency left to use, the step history, an undo stack and its
+own seed. It is saved under its own id, so a reload carries on the same craft rather than starting a fresh
+one, and one step back winds the stream to where that step began.
 to the bench, changing the plan and launching again leaves the first run where it was.
 
 **Back, from inside a run.** Back is `history.back()`, which lands on the `popstate` listener
@@ -891,7 +893,7 @@ reads the same files once per patch, with our own User-Agent.
 | 1 | a full side never gains another modifier, and a full item refuses instead of doing nothing quietly |
 | 2 | nothing above the item level is ever reached, and an orb whose floor the item level cannot reach refuses |
 | 3 | 10,000 items rolled to six modifiers never repeat a modifier or a group |
-| 4 | a class with no weights takes the even path, every candidate at the same weight, the line on the card, and **no share on any row** — while a measured class prints its shares and the running card prints none |
+| 4 | a class with no weights takes the even path, every candidate at the same weight, the line on the card, and **no share on any row** — while a measured class prints its shares and a craft that is rolling prints none |
 | 5 | the five steps whose whole effect is an unpublished number all refuse, each with its own reason |
 | 6 | every omen in `data/craft.json` sits in exactly one of the four groups, nothing is named here that the game does not have, and none of the six the game removed can craft |
 | 7 | a currency the item state does not take refuses, in the game's own words |

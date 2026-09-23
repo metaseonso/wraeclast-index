@@ -3,6 +3,41 @@
 The full list of changes. The public patch notes (data/changelog.json, shown on the site) stay short.
 Add the details here first, then a short public line there.
 
+## Next — The bench is one screen, and the Currency tab asks a question
+
+- **The bench and the craft are one card.** The owner, 24 September 2026: *"lets make it so bench and the
+  prescreen where we load the materials to take into bench is one screen with a little drawer that brings out
+  the materials to bring into the crafting session."* **Roll it** now rolls in place: the item panel becomes
+  the item as the craft has left it, the roll button goes, and the craft's own controls and log appear under
+  the drawer. Kind `r` and the `runbody` field are retired, and `runIt`, `fillRun` and `runBody` with them.
+- **The drawer holds both halves.** While a craft is rolling it draws *In hand*, then the omens, then *Bring
+  more in* — the search box and the whole shelf. Picking there adds the currency to the craft as well as to
+  the plan, which is the one thing the two-card version could not do at all.
+- `live()` is the craft rolling on the item the bench is set to. `runView(run)` and `benchView(plan)` return
+  the same shape, so the card takes whichever fits and `openBench`, `paint` and a reload all make one choice.
+  `running: true` on the view hides the roll button and the picked list, because the drawer says it better.
+- **The bench has a search box**, over every shelf at once, with the group named on a row found across one.
+  `Ctrl + /` reaches it: `cardFilter` now looks for an `input[type=search][data-find]` the card's own module
+  drew before it builds a filter over the lines behind it.
+- **The Currency tab's question row** (#57, Option 2 of `docs/proposal-currency.md`). `ASKS` in `kinds.js`,
+  seven chips, each a declared list of the game's own categories; `tools/dev/frame.mjs` fails a build where
+  the catalogue holds a group no question names, names one twice, or a question names a group the catalogue
+  does not hold, and it counts the 12 rows the game itself files under nothing.
+- **The upgrade ladders.** 390 bytes in `index-core` (`tools/carddata.py` `ladders`, `tools/appdata.py`), five
+  of them, drawn on all 15 orb cards. The prices are the ones already in the browser, the modifier levels are
+  poe2db's and say so, and the two are in two columns: at 13:00 on 23 September a Greater Exalted Orb was
+  4.55× a plain one and a Perfect was 1,463×.
+- **`slotList`** reads a use line the game wrote as a table — 231 of 652 — and the split happens where the card
+  is made, so a card carries the sentence or the table and never both. The guard caught 798 marked words
+  going missing before this was right; the slot names stay plain, because "Martial Weapon" heads 70 of those
+  columns.
+- **`actHTML` / `runAct`** in `app.js`: one route for drawing an act in a card's corner and one for running
+  it, so a tab that offers an act never names a module. The Currency grid uses it for the bench, 465 of 652.
+- **Dropped from the proposal**: `rides`, `quality` and `useson` each repeat the line the card already draws
+  — a catalyst's own line says *"Adds quality that enhances Attribute modifiers on a ring or amulet"* — and
+  `setprice` reaches 2 rows of 652, one of which has no answer because the thing it makes is not traded.
+- **The exchange markets wear their art**, both ends, the last rows on the site that had none.
+
 ## Next — Build and Farms taken offline, and the table that shuts a page
 
 - The owner, 23 September 2026: both pages need more work, so they come off the site and go back on the

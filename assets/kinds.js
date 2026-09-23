@@ -279,6 +279,8 @@ export const FIELDS = {
   keywords: {type: 'chips', at: 'kw', slot: 'body', every: 1},   // the popup only: a way in, not a line of text
 
   /* ---------- the crafting bench ----------
+     One card, and the craft runs on it. The drawer holds the materials — what is in hand, and the whole
+     shelf to bring more in mid-craft — so setting a craft up and running it are not two screens.
      A card that holds a plan rather than a row of the index: the item, the currency and omens picked for it,
      and the button that starts the run (docs/craft-sim.md). `item`, `picks` and `launch` are the first
      fields on the site that take a click — they draw from the card's own state, and the card's own module
@@ -289,7 +291,6 @@ export const FIELDS = {
   benchpicks: {type: 'picks', at: 'plan', slot: 'body'},
   benchnote:  {type: 'note', at: 'note', slot: 'body'},
   launch:     {type: 'launch', at: 'plan', slot: 'body'},
-  runbody:    {type: 'own', slot: 'body'},
 
   /* ---------- the character builder ----------
      A card that holds a build file rather than a row of the index: what has been sent to its pool, what is
@@ -509,14 +510,6 @@ export const KINDS = [
      (three open at once, a guest's in the session) and answers every control on it. */
   {k: 'f', one: 'Build', many: 'Builds', own: './builder.js',
    fields: [...HEAD, ...SAYS, 'buildfiles', 'budgets', 'optimise', 'geartiles', 'treemap', 'buildtab', ...REST, ...FOOT],
-   acts: [],
-   rel: []},
-
-  /* ...and the run the bench launches: the simulator itself, with the item and the picks in hand. A card, so
-     it is on the trail, so Back from it is the bench and Forward is the run again — and the run is written
-     down on every step, so neither throws a craft away. */
-  {k: 'r', one: 'Craft run', many: 'Craft runs', own: './craftsim.js',
-   fields: [...HEAD, ...SAYS, 'benchitem', 'runbody', ...REST, ...FOOT],
    acts: [],
    rel: []},
 ];

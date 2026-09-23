@@ -257,12 +257,14 @@ function tierOf(d, pool, i){
 const weightSrc = () => X.wsrc ? 'How often each one rolls: ' + X.wsrc.n + ', ' + X.wsrc.how + '.' : '';
 
 /* the entry the trail holds. One of it, so Back onto the bench finds the bench you left. */
-async function benchIt(v){
+async function benchIt(v, run){
   if(!BIT) BIT = {k: 'n', id: 'bench', n: '', s: ''};
   const d = await classData(v.cls);
   BIT.n = v.base || 'Crafting bench';
-  BIT.s = v.base ? v.kind + ' · item level ' + v.ilvl : 'Pick a base, then what to craft it with';
-  BIT.img = baseArt(baseOf(d, v.base));
+  BIT.s = v.base ? v.kind + ' · item level ' + v.ilvl +
+    (run ? ' · ' + v.steps + ' step' + (v.steps === 1 ? '' : 's') : '')
+    : 'Pick a base, then what to craft it with';
+  BIT.img = run ? baseArt(run.it.base) : baseArt(baseOf(d, v.base));
   BIT.plan = v;
   BIT.note = v.note;
   return BIT;
@@ -296,8 +298,10 @@ export async function openBench(from, also){
     try { more = await alsoPicked(plan, also); } catch {}
     if(more) say = say ? say + ' · ' + more : more;
   }
-  const v = await benchView(plan);
-  await benchIt(v);
+  // the same choice paint makes: a craft already rolling on this item is what the card shows
+  const run = live();
+  const v = run ? runView(run) : await benchView(plan);
+  await benchIt(v, run);
   if(say) BIT.s += ' · ' + say;
   saveBench();
   openDetail(BIT, {drawn: true, price: null, builds: false, kind: 'Bench', on: onBench}, null);
@@ -307,29 +311,38 @@ export async function openCard(it){
   if(it.k !== 'r') return openBench(null);
   try { await craftData(); } catch { return; }
   await styles();
+  if(!LOOKED){ LOOKED = true; await restore(); }
   const run = RUNS.get(it.id);
   if(!run) return openBench(null);
-  show(run);
+  // a craft is not a card of its own any more: the bench is set back to it and opened on it
+  BENCH = {...run.plan, picks: [...run.plan.picks]};
+  FRONT = run.id;
+  return openBench(null);
 }
-const show = run => openDetail(runIt(run), {drawn: true, price: null, builds: false, kind: 'Craft run',
-  on: (w, el, e) => onRun(run, w, el, e)}, null);
 
 /* redraw the card the bench is on, from the plan as it now stands */
 async function paint(){
   await ready(BENCH);
-  const v = await benchView(BENCH);
-  await benchIt(v);
+  const run = live();
+  const v = run ? runView(run) : await benchView(BENCH);
+  await benchIt(v, run);
   saveBench();
   repaint();
 }
+/* What a running craft answers for itself. Everything else on the card is the bench's, so one screen has one
+   handler and no control is answered twice. */
+const RUN_DOES = new Set(['sel', 'arm', 'use', 'take', 'undo', 'over', 'shut']);
 /* every control on the bench card says what it does, and this is what it does. Nothing else answers them. */
 function onBench(what, el, e){
   const [verb, rest] = split(what);
-  const live = e && e.type === 'input';
+  const run = live();
+  // the craft answers its own controls; the drawer, the search and the shelf stay the bench's
+  if(run && RUN_DOES.has(split(what)[0])) return void onRun(run, what, el, e);
+  const typing = e && e.type === 'input';
   if(verb === 'ilvl'){
     const lab = el.closest('.bn-lab');
     if(lab && lab.querySelector('b')) lab.querySelector('b').textContent = el.value;
-    if(live) return;
+    if(typing) return;
     BENCH.ilvl = +el.value;
     return void paint();
   }
@@ -347,7 +360,7 @@ function onBench(what, el, e){
     });
     return;
   }
-  if(live) return;                              // a list answers on change, not on every keystroke in it
+  if(typing) return;                              // a list answers on change, not on every keystroke in it
   if(verb === 'kind'){ BENCH.cls = el.value; BENCH.base = ''; return void paint(); }
   if(verb === 'base'){ BENCH.base = el.value; return void paint(); }
   if(verb === 'drop'){ BENCH.picks.splice(+rest, 1); return void paint(); }
@@ -356,10 +369,22 @@ function onBench(what, el, e){
   if(verb === 'pick'){
     const at = BENCH.picks.indexOf(rest);
     if(at >= 0) BENCH.picks.splice(at, 1); else BENCH.picks.push(rest);
+    // a craft already rolling takes it in hand there and then: that is what the drawer is for
+    if(run){
+      const was = run.plan.picks.indexOf(rest);
+      if(was >= 0){ run.plan.picks.splice(was, 1); run.armed.delete(rest); if(run.sel === rest) run.sel = ''; }
+      else run.plan.picks.push(rest);
+      saveRun(run);
+    }
     return void paint();
   }
   if(verb === 'card'){ const c = indexCard(rest); if(c) openDetail(c, {nested: true}, hrefOf(c)); return; }
-  if(verb === 'again'){ const run = RUNS.get(FRONT); if(run) show(run); return; }
+  if(verb === 'again'){
+    const was = RUNS.get(FRONT);
+    if(was){ BENCH.cls = was.plan.cls; BENCH.base = was.plan.base; BENCH.ilvl = was.plan.ilvl;
+             BENCH.picks = [...was.plan.picks]; paint(); }
+    return;
+  }
   if(verb === 'roll') return void launch();
 }
 
@@ -367,18 +392,31 @@ function onBench(what, el, e){
    The game's own tab, expanded: the orbs in the middle, the mechanic currency along the sides, and each side
    opening into its full list in the middle. On a phone the whole of it is a sheet at the bottom of the
    screen — the groups along the top of it, one list at a time, and the handle pulls the full tab up. */
-const TAB = {open: 'orb', up: false, node: null, q: ''};
+const TAB = {open: 'orb', up: false, node: null, under: null, q: ''};
 
 export function fill(host, it){
-  if(it.k === 'r') return fillRun(host, it);
   if(!TAB.node){
     TAB.node = document.createElement('div');
     TAB.node.className = 'bn-sheet';
   }
+  if(!TAB.under){
+    TAB.under = document.createElement('div');
+    TAB.under.className = 'bn-under';
+  }
   host.classList.add('bn-stick');   // on a phone the box the field left is what the sheet sticks to
-  host.replaceChildren(TAB.node);
+  host.replaceChildren(TAB.node, TAB.under);
   overNav(host);
   tab();
+  benchUnder();
+}
+/* under the drawer: nothing at all before a craft is rolling, and the craft's own controls and log once one
+   is. A choice the craft is waiting on takes the whole of it, because there is one thing to answer. */
+function benchUnder(){
+  const run = live();
+  if(!TAB.under) return;
+  TAB.under.innerHTML = !run ? ''
+    : run.offer ? offerHTML(run) + ctlHTML(run) + logHTML(run, E.poolNote(run.it.pool))
+    : ctlHTML(run) + logHTML(run, E.poolNote(run.it.pool));
 }
 // the bar at the foot of an open card on a phone: the sheet sits above it rather than under it
 function overNav(node){
@@ -404,6 +442,13 @@ async function tab(){
   const q = TAB.q.trim().toLowerCase();
   const found = q ? GROUPS.flatMap(g => (all[g.g] || []).filter(x => x.n.toLowerCase().includes(q))
     .map(x => ({x, g: g.n}))) : null;
+  /* While a craft is running the drawer holds both halves: what is in hand to use on the item now, and the
+     whole shelf to bring more in without leaving the craft. Before one, only the shelf. */
+  const run = live();
+  const by = run ? new Map(allOf(all).map(x => [pickKey(x), x])) : null;
+  const picks = run ? run.plan.picks.map(k => ({k, x: by.get(k)})).filter(p => p.x) : [];
+  const inHand = picks.filter(p => !p.x.omen), omens = picks.filter(p => p.x.omen);
+  const sel = run ? pickOf(run, run.sel) : null;
   node.innerHTML =
     '<button type="button" class="bn-grip" data-do="grip" aria-label="' +
       (TAB.up ? 'Close the currency tab' : 'Open the full currency tab') + '"><span></span></button>' +
@@ -412,6 +457,15 @@ async function tab(){
       '">' + icHTML((all[g.g][0] || {}).n || '') + '<span>' + esc(g.n) + '<i>' + all[g.g].length +
       '</i></span></button>').join('') + '</div>' +
     '<div class="bn-mid">' +
+      (run ? '<p class="bn-now">' + (sel ? icHTML(sel.n) + '<b>' + esc(sel.n) + '</b>' : '<b>Pick a currency</b>') + '</p>' +
+        '<p class="bn-h4">In hand <span>' + inHand.length + '</span></p>' +
+        '<div class="bn-cells bn-hand">' + inHand.map(({k, x}) => runCell(run, k, x)).join('') + '</div>' +
+        (omens.length ? '<p class="bn-h4">Omens <span>' + [...run.armed].length + ' armed</span></p>' +
+          '<div class="bn-omens">' + omens.map(({k, x}) => '<button type="button" class="bn-omen" data-do="arm:' +
+            esc(k) + '" aria-pressed="' + run.armed.has(k) + '" title="' + esc(x.t) + '">' + icHTML(x.n) +
+            '<span>' + esc(x.n.replace(/^Omen of /, '')) + '</span></button>').join('') + '</div>' +
+          '<p class="note">' + esc(E.DECISION[11].says) + '</p>' : '') +
+        '<p class="bn-h4 bn-more">Bring more in</p>' : '') +
       '<div class="bn-find"><input class="bn-q" type="search" data-find data-do="find" ' +
         'placeholder="Search every currency…" autocomplete="off" spellcheck="false" ' +
         'aria-label="Search every currency on the bench" value="' + esc(TAB.q) + '"></div>' +
@@ -452,7 +506,7 @@ let FRONT = '';   // the run the bench last launched or restored, so the bench c
 function newRun(plan, it){
   return {id: 'run-' + Date.now().toString(36) + '-' + (++SEQ), plan: {...plan, picks: [...plan.picks]},
     it, log: [], undo: [], used: {}, seed: (Math.random() * 0xFFFFFFFF) >>> 0, at: 0,
-    sel: '', armed: new Set(plan.picks.filter(k => k.startsWith('omen:'))), node: null, say: '', up: false};
+    sel: '', armed: new Set(plan.picks.filter(k => k.startsWith('omen:'))), say: ''};
 }
 /* the stream, wound to where the run stands. A reload carries on the same one rather than starting a fresh
    one, and one step back winds it to where that step began. */
@@ -461,6 +515,9 @@ function stream(run){
   for(let i = 0; i < run.at; i++) base();
   run.rnd = () => { run.at++; return base(); };
 }
+/* Rolling does not leave the card. The bench and the craft are one screen: the item you set up is the item
+   that rolls, the drawer that held the materials keeps holding them, and what the roll did is written under
+   both. Nothing to go Back to, because nothing was left. */
 async function launch(){
   if(!BENCH || !BENCH.base || !BENCH.picks.length) return;
   const d = await classData(BENCH.cls);
@@ -468,21 +525,25 @@ async function launch(){
   stream(run);
   RUNS.set(run.id, run);
   FRONT = run.id;
-  touchBench();
+  TAB.up = true;              // the drawer opens on the first roll, so what you are holding is in hand
   saveRun(run);
   saveBench();
-  show(run);
+  await paint();
+}
+/* the craft this bench is running, if it is running one on the item the bench is set to */
+function live(){
+  const run = RUNS.get(FRONT);
+  if(!run || !BENCH) return null;
+  return run.plan.cls === BENCH.cls && run.plan.base === BENCH.base && run.plan.ilvl === BENCH.ilvl ? run : null;
 }
 const pickOf = (run, key) => key
   ? allOf(shelf(run.it.d, run.it.cl, run.it.base)).find(x => pickKey(x) === key) || null : null;
 
-function runIt(run){
-  if(!run.entry) run.entry = {k: 'r', id: run.id, n: run.plan.base, s: ''};
-  const it = run.it, d = it.d, done = run.log.filter(l => l.ok).length;
-  const sel = pickOf(run, run.sel);
-  run.entry.s = it.cl.n + ' · item level ' + it.ilvl + ' · ' + done + ' step' + (done === 1 ? '' : 's');
-  run.entry.img = baseArt(it.base);
-  run.entry.plan = {
+/* The item as the craft has left it, in the same shape benchView gives, so one card draws either. No
+   pickers: the class, the base and the item level are what this craft is, and changing one is a new craft. */
+function runView(run){
+  const it = run.it, d = it.d, sel = pickOf(run, run.sel);
+  return {
     pickers: 0, cls: d.id, kind: it.cl.n, base: it.base.n, ilvl: it.ilvl, rarity: it.rarity,
     corrupt: it.corrupt, imp: it.imp, so: it.cl.so || 0, sockets: it.sockets,
     caps: {p: E.capFor(it, 'p'), s: E.capFor(it, 's')},
@@ -492,9 +553,10 @@ function runIt(run){
       lvl: E.lvlOf(d, m.i), tier: tierOf(d, it.pool, m.i), src: SRC[m.src] || ''})),
     pool: null,   // no share on any row here: a chance beside a modifier that has landed is a chance per hit
     use: sel ? 'Use ' + sel.n + ' on it' : 'Pick a currency, then use it on the item',
+    kinds: [], bases: [], picks: [], again: '', ready: false, why: '', note: '',
+    running: true,   // the roll button is not drawn over a craft that is already rolling
+    steps: run.log.filter(l => l.ok).length,
   };
-  run.entry.note = '';
-  return run.entry;
 }
 const SRC = {p: '', e: 'Essence', d: 'Desecrated', c: 'Corrupted'};
 
@@ -509,7 +571,6 @@ function onRun(run, what, _el, e){
   if(verb === 'undo') return void undoStep(run);
   if(verb === 'over') return void restart(run);
   if(verb === 'shut'){ run.offer = null; return void runPaint(run); }
-  if(verb === 'grip'){ run.up = !run.up; return void runPaint(run); }
   if(verb === 'card'){ const c = indexCard(rest); if(c) openDetail(c, {nested: true}, hrefOf(c)); return; }
 }
 /* one use of the currency that is picked, with whatever omens are armed for it riding on it */
@@ -551,9 +612,9 @@ function offerChoice(run, x, on, opt){
       ? 'The bench already shows every modifier the item can take, so there is nothing left for a second reveal to change.' : '',
     list: list.map(i => ({i, lines: d.mods[i][3], side: E.side(d, i), lvl: E.lvlOf(d, i),
       lord: d.fam[d.mods[i][1]][5] || ''}))};
-  run.up = false;            // the choice comes first: the sheet is out of the way until it is answered
-  runPaint(run);
-  const el = run.node && run.node.querySelector('.bn-offer');
+  TAB.up = false;            // the choice comes first: the drawer is out of the way until it is answered
+  runPaint();
+  const el = TAB.under && TAB.under.querySelector('.bn-offer');
   if(el) el.scrollIntoView({block: 'nearest'});
 }
 function take(run, i){
@@ -609,58 +670,9 @@ function restart(run){
   saveRun(run);
   runPaint(run);
 }
-function runPaint(run){
-  runIt(run);
-  runBody(run);
-  touchBench();
-  repaint();
-}
-/* the bench behind this run has an offer to make when you go back to it, and this keeps it current: the
-   card holds its own state, so the state has to be right before the card is drawn again */
-function touchBench(){
-  const run = RUNS.get(FRONT);
-  if(!BIT || !BIT.plan) return;
-  BIT.plan.again = againLabel(run);
-}
-function fillRun(host, it){
-  const run = RUNS.get(it.id);
-  if(!run) return void (host.innerHTML = '<p class="note">This craft is not in this tab any more.</p>');
-  if(!run.node){
-    run.node = document.createElement('div');
-    run.node.className = 'bn-run';
-  }
-  runBody(run);
-  host.replaceChildren(run.node);
-  overNav(host);
-}
-/* everything under the item on a running card: what you are holding, what each step did, and what it cost */
-function runBody(run){
-  if(!run.node) return;
-  const all = shelf(run.it.d, run.it.cl, run.it.base);
-  const by = new Map(allOf(all).map(x => [pickKey(x), x]));
-  const picks = run.plan.picks.map(k => ({k, x: by.get(k)})).filter(p => p.x);
-  const held = picks.filter(p => !p.x.omen), omens = picks.filter(p => p.x.omen);
-  const sel = pickOf(run, run.sel);
-  const even = E.poolNote(run.it.pool);
-  const was = run.node.querySelector('.bn-cells');
-  const top = was ? was.scrollTop : 0;
-  // while a choice is open the sheet is not drawn at all: there is one thing to answer, and it is that
-  run.node.innerHTML = run.offer ? offerHTML(run) + ctlHTML(run) + logHTML(run, even) :
-    '<div class="bn-sheet bn-runsheet' + (run.up ? ' up' : '') + '">' +
-      '<button type="button" class="bn-grip" data-do="grip" aria-label="' +
-        (run.up ? 'Close what you are holding' : 'Open what you are holding') + '"><span></span></button>' +
-      '<p class="bn-now">' + (sel ? icHTML(sel.n) + '<b>' + esc(sel.n) + '</b>' : '<b>Pick a currency</b>') + '</p>' +
-      '<div class="bn-mid"><p class="bn-h4">Holding <span>' + held.length + '</span></p>' +
-        '<div class="bn-cells">' + held.map(({k, x}) => runCell(run, k, x)).join('') + '</div>' +
-        (omens.length ? '<p class="bn-h4">Omens <span>' + [...run.armed].length + ' armed</span></p>' +
-          '<div class="bn-omens">' + omens.map(({k, x}) => '<button type="button" class="bn-omen" data-do="arm:' +
-            esc(k) + '" aria-pressed="' + run.armed.has(k) + '" title="' + esc(x.t) + '">' + icHTML(x.n) +
-            '<span>' + esc(x.n.replace(/^Omen of /, '')) + '</span></button>').join('') + '</div>' +
-          '<p class="note">' + esc(E.DECISION[11].says) + '</p>' : '') +
-      '</div></div>' + ctlHTML(run) + logHTML(run, even);
-  const now = run.node.querySelector('.bn-cells');
-  if(now) now.scrollTop = top;
-}
+/* One card, so one way to draw it: the bench's own paint, which draws the item the craft has left and the
+   drawer and the log under it. */
+const runPaint = () => paint();
 const ctlHTML = run => '<div class="bn-ctl"><button type="button" class="btn" data-do="undo"' +
   (run.undo.length ? '' : ' disabled') + '>Undo</button><button type="button" class="btn" data-do="over"' +
   (run.log.length ? '' : ' disabled') + '>Start over</button>' + spendHTML(run) + '</div>';

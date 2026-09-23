@@ -1017,11 +1017,12 @@ export const TYPE = {
   budget: {raw: 1, v: (it, f, o) => budgetHTML(it[f.at], o.full)},
   gear:   {raw: 1, v: (it, f) => gearHTML(it[f.at])},
   tree:   {raw: 1, v: (it, f) => treeHTML(it[f.at])},
-  picks:  {raw: 1, v: (it, f) => picksHTML(it[f.at])},
+  // what is picked to craft with, before a craft is rolling. While one is, the drawer says what is in hand
+  picks:  {raw: 1, v: (it, f) => it[f.at] && it[f.at].running ? '' : picksHTML(it[f.at])},
   note:   {raw: 1, v: (it, f) => it[f.at] ? '<p class="card-src bn-note">' + esc(it[f.at]) + '</p>' : ''},
   launch: {raw: 1, v: (it, f) => {
     const p = it[f.at];
-    if(!p) return '';
+    if(!p || p.running) return '';   // a craft already rolling has its own controls; it is not started again
     return '<div class="bn-go">' +
       (p.again ? '<button type="button" class="btn bn-again" data-do="again">' + esc(p.again) + '</button>' : '') +
       '<button type="button" class="btn gold bn-roll" data-do="roll"' + (p.ready ? '' : ' disabled') +
