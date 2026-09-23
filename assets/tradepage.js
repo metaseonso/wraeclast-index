@@ -4,6 +4,10 @@
 import { D, $, esc } from './app.js';
 import { tradeData, searchURL, valueFor, valHTML, syncVal, stepOf, heatNote, rollFor, key, range } from './trade.js';
 import * as bp from './basepool.js';
+// the rules an item keeps: fetched with the table they read, the first time a search names something that
+// has them, and never in the page's own load (assets/engine.js, the file the bench runs on)
+let ENG = null;
+const rules = async () => ENG || (ENG = await import('./engine.js').catch(() => null));
 
 const GROUPS = {
   and:    {label: 'Must have', hint: 'Every mod here must be on the item.'},
@@ -53,7 +57,7 @@ function save(){
 const CSRC = {m: ['explicit'], d: ['desecrated', 'explicit'], c: ['enchant', 'implicit']};
 // the trade site lists "reduced" and "less" as "increased" and "more" with a negative number (assets/craft.js)
 const flip = line => /\b(reduced|less)\b/.test(line) ? line.replace(/\breduced\b/, 'increased').replace(/\bless\b/, 'more') : null;
-let NAR = null, NARFOR = null;   // what the item narrows to, and the item it was worked out for
+let NAR = null, NARFOR = null, FIT = null;   // what the item narrows to, the item it was worked out for, and the rules it keeps
 const narrowing = () => (S.narrow === false ? null : NAR);
 function statOf(line, which, cl){
   const tail = cl.g === 'Flasks' ? (cl.id === 'charm' ? ' (charm)' : ' (flask)') : '';   // "... (Charm)" on the trade site
@@ -67,16 +71,20 @@ function statOf(line, which, cl){
   const one = l => (tail && find(key(l) + tail)) || find(key(l));
   return one(line) || (flip(line) && one(flip(line))) || null;
 }
-/* {n, cat, ids, ranges, types}: what this base is called, its trade category, the mods it can have, the ends
-   and tiers of each of those, and the defence mixes it comes in. */
+/* {n, cat, ids, ranges, types, at, only}: what this base is called, its trade category, the mods it can
+   have, the ends and tiers of each of those, the defence mixes it comes in, the modifiers behind each line
+   it rolls itself — by their place in the class's file, which is what the rules are asked about — and the
+   lines it only ever has from a desecration or a corruption. */
 function narrowOf(P, base, cl){
-  const ids = new Set(), ranges = new Map();
+  const ids = new Set(), ranges = new Map(), at = new Map();
   // the ends and the tiers of a slider are what the base rolls; two mods that read as one line on the trade
   // site keep the ends and lose the tiers, rather than drawing one mod's tiers over another's
   for(const f of bp.famsOf(P, base, 'm')) for(const t of f.tiers) for(const line of t.lines){
     const id = statOf(line, 'm', cl), r = id && range(line);
     if(!id) continue;
     ids.add(id);
+    if(!at.has(id)) at.set(id, []);
+    if(!at.get(id).includes(t.i)) at.get(id).push(t.i);
     if(!r) continue;
     const got = ranges.get(id);
     if(!got){ ranges.set(id, {f: f.f, lo: r.lo, hi: r.hi, tiers: [[r.lo, r.hi, t.lvl]]}); continue; }
@@ -85,30 +93,54 @@ function narrowOf(P, base, cl){
     else got.tiers = null;
   }
   // a desecration, a corruption, a rune in a socket and the base's own implicit: things it can have, with
-  // no rolling tiers of their own here
-  for(const which of ['d', 'c']) for(const f of bp.famsOf(P, base, which))
-    for(const t of f.tiers) for(const line of t.lines) ids.add(statOf(line, which, cl));
+  // no rolling tiers of their own here. What only a desecration or a corruption puts on it is kept apart,
+  // with the modifier behind it: the step that offers one is the engine's own, and so is what it leaves.
+  const only = new Map(), plain = new Set();
+  for(const which of ['d', 'c']) for(const f of bp.famsOf(P, base, which)) for(const t of f.tiers) for(const line of t.lines){
+    const id = statOf(line, which, cl);
+    if(!id) continue;
+    ids.add(id);
+    if(!only.has(id)) only.set(id, {i: t.i, src: which});
+  }
   if(cl.so) for(const a of P.aug || []) for(const line of [...(a[3] || []), ...(a[4] || [])])
-    ids.add(statOf(line, 'm', cl));
-  for(const b of base ? [base] : P.bases) for(const line of b.im || []) ids.add(statOf(line, 'c', cl));
+    plain.add(statOf(line, 'm', cl));
+  for(const b of base ? [base] : P.bases) for(const line of b.im || []) plain.add(statOf(line, 'c', cl));
+  plain.delete(null);
+  for(const id of plain) ids.add(id);
+  // anything the base rolls, wears in a socket or carries as its own implicit is nothing a corruption did
+  for(const id of [...at.keys(), ...plain]) only.delete(id);
   ids.delete(null);
   for(const r of ranges.values()){
     if(r.tiers) r.tiers.sort((a, b) => a[0] - b[0] || a[1] - b[1]);
     if(r.tiers && r.tiers.length < 2) r.tiers = null;
   }
-  return {n: base ? base.n : cl.n, cat: cl.cat, ids, ranges, types: bp.typingsOf(P, base)};
+  return {n: base ? base.n : cl.n, cat: cl.cat, ids, ranges, types: bp.typingsOf(P, base), at, only};
 }
 async function loadNarrow(){
   const sig = S.item ? S.item.k + '|' + S.item.v : '';
   if(sig === NARFOR) return;
   NARFOR = sig;
-  NAR = null;
-  if(!S.item || (S.item.k !== 'base' && S.item.k !== 'category')) return;
+  // the note is the last item's until this one answers, so a search that narrows nothing draws itself again
+  const had = !!NAR;
+  NAR = FIT = null;
+  const gone = () => { if(had) repaint(); };
+  if(!S.item || (S.item.k !== 'base' && S.item.k !== 'category')) return gone();
   const cl = await bp.classFor(S.item);
   const P = cl && await bp.table('data/craft/' + cl.id + '.json');
   if(NARFOR !== sig) return;   // the item was changed while its table was coming
-  if(P) NAR = narrowOf(P, bp.baseOf(P, S.item.k === 'base' ? S.item.v : ''), cl);
-  if(NAR) repaint();
+  if(!P) return gone();
+  const base = bp.baseOf(P, S.item.k === 'base' ? S.item.v : '');
+  NAR = narrowOf(P, base, cl);
+  // the rules come with the table: the whole of data/craft.json for the kinds of item, this class's own
+  // file made ready to roll from, and the bases a search on this item covers — one base, or all of a kind's
+  const [X, eng] = await Promise.all([bp.craft(), rules()]);
+  if(NARFOR !== sig) return;
+  if(X && eng){
+    eng.useData(X);
+    eng.prepClass(P, cl.id);
+    FIT = {P, cl, bases: base ? [base] : P.bases, at: NAR.at, only: NAR.only};
+  }
+  repaint();
 }
 /* the note, wherever something is being narrowed: what it is narrowed to, and the way out beside it */
 function narrowNote(){
@@ -117,6 +149,210 @@ function narrowNote(){
     '<button type="button" class="cr-foff" data-act="wide">what ' + esc(n.n) + ' can have<i aria-hidden="true">✕</i></button></p>';
   return NAR ? '<p class="note tp-fnote"><button type="button" class="linkbtn" data-act="narrow">Narrow to what ' +
     esc(NAR.n) + ' can have</button></p>' : '';
+}
+
+/* ---------- a search obeys the same rules as the item ----------
+   An item holds so many prefixes and so many suffixes, one modifier per group, and only the tiers its level
+   reaches — so a search that asks for more than that asks for something no item can be. Those rules are the
+   bench's, in assets/engine.js, and tools/dev/simcheck.mjs measures them; none of them is written again
+   here. This builds the item the search describes with the engine's own `newItem`, puts the must-have lines
+   on it with `addMod`, and asks `candidates` what will still go on. Where the answer is no, the wall is
+   named by the engine's own `heldFams`, `heldGroups`, `capFor` and `lvlOf` — the same four `candidates`
+   itself reads.
+   Nothing is ever taken out of the search. A line the item cannot carry stays where it is, says the fact,
+   and carries the one tap that settles it; the note over the list turns the whole thing off. */
+const RARITY = {'': 'rare', nonunique: 'rare', rare: 'rare', magic: 'magic', normal: 'normal'};
+const ZERO = () => 0;      // the engine rolls the numbers of every modifier it adds; none of them is read here
+const WALL = ['lvl', 'corrupt', 'full', 'group', 'twice', 'none'];   // softest first: the item level is a floor a player can still move
+const softer = (a, b) => WALL.indexOf(a) < WALL.indexOf(b);
+// the item level the search is asking for, and the ceiling the trade site itself keeps
+const askedLevel = () => S.ilvl === '' ? T.limits.ilvl : Math.max(1, Math.min(T.limits.ilvl, +S.ilvl || 1));
+
+/* The item the search describes — one per pool and per pair of caps the bases in scope come in, because a
+   base's own implicit moves a cap and two bases of one kind do not always roll the same pool. A whole kind
+   is every base of it: what one of them can carry, the search can find. */
+function shelves(){
+  const {P, cl, bases} = FIT, rarity = RARITY[S.rarity], ilvl = askedLevel(), out = new Map();
+  for(const b of bases){
+    const k = b.p + ':' + ENG.capsOf(cl, b, rarity).join(',');
+    if(!out.has(k)) out.set(k, ENG.newItem(P, b.n, ilvl, rarity));
+  }
+  return [...out.values()];
+}
+/* which wall one modifier hits on this item, asked of the engine and in its order: what the item already
+   holds first, then the side's cap, then the item level */
+function wallOf(it, i){
+  const d = it.d, a = ENG.side(d, i);
+  if(ENG.heldFams(it).has(ENG.famOf(d, i))) return {w: 'twice'};
+  const g = ENG.groupsOf(d, i).find(x => ENG.heldGroups(it).has(x));
+  if(g !== undefined) return {w: 'group', with: (it.mods.find(m => ENG.groupsOf(d, m.i).includes(g)) || {}).row};
+  const cap = ENG.capFor(it, a);
+  if(ENG.countSide(it, a) >= cap) return {w: 'full', side: a, cap};
+  if(ENG.lvlOf(d, i) > it.ilvl) return {w: 'lvl', lvl: ENG.lvlOf(d, i)};
+  return {w: 'none'};
+}
+/* A line only a desecration or a corruption puts on this base, against a search that asks for an item that
+   was never corrupted. The step that offers one is the engine's `take`, and what it leaves behind is the
+   engine's answer rather than a rule kept here. */
+function corruptWall(it, id){
+  const o = FIT.only.get(id);
+  if(!o || S.states.corrupted !== 'no') return null;
+  const t = ENG.clone(it);
+  ENG.STEP.take(t, ZERO, o);
+  return t.corrupt ? {w: 'corrupt'} : null;
+}
+/* One line of the search against one item: which of the modifiers behind that line can still go on, or the
+   nearest wall of the ones that cannot. A line the base has but does not roll — an implicit, a rune, what a
+   desecration or a corruption adds — sits outside the caps, so no rule of the sides bears on it. */
+function holdOn(it, id){
+  const no = corruptWall(it, id);
+  if(no) return {wall: no};
+  const list = FIT.at.get(id);
+  if(!list || !list.length) return {ok: true};
+  const left = new Set(ENG.candidates(it).list.map(e => e.i));
+  const fits = list.find(i => left.has(i));
+  if(fits !== undefined) return {ok: true, i: fits};
+  let wall = null, at = null;
+  for(const i of list){
+    const w = wallOf(it, i);
+    if(!wall || softer(w.w, wall.w) || (w.w === 'lvl' && wall.w === 'lvl' && w.lvl < wall.lvl)){ wall = w; at = i; }
+  }
+  return {wall, i: at};
+}
+/* The most lines of one group an item can hold at once, beside what is already on it: a side holds what its
+   cap has left, and a group holds one modifier, so it is whichever of the two runs out first. What the item
+   already rules out is left out of the count; the item level is not, because the search has a floor and an
+   item over it rolls the tier. A total is worked out from what is on the item rather than rolled, so a group
+   holding one is not bounded here. */
+function roomFor(it, g){
+  const keys = {p: new Set(), s: new Set()};
+  for(const m of g.mods){
+    if(m.id.startsWith('pseudo.')) return Infinity;
+    for(const i of FIT.at.get(m.id) || []){
+      const a = ENG.side(it.d, i), w = wallOf(it, i).w;
+      if((a !== 'p' && a !== 's') || w === 'twice' || w === 'group') continue;
+      keys[a].add(ENG.groupsOf(it.d, i).join(','));
+    }
+  }
+  return ['p', 's'].reduce((n, a) =>
+    n + Math.min(keys[a].size, Math.max(0, ENG.capFor(it, a) - ENG.countSide(it, a))), 0);
+}
+/* Every line of the search that names a modifier the item has to carry. "Must not have" is the one group
+   that says what is missing, so no rule of the item bears on it. */
+function rowsOf(){
+  const out = [];
+  S.groups.forEach((g, gi) => g.mods.forEach((m, mi) => {
+    if(g.t === 'not' || m.id.startsWith('pseudo.')) return;
+    out.push({k: gi + ':' + mi, gi, id: m.id, must: g.t === 'and'});
+  }));
+  return out;
+}
+const wants = g => g.t === 'or' ? 1 : g.t === 'count' ? (+g.n || 1) : 0;
+const held = v => !v || v.ok || v.wall.w === 'lvl';    // the item level is a floor, not a wall the item keeps
+
+/* The whole search against the item, on every shelf: a line one of them carries is a line an item can
+   carry, and a line none of them carries reports the softest wall it hit anywhere. */
+function fitPass(){
+  if(!FIT || !ENG || !narrowing() || !(S.rarity in RARITY)) return null;
+  const rows = rowsOf(), by = new Map(), room = new Map();
+  const keep = (k, v) => {
+    const had = by.get(k);
+    if(!had || (!had.ok && (v.ok || softer(v.wall.w, had.wall.w)))) by.set(k, v);
+  };
+  for(const it of shelves()){
+    // the must-haves go on first, in the order the search reads them, so every line after them is read
+    // against the item the player is asking for. A line whose only wall is the item level goes on too: the
+    // search has a floor, and an item over it rolls the tier.
+    for(const r of rows) if(r.must){
+      const v = holdOn(it, r.id);
+      if(v.i !== undefined && held(v)) ENG.addMod(it, v.i, ZERO).row = r.id;
+      keep(r.k, v);
+    }
+    for(const r of rows) if(!r.must) keep(r.k, holdOn(it, r.id));
+    S.groups.forEach((g, gi) => {
+      if(wants(g) && g.mods.length) room.set(gi, Math.max(room.get(gi) ?? 0, roomFor(it, g)));
+    });
+  }
+  // a group of "some of these" is held to two numbers at once: how many of them fit on one item, and how
+  // many of them an item can have at all
+  for(const [gi, cap] of room){
+    const mods = S.groups[gi].mods;
+    room.set(gi, Math.min(cap, mods.filter((m, mi) => held(by.get(gi + ':' + mi))).length));
+  }
+  const dead = rows.some(r => r.must && !held(by.get(r.k))) || [...room].some(([gi, n]) => wants(S.groups[gi]) > n);
+  return {by, room, dead};
+}
+
+/* ---------- what it says, and the one tap that settles it ----------
+   A reason is a fact about the item, never a sentence about the page. */
+function wallText(w, n){
+  if(w.w === 'twice') return 'Already in the search.';
+  if(w.w === 'group') return w.with ? 'This and ' + modText(w.with) + ' cannot sit on one item.'
+    : 'Two modifiers of one group cannot sit on one item.';
+  if(w.w === 'full') return w.cap ? ENG.sideWord(w.side) + ' are full.' : 'A Normal item carries no modifiers.';
+  if(w.w === 'lvl') return 'Rolls from item level ' + w.lvl + '.';
+  if(w.w === 'corrupt') return 'Only a corrupted item carries it.';
+  return n.n + ' cannot roll it';
+}
+const DROP = {act: 'delmod', label: 'Drop it'};
+const toLevel = lvl => ({act: 'ilvl', v: lvl, label: 'Item level ' + lvl});
+const wallFix = w => w.w === 'lvl' ? toLevel(w.lvl)
+  : w.w === 'corrupt' ? {act: 'state', v: 'corrupted', label: 'Corrupted: Any'} : DROP;
+/* The number asked for, against what this base rolls and the item level the tier that reaches it needs. A
+   ceiling ("at most") is never out of reach, and a line whose tiers two modifiers share keeps its ends
+   only, so there is no tier to hold it to. */
+function askWall(m){
+  const r = narrowing().ranges.get(m.id), v = +m.v;
+  if(!r || !r.tiers || (m.op || 'min') === 'max' || m.v === '' || m.v === undefined || !isFinite(v)) return null;
+  const at = askedLevel(), here = r.tiers.filter(t => t[2] <= at).map(t => t[1]);
+  const top = here.length ? Math.max(...here) : 0;
+  if(v <= top) return null;
+  const up = r.tiers.filter(t => t[1] >= v).map(t => t[2]).sort((x, y) => x - y)[0];
+  return up ? {w: 'lvl', at, top, lvl: up} : {w: 'over', hi: Math.max(...r.tiers.map(t => t[1]))};
+}
+const askText = (a, n) => a.w === 'lvl' ? 'Item level ' + a.at + ' rolls this to ' + a.top + '.'
+  : n.n + ' rolls this to ' + a.hi + '.';
+const askFix = a => a.w === 'lvl' ? toLevel(a.lvl) : {act: 'ask', v: a.hi, label: 'Ask ' + a.hi};
+
+function whyHTML(text, fix){
+  if(!text) return '';
+  return '<span class="tp-off">' + esc(text) + '</span>' + (fix ? '<button type="button" class="cr-foff" data-act="' +
+    fix.act + '" data-v="' + esc(fix.v ?? '') + '">' + esc(fix.label) + '</button>' : '');
+}
+function rowWhy(r, g, gi, m, mi){
+  const n = narrowing();
+  if(!n || m.id.startsWith('pseudo.')) return '';
+  // a mod that was already here when the base was picked stays, and says where it stands
+  if(!n.ids.has(m.id)) return whyHTML(n.n + ' cannot roll it', g.t === 'not' ? null : DROP);
+  if(!r) return '';
+  const v = r.by.get(gi + ':' + mi);
+  if(v && !v.ok) return whyHTML(wallText(v.wall, n), wallFix(v.wall));
+  const a = g.t === 'not' ? null : askWall(m);
+  return a ? whyHTML(askText(a, n), askFix(a)) : '';
+}
+function groupWhy(r, gi, g){
+  const n = r && r.room.get(gi);
+  if(n === undefined || wants(g) <= n) return '';
+  return n ? whyHTML('An item holds at most ' + n + ' of these.', g.t === 'count' ? {act: 'count', v: n, label: 'Ask ' + n} : null)
+    : whyHTML('No item carries any of these.', null);
+}
+/* The facts, drawn where they belong: beside the line they are about, under the group they bound, and by the
+   button that opens the search. Worked out again whenever a number moves, without redrawing the page, so a
+   box being typed into keeps the cursor. */
+function paintFit(){
+  const r = fitPass();
+  EL.querySelectorAll('.tp-group').forEach(sec => {
+    const gi = +sec.dataset.g, g = S.groups[gi];
+    if(!g) return;
+    sec.querySelectorAll('.tp-mod').forEach(row => {
+      const mi = +row.dataset.m, box = row.querySelector('.tp-why');
+      if(box && g.mods[mi]) box.innerHTML = rowWhy(r, g, gi, g.mods[mi], mi);
+    });
+    const gw = sec.querySelector('.tp-gwhy');
+    if(gw) gw.innerHTML = groupWhy(r, gi, g);
+  });
+  const none = EL.querySelector('.tp-none');
+  if(none) none.textContent = r && r.dead ? 'No item carries all of this. The search finds nothing.' : '';
 }
 
 /* ---------- defence types (gear kinds only) ----------
@@ -343,17 +579,15 @@ function groupHTML(g, gi){
   return '<section class="tp-group" data-g="' + gi + '"><div class="tp-ghd"><h4>' + G.label + '</h4><span class="note">' + G.hint + '</span>' +
     '<button type="button" class="btn tp-del" data-act="delgroup" title="Remove this group">Remove</button></div>' +
     (g.t === 'count' ? '<div class="trow"><span>How many</span>' + vnum('n', g.n ?? 1, '', g.mods.length > 1 ? {lo: 1, hi: g.mods.length, step: 1, heat: false} : null) + '</div>' : '') +
+    (wants(g) ? '<p class="tp-why tp-gwhy"></p>' : '') +
     g.mods.map((m, mi) => {
       const info = MOD.get(m.id) || {t: m.id, k: ''};
-      const n = narrowing();
-      // a mod that was already here when the base was picked stays, and says where it stands
-      const off = n && !m.id.startsWith('pseudo.') && !n.ids.has(m.id)
-        ? '<span class="tp-off">' + esc(n.n) + ' cannot roll it</span>' : '';
-      return '<div class="tp-mod" data-m="' + mi + '"><span class="tp-mtext">' + esc(info.t) + ' <span class="pill">' + (KIND[info.k] || '') + '</span>' + off + '</span>' +
+      // where the item cannot carry this line, the fact and the way out land under it (paintFit)
+      return '<div class="tp-mod" data-m="' + mi + '"><span class="tp-mtext">' + esc(info.t) + ' <span class="pill">' + (KIND[info.k] || '') + '</span></span>' +
         (g.t === 'and' || g.t === 'count' || g.t === 'or' ? '<div class="seg" data-k="op">' + OPS.map(([o, l]) =>
           '<button type="button" data-v="' + o + '" aria-pressed="' + ((m.op || 'min') === o) + '">' + l + '</button>').join('') + '</div>' + vnum('v', m.v ?? '', 'any', modSlide(m.id, info)) : '') +
         (g.t === 'weight' ? '<span class="note">counts ×</span>' + vnum('w', m.w ?? 1, '', {lo: 1, hi: 10, step: 1, heat: false}) : '') +
-        '<button type="button" class="btn tp-x" data-act="delmod" title="Remove">Remove</button></div>';
+        '<button type="button" class="btn tp-x" data-act="delmod" title="Remove">Remove</button><p class="tp-why"></p></div>';
     }).join('') +
     (g.t === 'weight' ? '<div class="trow"><span>Total at least</span>' + vnum('min', g.min ?? '', 'any', totalSlide(g)) + '</div>' : '') +
     '<div class="tp-add" data-picker="mod"></div></section>';
@@ -395,7 +629,8 @@ function draw(){
         '<label class="note tonline"><input type="checkbox" data-k="online"' + (S.online ? ' checked' : '') + '> Online sellers only</label></div>' +
     '</div>' +
     '<div class="panel tp-out"><p class="tp-sum">' + esc(summary()) + '</p>' +
-      '<div class="tgo"><button type="button" class="btn tcopy">Copy link</button><a class="btn gold" target="_blank" rel="noopener" href="' + esc(url) + '">Open on trade ↗</a></div></div>';
+      '<div class="tgo"><button type="button" class="btn tcopy">Copy link</button><a class="btn gold" target="_blank" rel="noopener" href="' + esc(url) + '">Open on trade ↗</a></div>' +
+      '<p class="tp-none"></p></div>';
 
   // the chosen base's own table, the first time it is asked for: it narrows once it is in, and a table that
   // does not come leaves the whole list where it was rather than half of it
@@ -410,15 +645,17 @@ function draw(){
       commit(true);
     });
   });
+  paintFit();
   wire();
 }
 function commit(focusLast){ save(); const y = scrollY; draw(); scrollTo(0, y);
   if(focusLast){ const f = [...EL.querySelectorAll('.tp-add input')].pop(); if(f) f.focus({preventScroll: true}); } }
 function repaint(){ const y = scrollY; draw(); scrollTo(0, y); }   // the page again, nothing about the search changed
-function refresh(){   // values changed: keep the inputs, redo the summary and the link
+function refresh(){   // values changed: keep the inputs, redo the summary, the link and what the item can carry
   save();
   EL.querySelector('.tp-sum').textContent = summary();
   EL.querySelector('.tp-out .gold').href = searchURL(D.market ? D.market.league : 'Standard', query());
+  paintFit();
 }
 
 let wired = false;
@@ -458,6 +695,12 @@ function wire(){
     if(b.dataset.act === 'narrow'){ S.narrow = true; return commit(); }
     if(b.dataset.act === 'delgroup'){ S.groups.splice(+g.dataset.g, 1); return commit(); }
     if(b.dataset.act === 'delmod'){ S.groups[+g.dataset.g].mods.splice(+m.dataset.m, 1); return commit(); }
+    // the one tap out of a line the item cannot carry: the level it rolls at, the roll it reaches, or how
+    // many of a group an item holds
+    if(b.dataset.act === 'ilvl'){ S.ilvl = b.dataset.v; return commit(); }
+    if(b.dataset.act === 'ask'){ S.groups[+g.dataset.g].mods[+m.dataset.m].v = b.dataset.v; return commit(); }
+    if(b.dataset.act === 'count'){ S.groups[+g.dataset.g].n = b.dataset.v; return commit(); }
+    if(b.dataset.act === 'state'){ S.states[b.dataset.v] = 'any'; return commit(); }
     if(seg && seg.dataset.k === 'op'){ S.groups[+g.dataset.g].mods[+m.dataset.m].op = b.dataset.v; return commit(); }
     if(seg && seg.dataset.state){ S.states[seg.dataset.state] = b.dataset.v; return commit(); }
     if(b.classList.contains('tcopy')){
