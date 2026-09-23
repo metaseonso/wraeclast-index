@@ -1,11 +1,12 @@
 /* Real prices. Currency: the in-game Currency Exchange, from GGG's public hourly feed (tools/exchange.py ->
    exchange.json, sent in by the data server: worker/files.js). Everything else: real listings on the official
    trade site, checked as below.
-   The checks run on the data server (tools/vm/), not here (the trade site blocks Cloudflare's shared addresses):
-   once an hour tools/pricepull.py asks GET /api/prices/state what is oldest, spreads its checks over the hour,
-   and sends the results to POST /api/prices/ingest. It signs in with the data server's key (worker/files.js
-   fromServer). Until the move is done, GitHub's own short-lived token (OpenID Connect) from this repo's prices
-   workflow on main works too: this checks GitHub's signature and that the token is for that workflow.
+   The checks run on GitHub Actions (.github/workflows/prices.yml), not here (the trade site blocks
+   Cloudflare's shared addresses): once an hour tools/pricepull.py asks GET /api/prices/state what is oldest,
+   spreads its checks over the hour, and sends the results to POST /api/prices/ingest. It signs in with
+   GitHub's own short-lived token (OpenID Connect) from that workflow on main: this checks GitHub's signature
+   and that the token is for that workflow. A key of its own (worker/files.js fromServer) still works too, for
+   a run by hand somewhere else.
 
    What is checked (the key in the trade_prices table):
      uniq:<index id>            uniques: the 10 cheapest listings (online sellers)

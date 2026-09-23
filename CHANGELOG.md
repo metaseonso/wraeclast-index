@@ -3,6 +3,16 @@
 The full list of changes. The public patch notes (data/changelog.json, shown on the site) stay short.
 Add the details here first, then a short public line there.
 
+## Next — The end of the data server that was never set up
+
+- Ticket 69. `tools/vm/` described deploying the hourly jobs to an Oracle server over SSH that was never set
+  up — `deploy.sh --status` failed at the first hop, and the owner nearly deployed to it. The jobs have always
+  really run on GitHub Actions (`tools/pricepull.py` in `.github/workflows/prices.yml`, `tools/market.py`,
+  `tools/exchange.py` and `tools/leagues.py` in `pages.yml`); nothing of ours needs deploying anywhere.
+  `tools/vm/` is deleted, the README says where the jobs run, and every comment that pointed at it
+  (`tools/exchange.py`, `market.py`, `leagues.py`, `pricepull.py`, `sitedata.py`, `worker/files.js`,
+  `worker/prices.js`, `wrangler.jsonc`) points at the workflow instead.
+
 ## Next — Every interaction the game's wording names, and a way to settle the ones nobody has
 
 - Ticket 58. The keywords were mapped and the interactions were not. "Recovery from your Life Flasks cannot

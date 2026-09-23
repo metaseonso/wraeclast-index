@@ -4,9 +4,8 @@
 what it actually traded for: divines (or exalted or chaos, turned into divines at that hour's own rate) paid,
 divided by the amount bought, over the last 24 hours.
 
-Runs every hour on the data server (tools/vm/; until the move is done, also in .github/workflows/pages.yml
-after tools/market.py, which gives the league). It keeps its running totals in exchange-state.json: on the data
-server in WI_DATA_DIR; in GitHub Actions, published with the site so the next run continues from it. With no
+Runs every hour in .github/workflows/pages.yml, after tools/market.py, which gives the league. It keeps its
+running totals in exchange-state.json, published with the site so the next run continues from it. With no
 totals yet it takes that published copy once, else a first run fills in the last 14 days, so trends show at once.
 Where files go and how they reach the site: tools/sitedata.py.
 

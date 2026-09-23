@@ -300,7 +300,7 @@ worker. Only the paths in `wrangler.jsonc` under `run_worker_first` cost a reque
 
 | | Option A — the board | Option B — the ledger |
 |---|---|---|
-| New fetch job | one, **once a day**, on the data server (`tools/vm/`). ~12 outbound reads: 6 channel feeds, 2 search feeds, 4 strategy pages | **none.** It uses the hourly Exchange feed and the hourly trade job, both already running |
+| New fetch job | one, **once a day**, a GitHub Actions job of its own. ~12 outbound reads: 6 channel feeds, 2 search feeds, 4 strategy pages | **none.** It uses the hourly Exchange feed and the hourly trade job, both already running |
 | Cloudflare requests added | **0** per visit if the file ships in the repo like `data/farms.json`; +1 per Farms visit if it goes through `POST /api/data/put` | **0** |
 | D1 writes added | 0, or 1 a day through the ingest | **0.** The run log is in the player's browser |
 | D1 rows stored | 0 | 0 |

@@ -3,8 +3,8 @@ the league name, from poe.ninja's public economy API. NO PRICES: the site shows 
 the in-game Currency Exchange (tools/exchange.py) and live trade listings (tools/pricepull.py); the site's worker
 (worker/prices.js) builds the /data/market.json that pages read. poe.ninja's prices are dropped here.
 
-Runs every hour on the data server (tools/vm/; until the move is done, also in .github/workflows/pages.yml),
-and by hand:  python tools/market.py    (where files go and how they reach the site: tools/sitedata.py)
+Runs every hour in .github/workflows/pages.yml, and by hand:  python tools/market.py
+(where files go and how they reach the site: tools/sitedata.py)
 poe.ninja's API guidelines (https://poe.ninja/docs/api): public economy endpoints only, a descriptive
 User-Agent, at most hourly, low concurrency. This script makes about 24 requests, one after another.
 
