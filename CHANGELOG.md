@@ -3,6 +3,48 @@
 The full list of changes. The public patch notes (data/changelog.json, shown on the site) stay short.
 Add the details here first, then a short public line there.
 
+## Next — Bosses: is the kill worth it, and how much of it is luck
+
+- **The meter.** Ticket 59. A boss card priced the way in and the drops and never said whether killing it
+  paid. It does now: four rows a run — **Way in**, **A kill**, **An hour**, **Settles** — inside the card's
+  own frame, `assets/bosses.js` and a `.bo-roi` block in `assets/app.css`. No new component, no new job, no
+  new file: the figures are worked in the browser out of `data/bossprices.json` and `data/bosses.json`, both
+  already loaded by the tab.
+- **Every rate is a range.** A rate is what a sample landed on, so each one draws its 95% Wilson band on the
+  sample the wiki took, and the band is shown wherever the rate is: `42% · 31%–54% over 71 kills`. The wiki's
+  own shapes are all kept — a number, `~1.5%`, `23-34%`, `19.5% (17%)` — and a ceiling (`<1%`) keeps the
+  wiki's ceiling and takes no band, because nothing was counted to widen.
+- **What is counted, and what is not.** A rate row with no sample and a drop with no real price are both left
+  out and named under the rows: *Left out: 28 with no sample.* Of 116 rate rows in the file, 82 carry a
+  sample. A boss with a rate table the wiki never counted draws the four rows saying `no sample` and no
+  figure; a boss with no rate table draws no meter at all. **9 of 104 bosses draw one**, and the tab says so
+  under the list.
+- **A run is one way the fight is done.** The wiki splits a boss by mode (the Arbiter is Regular or Uber) and
+  by the condition it writes into a group (*If the ring is taken immediately…*); a row that names neither
+  belongs to every run. Two runs are never added together — that would count one drop twice — so the Arbiter
+  and the Vessel each draw two meters.
+- **The way in** is the cheapest entry that is really priced, named on the row, with how many priced entries
+  there are. How many of one an entry takes comes off the item's own line and nothing else: *Combine 300
+  Splinters* makes Xesht's cheapest door 300 × 0.005276 = **1.58 div** against 8.90 for the key.
+- **The arithmetic**, worked on Olroth, Origin of the Fall (PoE2 Wiki, 71 kills, patch 0.3.0; prices the site's
+  own, 23 Sep 2026). Wilson at z = 1.96 on 42% over 71 gives 31.2%–53.6%; 12.5% gives 6.7%–22.2%; ~1.5%
+  gives 0.28%–7.7% — a 28-fold span, which is the point. Times the price of each drop and summed, a kill is
+  **21.6 to 60.2 div**, against a 3.73 div key. The point rates give mu = 37.65 div and, each drop counted on
+  its own, sigma = 77.13 div — Uhtred's Exodus alone (18% of 198.3 div) is 5,804 of the 5,950 variance. So
+  n = (1.96 × 77.13 ÷ (0.25 × 37.65))² = **259 kills**, 43 hours at 6 an hour. For one drop that same sum is
+  1.96/√k: 61 of the thing seen, the table in `docs/proposal-farms.md`.
+- **Kills an hour is the player's**, 1 to 30 on a slider, kept in their browser (`wi.bosskph`) and never ours.
+  It moves the two rows that stand on it and nothing else; the card's own copy is rewritten with them, so a
+  step back and forward comes back at the number they set.
+- **The rule this ticket is bound by** is unchanged: no value per kill, ever, as fact. Nothing here is a
+  single number, every rate names the PoE2 Wiki and the size of its sample on screen, the hours-to-settle sits
+  beside the money so a player can see how much of it is luck, and where the sample is missing the meter says
+  so and draws nothing.
+- Checked in headless Chrome at 375×812 touch and at 1180 desktop, against this worktree's files with the
+  site's published prices: Olroth's range, source and settle figure; Zarokh's four rows saying `no sample`;
+  Akthi drawing no meter; the slider moving 6 to 12 and holding through Back and Forward. No console errors,
+  nothing scrolls sideways. guard 8 ok, 0 failed.
+
 ## Next — Attack Speed is a card, and every phrase like it is counted
 
 - **The card.** Ticket 66. Five small passives answer to the name, so `tools/nodelinks.py` left the phrase

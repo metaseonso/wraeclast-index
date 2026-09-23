@@ -179,6 +179,10 @@ function meterOf(r, run){
     mu += b.pt * p.v; vr += p.v * p.v * b.pt * (1 - b.pt);
   }
   if(out.counted && mu > 0) out.kills = Math.ceil(Math.pow(Z * Math.sqrt(vr) / (NEAR * mu), 2));
+  // nothing counted: the row says which of the two it is short of, and never the wrong one
+  out.why = out.counted ? '' : out.nosample >= out.noprice ? 'no sample' : 'no price';
+  out.short = out.counted ? '' : out.rows + ' drops, none ' +
+    (out.nosample && out.noprice ? 'sampled or priced' : out.nosample ? 'sampled' : 'priced');
   const ways = r.access.filter(x => x.px && num(x.px.v))
     .map(x => ({n: x.n, each: eachOf(x), div: eachOf(x) * x.px.v}))
     .sort((a, x) => a.div - x.div);
@@ -206,18 +210,16 @@ const figHTML = (cls, label, value, sub) => '<div class="bo-fig' + (cls ? ' ' + 
 const wayFig = m => figHTML('', 'Way in', m.way ? '<b>' + moneyHTML(m.way.div) + '</b>' : miss('no price'),
   m.way ? m.way.n + (m.way.each > 1 ? ' ×' + m.way.each : '') +
     (m.ways > 1 ? ' · cheapest of ' + m.ways + ' priced' : '') : 'no entry priced');
-const killFig = m => figHTML('', 'A kill', m.counted ? span(m.lo, m.hi) : miss('no sample'),
-  m.counted ? m.counted + ' of ' + m.rows + ' drops · ' + m.sample.join(' and ') + ' kills sampled'
-    : m.rows + ' drops, none sampled');
+const killFig = m => figHTML('', 'A kill', m.counted ? span(m.lo, m.hi) : miss(m.why),
+  m.counted ? m.counted + ' of ' + m.rows + ' drops · ' + m.sample.join(' and ') + ' kills sampled' : m.short);
 const hourFig = m => figHTML('bo-hr', 'An hour',
-  m.counted && m.way ? span((m.lo - m.way.div) * KPH, (m.hi - m.way.div) * KPH) : miss(m.counted ? 'no price' : 'no sample'),
+  m.counted && m.way ? span((m.lo - m.way.div) * KPH, (m.hi - m.way.div) * KPH) : miss(m.counted ? 'no price' : m.why),
   m.counted && m.way ? 'at ' + KPH + ' kills an hour' : m.counted ? 'the way in has none' : 'nothing to work it out from');
 const settleFig = m => figHTML('bo-set', 'Settles',
-  m.kills ? '<b>' + m.kills.toLocaleString() + ' kills</b>' : miss('no sample'),
+  m.kills ? '<b>' + m.kills.toLocaleString() + ' kills</b>' : miss(m.why || 'no sample'),
   m.kills ? hrs(m.kills / KPH) + ' hours at ' + KPH + ' an hour' : 'nothing to work it out from');
 
-function runHTML(r, run, i){
-  const m = meterOf(r, run);
+function runHTML(m, run, i){
   const left = [m.nosample ? m.nosample + ' with no sample' : '', m.noprice ? m.noprice + ' with no price' : '']
     .filter(Boolean);
   return '<div class="bo-roi" data-run="' + i + '">' +
@@ -225,21 +227,23 @@ function runHTML(r, run, i){
     wayFig(m) + killFig(m) + hourFig(m) + settleFig(m) +
     (left.length ? '<p class="note">Left out: ' + esc(left.join(', ')) + '.</p>' : '') + '</div>';
 }
-/* The whole section. A boss the wiki never sampled draws no meter at all: where there is no sample there is
-   no figure, and a blank would read as a zero. */
+/* The whole section. A boss with no rate table draws no meter at all; a table the wiki never counted draws
+   the rows and no figure, because a blank would read as a zero and a number would be a guess. The slider is
+   there only where a figure moves with it. */
 function roiHTML(r){
   const b = r.b;
   if(!b.rates || !((b.rates.rows || []).length)) return '';
-  const runs = runsOf(b);
+  const runs = runsOf(b).map(run => ({run, m: meterOf(r, run)}));
+  const live = runs.some(x => x.m.counted);
   return '<div class="bo-sec bo-worth"><p class="lbl">Worth it</p>' +
-    runs.map((run, i) => runHTML(r, run, i)).join('') +
-    '<label class="bo-kph"><span class="lbl">Kills an hour <b>' + KPH + '</b></span>' +
-      '<input type="range" min="1" max="30" step="1" value="' + KPH + '" data-do="kph" aria-label="Kills an hour"></label>' +
+    runs.map((x, i) => runHTML(x.m, x.run, i)).join('') +
+    (live ? '<label class="bo-kph"><span class="lbl">Kills an hour <b>' + KPH + '</b></span>' +
+      '<input type="range" min="1" max="30" step="1" value="' + KPH + '" data-do="kph" aria-label="Kills an hour"></label>' : '') +
     '<p class="note">' + esc(rateSrc(b.rates)) + '</p>' +
     '<p class="note">Prices: the in-game Currency Exchange and the trade site' +
-      (BP && BP.updated ? ', checked ' + esc(ago(BP.updated)) : '') + '. Kills an hour is yours.</p>' +
-    '<p class="note">Settles: the kills it takes for the average to sit within a quarter of itself, ' +
-      '19 times in 20.</p></div>';
+      (BP && BP.updated ? ', checked ' + esc(ago(BP.updated)) : '') + '.</p>' +
+    (live ? '<p class="note">Kills an hour is yours. Settles: the kills it takes for the average to sit ' +
+      'within a quarter of itself, 19 times in 20.</p>' : '') + '</div>';
 }
 // a boss the meter can answer for: one run with a sampled rate and a real price on the same drop
 const drawsMeter = r => runsOf(r.b).some(run => meterOf(r, run).counted > 0);
