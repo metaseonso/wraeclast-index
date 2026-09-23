@@ -117,8 +117,10 @@
 .flow-run{margin:0; padding:0; list-style:none; display:flex; flex-direction:column; gap:19px; counter-reset:flow}
 .flow-st{position:relative; counter-increment:flow; border:1px solid var(--line); border-radius:6px;
   padding:6px 9px 7px; background:var(--sunken)}
-.flow-st b{display:block; font-size:12.5px; font-weight:600; color:var(--text)}
-.flow-st b::before{content:counter(flow) '. '; font-weight:500; color:var(--faint)}
+.flow-st b{display:flex; align-items:center; gap:6px; font-size:12.5px; font-weight:600; color:var(--text)}
+.flow-st b::before{content:counter(flow) '.'; font-weight:500; color:var(--faint)}
+/* the step's own mark, in the accent, so a chart reads as shapes before it reads as words */
+.flow-st b .mk{flex:none; width:15px; height:15px; color:var(--accent)}
 .flow-st span{display:block; margin-top:2px; font-size:11.5px; line-height:1.45; color:var(--muted)}
 /* the arrow into a step: a hairline up into the gap, with a head on it */
 .flow-st + .flow-st::before{content:''; position:absolute; left:50%; top:-19px; width:1px; height:12px;

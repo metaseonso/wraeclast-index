@@ -449,8 +449,9 @@ function richHTML(it, at, max){
 function flowHTML(it, full){
   if(!it.fl || !it.fl.length || !full) return '';
   // the chart's own labels stay plain; what a step says is a line like any other, and carries its marks
-  const run = st => '<ol class="flow-run">' + st.map(([n, note]) =>
-    '<li class="flow-st"><b>' + esc(n) + '</b>' + (note ? '<span>' + drawLine(it, note) + '</span>' : '') + '</li>'
+  const run = st => '<ol class="flow-run">' + st.map(([n, note, mk]) =>
+    '<li class="flow-st"><b>' + (MARKS[mk] ? markHTML(mk) : '') + esc(n) + '</b>' +
+    (note ? '<span>' + drawLine(it, note) + '</span>' : '') + '</li>'
   ).join('') + '</ol>';
   const cols = cs => '<div class="flow-cols">' + cs.map(c =>
     '<div class="flow-col"><b>' + esc(c.h) + '</b><ul>' + (c.ls || []).map(x => '<li>' + drawLine(it, x) + '</li>').join('') +
@@ -473,6 +474,23 @@ export const MARKS = {
   say:    '<path d="M4.6 3.5h9.8c1.5 0 2.7 1.2 2.7 2.7v4.2c0 1.5-1.2 2.7-2.7 2.7H9.9l-3.6 3v-3H4.6' +
           'c-1.5 0-2.7-1.2-2.7-2.7V6.2c0-1.5 1.2-2.7 2.7-2.7z"/>',
   ask:    '<circle cx="10" cy="10" r="7.6"/><path d="M7.7 8a2.3 2.3 0 1 1 2.8 2.2v1.5"/><path d="M10.5 14h.01"/>',
+  /* the steps a flowchart runs through (tools/mechanics.py names the one each step wears). A step with no
+     mark draws none, so a new step is a line in that tool and nothing here until it wants a shape. */
+  base:   '<path d="M15.8 4.2l-7 7M13 3.4h3.6V7M8.8 11.2l-1.6 1.6M5.4 10.6L3.6 12.4l4 4 1.8-1.8"/>',
+  add:    '<circle cx="10" cy="10" r="7"/><path d="M10 6.4v7.2M6.4 10h7.2"/>',
+  turn:   '<path d="M4 8h9l-2.6-2.6M16 12H7l2.6 2.6"/>',
+  copy:   '<rect x="3.4" y="3.4" width="8.6" height="8.6" rx="1.6"/><path d="M8 16.6h6.6a2 2 0 0 0 2-2V8"/>',
+  pct:    '<path d="M5.6 14.4L14.4 5.6"/><circle cx="7.2" cy="7.2" r="1.9"/><circle cx="12.8" cy="12.8" r="1.9"/>',
+  times:  '<path d="M5.4 5.4l9.2 9.2M14.6 5.4l-9.2 9.2"/>',
+  crit:   '<path d="M10 2.6v3.2M10 14.2v3.2M2.6 10h3.2M14.2 10h3.2M4.8 4.8l2.3 2.3M12.9 12.9l2.3 2.3' +
+          'M15.2 4.8l-2.3 2.3M7.1 12.9l-2.3 2.3"/>',
+  dodge:  '<path d="M3.2 15.4C6 8.6 10.6 5.4 16.4 4.2M12.6 3.4l3.8.8-.8 3.8"/>',
+  plate:  '<rect x="3.6" y="6" width="12.8" height="8.6" rx="1.4"/><path d="M3.6 10.3h12.8M10 6v8.6"/>',
+  res:    '<path d="M10 2.8l6.2 3.6v7.2L10 17.2 3.8 13.6V6.4L10 2.8z"/>',
+  esh:    '<path d="M10 2.8l5.6 1.9v4.6c0 3-2.2 5.3-5.6 6.6-3.4-1.3-5.6-3.6-5.6-6.6V4.7L10 2.8z"/>' +
+          '<path d="M10.7 6.6L8.4 10.2h3.2l-2.3 3.4"/>',
+  drop:   '<path d="M10 3.2c3 3.1 4.6 5.2 4.6 7.2a4.6 4.6 0 0 1-9.2 0c0-2 1.6-4.1 4.6-7.2z"/>',
+  life:   '<path d="M10 15.8S4.2 12.3 4.2 8.4A3.3 3.3 0 0 1 10 6.2a3.3 3.3 0 0 1 5.8 2.2c0 3.9-5.8 7.4-5.8 7.4z"/>',
 };
 export const markHTML = m => '<svg class="mk" viewBox="0 0 20 20" aria-hidden="true">' + (MARKS[m] || '') + '</svg>';
 function offerHTML(it, f, full){

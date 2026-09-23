@@ -181,17 +181,17 @@ CARDS = [
      'fl': [
          {'h': 'The hit', 'st': [
              ['Base damage', 'Attacks use your Martial Weapon’s stats unless the skill says otherwise. '
-                             'Spells use the damage listed on the skill.'],
-             ['Added damage', 'An Adds line adds damage of its own type to the base, before conversion.'],
-             ['Damage Conversion', 'The damage changes type. Worked out on the base, before any increase.'],
+                             'Spells use the damage listed on the skill.', 'base'],
+             ['Added damage', 'An Adds line adds damage of its own type to the base, before conversion.', 'add'],
+             ['Damage Conversion', 'The damage changes type. Worked out on the base, before any increase.', 'turn'],
              ['Gained as extra damage', 'A copy is added as another damage type. The original is still '
-                                        'dealt, and the copy scales with the new type only.'],
+                                        'dealt, and the copy scales with the new type only.', 'copy'],
              ['Increased and reduced', 'Per damage type: every increased and reduced modifier to it is added '
                                        'into one sum, and the sum is applied once. Conversion has already '
-                                       'settled which type the damage is, so this is the new type’s sum.'],
-             ['More and less', 'Each more and less modifier is its own multiplier, applied after that sum.'],
+                                       'settled which type the damage is, so this is the new type’s sum.', 'pct'],
+             ['More and less', 'Each more and less modifier is its own multiplier, applied after that sum.', 'times'],
              ['Critical Hits', 'Critical Hits deal +100% extra damage by default. Critical Damage Bonuses '
-                               'modify that.'],
+                               'modify that.', 'crit'],
          ]},
          # the two that get read as the same thing. Side by side on a wide card, stacked on a phone.
          {'h': 'Conversion and extra damage', 'cols': [
@@ -221,12 +221,12 @@ CARDS = [
          ]},
          {'h': 'What reduces it', 'st': [
              ['Evasion', 'Accuracy is checked against the target’s Evasion. An Evaded Hit does not Hit '
-                         'at all.'],
-             ['Block', 'Blocking completely prevents the damage of an incoming Hit.'],
+                         'at all.', 'dodge'],
+             ['Block', 'Blocking completely prevents the damage of an incoming Hit.', 'shield'],
              ['Armour', 'Armour reduces damage taken from Hits. By default it applies only to Physical '
-                        'damage, and it is more effective against smaller hits.'],
+                        'damage, and it is more effective against smaller hits.', 'plate'],
              ['Resistances', 'Resistances reduce damage taken of the matching damage type — Fire, Cold, '
-                             'Lightning or Chaos — up to a Maximum.'],
+                             'Lightning or Chaos — up to a Maximum.', 'res'],
          ]},
      ]},
     {'id': 'IncreasedReduced', 'n': 'Increased and reduced', 'words': ['increased', 'reduced'], 'gate': 'pct',
@@ -268,9 +268,9 @@ CARDS = [
          {'h': 'Does any damage arrive', 'st': [
              ['Evasion', 'Evasion Rating grants a chance to Evade enemy Hits, preventing them from Hitting '
                          'you at all. The chance also depends on the attacker’s Accuracy, and a Hit’s chance '
-                         'to land never falls below 5%.'],
+                         'to land never falls below 5%.', 'dodge'],
              ['Block', 'Blocking completely prevents the damage of an incoming Hit. You still take the Stun '
-                       'from it, and you cannot Block while Stunned or Frozen.'],
+                       'from it, and you cannot Block while Stunned or Frozen.', 'shield'],
          ]},
          # the two that get read as the same thing. Side by side on a wide card, stacked on a phone.
          {'h': 'Armour and Resistances', 'cols': [
@@ -294,10 +294,10 @@ CARDS = [
          {'h': 'What takes what is left', 'st': [
              ['Energy Shield', 'Energy Shield protects your Life by taking damage instead. Chaos damage '
                                'removes twice as much. Damage from Bleeding and Poison bypasses it to '
-                               'remove Life directly.'],
+                               'remove Life directly.', 'esh'],
              ['Mind Over Matter', 'Mind Over Matter takes all damage from Mana before Life. It takes what '
-                                  'Energy Shield did not.'],
-             ['Life', 'What is left comes off Life.'],
+                                  'Energy Shield did not.', 'drop'],
+             ['Life', 'What is left comes off Life.', 'life'],
          ]},
      ]},
     {'id': 'ResistanceMax', 'n': 'Resistances and the maximum',
