@@ -245,6 +245,18 @@ export const FIELDS = {
   launch:     {type: 'launch', at: 'plan', slot: 'body'},
   runbody:    {type: 'own', slot: 'body'},
 
+  /* ---------- the character builder ----------
+     A card that holds a build file rather than a row of the index: what has been sent to its pool, what is
+     chosen out of it, what each budget still has room for, and the tree (docs/proposal-builder.md). The
+     budgets are the bench's item panel, one row per slot with its count on the right; the gear preview is a
+     tile per slot that draws the card the site already draws; the tree preview is the main tree with what is
+     allocated lit. Its own module keeps the files and answers the card's controls (`own` below, ACTS.go). */
+  buildfiles: {type: 'own', slot: 'body'},
+  budgets:    {type: 'budget', at: 'build', slot: 'body'},
+  geartiles:  {type: 'gear', at: 'build', slot: 'body'},
+  treemap:    {type: 'tree', at: 'build', slot: 'body'},
+  buildtab:   {type: 'own', slot: 'body'},
+
   spark:    {type: 'spark', slot: 'foot', every: 1},
   usage:    {type: 'usage', slot: 'foot', every: 1},
   // how thin the market behind the price is, off the price row: fewer than `under` listed says so
@@ -273,6 +285,13 @@ export const ACTS = {
   bench: {label: 'Crafting bench', own: './craftsim.js', go: 'openBench',
           only: {c: {at: 's', of: ['Currency', 'Essences', 'Omens', 'Runes', 'Soul Cores', 'Idols',
                                    'Catalysts', 'Abyssal Bones', 'Verisium']}}},
+  /* Every card a build can hold travels to a build file, the same way a base travels to the bench: a gem, a
+     unique, a base item, a passive, a cluster, and the gems the market lists as currency. It opens a row
+     inside the popup with one checkbox per open file, so a card is in the pool of as many as it fits, and
+     nothing is chosen by ticking. A currency that is not a gem has nothing to hand a build, so it has no
+     pool act. docs/proposal-builder.md, "How a card gets to a build file". */
+  pool:  {label: 'Add to a build', own: './builder.js', go: 'openPool',
+          only: {c: {at: 's', of: ['Uncut Gems', 'Lineage Supports']}}},
   open:  {label: 'Open in '},
 };
 
@@ -329,7 +348,7 @@ export const KINDS = [
    sprite: 'gems', px: {as: 'c', at: 'li'},
    builds: [{at: 'w', key: 'skills'}, {key: 'allskills'}],
    fields: [...HEAD, 'gemreq', 'lineage', 'usetime', 'cost', 'spirit', ...BODY, ...FOOT],
-   acts: ['trade', 'full', 'open'],
+   acts: ['trade', 'pool', 'full', 'open'],
    rel: ['granted', 'named', 'namedby', 'cat']},
 
   {k: 'u', one: 'Unique', tone: 'c-unique', many: 'Uniques', place: 'Uniques', sec: 'uniques', link: 'explore#uniques=@n', mark: 'ls',
@@ -337,7 +356,7 @@ export const KINDS = [
    sprite: 'uniques', make: {base: 'sub1'}, few: {at: 'ls', under: 10},
    builds: [{key: 'items'}],
    fields: [...HEAD, 'reqs', 'corrupt', 'limit', 'group', 'props', 'implicit', ...BODY, ...FOOT],
-   acts: ['trade', 'full', 'open'],
+   acts: ['trade', 'pool', 'full', 'open'],
    rel: ['base', 'variants', 'grants', 'named', 'namedby', 'cat']},
 
   {k: 'p', one: 'Passive', tone: 'c-keystone', many: 'Passives', place: 'Passive tree', sec: 'tree', link: 'explore#tree=@n', mark: 'ls',
@@ -345,7 +364,7 @@ export const KINDS = [
    kw: 'name',
    builds: [{at: 's', starts: 'Keystone', key: 'keypassives'}, {at: 'asc', key: 'keypassives'}, {at: 'rec', key: 'anointed'}],
    fields: [...HEAD, 'asc', 'region', 'ontree', ...BODY, ...FOOT],
-   acts: ['full', 'open'],
+   acts: ['pool', 'full', 'open'],
    rel: [...KWUSE, 'grants', 'clusterof', 'named', 'namedby', 'cat']},
 
   /* A cluster: the notable that makes a stretch of the tree worth walking to, and the nodes you walk through
@@ -356,14 +375,14 @@ export const KINDS = [
   {k: 't', one: 'Cluster', many: 'Clusters', place: 'Passive tree', sec: 'tree', link: 'explore#tree=@n', mark: 'ls',
    index: true, search: true, rank: -10,
    fields: [...HEAD, 'region', 'points', 'shared', ...BODY, ...FOOT],
-   acts: ['full', 'open'],
+   acts: ['pool', 'full', 'open'],
    rel: ['incluster', 'clusterof', ...KWUSE, 'cat']},
 
   {k: 'b', one: 'Base', tone: 'muted', many: 'Bases', place: 'Craft', link: 'craft', mark: 'ls',
    index: true, search: true, item: true, crawl: true,
    make: {base: 'name', ni: 'lines'},
    fields: [...HEAD, 'reqs', 'props', 'implicit', 'weights', ...SAYS, 'canroll', 'cancorrupt', ...REST, ...FOOT],
-   acts: ['trade', 'bench', 'craft'],
+   acts: ['trade', 'pool', 'bench', 'craft'],
    rel: ['uniques', 'grants', 'klassof', 'klass', 'named', 'namedby']},
 
   {k: 'i', one: 'Item class', tone: 'bronze', many: 'Item classes', place: 'Craft', link: 'craft',
@@ -384,7 +403,7 @@ export const KINDS = [
    index: true, search: true, item: true, crawl: true,
    px: {as: 'c'}, make: {nx: 'yes'}, gone: {at: 'nx'}, few: {at: 'vol', under: 1},
    fields: [...HEAD, 'droplv', ...SAYS, 'adds', ...REST, ...FOOT],
-   acts: ['trade', 'bench', 'open'],
+   acts: ['trade', 'pool', 'bench', 'open'],
    rel: ['named', 'namedby', 'cat']},
 
   {k: 'w', one: 'Keyword', tone: 'accent', many: 'Keywords', sec: 'keywords', index: true, search: true, crawl: true,
@@ -421,6 +440,15 @@ export const KINDS = [
      the currency tab in the box `benchtab` leaves and answers the card's controls (docs/craft-sim.md). */
   {k: 'n', one: 'Bench', many: 'Bench', place: 'Craft', own: './craftsim.js',
    fields: [...HEAD, ...SAYS, 'benchitem', 'benchtab', 'benchpicks', 'benchnote', 'launch', ...REST, ...FOOT],
+   acts: [],
+   rel: []},
+
+  /* The builder: one card holding a build file — the pool, the budgets, the gear preview and the tree. It
+     has no rows in the index — you reach it from the pool row under any card a build can hold — so the
+     search does not carry it and the map names it among what it left out. Its own module keeps the files
+     (three open at once, a guest's in the session) and answers every control on it. */
+  {k: 'f', one: 'Build', many: 'Builds', own: './builder.js',
+   fields: [...HEAD, ...SAYS, 'buildfiles', 'budgets', 'geartiles', 'treemap', 'buildtab', ...REST, ...FOOT],
    acts: [],
    rel: []},
 

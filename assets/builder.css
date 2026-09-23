@@ -1,0 +1,100 @@
+/* The character builder's card (assets/builder.js, assets/kinds.js kind 'f').
+
+   Its own file, fetched the first time a build card or a pool row opens and never before, so none of it is
+   in the first paint. The bench's own file comes with it, because the budget rows are the bench's item
+   panel: .bn-side, .bn-h4 and .bn-mods are its, the family rows are the Craft tab's (.cr-fam, assets/app.css)
+   and the sliders are the Trade panel's (.tval, assets/cards.css). What is here is only what none of them
+   has: the file tabs, the gear tiles with the card that floats beside one, the tree picture, and the rows a
+   cluster's own nodes sit in.
+
+   Two things decide the shape. A pointer gets the preview on hover, a finger gets it by opening the card —
+   so the hover box is drawn only where the browser says there is a pointer, and the tile is a button either
+   way. Every control is at least 44px. */
+
+/* ---------- the files, the name and the start ---------- */
+.bd-top{display:grid; gap:8px; margin-top:10px}
+.bd-tabs{display:flex; flex-wrap:wrap; gap:6px; align-items:center}
+.bd-tabs .chip{min-height:34px}
+.bd-set{display:grid; grid-template-columns:repeat(auto-fit, minmax(160px, 1fr)); gap:10px; align-items:end}
+.bd-set input.field{min-height:44px}
+
+/* ---------- the pool row under any card ---------- */
+.bd-row{display:grid; gap:8px; margin-top:12px; padding:10px 12px; border-radius:10px;
+  background:var(--sunken); border:1px solid var(--line-soft)}
+.bd-files{margin:0; padding:0; list-style:none; display:grid; gap:6px}
+.bd-files li{display:flex; gap:10px; align-items:center}
+.bd-file{flex:1; min-width:0; display:flex; gap:10px; align-items:center; min-height:44px; cursor:pointer}
+.bd-file input{width:20px; height:20px; flex:none; accent-color:var(--accent)}
+.bd-file b{font-weight:600; overflow-wrap:anywhere}
+.bd-file span{font-size:11px; color:var(--faint); margin-left:auto; white-space:nowrap}
+
+/* ---------- the budgets: the bench's own panel, one row per slot ---------- */
+.bd-budget{display:grid; gap:6px; margin-top:12px}
+.bd-brow{padding:8px 10px; border-radius:8px; background:var(--sunken); border:1px solid var(--line-soft)}
+.bd-brow .bn-h4{display:flex; gap:8px; align-items:baseline}
+.bd-brow .bn-h4 span{margin-left:auto}
+.bd-open{min-height:32px; padding:0; border:0; background:none; color:inherit; font:inherit;
+  letter-spacing:inherit; text-transform:inherit; cursor:pointer}
+.bd-open:hover{color:var(--accent)}
+.bd-open[aria-expanded="true"]::after{content:' \2212'}
+.bd-open[aria-expanded="false"]::after{content:' +'}
+.bd-held .bd-nm{padding:0; border:0; background:none; color:var(--text); font:600 12.5px/1.4 inherit;
+  text-align:left; cursor:pointer; overflow-wrap:anywhere}
+.bd-held .bd-nm:hover{color:var(--accent)}
+.bd-sides{margin:2px 0 0; display:flex; flex-wrap:wrap; gap:10px}
+.bn-h5{font-size:10.5px; text-transform:uppercase; letter-spacing:.09em; color:var(--faint)}
+.bn-h5 b{font-family:var(--mono); font-weight:600; color:var(--text); letter-spacing:0}
+.bd-fams{margin-top:8px}
+.bd-cost{margin:0; font:500 11.5px var(--mono); color:var(--muted)}
+
+/* ---------- a cluster and its own nodes ---------- */
+.bd-clus{margin-top:8px; padding:8px 10px; border-radius:8px; background:var(--raised);
+  border:1px solid var(--line-soft); position:relative}
+.bd-clus > .bn-x{position:absolute; top:4px; right:4px; min-height:34px; min-width:34px}
+.bd-nodes .bd-node{width:100%; display:grid; grid-template-columns:minmax(0, 1fr) auto; gap:1px 10px;
+  align-items:baseline; text-align:left; min-height:44px; padding:4px 8px; border-radius:6px;
+  border:1px solid var(--line-soft); background:var(--surface); color:var(--muted); cursor:pointer}
+.bd-nodes .bd-node[aria-pressed="true"]{border-color:var(--accent); color:var(--text); background:var(--accent-soft)}
+.bd-nodes .bd-node .bn-ml{font-weight:600}
+.bd-nodes .bd-node .bn-mm{font-size:11px; color:var(--faint)}
+.bd-sh{grid-column:1 / -1; font:500 10.5px var(--mono); color:var(--c-unique, #C39A5A)}
+
+/* ---------- the gear preview, and the card that floats beside a tile ---------- */
+.bd-gear{display:flex; flex-wrap:wrap; gap:6px; margin-top:12px}
+.bd-gear .card-facts{flex-basis:100%; margin:0}
+.bd-tile{position:relative; display:block}
+.bd-slot{width:64px; min-height:64px; display:grid; gap:2px; place-items:center; padding:4px;
+  border-radius:8px; border:1px dashed var(--line); background:var(--sunken); cursor:pointer}
+.bd-tile.on .bd-slot{border-style:solid; border-color:var(--line)}
+.bd-slot .card-ic{width:32px; height:32px}
+.bd-sn{font-size:9.5px; line-height:1.2; color:var(--faint); text-align:center; overflow-wrap:anywhere}
+.bd-tile > .bn-x{position:absolute; top:-6px; right:-6px; min-height:28px; min-width:28px; padding:0;
+  font-size:0; border-radius:50%; background:var(--surface)}
+.bd-tile > .bn-x::before{content:'\00d7'; font-size:15px}
+.bd-tip{display:none}
+@media (hover: hover) and (pointer: fine){
+  .bd-tip{position:absolute; z-index:5; left:0; top:calc(100% + 6px); width:300px; max-width:78vw;
+    pointer-events:none}
+  .bd-tile.on:hover .bd-tip, .bd-tile.on:focus-within .bd-tip{display:block}
+  .bd-tip .card{box-shadow:0 10px 30px rgba(0,0,0,.45)}
+}
+
+/* ---------- the tree preview ---------- */
+.bd-tree{margin:12px 0 0; display:grid; gap:4px; justify-items:start}
+.bd-tree figcaption{font-size:10.5px; text-transform:uppercase; letter-spacing:.09em; color:var(--faint)}
+.bd-tree svg{width:100%; max-width:320px; height:auto; background:var(--sunken); border-radius:8px}
+.bd-tree path{fill:none; stroke-linecap:round}
+.bd-back{stroke:var(--line-soft); stroke-width:.6}
+.bd-road{stroke:var(--muted); stroke-width:2.4}
+.bd-taken{stroke:var(--accent); stroke-width:3.4}
+.bd-start{stroke:var(--text); stroke-width:4.4}
+
+/* ---------- the pool, and the chips over it ---------- */
+.bd-box{display:grid; gap:8px; margin-top:12px}
+.bd-chips{display:flex; flex-wrap:wrap; gap:5px}
+.bd-chips .chip{min-height:32px}
+.bd-pool{margin:0; padding:0; list-style:none; display:grid; gap:5px; max-height:420px; overflow:auto}
+.bd-prow{display:flex; gap:10px; align-items:center; padding:5px 6px 5px 8px; border-radius:8px;
+  background:var(--sunken); border:1px solid var(--line-soft)}
+.bd-prow .bn-ic{border:0; cursor:pointer; padding:0}
+.bd-prow .btn{flex:none; padding:4px 12px; font-size:12px; min-height:44px}

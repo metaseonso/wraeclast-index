@@ -207,15 +207,17 @@ def card_of(node, by_id, by_said):
 
 # ---------------------------------------------------------------- the two files
 
-def shape(nodes, where, edges, roots, order, at):
+def shape(nodes, where, edges, roots, order, at, said):
     """Where every main-tree node sits, what kind it is, and every edge between two of them.
 
     Flat lists, one entry per node in the tree's own numbering order, because the builder walks this by place
-    and never by name. A player reads none of it."""
+    and never by name. A player reads none of it but the six starts, which carry the tree's own word for the
+    part of it they stand at."""
     return {'v': 1, 'x': [where[h][0] for h in order], 'y': [where[h][1] for h in order],
             't': [sort_of(nodes[h]) for h in order],
             'e': [i for a, b in edges for i in (at[a], at[b])],
-            'st': [at[h] for h in roots]}
+            'st': [at[h] for h in roots],
+            'sn': [(said.get(h) or {}).get('reg') or '' for h in roots]}
 
 
 def clusters(src, owners, step, order, at, cards, by_node):
@@ -297,7 +299,7 @@ def build(index):
     shared = {h for h in order if h in step and len(owners[h]) > 1}
 
     cards = sorted({c for h, c in by_node.items() if c and h in step})
-    sh = shape(nodes, where, edges, roots, order, at)
+    sh = shape(nodes, where, edges, roots, order, at, said)
     cl = clusters(src, owners, step, order, at, cards, by_node)
     new, kept = rows(src, inside, shared, said, index)
 

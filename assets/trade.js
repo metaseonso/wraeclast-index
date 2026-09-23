@@ -85,7 +85,8 @@ export function readout(v, tiers, pts){
   return bits.join(' · ');
 }
 export const stepOf = (lo, hi, tiers) => [lo, hi, ...(tiers || []).flat()].every(Number.isInteger) ? 1 : 0.1;
-/* o: {k, lo, hi, step, v, tiers, prices, heat:false for plain counts} */
+/* o: {k, lo, hi, step, v, tiers, prices, heat:false for plain counts, do: what it does where the
+   card it is on answers its own controls} */
 export function slideHTML(o){
   const lo = +o.lo, hi = +o.hi, w = hi - lo, step = o.step || 1;
   if(!(w > 0)) return '';
@@ -113,7 +114,8 @@ export function slideHTML(o){
   }
   const unset = o.v === '' || o.v === null || o.v === undefined;
   return '<span class="tslide' + (unset ? ' unset' : '') + '"><span class="ttrack" style="background:' + bg + '">' + marks + '</span>' +
-    '<input type="range" data-k="' + o.k + '" min="' + lo + '" max="' + hi + '" step="' + step + '" value="' + (unset ? lo : o.v) + '"></span>';
+    '<input type="range" data-k="' + o.k + '"' + (o.do ? ' data-do="' + esc(o.do) + '"' : '') +
+    ' min="' + lo + '" max="' + hi + '" step="' + step + '" value="' + (unset ? lo : o.v) + '"></span>';
 }
 /* a number box with its slider (and the tier it lands in); keep them in step with syncVal() */
 export function valHTML(o, box){
