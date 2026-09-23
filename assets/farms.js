@@ -142,12 +142,13 @@ function costHTML(r){   // no total: the sheet gives no amounts per map. Just wh
 /* The patch and league clocks, in one line on the entry they age. A card that looks current and is not is
    the fault this line exists for, so it is on the card and not only on the bar above them all. */
 function ageHTML(r){
-  if(r.age === 'now' && !oldLeague()) return '';
-  const made = esc(madeFor(r.f)), live = livePatch(), lg = D.market && D.market.league;
-  const from = oldLeague() ? made + ' · ' + esc(SRC.league) : made;
+  const old = oldLeague(), lg = esc((D.market && D.market.league) || '');
+  if(r.age === 'now' && !old) return '';
+  const from = esc(madeFor(r.f)) + (old ? ' · ' + esc(SRC.league) : '');
   if(r.dry) return '<p class="fm-age hard">Made for patch ' + from + '. Prices are not drawn.</p>';
-  return '<p class="fm-age">Made for patch ' + from + '. The game is on ' + esc(live || '?') +
-    (oldLeague() ? ' · ' + esc(lg) : '') + '.</p>';
+  if(r.age === 'mark') return '<p class="fm-age">Made for patch ' + from + '. The game is on ' +
+    esc(livePatch() || '?') + (old ? ' · ' + lg : '') + '.</p>';
+  return '<p class="fm-age">Setup from ' + esc(SRC.league) + '. Prices are ' + lg + '.</p>';
 }
 const oldLeague = () => { const lg = D.market && D.market.league; return !!(lg && SRC && SRC.league && lg !== SRC.league); };
 /* the trade line on a rolled tablet or waystone: listings, when it was checked, and the search itself */
@@ -221,7 +222,7 @@ function farmCard(r){
 function ridesHTML(x, dry){
   const on = x.on;
   if(!on || dry) return '';
-  const name = (x.q > 1 ? x.q + ' ' : '') + on.n + (x.q > 1 ? 's' : '');
+  const name = on.n + (x.q > 1 ? ' ×' + x.q : '');   // one use each, so one orb per omen
   return '<p class="card-facts fm-on">Rides on ' +
     (on.href ? '<a class="card-ext" href="' + esc(on.href) + '">' + esc(name) + '</a>' : esc(name)) +
     ' · ' + (on.px ? moneyHTML(on.px.v * x.q) : 'no price yet') + '</p>';
