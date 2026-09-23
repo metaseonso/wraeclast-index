@@ -3,6 +3,39 @@
 The full list of changes. The public patch notes (data/changelog.json, shown on the site) stay short.
 Add the details here first, then a short public line there.
 
+## Next — A levelling guide we did not write, on the Build tab
+
+- A player called Dan sent a levelling guide in through the suggestion box:
+  <https://domistae.github.io/poe2-leveling/poe2_act4_guide.html>. Read before anything was written about it.
+  It is a free, unofficial, fan-made site by one person, **domistae** — an interactive campaign checklist for
+  Acts I–IV and the Interludes with a box to tick per step, optimal routing, waypoints, gems, rewards and
+  passive points, written for the live league (0.5.5 today), plus endgame and crafting pages beside it. Dan
+  sent the Act IV page; the link goes to the **levelling hub** instead, because that is the page all four
+  acts and the Interludes hang off and the Act IV page is one click inside it.
+- **Where it sits.** The Build tab, one line under the paste box, so it is there before a build code is —
+  the one player on that page who has no code to paste is the one still levelling. It reads: *Still
+  levelling? Acts I–IV and the Interludes, step by step, ticked off as you go ↗ — PoE 2 Leveling Guide, by
+  domistae.* Whose it is is in the line itself, the link opens in its own tab, and nothing about it reads as
+  ours. Clicks on it already count as `out:domistae.github.io` in the owner's dashboard, with no change to
+  `assets/track.js`.
+- **The link is read on every publish, so it cannot rot quietly.** `tools/guides.py` holds the whole list —
+  the name, whose it is, what a player will find, the address, and the words the page has to still carry —
+  and writes `data/guides.json`; `assets/build.js` draws whatever that file holds, so a second guide is one
+  entry in the tool and no page code. Every run fetches each address. A guide that answers keeps today's
+  date. A guide whose address has gone, or whose page came back too short, or which no longer carries its own
+  words — an address that outlived its guide — goes through `tools/lastgood.py` like any other outside
+  source: the row already committed stays exactly as it was, the run names the guide and why on stderr,
+  `data/faults.json` records it **under that guide's own name**, a `data-fault` ticket goes up and the run
+  exits non-zero. One guide, one section, and the one thing counted is its own check, so the record reads
+  "1 row before, 0 now" and dates the kept copy by the day that guide last checked out.
+- **Proved all three ways** against a scratch data directory: a dead address, a page that no longer says what
+  it should, and the guide answering again. The first two kept the committed row, named the fault and exited
+  1; the third cleared the fault and exited 0.
+- Once per publish, not on the hourly price runs (`.github/workflows/pages.yml`): one read of someone else's
+  site per deploy is enough to catch a link going, and the hourly job is for prices.
+- Styling is two lines in `assets/app.css` (`.guide`) over the existing `.note`: no new component, and the
+  line wraps at 375px rather than pushing the page sideways.
+
 ## Next — The frame: one card, one map, and a loop with two moves
 
 - The owner's call: *"we want cards and map to be a frame populated with predetermined items with a

@@ -275,7 +275,21 @@ function gemEntry(g){
   return D.index.items.find(it => it.k === 'g' && it._nl === n) || null;
 }
 
-/* ---------- 5. the page ---------- */
+/* ---------- 5. a guide somebody else wrote ----------
+   Linked where it helps a player, named where it is shown, never ours. The list is data/guides.json
+   (tools/guides.py), which reads every address on every publish, so a link that rots is a fault with its own
+   name in data/faults.json and never a dead link sitting here quietly. Another guide is one entry in that
+   tool and no code here. */
+async function guides(el){
+  let list = [];
+  try { list = ((await (await fetch('data/guides.json')).json()) || {}).guides || []; } catch {}
+  const box = $('#pobguide', el);
+  if(!box || !list.length) return;
+  box.innerHTML = list.map(g => '<p class="note guide">Still levelling? <a href="' + esc(g.url) +
+    '" target="_blank" rel="noopener">' + esc(g.what) + ' ↗</a> — ' + esc(g.name) + ', by ' + esc(g.by) + '.</p>').join('');
+}
+
+/* ---------- 6. the page ---------- */
 let EL;
 export function mount(el){
   EL = el;
@@ -285,7 +299,9 @@ export function mount(el){
       '<textarea class="field" id="pob" spellcheck="false" placeholder="Paste a Path of Building code or a build link"></textarea>' +
       '<div class="row" style="margin-top:10px"><button type="button" class="btn primary" id="pobgo">Read build</button>' +
       '<span class="note" id="pobmsg">A code, or a pobb.in / poe.ninja / maxroll / mobalytics link.</span></div></div>' +
+    '<div id="pobguide"></div>' +
     '<div id="pobout"></div>';
+  guides(el);                                  // one line under the box, for a character that is not there yet
   const go = () => run($('#pob', el).value);
   $('#pobgo', el).addEventListener('click', go);
   $('#pob', el).addEventListener('paste', () => setTimeout(go, 0));
