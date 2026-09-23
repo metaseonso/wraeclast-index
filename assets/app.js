@@ -115,8 +115,13 @@ function prep(it, k, IMGS, lxk){   // once per card: its kind, full image link, 
     if(rx.size) it.rx = [...rx];
   }
   it._nl = it.n.toLowerCase();
-  it._hay = [it.n, it.s, it.t, it.q, it.asc, it.reg, (it.ls || []).join(' '), (it.pr || []).join(' '),
-    (it.tags || []).join(' '), (it.o || []).join(' ')].filter(Boolean).join(' ').toLowerCase();
+  /* Everything on the card a player can read, so a search reaches any line of any listing: the name and the
+     sub line, what it does, its own lines and properties, its tags and options, the flavour line, a recipe's
+     own rows, the other names the game knows a keyword by, and a source note. Never an internal id — the
+     item class and the atlas place are slugs, and the card shows neither (docs, "No raw game code"). */
+  it._hay = [it.n, it.s, it.t, it.q, it.asc, it.reg, it.qt, it.src, (it.ls || []).join(' '),
+    (it.pr || []).join(' '), (it.tags || []).join(' '), (it.o || []).join(' '), (it.rec || []).join(' '),
+    (it.f || []).join(' ')].filter(Boolean).join(' ').toLowerCase();
   // the fields a kind works out from the entry itself: a base item is its own base and every line of it is an
   // implicit, a currency is not in the catalogue until the market says so. The kind declares them (KINDS make)
   const make = (KIND[k] || {}).make;
@@ -154,7 +159,12 @@ function assemble(core, rest){
   }
   if(rest) for(const [key, kw] of Object.entries(rest.ckw || {})){ const it = byKey.get(key); if(it) it.kw = kw; }
   // the core's own cards keep their keyword chips and flavour line in the rest, so the first cards stay small
-  if(rest) for(const [key, qt] of Object.entries(rest.cqt || {})){ const it = byKey.get(key); if(it) it.qt = qt; }
+  // the flavour line lands with the rest, after the haystack was built, so the haystack takes it here:
+  // a search for a line somebody remembers reading has to reach the line they read
+  if(rest) for(const [key, qt] of Object.entries(rest.cqt || {})){
+    const it = byKey.get(key);
+    if(it){ it.qt = qt; it._hay += ' ' + String(qt).toLowerCase(); }
+  }
   /* A kind whose prices are listed under another kind says so once (KINDS px). There are two ways of meeting
      the market there, and the declaration says which: a kind listed there whole keeps its own card, and the
      market must not repeat it; a kind only some of whose entries are listed there (px carries a test: a
@@ -2013,24 +2023,109 @@ function nearScore(it, N){
   return it._ncv = c && Math.min(NEAR_CAP, c * NEAR_STEP);
 }
 
+/* ---------- a word that was nearly typed ----------
+   A search where every letter has to be right is a search that answers nothing the moment a finger slips,
+   and the names here are not ones anybody spells from memory: Uul-Netol, Quarterstaff, Simulacrum.
+
+   So a word the index has never seen is looked up in the index's own vocabulary — every word on every card,
+   about 7,700 of them — and whatever was nearly typed stands in for it. The distance is Damerau's, which
+   counts two letters swapped as one slip rather than two, because that is the most common slip there is:
+   "divien" is one away from "divine" and would be two away under plain Levenshtein.
+
+   It runs only where a word matched nothing at all. Typing "divin" matches, so nothing here happens on the
+   way to "divine"; it is the finished word that misses, and then it costs one pass over a list of short
+   words, once, on that keystroke. */
+const NEAR_LETTERS = 6;   // from here up a word is allowed two slips; under it, one
+let VOCAB = null, VOCAB_AT = -1;
+function vocab(){
+  const n = D.index && D.index.items ? D.index.items.length : 0;
+  if(VOCAB && VOCAB_AT === n) return VOCAB;
+  const set = new Set();
+  for(const it of (D.index && D.index.items) || [])
+    for(const w of (it._hay || '').match(/[a-z0-9]+/g) || []) if(w.length > 2) set.add(w);
+  VOCAB_AT = n;
+  return VOCAB = [...set];
+}
+/* Damerau–Levenshtein, given up on as soon as the whole row is already further than max. */
+function apart(a, b, max){
+  const al = a.length, bl = b.length;
+  if(Math.abs(al - bl) > max) return max + 1;
+  let two = null;                        // the row two back, which a swap is measured against
+  let one = new Array(bl + 1);           // ...and the row before this one
+  for(let j = 0; j <= bl; j++) one[j] = j;
+  for(let i = 1; i <= al; i++){
+    const row = new Array(bl + 1);
+    row[0] = i;
+    let best = i;
+    for(let j = 1; j <= bl; j++){
+      const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+      let v = Math.min(one[j] + 1, row[j - 1] + 1, one[j - 1] + cost);
+      if(two && j > 1 && a[i - 1] === b[j - 2] && a[i - 2] === b[j - 1]) v = Math.min(v, two[j - 2] + 1);
+      row[j] = v;
+      if(v < best) best = v;
+    }
+    if(best > max) return max + 1;       // the whole row is already too far: nothing below it can come back
+    two = one; one = row;
+  }
+  return one[bl];
+}
+
+/* What was nearly typed, nearest first, at most a handful. */
+function nearWords(t){
+  const max = t.length >= NEAR_LETTERS ? 2 : 1;
+  const hit = [];
+  for(const w of vocab()){
+    if(Math.abs(w.length - t.length) > max) continue;
+    const d = apart(t, w, max);
+    if(d <= max) hit.push([d, w]);
+  }
+  hit.sort((a, b) => a[0] - b[0] || a[1].length - b[1].length);
+  return hit.slice(0, 6).map(x => x[1]);
+}
+/* One typed word, turned into what a card is allowed to match it with. `near` says the word was not the one
+   typed, so a card that matched it scores under one that matched the letters as they were given. */
+export function words(qs){
+  const out = [];
+  for(const t of qs.trim().toLowerCase().split(/\s+/).filter(Boolean)){
+    if(t.length < 3){ out.push({alts: [t], near: false}); continue; }
+    if(vocab().some(w => w.includes(t))){ out.push({alts: [t], near: false}); continue; }
+    const alts = nearWords(t);
+    out.push({alts: alts.length ? alts : [t], near: !!alts.length});
+  }
+  return out;
+}
+/* Does this card answer to every word typed, and how well. Null where one word has no answer on it at all —
+   every word has to land somewhere, which is what keeps a two-word search from widening. */
+export function hits(it, ws){
+  let s = 0;
+  for(const w of ws){
+    let best = 0;
+    for(const a of w.alts){
+      if(it._nl.includes(a)){ best = w.near ? 30 : 40; break; }
+      if(it._hay.includes(a)) best = Math.max(best, w.near ? 5 : 8);
+    }
+    if(!best) return null;
+    s += best;
+  }
+  return s;
+}
+
 /* ---------- search ---------- */
 export function search(q, kind = 'all'){
   const qs = q.trim().toLowerCase();
-  const toks = qs.split(/\s+/).filter(Boolean);
+  const ws = words(qs);          // each typed word, and whatever was nearly typed where it answered nothing
   const out = [];
-  if(!toks.length) return out;
+  if(!ws.length) return out;
+  const slipped = ws.some(w => w.near);
   const wordStart = new RegExp('(^|[^a-z0-9])' + qs.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
   const near = nearness();   // no trail, and the score below is the one it always was
   for(const it of D.index.items){
     if((kind !== 'all' && it.k !== kind) || it.dup) continue;
-    let s = 0, ok = true;
-    for(const t of toks){
-      if(it._nl.includes(t)) s += 40;
-      else if(it._hay.includes(t)) s += 8;
-      else { ok = false; break; }
-    }
-    if(!ok) continue;
-    if(it._nl === qs) s += 1000;
+    let s = hits(it, ws);
+    if(s === null) continue;
+    // the bonuses below are for the letters as they were given, so a word that slipped never wins on them
+    if(slipped) s += 0;
+    else if(it._nl === qs) s += 1000;
     else if(it._nl.startsWith(qs)) s += 600;
     else if(wordStart.test(it._nl)) s += 380;
     else if(it._nl.includes(qs)) s += 220;

@@ -440,7 +440,11 @@ async function tab(){
      answers to it across every group, because a player looking for the Chaos Orb should not have to know
      which shelf the game keeps it on. Each found row still says the group it came from. */
   const q = TAB.q.trim().toLowerCase();
-  const found = q ? GROUPS.flatMap(g => (all[g.g] || []).filter(x => x.n.toLowerCase().includes(q))
+  // every word, anywhere on the row: its name, the group it is in, and what it says it does
+  const qw = q ? q.split(/\s+/).filter(Boolean) : [];
+  const says = x => (x.n + ' ' + (x.sub || '') + ' ' + (x.t || '')).toLowerCase();
+  const found = q ? GROUPS.flatMap(g => (all[g.g] || [])
+    .filter(x => { const h = says(x) + ' ' + g.n.toLowerCase(); return qw.every(w => h.includes(w)); })
     .map(x => ({x, g: g.n}))) : null;
   /* While a craft is running the drawer holds both halves: what is in hand to use on the item now, and the
      whole shelf to bring more in without leaving the craft. Before one, only the shelf. */

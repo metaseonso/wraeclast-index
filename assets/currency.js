@@ -1,7 +1,7 @@
 /* Currency tab: every currency-type item, what it does, how its price moves, trading routes,
    and a watch list. Prices: data/market.json: what each currency traded for on the in-game Currency Exchange
    (GGG's public hourly feed, tools/exchange.py). */
-import { D, $, esc, card, flow, money, moneyHTML, params, openDetail, openBox, actHTML, runAct, iconHTML } from './app.js';
+import { D, $, esc, card, flow, money, moneyHTML, params, openDetail, openBox, actHTML, runAct, iconHTML, words, hits } from './app.js';
 import { ASKS, ASK } from './kinds.js';   // the questions the page is asked, and which group answers which
 
 const WATCH_KEY = 'wi.watch';
@@ -18,7 +18,7 @@ const MIN_VOL = 5;        // divine traded per day before a price counts as a ma
 const ROUTE_MIN = 3, ROUTE_MAX = 60, ROUTE_VOL = 25;
 const PAGE = 48;          // rows the grid adds at a time
 
-const S = {ask: 'all', cat: 'all', trend: 'all', sort: 'move', q: '', liquid: true, shown: PAGE, watch: loadWatch()};
+const S = {ask: 'all', cat: 'all', trend: 'all', sort: 'move', q: '', words: [], liquid: true, shown: PAGE, watch: loadWatch()};
 let EL, ALL = [];
 
 /* ---------- signals ---------- */
@@ -59,7 +59,7 @@ function match(r){
   if(S.ask !== 'all' && ASK[m.cat] !== S.ask) return false;
   if(S.cat !== 'all' && m.cat !== S.cat) return false;
   if(S.liquid && (m.vol ?? 0) < MIN_VOL && S.trend !== 'watch') return false;
-  if(S.q && !it._hay.includes(S.q)) return false;
+  if(S.q && hits(it, S.words || []) === null) return false;   // every word, anywhere on the row
   switch(S.trend){
     case 'rising': return (m.ch ?? 0) >= 10;
     case 'falling': return (m.ch ?? 0) <= -10;
@@ -309,7 +309,8 @@ export function mount(el){
     render();
   });
   paintCats();
-  $('#cxq', el).addEventListener('input', e => { S.q = e.target.value.trim().toLowerCase(); S.shown = PAGE; render(); });
+  $('#cxq', el).addEventListener('input', e => { S.q = e.target.value.trim().toLowerCase();
+    S.words = S.q ? words(S.q) : []; S.shown = PAGE; render(); });
   $('#cxsort', el).addEventListener('change', e => { S.sort = e.target.value; render(); });
   $('#cxliq', el).addEventListener('change', e => { S.liquid = e.target.checked; S.shown = PAGE; render(); });
   $('.cx-next', el).addEventListener('click', () => { S.shown += PAGE; render(); });
@@ -329,7 +330,7 @@ export function mount(el){
 
 function update(){
   const c = params().get('c');
-  if(c){ S.q = c.toLowerCase(); S.cat = 'all'; S.trend = 'all'; S.liquid = false;
+  if(c){ S.q = c.toLowerCase(); S.words = words(S.q); S.cat = 'all'; S.trend = 'all'; S.liquid = false;
     const q = $('#cxq', EL); if(q) q.value = c;
     const l = $('#cxliq', EL); if(l) l.checked = false;
     EL.querySelectorAll('#cxcat button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.v === 'all')));
