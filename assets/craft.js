@@ -1170,8 +1170,8 @@ export async function mount(el){
   return {update};
 }
 function head(){
-  return '<div class="pagehd"><h2>Craft</h2><p>Every mod a base can roll at its item level, and where a mod ' +
-    'you want comes from. Plan the item, practise it at the bench, then find it on trade.</p></div>';
+  return '<div class="pagehd"><h2>Craft</h2><p>Every modifier a base can roll at its item level, ' +
+    'and where each one comes from.</p></div>';
 }
 /* Two questions, one item. The switch is the site's own segmented control, and which question is being asked
    is in the address, so a link opens on the question it was sent about. */
