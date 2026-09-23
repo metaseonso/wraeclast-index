@@ -121,6 +121,27 @@ export const FRAME = {
 };
 /* A small test on one entry, where a declaration needs one: the field it reads and what it wants of it.
    Nothing said about the field means "it carries something"; no field at all means "always". */
+/* A use line that is really a table. The game writes what a rune, a soul core or an idol does as one run-on
+   string: the slot it went into, a colon, what it gives there, and an em dash before the next slot —
+   "Armour: +14% to Fire Resistance — Martial Weapon: Adds 7 to 11 Fire Damage". Inside one slot the game's
+   own middot separates two effects, and that is left exactly as it is written.
+
+   This reads the line and gives back the rows, or nothing at all where the line is an ordinary sentence. It
+   reads the line itself and never the item's group, because the game's own category is not a reliable shape:
+   231 of the catalogue's 652 lines are written this way and they are not one group.
+
+   Measured 23 September 2026: 119 lines of two or more slots, 112 of one, 421 ordinary sentences untouched.
+   It gives back two lists side by side — the slots, and what each one gives — the way a card already carries
+   its lines beside the marks in them. The half a player reads is a list of plain lines, so it takes the same
+   marked words every other line on the site takes, and needs nothing of its own to do it. */
+const SLOT_ROW = /^([A-Za-z][A-Za-z ]{0,30}): (.+)$/;
+export function slotList(t){
+  const parts = String(t || '').split(' — ');
+  if(!parts[0]) return null;
+  const rows = parts.map(p => SLOT_ROW.exec(p.trim()));
+  return rows.every(Boolean) ? {at: rows.map(m => m[1]), is: rows.map(m => m[2])} : null;
+}
+
 export const holds = (it, c) => {
   if(!c) return false;
   if(c.at === undefined) return true;
@@ -193,6 +214,12 @@ export const FIELDS = {
 
   lines:    {type: 'rich', at: 'ls', slot: 'body', every: 1},   // the effect lines: mods, stats, what it adds
   text:     {type: 'rich', at: 't', slot: 'body', every: 1},    // what it does, in the game's own words
+  /* ...and the same words where the game wrote them as a table rather than a sentence: one row per slot.
+     The card carries one or the other and never both, because the line is split where the card is made.
+     `beside` is the slot names, drawn as the left-hand column. They are headings and take no marked words:
+     "Martial Weapon" heads 70 of these columns, and a keyword door repeated 70 times down one page is noise
+     rather than a way anywhere. What the slot gives is a line like any other and marks like any other. */
+  perslot:  {type: 'perslot', at: 'pv', beside: 'ps', slot: 'body'},
   /* the modifier it puts on an item, per kind of item: an essence adds a different one to a bow than to a body
      armour, and the game's one line says none of it. Anything else that adds a known modifier reads the same
      table, keyed by whatever "at" names (tools/essences.py). */
@@ -426,7 +453,7 @@ export const KINDS = [
   {k: 'c', one: 'Currency', tone: 'c-currency', many: 'Currency', place: 'Currency', link: './#/currency?c=@id',
    index: true, search: true, item: true, crawl: true,
    px: {as: 'c'}, make: {nx: 'yes'}, gone: {at: 'nx'}, few: {at: 'vol', under: 1},
-   fields: [...HEAD, 'droplv', ...SAYS, 'adds', ...REST, ...FOOT],
+   fields: [...HEAD, 'droplv', ...SAYS, 'perslot', 'adds', ...REST, ...FOOT],
    acts: ['trade', 'pool', 'bench', 'pin', 'open'],
    rel: ['named', 'namedby', 'cat']},
 

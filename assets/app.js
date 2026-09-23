@@ -5,7 +5,7 @@
                        trade site listings (worker/prices.js); trends from the site's own daily prices
    Build usage links to poe.ninja's own builds page: their builds API is not open to other sites. */
 import {initKeys, setCardKeys, keyLabel} from './keys.js';
-import {KIND, DEFAULT, FIELDS, ACTS, CHIPS, NAMES, ROUTES, SHUT, fieldsOf, FRAME, SLOTS, BOXES, MAKE, KW, holds, markOf, ours} from './kinds.js';
+import {KIND, DEFAULT, FIELDS, ACTS, CHIPS, NAMES, ROUTES, SHUT, fieldsOf, FRAME, SLOTS, BOXES, MAKE, KW, holds, markOf, ours, slotList} from './kinds.js';
 import * as edges from './edges.js';
 import * as marks from './marks.js';
 
@@ -166,15 +166,20 @@ function assemble(core, rest){
       if(own){ own.nx = false; if(!own.img) own.img = m.ic; continue; }   // the index has it: its card, with the market's price
       let it = MC.get(key);
       if(!it){
-        it = {k:'c', id:key.slice(2), n:m.n, s:m.cat || 'Currency', t:m.u || '', img:m.ic, dl:m.dl};
+        // the game writes some of these lines as a table rather than a sentence; the card carries one or
+        // the other, never both, so the two fields that draw them never draw the same words twice
+        const ps = slotList(m.u);
+        it = {k:'c', id:key.slice(2), n:m.n, s:m.cat || 'Currency', t:ps ? '' : (m.u || ''),
+              img:m.ic, dl:m.dl};
+        if(ps){ it.ps = ps.at; it.pv = ps.is; }
         if(lineage.has(m.n)) it.dup = true;   // kept for the Currency tab; the search shows the gem card
-        it._nl = it.n.toLowerCase(); it._hay = (it.n + ' ' + it.s + ' ' + it.t).toLowerCase();
+        it._nl = it.n.toLowerCase(); it._hay = (it.n + ' ' + it.s + ' ' + (m.u || '')).toLowerCase();
         MC.set(key, it);
       }
       // A priced card must still say what the thing does. The market file says so for most of them; for the
       // rest the official text is in the index — a lineage support gem's own card, or "ix" for a name no card
       // covers at all (tools/carddata.py). Both are in the rest, so this fills in when the rest lands.
-      if(!it.t && rest){
+      if(!it.t && !it.pv && rest){
         it.t = itemText.get('c:' + m.n) || (rest.ix || {})[m.n] || '';
         if(it.t) it._hay += ' ' + it.t.toLowerCase();
       }
@@ -923,6 +928,20 @@ export const TYPE = {
   }},
   reqs:   {raw: 1, v: (it, f) => reqPills(it[f.at])},
   rich:   {raw: 1, v: (it, f, o) => richHTML(it, f.at, o.full ? Infinity : (f.lines || FRAME.lines))},
+  /* the same words where the game wrote them as a table: the slot on the left, what it gives there on the
+     right. The grid draws four rows the way any list in a slot does, the popup draws all of them, and what
+     is not drawn is a count. The right-hand side keeps the game's own middot where a slot gives two things. */
+  perslot: {raw: 1, v: (it, f, o) => {
+    const vals = it[f.at] || [], at = it[f.beside] || [];
+    if(!vals.length) return '';
+    const cap = o.full ? vals.length : FRAME.lines;
+    const over = vals.length - cap > FRAME.slack ? vals.length - cap : 0;
+    return '<ul class="card-slots">' +
+      vals.slice(0, over ? cap : vals.length).map((what, i) =>
+        '<li><span class="cs-at">' + esc(at[i] || '') + '</span>' +
+        '<span class="cs-is" data-mk="' + f.at + ':' + i + '">' + lineHTML(it, f.at, i, what, false) + '</span></li>').join('') +
+      (over ? '<li class="more-n">' + esc(FRAME.more(over)) + '</li>' : '') + '</ul>';
+  }},
   quote:  {raw: 1, v: (it, f) => it[f.at] ? '<p class="card-fl">' + esc(it[f.at]) + '</p>' : ''},
   options: {raw: 1, v: (it, f, o) => {   // an atlas choice passive: what it lets you pick (in full in the popup)
     const list = it[f.at];
