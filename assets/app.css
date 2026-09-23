@@ -270,6 +270,14 @@ a.pill.fm-tq small{margin-left:2px; color:var(--faint)}
    than pinned over the page */
 .tp-fnote{position:static; margin:0}
 .tp-off{font:11px var(--mono); color:var(--neg); margin-left:8px}
+/* a line of the search the item cannot carry: the fact, and the one tap that settles it, on their own row
+   under the line so a phone reads both */
+.tp-why{flex-basis:100%; display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin:0}
+.tp-why:empty{display:none}
+.tp-why .tp-off{margin:0}
+.tp-why .cr-foff{font-size:11px; padding:2px 9px}
+.tp-none{flex-basis:100%; margin:0; font:11px var(--mono); color:var(--neg)}
+.tp-none:empty{display:none}
 
 /* Atlas tab */
 .at-secs{justify-content:flex-start; margin:0 0 12px}

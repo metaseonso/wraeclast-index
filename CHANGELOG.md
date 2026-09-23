@@ -91,6 +91,50 @@ Add the details here first, then a short public line there.
   The phone leads with the item and its level, then the way to another base, then the pool, then the rail.
 - Checked in headless Chrome at 375×812 touch and at 1440: no console errors, nothing scrolls sideways,
   nothing under 44px on the phone. guard 7 ok, simcheck 2 ok.
+## Next — Trade: a search obeys the same rules as the item (ticket 65)
+
+- The fault. #44 narrowed the Trade page's mod list to what the chosen base can roll and stopped there. The
+  page knew **which** modifiers a base has and nothing about **how many of them one item can carry**, so a
+  player could ask for five prefixes on a base that holds three, two modifiers out of one group, or a tier
+  no item of the level asked for can reach. The trade site answered with nothing and the page never said why.
+- **The rules are the bench's, and there is still one copy of them.** `assets/tradepage.js` imports
+  `assets/engine.js` — the file `tools/dev/simcheck.mjs` measures over 250,000 rolls a class — and asks it:
+  `newItem` builds the item the search describes, `addMod` puts the must-have lines on it, `candidates`
+  answers what will still go on, and where the answer is no the wall is named by the same four the engine's
+  own pick reads: `heldFams`, `heldGroups`, `capFor` and `lvlOf`. Nothing about a cap, a group or an item
+  level is written down in the Trade page.
+- **Every base the search covers.** One item is built per pool and per pair of caps the bases in scope come
+  in, because a base's own implicit moves a cap (a Dusk Ring is 4 prefixes and 2 suffixes where the class is
+  3 and 3) and two bases of one kind do not always roll the same pool. A whole kind is every base of it: what
+  one of them can carry, the search can find, so "any Ring" with four prefixes is never called impossible.
+- **What it says, and where.** A line the item cannot carry stays in the search, keeps its slider, and says
+  the fact under it: *"Prefixes are full."* · *"This and +# to Level of all Spell Skills cannot sit on one
+  item."* · *"Rolls from item level 16."* · *"Item level 60 rolls this to 35."* · *"Only a corrupted item
+  carries it."* · *"A Normal item carries no modifiers."* A group of "some of these" says how many of them
+  one item holds. The note by the Open button says the whole of it: *"No item carries all of this. The search
+  finds nothing."*
+- **Nothing is ever taken out of the search.** The query the page hands the trade site is the one the player
+  built, wall or no wall. Beside each fact is the one tap that settles it — **Drop it**, **Item level 82**,
+  **Ask 45**, **Ask 3**, **Corrupted: Any** — and the "Narrowed to" note's own ✕ turns the whole thing off,
+  exactly as it already did for the mod list.
+- **What excludes what.** A line this base only ever has from a desecration or a corruption, against a search
+  that asks for an item that was never corrupted: the step that offers one is the engine's `take`, so the
+  page runs it on a copy of the item and reads `corrupt` off the result rather than keeping a rule of its own.
+- **The item level is a floor, not a wall.** "Item level at least 60" is a minimum on the trade site, so a
+  tier that needs 82 is not impossible — it is a fact about what 60 reaches, and the tap moves the floor. Only
+  a cap, a group and a corruption make a search find nothing.
+- **Nothing new drawn.** The facts use the note the Craft tab already has (`cr-foff`) and the red line the
+  Mods list already had (`tp-off`); two rules in `assets/app.css` put them on their own row inside the mod
+  row. The rules and `data/craft.json` are fetched the first time a search names a base or a kind — the Trade
+  tab with nothing picked loads neither, and first paint is unmoved.
+- **Proved** in headless Chrome at 375×812 touch and at 1280×900, over eleven searches: a fourth prefix on a
+  Sapphire Ring, a fifth on a Dusk Ring and a third suffix on it, two modifiers of one group on a Lapis
+  Amulet, flat Armour beside flat Evasion on a Grand Regalia, a second prefix on a Greater Life Flask, a 41%
+  Fire Resistance roll asked for at item level 60, Chaos Resistance at item level 10, five of five prefixes in
+  a "some of these" group, a Desecrated modifier on an uncorrupted item, a Normal item, and the same searches
+  with the note turned off. Every tap settled what it named, every query came out as asked, no console errors
+  and nothing scrolls sideways. Hand-checked against `data/craft/ring.json`, `body-armour.json` and
+  `life-flask.json`.
 
 ## Next — A tab left open across a deploy opens the new bench, instead of nothing at all
 
