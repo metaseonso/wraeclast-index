@@ -27,6 +27,10 @@
 import { D, esc, moneyHTML, openDetail, hrefOf, repaint, actPanel } from './app.js';
 import { valHTML, syncVal } from './trade.js';
 import * as E from './engine.js';
+/* The rules, and the search that runs over them. Nothing on this card works a stat out for itself, and the
+   button and the live list under the numbers are one machine (assets/optimise.js). */
+import * as M from './maths.js';
+import * as O from './optimise.js';
 
 const KEY = 'wi.build';
 const OPEN = 3;         // files open at once: three names and three boxes fit one row on a 375-pixel phone
@@ -103,7 +107,23 @@ function takes(id){                     // the kinds of item one slot holds
 }
 const labelOf = id => (SLOTS.find(s => s[0] === id) || [, ''])[1];
 const clsOf = id => X.classes.find(c => c.id === id) || null;
-const classOf = it => it ? (it.cr || (it.k === 'i' ? it.id : '')) : '';
+/* Which kind of item a card is. A base says so outright and so does an item class; a unique says it in its
+   own subtitle — "Chain Tiara · Helmet" — and carries no field for it, so the word after the dot is read,
+   which settles 687 of the 707 uniques that have lines. The twenty left are flasks, relics and tablets,
+   none of which the frame gives a slot. */
+const slug = s => String(s).trim().toLowerCase().replace(/\s+/g, '-');
+function classOf(it){
+  if(!it) return '';
+  if(it.cr) return it.cr;
+  if(it.k === 'i') return it.id;
+  if(it.k !== 'u') return '';
+  if(it.bcr === undefined){
+    const said = String(it.s || '').split(' · ');
+    const k = slug(said[said.length - 1] || '');
+    it.bcr = X && X.classes.some(c => c.id === k) ? k : '';
+  }
+  return it.bcr;
+}
 /* which slots one card could fill: a slot that takes its item class, or the tree's own sockets for a jewel */
 function slotsFor(it){
   const cr = classOf(it);
@@ -113,6 +133,10 @@ function slotsFor(it){
 }
 // a support is a gem the game's own tags call one, which is where the word comes from and not a list here
 const isSupport = it => (it.tags || []).some(t => /^support$/i.test(t));
+/* How many supports the link still has room for. The two numbers are the owner's own knowledge of the game
+   and the export states neither, so M.SOURCE.sockets travels with every count this draws. */
+const gemList = g => [...g.sk.map(k => ({k, support: false})), ...g.sup.map(k => ({k, support: true}))];
+const roomFor = g => M.socketsLeft(gemList(g)).room;
 const poolable = it => ['g', 'u', 'b', 'p', 't', 'c'].includes(it.k);
 /* what a pooled card would fill, in a word: what the checkbox row says beside the file's name */
 function fillsWhat(it){
@@ -126,7 +150,8 @@ function fillsWhat(it){
 }
 
 /* ---------- the files ---------- */
-const blank = n => ({v: 1, id: '', n, st: 0, gear: {}, jewels: [], cl: [], pool: [], at: Date.now()});
+const blank = n => ({v: 1, id: '', n, st: 0, cls: '', lv: 1, gear: {}, jewels: [], cl: [],
+  gems: {sk: [], sup: []}, pool: [], at: Date.now()});
 let B = null;                     // what the session holds
 const put = (k, v) => { try { sessionStorage.setItem(k, JSON.stringify(v)); } catch {} };
 const get = k => { try { const s = sessionStorage.getItem(k); return s ? JSON.parse(s) : null; } catch { return null; } };
@@ -136,7 +161,12 @@ function held(){
   const was = get(KEY);
   B = was && was.v === 1 && Array.isArray(was.files) ? was : {v: 1, files: [], on: ''};
   B.files = B.files.filter(f => f && f.v === 1 && f.n).slice(0, OPEN);
-  for(const f of B.files) f.jewels = (f.jewels || []).map(x => typeof x === 'string' ? {k: x, c: ''} : x || null);
+  for(const f of B.files){
+    f.jewels = (f.jewels || []).map(x => typeof x === 'string' ? {k: x, c: ''} : x || null);
+    if(!f.gems || !Array.isArray(f.gems.sk)) f.gems = {sk: [], sup: []};
+    if(typeof f.lv !== 'number') f.lv = 1;
+    if(typeof f.cls !== 'string') f.cls = '';
+  }
   return B;
 }
 /* A file over the cap is refused with its size on screen, never trimmed behind the player: the change is
@@ -418,6 +448,10 @@ function view(f, d){
     id: f.id, n: f.n, st: f.st, starts: SHAPE ? SHAPE.sn : [],
     files: held().files.map(x => ({id: x.id, n: x.n, on: x.id === f.id})), open: OPEN,
     rows: budgetRows(f, d),
+    cls: f.cls || '', lv: f.lv || 1, classes: GAME ? (GAME.classes || []).map(c => c.n) : [],
+    link: gemView(f), opt: f.opt || null, run: RUN && RUN.id === f.id ? runView() : null, show: SHOW,
+    live: liveFor(f, (f.opt && f.opt.aim) || SHOW),
+    said: f.optsaid || '',
     supports: f.pool.filter(k => { const c = D.byKey.get(k); return c && c.k === 'g' && isSupport(c); }).length,
     jewels: {held: f.jewels.filter(Boolean).length, of: sockets, rows: jewelRows(f, p)},
     points: {steps: p.steps, path: p.path.length, total: p.total},
@@ -539,6 +573,18 @@ function onBuild(what, el, e){
     if(it) openDetail(it, {nested: true}, hrefOf(it));
     return;
   }
+  if(verb === 'opt'){ press(f); return void paint(); }
+  if(verb === 'show'){ SHOW = rest; return void paint(); }
+  if(verb === 'takeaim'){ takeAnswer(f, rest); return; }
+  if(verb === 'back'){ putBack(f, +rest); return; }
+  if(verb === 'backall'){ putAllBack(f); return; }
+  if(verb === 'dropgem'){
+    f.gems.sk = f.gems.sk.filter(k => k !== rest);
+    f.gems.sup = f.gems.sup.filter(k => k !== rest);
+    return void paint();
+  }
+  if(verb === 'cls'){ f.cls = el.value; return void paint(); }
+  if(verb === 'lv'){ f.lv = Math.max(1, Math.min(100, Number(el.value) || 1)); return void paint(); }
   if(verb === 'chip'){ CHIP = rest; return void paint(); }
   if(verb === 'file'){ held().on = rest; save(); return void paint(); }
   if(verb === 'new'){ newFile(); return void paint(); }
@@ -557,6 +603,17 @@ function choose(f, it){
     f.jewels[at < 0 ? f.jewels.length : at] = {k: it.k + ':' + it.id, c: ''};
     return;
   }
+  /* A gem lands in the link. A skill goes in as a skill; a second one is the skill the first casts, and the
+     game counts both towards the six. A support takes a socket while there is one (assets/maths.js
+     SOCKETS, and SOURCE.sockets says where the two numbers come from). */
+  if(it.k === 'g'){
+    const key = it.k + ':' + it.id;
+    const g = f.gems;
+    if(g.sk.includes(key) || g.sup.includes(key)) return;
+    if(!isSupport(it)){ if(g.sk.length < M.SOCKETS.chain - 1) g.sk.push(key); return; }
+    if(g.sup.length < roomFor(g)) g.sup.push(key);
+    return;
+  }
   const slots = slotsFor(it);
   const free = slots.find(s => !f.gear[s]) || slots[0];
   if(free) f.gear[free] = {k: it.k + ':' + it.id, want: {}, ilvl: X.ilvl, open: false};
@@ -569,6 +626,12 @@ export function fill(host, it){
   const v = it && it.build;
   if(!host || !v) return;
   if(host.dataset.fill === 'buildfiles') return void files(host, v);
+  if(host.dataset.fill === 'optimise'){
+    const f = current();
+    if(f) optBox(host, v, f);
+    if(f && !RUN) liveWork(f, (f.opt && f.opt.aim) || SHOW);
+    return;
+  }
   const node = document.createElement('div');
   node.className = 'bd-box';
   const chips = [['all', 'All', v.pool.length, 0]]
@@ -628,7 +691,605 @@ function files(host, v){
         '<select class="field" data-do="start">' + v.starts.map((n, i) =>
           '<option value="' + i + '"' + (i === v.st ? ' selected' : '') + '>' + esc(n) + '</option>').join('') +
         '</select></label>' : '') +
+      (v.classes.length ? '<label class="bn-lab"><span class="lbl">Class</span>' +
+        '<select class="field" data-do="cls"><option value="">None</option>' + v.classes.map(n =>
+          '<option value="' + esc(n) + '"' + (n === v.cls ? ' selected' : '') + '>' + esc(n) + '</option>').join('') +
+        '</select></label>' : '') +
+      '<label class="bn-lab"><span class="lbl">Level</span>' +
+        '<input class="field" type="number" min="1" max="100" data-do="lv" value="' + (v.lv || 1) + '"></label>' +
     '</div>' +
-    '<p class="card-src">Which class starts where is not in the files we read, so the start is the tree’s own.</p>';
+    '<p class="card-src">Which class starts where is not in the files we read, so the start is the tree’s own '
+      + 'and the class is the game’s.</p>';
   host.replaceChildren(node);
+}
+
+/* ---------- the numbers, and what is still open ----------
+   Everything below answers the optimise button and the live list under it. The rules are assets/maths.js and
+   the search is assets/optimise.js; what is here is the part only this card knows — which of its own things
+   are still open, what each one would put on the build, and what it costs.
+
+   docs/proposal-builder.md section 4. Two data files come in for it: the game's own class and monster table,
+   and the support lines tools/gemlines.py distils. Both are fetched the first time the button is pressed and
+   never on a first paint. */
+let GAME = null;                  // data/gamestats.json: what a class starts with, one monster per level
+let GEM = null;                   // data/gemlines.json: a support's lines, with its frame off
+async function optData(){
+  if(GAME && GEM) return true;
+  try {
+    const [g, m] = await Promise.all([
+      GAME || json('data/gamestats.json'), GEM || json('data/gemlines.json'),
+    ]);
+    GAME = GAME || g; GEM = GEM || m;
+    return true;
+  } catch { return false; }
+}
+const classRow = f => (GAME && (GAME.classes || []).find(c => c.n === f.cls)) || null;
+
+/* What an item carries before a line on it is read: the game prints Armour, Evasion and Energy Shield on the
+   item, and a line of its own that names one of them is already inside that number. A base prints one number
+   and a unique prints a range — the range is read at its floor, which is the reading that does not flatter. */
+const DEF = /^(Armour|Evasion Rating|Evasion|Energy Shield):\s*\(?(-?[\d.]+)/;
+function defenceOf(it){
+  const out = {armour: 0, evasion: 0, es: 0};
+  for(const l of (it && it.pr) || []){
+    const m = String(l).match(DEF);
+    if(!m) continue;
+    out[{Armour: 'armour', Evasion: 'evasion', 'Evasion Rating': 'evasion', 'Energy Shield': 'es'}[m[1]]] += Number(m[2]) || 0;
+  }
+  return out;
+}
+/* A rare's own lines, out of the families the player aimed at: the tier this item level reaches, read at the
+   bottom of its range. What the player aims at is the top, and the row says both. */
+function aimedLines(P, got, want){
+  const out = [];
+  if(!P) return out;
+  for(const [f, v] of Object.entries(want || {})){
+    const tier = tierFor(P, got, f, v);
+    if(tier) out.push(...E.withValues(P.mods[tier.i][3], tier.lo));
+  }
+  return out;
+}
+function tierFor(P, got, f, v){
+  const ilvl = got.ilvl || (X ? X.ilvl : 0);
+  let best = null;
+  for(let i = 0; i < P.mods.length; i++){
+    const m = P.mods[i];
+    if(String(m[1]) !== String(f) || m[2] > ilvl) continue;
+    if(v !== 1 && m[5] !== null && m[6] !== null && !(v >= m[5] && v <= m[6])) { if(best) continue; }
+    if(!best || m[2] > P.mods[best.i][2]) best = {i};
+  }
+  if(!best) return null;
+  const m = P.mods[best.i];
+  const n = (m[3] || []).join(' ').match(E.RANGE);
+  return {i: best.i, lo: (n || []).map((_, k) => rangeEnd(m[3], k, 0)),
+    hi: (n || []).map((_, k) => rangeEnd(m[3], k, 1))};
+}
+function rangeEnd(lines, k, end){
+  const all = [];
+  for(const ln of lines) for(const m of String(ln).matchAll(E.RANGE)) all.push([Number(m[1]), Number(m[2])]);
+  const pair = all[k] || [0, 0];
+  return end ? Math.max(pair[0], pair[1]) : Math.min(pair[0], pair[1]);
+}
+
+/* Every line the build already carries: the gear, the jewels, the clusters and the link. A cluster node with
+   no card of its own carries no line here, the way the Build tab says a passive its data does not carry. */
+function linesOfFile(f, d, p){
+  const out = [];
+  for(const [id] of SLOTS){
+    const got = f.gear[id];
+    const it = got && D.byKey.get(got.k);
+    if(!it) continue;
+    if(it.k === 'u') for(const l of it.ls || []) out.push(l);
+    if(it.k === 'b') out.push(...aimedLines(d[id], got, got.want));
+  }
+  for(const got of f.jewels) {
+    const it = got && D.byKey.get(got.k);
+    if(it) for(const l of it.ls || []) out.push(l);
+  }
+  for(const s of p.steps) for(const at of s.took){
+    const c = cardAt(at);
+    if(c) for(const l of c.ls || []) out.push(l);
+  }
+  for(const l of supportLines(f.gems.sup)) out.push(l);
+  return out;
+}
+/* A support's lines, off data/gemlines.json, which is keyed by the card's own id and never shows one. */
+function supportLines(keys){
+  const out = [];
+  if(!GEM) return out;
+  for(const k of keys || []) for(const i of GEM.g[String(k).slice(2)] || []) out.push(GEM.w[i]);
+  return out;
+}
+const gearSum = f => {
+  const out = {armour: 0, evasion: 0, es: 0};
+  for(const [id] of SLOTS){
+    const got = f.gear[id], it = got && D.byKey.get(got.k);
+    if(!it) continue;
+    const d = defenceOf(it);
+    out.armour += d.armour; out.evasion += d.evasion; out.es += d.es;
+  }
+  return out;
+};
+/* The weapon it swings, out of the base's own card: what a base is worth is a card on this site already. */
+function weaponOf(f){
+  const got = f.gear.weapon, it = got && D.byKey.get(got.k);
+  if(!it) return null;
+  const pr = it.pr || [];
+  const take = re => { for(const l of pr){ const m = String(l).match(re); if(m) return m; } return null; };
+  const dmg = take(/^\w* ?Damage: \(?(-?[\d.]+)-\(?(-?[\d.]+)/);
+  const rate = take(/^Attacks per Second: \(?([\d.]+)/);
+  const crit = take(/^Critical Hit Chance: \(?([\d.]+)/);
+  if(!dmg || !rate) return null;
+  return {dmg: [Number(dmg[1]), Number(dmg[2])], rate: Number(rate[1]),
+    crit: crit ? Number(crit[1]) : 0, quality: 0};
+}
+
+/* ---------- what is still open ----------
+   Only what is open, and never a choice the player made. A slot they filled, a modifier they picked, a
+   cluster they took: the search treats every one of them as fixed, which is what makes the change list
+   mean anything (docs/proposal-builder.md 4.1). */
+const priceOf = k => {
+  const r = D.market && D.market.items && D.market.items[k];
+  return r && r.v !== undefined ? r.v : null;
+};
+/* The fewest steps from what is allocated to every node at once: one pass, not one per cluster. Point cost
+   is counted from what is allocated, so two clusters that share a road are each costed the whole road —
+   over-stated and never under-stated, and the plan re-counts it for real once they are taken. */
+function reachAll(alloc){
+  const A = adj(), dist = new Int32Array(A.length).fill(-1), q = [];
+  for(const h of alloc){ dist[h] = 0; q.push(h); }
+  for(let i = 0; i < q.length; i++) for(const m of A[q[i]]) if(dist[m] < 0){ dist[m] = dist[q[i]] + 1; q.push(m); }
+  return dist;
+}
+/* Which supports the skill's own type list admits: every tag the support carries other than Support has to
+   be one the skill carries. 512 of the game's own 4,746 recommended entries fall outside this reading, so
+   the card says the count is our reading of the list and not the game's own word. */
+function admits(sup, skill){
+  const have = new Set(skill.tags || []);
+  return (sup.tags || []).every(t => /^support$/i.test(t) || have.has(t));
+}
+function openings(f, d, p){
+  const out = [];
+  const pool = f.pool.map(k => D.byKey.get(k)).filter(Boolean);
+  // an empty gear slot, out of what was pooled for it
+  for(const [id, label] of SLOTS){
+    if(f.gear[id]) continue;
+    for(const it of pool){
+      if(!slotsFor(it).includes(id)) continue;
+      out.push({kind: 'gear', fills: 'gear:' + id, slot: id, what: label, to: it.n, key: it.k + ':' + it.id,
+        lines: it.k === 'u' ? (it.ls || []) : [], gear: defenceOf(it), points: 0,
+        price: priceOf(it.k + ':' + it.id), put: {do: 'gear', slot: id, k: it.k + ':' + it.id}});
+    }
+  }
+  // a rare already chosen, with a side still open: one family at a time, at the tier this level reaches
+  for(const [id, label] of SLOTS){
+    const got = f.gear[id];
+    const it = got && D.byKey.get(got.k);
+    if(!it || it.k !== 'b' || !d[id]) continue;
+    const P = d[id], base = (P.bases || []).find(b => b.n === it.n);
+    const cl = clsOf(classOf(it));
+    if(!base || !cl) continue;
+    const caps = E.capsOf(cl, base, 'rare');
+    const held = Object.keys(got.want || {});
+    const room = {p: caps[0] - held.filter(x => P.fam[x] && P.fam[x][0] === 'p').length,
+                  s: caps[1] - held.filter(x => P.fam[x] && P.fam[x][0] === 's').length};
+    for(const fam of families(P, base, got, id)){
+      if(fam.v !== undefined) continue;                    // a modifier the player picked is fixed
+      if(room[fam.side] <= 0) continue;
+      const tier = tierFor(P, got, fam.f, 1);
+      if(!tier) continue;
+      out.push({kind: 'mod', fills: 'mod:' + id + '/' + fam.f, slot: id, side: fam.side,
+        caps: {p: caps[0], s: caps[1]}, what: label, to: E.withValues(P.mods[tier.i][3], tier.hi).join(' / '),
+        lines: E.withValues(P.mods[tier.i][3], tier.lo), gear: {}, points: 0, price: null,
+        floor: E.withValues(P.mods[tier.i][3], tier.lo).join(' / '),
+        put: {do: 'roll', slot: id, fam: fam.f, v: tier.hi[0] === undefined ? 1 : tier.hi[0]}});
+    }
+  }
+  // an empty support socket, out of every support the skill's own type list admits
+  const skill = f.gems.sk.length ? D.byKey.get(f.gems.sk[0]) : null;
+  const room = roomFor(f.gems);
+  if(skill && GEM) for(let n = f.gems.sup.length; n < room; n++){
+    for(const it of D.index.items){
+      if(it.k !== 'g' || !isSupport(it) || !admits(it, skill)) continue;
+      const key = 'g:' + it.id;
+      if(f.gems.sup.includes(key)) continue;
+      const lines = supportLines([key]);
+      if(!lines.length) continue;
+      out.push({kind: 'support', fills: 'sup:' + n, what: 'Support ' + (n + 1), to: it.n, key,
+        lines, gear: {}, points: 0, price: priceOf(key), put: {do: 'sup', k: key}});
+    }
+    break;                       // one socket's worth of candidates; the next step fills the next socket
+  }
+  // a cluster not taken, costed from what is allocated
+  if(CLUST && SHAPE){
+    const dist = reachAll(p.alloc);
+    const took = new Set(f.cl.map(c => c.c));
+    for(let j = 0; j < CLUST.id.length; j++){
+      const id = CLUST.id[j];
+      if(took.has(id)) continue;
+      const card = D.byKey.get('t:' + id);
+      if(!card || !(card.ls || []).length) continue;
+      const at = CLUST.at[j];
+      const reach = dist[at];
+      if(reach < 0) continue;                              // nothing wanted is reachable from what is allocated
+      out.push({kind: 'cluster', fills: 'cl:' + id, what: 'Cluster', to: card.n, key: 't:' + id,
+        lines: card.ls || [], gear: {}, points: reach, price: null,
+        put: {do: 'cluster', id, at}});
+    }
+  }
+  // a jewel socket, out of what was pooled
+  const sockets = SHAPE ? SHAPE.t.reduce((n, t) => n + (t === JEWEL ? 1 : 0), 0) : 0;
+  for(let i = 0; i < sockets; i++){
+    if(f.jewels[i]) continue;
+    for(const it of pool){
+      if(classOf(it) !== 'jewel') continue;
+      out.push({kind: 'jewel', fills: 'jw:' + i, what: 'Jewel', to: it.n, key: it.k + ':' + it.id,
+        lines: it.ls || [], gear: {}, points: 0, price: priceOf(it.k + ':' + it.id),
+        put: {do: 'jewel', i, k: it.k + ':' + it.id}});
+    }
+    break;
+  }
+  return out;
+}
+
+/* ---------- the run ----------
+   Three answers, one clock. A first answer on a beam of one, then the full pass on a beam of four with the
+   pair pass behind it, all three sharing the 3 second cap the press is given. The work is done in slices
+   between frames, so the page never stops answering and the button says how far it has got. */
+const AIMS = O.AIMS;
+let RUN = null;                   // the press in flight: the three searches, and what they have reached
+let SHOW = 'both';                // which of the three answers the rows are drawn from
+
+async function stateOf(f){
+  const d = await classFiles(f);
+  const p = SHAPE ? plan(f) : {alloc: new Set(), steps: [], path: [], total: 0};
+  const lines = linesOfFile(f, d, p);
+  const had = M.read(lines);
+  return {S: {level: Math.max(1, f.lv || 1), cls: classRow(f), stats: had.stats, gear: gearSum(f),
+    weapon: weaponOf(f), points: {spent: p.total, cap: Math.max(1, f.lv || 1)},
+    open: openings(f, d, p)}, had, p, d};
+}
+/* One press. It never writes to the build: it works three answers out and the player takes one. */
+async function press(f){
+  if(!(await optData())) return void fault(f, 'The game’s own tables did not load.');
+  const {S, had} = await stateOf(f);
+  const t0 = performance.now();
+  RUN = {id: f.id, at: t0, S, had, tried: 0, ms: 0, first: 0, done: false,
+    answers: {}, runs: {}, phase: 'first'};
+  for(const [a] of AIMS) RUN.runs[a] = O.start(S, a, {beam: 1, pairs: false, cap: O.FIRST});
+  slice();
+}
+function fault(f, why){
+  f.optsaid = why;
+  paint();
+}
+/* One slice of work, then back to the page. */
+function slice(){
+  const run = RUN;
+  if(!run || run.done) return;
+  const gone = performance.now() - run.at;
+  const left = O.CAP - gone;
+  if(left <= 0) return void finish('clock');
+  // the 250 milliseconds to a first answer is the press's, not each aim's: three of them share it, and
+  // whatever the beam of one has reached when it runs out is the first answer
+  const spent = run.phase === 'first' && gone >= O.FIRST;
+  let all = true;
+  for(const [a] of AIMS){
+    const s = run.runs[a];
+    if(s.state.done || spent) continue;
+    s.tick(Math.min(8, Math.max(1, left)));
+    if(!s.state.done) all = false;
+  }
+  if(run.phase === 'first' && performance.now() - run.at >= O.FIRST) all = true;
+  for(const [a] of AIMS) run.answers[a] = run.runs[a].answer;
+  run.tried = AIMS.reduce((n, [a]) => n + run.runs[a].state.tried, 0);
+  run.ms = performance.now() - run.at;
+  if(all && run.phase === 'first'){
+    run.first = run.ms;
+    run.phase = 'full';
+    for(const [a] of AIMS){                    // the first answers stand until the full pass beats them
+      const st = run.runs[a].state;
+      if(!st.done){ st.done = true; st.stopped = st.stopped || 'clock'; }
+      run.answers[a] = run.runs[a].answer;
+    }
+    for(const [a] of AIMS) run.runs[a] = O.start(run.S, a, {cap: O.CAP - run.ms});
+    paint();
+    return void requestAnimationFrame(slice);
+  }
+  if(all) return void finish('');
+  paint();
+  requestAnimationFrame(slice);
+}
+function finish(why){
+  if(!RUN) return;
+  RUN.done = true;
+  RUN.ms = performance.now() - RUN.at;
+  // an aim that ran its own clock out stopped at the cap, whether or not the press noticed first
+  RUN.stopped = why || (AIMS.some(([a]) => RUN.runs[a].state.stopped === 'clock') ? 'clock' : '');
+  for(const [a] of AIMS){
+    const st = RUN.runs[a].state;
+    if(why === 'clock' && !st.done){ st.done = true; st.stopped = 'clock'; }
+    RUN.answers[a] = RUN.runs[a].answer;
+  }
+  RUN.tried = AIMS.reduce((n, [a]) => n + RUN.runs[a].state.tried, 0);
+  paint();
+}
+
+/* ---------- taking an answer, and putting it back ----------
+   Every change is a row with its own put-back, and Put all back returns the build to exactly what it was
+   before the button, out of the state written before the search started (4.5). */
+const snapOf = f => JSON.stringify({gear: f.gear, jewels: f.jewels, cl: f.cl, gems: f.gems});
+function applyOne(f, put){
+  if(put.do === 'gear') f.gear[put.slot] = {k: put.k, want: {}, ilvl: X.ilvl, open: false};
+  else if(put.do === 'roll'){ const got = f.gear[put.slot]; if(got) got.want[put.fam] = put.v; }
+  else if(put.do === 'sup'){ if(!f.gems.sup.includes(put.k)) f.gems.sup.push(put.k); }
+  else if(put.do === 'cluster'){ if(!f.cl.some(c => c.c === put.id)) f.cl.push({c: put.id, take: [put.at]}); }
+  else if(put.do === 'jewel') f.jewels[put.i] = {k: put.k, c: ''};
+}
+function undoOne(f, put){
+  if(put.do === 'gear') delete f.gear[put.slot];
+  else if(put.do === 'roll'){ const got = f.gear[put.slot]; if(got) delete got.want[put.fam]; }
+  else if(put.do === 'sup') f.gems.sup = f.gems.sup.filter(k => k !== put.k);
+  else if(put.do === 'cluster') f.cl = f.cl.filter(c => c.c !== put.id);
+  else if(put.do === 'jewel') f.jewels[put.i] = null;
+}
+/* Taking an answer writes the rows onto the build, in the order they were made, and keeps what it was. */
+function takeAnswer(f, aim){
+  const A = RUN && RUN.answers[aim];
+  if(!A || !A.rows.length) return;
+  const was = snapOf(f);
+  const rows = A.rows.map(r => ({what: r.x.what, to: r.x.to, kind: r.x.kind, key: r.x.key || '',
+    put: r.x.put, price: r.x.price, points: r.x.points || 0, moved: r.moved, back: false,
+    floor: r.x.floor || ''}));
+  for(const r of rows) applyOne(f, r.put);
+  f.opt = {aim, rows, was, tried: RUN.tried, ms: Math.round(RUN.ms), left: A.left || null,
+    stopped: A.stopped || RUN.stopped || '', steps: A.steps, of: A.of};
+  RUN = null;
+  paint();
+}
+/* One row back. The numbers are re-run, because a later change may have depended on it: a row whose own
+   gain has gone says so and offers to go back too, and nothing is unwound behind the player. */
+async function putBack(f, i){
+  const o = f.opt;
+  if(!o || !o.rows[i] || o.rows[i].back) return;
+  undoOne(f, o.rows[i].put);
+  o.rows[i].back = true;
+  await restate(f);
+  paint();
+}
+function putAllBack(f){
+  const o = f.opt;
+  if(!o) return;
+  const was = JSON.parse(o.was);
+  f.gear = was.gear; f.jewels = was.jewels; f.cl = was.cl; f.gems = was.gems;
+  f.opt = null;
+  paint();
+}
+/* After a put-back, every row still on the build is re-costed against the build as it now stands. A row
+   worth nothing any more is the one that depended on the row that went back. */
+async function restate(f){
+  const o = f.opt;
+  if(!o || !(await optData())) return;
+  const gone = o.rows.some(z => z.back);
+  const {S} = await stateOf(f);
+  const now = O.numbers(S);
+  for(const r of o.rows){
+    if(r.back){ r.depends = false; continue; }
+    undoOne(f, r.put);
+    const {S: less} = await stateOf(f);
+    applyOne(f, r.put);
+    const off = O.numbers(less);
+    // it is on the build and the build is no better for it: what made it worth taking has gone back
+    r.depends = gone && now.dps <= off.dps * (1 + 1e-9) && now.life <= off.life * (1 + 1e-9);
+  }
+}
+
+/* The live list: the best few changes the same search would make, worked out on the card as it stands and
+   redone when it changes. One step of the same machine over the same candidates, so nothing here is a second
+   opinion. Kept against what the file looked like when it was worked out, because a paint is not a change. */
+let LIVE = null;
+function liveFor(f, aim){
+  const sig = f.id + '|' + aim + '|' + f.lv + '|' + f.cls + '|' + snapOf(f) + '|' + f.pool.join(',');
+  if(LIVE && LIVE.sig === sig) return LIVE.out;
+  return null;
+}
+async function liveWork(f, aim){
+  if(!(await optData())) return;
+  const sig = f.id + '|' + aim + '|' + f.lv + '|' + f.cls + '|' + snapOf(f) + '|' + f.pool.join(',');
+  if(LIVE && LIVE.sig === sig) return;
+  const {S} = await stateOf(f);
+  const r = O.wouldImprove(S, aim, 3);
+  LIVE = {sig, out: {ms: Math.round(r.ms), tried: r.tried, open: S.open.length,
+    list: r.list.map(x => ({what: x.what, to: x.to, key: x.key || '', points: x.points || 0,
+      price: x.price, moved: movedFor(S, x)}))}};
+  paint();
+}
+/* What one change on its own would do to the build as it stands: the same search, given that one change and
+   one step to make it. */
+function movedFor(S, x){
+  const z = O.run({...S, open: [x]}, 'both', {steps: 1, pairs: false});
+  return z.rows.length ? z.rows[0].moved : null;
+}
+
+/* ---------- what the optimise field is holding ----------
+   The link, the three answers, the rows the button wrote and what it left. Nothing is worked out here that
+   is not worked out above: this is the shape the card reads. */
+function gemView(f){
+  const list = gemList(f.gems);
+  const left = M.socketsLeft(list);
+  const card = k => { const it = D.byKey.get(k); return it ? {k, n: it.n, img: it.img} : null; };
+  return {sk: f.gems.sk.map(card).filter(Boolean), sup: f.gems.sup.map(card).filter(Boolean),
+    room: left.room, held: left.held, over: left.over, skills: left.skills, why: M.SOURCE.sockets};
+}
+function runView(){
+  const out = {phase: RUN.phase, done: RUN.done, ms: Math.round(RUN.ms), first: Math.round(RUN.first),
+    tried: RUN.tried, stopped: RUN.stopped || '', answers: []};
+  for(const [a, label] of AIMS){
+    const A = RUN.answers[a];
+    if(!A) continue;
+    out.answers.push({a, label, rows: A.rows.length, steps: A.steps, of: A.of, ms: Math.round(A.ms),
+      tried: A.tried, pairs: A.pairs, stopped: A.stopped,
+      moved: A.rows.length ? O.moved(A.was, A.now) : null,
+      ties: (A.ties || []).map(t => ({n: t.x.to, what: t.x.what, by: t.by || ''})),
+      points: A.points});
+  }
+  return out;
+}
+const num = v => !isFinite(v) ? '—' : Math.abs(v) >= 1e6 ? (v / 1e6).toFixed(1) + 'M'
+  : Math.abs(v) >= 1e4 ? Math.round(v / 1e3) + 'k' : String(Math.round(v));
+const pct = v => (v >= 0 ? '+' : '') + v.toFixed(1) + '%';
+/* What one change did, in a word and a number: whichever of the two it moved most. */
+function movedSaid(m){
+  if(!m) return '';
+  const out = [];
+  if(Math.abs(m.dpsPct) >= 0.05) out.push(pct(m.dpsPct) + ' damage');
+  if(Math.abs(m.lifePct) >= 0.05) out.push(pct(m.lifePct) + ' effective life');
+  return out.join(' · ') || 'nothing it counts';
+}
+
+/* ---------- what it left on the table ----------
+   Counted, never rounded up: the budgets still open, the pool it did not use with the reason in a word, the
+   points not spent, and what it cost where there is a real price. A rare is not a listed thing, so the picks
+   with no price are counted beside the total and never folded into it. */
+function leftOf(f, v){
+  const rows = (f.opt && f.opt.rows.filter(r => !r.back)) || [];
+  const used = new Set(rows.map(r => r.key).filter(Boolean));
+  const slots = SLOTS.filter(([id]) => !f.gear[id]).map(([, n]) => n);
+  const jewels = v.jewels.of - v.jewels.held;
+  /* Why a pooled card went unused, in a word. A search that stopped at the cap or at a tie did not weigh it
+     and find it wanting: it never got to it, and the word says so. */
+  const weighed = f.opt && (!f.opt.stopped || f.opt.stopped === 'nothing');
+  const open = weighed ? 'worse' : 'not reached';
+  const why = it => {
+    const k = it.k + ':' + it.id;
+    if(used.has(k)) return '';
+    if(it.k === 't') return f.cl.some(c => c.c === it.id) ? 'taken' : open;
+    if(classOf(it) === 'jewel') return jewels > 0 ? open : 'no socket open';
+    if(it.k === 'g') return isSupport(it) ? (v.link.room > v.link.held ? open : 'no socket open') : 'in the link';
+    const s = slotsFor(it);
+    if(!s.length) return 'nothing it fits';
+    return s.some(x => !f.gear[x]) ? open : 'no slot open';
+  };
+  const spare = f.pool.map(k => D.byKey.get(k)).filter(Boolean)
+    .map(it => ({n: it.n, why: why(it)})).filter(x => x.why);
+  let paid = 0, priced = 0, free = 0;
+  for(const r of rows){
+    if(r.price != null){ paid += r.price; priced++; } else free++;
+  }
+  return {slots, jewels, spare, points: Math.max(0, (f.lv || 1) - v.points.total),
+    supports: Math.max(0, v.link.room - v.link.held), paid, priced, free};
+}
+
+/* ---------- the optimise field ---------- */
+function optBox(host, v, f){
+  const node = document.createElement('div');
+  node.className = 'bd-opt';
+  const run = v.run, opt = v.opt;
+  const left = leftOf(f, v);
+  const aim = (opt && opt.aim) || v.show;
+  const chips = AIMS.map(([a, label]) =>
+    '<button type="button" class="chip" data-do="show:' + a + '" aria-pressed="' + (aim === a) + '">' +
+    esc(label) + '</button>').join('');
+  node.innerHTML =
+    '<p class="bn-h4">Optimise <span>' + v.link.held + ' of ' + v.link.room + ' supports</span></p>' +
+    linkHTML(v) +
+    '<div class="bd-chips">' + chips + '</div>' +
+    '<div class="bn-ctl">' +
+      '<button type="button" class="btn gold" data-do="opt"' + (run && !run.done ? ' disabled' : '') + '>' +
+        (run && !run.done ? 'Working' : 'Optimise') + '</button>' +
+      (opt ? '<button type="button" class="btn" data-do="backall">Put all back</button>' : '') +
+    '</div>' +
+    (v.said ? '<p class="note">' + esc(v.said) + '</p>' : '') +
+    (run ? runHTML(run, aim) : '') +
+    (!run && !opt ? liveHTML(v.live) : '') +
+    (opt ? rowsHTML(opt) : '') +
+    leftHTML(left, v) +
+    '<p class="note">This is not the best build. It is the best of what it tried, out of what you pooled.</p>' +
+    '<p class="card-src">' + esc(M.SOURCE.sockets) + '</p>' +
+    '<p class="card-src">' + esc(M.SOURCE.order) + ' ' + esc(M.BASE_SOURCE) + '</p>';
+  host.replaceChildren(node);
+}
+
+/* The live list, before the button is pressed: the best few the same search would take. */
+function liveHTML(live){
+  if(!live) return '<p class="note">Working out what is open.</p>';
+  if(!live.list.length) return '<p class="bn-h4">What would improve this</p>' +
+    '<p class="note">Nothing in the pool improves this. ' + live.tried.toLocaleString() + ' changes tried.</p>';
+  return '<p class="bn-h4">What would improve this <span>' + live.open.toLocaleString() + ' open</span></p>' +
+    '<ul class="bd-spare bd-live">' + live.list.map(x =>
+      '<li><b>' + esc(x.what + ' · ' + x.to) + '</b><span>' + esc(movedSaid(x.moved)) + '</span></li>').join('') +
+    '</ul>';
+}
+/* The link: the skill, the skill it casts where there is one, and the supports in it. */
+function linkHTML(v){
+  const g = v.link;
+  const tile = (c, w) => '<li><button type="button" class="bn-gt" data-do="see:' + esc(c.k) + '">' +
+    '<span>' + esc(c.n) + '</span><i>' + esc(w) + '</i></button>' +
+    '<button type="button" class="bn-x" data-do="dropgem:' + esc(c.k) + '" aria-label="Out of the link">Remove</button></li>';
+  const list = [...g.sk.map((c, i) => tile(c, i ? 'Casts' : 'Skill')), ...g.sup.map(c => tile(c, 'Support'))];
+  return '<ul class="bd-link">' + (list.length ? list.join('')
+    : '<li class="bd-none"><p class="note">Nothing in the link.</p></li>') + '</ul>' +
+    (g.over ? '<p class="note">' + g.over + ' more than the link holds.</p>' : '');
+}
+
+/* What the press has reached: three answers, side by side, each with what it moved and what it cost. */
+function runHTML(run, aim){
+  const said = run.done
+    ? (run.stopped === 'clock' ? 'Stopped at 3 seconds. ' + run.tried.toLocaleString() + ' changes tried.'
+       : run.tried.toLocaleString() + ' changes tried in ' + run.ms + 'ms.')
+    : (run.phase === 'first' ? 'First answer' : run.ms + 'ms · ' + run.tried.toLocaleString() + ' tried');
+  const cell = a => {
+    const on = a.a === aim;
+    return '<li' + (on ? ' class="on"' : '') + '><p class="bd-al">' + esc(a.label) + '</p>' +
+      '<p class="bd-am">' + esc(a.rows ? movedSaid(a.moved) : 'Nothing improves it') + '</p>' +
+      '<p class="note">' + a.rows + (a.rows === 1 ? ' change' : ' changes') +
+        (a.points ? ' · ' + a.points + ' points' : '') + ' · ' + a.steps + ' of ' + a.of + ' steps</p>' +
+      (a.stopped === 'clock' ? '<p class="note">Stopped at the cap.</p>' : '') +
+      (a.rows ? '<button type="button" class="btn" data-do="takeaim:' + a.a + '">Take</button>' : '') +
+      (a.ties.length ? '<p class="note">' + a.ties.length + ' score the same, so it took none of them: ' +
+        esc(a.ties.map(t => t.n + (t.by ? ' (' + t.by + ')' : '')).join(', ')) + '</p>' : '') +
+      '</li>';
+  };
+  return '<p class="bn-h4">Answers <span>' + esc(said) + '</span></p>' +
+    '<ul class="bd-ans">' + run.answers.map(cell).join('') + '</ul>' +
+    (run.first ? '<p class="note">First answer at ' + run.first + 'ms.</p>' : '');
+}
+
+/* Every change is a row with its own put-back. A row a later one leaned on says so rather than going back
+   behind the player. */
+function rowsHTML(o){
+  const live = o.rows.filter(r => !r.back).length;
+  return '<p class="bn-h4">It filled ' + live + (live === 1 ? ' thing' : ' things') + ' <span>' +
+      esc(O.aimName(o.aim)) + '</span></p>' +
+    '<ul class="bn-log bd-rows">' + o.rows.map((r, i) =>
+      '<li class="' + (r.back ? 'no' : 'on') + '">' +
+        '<span class="bn-sn">' + esc(r.what) + (r.points ? ' <i>' + r.points + ' points</i>' : '') + '</span>' +
+        '<span class="bn-sw">' + esc(movedSaid(r.moved)) + '</span>' +
+        '<span class="bn-sl">' + esc(r.to) + '</span>' +
+        (r.back ? '<span class="bn-snote">Put back.</span>' : '') +
+        (r.floor && !r.back ? '<span class="bn-snote">Counted at ' + esc(r.floor) + '</span>' : '') +
+        (r.depends && !r.back ? '<span class="bn-snote">Depends on the one you put back.</span>' : '') +
+        (r.back ? '' : '<button type="button" class="bn-x" data-do="back:' + i + '">Put back</button>') +
+      '</li>').join('') + '</ul>' +
+    (o.stopped === 'clock' ? '<p class="note">Stopped at 3 seconds, ' + o.steps + ' of ' + o.of + ' steps.</p>' : '');
+}
+
+function leftHTML(left, v){
+  const bits = [];
+  if(left.slots.length) bits.push(left.slots.length + ' gear ' + (left.slots.length === 1 ? 'slot' : 'slots'));
+  if(left.jewels > 0) bits.push(left.jewels + ' jewel ' + (left.jewels === 1 ? 'socket' : 'sockets'));
+  if(left.supports > 0) bits.push(left.supports + ' support ' + (left.supports === 1 ? 'socket' : 'sockets'));
+  if(left.points > 0) bits.push(left.points + ' points');
+  return '<p class="bn-h4">Left on the table <span>' + bits.length + '</span></p>' +
+    '<p class="note">' + (bits.length ? esc(bits.join(' · ')) + ' still open.' : 'Nothing still open.') + '</p>' +
+    (left.spare.length ? '<ul class="bd-spare">' + left.spare.slice(0, 8).map(x =>
+      '<li><b>' + esc(x.n) + '</b><span>' + esc(x.why) + '</span></li>').join('') + '</ul>' +
+      (left.spare.length > 8 ? '<p class="note">' + (left.spare.length - 8) + ' more in the pool unused.</p>' : '')
+      : '') +
+    (left.priced ? '<p class="note">What it used, at live prices: ' + num(left.paid) + ' Exalted Orbs over ' +
+      left.priced + (left.priced === 1 ? ' pick' : ' picks') +
+      (left.free ? ' · ' + left.free + ' with no price' : '') + '.</p>'
+      : (left.free ? '<p class="note">' + left.free + (left.free === 1 ? ' pick has' : ' picks have') +
+        ' no price. A rare is not a listed thing.</p>' : '')) +
+    '<p class="note">Points counted off the level. What a quest grants is in nothing we read.</p>';
 }

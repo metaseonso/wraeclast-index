@@ -256,6 +256,10 @@ export const FIELDS = {
   geartiles:  {type: 'gear', at: 'build', slot: 'body'},
   treemap:    {type: 'tree', at: 'build', slot: 'body'},
   buildtab:   {type: 'own', slot: 'body'},
+  /* The optimise button, what it filled, and what it left (docs/proposal-builder.md 4). One field, because
+     the button, the three answers and the change list are one thing: the rows under it are what the button
+     did and each one puts itself back. */
+  optimise:   {type: 'own', slot: 'body'},
 
   spark:    {type: 'spark', slot: 'foot', every: 1},
   usage:    {type: 'usage', slot: 'foot', every: 1},
@@ -455,7 +459,7 @@ export const KINDS = [
      search does not carry it and the map names it among what it left out. Its own module keeps the files
      (three open at once, a guest's in the session) and answers every control on it. */
   {k: 'f', one: 'Build', many: 'Builds', own: './builder.js',
-   fields: [...HEAD, ...SAYS, 'buildfiles', 'budgets', 'geartiles', 'treemap', 'buildtab', ...REST, ...FOOT],
+   fields: [...HEAD, ...SAYS, 'buildfiles', 'budgets', 'optimise', 'geartiles', 'treemap', 'buildtab', ...REST, ...FOOT],
    acts: [],
    rel: []},
 

@@ -276,7 +276,9 @@ modifiers with no measured weight — because it is the same data and the same g
 
 ## 1.6 What #51 does not settle
 
-- **How many supports a skill can socket.** Not in our data, not in the export's skill gem file.
+- ~~**How many supports a skill can socket.**~~ Settled for #54: up to 5 supports, and 6 in total where one
+  skill gem casts another. The owner's own knowledge of the game, 23 September 2026 — the export still states
+  neither, and `assets/maths.js` `SOURCE.sockets` says so wherever a count is drawn.
 - **What an account costs**, because accounts are not live. The arithmetic above assumes a file per account
   and a save per player; a sign-in route will add its own reads.
 - **Sharing a file.** Out of scope here: a file is the player's own until a ticket says otherwise.
@@ -738,7 +740,7 @@ still open toward **offence**, **defence** or **balanced**.
 |---|---|
 | An empty gear slot | the items in the pool that fit it, plus the rare bases that fit it |
 | A rare with affixes not chosen | the modifiers its own pool can roll at that item level, one per side per step |
-| An empty support socket | the supports the skill's own type list admits — **a median of 243 per skill** |
+| An empty support socket | the supports the skill's own type list admits — **a median of 243 per skill** in the export the count was taken from. What ships to a browser is the card index's own tags, which reads a median of **170** over its 458 skills; the card prints the count for the skill in hand, worked out rather than quoted |
 | Points not spent | the clusters not taken, entry cost counted from what is allocated |
 | A jewel socket | the jewels in the pool |
 
@@ -853,7 +855,7 @@ the meantime; each row is either a refusal, a stated gap, or a range that widens
 
 | What we need | Who would have it | What we do instead | What would close it |
 |---|---|---|---|
-| How many supports a skill can socket | GGG. Not in our gem data and not in the export's skill gem file | count what is picked; say the game decides how many fit | a socket count in the export, or in the skill's own data |
+| ~~How many supports a skill can socket~~ **Settled** | The owner, 23 September 2026. Still in no file the game publishes | a skill gem takes up to 5 supports, and a skill gem that casts another skill gem counts to 6 in total, so skill → skill leaves four. `SOCKETS` and `socketsLeft` in `assets/maths.js`, and `SOURCE.sockets` is printed wherever a count is shown | — |
 | A jewel's radius in game units | GGG. Not in the tree file, the jewel pools or anything else we read | the player tells the jewel which cluster it covers, and the card says why | a radius table, in the tree's own orbit units or any other |
 | What a timeless jewel seed does node by node | GGG. The factions and conquerors are in our data; the per-node result is not | name the faction and the conqueror, and let the player say what it changed | a published mapping, or a measurement with its method shown |
 | Whether a support is legal beyond the type gate | GGG. **512 of the game's own 4,746 recommended support entries fall outside our reading of the allowed-type list** | admit what the type list admits, and show the game's own recommended list beside it | an excluded-type list in the export, or the minion type lists |

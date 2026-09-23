@@ -74,6 +74,68 @@ Add the details here first, then a short public line there.
   `loadPins`/`savePins`, and nothing else moves.
 - `assets/pins.js` is the other half — a Pins button in the top bar with a count, and the box it opens: every
   pinned card, a star to unpin it in place, and a tap to open its own card.
+## Next — The optimise button: what is still open, filled three ways, every change with a put-back
+
+- Ticket 54, the last of the four slices. One button on a build card. It takes what the player has chosen
+  and fills what is still open toward **offence**, **defence** or **balanced**, and shows all three answers
+  at once. `assets/optimise.js` is the search; `assets/builder.js` works out what is open and draws it.
+- **It never replaces a choice.** A slot the player filled, a modifier they picked, a cluster they took: all
+  fixed. That is what makes the change list mean anything — every row in it is a thing that was empty.
+- **What it searches over**, all of it out of what the build already has a right to: an empty gear slot, out
+  of what was pooled for it; a rare already on, one modifier family at a time at the tier its item level
+  reaches; an empty support socket, out of every support the skill's own type list admits; a cluster not
+  taken, costed from what is allocated by one breadth-first pass rather than one per cluster; a jewel socket,
+  out of the pool. A half-finished level 65 Warrior comes to **1,262 changes in one step**.
+- **Greedy, a beam of four, then a pair pass over the top forty it rejected.** Not branch and bound: a bound
+  worth having has to know the best a stat can still become, which is the thing v1.0 does not model. Not
+  brute force: five supports out of a median 243 is 6,774,333,588 combinations, which at the cost the check
+  measures is half a day. The pair pass is the repair for what greedy is bad at — two changes that are only
+  good together — at 780 pairs rather than a general two-change search.
+- **Ties are shown and not taken, where they are a choice.** Two helmets for one helmet slot is a choice and
+  the player makes it, so it stops, shows both and names what separates them — cheaper, fewer points, fewer
+  unknowns. A support and a boot modifier that happen to be worth the same are not a choice at all: it takes
+  one now and the other next step. Nothing improving is an answer, and so is the budget running out.
+- **Every change is a row with its own put-back**, in the order they were made, with what each did to the
+  numbers on its own. Putting one back re-runs the numbers, and a row that is on the build and worth nothing
+  without the one that went back says *Depends on the one you put back* rather than being unwound quietly.
+  **Put all back** returns the build to exactly what it was, out of the state written before the search.
+- **What it left on the table**, counted: budgets still open, the pool it did not use with the reason in a
+  word, points not spent, and what it used at live prices with the priceless picks counted beside the total
+  rather than folded into it. A search that stopped at the cap or at a tie says a card was *not reached*
+  rather than that it was worse.
+- **The live list under it is the same machine, given one step.** While the player is choosing, the same
+  search runs over the same candidates and names the best few. There is no second engine, so a change the
+  panel names is one the button would take.
+- **The link, and the two numbers behind it.** A gem now lands in the link: a skill, the skill it casts where
+  there is one, and up to five supports — `SOCKETS` and `socketsLeft` in `assets/maths.js`, with
+  `SOURCE.sockets` printed wherever a count is shown, because the export states neither number and the
+  owner's own knowledge of the game is where both come from.
+- **`tools/gemlines.py`** strips the frame a support writes its lines inside — "Supported Skills deal 30%
+  more Damage" is "30% more Damage" to the skill — and writes 77 KB keyed by the card the site already has,
+  out of the 2.7 MB committed dump, which has no business on a build card. Of **947 support wordings the
+  table reads 75, over 66 supports**; 515 name a mechanic this version does not count and 581 are wordings it
+  does not know, so a support that moves nothing it works out is named and not counted.
+- **The character assembly moved into `assets/maths.js`.** It lived in the Build tab while the Build tab was
+  the only thing that worked a character out; the button works one out several hundred times a step. One
+  copy, beside the rules `tools/dev/buildcheck.mjs` already holds.
+- **Two shapes the table was missing** turned up while reading supports: damage with hits, and a pair taken
+  more or less rather than increased. 28 shapes now.
+- **Three things cost far more than the maths did.** A wording was read once per evaluation rather than once
+  per candidate — regular expressions over 28 shapes, thousands of times a step. Every stat a hit looks up
+  and the build has not got was a fresh object made and thrown away, seventy per hit. And the keys were stuck
+  together on every lookup, so each one was a new string to hash. **One evaluation in `buildcheck` goes 17.0
+  to 7.3 microseconds, and the Build tab gets that too.**
+- **Measured, headless, not assumed.** At 1440×900: a first answer at **284ms** and **87,756 changes tried in
+  991ms** across all three aims. At 375×812 with touch and the processor at a fifth: a first answer at
+  **407ms**, and the **3 second cap** after 59,829 — the two aims it cut off say *Stopped at the cap* and the
+  press says *Stopped at 3 seconds*. No console errors, nothing scrolls sideways, and first paint is
+  untouched because none of this is fetched or parsed until a build card opens.
+- **A unique carries no item class**, only its own subtitle, so the word after the dot is read: 687 of the
+  707 uniques with lines can now land in a slot. The twenty left are flasks, relics and tablets, and the
+  frame gives none of them a slot.
+- The proposal's two rows saying the socket count was unknown are struck through, and 4.1's median of 243 is
+  marked as the export's figure: the card index a browser gets carries fewer tags, so the same reading gives
+  170 over its 458 skills, and the card counts the skill in hand rather than quoting either.
 
 ## Next — Every interaction the game's wording names, and a way to settle the ones nobody has
 
