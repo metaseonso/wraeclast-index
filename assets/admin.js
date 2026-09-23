@@ -614,13 +614,24 @@ function cardName(c){
   return (d ? d.one + ' · ' : '') + s.slice(i + 1);
 }
 const noteCard = n => { const w = cardName(n.card); return w ? '<span class="dv-note-c">' + esc(w) + '</span>' : ''; };
+/* An answer to an interaction the game leaves open (worker/community.js, migration 0010): which way the
+   player says it works, the name they gave and where it comes from. The card draws those three for anyone;
+   the note's own words are only ever here. `shown` is what the card does with it: 1 is marked as ours, -1 is
+   off the card altogether. */
+const LEAN = {works: 'It works', no: 'It does not', unclear: 'Still unclear'};
+const SHOWN = {'1': [[0, 'As sent'], [-1, 'Take down']], '-1': [[0, 'Put back']], '0': [[1, 'Checked by us'], [-1, 'Take down']]};
+const leanLine = n => n.lean ? '<p class="dv-note-l">' + esc(LEAN[n.lean] || n.lean) +
+  (n.who ? ' · ' + esc(n.who) : '') + (n.src ? ' · ' + esc(n.src) : '') +
+  (n.shown === 1 ? ' · marked as ours' : n.shown === -1 ? ' · off the card' : '') + '</p>' : '';
+const leanButtons = n => !n.lean ? '' : (SHOWN[String(n.shown || 0)] || SHOWN['0']).map(([v, l]) =>
+  '<button type="button" class="btn" data-id="' + esc(n.id) + '" data-w="' + v + '">' + l + '</button>').join('');
 const noteBox = () => obj(S.sg || obj(obj(S.data).suggestions));
 function notesList(sg){
   const list = arr(obj(sg).list).map(obj).filter(n => S.filter === 'all' || n.status === S.filter);
   return list.length ? list.map(n => '<li class="dv-note s-' + esc(n.status) + '">' +
-    '<p class="dv-note-t" data-open="' + esc(n.id) + '" tabindex="0">' + esc(n.text) + '</p>' +
+    '<p class="dv-note-t" data-open="' + esc(n.id) + '" tabindex="0">' + esc(n.text) + '</p>' + leanLine(n) +
     '<div class="dv-note-ft">' + noteCard(n) + '<span class="note">' + esc(pageName(n.page)) + ' · ' + esc(ago(n.at)) + '</span>' +
-    '<span class="grow"></span>' + noteButtons(n) + '</div></li>').join('')
+    '<span class="grow"></span>' + leanButtons(n) + noteButtons(n) + '</div></li>').join('')
     : '<li class="note dv-none">Nothing here.</li>';
 }
 function drawNotes(){
@@ -634,6 +645,16 @@ function drawNotes(){
   fill('#notemore', sg.more || all > have ? '<button type="button" class="btn" id="older">Load older</button>' +
     '<span class="note">' + num(have) + ' of ' + num(all) + ' loaded</span>' : '');
   count(fin(c.new));
+}
+/* what the card does with one answer: marked as ours, as it was sent, or off the card */
+async function shownAs(id, shown){
+  let r = null;
+  try { r = await api('suggestion', {id, shown}); } catch {}
+  if(!r || !r.ok) return false;
+  const n = arr(noteBox().list).find(x => obj(x).id === id);
+  if(n) n.shown = shown;
+  drawNotes();
+  return true;
 }
 async function mark(id, status){
   let r = null;
@@ -654,7 +675,7 @@ function openNote(id){
   box.className = 'panel dv-pop';
   const paint = () => {
     box.innerHTML = '<h3>Note</h3><p class="note">' + noteCard(n) + ' ' + esc(pageName(n.page)) + ' · ' + esc(ago(n.at)) + '</p>' +
-      '<p class="dv-note-full">' + esc(n.text) + '</p><div class="ov-go">' + noteButtons(n) + '</div>';
+      leanLine(n) + '<p class="dv-note-full">' + esc(n.text) + '</p><div class="ov-go">' + noteButtons(n) + '</div>';
   };
   paint();
   box.addEventListener('click', async e => {
@@ -673,6 +694,8 @@ $('#notepick').addEventListener('click', e => {
   safe('#notes', () => notesList(noteBox()));
 });
 $('#notes').addEventListener('click', async e => {
+  const w = e.target.closest('button[data-w]');
+  if(w){ w.disabled = true; if(!(await shownAs(+w.dataset.id, +w.dataset.w))) w.disabled = false; return; }
   const b = e.target.closest('button[data-s]');
   if(b){ b.disabled = true; if(!(await mark(+b.dataset.id, b.dataset.s))) b.disabled = false; return; }
   const t = e.target.closest('[data-open]');

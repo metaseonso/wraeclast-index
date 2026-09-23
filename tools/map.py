@@ -77,26 +77,41 @@ RAMP = 1024              # how many steps that scale has altogether: its top is 
 SOFT = 1.4               # how many edges it takes to lift a pixel properly clear of the ground
 
 # ---------- the declarations ----------
-# assets/kinds.js is a table, not a program: these read the three fields the map needs out of it, the same
-# way tools/dev/guard.mjs imports it. A kind that stops declaring one of them falls back, never crashes.
-KIND_ROW = re.compile(r"\{k: '(\w)',(.*?)\}", re.S)
+# assets/kinds.js is a table, not a program: these read the fields the map needs out of it, the same way
+# tools/dev/guard.mjs imports it. A kind that stops declaring one of them falls back, never crashes.
+KIND_AT = re.compile(r"\{k: '(\w)'")
+WORDS_OBJ = re.compile(r"words: \{([^}]*)\}")
 FIELD = re.compile(r"(\w+): '([^']*)'")
 TOKEN = re.compile(r"--([\w-]+):\s*(#[0-9A-Fa-f]{3,8})")
 
 
 def declarations():
-    """Every kind the site cards, in the order it declares them: letter, name, colour, and which of a card's
-    own fields the build already marked references in."""
+    """Every kind the site cards, in the order it declares them: letter, name, colour, which of a card's own
+    fields the build already marked references in, and which of its own words are doors into it."""
     src = KINDS_JS.read_text(encoding='utf-8')
     body = src[src.index('export const KINDS'):src.index('export const DEFAULT')]
     palette = dict(TOKEN.findall(THEME_CSS.read_text(encoding='utf-8')))
-    out = []
-    for k, rest in KIND_ROW.findall(body):
-        f = dict(FIELD.findall(rest))
+    out, cuts = [], [m.start() for m in KIND_AT.finditer(body)]
+    for i, start in enumerate(cuts):
+        row = body[start:cuts[i + 1] if i + 1 < len(cuts) else len(body)]
+        k = KIND_AT.match(row).group(1)
+        # the "words" declaration is an object of its own: read it apart, so its keys are not read as the
+        # kind's (a keyword's words.mark is whose words they are, never the field the build marked)
+        w = WORDS_OBJ.search(row)
+        words = dict(FIELD.findall(w.group(1))) if w else {}
+        f = dict(FIELD.findall(row[:w.start()] + row[w.end():] if w else row))
         many = f.get('many') or ('Kind ' + k)
-        out.append({'k': k, 'many': many, 'mark': f.get('mark', ''),
+        out.append({'k': k, 'many': many, 'mark': f.get('mark', ''), 'words': words, 'kw': f.get('kw', ''),
                     'rgb': rgb(palette.get(f.get('tone', ''), '')) or own_colour(k)})
     return out
+
+
+def word_rules():
+    """Which of a kind's own words open its card, and which kind is a keyword itself (assets/kinds.js
+    `words` and `kw`), for Marks below: {k: words} and the letters whose card stands for its own keyword."""
+    kinds = declarations()
+    return ({d['k']: d['words'] for d in kinds if d['words']},
+            {d['k'] for d in kinds if d.get('kw') == 'id'})
 
 
 def rgb(hexcolour):
@@ -277,9 +292,13 @@ class Marks:
     """assets/marks.js, in Python: the phrases a card's lines open a door on.
 
     The same table and the same rules, so the lines this counts are the lines a player can really click:
-    whole words, longest phrase first, never inside another mark; a keyword's own name anywhere, its other
-    spellings only where the card's own keyword list names it; a mechanics word only where the line uses it
-    as a number; never the card you are already on.
+    whole words, longest phrase first, never inside another mark; a card's own name a door wherever it is
+    read or only where the card being drawn carries that keyword, whichever its kind declares; a word of a
+    kind whose words each carry their own rule only where that rule says so; never the card you are already
+    on.
+
+    Which of a card's own words are doors is the kind's own declaration and nothing here (assets/kinds.js
+    `words`, read by word_rules above), so a new kind whose words are doors lands with nobody editing this.
     """
 
     WORD = re.compile(r'\w+', re.A)
@@ -288,19 +307,25 @@ class Marks:
     PCT = re.compile(r'%\s*$')
     NUM = re.compile(r'^\s*\(?[-+]?\d')
 
-    def __init__(self, items, keystones):
-        own, other = {}, {}
+    def __init__(self, items, keystones, rules=None):
+        rules, self.own_kw = word_rules() if rules is None else rules
+        own, other, self.gates = {}, {}, {}
+        box = {'own': own, 'alt': other}
         def add(table, phrase, key):
             if phrase and len(phrase) > 1:
                 table[phrase] = 0 if (phrase in table and table[phrase] != key) else key
         for it in items:
-            if it['k'] == 'w':
-                add(own, it['n'], 'w:' + it['id'])
-                for spelling in it.get('f') or ():
-                    add(other, spelling, 'w:' + it['id'])
-            elif it['k'] == 'h':
-                for spelling in it.get('f') or ():
-                    add(own, spelling, 'h:' + it['id'])
+            w = rules.get(it['k'])
+            if not w:
+                continue
+            key = it['k'] + ':' + it['id']
+            if w.get('n') in box:
+                add(box[w['n']], it['n'], key)
+            for spelling in it.get('f') or ():
+                if w.get('f') in box:
+                    add(box[w['f']], spelling, key)
+                if w.get('only') == 'gate':
+                    self.gates[spelling] = it.get('fg') or ''
         self.first = defaultdict(list)
         for table, alt in ((own, 0), (other, 1)):
             for phrase, key in table.items():
@@ -311,6 +336,7 @@ class Marks:
                     self.first[head.group(0)].append((phrase, key, alt))
         for rows in self.first.values():
             rows.sort(key=lambda row: -len(row[0]))
+        self.gated = {k for k, w in rules.items() if w.get('only') == 'gate'}
         self.keystone = {}       # a keystone passive stands for its own keyword: not a door to itself
         by_name = {}
         for it in items:
@@ -320,9 +346,22 @@ class Marks:
             if name in by_name:
                 self.keystone[by_name[name]] = kwid
 
-    def scan(self, it, text, block):
+    def ok(self, gate, text, start, end):
+        """When one of a gated kind's words counts, by that card's own rule ("fg", tools/mechanics.py)."""
+        pct = bool(self.PCT.search(text[:start]))
+        opens = (not start) and bool(self.NUM.match(text[end:]))
+        if gate == 'any':
+            return True
+        if gate == 'pct':
+            return pct
+        if gate == 'start':
+            return opens
+        return pct or opens
+
+    def spans(self, it, text, block):
+        """The marks in one line: [(start, end, key)], left to right and never overlapping."""
         mine = it['k'] + ':' + it['id']
-        self_kw = it['id'] if it['k'] == 'w' else self.keystone.get(mine)
+        self_kw = it['id'] if it['k'] in self.own_kw else self.keystone.get(mine)
         kw = it.get('kw') or ()
         found, at_word = [], 0
         for m in self.WORD.finditer(text):
@@ -336,13 +375,17 @@ class Marks:
                 if key:
                     if alt and key[2:] not in kw:
                         continue
-                    if key[0] == 'h' and not (self.PCT.search(text[:start]) or (not start and self.NUM.match(text[end:]))):
+                    if key[0] in self.gated and not self.ok(self.gates.get(phrase, ''), text, start, end):
                         continue
                 at_word = end
                 if key and key != mine and not (self_kw and key == 'w:' + self_kw) and not held(block, start, end):
-                    found.append(key)
+                    found.append((start, end, key))
                 break
         return found
+
+    def scan(self, it, text, block):
+        """The cards one line opens, in the order it opens them."""
+        return [key for _, _, key in self.spans(it, text, block)]
 
 
 def held(block, start, end):

@@ -362,6 +362,8 @@ marks.setup({D, keywordIdOf, kindOf: k => KIND[k], kwKey: id => KW.own + ':' + i
 const MARK = {
   ours: {cls: 'hlink',  data: 'h',  title: 'How it works — our own note, not the game’s', id: key => key},
   game: {cls: 'kwmark', data: 'kw', title: 'Keyword — the game’s own words', id: key => key.slice(2)},
+  open: {cls: 'hlink qlink', data: 'h', title: 'Not settled — what the game states, and what players report',
+         id: key => key},
 };
 function spansHTML(text, spans){
   if(!spans || !spans.length) return esc(text);
@@ -722,6 +724,16 @@ function picksHTML(p){
       ' off the bench">Remove</button></li>').join('') + '</ul></div>';
 }
 
+/* ---------- an interaction nobody has settled ----------
+   Two fields on an interaction card (assets/kinds.js, tools/interactions.py): what players report about
+   this one, and how often each open interaction gets reported at all. Both are live, so each leaves a box
+   and the module fills it when the answer lands — the same shape as a field whose table is a file of its
+   own. In the popup only: the grid is for reading, and a card nobody opens asks for nothing. */
+function clarifyFill(host, it, f, o){
+  if(!host) return;
+  lazy('./clarify.js', 'What players report').then(m => { if(host.isConnected) m.fill(host, it, f, o); }, () => {});
+}
+
 /* ---------- a field the kind's own module fills ----------
    A card that is an application rather than a row of the index leaves a box and its own module puts the
    application in it (KINDS own), the same shape as a field whose table is a file of its own. One renderer,
@@ -800,6 +812,10 @@ export const TYPE = {
     ? '<div class="card-addsbox" data-fill="' + esc(name) + '" hidden></div>' : ''},
   pool:   {raw: 1, fill: poolFill, v: (it, f, o, name) => o.full && it[f.at] && fileOf(f, it)
     ? '<div class="card-addsbox" data-fill="' + esc(name) + '" hidden></div>' : ''},
+  players: {raw: 1, fill: clarifyFill, v: (it, f, o, name) => o.full
+    ? '<div class="card-clar" data-fill="' + esc(name) + '"></div>' : ''},
+  heat:   {raw: 1, fill: clarifyFill, v: (it, f, o, name) => o.full
+    ? '<div class="card-heat" data-fill="' + esc(name) + '"></div>' : ''},
   swap:   {raw: 1, v: (it, f, o) => swapHTML(it, f, o.full)},
   flow:   {raw: 1, v: (it, f, o) => flowHTML(it, o.full)},
   source: {raw: 1, v: (it, f) => it[f.at] ? '<p class="card-src">' + esc(it[f.at]) + '</p>' : ''},

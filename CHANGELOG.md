@@ -3,6 +3,51 @@
 The full list of changes. The public patch notes (data/changelog.json, shown on the site) stay short.
 Add the details here first, then a short public line there.
 
+## Next — Every interaction the game's wording names, and a way to settle the ones nobody has
+
+- Ticket 58. The keywords were mapped and the interactions were not. "Recovery from your Life Flasks cannot
+  be applied to anything other than you" names three of them — a recovery, an exclusion, a condition — and
+  every one of those words sat as plain text.
+- **Half one: the inventory.** `tools/interactions.py` reads the game's own wording across every line the
+  site shows (uniques, bases, passives, gems, keywords, the Atlas, currency and our own cards) and settles
+  each site into exactly one bucket. **3,819 sites in 9,627 lines: 516 open a card that already answers them
+  (a keyword card, or a mechanics card), 3,225 are marked unclear, 78 are spoken for by a rule the frame
+  already settles, and 0 are left plain.** The three "spoken for" reasons are counted apart — 28 read on the
+  very card that answers them (a card is never its own door), 23 the game has an entry for and its own markup
+  does not mark here, 27 under a phrase two cards answer to. The guard's cards line carries the count every
+  run and **fails on a site left plain**, so a new patch's wording cannot go by unread.
+- **Thirteen interaction cards**, kind `q`, one per open question, in the five families the game's wording
+  takes: Recovery and Regeneration (recovery); Converted and gained (conversion); What sets it off (trigger);
+  While it holds, Only if, Against whom, What it applies to, Stacking and counting (condition); Cannot,
+  Instead of, Immune and unaffected, Other than (exclusion). Each states what the game states, then the line
+  that begins **"Not settled:"**, and names its source as the game for the first part and nobody for the rest
+   — which is the whole point of the card. Its sub line reads "Not settled · <family>".
+- **A mark of its own.** `words.mark` gained a third value, `open`: the word with a question behind it, never
+  the footnote a card that answers wears, so a player can tell an answer from an open question before
+  pressing either. Nothing is written into the index for these words, the way nothing is for a keyword: the
+  page marks them as it draws (`assets/marks.js`), off the same declaration.
+- **Half two: what players report.** An interaction card takes an answer, and it travels the path a note from
+  the Suggest button already takes — the same table, the same rate limit, the card key beside it. Migration
+  `0010_clarify.sql` adds four columns to `suggestions`: `lean` (works / no / unclear, and the only thing
+  that makes a note an answer), `who`, `src` and `shown`. **It needs applying.**
+- **Which way it leans and who weighed in**, never one answer standing in for the rest: the lean is a tally
+  with all three sides drawn, and each name sits beside what that player said and where it came from. A row
+  the owner has checked is marked **Checked by us**; one taken down is on the card no more. What a player
+  wrote is under its own heading and says so — "Players' own words, not the game's" — and the note's own
+  words stay on the owner's dashboard, as they always have.
+- **A heatmap** of how often each open interaction is answered at all, every one of them at once, busiest
+  first, each cell the card it counts — so the ones that matter rise and are one press away.
+- **What it feeds.** `assets/clarify.js` exports the hooks the builder's maths and the bench read:
+  `open()` every open interaction, `openIn(text)` the ones a piece of the game's own wording names (so a
+  range that depends on one is widened and the interaction is named rather than a number invented),
+  `assume(key, how)` and `assumption(key)` for carrying on as if it works or as if it does not, and
+  `reported(key)` for what players have said. `data/interactions.json` carries the same list for a build
+  step. The card's own "Carry on as if" pair is the player's end of it.
+- **`tools/map.py`'s `Marks`** now reads which of a kind's words are doors off the kind declarations instead
+  of naming kinds itself, and honours each card's own gate — so the picture counts the interaction words,
+  and the mechanics words whose gate is `any`, which it was missing. The map is 10 kinds, 6,690 dots and
+  28,421 lines.
+
 ## Next — Found first: a rich result for anything in the index, and terms that ask to be cited
 
 - Ticket 68. The 7,200 crawler pages already carried the words. What they did not carry was the structured
