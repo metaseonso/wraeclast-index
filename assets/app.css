@@ -881,12 +881,12 @@ small.at-bonus{display:block}
 /* The cheat code: the crest's own badge, and war drums a long way off (assets/suggest.js). The badge is a
    forged plate, not a typeface, so it is drawn the way the crest is and not set in the site's heading face. */
 .cheat{position:fixed; inset:0; z-index:300; display:grid; place-items:center; pointer-events:none;   /* over everything the site draws, which tops out at 200 */
-  animation:cheat-out .5s ease-in 3.1s both}
+  animation:cheat-out .55s ease-in 3.65s both}
 /* the words are the crest's own badge, forged the same way (tools/art.py cheat-words), not a typeface */
 .cheat-said{position:relative; z-index:2;
   width:min(560px, 82vw); height:auto; margin:0;
   filter:drop-shadow(0 0 30px rgba(140,203,63,.3)) drop-shadow(0 10px 34px rgba(0,0,0,.9));
-  animation:cheat-in .5s cubic-bezier(.2,.8,.2,1) both}
+  animation:cheat-in .7s cubic-bezier(.2,.8,.2,1) .75s both}   /* the drums are heard first */
 @keyframes cheat-in{from{opacity:0; transform:translateY(10px) scale(.96)} to{opacity:1; transform:none}}
 @keyframes cheat-out{to{opacity:0}}
 @media (prefers-reduced-motion: reduce){

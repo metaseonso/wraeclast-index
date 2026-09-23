@@ -84,16 +84,21 @@ export function mountFlag(){
    the same way (tools/art.py): dark metal, bone bevels, green stone lit from inside it. A typeface would
    have been the site's headings, not its badge.
 
-   The drums are not a file. A hit is a low tone that drops as it sounds, with a breath of noise on its front
-   for the skin, put through a filter that takes the top off and a delay that answers it — which is what
-   distance does to a drum. So there is nothing to fetch, nothing to licence, and the pattern is four lines
-   below rather than a waveform nobody can change. It only ever plays off the keys that were just typed, so
-   the browser has its gesture, and it is stopped the moment the words go.
+   The drums are not a file and not a sample of anybody's recording. A hit is a low tone that drops as it
+   sounds, put through a filter that takes the top off and a delay that answers it, which is what distance
+   does to a drum; between the hits is a short dry rattle high above them. So there is nothing to fetch,
+   nothing to licence, and the pattern is two lines below rather than a waveform nobody can change. It only
+   ever plays off the keys that were just typed, so the browser has its gesture, and it is stopped the moment
+   the words go.
+   The sound goes first: the drums have LEAD seconds on their own before the words come up, so it is heard
+   coming before it is read (the badge's own delay, assets/app.css .cheat-said).
 
    Where the reader has asked for less motion, the words come up without their entrance. */
-const BEATS = [0, .44, 1.05, 1.49, 2.1, 2.54];   // two, rest, two, rest, two: a march, not a roll
+const BEATS = [0, .52, 1.16, 1.68, 2.32, 2.84];   // two, rest, two, rest, two: a march, not a roll
+const SHAKE = [.26, .78, .9, 1.42, 1.94, 2.06, 2.58];   // the small dry sound between them
 const FAR = 190;        // hertz the air leaves of a drum this far off
-const LOUD = .16;       // as loud as it ever gets
+const LOUD = .17;       // as loud as it ever gets
+const LEAD = .75;       // seconds the drums have on their own before the words arrive
 
 function drums(){
   const AC = window.AudioContext || window.webkitAudioContext;
@@ -106,32 +111,50 @@ function drums(){
   air.type = 'lowpass';
   air.frequency.value = FAR;
   const echo = ac.createDelay(1);        // ...and gives it back a moment later, quieter
-  echo.delayTime.value = .27;
+  echo.delayTime.value = .31;
   const back = ac.createGain();
-  back.gain.value = .3;
+  back.gain.value = .32;
   air.connect(out);
   air.connect(echo);
   echo.connect(back);
   back.connect(echo);
   back.connect(out);
   out.connect(ac.destination);
+  // the small dry sound between the drums: noise, brief, and much further up than the skins
+  const dust = ac.createBuffer(1, ac.sampleRate * .3, ac.sampleRate);
+  const d = dust.getChannelData(0);
+  for(let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / d.length);
   const now = ac.currentTime + .04;
   for(let i = 0; i < BEATS.length; i++){
     const t = now + BEATS[i], loud = .5 + i / BEATS.length * .5;   // it comes closer as it goes
     const skin = ac.createOscillator(), g = ac.createGain();
     skin.type = 'sine';
     skin.frequency.setValueAtTime(78, t);
-    skin.frequency.exponentialRampToValueAtTime(41, t + .22);
+    skin.frequency.exponentialRampToValueAtTime(41, t + .24);
     g.gain.setValueAtTime(0, t);
     g.gain.linearRampToValueAtTime(loud, t + .008);
-    g.gain.exponentialRampToValueAtTime(.001, t + .5);
+    g.gain.exponentialRampToValueAtTime(.001, t + .55);
     skin.connect(g);
     g.connect(air);
     skin.start(t);
-    skin.stop(t + .55);
+    skin.stop(t + .6);
+  }
+  for(const at of SHAKE){
+    const t = now + at, src = ac.createBufferSource(), g = ac.createGain(), top = ac.createBiquadFilter();
+    src.buffer = dust;
+    top.type = 'bandpass';
+    top.frequency.value = 2600;
+    top.Q.value = .8;
+    g.gain.setValueAtTime(.06, t);
+    g.gain.exponentialRampToValueAtTime(.001, t + .16);
+    src.connect(top);
+    top.connect(g);
+    g.connect(out);
+    src.start(t);
+    src.stop(t + .2);
   }
   out.gain.setValueAtTime(LOUD, now + BEATS[BEATS.length - 1]);
-  out.gain.linearRampToValueAtTime(0, now + BEATS[BEATS.length - 1] + .8);
+  out.gain.linearRampToValueAtTime(0, now + BEATS[BEATS.length - 1] + .9);
   return () => { try { ac.close(); } catch {} };
 }
 
@@ -144,7 +167,7 @@ function cheat(){
   box.innerHTML = '<img class="cheat-said" src="assets/brand/cheat-words.webp" alt="Cheat Code Activated" decoding="async">';
   document.body.appendChild(box);
   const quiet = drums();
-  setTimeout(() => { box.remove(); quiet(); }, still ? 2400 : 3600);
+  setTimeout(() => { box.remove(); quiet(); }, still ? 2800 : 4200);
 }
 
 function open(card){
