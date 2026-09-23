@@ -297,10 +297,33 @@ function thinNote(days, mine, back){
    (k), which day this league's own line starts on (f), how many days it has (n) and which days it is missing
    (g). An item with no past league still gets lh when its own line has a day missing, so the chart breaks
    there rather than drawing straight over it. */
+/* The leagues before our own store began, read once from poe.ninja and committed (tools/ninjapast.py). One
+   real number a currency: what it finished that league at. It is only ever put where we have nothing of our
+   own, it is marked as theirs so the card can say so, and it goes the moment our own line for that league
+   exists. */
+async function ninjaPast(env, origin, ctx){
+  const f = (await published(env, origin, 'pastprices.json', ctx)) || (await asset(env, origin, 'pastprices.json'));
+  const out = new Map();
+  for(const l of (f && f.leagues) || []){
+    if(!l || !l.name) continue;
+    for(const [name, row] of Object.entries(l.items || {})){
+      if(!row || !(row.v > 0)) continue;
+      const list = out.get('c:' + name) || [];
+      list.push({n: l.name, v: row.v});
+      out.set('c:' + name, list);
+    }
+  }
+  return out;
+}
 async function addLeagueLines(env, origin, ctx, league, items, own){
   const order = await leagueOrder(env);
-  const back = order.filter(l => l && l !== league).slice(0, BACK);
   const starts = await leagueStarts(env, origin, ctx);
+  // the leagues to draw behind this one: ours first, then the ones only poe.ninja has, newest start first
+  const ninja = await ninjaPast(env, origin, ctx);
+  const seen = new Set([league, ...order]);
+  const theirs = [...new Set([...ninja.values()].flat().map(x => x.n))].filter(n => !seen.has(n));
+  const back = [...order.filter(l => l && l !== league), ...theirs]
+    .sort((a, b) => (starts.get(b) || 0) - (starts.get(a) || 0)).slice(0, BACK);
   const startOf = l => (starts.has(l) ? starts.get(l) : null);
   const here = startOf(league);
   const by = new Map();
@@ -316,6 +339,19 @@ async function addLeagueLines(env, origin, ctx, league, items, own){
       const list = by.get(r.key) || [];
       list.push({n: r.league, b: back.indexOf(r.league) + 1, ...line});
       by.set(r.key, list);
+    }
+  }
+  // where a league is drawn and we have nothing of our own in it, their one point stands in its place
+  for(const [key, rows] of ninja){
+    for(const row of rows){
+      const b = back.indexOf(row.n) + 1;
+      if(!b) continue;
+      const list = by.get(key) || [];
+      if(list.some(x => x.n === row.n)) continue;
+      const s = starts.get(row.n), next = back.indexOf(row.n) ? starts.get(back[back.indexOf(row.n) - 1]) : starts.get(league);
+      list.push({n: row.n, b, d0: s !== undefined && next !== undefined ? Math.max(0, next - s - 1) : 0,
+        v: [row.v], src: 'ninja'});
+      by.set(key, list);
     }
   }
   for(const [k, it] of Object.entries(items)){
