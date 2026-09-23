@@ -35,11 +35,14 @@ export function openSuggest(card){ open(card || ''); }
    landed, not enough to be a feature. */
 // the key and the key's own place on the board, because a number row and a number pad are the same key to
 // whoever typed it, and some keyboards hand over a name where others hand over the character
-const FLAG = [['-', 'Minus', 'NumpadSubtract'], ['0', 'Digit0', 'Numpad0'],
-              ['9', 'Digit9', 'Numpad9'], ['8', 'Digit8', 'Numpad8']];
-const hit = (e, i) => FLAG[i] && (FLAG[i][0] === e.key || FLAG[i][1] === e.code || FLAG[i][2] === e.code);
+const SEQS = [
+  {keys: [['-', 'Minus', 'NumpadSubtract'], ['0', 'Digit0', 'Numpad0'],
+          ['9', 'Digit9', 'Numpad9'], ['8', 'Digit8', 'Numpad8']], go: flagged},
+  {keys: [['`', 'Backquote'], ['\\', 'Backslash'], [']', 'BracketRight']], go: cheat},
+];
+const hit = (q, e, i) => q[i] && q[i].some(k => k === e.key || k === e.code);
 const PAUSE = 2000;   // a sequence typed slower than this is not a sequence
-let at = 0, last = 0;
+let last = 0;
 function typing(el){
   if(!el || typeof el.closest !== 'function') return false;   // the key was not aimed at anything on the page
   return !!(el.closest('input, textarea, select') || el.closest('[contenteditable]:not([contenteditable="false"])'));
@@ -63,14 +66,41 @@ function flagged(){
 export function mountFlag(){
   if(window.__wiFlag) return;
   window.__wiFlag = true;
+  for(const q of SEQS) q.at = 0;
   addEventListener('keydown', e => {
     if(e.ctrlKey || e.metaKey || e.altKey || typing(e.target)) return;
     const now = Date.now();
-    if(now - last > PAUSE) at = 0;
+    for(const q of SEQS){
+      if(now - last > PAUSE) q.at = 0;
+      q.at = hit(q.keys, e, q.at) ? q.at + 1 : (hit(q.keys, e, 0) ? 1 : 0);
+      if(q.at === q.keys.length){ q.at = 0; q.go(); }
+    }
     last = now;
-    at = hit(e, at) ? at + 1 : (hit(e, 0) ? 1 : 0);
-    if(at === FLAG.length){ at = 0; flagged(); }
   });
+}
+
+/* ---------- the cheat code ----------
+   It does nothing yet, and that is the whole of it: the words, and the gas poured over them. The gas is its
+   own art, made for being poured — three plates that are heavy where they enter and thin as they fall
+   (tools/art.py, assets/brand/cheat-gas-*.webp). The crest's fog is built to hang and drift sideways and
+   was the wrong shape for this. Four layers, one of them a mirror, screen-blended and moved by CSS alone, so
+   nothing is drawn frame by frame. It clears itself.
+   The words are the crest's own hand, forged the same way and made the same way (tools/art.py): dark metal,
+   bone bevels, green stone lit from inside it. A typeface would have been the site's headings, not its badge.
+   Where the reader has asked for less motion, the words come up and the gas does not. */
+function cheat(){
+  if(document.querySelector('.cheat')) return;
+  const box = document.createElement('div');
+  box.className = 'cheat';
+  box.setAttribute('role', 'status');
+  const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  box.innerHTML = (still ? '' :
+    [['1', ''], ['2', ''], ['3', ''], ['2', ' m']].map(([n, mirror], i) =>
+      '<img class="cheat-gas g' + (i + 1) + mirror + '" src="assets/brand/cheat-gas-' + n +
+      '.webp" alt="" decoding="async">').join('')) +
+    '<img class="cheat-said" src="assets/brand/cheat-words.webp" alt="Cheat Code Activated" decoding="async">';
+  document.body.appendChild(box);
+  setTimeout(() => box.remove(), still ? 2200 : 4200);
 }
 
 function open(card){

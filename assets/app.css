@@ -877,3 +877,43 @@ small.at-bonus{display:block}
 .cda-said{position:fixed; left:50%; bottom:18px; transform:translateX(-50%); z-index:60; margin:0;
   padding:5px 12px; border:1px solid var(--line); border-radius:8px; background:var(--sunken);
   color:var(--muted); font-size:12px; pointer-events:none}
+
+/* The cheat code: the words, and the crest's own gas poured over them (assets/suggest.js). The textures are
+   the ones the home page drifts, screen-blended the same way; only the direction is different, because this
+   one is poured and that one hangs. CSS alone, four layers on their own loops, and the whole thing takes
+   itself off the page when it is done. */
+.cheat{position:fixed; inset:0; z-index:300; display:grid; place-items:center; pointer-events:none;   /* over everything the site draws, which tops out at 200 */
+  animation:cheat-out .5s ease-in 3.7s both}
+/* the words are the crest's own badge, forged the same way (tools/art.py cheat-words), not a typeface */
+.cheat-said{position:relative; z-index:2;   /* the gas is poured over it, not in front of it */
+  width:min(560px, 82vw); height:auto; margin:0;
+  filter:drop-shadow(0 0 30px rgba(140,203,63,.3)) drop-shadow(0 10px 34px rgba(0,0,0,.9));
+  animation:cheat-in .5s cubic-bezier(.2,.8,.2,1) both}
+.cheat-gas{position:absolute; left:50%; width:min(760px, 150vw); height:auto; mix-blend-mode:screen;
+  opacity:0; will-change:transform, opacity; pointer-events:none}
+/* an animation's own transform wins, so a mirrored layer carries the flip in its keyframes,
+   the way the crest's fog does (assets/theme.css wi-haze-m) */
+.cheat-gas.m{animation-name:cheat-pour-m}
+.g1{animation:cheat-pour 3.6s ease-out both}
+.g2{animation:cheat-pour 3.6s ease-out .25s both}
+.g3{animation:cheat-pour 3.6s ease-out .5s both}
+.g4{animation:cheat-pour 3.6s ease-out .75s both}
+@keyframes cheat-pour-m{
+  0%{transform:scaleX(-1) translate(50%, -60vh) scale(.6); opacity:0}
+  25%{opacity:.5}
+  70%{opacity:.34}
+  100%{transform:scaleX(-1) translate(50%, 18vh) scale(1.5); opacity:0}
+}
+@keyframes cheat-in{from{opacity:0; transform:translateY(8px) scale(.97)} to{opacity:1; transform:none}}
+@keyframes cheat-out{to{opacity:0}}
+/* poured from above the words, spreading as it settles over them */
+@keyframes cheat-pour{
+  0%{transform:translate(-50%, -60vh) scale(.6); opacity:0}
+  25%{opacity:.5}
+  70%{opacity:.34}
+  100%{transform:translate(-50%, 18vh) scale(1.5); opacity:0}
+}
+@media (prefers-reduced-motion: reduce){
+  .cheat{animation-duration:.4s; animation-delay:1.7s}
+  .cheat-said{animation:none}
+}
