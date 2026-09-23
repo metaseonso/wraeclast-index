@@ -434,6 +434,7 @@ function view(f, d){
     rows: budgetRows(f, d),
     cls: f.cls || '', lv: f.lv || 1, classes: GAME ? (GAME.classes || []).map(c => c.n) : [],
     link: gemView(f), opt: f.opt || null, run: RUN && RUN.id === f.id ? runView() : null, show: SHOW,
+    live: liveFor(f, (f.opt && f.opt.aim) || SHOW),
     said: f.optsaid || '',
     supports: f.pool.filter(k => { const c = D.byKey.get(k); return c && c.k === 'g' && isSupport(c); }).length,
     jewels: {held: f.jewels.filter(Boolean).length, of: sockets, rows: jewelRows(f, p)},
@@ -612,7 +613,7 @@ export function fill(host, it){
   if(host.dataset.fill === 'optimise'){
     const f = current();
     if(f) optBox(host, v, f);
-    if(!GAME || !GEM) optData().then(ok => { if(ok && host.isConnected) paint(); });
+    if(f && !RUN) liveWork(f, (f.opt && f.opt.aim) || SHOW);
     return;
   }
   const node = document.createElement('div');
@@ -1052,6 +1053,33 @@ async function restate(f){
   }
 }
 
+/* The live list: the best few changes the same search would make, worked out on the card as it stands and
+   redone when it changes. One step of the same machine over the same candidates, so nothing here is a second
+   opinion. Kept against what the file looked like when it was worked out, because a paint is not a change. */
+let LIVE = null;
+function liveFor(f, aim){
+  const sig = f.id + '|' + aim + '|' + f.lv + '|' + f.cls + '|' + snapOf(f) + '|' + f.pool.join(',');
+  if(LIVE && LIVE.sig === sig) return LIVE.out;
+  return null;
+}
+async function liveWork(f, aim){
+  if(!(await optData())) return;
+  const sig = f.id + '|' + aim + '|' + f.lv + '|' + f.cls + '|' + snapOf(f) + '|' + f.pool.join(',');
+  if(LIVE && LIVE.sig === sig) return;
+  const {S} = await stateOf(f);
+  const r = O.wouldImprove(S, aim, 3);
+  LIVE = {sig, out: {ms: Math.round(r.ms), tried: r.tried, open: S.open.length,
+    list: r.list.map(x => ({what: x.what, to: x.to, key: x.key || '', points: x.points || 0,
+      price: x.price, moved: movedFor(S, x)}))}};
+  paint();
+}
+/* What one change on its own would do to the build as it stands: the same search, given that one change and
+   one step to make it. */
+function movedFor(S, x){
+  const z = O.run({...S, open: [x]}, 'both', {steps: 1, pairs: false});
+  return z.rows.length ? z.rows[0].moved : null;
+}
+
 /* ---------- what the optimise field is holding ----------
    The link, the three answers, the rows the button wrote and what it left. Nothing is worked out here that
    is not worked out above: this is the shape the card reads. */
@@ -1138,6 +1166,7 @@ function optBox(host, v, f){
     '</div>' +
     (v.said ? '<p class="note">' + esc(v.said) + '</p>' : '') +
     (run ? runHTML(run, aim) : '') +
+    (!run && !opt ? liveHTML(v.live) : '') +
     (opt ? rowsHTML(opt) : '') +
     leftHTML(left, v) +
     '<p class="note">This is not the best build. It is the best of what it tried, out of what you pooled.</p>' +
@@ -1146,6 +1175,16 @@ function optBox(host, v, f){
   host.replaceChildren(node);
 }
 
+/* The live list, before the button is pressed: the best few the same search would take. */
+function liveHTML(live){
+  if(!live) return '<p class="note">Working out what is open.</p>';
+  if(!live.list.length) return '<p class="bn-h4">What would improve this</p>' +
+    '<p class="note">Nothing in the pool improves this. ' + live.tried.toLocaleString() + ' changes tried.</p>';
+  return '<p class="bn-h4">What would improve this <span>' + live.open.toLocaleString() + ' open</span></p>' +
+    '<ul class="bd-spare bd-live">' + live.list.map(x =>
+      '<li><b>' + esc(x.what + ' · ' + x.to) + '</b><span>' + esc(movedSaid(x.moved)) + '</span></li>').join('') +
+    '</ul>';
+}
 /* The link: the skill, the skill it casts where there is one, and the supports in it. */
 function linkHTML(v){
   const g = v.link;

@@ -371,6 +371,25 @@ export function numbers(S){
   return {dps: dps ? dps.dps : 0, life: effectiveLife(c)};
 }
 
+/* ---------- what would improve this ----------
+   The live list under the numbers, while the player is choosing. One step of the same search, on the same
+   candidates, scored the same way — so a change the panel names is one the button would take. There is no
+   second engine and there never is one. */
+export function wouldImprove(S, aim, n){
+  const s = start(S, aim, {beam: 1, steps: 1, pairs: false, cap: 1e9});
+  s.tick(1e9);
+  const best = s.state.best && s.state.best.taken[0];
+  const out = [];
+  const seen = new Set();
+  for(const x of [best, ...(s.state.rejects || [])]){
+    if(!x || seen.has(x.fills)) continue;
+    seen.add(x.fills);
+    out.push(x);
+    if(out.length >= (n || 3)) break;
+  }
+  return {list: out, tried: s.state.tried, ms: s.state.ms};
+}
+
 /* ---------- run it to the end, without a page ----------
    One call, for the live recommendations and for anything checking this file. The button does not use it:
    the button ticks, so the page never stops answering. */
