@@ -117,9 +117,9 @@ function read(doc){
     if(/^(Flask|Charm) \d/.test(name) && s.getAttribute('active') === 'false') continue;
     b.items.push({slot: name.replace(/ Swap$/, ''), ...parseItem(byId[id])});
   }
+  b.items.sort((x, y) => (SLOTS.indexOf(x.slot) + 1 || 99) - (SLOTS.indexOf(y.slot) + 1 || 99));
   // the slots the code itself lists empty. Only the ones the character has one of, whatever the build:
   // a second weapon is a question about the first one's grip, and a third ring is not a slot the game gives.
-  b.items.sort((x, y) => (SLOTS.indexOf(x.slot) + 1 || 99) - (SLOTS.indexOf(y.slot) + 1 || 99));
   b.empty = set ? GEAR.filter(n => !filled.has(n)) : [];
   // the jewel sockets the tree gives, and the ones nothing is in
   if(set) for(const s of set.querySelectorAll(':scope > SocketIdURL')) jewels.add(s.getAttribute('name') || '');
@@ -382,7 +382,7 @@ function pieces(b){
   return out;
 }
 const paid = px => px && px.v !== null && px.v !== undefined && isFinite(px.v);
-function billHTML(b, list){
+function billHTML(list){
   const has = list.filter(p => paid(p.px)), total = has.reduce((n, p) => n + p.px.v, 0);
   const own = list.filter(p => p.own).length, blank = list.length - has.length - own;
   const M = D.market || {};
@@ -426,7 +426,11 @@ async function openCraft(p){
 function buildIt(b, host){
   const list = pieces(b);
   BILL = new Map(list.map(p => [p.key, p]));
-  host.innerHTML = billHTML(b, list);
+  if(!list.length){
+    host.innerHTML = '<div class="panel" style="margin-top:14px"><p class="note">No gear in this build. There is nothing to price.</p></div>';
+    return;
+  }
+  host.innerHTML = billHTML(list);
   const grid = $('#bill', host);
   flow(grid, list, billCard);
   grid.addEventListener('click', e => {
@@ -453,7 +457,7 @@ async function guides(el){
 }
 
 /* ---------- 6. the page ---------- */
-let EL;
+let EL, LAST = null;
 export function mount(el){
   EL = el;
   el.innerHTML =
@@ -509,7 +513,15 @@ async function run(code){
 
   const bill = $('#pobbill', out);
   $('#pobbuild', out).addEventListener('click', () => buildIt(b, bill));
-  stillOpen(b).then(rows => { const box = $('#popen', out); if(box) box.innerHTML = openHTML(rows); optimise(b, A, rows); }, () => {});
+  // what is still open needs the item classes' own file, so it lands a moment later. A second code read
+  // while it is in the air wins: only the build on screen writes into the box.
+  const mine = LAST = {};
+  stillOpen(b).then(rows => {
+    if(LAST !== mine) return;
+    const box = $('#popen', out);
+    if(box) box.innerHTML = openHTML(rows);
+    optimise(b, A, rows);
+  }, () => {});
 }
 /* The pass that aims a build at offence, defence or neutral is its own module. Where it ships it is handed
    the build, what the numbers said about it and what is still open, and it draws its own control in the
