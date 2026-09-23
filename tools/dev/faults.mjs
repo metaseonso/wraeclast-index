@@ -111,12 +111,13 @@ globalThis.caches = {default: {match: async () => null, put: async () => {}}};
 const RECORD = await read(join(data, 'faults.json'), '{}');
 globalThis.fetch = async (u, opt = {}) => new Response(String(u).endsWith('faults.json') && opt.method !== 'HEAD'
   ? RECORD : '{}', {status: 200});
+const { health, serveHealth, JOBS } = await import(pathToFileURL(join(ROOT, 'worker', 'health.js')).href);
 /* every trade price job came in a minute ago, so the stale section is the worst thing on the site and the
-   line at the top of the dashboard has to be about it */
+   line at the top of the dashboard has to be about it. Which kinds those are comes off the watch's own
+   table, so a new kind of price lands here with nobody editing this. */
 const fresh = new Date(Date.now() - 60000).toISOString();
 const env = {DB: {prepare(){ return {bind(){ return this; }, async first(){ return null; },
-  async all(){ return {results: ['uniq', 'roll', 'farm', 'boss'].map(kind => ({kind, at: fresh}))}; }}; }}};
-const { health, serveHealth } = await import(pathToFileURL(join(ROOT, 'worker', 'health.js')).href);
+  async all(){ return {results: JOBS.filter(j => j[0] === 'price').map(j => ({kind: j[1], at: fresh}))}; }}; }}};
 const h = await health(env, 'https://wraeclastindex.fyi');
 const row = (h.jobs || []).find(j => j.where === 'data' && j.what === 'Widgets');
 const named = !!row && /^Widgets: still showing the copy from 19 Sep, /.test(row.note || '') &&

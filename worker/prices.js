@@ -9,6 +9,9 @@
 
    What is checked (the key in the trade_prices table):
      uniq:<index id>            uniques: the 10 cheapest listings (online sellers)
+     base:<base item>           base items, white only: the same checks, on the best base of each shape a
+                                player shops in (data/basequeries.json, tools/baseprices.py). A rare of that
+                                name is another item at another price and is never counted in here.
      roll:<stat>@<value>        trade sliders: the 10 cheapest items with at least that roll
      farm:<key>                 rolled tablets and waystones for the Farms tab
      boss:<key>                 boss entry items the in-game Currency Exchange does not trade (data/bossqueries.json)
@@ -111,7 +114,8 @@ export async function state(request, env, url){
 }
 
 /* ---------- POST /api/prices/ingest ---------- */
-const KEY = /^(roll:[a-z]+\.[a-z0-9_]+@-?\d+(\.\d+)?|(farm|boss):[a-z0-9-]{1,80}|uniq:[^\n|][^\n]{0,119}|cur:[^\s|]{1,60}\|[^\n|]{1,80})$/;
+// uniq carries "<name> | <base>" where a unique comes on more than one; a base item is one name and no pipe
+const KEY = /^(roll:[a-z]+\.[a-z0-9_]+@-?\d+(\.\d+)?|(farm|boss):[a-z0-9-]{1,80}|uniq:[^\n|][^\n]{0,119}|base:[^\n|]{1,120}|cur:[^\s|]{1,60}\|[^\n|]{1,80})$/;
 export async function ingest(request, env, url){
   if(request.method !== 'POST') return json(405, {error: 'POST only.'});
   if(!(await signed(request, env, url))) return json(401, {error: 'Not signed in.'});
@@ -347,7 +351,8 @@ export async function serveMarket(request, env, ctx){
   const catRow = await publishedRow(env, url.origin, 'market.json', ctx), cat = (catRow && catRow.data) || {items: {}};
   const cxRow = await publishedRow(env, url.origin, 'exchange.json', ctx), cx = (cxRow && cxRow.data) || {items: {}};
   const league = cat.league || '';
-  const rows = await env.DB.prepare("SELECT key, v, total, at, h FROM trade_prices WHERE league = ? AND key LIKE 'uniq:%'").bind(league).all();
+  const rows = await env.DB.prepare(
+    "SELECT key, v, total, at, h FROM trade_prices WHERE league = ? AND (key LIKE 'uniq:%' OR key LIKE 'base:%')").bind(league).all();
   const rate = cx.league === league ? cx.rate : null;
   const items = {};
   for(const [k, it] of Object.entries(cat.items || {})){
@@ -357,8 +362,14 @@ export async function serveMarket(request, env, ctx){
     items[k] = o;
   }
   const currencyAt = cx.league === league ? older(cx.updated, came(cxRow)) : null;
-  let tradeAt = null;
-  for(const r of rows.results || []) if(!tradeAt || r.at > tradeAt) tradeAt = r.at;
+  // each kind of trade check is aged on its own and the older of the two stands, so a kind that has stopped
+  // cannot hide behind one that is still running. Both are late after the same six hours (worker/health.js).
+  let uniqAt = null, baseAt = null;
+  for(const r of rows.results || []){
+    if(r.key.startsWith('base:')){ if(!baseAt || r.at > baseAt) baseAt = r.at; }
+    else if(!uniqAt || r.at > uniqAt) uniqAt = r.at;
+  }
+  const tradeAt = older(uniqAt, baseAt);
   const updated = older(currencyAt, tradeAt);
   const late = stale(currencyAt, 'file', 'exchange.json') || (!!tradeAt && stale(tradeAt, 'price', 'uniq'));
   const own = new Map();   // which price_leagues row each item is, and where this league's own line starts
@@ -376,11 +387,15 @@ export async function serveMarket(request, env, ctx){
     const pts = points(x.h);
     own.set('c:' + name, {k: 'cx:' + name, f: pts.length ? pts[0][0] : null, n: pts.length, g: gapsOf(pts)});
   }
-  // uniques: real listings on the trade site
+  /* uniques and base items: real listings on the trade site, under the key the card is looked up by. A base
+     was asked for white, which is not the item its own name stands for everywhere else, so the row says so
+     (as) and the card prints that word beside the price. Nothing is drawn where the last check found nobody
+     selling: fields() leaves v out and the card has no price, rather than yesterday's. */
   for(const r of rows.results || []){
-    items['u:' + r.key.slice(5)] = {...fields(r), src: 'trade'};
+    const base = r.key.startsWith('base:'), k = (base ? 'b:' : 'u:') + r.key.slice(5);
+    items[k] = {...fields(r), src: 'trade', ...(base ? {as: 'white'} : {})};
     const pts = points(r.h);
-    own.set('u:' + r.key.slice(5), {k: r.key, f: pts.length ? pts[0][0] : null, n: pts.length, g: gapsOf(pts)});
+    own.set(k, {k: r.key, f: pts.length ? pts[0][0] : null, n: pts.length, g: gapsOf(pts)});
   }
   // the past leagues' lines. Left out of ?part=now, so the first cards never wait for them.
   if(part !== 'now') await addLeagueLines(env, url.origin, ctx, league, items, own);
