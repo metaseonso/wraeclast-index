@@ -52,16 +52,21 @@ export const SHAPES = [
   [/\byou'?ll see\b/i,          'narrates the interface'],
   [/\bwe['’]ll\b/i,             'speaks as the author'],   // the apostrophe is required: "well" is an ordinary word
   [/\bI['’]ll\b/,               'speaks as the author'],   // required here too: "Ill" is an ordinary word
-  [/let[’']s/i,            'speaks as the author'],   // the contraction only: "lets" is an ordinary verb
+  [/\blet[’']s\b/i,       'speaks as the author'],   // the contraction only: "lets" is an ordinary verb
   [/\bsimply\b/i,               'coaches the reader'],
   [/\bjust (click|pick|tap|choose|select)\b/i, 'coaches the reader'],
   [/\bfeel free\b/i,            'coaches the reader'],
+  /* A chain of steps: "pick a currency, then use it on the item", "Plan the item, practise it at the
+     bench, then find it on trade". The bare-command shape below only fires where the command is the whole
+     string, so every one of these got past it by carrying on past the noun. A state is not a tutorial. */
+  [/(?:^|[.!?)>”"]\s+)(pick|choose|select|plan|practise|paste|press|tap)\b[^.!?<]{0,60},\s*(then|and)\s+\w/i,
+                                'walks the reader through steps'],
   [/\bdon'?t worry\b/i,         'coaches the reader'],
   [/\b(make|be) sure to\b/i,    'coaches the reader'],
   [/\bhelps? you\b/i,           'sells the feature'],
   [/\ballows? you to\b/i,       'sells the feature'],
   [/\bmakes it easy\b/i,        'sells the feature'],
-  [/lets you/i,             'sells the feature'],
+  [/\blets you\b/i,          'sells the feature'],
   [/\bhandy\b/i,                'sells the feature'],
   [/\bkeep in mind\b/i,         'essay glue'],
   [/\bnote that\b/i,            'essay glue'],

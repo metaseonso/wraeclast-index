@@ -263,7 +263,7 @@ async function benchIt(v, run){
   BIT.n = v.base || 'Crafting bench';
   BIT.s = v.base ? v.kind + ' · item level ' + v.ilvl +
     (run ? ' · ' + v.steps + ' step' + (v.steps === 1 ? '' : 's') : '')
-    : 'Pick a base, then what to craft it with';
+    : 'No base chosen yet.';
   BIT.img = run ? baseArt(run.it.base) : baseArt(baseOf(d, v.base));
   BIT.plan = v;
   BIT.note = v.note;
@@ -681,7 +681,7 @@ const ctlHTML = run => '<div class="bn-ctl"><button type="button" class="btn" da
 const logHTML = (run, even) => (even ? '<p class="card-src bn-note">' + esc(even) + '</p>' : '') +
   '<p class="bn-h4">What it did <span>' + run.log.length + '</span></p>' +
   (run.log.length ? '<ul class="bn-log">' + run.log.map(stepHTML).join('') + '</ul>'
-    : '<p class="note">Nothing yet. Pick a currency, then use it on the item.</p>') +
+    : '<p class="note">Nothing yet.</p>') +
   (run.say ? '<p class="card-src">' + esc(run.say) + '</p>' : '');
 const runCell = (run, k, x) => '<div class="bn-cellw"><button type="button" class="bn-cell" data-do="sel:' +
   esc(k) + '" aria-pressed="' + (run.sel === k) + '">' + icHTML(x.n) + '<span class="bn-cn"><b>' + esc(x.n) +
