@@ -714,7 +714,10 @@ function planBox(){
    section still showing an older copy because its source failed: the note says which copy and why, in the
    words the builder wrote when it kept it (data/faults.json, tools/lastgood.py). */
 const STATE = {ok: ['fine', 'good'], unknown: ['unknown', 'ok'], late: ['late', 'ok'], stopped: ['stopped', 'poor']};
-const FROM = {backup: 'backup site', none: '—', stale: 'stale since'};   // where a file came from, when it has no time of its own
+const FROM = {backup: 'backup site', none: '—', stale: 'stale since'};   // where a file came from, when it has no time at all
+// a file still coming from the backup site is dated by its own hour, not by when it arrived: the age is real,
+// so it says where it came from under it (worker/health.js)
+const BACKUP = '<span class="dv-sub">from the backup site</span>';
 const TOP = {late: ' v-late', stopped: ' v-stopped'};   // how the line at the top of the page reads
 function jobsBox(){
   const list = arr(obj(obj(S.data).jobs).jobs).map(obj);
@@ -728,7 +731,7 @@ function jobsBox(){
       const said = full.startsWith(x.what + ': ') ? full.slice(String(x.what).length + 2) : full;
       const note = said ? '<span class="dv-sub">' + esc(said) + '</span>' : '';
       return '<tr><td>' + esc(x.what) + note + '</td><td class="n"><span class="dv-g g-' + tone + '">' + word + '</span></td>' +
-        '<td class="n">' + (x.at ? esc(ago(x.at)) : esc(FROM[x.from] || '—')) + '</td></tr>';
+        '<td class="n">' + (x.at ? esc(ago(x.at)) + (x.from === 'backup' ? BACKUP : '') : esc(FROM[x.from] || '—')) + '</td></tr>';
     }).join('') + '</tbody></table></div>';
 }
 /* the worst of them, in one line at the top of every tab */

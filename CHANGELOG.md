@@ -35,6 +35,38 @@ Add the details here first, then a short public line there.
   site per deploy is enough to catch a link going, and the hourly job is for prices.
 - Styling is two lines in `assets/app.css` (`.guide`) over the existing `.note`: no new component, and the
   line wraps at 375px rather than pushing the page sideways.
+## Next — Every data file says how old it is, backup or not
+
+- The fault, live: `GET /api/health` answered `{"state":"unknown","ok":false,"note":"Currency prices: from
+  the backup site, age not known here."}`. The owner: *"that's not right it needs to be fixed."*
+- **Why it said that.** The hourly files still come from the backup site, not from the key-signed ingest into
+  the files table, so there was no arrival time for them and the watch had nothing to count from. It read
+  `unknown` and stayed there — which also meant a feed that froze could sit there for a week without ever
+  raising a fault. The state machine was written for a cutover that is shelved.
+- **The age now comes out of the file itself.** Every job writes the hour of its data at the top of what it
+  sends, in `updated`: in `exchange.json` the hour of the Currency Exchange feed behind it, in `market.json`
+  and `leagues.json` the moment the file was built. `ownTime` (`worker/files.js`) reads that field off the
+  text, not the parsed file — it sits at the top of all three, so a 340 kB price file is never parsed to ask
+  its age — and `fileWhen` hands it to the watch when the backup is the one answering. Nothing is invented:
+  the file's own hour is never newer than the moment the file arrived, so this can only read older than the
+  truth, never fresher.
+- **Which time wins.** The arrival time whenever a job has sent the file in, the file's own hour only while
+  the backup is answering. The cutover is untouched: the day the ingest starts writing rows, the arrival time
+  is simply there and the fallback never runs again.
+- **So the states work again.** Against the thresholds that were already in the table, a backup file goes
+  fine, then late, then stopped like any other job: the currency file is the hourly one, late at two hours
+  and stopped at six.
+- **`unknown` now means what it says**: nothing anywhere gives a time. Only a file carrying no `updated` at
+  all reads it, and the line says why — "Currency prices: the file does not say when it was made." A file
+  the backup will not answer for at all still reads stopped, as before.
+- **The dashboard keeps the distinction.** The Data jobs block shows the age, with "from the backup site"
+  under it while a file is still coming from there. The public answer leads with an age and a state; it still
+  carries which source answered, but no line of it reads "age not known" any more.
+- **Checked against a local worker and a local database**, five ways: the live shape today (files table
+  empty, backup answering, feed fresh) reads fine; a backup currency file three hours old reads late; four
+  days old reads stopped; a fresh row in the files table over a five-day-old backup copy reads fine off its
+  arrival; and a backup file with no `updated` reads unknown. The owner's Data jobs block was drawn in a real
+  headless Chrome for all five. `node tools/dev/guard.mjs`: 7 ok, 0 failed.
 
 ## Next — The frame: one card, one map, and a loop with two moves
 

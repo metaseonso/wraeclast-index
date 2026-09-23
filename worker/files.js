@@ -6,13 +6,14 @@
      published(env, origin, name, ctx)     a file, parsed; each data centre keeps a copy for 5 minutes
      publishedRow(env, origin, name, ctx)  the same, with when it came in and which source answered
                                            ({data, at, from}), so what is built from it can say how old it is
-     fileWhen(env, origin, name)           only that, without reading the file (worker/health.js)
+     fileWhen(env, origin, name)           only how old it is, for the job watch (worker/health.js)
    There is one row per file: the newest copy that came in. It is served however old it is (the last good copy
    beats nothing), and its age travels with it, so a stale file can never pass for a fresh one.
    The key: "Authorization: Bearer <key>". Only its SHA-256 (hex) is stored, in the INGEST_HASH secret.
    No INGEST_HASH: no key works.
    Until the move to the data server is done, a file that never came in is read from the old GitHub Pages copy.
-   That copy comes with no arrival time: its age is not known here ("from: backup"). */
+   That copy comes with no arrival time ("from: backup"), so the time the file gives for itself stands in for
+   it (ownTime): the hour the data was made, which is never newer than the moment the file arrived. */
 import { same } from './dash.js';
 
 const NAMES = new Set(['exchange.json', 'market.json', 'leagues.json', 'faults.json']);
@@ -39,6 +40,16 @@ export async function fromServer(request, env){
   return same(got, Uint8Array.from(want.match(/../g), h => parseInt(h, 16)));
 }
 
+/* The time a file gives for itself, in unix seconds, or null when it gives none. Every job writes it at the
+   top of the file it sends, in the "updated" field: in exchange.json the hour of the Currency Exchange feed
+   behind it, in market.json and leagues.json the moment the file was built. Taken off the text, not the
+   parsed file: it sits at the top of all of them, so a 340 kB price file is never parsed to ask its age. */
+function ownTime(body){
+  const m = String(body).match(/"updated"\s*:\s*"([^"]{10,40})"/);
+  const t = m ? Date.parse(m[1]) : NaN;
+  return t ? Math.floor(t / 1000) : null;
+}
+
 /* ---------- reading ---------- */
 /* the newest copy there is: {body, at, from}. from "jobs": a job sent it in (at: unix seconds); from "backup":
    the old GitHub Pages copy, which carries no arrival time (at: null). null when nothing has it. */
@@ -60,8 +71,9 @@ export async function fileRow(env, origin, name, ctx){
   if(ctx && ctx.waitUntil) ctx.waitUntil(put); else await put;
   return {body: row.body, at: row.at, from: 'jobs'};
 }
-/* when a file came in and which source answered, without reading the file: {at, from} ("jobs", "backup" or
-   "none"). The backup site is asked with a HEAD: enough to know it still answers. */
+/* how old a file is and which source answered: {at, from} ("jobs", "backup" or "none"). A file a job sent in
+   is timed by its arrival, and the file itself is never read. The backup site's copy has no arrival time, so
+   it is read and the time it gives for itself is used instead (at: null when it gives none). */
 export async function fileWhen(env, origin, name){
   const hit = await caches.default.match(copyOf(origin, name));
   const at = hit && +hit.headers.get('X-Data-At');
@@ -70,8 +82,8 @@ export async function fileWhen(env, origin, name){
   try { row = await env.DB.prepare('SELECT at FROM files WHERE name = ?').bind(name).first(); } catch {}   // no table yet
   if(row) return {at: row.at, from: 'jobs'};
   try {
-    const r = await fetch(PAGES + name, {method: 'HEAD', headers: {'User-Agent': UA}, cf: {cacheTtl: TTL, cacheEverything: true}});
-    if(r.ok) return {at: null, from: 'backup'};
+    const r = await fetch(PAGES + name, {headers: {'User-Agent': UA}, cf: {cacheTtl: TTL, cacheEverything: true}});
+    if(r.ok) return {at: ownTime(await r.text()), from: 'backup'};
   } catch {}
   return {at: null, from: 'none'};
 }
