@@ -63,7 +63,8 @@ The shapes are measurable, off the lines we already ship:
 | Sockets in and stays | 227 (Runes 140, Soul Cores 52, Idols 35) | a list of slots run together in one string, 128 of them | **nothing draws it as a list** |
 | Adds quality | 28 (Catalysts) | what quality, on what | `text`, and the tag is in the craft data |
 | Desecrates | 15 (Abyssal Bones) — 11 the bench runs, 4 that carry slot lines | either shape | both |
-| Becomes a gem | 117 (Uncut Gems 42, Lineage Supports 75) | nothing at all for the 75 | the gem's own card |
+| Becomes a gem | 42 (Uncut Gems) | *"Creates a Skill Gem or Level an existing gem to level 14"* | `text`, already there |
+| Is a support gem | 75 (Lineage Supports) | nothing at all on the currency row | the gem's own card, which the currency card already borrows |
 
 That covers all 652 with no row in two places and none left over.
 
@@ -131,7 +132,7 @@ word to its `fields`. That is the frame working as written.
 
 ### The chips
 
-Seven chips over the grid, in the same `.kinds .chip` row with the same counts the watch-list picker already
+Eight chips over the grid, in the same `.kinds .chip` row with the same counts the watch-list picker already
 draws. Each is a declared list of the game's own categories — no classification of our own:
 
 | Chip | The game's groups behind it | Rows |
@@ -142,7 +143,8 @@ draws. Each is a declared list of the game's own categories — no classificatio
 | Adds quality | Catalysts | 28 |
 | Desecrates | Abyssal Bones | 15 |
 | Opens a door | Fragments | 26 |
-| Becomes a gem | Uncut Gems, Lineage Supports | 117 |
+| Becomes a gem | Uncut Gems | 42 |
+| Supports a skill | Lineage Supports | 75 |
 
 All 652, once each. The price chips that are there now — rising, falling, swinging, steady, below average,
 watching — stay, on the second row where they are today. A player who came for the market still finds it; a
@@ -358,9 +360,12 @@ already is.
   0.328 against Refined Reaver 3.606, an 11× step. Nothing in the data we ship names the recipe that turns
   one into the other, so no ladder row can be drawn for them. If a recipe exists in the game files, that is
   eleven more ladder rows for free; I could not confirm it here.
-* **The Lineage Supports.** 75 rows with no use line at all. They are priced as currency and they are gems,
-  and the index already ranks the gem card above the currency card for the same name. Whether the currency
-  card should exist for them at all is a separate question from this proposal, and it should get a ticket.
+* **The Lineage Supports — settled, 24 September 2026.** The owner: *"those lineage supports ARE gems and can
+  be traded in the currency market."* So the currency card stays, because the market really lists them, and
+  a chip calling them "becomes a gem" was wrong about all 75 — they already are one. They have their own
+  question now, *Supports a skill*, in the game's own first word: 77 of the 78 lineage gem lines begin with
+  "Supports", and the index cards every one of them as a "Lineage support gem". The currency row carries no
+  line of its own and borrows the gem card's, which it already did.
 * **The nine Exchange rows the catalogue does not name.** They price, they have no card. Not looked into.
 * **The served size of `/data/market.json`.** The worker builds it at the edge; the component sizes above are
   measured, the served total is not.

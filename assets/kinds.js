@@ -532,6 +532,11 @@ export const CHIPS = [['all', 'All'], ...KINDS.filter(d => d.search).map(d => [d
    enough to matter: the game files the Breach Splinter under Catalysts and the Simulacrum under Fragments.
    So a chip narrows the page, and it never decides what a card says about itself.
 
+   Uncut Gems and Lineage Supports are not one question, though both are gems on the market. An Uncut Gem
+   says "Creates a Skill Gem"; a Lineage Support already is one — the index cards all 78 of them as a
+   "Lineage support gem", and 77 of their lines begin with the word "Supports". One becomes a gem and the
+   other supports a skill, and a chip that called both the first was wrong about 75 rows.
+
    tools/dev/frame.mjs fails a build where the catalogue holds a category no chip names, because a category
    nobody named is a row a player cannot reach from any question. */
 export const ASKS = [
@@ -541,7 +546,8 @@ export const ASKS = [
   ['quality', 'Adds quality',          ['Catalysts']],
   ['bone',    'Desecrates',            ['Abyssal Bones']],
   ['door',    'Opens a door',          ['Fragments']],
-  ['gem',     'Becomes a gem',         ['Uncut Gems', 'Lineage Supports']],
+  ['gem',     'Becomes a gem',         ['Uncut Gems']],
+  ['support', 'Supports a skill',      ['Lineage Supports']],
 ];
 export const ASK = {};           // the question a category answers to, by the game's own name for it
 for(const [k, , cats] of ASKS) for(const c of cats) ASK[c] = k;
