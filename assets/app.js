@@ -1425,6 +1425,7 @@ export function openDetail(it, opts = {}, href){
   PEND = null;
   const own = (KIND[it.k] || {}).own;   // a boss: its tab has the way in and the drops, so it draws the card and calls back
   if(own && !opts.drawn) return void lazy(own, 'This card').then(m => { OWN[own] = m; m.openCard(it); }, () => {});
+  sawCard(it);   // the trail the search ranks by: one card, once, where every card is opened
   ensureOV();
   const cur = CUR();
   let d = 1;
@@ -1819,6 +1820,79 @@ export function flow(grid, list, make){
   });
 }
 
+/* ---------- where you have been ----------
+   The cards opened in this tab, newest first, so the search can put what sits nearest them first. A card is
+   near one of yours when the index already joins the two: the same base item, item class, Atlas section or
+   sub line - the maps Connections is drawn from (assets/edges.js) - a keyword they share, or a card yours
+   names outright. Every card further back counts for less, so the last few decide it.
+   A group of three says a great deal and a group of nine hundred says next to nothing, so each one is worth
+   less the more cards are in it, and a keyword the same by its own tally. The sum is capped: the words still
+   say what the search is about, and closeness only orders what they matched.
+   This tab's own list, and it goes when the tab does. Card keys in sessionStorage: no address, no cookie,
+   nothing anyone typed, and none of it leaves the browser - the line worker/dash.js already holds.
+   Signed in (#7): an account's history is the same list in the same shape, the cards it opened newest first,
+   weighted to recent leagues instead of to this tab's last few. It plugs in at BEEN.account - a function
+   answering that list of keys - and nothing else here changes. Accounts are not built, so the slot stays
+   empty, the way D.usage does. */
+export const BEEN = {account: null};
+const SEEN = 'wi.seen';        // the trail, in this tab's own storage
+const SEEN_MAX = 12;           // cards kept; the oldest drops off
+const SEEN_FADE = 0.7;         // what each card further back is worth against the one in front of it
+const SEEN_NAMED = 0.6;        // a card one of yours names, against one you opened yourself
+const NEAR_CAP = 150, NEAR_STEP = 60;   // the most closeness can add, and what one full share of it is worth
+
+// the tab's storage is read once and kept here after: a keystroke must not go looking for it
+let SEEN_LIST = null;
+function tabSeen(){
+  if(!SEEN_LIST){ try { SEEN_LIST = JSON.parse(sessionStorage.getItem(SEEN)) || []; } catch { SEEN_LIST = []; } }
+  return SEEN_LIST;
+}
+// the account's own history where there is one, this tab's trail where there is not
+const seenKeys = () => (BEEN.account && BEEN.account()) || tabSeen();
+function sawCard(it){
+  const key = it.k + ':' + it.id;
+  SEEN_LIST = [key, ...tabSeen().filter(k => k !== key)].slice(0, SEEN_MAX);   // opened again, it goes to the front
+  try { sessionStorage.setItem(SEEN, JSON.stringify(SEEN_LIST)); } catch {}   // a browser that will not keep it searches as a guest
+  NEAR = null;
+}
+// how many cards carry a keyword, off the keyword card's own tally: one on a thousand cards says much less
+// about where you have been than one on five
+function kwSpread(id){
+  const c = D.byKey.get(KW.own + ':' + id);
+  return c && c.use ? Object.values(c.use).reduce((a, b) => a + b, 0) : 1;
+}
+const weigh = (map, k, w) => map.set(k, (map.get(k) || 0) + w);
+/* What the trail has in common, worked out again whenever it moves. Nothing here runs until a card has been
+   opened, and nothing at all before something is typed. */
+let NEAR = null;
+function nearness(){
+  const keys = seenKeys().slice(0, SEEN_MAX);
+  if(!keys.length) return null;              // nothing opened yet: there is no trail to be near, and no cost
+  const sig = keys.join(' ');
+  if(NEAR && NEAR.sig === sig && NEAR.v === D.index) return NEAR;
+  const group = new Map(), card = new Map(), kw = new Map();
+  let w = 1;
+  for(const key of keys){
+    const it = D.byKey.get(key);   // a card a newer index no longer carries is simply not there
+    if(it){
+      weigh(card, key, w);
+      for(const [g, n] of edges.groupsOf(it)) weigh(group, g, w / Math.log2(2 + n));
+      for(const id of it.kw || []) weigh(kw, id, w / Math.log2(2 + kwSpread(id)));
+      for(const t of it.rx || []) weigh(card, t, w * SEEN_NAMED);
+    }
+    w *= SEEN_FADE;
+  }
+  NEAR = {sig, v: D.index, group, card, kw};
+  return NEAR;
+}
+// one card against the trail: every share of it counted, then capped
+function nearScore(it, N){
+  let c = N.card.get(it.k + ':' + it.id) || 0;
+  for(const g of edges.groupsOf(it)) c += N.group.get(g[0]) || 0;
+  for(const id of it.kw || []) c += N.kw.get(id) || 0;
+  return c && Math.min(NEAR_CAP, c * NEAR_STEP);
+}
+
 /* ---------- search ---------- */
 export function search(q, kind = 'all'){
   const qs = q.trim().toLowerCase();
@@ -1826,6 +1900,7 @@ export function search(q, kind = 'all'){
   const out = [];
   if(!toks.length) return out;
   const wordStart = new RegExp('(^|[^a-z0-9])' + qs.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+  const near = nearness();   // no trail, and the score below is the one it always was
   for(const it of D.index.items){
     if((kind !== 'all' && it.k !== kind) || it.dup) continue;
     let s = 0, ok = true;
@@ -1842,6 +1917,7 @@ export function search(q, kind = 'all'){
     s += (KIND[it.k] || {}).rank || 0;              // a kind that should not rank beside the rest says so once
     if(priceOf(it)) s += 12;
     const u = usageOf(it); if(u) s += Math.min(40, u * 2);
+    if(near) s += nearScore(it, near);              // how close it sits to the cards already opened
     out.push({it, s: s - it.n.length * 0.2});
   }
   /* Two bands, and the low one is always second: a card marked "lo" is the tree's own wording for a stat
