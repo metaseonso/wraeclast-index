@@ -1,10 +1,15 @@
 /* Wraeclast Index service worker: repeat visits paint straight from this browser's own copy of the site.
 
    worker/index.js writes the deploy's version id into BUILD when it serves this file, so every deploy is a new
-   service worker with its own copy, and a page is always one deploy's files, never a mix:
+   service worker with its own copy, and a page holds to the files of the deploy it was loaded with:
    - The pages (/, /explore, /privacy) and the site's files (assets/, data/, sprites/) come from the copy of the deploy
      the page was loaded with. A page from an older deploy, or from before this worker, gets the network, exactly as
      if there were no service worker.
+   - The one thing it cannot hold to is a file that deploy never had. The older copy is deleted on activate and the
+     server keeps one version of each path, so a module a newer deploy added reaches an older page new, and will not
+     link against the app.js that page is already running. assets/app.js fetches every module it needs later through
+     one helper, which knows that refusal from a file that never arrived and reloads the page once ("a module fetched
+     when it is needed"). Nothing else can mix, because every other path was already in the copy.
    - After a deploy, the next page load still opens instantly from the copy it has while the new deploy downloads in
      the background; the load after that is the new deploy.
    - Never from the copy: /api/*, the owner's dashboard, the crawler pages, and the live files the worker answers

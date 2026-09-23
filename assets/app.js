@@ -13,6 +13,59 @@ export const $ = (s, el = document) => el.querySelector(s);
 export const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
+/* ---------- a module fetched when it is needed ----------
+   Every lazy import on this page goes through here, because they all share one fault. A tab left open across a
+   deploy is still running that deploy's app.js, and the server keeps one version of each path — the new one. So a
+   module the newer deploy added arrives new, asks the old app.js for an export it does not have, and the browser
+   refuses to link the two. The page is simply a deploy behind: reload it once and the feature opens. A reload
+   costs nothing, because what a card is holding is already written down (the bench keeps its craft in
+   sessionStorage, assets/craftsim.js).
+   Only on a refusal to link, never on a file that did not arrive. The browser throws a SyntaxError when the file
+   came and its imports and exports do not line up, and a TypeError ("Failed to fetch dynamically imported
+   module") when it could not be fetched at all: offline, blocked, or a path that is not there. Someone on a train
+   must never be reloaded in circles.
+   One reload a session: STALE holds the module that caused it until that same module loads. So a module that is
+   broken for a real reason fails once and says so instead of reloading forever, and a later deploy in the same
+   session still gets its one reload.
+   `what` is the feature in the player's own words, and is said only where a reload is not the answer. */
+const STALE = 'wi.stale';
+// take this session's one reload, if it is still there. A browser that will not keep it says no, so it is
+// never taken twice, and never taken at all where it could not be remembered
+function spend(url){
+  try {
+    if(sessionStorage.getItem(STALE)) return false;
+    sessionStorage.setItem(STALE, url);
+    return true;
+  } catch { return false; }
+}
+function lazy(url, what){
+  return import(url).then(m => {
+    try { if(sessionStorage.getItem(STALE) === url) sessionStorage.removeItem(STALE); } catch {}   // it worked: armed again
+    return m;
+  }, err => {
+    if(err && err.name === 'SyntaxError' && spend(url)){
+      location.reload();
+      return new Promise(() => {});   // the page is on its way out: nothing waiting on this should run
+    }
+    if(what) stuck(what);
+    throw err;
+  });
+}
+/* One line when something would not open: bottom of the screen, gone in a moment. It is only ever drawn after a
+   reload has already failed to fix things, or with no network at all, so in practice it is never seen. */
+function stuck(what){
+  let box = $('.stuck');
+  if(!box){
+    box = document.createElement('p');
+    box.className = 'stuck';
+    box.setAttribute('role', 'status');
+    document.body.appendChild(box);
+  }
+  box.textContent = what + ' did not open. Reload the page.';
+  clearTimeout(box._go);
+  box._go = setTimeout(() => box.remove(), 6000);
+}
+
 /* ---------- data ----------
    Two parts each, so the first cards never wait for the whole index (tools/appdata.py):
      data/index-core.json   the uniques and currency cards: all the home page's first cards need
@@ -519,7 +572,7 @@ function poolHTML(rows, f){
 function poolFill(host, it, f){
   const url = host && fileOf(f, it);
   if(!url) return;
-  Promise.all([import('./basepool.js'), tableOf(url)]).then(([bp, P]) => {
+  Promise.all([lazy('./basepool.js'), tableOf(url)]).then(([bp, P]) => {
     const rows = bp.famsOf(P, bp.baseOf(P, it[f.at]), f.of);
     if(!rows.length || !host.isConnected) return;
     host.innerHTML = poolHTML(rows, f);
@@ -645,7 +698,7 @@ function ownFill(host, it, f, o){
   if(!host || !url) return;
   const had = OWN[url];
   if(had) return void (had.fill && had.fill(host, it, f, o));
-  import(url).then(m => { OWN[url] = m; if(host.isConnected && m.fill) m.fill(host, it, f, o); }, () => {});
+  lazy(url).then(m => { OWN[url] = m; if(host.isConnected && m.fill) m.fill(host, it, f, o); }, () => {});
 }
 
 /* ---------- one function per field type ----------
@@ -1052,7 +1105,7 @@ function ensureOV(){
       const own = t.closest('.btn[data-act]');
       if(own){
         const a = ACTS[own.dataset.act];
-        if(a && a.go && cur) import(a.own).then(m => m[a.go] && m[a.go](cur.it), () => {});
+        if(a && a.go && cur) lazy(a.own, 'The ' + (a.label || 'button').toLowerCase()).then(m => m[a.go] && m[a.go](cur.it), () => {});
         return;
       }
       // a card that is an application, answering its own controls: the control says what it does and the
@@ -1152,7 +1205,7 @@ export function openDetail(it, opts = {}, href){
   }
   PEND = null;
   const own = (KIND[it.k] || {}).own;   // a boss: its tab has the way in and the drops, so it draws the card and calls back
-  if(own && !opts.drawn) return void import(own).then(m => { OWN[own] = m; m.openCard(it); }, () => {});
+  if(own && !opts.drawn) return void lazy(own, 'This card').then(m => { OWN[own] = m; m.openCard(it); }, () => {});
   ensureOV();
   const cur = CUR();
   let d = 1;
@@ -1211,7 +1264,7 @@ function paintStep(){
       if(open){ open.remove(); tb.setAttribute('aria-expanded', 'false'); return; }
       tb.disabled = true;
       try {
-        const {tradePanel} = await import('./trade.js');
+        const {tradePanel} = await lazy('./trade.js', 'The trade listings');
         body.appendChild(await tradePanel(it));
         tb.setAttribute('aria-expanded', 'true');
         row.scrollIntoView({block: 'start'});   // the panel opens below the fold: show it, with the button above it
@@ -1710,10 +1763,10 @@ export function mountTopSearch(host){
 }
 // every keyboard shortcut lives in keys.js; "Search everything" jumps into the big box on home, the top box everywhere else
 initKeys(() => (IS_APP && route() === 'home' && document.getElementById('q')) || TOPQ);
-import('./suggest.js').then(m => m.mountSuggest()).catch(() => {});   // the Suggest button, on every page
-import('./notes.js').then(m => m.mountNotes()).catch(() => {});       // Patch notes, on every page
-import('./support.js').then(m => m.mountSupport()).catch(() => {});   // Support link, once data/support.json is filled in
-import('./track.js').then(m => m.mountTrack()).catch(() => {});       // page views and clicks for the owner's dashboard
+lazy('./suggest.js').then(m => m.mountSuggest()).catch(() => {});   // the Suggest button, on every page
+lazy('./notes.js').then(m => m.mountNotes()).catch(() => {});       // Patch notes, on every page
+lazy('./support.js').then(m => m.mountSupport()).catch(() => {});   // Support link, once data/support.json is filled in
+lazy('./track.js').then(m => m.mountTrack()).catch(() => {});       // page views and clicks for the owner's dashboard
 
 /* ---------- router ---------- */
 function route(){ const m = location.hash.match(/^#\/(\w+)/); return m ? m[1] : 'home'; }
@@ -1732,7 +1785,7 @@ async function show(){
     if(!matchMedia('(pointer:coarse)').matches) $('#q').focus({preventScroll:true});
   } else {
     if(r !== 'map') await ready;   // every other tab draws cards out of the index; the map is a finished picture
-    if(!loaded[r]) loaded[r] = import('./' + ({trade: 'tradepage'}[r] || r) + '.js').then(m => m.mount($('#view-' + r)));
+    if(!loaded[r]) loaded[r] = lazy('./' + ({trade: 'tradepage'}[r] || r) + '.js', 'This tab').then(m => m.mount($('#view-' + r)));
     const m = await loaded[r];
     if(m && m.update) m.update();
   }
@@ -1757,7 +1810,7 @@ first.then(() => {
   if(M && M.updated) st.innerHTML = 'Prices: <b>' + esc(M.league) + '</b> · ' + ago(M.updated) +
     (M.late ? ' · <span class="err">waiting for new prices</span>' : '');
   else st.textContent = 'Prices not loaded yet';
-  import('./league.js').then(m => m.mountLeague($('#leagueclock'))).catch(() => {});   // the league clock
+  lazy('./league.js').then(m => m.mountLeague($('#leagueclock'))).catch(() => {});   // the league clock
 }).catch(failed);
 first.then(later, later);   // the crest's fog, once the first cards are on screen
 ready.then(() => {

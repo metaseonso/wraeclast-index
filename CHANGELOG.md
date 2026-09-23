@@ -3,6 +3,41 @@
 The full list of changes. The public patch notes (data/changelog.json, shown on the site) stay short.
 Add the details here first, then a short public line there.
 
+## Next — A tab left open across a deploy opens the new bench, instead of nothing at all
+
+- The fault, live on wraeclastindex.fyi minutes after the bench went out (ticket 48). A tab opened before the
+  deploy is still running that deploy's `assets/app.js`, which is right and is what `sw.js` is for. Click
+  Crafting bench on a card in it and `sw.js` `file()` sees a page that is not of this deploy, goes to the
+  network, and the network hands back the **new** `assets/craftsim.js`. Old `app.js` and new `craftsim.js`:
+  *"The requested module './app.js' does not provide an export named 'repaint'"*, and the bench does not open.
+  Nothing is said. One reload fixes it, and the craft survives a reload, so nothing was ever at risk — but the
+  first try failed in silence.
+- **It is not only the bench.** Every deploy that adds a module has the same window, for as long as a tab from
+  the deploy before it is open. `sw.js` cannot close it: the older copy is deleted on activate and the server
+  keeps one version of each path.
+- **The failed load is the signal.** `assets/app.js` now fetches every module it needs later through one
+  helper, `lazy()` — all ten lazy imports and the router's tab loader. A module that will not link means the
+  page is a deploy behind, so the page reloads itself once and the next click opens the feature.
+- **A refusal to link, never a file that did not arrive.** The browser throws a **SyntaxError** when the file
+  came and its imports and exports do not line up, and a **TypeError** ("Failed to fetch dynamically imported
+  module") when it could not be fetched at all — offline, blocked, or a path that is not there. Only the first
+  reloads. Someone on a train is never reloaded in circles.
+- **One reload a session.** `sessionStorage` holds the module that caused it, until that same module loads. So
+  a module that is broken for a real reason fails once, and a later deploy in the same session still gets its
+  one reload. A browser with storage denied is never reloaded, for want of anywhere to remember it.
+- **Only then is anything said**, in one line at the foot of the screen: *"The crafting bench did not open.
+  Reload the page."* The words are the button's own, so no file and no id is ever on a screen. The background
+  mounts — Suggest, Patch notes, Support, the tracker, the league clock — say nothing, because there is
+  nothing for a player to do about them.
+- **Proved both ways** in headless Chrome over two builds on one origin: a tab recorded as a page of deploy
+  `a1`, then deploy `b2` out with `craftsim.js` in it for the first time. Before: the SyntaxError above, no
+  reload, no bench, nothing said. After: one reload, the tab comes back on `b2`'s `app.js`, the bench opens.
+  Three ways round again for the loop: a module that 404s fails once and says so through five clicks; a module
+  that is genuinely broken reloads once, then says so and stays put through four more; the marker clears the
+  moment that module loads. First paint is unmoved — 212 ms median either way, over twelve cold loads each.
+- `sw.js`'s header said "a page is always one deploy's files, never a mix". It now says what actually holds,
+  and names the one file it cannot hold to and who catches it.
+
 ## Next — A levelling guide we did not write, on the Build tab
 
 - A player called Dan sent a levelling guide in through the suggestion box:
