@@ -5,7 +5,7 @@ buildable, both drawn against the card frame, the chips, the price chart, the po
 currency tab. No new component where one of those does the job. No code yet.
 
 The tab prices 652 things very well and says almost nothing about any of them. A player opens it to find out
-whether a Perfect Exalted Orb is worth 1,245 plain ones, and leaves knowing that it moved 39% this week.
+whether a Perfect Exalted Orb is worth what it is asking today, and leaves knowing that it moved 39% this week.
 
 ---
 
@@ -113,11 +113,11 @@ types with a different word in front.
 | Field | Type | Slot | Reads | Draws | Cost |
 |---|---|---|---|---|---|
 | `rides` | `text` | pill | which orb an omen rides on | *Rides on an Exalted Orb* | one entry |
-| `floor` | `number` | fact | an upgraded orb's modifier-level floor | *No modifier below level 50* | one entry |
+| `floor` | `number` | fact | an upgraded orb's lowest modifier level | *Modifier level 50 or higher · poe2db* | one entry |
 | `quality` | `text` | pill | a catalyst's tag and what it goes on | *Life quality · rings and amulets* | one entry |
 | `useson` | `text` | pill | what a bone desecrates, and its level cap | *Amulet, ring or belt · level 64 or less* | one entry |
 | `perslot` | **new** | body | the item's own line, split on its own separator | a two-column list: the slot, what it gives there. 4 lines in the grid, all of them in the popup | one entry, one renderer |
-| `ladder` | **new** | body | the orb's own upgrades | three rows: plain, Greater, Perfect — each with today's price, the multiple, and the floor it buys | one entry, one renderer |
+| `ladder` | **new** | body | the orb's own upgrades | three rows: plain, Greater, Perfect. A price column aged like every other price on the site, and a lowest-modifier-level column with its source. Two columns, never one sentence | one entry, one renderer |
 | `setprice` | **new** | fact | the count in a *Combine N…* line | *300 of these cost 2.93 div · the whole one costs 3.33 div* | one entry, one renderer |
 | `cheapest` | **new** | fact | prices already loaded, across the card's own group | *Cheapest in Catalysts: Flesh Catalyst, 0.023 div* | one entry, one renderer |
 
@@ -199,12 +199,28 @@ Prices are the Currency Exchange's, 19 September 2026, in divines.
 | Exalted | 0.002163 | 0.00872 | 4.0 | 2.69300 | **1,245** | level 35 / 50 |
 | Chaos | 0.117300 | 0.34400 | 2.9 | 5.67200 | **48.4** | level 35 / 50 |
 
-A Perfect Exalted Orb costs **1,245 plain ones** and what it buys is a floor of modifier level 50. That is
-the single most useful sentence the tab could put on a card, it is true today at real prices, and the tab
-cannot say it.
+**Two things, and they are never one sentence.**
 
-The Greater step is 1.5× to 4×. The Perfect step is 11× to 1,245×. A player who learns only that has learned
-something worth an evening.
+The multiple is a price. It was 1,245 when these two prices were read and it is a different number by the
+hour, so it is drawn as a price is drawn everywhere else on this site: with its own age beside it, and gone
+rather than stale if either end has no price.
+
+The lowest modifier level is not a price and does not move. It is also not in the game's own words — the
+Exalted Orb, the Greater and the Perfect all carry the same line, *"Augments a Rare item with a new random
+modifier"*. The 50 comes from poe2db and is named on screen, per the standing rule for anything the game
+does not publish.
+
+So the card says three things, in three slots, and a reader can take any one of them on its own:
+
+> **Augments a Rare item with a new random modifier** — the game's own line
+> **Modifier level 50 or higher** · poe2db — a fact, with its source
+> **1,245 × Exalted Orb** · checked 41 min ago — a price, with its age
+
+Welded into one sentence it reads as a single claim that is half true by the hour, and it is not how
+anything else on this site talks.
+
+At the prices in the table above the Greater step is 1.5× to 4× and the Perfect step is 11× to 1,245×. Those
+multiples are prices and move with them. What does not move is which level floor each step buys.
 
 ### 2. The set against its parts
 
@@ -293,7 +309,15 @@ things this proposal adds are not prices, and they need their own answer.
 | The ladder's multiples and the set-against-parts line | prices, so hourly | they are worked out at draw time from the prices in hand. If either end has no price the line is not drawn — never a zero, never a stale multiple |
 | The seven chips | a new league can add a group the table does not name | the chip table is declared, so an unnamed group is **counted and named** on the page rather than silently dropped, the same way the map names what it left out. A build check should fail when a category is in no chip |
 
-One rule holds all three: what is not drawn is a number, never an "etc."
+Two rules hold all three.
+
+**What is not drawn is a number, never an "etc."**
+
+**A price and a fact never share a sentence.** A price carries its age and is gone rather than stale. A fact
+carries its source where the game does not publish it. They sit in different slots, and a reader can take
+either one on its own without the other having to be true. The owner, 23 September 2026, on a draft that
+welded them: *"It doesnt always cost that. it can state currently based on present price. and the next part
+is a separate statement about what it does."*
 
 ---
 
