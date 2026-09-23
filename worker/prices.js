@@ -341,23 +341,25 @@ async function addLeagueLines(env, origin, ctx, league, items, own){
       by.set(r.key, list);
     }
   }
-  // where a league is drawn and we have nothing of our own in it, their one point stands in its place
-  for(const [key, rows] of ninja){
-    for(const row of rows){
-      const b = back.indexOf(row.n) + 1;
-      if(!b) continue;
-      const list = by.get(key) || [];
-      if(list.some(x => x.n === row.n)) continue;
-      const s = starts.get(row.n), next = back.indexOf(row.n) ? starts.get(back[back.indexOf(row.n) - 1]) : starts.get(league);
-      list.push({n: row.n, b, d0: s !== undefined && next !== undefined ? Math.max(0, next - s - 1) : 0,
-        v: [row.v], src: 'ninja'});
-      by.set(key, list);
-    }
-  }
+  /* A league we have nothing of our own in: their one number stands in its place, on the last day of that
+     league, marked as theirs. Their rows are keyed by the card, not by the row in our own table, so they are
+     put in here beside whatever of ours is already there. */
+  const ninjaFor = k => (ninja.get(k) || []).map(row => {
+    const b = back.indexOf(row.n) + 1;
+    if(!b) return null;
+    const s = starts.get(row.n);
+    const after = b > 1 ? starts.get(back[b - 2]) : starts.get(league);
+    return {n: row.n, b, d0: s !== undefined && after !== undefined ? Math.max(0, after - s - 1) : 0,
+      v: [row.v], src: 'ninja'};
+  }).filter(Boolean);
   for(const [k, it] of Object.entries(items)){
     const mine = own.get(k);
-    if(!mine) continue;
-    const past = (by.get(mine.k) || []).sort((a, b) => a.b - b.b);   // newest league first
+    const ours = mine ? (by.get(mine.k) || []) : [];
+    const past = [...ours, ...ninjaFor(k).filter(x => !ours.some(o => o.n === x.n))].sort((a, b) => a.b - b.b);
+    if(!mine){   // nothing of our own at all: their leagues are the whole of the chart's past
+      if(past.length) it.lh = {d0: 0, past};
+      continue;
+    }
     const note = thinNote(mine.n, past, back);
     const gaps = mine.g || [];
     if(!past.length && !note && !gaps.length) continue;
