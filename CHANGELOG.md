@@ -3,6 +3,63 @@
 The full list of changes. The public patch notes (data/changelog.json, shown on the site) stay short.
 Add the details here first, then a short public line there.
 
+## Next — Craft: two questions, and the bench inside the page
+
+- The tab answered one question: *what can this base roll* — and only once you knew the base. The other
+  question a player actually has is *how do I get this mod*, and the page could not answer it at all. It now
+  asks which one you want, in the site's own segmented control, and the answer is in the address
+  (`#/craft?ask=mod&find=fire+res&mod=to-fire-resistance&base=Gold+Ring&ilvl=80`), so a link opens on the
+  question it was sent about.
+- **One item, two questions.** Picking a kind of item on the second screen picks the page's own item, so what
+  you find there is already on the first screen, in the plan, in the trade search and on the way to the
+  bench. Nothing is a separate mode with a state of its own.
+- **The mod screen.** Type a modifier in its own words. The hits are the thinnest row the page has — the
+  line, its side, how many kinds of item carry it, and whether an essence guarantees it — ordered by the line
+  that reads the way it was typed, then the ones that roll before the ones only a desecration or a corruption
+  adds, then the ones the most kinds of item carry. Nothing is ordered by how good a modifier is: that is the
+  player's call. 40 rows, then the rest as a count.
+- Pick one and it says what can carry it, and on the base you are on it draws the modifier as the same row
+  the pool draws — its tiers on the trade slider, the tiers this item level cannot reach greyed, its weight,
+  its share of that side at this item level, and Craft of Exile named for the weight directly under it. One
+  modifier at a time, never the odds for a whole item, and no cost to hit anywhere.
+- **The right rail is what was missing.** What guarantees it (the essences, with what each does and what it
+  costs right now), what holds a roll to its side (the omens the game still has — which ones it has taken out
+  is the bench's own table, `assets/engine.js`, never a second copy), and what can add one at all (the orbs,
+  with the Greater and Perfect ones drawn only where a tier of this modifier is inside their reach at this
+  item level). Every price is the in-game Currency Exchange and live trade listings; a currency the market
+  does not price today carries no price rather than a made-up one.
+- An item that cannot be Rare is never offered the orbs whose own line says "Rare item" — the game's words
+  decide that, so there is no second list of which orb needs what.
+- **The bench is in the page, not a link off it.** Two ways in, both where the player already is: a *Practise
+  at the bench* button beside the base and on the item, and a gold one at the head of the rail. Either opens
+  the bench card on the item this page is on — the base **and its item level**, which the bench used to
+  replace with the class's top — and the rail's button hands over what it had just named: the essences that
+  guarantee the modifier and the orbs that can add one, because an essence works on a Magic item and getting
+  there is the orbs' job. Each pick comes off the bench in a tap, and one this kind of item does not craft
+  with is named rather than swapped for something else (`alsoPicked`, `assets/craftsim.js`).
+- **`data/craftmods.json`, 58 kB** (`tools/craftmods.py`): every modifier in the game, its side, its tags and
+  the kinds of item that can carry it, with the lowest level it lands at and whether an essence guarantees it
+  there. It is the 31 item class files — 1.6 MB — turned inside out, so nothing official is read a second
+  time, and it is fetched the first time the second question is asked and never in first paint. A modifier
+  that rolls on one kind of item and is desecrated on another is two rows, because those are two different
+  answers to the question.
+- **Three of the slices that were drawn and never cleared are cleared here.** *Thin rows*: the hits list.
+  *Pools instead of 294 names*: a kind of item with 294 bases has a handful of pools, and the pool is what
+  decides whether a modifier is in it, so the bases are offered as their pools — by the defences they come in,
+  with how many bases are in each — and picking one picks a base of it. *Mechanics as filters*: on this screen
+  the mechanics are not a panel to open, they are the answer — the rail is essences, omens and orbs, put
+  against the modifier you asked about. The fourth, *a modifier as a card kind of its own*, is untouched:
+  that is a `KINDS` entry and 637 rows in the index, which is the frame's move (b), not this ticket.
+- **A phone does one job per screen.** The search and the list until a modifier is picked, then that modifier
+  and how to get it, with *Every modifier* as the way back. Every control on the tab is at least 44px, the
+  same rule `assets/bench.css` already keeps, and nothing scrolls sideways at 375px.
+- Measured, 375×812 and 1440×950 in headless Chrome: both screens, a modifier row with its weight, its share
+  and its source, the rail with live prices, the way into the bench taken and a craft run from it (a
+  Transmutation, then the essence, landing the guaranteed modifier), no console errors, no sideways scroll,
+  no control under 44px. First paint on the Craft tab is unmoved (184 ms before, 164 ms after, run five times
+  each); the first screen costs +6.0 kB gzipped of `assets/craft.js` and +0.7 kB of `assets/app.css`, and the
+  second screen pulls `data/craftmods.json` (8.6 kB gzipped) and `assets/engine.js` on top.
+
 ## Next — A levelling guide we did not write, on the Build tab
 
 - A player called Dan sent a levelling guide in through the suggestion box:
