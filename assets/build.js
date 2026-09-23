@@ -476,16 +476,19 @@ async function stillOpen(b){
   if(!b.asc) rows.push(['Ascendancy', 'none taken']);
   if(b.gems.length){
     const s = M.socketsLeft(b.gems);
-    rows.push(['Supports', s.over ? s.held + ', ' + s.over + ' over' : s.held + ' of ' + s.room]);
+    if(s.over) rows.push(['Supports', s.held + ', ' + s.over + ' over ' + s.room]);
+    else if(s.held < s.room) rows.push(['Supports', (s.room - s.held) + ' of ' + s.room + ' free']);
   }
   return rows;
 }
 function openHTML(rows){
   if(!rows.length) return '<div class="panel"><p class="note">Nothing open. Every slot is filled and every affix is chosen.</p></div>';
+  const said = ['Affix caps and augment sockets come from the item class.',
+    rows.some(r => r[0] === 'Passives') ? 'Levelling gives one passive point, and quest points come on top.' : '',
+    rows.some(r => r[0] === 'Supports') ? M.SOURCE.sockets : ''].filter(Boolean).join(' ');
   return '<div class="panel"><dl class="bs-grid">' +
     rows.map(([k, v]) => '<div><dt>' + esc(k) + '</dt><dd>' + esc(v) + '</dd></div>').join('') +
-    '</dl><p class="note" style="margin-top:10px">Affix caps and augment sockets come from the item class. ' +
-    'Levelling gives one passive point, and quest points come on top. ' + esc(M.SOURCE.sockets) + '</p></div>';
+    '</dl><p class="note" style="margin-top:10px">' + esc(said) + '</p></div>';
 }
 
 /* ---------- 4. what to buy, priced live ---------- */
