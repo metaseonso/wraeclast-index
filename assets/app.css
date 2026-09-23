@@ -385,6 +385,26 @@ small.at-bonus{display:block}
   .bo-item.rated{grid-template-columns:24px minmax(0,1fr) auto}
   .bo-item.rated .bo-rate{grid-column:2/-1}
 }
+/* the meter: four rows a run, each one a figure or the word for what it has not got */
+.bo-worth{gap:8px}
+.bo-roi{display:grid; gap:5px; min-width:0}
+.bo-roi + .bo-roi{border-top:1px dashed var(--line-soft); padding-top:8px}
+.bo-roi .lbl, .bo-roi .note{margin:0}
+.bo-fig{display:grid; grid-template-columns:76px auto minmax(0,1fr); gap:1px 10px; align-items:baseline; min-width:0}
+.bo-fig > span{font-size:10px; text-transform:uppercase; letter-spacing:.08em; color:var(--faint)}
+.bo-fig b{font:600 14px var(--mono); font-variant-numeric:tabular-nums; color:var(--text); white-space:nowrap}
+.bo-fig b small{margin-left:2px; font:500 10px var(--sans); color:var(--faint)}
+.bo-fig b.none{font:500 12px var(--sans); color:var(--faint)}
+.bo-fig i{font-style:normal; font-size:11px; line-height:1.35; color:var(--faint); overflow-wrap:anywhere}
+.bo-kph{display:grid; gap:3px; min-width:0}
+.bo-kph .lbl{margin:0}
+.bo-kph b{font-family:var(--mono); font-size:12px; color:var(--text); letter-spacing:0}
+.bo-kph input[type=range]{width:100%; min-height:28px; margin:0}
+@media (max-width:640px){
+  .bo-fig{grid-template-columns:70px minmax(0,1fr)}
+  .bo-fig i{grid-column:2/-1}
+  .bo-kph input[type=range]{min-height:44px}
+}
 /* end Bosses tab */
 /* Trade page: popular searches from everyone */
 .tp-pop{display:flex; flex-wrap:wrap; align-items:center; gap:6px; margin:0 0 10px}

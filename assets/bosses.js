@@ -7,7 +7,7 @@
    Prices: data/bossprices.json (worker/prices.js) resolves every name at once from the unique checks, the
    in-game Currency Exchange and the trade searches in data/bossqueries.json; a name it does not carry falls back to
    the card's own market price. Real prices only, and a rate never meets one: no value per kill, here or anywhere. */
-import { D, $, esc, card, openDetail, priceOf, hrefOf, moneyHTML, change, spark, ago, params } from './app.js';
+import { D, $, esc, card, openDetail, priceOf, hrefOf, money as coin, moneyHTML, change, spark, ago, params } from './app.js';
 
 const SHOW = [['all', 'All'], ['pin', 'Pinnacle'], ['drops', 'With drops']];
 const SORTS = [['name', 'Name'], ['way', 'Way in']];
@@ -97,6 +97,174 @@ function row(b, i){
 }
 const wayValue = r => r.way && r.way.px && num(r.way.px.v) ? r.way.px.v : null;
 
+/* ---------- is it worth killing? ----------
+   Three real prices and one community sample, and nothing else. What the way in costs and what a drop sells
+   for are live prices; how often a drop falls is the PoE2 Wiki's own sample, named and counted on screen
+   wherever it is used. A rate never lands as one number: every one is drawn as the 95% Wilson band on the
+   sample the wiki took, so a figure taken over 71 kills reads as the span it really is. A row with no sample
+   and a drop with no price are both left out and counted on screen. Nothing here is filled in with a guess,
+   and no rate is ever multiplied into a value per kill that is offered as fact.
+
+   The settle figure is the other half of the answer, because these returns are lumpy. After n kills the 95%
+   band on the average is 1.96 * sigma / (mu * sqrt(n)) wide, so the kills that bring it inside a quarter of
+   the average are n = (1.96 * sigma / (0.25 * mu))^2, sigma taken over the counted drops one at a time (each
+   on its own, which is the wide end: a table where one unique drops or another cannot swing further than
+   that). For a single drop it comes to 1.96 / sqrt(k), which is 61 of the thing seen — the same arithmetic
+   as docs/proposal-farms.md. Kills an hour is the player's own number and is never ours. */
+const Z = 1.96;         // the 95% band
+const NEAR = 0.25;      // how near the average has to settle before an average is worth reading
+const KPH_KEY = 'wi.bosskph';
+let KPH = 6;            // kills an hour, the player's own, kept in their browser
+try { const v = Math.round(+localStorage.getItem(KPH_KEY)); if(v >= 1 && v <= 30) KPH = v; } catch {}
+
+function wilson(p, n, up){
+  const k = Z * Z / n, c = (p + k / 2) / (1 + k);
+  const h = Z / (1 + k) * Math.sqrt(p * (1 - p) / n + k / (4 * n));
+  return Math.max(0, Math.min(1, up ? c + h : c - h));
+}
+/* The shapes the wiki writes a rate in: a number, an approximation ("~1.5%"), a span ("23-34%"), now and then
+   two numbers ("19.5% (17%)"), and a ceiling ("<1%"). A ceiling keeps the wiki's own ceiling and takes no
+   band: it is already a statement about how small the number is, and nothing was counted to widen. */
+function rateBand(r){
+  const ns = String(r.rate || '').match(/\d+(?:\.\d+)?/g);
+  if(!ns || !num(r.sample)) return null;
+  const v = ns.map(x => +x / 100), pt = v[0];
+  if(/^\s*</.test(r.rate)) return {lo: 0, hi: pt, pt, cap: true};
+  return {lo: wilson(Math.min(...v), r.sample, false), hi: wilson(Math.max(...v), r.sample, true), pt};
+}
+const pct = v => (v * 100 >= 10 ? Math.round(v * 100) : +(v * 100).toFixed(1)) + '%';
+
+/* A run is one way the fight is done. The wiki's table splits a boss by mode — the Arbiter is Regular or
+   Uber — and by the conditions it writes into a group ("If the ring is taken immediately…"); a row that names
+   neither belongs to every run. Two runs are never added together: that would count one drop twice. */
+const isCond = g => /^if\b/i.test(g || '');
+function runsOf(b){
+  const rows = (b.rates && b.rates.rows) || [];
+  const modes = [...new Set(rows.map(r => r.mode || '').filter(Boolean))];
+  const out = [];
+  for(const m of modes.length ? modes : ['']){
+    const mine = rows.filter(r => !r.mode || r.mode === m);
+    const conds = [...new Set(mine.map(r => r.group || '').filter(isCond))];
+    // the wiki writes a condition as a whole sentence about what drops; the run is named by the condition
+    // itself, which is the clause before the comma
+    for(const c of conds.length ? conds : [''])
+      out.push({name: [m, c.split(',')[0].replace(/\.*$/, '')].filter(Boolean).join(' · '),
+        rows: mine.filter(r => !isCond(r.group) || r.group === c)});
+  }
+  return out;
+}
+/* How many of an entry item one way in takes, off the item's own line and nothing else: a splinter says
+   "Combine 300 Splinters…" itself. An item that says nothing is one item. */
+function eachOf(x){
+  const M = (D.market && D.market.items) || {};
+  const said = (x.it && x.it.t) || (M['c:' + x.n] || {}).u || '';
+  const m = said.match(/Combine (\d+)/);
+  return m ? +m[1] : 1;
+}
+/* One run, worked: what it costs to get in, what the sampled drops come to, and how many kills the average
+   takes to settle. counted, nosample and noprice are all shown, so the reader sees how much of the table the
+   figures are made of. */
+function meterOf(r, run){
+  const px = new Map(r.drops.map(x => [x.n.toLowerCase(), x.px]));
+  const out = {counted: 0, nosample: 0, noprice: 0, lo: 0, hi: 0, kills: null, rows: run.rows.length,
+    sample: [...new Set(run.rows.filter(x => num(x.sample)).map(x => x.sample))].sort((a, b) => a - b)};
+  let mu = 0, vr = 0;
+  for(const row of run.rows){
+    const b = rateBand(row);
+    if(!b){ out.nosample++; continue; }
+    const p = px.get(row.item.toLowerCase());
+    if(!p || !num(p.v)){ out.noprice++; continue; }
+    out.counted++;
+    out.lo += b.lo * p.v; out.hi += b.hi * p.v;
+    mu += b.pt * p.v; vr += p.v * p.v * b.pt * (1 - b.pt);
+  }
+  if(out.counted && mu > 0) out.kills = Math.ceil(Math.pow(Z * Math.sqrt(vr) / (NEAR * mu), 2));
+  const ways = r.access.filter(x => x.px && num(x.px.v))
+    .map(x => ({n: x.n, each: eachOf(x), div: eachOf(x) * x.px.v}))
+    .sort((a, x) => a.div - x.div);
+  out.way = ways[0] || null;
+  out.ways = ways.length;
+  return out;
+}
+
+/* ---------- the meter: four rows, and every one of them either a figure or what it is missing ---------- */
+/* A range in one unit, the dearer end picking it, so the two ends read against each other. */
+function span(lo, hi){
+  const m = coin(Math.max(Math.abs(lo), Math.abs(hi)));
+  if(!m) return '<b class="none">no price</b>';
+  const ex = (D.market && D.market.rates && D.market.rates.exalted) || 1;
+  const put = v => {
+    const x = m.u === 'ex' ? v * ex : v, a = Math.abs(x);
+    return (a >= 100 ? Math.round(x).toLocaleString() : +x.toFixed(a >= 10 ? 1 : 2)).toString();
+  };
+  return '<b>' + put(lo) + ' – ' + put(hi) + '<small>' + m.u + '</small></b>';
+}
+const hrs = n => n < 10 ? +n.toFixed(1) : Math.round(n);
+const miss = said => '<b class="none">' + esc(said) + '</b>';
+const figHTML = (cls, label, value, sub) => '<div class="bo-fig' + (cls ? ' ' + cls : '') + '"><span>' + label +
+  '</span>' + value + '<i>' + esc(sub) + '</i></div>';
+const wayFig = m => figHTML('', 'Way in', m.way ? '<b>' + moneyHTML(m.way.div) + '</b>' : miss('no price'),
+  m.way ? m.way.n + (m.way.each > 1 ? ' ×' + m.way.each : '') +
+    (m.ways > 1 ? ' · cheapest of ' + m.ways + ' priced' : '') : 'no entry priced');
+const killFig = m => figHTML('', 'A kill', m.counted ? span(m.lo, m.hi) : miss('no sample'),
+  m.counted ? m.counted + ' of ' + m.rows + ' drops · ' + m.sample.join(' and ') + ' kills sampled'
+    : m.rows + ' drops, none sampled');
+const hourFig = m => figHTML('bo-hr', 'An hour',
+  m.counted && m.way ? span((m.lo - m.way.div) * KPH, (m.hi - m.way.div) * KPH) : miss(m.counted ? 'no price' : 'no sample'),
+  m.counted && m.way ? 'at ' + KPH + ' kills an hour' : m.counted ? 'the way in has none' : 'nothing to work it out from');
+const settleFig = m => figHTML('bo-set', 'Settles',
+  m.kills ? '<b>' + m.kills.toLocaleString() + ' kills</b>' : miss('no sample'),
+  m.kills ? hrs(m.kills / KPH) + ' hours at ' + KPH + ' an hour' : 'nothing to work it out from');
+
+function runHTML(r, run, i){
+  const m = meterOf(r, run);
+  const left = [m.nosample ? m.nosample + ' with no sample' : '', m.noprice ? m.noprice + ' with no price' : '']
+    .filter(Boolean);
+  return '<div class="bo-roi" data-run="' + i + '">' +
+    (run.name ? '<p class="lbl">' + esc(run.name) + '</p>' : '') +
+    wayFig(m) + killFig(m) + hourFig(m) + settleFig(m) +
+    (left.length ? '<p class="note">Left out: ' + esc(left.join(', ')) + '.</p>' : '') + '</div>';
+}
+/* The whole section. A boss the wiki never sampled draws no meter at all: where there is no sample there is
+   no figure, and a blank would read as a zero. */
+function roiHTML(r){
+  const b = r.b;
+  if(!b.rates || !((b.rates.rows || []).length)) return '';
+  const runs = runsOf(b);
+  return '<div class="bo-sec bo-worth"><p class="lbl">Worth it</p>' +
+    runs.map((run, i) => runHTML(r, run, i)).join('') +
+    '<label class="bo-kph"><span class="lbl">Kills an hour <b>' + KPH + '</b></span>' +
+      '<input type="range" min="1" max="30" step="1" value="' + KPH + '" data-do="kph" aria-label="Kills an hour"></label>' +
+    '<p class="note">' + esc(rateSrc(b.rates)) + '</p>' +
+    '<p class="note">Prices: the in-game Currency Exchange and the trade site' +
+      (BP && BP.updated ? ', checked ' + esc(ago(BP.updated)) : '') + '. Kills an hour is yours.</p>' +
+    '<p class="note">Settles: the kills it takes for the average to sit within a quarter of itself, ' +
+      '19 times in 20.</p></div>';
+}
+// a boss the meter can answer for: one run with a sampled rate and a real price on the same drop
+const drawsMeter = r => runsOf(r.b).some(run => meterOf(r, run).counted > 0);
+/* The slider moves and the two rows that stand on it are redrawn where they are, so the card keeps its place
+   and the finger keeps the slider. The card's own extra is rewritten with them: a step back and forward
+   redraws from it, and it would otherwise come back at the old number. */
+function onBoss(r, opts, what, el){
+  if(what !== 'kph') return;
+  const v = Math.max(1, Math.min(30, Math.round(+el.value) || KPH));
+  KPH = v;
+  try { localStorage.setItem(KPH_KEY, String(v)); } catch {}
+  const box = el.closest('.bo-worth');
+  if(!box) return;
+  const lab = box.querySelector('.bo-kph b');
+  if(lab) lab.textContent = v;
+  const runs = runsOf(r.b);
+  for(const blk of box.querySelectorAll('.bo-roi')){
+    const m = meterOf(r, runs[+blk.dataset.run]);
+    const hr = blk.querySelector('.bo-hr'), st = blk.querySelector('.bo-set');
+    if(hr) hr.outerHTML = hourFig(m);
+    if(st) st.outerHTML = settleFig(m);
+  }
+  opts.extra = extraOf(r);
+}
+
 /* ---------- small pieces ---------- */
 const ICONS = new Map();
 function icon(it){   // the live card's own icon, so a row always matches the card it opens
@@ -114,8 +282,14 @@ function priceHTML(x){
 }
 /* A rate carries its own sample: a number the wiki took over 50 kills must never inherit another row's count,
    and most pages sample some rows and not others. */
-const rateTag = r => [r.mode, (r.group || '').replace(/\.\.\.$/, '…'), num(r.sample) ? r.sample + ' kills' : null]
-  .filter(Boolean).join(' · ');
+/* ...and its own band: a rate is what a sample landed on, so what it says next to it is the span that sample
+   really covers — 42% over 71 kills is 31% to 54%, and a reader who sees only the 42% is reading luck. */
+const rateTag = r => {
+  const b = rateBand(r);
+  return [r.mode, (r.group || '').replace(/\.\.\.$/, '…'),
+    b && !b.cap ? pct(b.lo) + '–' + pct(b.hi) + ' over ' + r.sample + ' kills'
+      : num(r.sample) ? r.sample + ' kills' : null].filter(Boolean).join(' · ');
+};
 function rateHTML(rows){
   if(!rows.length) return '<span class="bo-r none">no sample</span>';   // never a blank cell: blank would read as zero
   return rows.map(r => {
@@ -193,13 +367,15 @@ export async function openCard(it){
     if(r) openBoss(r);
   }
 }
-function openBoss(r){
+/* Everything the boss card carries under its head, made again whenever it is drawn again: the meter stands on
+   a number the player sets, so the card's own copy of it has to be made fresh and not kept. */
+function extraOf(r){
   const b = r.b, rated = !!(b.rates && (b.rates.rows || []).length), from = dropSrc(r);
   const pills = [];   // the level is not a pill: it sits on its own area, in the line under the boss's name
   if(b.pinnacle) pills.push('<span class="pill">Pinnacle</span>');
   if(r.drops.length) pills.push('<span class="pill">' + r.drops.length + (r.drops.length === 1 ? ' drop' : ' drops') + '</span>');
-  const extra =
-    (pills.length ? '<div class="card-req">' + pills.join('') + '</div>' : '') +
+  return (pills.length ? '<div class="card-req">' + pills.join('') + '</div>' : '') +
+    roiHTML(r) +
     (r.access.length ? '<div class="bo-sec"><p class="lbl">Way in</p><div class="bo-tbl">' +
       r.access.map((x, i) => itemRow(x, r.i + ':a:' + i, false)).join('') +
       '</div><p class="note">Way in: the entry items Exiled Exchange 2 lists as dropping what this boss drops.</p></div>' : '') +
@@ -209,10 +385,14 @@ function openBoss(r){
       (from ? '<p class="note">' + esc(from) + '</p>' : '') +
       (rated ? '<p class="note">' + esc(rateSrc(b.rates)) + '</p>' : '') + '</div>'
       : '<p class="fm-miss">No feed names what this one drops.</p>');
-  const it = bossItem(b);
+}
+function openBoss(r){
+  const b = r.b, it = bossItem(b);
   const here = /^#\/bosses\b/.test(location.hash);   // on the tab already: the gold button has nowhere new to go
-  openDetail(it, {price: null, builds: false, drawn: true, kind: b.pinnacle ? 'Pinnacle boss' : 'Boss', extra},
-    here ? null : hrefOf(it));
+  const opts = {price: null, builds: false, drawn: true, kind: b.pinnacle ? 'Pinnacle boss' : 'Boss',
+    extra: extraOf(r)};
+  opts.on = (what, el) => onBoss(r, opts, what, el);
+  openDetail(it, opts, here ? null : hrefOf(it));
 }
 /* The item rows live in the card's own HTML, so the popup redraws them itself on Back: one listener on the page,
    not on a card that gets replaced. */
@@ -287,7 +467,9 @@ export async function mount(el){
       (BP && BP.updated ? ' Last check ' + esc(ago(BP.updated)) + '.' : '') + '</p>' +
     '<p class="note">Only the bosses a drop feed covers have a way in and a drop list. Pinnacle is the game’s own ' +
       'marking, so a few fights players call pinnacle are not marked. Drop rates are community samples from the ' +
-      '<a href="' + esc(srcURL('PoE2 Wiki')) + '" target="_blank" rel="noopener">PoE2 Wiki</a> (CC BY-NC-SA), not game data.</p>' +
+      '<a href="' + esc(srcURL('PoE2 Wiki')) + '" target="_blank" rel="noopener">PoE2 Wiki</a> (CC BY-NC-SA), not game data. ' +
+      'A meter is drawn where a sample and a real price meet on the same drop: ' +
+      ROWS.filter(drawsMeter).length + ' of ' + ROWS.length + ' bosses.</p>' +
     ((B.notes || []).length ? '<div class="sect"><h3>Gaps in the lists</h3></div><ul class="note bo-gaps">' +
       B.notes.map(n => '<li>' + esc(n) + '</li>').join('') + '</ul>' : '');
 
