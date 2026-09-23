@@ -13,6 +13,19 @@ Add the details here first, then a short public line there.
   (`tools/exchange.py`, `market.py`, `leagues.py`, `pricepull.py`, `sitedata.py`, `worker/files.js`,
   `worker/prices.js`, `wrangler.jsonc`) points at the workflow instead.
 
+## Next — Pins
+
+- Ticket 8. A player pins any card and gets it back in one place. The way onto the list is a Pin button,
+  declared once in `ACTS` (`assets/kinds.js`) like Trade or Full stats, so every kind that carries it in its
+  own `acts` — gems, uniques, passives, clusters, bases, item classes, Atlas, currency, keywords, mechanics,
+  interactions, bosses — gets it from the declaration, not from a copy of the Currency tab's own star.
+- Session only: `assets/app.js` keeps the list in `sessionStorage` (`isPinned`, `togglePin`, `pinnedKeys`),
+  the way the crafting bench keeps its craft, so it dies with the tab. That is the seam for the accounts
+  ticket (7): a signed-in read and write of the same list, keyed the same way ("kind:id"), in place of
+  `loadPins`/`savePins`, and nothing else moves.
+- `assets/pins.js` is the other half — a Pins button in the top bar with a count, and the box it opens: every
+  pinned card, a star to unpin it in place, and a tap to open its own card.
+
 ## Next — Every interaction the game's wording names, and a way to settle the ones nobody has
 
 - Ticket 58. The keywords were mapped and the interactions were not. "Recovery from your Life Flasks cannot
