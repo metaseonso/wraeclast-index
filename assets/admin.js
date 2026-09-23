@@ -722,7 +722,7 @@ function planBox(){
 /* the data jobs: fine, late or stopped, worked out by the site (worker/health.js). A row with a note is a
    section still showing an older copy because its source failed: the note says which copy and why, in the
    words the builder wrote when it kept it (data/faults.json, tools/lastgood.py). */
-const STATE = {ok: ['fine', 'good'], unknown: ['unknown', 'ok'], late: ['late', 'ok'], stopped: ['stopped', 'poor']};
+const STATE = {ok: ['fine', 'good'], waiting: ['waiting', 'ok'], unknown: ['unknown', 'ok'], late: ['late', 'ok'], stopped: ['stopped', 'poor']};
 const FROM = {backup: 'backup site', none: '—', stale: 'stale since'};   // where a file came from, when it has no time at all
 // a file still coming from the backup site is dated by its own hour, not by when it arrived: the age is real,
 // so it says where it came from under it (worker/health.js)

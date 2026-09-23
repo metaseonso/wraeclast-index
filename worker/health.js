@@ -21,7 +21,8 @@ import { fileWhen, published } from './files.js';
 
 const CACHE = 60;   // seconds a data centre keeps its answer
 
-/* [where, the file or kind of price, plain name, every (hours), late after (hours), stopped after (hours)]
+/* [where, the file or kind of price, plain name, every (hours), late after (hours), stopped after (hours),
+   watching since (the day the job was added)]
    A file comes in on the hour. A kind of trade price comes round on a day, not an hour: the job runs hourly
    and gives every kind a share of every run, but the trade site turns away most of some runs, so one price
    of a kind is seen about once a day (tools/pricepull.py). What is watched here is whether that share is
@@ -31,17 +32,17 @@ const CACHE = 60;   // seconds a data centre keeps its answer
    cycle shows itself there whatever this says.
    Currency listings (cur) are not watched: the Currency Exchange feed replaced those checks (tools/pricepull.py). */
 export const JOBS = [
-  ['file', 'exchange.json', 'Currency prices', 1, 2, 6],
-  ['file', 'market.json', 'Currency list', 1, 2, 6],
-  ['file', 'leagues.json', 'League dates', 6, 13, 26],
-  ['price', 'uniq', 'Unique prices', 24, 6, 26],
-  ['price', 'base', 'Base item prices', 24, 6, 26],
-  ['price', 'roll', 'Mod roll prices', 24, 6, 26],
-  ['price', 'farm', 'Farm prices', 24, 6, 26],
-  ['price', 'boss', 'Boss entry prices', 24, 6, 26],
+  ['file', 'exchange.json', 'Currency prices', 1, 2, 6, '2026-09-01'],
+  ['file', 'market.json', 'Currency list', 1, 2, 6, '2026-09-01'],
+  ['file', 'leagues.json', 'League dates', 6, 13, 26, '2026-09-01'],
+  ['price', 'uniq', 'Unique prices', 24, 6, 26, '2026-09-01'],
+  ['price', 'base', 'Base item prices', 24, 6, 26, '2026-09-23'],
+  ['price', 'roll', 'Mod roll prices', 24, 6, 26, '2026-09-01'],
+  ['price', 'farm', 'Farm prices', 24, 6, 26, '2026-09-01'],
+  ['price', 'boss', 'Boss entry prices', 24, 6, 26, '2026-09-01'],
 ];
 const KIND = {uniq: 'uniques', base: 'bases', roll: 'rolls', farm: 'farms', boss: 'bosses'};   // what each kind of price is called in /api/health
-const RANK = {ok: 0, unknown: 1, late: 2, stopped: 3};
+const RANK = {ok: 0, waiting: 1, unknown: 2, late: 3, stopped: 4};
 const json = (status, body, extra = {}) => new Response(JSON.stringify(body), {status, headers: {
   'Content-Type': 'application/json; charset=utf-8', 'X-Robots-Tag': 'noindex', ...extra}});
 
@@ -88,12 +89,15 @@ export async function health(env, origin){
     const r = await env.DB.prepare("SELECT substr(key, 1, instr(key, ':') - 1) AS kind, MAX(at) AS at FROM trade_prices GROUP BY kind").all();
     for(const x of r.results || []) at.price[x.kind] = {at: Date.parse(x.at) / 1000, from: 'jobs'};
   } catch {}   // no table yet
-  const jobs = JOBS.map(([where, name, what, every, late, stopped]) => {
+  const jobs = JOBS.map(([where, name, what, every, late, stopped, since]) => {
     const got = at[where][name] || {at: null, from: 'none'};
     const t = got.at ? got.at * 1000 : null;
     const minutes = t ? Math.max(0, Math.round((now - t) / 60000)) : null;
+    // nothing has ever come in: a job added today is waiting for its first run, not stopped. Once its own
+    // cycle has gone by since it was added, nothing having come in is the fault it looks like.
+    const young = Date.parse(since || '') + (stopped + every) * 3600000 > now;
     const state = minutes !== null ? (minutes >= stopped * 60 ? 'stopped' : minutes >= late * 60 ? 'late' : 'ok')
-      : got.from === 'backup' ? 'unknown' : 'stopped';
+      : got.from === 'backup' ? 'unknown' : young ? 'waiting' : 'stopped';
     return {where, name, what, every, state, from: got.from, at: t ? new Date(t).toISOString() : null, minutes};
   });
   jobs.push(...await stale(env, origin, now));
@@ -103,10 +107,13 @@ export async function health(env, origin){
   const line = worst.note ? worst.note                          // a stale section says it in its own words
     : worst.state === 'ok' ? 'Every data job is on time.'
     : worst.state === 'unknown' ? worst.what + ': the file does not say when it was made.'
+    : worst.state === 'waiting' ? worst.what + ': waiting for its first run.'
     : worst.minutes === null ? worst.what + ': nothing has come in yet.'
     : worst.from === 'backup' ? worst.what + ': from ' + since(worst.minutes) + '.'   // the file's own hour, not an arrival
     : worst.what + ' last came in ' + since(worst.minutes) + '.';
-  return {state: worst.state, ok: worst.state === 'ok', at: new Date(now).toISOString(), line, jobs};
+  // a job still waiting for its first run is not a fault: the site is fine, and the row says what it is
+  return {state: worst.state, ok: worst.state === 'ok' || worst.state === 'waiting',
+    at: new Date(now).toISOString(), line, jobs};
 }
 
 /* ---------- GET /api/health ---------- */
