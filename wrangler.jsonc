@@ -2,8 +2,9 @@
 // The site itself is static files (served straight from the edge); the worker only answers
 // /data/market.json (live prices), /sw.js (the service worker, stamped with the deploy), /api/* (things a browser cannot fetch on its own) and the
 // plain pages for search engines and AI search (worker/seo.js: item pages, lists, sitemap, llms.txt).
-// The hourly data jobs (tools/pricepull.py, exchange.py, market.py, leagues.py) run on the data server (tools/vm/)
-// and send their results in (worker/prices.js, worker/files.js).
+// The hourly data jobs (tools/pricepull.py, exchange.py, market.py, leagues.py) run on GitHub Actions
+// (.github/workflows/prices.yml at 2 past the hour, pages.yml at 17 past) and send their results in
+// (worker/prices.js, worker/files.js).
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "wraeclast-index",

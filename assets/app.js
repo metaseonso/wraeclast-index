@@ -1308,6 +1308,7 @@ function ensureOV(){
       // so one route covers every act of that shape and no module is named here
       const own = t.closest('.btn[data-act]');
       if(own){
+        if(own.dataset.act === 'pin'){ if(cur){ togglePin(cur.it); repaint(); } return; }
         const a = ACTS[own.dataset.act];
         if(a && a.go && cur) lazy(a.own, 'The ' + (a.label || 'button').toLowerCase()).then(m => m[a.go] && m[a.go](cur.it), () => {});
         return;
@@ -1441,9 +1442,35 @@ export function openDetail(it, opts = {}, href){
   history.pushState({ov: TRAIL[AT].id, d}, '', location.href);   // one entry per card, both ways
   paintStep();
 }
+/* ---------- pins: a personal watch list ----------
+   Any card whose kind names 'pin' in its acts (assets/kinds.js) can be kept here, from the one button under
+   it — no kind writes its own star. Session only, the way the bench keeps its craft (assets/craftsim.js):
+   sessionStorage, so the list dies with the tab. This is the seam for a signed-in account (issue #7): swap
+   loadPins/savePins for a read and write of the same list from the account, keyed the same way ("kind:id"),
+   and nothing below needs to change — isPinned, togglePin and pinnedKeys stay the same functions.
+   assets/pins.js is the other half: the top-bar button and the box that reads the list back, both built on
+   these exports alone (it does not touch sessionStorage itself). */
+const PINS_KEY = 'wi.pins';
+function loadPins(){ try { return new Set(JSON.parse(sessionStorage.getItem(PINS_KEY) || '[]')); } catch { return new Set(); } }
+function savePins(){ try { sessionStorage.setItem(PINS_KEY, JSON.stringify([...PINS])); } catch {} }
+let PINS = loadPins();
+const PIN_SUBS = new Set();
+const pinKey = it => it.k + ':' + it.id;
+export const isPinned = it => PINS.has(pinKey(it));
+export const pinnedKeys = () => [...PINS];
+export function onPinChange(fn){ PIN_SUBS.add(fn); }
+export function togglePin(it){
+  const k = pinKey(it);
+  PINS.has(k) ? PINS.delete(k) : PINS.add(k);
+  savePins();
+  for(const fn of PIN_SUBS) fn();
+  return PINS.has(k);
+}
+
 /* The buttons under a card, from the kind's own list (assets/kinds.js ACTS). Each one draws only when it
-   has something to do: Trade for an item, Full stats where the page behind the card has a panel, and the
-   gold button where the kind has a tab and this card has an address in it. */
+   has something to do: Trade for an item, Full stats where the page behind the card has a panel, Pin for
+   any card kept in the watch list above, and the gold button where the kind has a tab and this card has an
+   address in it. */
 function actsHTML(it, opts, href){
   const d = KIND[it.k] || {}, out = [];
   for(const a of d.acts || []){
@@ -1452,6 +1479,10 @@ function actsHTML(it, opts, href){
       out.push('<button type="button" class="btn ttoggle" aria-expanded="false">' + ACTS.trade.label + '</button>');
     else if(a === 'full' && opts.onFull)
       out.push('<button type="button" class="btn fullstats">' + ACTS.full.label + '</button>');
+    else if(a === 'pin'){
+      const on = isPinned(it);
+      out.push('<button type="button" class="btn" data-act="pin" aria-pressed="' + on + '">' + (on ? 'Unpin' : 'Pin') + '</button>');
+    }
     // an act a module of ours answers, drawn where this card carries what the act asks of its kind (ACTS only)
     else if(act.go && (!act.only || !(it.k in act.only) || holds(it, act.only[it.k])))
       out.push('<button type="button" class="btn" data-act="' + esc(a) + '">' + esc(act.label) + '</button>');
@@ -2065,6 +2096,7 @@ export function mountTopSearch(host){
 initKeys(() => (IS_APP && route() === 'home' && document.getElementById('q')) || TOPQ);
 lazy('./suggest.js').then(m => { m.mountSuggest(); m.mountFlag(); }).catch(() => {});   // the Suggest button, and the owner's own flag
 lazy('./notes.js').then(m => m.mountNotes()).catch(() => {});       // Patch notes, on every page
+lazy('./pins.js').then(m => m.mountPins()).catch(() => {});         // the Pins button, and the list it opens
 lazy('./support.js').then(m => m.mountSupport()).catch(() => {});   // Support link, once data/support.json is filled in
 lazy('./track.js').then(m => m.mountTrack()).catch(() => {});       // page views and clicks for the owner's dashboard
 

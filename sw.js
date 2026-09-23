@@ -26,7 +26,7 @@ const META = 'wi-meta';   // which deploy each open page was loaded with
 const SHELL = ['./', 'explore', 'privacy',
   'assets/app.css', 'assets/cards.css', 'assets/theme.css', 'assets/look.css', 'assets/bridge.css',
   'assets/app.js', 'assets/kinds.js', 'assets/edges.js', 'assets/marks.js', 'assets/keys.js', 'assets/suggest.js', 'assets/notes.js',
-  'assets/support.js', 'assets/track.js',
+  'assets/pins.js', 'assets/support.js', 'assets/track.js',
   'assets/league.js', 'assets/bridge.js', 'assets/build.js', 'assets/currency.js', 'assets/trade.js', 'assets/tradepage.js',
   'assets/basepool.js',
   'assets/farms.js', 'assets/atlas.js', 'assets/bosses.js', 'assets/craft.js', 'assets/map.js',

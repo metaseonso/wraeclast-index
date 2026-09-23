@@ -276,6 +276,13 @@ export const FIELDS = {
 export const ACTS = {
   trade: {label: 'Trade'},
   full:  {label: 'Full stats'},
+  /* A personal watch list: any kind that names it here can be pinned, from the same button under every one
+     of them, so no kind writes its own star (the Currency tab's is the one that came first, kept as it
+     stands: assets/currency.js). Session only — assets/pins.js keeps the list in sessionStorage, so it dies
+     with the tab; the seam for a signed-in account (issue #7) is load/save in that file, keyed the same way
+     ("kind:id") either side of it. app.js answers the click itself and keeps the list (isPinned, togglePin),
+     the way it already answers Trade and Full stats, so no module loads only to flip a star. */
+  pin:   {label: 'Pin'},
   craft: {label: 'Open in Craft'},
   /* Every card the bench can start from travels to it: a base item, and the currency the game crafts an item
      with — orbs, essences, omens, runes, soul cores, idols, catalysts and desecration bones, which are the
@@ -348,7 +355,7 @@ export const KINDS = [
    sprite: 'gems', px: {as: 'c', at: 'li'},
    builds: [{at: 'w', key: 'skills'}, {key: 'allskills'}],
    fields: [...HEAD, 'gemreq', 'lineage', 'usetime', 'cost', 'spirit', ...BODY, ...FOOT],
-   acts: ['trade', 'pool', 'full', 'open'],
+   acts: ['trade', 'pool', 'full', 'pin', 'open'],
    rel: ['granted', 'named', 'namedby', 'cat']},
 
   {k: 'u', one: 'Unique', tone: 'c-unique', many: 'Uniques', place: 'Uniques', sec: 'uniques', link: 'explore#uniques=@n', mark: 'ls',
@@ -356,7 +363,7 @@ export const KINDS = [
    sprite: 'uniques', make: {base: 'sub1'}, few: {at: 'ls', under: 10},
    builds: [{key: 'items'}],
    fields: [...HEAD, 'reqs', 'corrupt', 'limit', 'group', 'props', 'implicit', ...BODY, ...FOOT],
-   acts: ['trade', 'pool', 'full', 'open'],
+   acts: ['trade', 'pool', 'full', 'pin', 'open'],
    rel: ['base', 'variants', 'grants', 'named', 'namedby', 'cat']},
 
   {k: 'p', one: 'Passive', tone: 'c-keystone', many: 'Passives', place: 'Passive tree', sec: 'tree', link: 'explore#tree=@n', mark: 'ls',
@@ -364,7 +371,7 @@ export const KINDS = [
    kw: 'name',
    builds: [{at: 's', starts: 'Keystone', key: 'keypassives'}, {at: 'asc', key: 'keypassives'}, {at: 'rec', key: 'anointed'}],
    fields: [...HEAD, 'asc', 'region', 'ontree', ...BODY, ...FOOT],
-   acts: ['pool', 'full', 'open'],
+   acts: ['pool', 'full', 'pin', 'open'],
    rel: [...KWUSE, 'grants', 'clusterof', 'named', 'namedby', 'cat']},
 
   /* A cluster: the notable that makes a stretch of the tree worth walking to, and the nodes you walk through
@@ -375,47 +382,47 @@ export const KINDS = [
   {k: 't', one: 'Cluster', many: 'Clusters', place: 'Passive tree', sec: 'tree', link: 'explore#tree=@n', mark: 'ls',
    index: true, search: true, rank: -10,
    fields: [...HEAD, 'region', 'points', 'shared', ...BODY, ...FOOT],
-   acts: ['pool', 'full', 'open'],
+   acts: ['pool', 'full', 'pin', 'open'],
    rel: ['incluster', 'clusterof', ...KWUSE, 'cat']},
 
   {k: 'b', one: 'Base', tone: 'muted', many: 'Bases', place: 'Craft', link: 'craft', mark: 'ls',
    index: true, search: true, item: true, crawl: true,
    make: {base: 'name', ni: 'lines'},
    fields: [...HEAD, 'reqs', 'props', 'implicit', 'weights', ...SAYS, 'canroll', 'cancorrupt', ...REST, ...FOOT],
-   acts: ['trade', 'pool', 'bench', 'craft'],
+   acts: ['trade', 'pool', 'bench', 'pin', 'craft'],
    rel: ['uniques', 'grants', 'klassof', 'klass', 'named', 'namedby']},
 
   {k: 'i', one: 'Item class', tone: 'bronze', many: 'Item classes', place: 'Craft', link: 'craft',
    index: true, search: true,
    make: {cr: 'id'},
    fields: [...HEAD, 'props', ...BODY, ...FOOT],
-   acts: ['bench', 'craft'],
+   acts: ['bench', 'pin', 'craft'],
    rel: ['inclass', 'cat']},
 
   {k: 'a', one: 'Atlas', tone: 'int', many: 'Atlas', place: 'Atlas', link: './#/atlas?s=@at&q=@n',
    index: true, search: true, item: true, crawl: true,
    px: {as: 'c'}, notitem: {at: 'at', is: 'tree'},
    fields: [...HEAD, 'nodety', 'ontree', 'warn', 'implicit', ...BODY, ...FOOT],
-   acts: ['trade', 'open'],
+   acts: ['trade', 'pin', 'open'],
    rel: ['section', 'named', 'namedby']},
 
   {k: 'c', one: 'Currency', tone: 'c-currency', many: 'Currency', place: 'Currency', link: './#/currency?c=@id',
    index: true, search: true, item: true, crawl: true,
    px: {as: 'c'}, make: {nx: 'yes'}, gone: {at: 'nx'}, few: {at: 'vol', under: 1},
    fields: [...HEAD, 'droplv', ...SAYS, 'adds', ...REST, ...FOOT],
-   acts: ['trade', 'pool', 'bench', 'open'],
+   acts: ['trade', 'pool', 'bench', 'pin', 'open'],
    rel: ['named', 'namedby', 'cat']},
 
   {k: 'w', one: 'Keyword', tone: 'accent', many: 'Keywords', sec: 'keywords', index: true, search: true, crawl: true,
    kw: 'id', rank: -25, words: {n: 'own', f: 'alt', mark: 'game'},
    fields: [...HEAD, 'uses', ...BODY, ...FOOT],
-   acts: ['full'],
+   acts: ['full', 'pin'],
    rel: [...KWUSE, 'named', 'namedby']},
 
   {k: 'h', one: 'Mechanics', tone: 'blood', many: 'Mechanics', index: true, search: true, mark: 'ls',
    words: {f: 'own', mark: 'ours', only: 'gate'},
    fields: [...HEAD, ...BODY, ...FOOT],
-   acts: [],
+   acts: ['pin'],
    rel: ['namedby', 'cat']},
 
   /* An interaction the game's wording names and nothing answers: ours, kind "q", one per open question
@@ -425,13 +432,13 @@ export const KINDS = [
   {k: 'q', one: 'Interaction', tone: 'c-rare', many: 'Interactions', index: true, search: true, mark: 'ls',
    words: {f: 'own', mark: 'open', only: 'gate'},
    fields: [...HEAD, ...SAYS, 'players', 'heat', ...REST, ...FOOT],
-   acts: [],
+   acts: ['pin'],
    rel: ['namedby', 'cat']},
 
   {k: 'x', one: 'Boss', tone: 'str', many: 'Bosses', place: 'Bosses', link: './#/bosses?q=@n', own: './bosses.js',
    search: true,
    fields: [...HEAD, ...BODY, ...FOOT],
-   acts: ['open'],
+   acts: ['pin', 'open'],
    rel: ['namedby', 'cat']},
 
   /* The bench: one card, holding an item and the currency and omens picked for it before anything runs. It
