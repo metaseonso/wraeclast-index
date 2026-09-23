@@ -8,7 +8,11 @@ What comes back is a picture on a black field, and the black has to become nothi
 over anything. Two ways, because a gas and a badge are not the same thing:
   glow  the plate's own brightness is its alpha, so a wisp fades out the way it is painted, and the frame's
         own edges are faded out with it. A plate that reaches its edge shows that edge as a straight line
-        the moment it moves, which is the one thing gas must never have. Gas.
+        the moment it moves, which is the one thing gas must never have.
+        It is also taken into the site's own green. The model paints smoke as white-grey with a green heart,
+        and white laid over a page with screen does not read as gas — it reads as a grey wash over
+        everything under it. So brightness becomes the colour as well as the alpha: nothing at the bottom,
+        deep green through the body, the accent at the top. Gas.
   cut   only the black around the shape goes; the shape itself stays as solid as it was painted, so the dark
         metal of a letter is metal and not a hole. Lettering.
 Nothing is traced by hand afterwards.
@@ -114,14 +118,33 @@ def plate(raw, how=GLOW, width=1024):
         im = im.resize((width, round(im.height * width / im.width)), Image.LANCZOS)
     grey = im.convert('L')
     # cut: black is nothing, anything above a whisper is whole, with a short ramp between so no edge is a stair
-    alpha = grey.point(lambda v: 0 if v < 8 else min(255, (v - 8) * 12)) if how == CUT else grey
-    if how == GLOW:
-        alpha = feather(alpha)
-    out = im.convert('RGBA')
-    out.putalpha(alpha)
+    if how == CUT:
+        out = im.convert('RGBA')
+        out.putalpha(grey.point(lambda v: 0 if v < 8 else min(255, (v - 8) * 12)))
+    else:
+        out = tint(grey).convert('RGBA')
+        out.putalpha(feather(grey))
     buf = io.BytesIO()
     out.save(buf, 'WEBP', quality=82, method=6)
     return buf.getvalue()
+
+
+# the site's own green, dark to bright: the ground, the accent, and a pale edge where the gas is thinnest
+GREEN = ((6, 18, 4), (74, 150, 34), (160, 220, 80), (226, 248, 196))
+
+
+def tint(grey):
+    """Brightness read as a colour ramp, so the plate is green light and not white smoke."""
+    from PIL import Image
+    ramp = []
+    for v in range(256):
+        t = v / 255 * 3
+        i = min(2, int(t))
+        a, b, f = GREEN[i], GREEN[i + 1], t - i
+        ramp.append(tuple(round(a[c] + (b[c] - a[c]) * f) for c in range(3)))
+    out = Image.new('RGB', grey.size)
+    out.putdata([ramp[v] for v in grey.getdata()])
+    return out
 
 
 def feather(alpha, part=0.16):
