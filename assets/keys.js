@@ -4,6 +4,8 @@
    the site works the same without storage, on the defaults.
    A binding is a key ("g", "/") or a Ctrl combo ("ctrl+/"; Cmd counts as Ctrl on a Mac). */
 
+import {SHUT} from './kinds.js';   // the pages that are not open, from the one table the site reads
+
 const ACTIONS = [
   {id: 'search',   name: 'Search everything',       key: '/'},
   // the list you are looking at: a drill-down list, the currency search… and, with a card open, the card itself
@@ -21,6 +23,13 @@ const ACTIONS = [
   {id: 'cardfwd',  name: 'Card forward',            key: 'ArrowRight', card: true},
   {id: 'cardclose', name: 'Close card',             key: 'x',          card: true},
 ];
+/* ...less any page the table has shut (assets/kinds.js SHUT): a key that goes to a closed room is not a key.
+   The binding is only dropped from the list, so a player who bound their own key to it gets it back the day
+   the page opens again. */
+for(let i = ACTIONS.length - 1; i >= 0; i--){
+  const m = (ACTIONS[i].go || '').match(/#\/(\w+)/);
+  if(m && m[1] in SHUT) ACTIONS.splice(i, 1);
+}
 const STORE = 'wi.keys';
 const MODS = new Set(['Shift', 'Control', 'Alt', 'AltGraph', 'Meta', 'OS', 'Super', 'Hyper', 'Fn', 'FnLock',
   'CapsLock', 'NumLock', 'ScrollLock', 'Symbol', 'SymbolLock', 'Dead', 'Process', 'Unidentified']);

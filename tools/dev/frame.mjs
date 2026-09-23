@@ -30,7 +30,7 @@
 import { readFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { KINDS, KIND, DEFAULT, FIELDS, FRAME, SLOTS, BOXES, DECL, REL, MAPS, ROUTES, SECTIONS, PAGES } from '../../assets/kinds.js';
+import { KINDS, KIND, DEFAULT, FIELDS, FRAME, SLOTS, BOXES, DECL, REL, MAPS, ROUTES, SECTIONS, PAGES, SHUT } from '../../assets/kinds.js';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(HERE, '..', '..');
@@ -193,8 +193,25 @@ export async function checkOneTable(){
     if(got !== want) bad.push('tools/sync.py writes the sections ' + (got || '(none found)') + ', and the table says ' + want);
   }
 
+  /* a page the table has shut: still a tab, so an old link lands on it; still a view, so it has somewhere to
+     say its line; and offered nowhere. A link left behind in one of these files is a door onto a closed room,
+     which is the whole thing this table exists to stop. */
+  const OFFERS = ['index.html', 'explore.html', 'tools/sync.py', 'worker/seo.js'];
+  for(const r of Object.keys(SHUT)){
+    if(!(r in ROUTES)) bad.push('the table shuts ' + r + ', which is not a tab — an old link to it would land on Search');
+    if(idx && !idx.includes('data-view="' + r + '"')) bad.push('index.html has no view for the shut page ' + r + ', so it has nowhere to say its line');
+    for(const f of OFFERS){
+      const s2 = await text(f);
+      if(s2 && s2.includes('#/' + r)) bad.push(f + ' still offers ' + r + ', and the table has it shut');
+    }
+  }
+  // the keys are a module, so they are held the way the counters are: read the table, keep no list beside it
+  const keys = await text('assets/keys.js');
+  if(keys && !keys.includes('SHUT')) bad.push('assets/keys.js offers a key per page and does not read what is shut');
+
   return {bad, said: Object.keys(PAGES).length + ' pages counted (' + tabs.length + ' tabs, ' + secs.length +
-    ' sections), one table'};
+    ' sections' + (Object.keys(SHUT).length ? ', ' + Object.keys(SHUT).length + ' shut: ' + Object.keys(SHUT).join(', ') : '') +
+    '), one table'};
 }
 
 /* ---------- the cards ----------

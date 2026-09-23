@@ -776,7 +776,7 @@ function llms(m){
   const n = k => fmt(m.kinds[k].length);
   return `# Wraeclast Index
 
-> Path of Exile 2, made easier for every kind of player. Live prices, build checks, trade search in plain words, and every gem, unique, passive, currency and keyword. Game data from the official game files; prices from the in-game Currency Exchange and live trade site listings.
+> Path of Exile 2, made easier for every kind of player. Live prices, the crafting bench, trade search in plain words, and every gem, unique, passive, currency and keyword. Game data from the official game files; prices from the in-game Currency Exchange and live trade site listings.
 
 Game data: patch ${m.patch} (${m.gen}). Prices: ${m.league || 'current'} league, the in-game Currency Exchange (currency) and live trade site listings (everything else, checked over the day) (last ${when(m.updated)}). Prices are in divine orbs (div), or exalted orbs (ex) below one divine. This product isn\'t affiliated with or endorsed by Grinding Gear Games in any way.
 
@@ -799,7 +799,6 @@ ${TERMS}
 ## App
 
 - [Search](${SITE}/): search everything at once; each result is a live card with price and trend
-- [Build](${SITE}/#/build): paste a Path of Building code; see what to fix first and what to buy next, at today's prices
 - [Currency](${SITE}/#/currency): every currency price, trend, and flips between divine, exalted and chaos
 - [Trade](${SITE}/#/trade): build any trade search in plain words, then open it on the official trade site
 - [Gems, uniques and passive tree](${SITE}/explore): the full tables and the passive tree

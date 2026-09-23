@@ -5,7 +5,7 @@
                        trade site listings (worker/prices.js); trends from the site's own daily prices
    Build usage links to poe.ninja's own builds page: their builds API is not open to other sites. */
 import {initKeys, setCardKeys, keyLabel} from './keys.js';
-import {KIND, DEFAULT, FIELDS, ACTS, CHIPS, NAMES, ROUTES, fieldsOf, FRAME, SLOTS, BOXES, MAKE, KW, holds, markOf, ours} from './kinds.js';
+import {KIND, DEFAULT, FIELDS, ACTS, CHIPS, NAMES, ROUTES, SHUT, fieldsOf, FRAME, SLOTS, BOXES, MAKE, KW, holds, markOf, ours} from './kinds.js';
 import * as edges from './edges.js';
 import * as marks from './marks.js';
 
@@ -1487,7 +1487,7 @@ function actsHTML(it, opts, href){
       out.push('<button type="button" class="btn" data-act="pin" aria-pressed="' + on + '">' + (on ? 'Unpin' : 'Pin') + '</button>');
     }
     // an act a module of ours answers, drawn where this card carries what the act asks of its kind (ACTS only)
-    else if(act.go && (!act.only || !(it.k in act.only) || holds(it, act.only[it.k])))
+    else if(act.go && !(act.page && act.page in SHUT) && (!act.only || !(it.k in act.only) || holds(it, act.only[it.k])))
       out.push('<button type="button" class="btn" data-act="' + esc(a) + '">' + esc(act.label) + '</button>');
     else if((a === 'open' || a === 'craft') && href)
       out.push('<a class="btn gold" href="' + esc(href) + '">' + ACTS[a].label + (a === 'open' ? d.place : '') + ' →</a>');
@@ -2112,6 +2112,12 @@ async function show(){
   document.body.dataset.route = r;
   document.querySelectorAll('.view').forEach(v => v.hidden = v.dataset.view !== r);
   document.querySelectorAll('.tabs a[data-route]').forEach(a => { if(a.dataset.route === r) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current'); });
+  // a page shut in the table (assets/kinds.js SHUT) says so where it stands, and loads nothing
+  if(r in SHUT){
+    $('#view-' + r).innerHTML = '<div class="empty"><h3>' + esc(ROUTES[r]) + '</h3><p>' + esc(SHUT[r]) +
+      '</p><p><a href="#/">Search everything</a></p></div>';
+    return;
+  }
   if(r === 'home'){
     await first;   // the core and today's prices: the first cards (search waits for the rest itself)
     const q = params().get('q') || '';
@@ -2128,6 +2134,11 @@ async function show(){
 
 /* ---------- boot ----------
    The drill-down page imports this module for the top search and the popup only. */
+/* A tab the table has shut is not offered anywhere it is linked from — the app's nav and the drill-down
+   page's own links alike. Both are written out already without it, so this is the belt on the braces: the
+   day a page is shut, no stale copy of a nav can offer it. */
+for(const r in SHUT) document.querySelectorAll('nav a[href$="#/' + r + '"]').forEach(a => a.remove());
+
 const IS_APP = !!document.getElementById('view-home');
 if(IS_APP){
 homeInit();

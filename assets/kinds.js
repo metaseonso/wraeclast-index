@@ -77,6 +77,16 @@ export const SECTIONS = {gems: 'Gems', uniques: 'Uniques', tree: 'Passive tree'}
 export const PAGES = {...ROUTES,
   ...Object.fromEntries(Object.entries(SECTIONS).map(([k, words]) => ['explore-' + k, words]))};
 
+/* A tab that is named and is not open, and the line it says instead. A page shut here keeps its name, its
+   address and its count, so a bookmark and an old link land on the page itself and are told what happened
+   rather than dropped on Search. Nothing offers it: the tab is not in the nav, the shortcut is not in the
+   keys, the act that travels to it is not drawn on a card, and llms.txt does not list it. Opening one again
+   is deleting a line here. tools/dev/frame.mjs fails a build where the nav and this table disagree. */
+export const SHUT = {
+  build: 'Closed while the builder is reworked.',
+  farms: 'Closed while farms are reworked into runs you set up and keep.',
+};
+
 /* ---------- the frame ----------
    The slots a card has, in the order they are drawn, and the boxes the head is divided into. A field lands in
    a slot; the slot's own rule says how many of them are drawn and what happens to the rest. Nothing below is
@@ -300,8 +310,9 @@ export const ACTS = {
      unique, a base item, a passive, a cluster, and the gems the market lists as currency. It opens a row
      inside the popup with one checkbox per open file, so a card is in the pool of as many as it fits, and
      nothing is chosen by ticking. A currency that is not a gem has nothing to hand a build, so it has no
-     pool act. docs/proposal-builder.md, "How a card gets to a build file". */
-  pool:  {label: 'Add to a build', own: './builder.js', go: 'openPool',
+     pool act. An act with a `page` is drawn only while that page is open (SHUT), because a button into a
+     closed room is worse than no button. docs/proposal-builder.md, "How a card gets to a build file". */
+  pool:  {label: 'Add to a build', own: './builder.js', go: 'openPool', page: 'build',
           only: {c: {at: 's', of: ['Uncut Gems', 'Lineage Supports']}}},
   open:  {label: 'Open in '},
 };

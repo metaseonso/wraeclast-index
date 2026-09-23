@@ -3,6 +3,35 @@
 The full list of changes. The public patch notes (data/changelog.json, shown on the site) stay short.
 Add the details here first, then a short public line there.
 
+## Next — Build and Farms taken offline, and the table that shuts a page
+
+- The owner, 23 September 2026: both pages need more work, so they come off the site and go back on the
+  queue for a rework. Nothing is deleted — the modules, the maths, the checks and the data jobs all stay,
+  because the two pages come back.
+- **`SHUT` in `assets/kinds.js`** is the one table that says so, beside `ROUTES`, and everything reads it:
+  - the router draws the page's own line and loads no module;
+  - every nav drops the tab (both the app's and the drill-down page's, at boot, on top of both files
+    already being written out without it);
+  - `assets/keys.js` drops the shortcut, by reading the table rather than by deleting the binding, so a
+    player who bound their own key to Build gets it back the day Build opens;
+  - `ACTS.pool` carries `page: 'build'` and is not drawn while that page is shut. A button into a closed
+    room is worse than no button, and that is now a rule of the acts table rather than a special case.
+- **A shut page keeps its address.** `build` and `farms` are still in `ROUTES`, still counted, and still
+  have their own `view` in `index.html`, so a bookmark and an old link land on the page itself and are told
+  what happened rather than dropped on Search without a word.
+- **`tools/dev/frame.mjs` holds the two apart**: a shut page must still be a tab and must still have a view,
+  and none of `index.html`, `explore.html`, `tools/sync.py` or `worker/seo.js` may still link it. `keys.js`
+  is a module, so it is held the way the counters are — it must read the table, not keep a list.
+- **The copy that promised them is gone too.** llms.txt no longer lists Build for a crawler, and the line
+  the site has led with since 0.16 — *"Live prices, build checks, trade search in plain words…"* — now says
+  *the crafting bench*, which is the thing that is actually open. It was in four places: the meta
+  description, the Open Graph description, the hero, and the worker's own llms.txt.
+- **`tools/dev/voice.mjs` now reads `data/changelog.json`.** The patch notes are copy a player reads and
+  were in no check; the whole backlog passes. 44 files, 19,755 lines.
+- The farm price job (`worker/health.js`, every 24h) is left running. It costs nothing, and the data is warm
+  for the day the page comes back.
+- Issues raised for the rework: the builder, and farms as a farm you set up and track over runs.
+
 ## Next — What is still open in a build, and Build it
 
 - Ticket 55, the Build tab's second function: the build you already have. The page read a Path of Building

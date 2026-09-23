@@ -75,7 +75,7 @@ NAV_BUTTONS = ''.join('<button type="button" data-k="%s" aria-pressed="%s">%s</b
 def mast(wisp, nav, boss=''):
     return ('<a href="./" class="brand-link"><h1 class="brand"><span class="mark" aria-hidden="true">' + wisp +
             '<img class="mark-logo" src="assets/brand/logo-64.webp" alt="" width="51" height="64"></span>Wraeclast <em>Index</em></h1></a>\n'
-            '    <nav class="applinks" aria-label="Play"><a href="./#/"><i class="ti ti-search" aria-hidden="true"></i>Search</a><a href="./#/build"><i class="ti ti-build" aria-hidden="true"></i>Build</a><a href="./#/trade"><i class="ti ti-trade" aria-hidden="true"></i>Trade</a><a href="./#/farms"><i class="ti ti-farms" aria-hidden="true"></i>Farms</a></nav>\n'
+            '    <nav class="applinks" aria-label="Play"><a href="./#/"><i class="ti ti-search" aria-hidden="true"></i>Search</a><a href="./#/trade"><i class="ti ti-trade" aria-hidden="true"></i>Trade</a></nav>\n'
             '    <div class="navgrp" role="group" aria-label="Look up"><nav class="applinks" aria-label="Tools"><a href="./#/craft"><i class="ti ti-craft" aria-hidden="true"></i>Craft</a><a href="./#/currency"><i class="ti ti-currency" aria-hidden="true"></i>Currency</a></nav>'
             '<nav class="nav" id="nav" aria-label="Sections">' + nav + '</nav>'
             '<nav class="applinks" aria-label="Atlas"><a href="./#/atlas"><i class="ti ti-atlas" aria-hidden="true"></i>Atlas</a>' + boss +
