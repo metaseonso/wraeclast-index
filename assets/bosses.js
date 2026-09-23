@@ -351,5 +351,5 @@ function render(){
   $('#bolist', EL).innerHTML = list.length
     ? '<div class="bo-hd"><span>Boss</span><span>Where</span><span>Level</span><span>Way in</span><span>Drops</span></div>' +
       list.map(listRow).join('')
-    : '<div class="empty"><h3>Nothing matches</h3><p>Try fewer words.</p></div>';
+    : '<div class="empty"><h3>Nothing matches</h3></div>';
 }

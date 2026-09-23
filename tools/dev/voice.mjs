@@ -34,7 +34,7 @@ export const FILES = [
   'assets/bosses.js', 'assets/map.js', 'assets/basepool.js', 'assets/bridge.js', 'assets/edges.js',
   'assets/kinds.js', 'assets/keys.js', 'assets/league.js', 'assets/marks.js', 'assets/notes.js',
   'assets/suggest.js', 'assets/support.js', 'assets/track.js',
-  'worker/seo.js',
+  'worker/seo.js', 'tools/mechanics.py',
 ];
 
 /* The shapes, each with the plain reason it is wrong, because a fail that only says "no" teaches nobody. */
@@ -44,8 +44,8 @@ export const SHAPES = [
   [/\band this says\b/i,        'narrates the interface'],
   [/\bis where it says\b/i,     'narrates the interface'],
   [/\byou'?ll see\b/i,          'narrates the interface'],
-  [/\bwe'?ll\b/i,               'speaks as the author'],
-  [/\bI'?ll\b/,                 'speaks as the author'],
+  [/\bwe['’]ll\b/i,             'speaks as the author'],   // the apostrophe is required: "well" is an ordinary word
+  [/\bI['’]ll\b/,               'speaks as the author'],   // required here too: "Ill" is an ordinary word
   [/let[’']s/i,            'speaks as the author'],   // the contraction only: "lets" is an ordinary verb
   [/\bsimply\b/i,               'coaches the reader'],
   [/\bjust (click|pick|tap|choose|select)\b/i, 'coaches the reader'],
@@ -64,6 +64,17 @@ export const SHAPES = [
   /* A label is a word, not a sentence. "Suffix · A desecration adds it · 3 kinds of item" reads as someone
      explaining the row; "Suffix · Desecration · 3 kinds of item" is the row. */
   [/\b(a|an) [\w-]+ (adds|guarantees|gives|puts|makes|carries) it\b/i, 'a sentence where a label belongs'],
+  /* An empty search or filter is a fact, not a support ticket. "Nothing matches. Try fewer words." coaches the
+     reader on how to use the search box they are already looking at; "Nothing matches." is the fact. */
+  [/\btry fewer\b/i,            'coaches the reader on their own search'],
+  [/\bloosen a filter\b/i,      'coaches the reader on their own search'],
+  /* Pointing at the page instead of stating the fact on it. "Pick one of the bases above" and "tap one" name
+     a direction and a gesture, as if the reader could not see the button they are being told to press. */
+  [/\btap one\b/i,              'points at the page instead of the fact'],
+  [/\b(pick|choose|select|add|tap|search)\b[^.!?<]{0,40}\b(above|below)\b/i, 'points at the page instead of the fact'],
+  /* "Select an item class." commands the reader; "No item class selected." says what is true. Every other
+     empty state on the site already says what is true — these two were the odd ones out. */
+  [/(?:^|[>'`])(select|choose|pick) (?:a|an|the) [a-z][a-z ]*\.(?=['`<])/i, 'a command where a state belongs'],
 ];
 
 /* What a player never reads: the comments. Block comments go whole; a line comment goes from // to the end of

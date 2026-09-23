@@ -246,7 +246,7 @@ async function benchView(plan){
     picks,
     again: againLabel(again),
     ready: !!(b && picks.length),
-    why: !b ? 'Pick a base first.' : !picks.length ? 'Pick at least one currency to craft with.' : '',
+    why: !b ? 'No base picked.' : !picks.length ? 'Nothing picked to craft with.' : '',
     note: cand ? cand.note : '',
   };
 }

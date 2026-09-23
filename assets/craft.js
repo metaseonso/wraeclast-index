@@ -783,7 +783,7 @@ function onItemHTML(r){
     '<label class="cr-lab"><span class="lbl">Item level</span>' + ilvlHTML() + '</label></div>' +
     (pools.length && (pools.length > 1 || !f) ? poolChipsHTML(pools) : '') +
     (f ? '<h4 class="cr-h4">On this base</h4><div class="cr-fams">' + famHTML(f, r.kind) + '</div>' + shareNote(r)
-      : '<p class="note">' + (pools.length ? 'This base does not roll it. Pick one of the bases above.'
+      : '<p class="note">' + (pools.length ? 'This base does not roll it.'
         : 'No base of this kind rolls it.') + '</p>');
 }
 /* ---------- the modifier itself ----------
@@ -919,7 +919,7 @@ function railHTML(){
   if(!r) return '<p class="note">No modifier selected.</p>';
   // the tiers and the ways to a modifier are the item's, so there is nothing of them until one is in hand
   if(!B || !r.cls.some(([i]) => MX.cl[i] === CL.id))
-    return modPanelHTML(r, null) + readsHTML(r) + '<p class="note">Select an item class.</p>';
+    return modPanelHTML(r, null) + readsHTML(r) + '<p class="note">No item class selected.</p>';
   const f = famHere(r), ess = f ? essFor(f) : [];
   return modPanelHTML(r, f) + readsHTML(r) + railHead(true, railWith(r, ess)) + planNote() +
     onItemHTML(r) + essHereHTML(ess) + addsHTML(r, f);
