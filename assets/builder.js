@@ -967,21 +967,31 @@ function fault(f, why){
 function slice(){
   const run = RUN;
   if(!run || run.done) return;
-  const left = O.CAP - (performance.now() - run.at);
+  const gone = performance.now() - run.at;
+  const left = O.CAP - gone;
   if(left <= 0) return void finish('clock');
+  // the 250 milliseconds to a first answer is the press's, not each aim's: three of them share it, and
+  // whatever the beam of one has reached when it runs out is the first answer
+  const spent = run.phase === 'first' && gone >= O.FIRST;
   let all = true;
   for(const [a] of AIMS){
     const s = run.runs[a];
-    if(s.state.done) continue;
+    if(s.state.done || spent) continue;
     s.tick(Math.min(8, Math.max(1, left)));
     if(!s.state.done) all = false;
   }
+  if(run.phase === 'first' && performance.now() - run.at >= O.FIRST) all = true;
   for(const [a] of AIMS) run.answers[a] = run.runs[a].answer;
   run.tried = AIMS.reduce((n, [a]) => n + run.runs[a].state.tried, 0);
   run.ms = performance.now() - run.at;
   if(all && run.phase === 'first'){
     run.first = run.ms;
     run.phase = 'full';
+    for(const [a] of AIMS){                    // the first answers stand until the full pass beats them
+      const st = run.runs[a].state;
+      if(!st.done){ st.done = true; st.stopped = st.stopped || 'clock'; }
+      run.answers[a] = run.runs[a].answer;
+    }
     for(const [a] of AIMS) run.runs[a] = O.start(run.S, a, {cap: O.CAP - run.ms});
     paint();
     return void requestAnimationFrame(slice);
@@ -994,7 +1004,8 @@ function finish(why){
   if(!RUN) return;
   RUN.done = true;
   RUN.ms = performance.now() - RUN.at;
-  RUN.stopped = why;
+  // an aim that ran its own clock out stopped at the cap, whether or not the press noticed first
+  RUN.stopped = why || (AIMS.some(([a]) => RUN.runs[a].state.stopped === 'clock') ? 'clock' : '');
   for(const [a] of AIMS){
     const st = RUN.runs[a].state;
     if(why === 'clock' && !st.done){ st.done = true; st.stopped = 'clock'; }
