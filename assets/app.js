@@ -1312,8 +1312,7 @@ function ensureOV(){
       const own = t.closest('.btn[data-act]');
       if(own){
         if(own.dataset.act === 'pin'){ if(cur){ togglePin(cur.it); repaint(); } return; }
-        const a = ACTS[own.dataset.act];
-        if(a && a.go && cur) lazy(a.own, 'The ' + (a.label || 'button').toLowerCase()).then(m => m[a.go] && m[a.go](cur.it), () => {});
+        if(cur) runAct(own.dataset.act, cur.it);
         return;
       }
       // a card that is an application, answering its own controls: the control says what it does and the
@@ -1474,6 +1473,25 @@ export function togglePin(it){
    has something to do: Trade for an item, Full stats where the page behind the card has a panel, Pin for
    any card kept in the watch list above, and the gold button where the kind has a tab and this card has an
    address in it. */
+/* The same act, in a card's own corner in a grid, for a tab that wants it one press away instead of two.
+   It draws where the act's own test holds and nowhere else, so a currency the bench cannot craft with has no
+   button, exactly as in the popup. A page deciding what a card it draws carries is the caller's own call
+   (docs/frame.md, "A page that already draws a field in full"), so this names no kind and no tab. */
+export function actHTML(name, it){
+  const a = ACTS[name] || {};
+  if(!a.go || (a.page && a.page in SHUT)) return '';
+  if(a.only && it.k in a.only && !holds(it, a.only[it.k])) return '';
+  return '<button type="button" class="card-do" data-act="' + esc(name) + '" data-id="' + esc(it.id || '') +
+    '">' + esc(a.short || a.label) + '</button>';
+}
+/* ...and one way to run one, wherever it was pressed: the act's declaration names the module and the call,
+   so nothing that offers an act ever names a file. */
+export function runAct(name, it){
+  const a = ACTS[name];
+  if(!a || !a.go || !it) return;
+  lazy(a.own, 'The ' + (a.label || 'button').toLowerCase()).then(m => m[a.go] && m[a.go](it), () => {});
+}
+
 function actsHTML(it, opts, href){
   const d = KIND[it.k] || {}, out = [];
   for(const a of d.acts || []){

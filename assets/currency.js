@@ -1,7 +1,7 @@
 /* Currency tab: every currency-type item, what it does, how its price moves, trading routes,
    and a watch list. Prices: data/market.json: what each currency traded for on the in-game Currency Exchange
    (GGG's public hourly feed, tools/exchange.py). */
-import { D, $, esc, card, flow, money, moneyHTML, params, openDetail, openBox } from './app.js';
+import { D, $, esc, card, flow, money, moneyHTML, params, openDetail, openBox, actHTML, runAct } from './app.js';
 
 const WATCH_KEY = 'wi.watch';
 function loadWatch(){ try { return new Set(JSON.parse(localStorage.getItem(WATCH_KEY) || '[]')); } catch { return new Set(); } }
@@ -125,7 +125,8 @@ function currencyCard(r){
     '" data-id="' + esc(it.id) + '">' + (on ? '★' : '☆') + '</button>';
   const extra = '<p class="card-facts">' + compact(m.vol || 0) + ' div traded in 24 h' +
     (r.sw >= 12 ? ' · swings ' + Math.round(r.sw) + '% a day' : '') + '</p>' + leagueLine(r);
-  return card(it, {href: null, builds: false, action: star, extra});
+  // the bench in the card's own corner: the act's test decides which of these get one (assets/kinds.js ACTS)
+  return card(it, {href: null, builds: false, action: star + actHTML('bench', it), extra});
 }
 /* the busiest pairs on the Currency Exchange: each opens its currency's card */
 function markets(host){
@@ -281,6 +282,8 @@ export function mount(el){
   $('.cx-all', el).addEventListener('click', () => { S.shown = Infinity; render(); });
   $('#cxpick', el).addEventListener('click', openPicker);
   el.addEventListener('click', e => {
+    const act = e.target.closest('.card-do[data-act]');
+    if(act){ e.preventDefault(); e.stopPropagation(); runAct(act.dataset.act, D.byKey.get('c:' + act.dataset.id)); return; }
     const b = e.target.closest('.star'); if(!b) return;
     e.preventDefault();
     toggleWatch(b.dataset.id);

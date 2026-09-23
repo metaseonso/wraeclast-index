@@ -302,8 +302,10 @@ export const ACTS = {
      with — orbs, essences, omens, runes, soul cores, idols, catalysts and desecration bones, which are the
      groups the game sorts currency into. A currency of any other group has nothing to hand the bench, so it
      has no bench act; one inside a group that the bench does not itself craft with opens the bench on the
-     item as it stands and says so in a line. docs/craft-sim.md, "The bench card". */
-  bench: {label: 'Crafting bench', own: './craftsim.js', go: 'openBench',
+     item as it stands and says so in a line. `short` is the same act in a card's own corner, where there is
+     room for a word and not a phrase; the act, the test and what it opens are the one declaration either way.
+     docs/craft-sim.md, "The bench card". */
+  bench: {label: 'Crafting bench', short: 'Bench', own: './craftsim.js', go: 'openBench',
           only: {c: {at: 's', of: ['Currency', 'Essences', 'Omens', 'Runes', 'Soul Cores', 'Idols',
                                    'Catalysts', 'Abyssal Bones', 'Verisium']}}},
   /* Every card a build can hold travels to a build file, the same way a base travels to the bench: a gem, a
