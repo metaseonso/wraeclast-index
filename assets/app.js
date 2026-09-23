@@ -1011,6 +1011,9 @@ function keepInView(el){
 /* how far back a league is, drawn as a line: this league solid, then the dashes pull further apart the older
    the league is. Colour says which league it is, the dashes say how far back, so the chart reads without
    colour too. A league with no colour of its own also fades. */
+/* A league we have no prices of our own in is drawn from poe.ninja's own numbers (tools/ninjapast.py), and
+   their mark sits beside it in the key, so nobody reads their work as ours. */
+const NINJA_MARK = '<img class="chart-src" src="assets/brand/ninja.png" alt="poe.ninja" width="11" height="11" loading="lazy">';
 const DASH = [null, '7 4', '3 4', '1 5'];
 const FADE = [null, null, null, '.72'];
 const WIDE = [2, 1.7, 1.6, 1.5];
@@ -1042,7 +1045,8 @@ function bigLine(vals, label, lh){
   const now = byDay((vals || []).map(v => v === null || v === undefined || !isFinite(v) ? null : v), lh && lh.g);
   // s.b is how many leagues back it is, so a thing that skipped a league keeps that league's shade free
   // instead of moving up a step (worker/prices.js lh.past)
-  const back = ((lh && lh.past) || []).map(s => ({n: s.n, b: Math.min(+s.b || 1, FADE.length - 1), d0: +s.d0 || 0, v: s.v || []}))
+  const back = ((lh && lh.past) || []).map(s => ({n: s.n, b: Math.min(+s.b || 1, FADE.length - 1), d0: +s.d0 || 0,
+    v: s.v || [], src: s.src || ''}))
     .sort((x, y) => x.b - y.b).slice(0, FADE.length - 1);
   const lines = [{n: (D.market && D.market.league) || 'This league', b: 0, d0: (lh && +lh.d0) || 0, v: now}, ...back];
   if(!lines.some(s => realDays(s.v) >= 2)) return '';   // one price is not a line: nothing is drawn from it
@@ -1058,7 +1062,14 @@ function bigLine(vals, label, lh){
   const col = s => s.b ? own(s) || 'var(--text)' : mine;
   const dim = s => own(s) ? FADE[s.b] : (FADE[s.b] || '.6');   // no colour of its own: the old faded ladder
   const dash = s => DASH[s.b];
+  const at = (i, y) => [(i - x0) / xw * w, h - (y - lo) / span * h];   // a day and a price, as the chart draws them
   const paths = lines.map(s => {
+    if(realDays(s.v) === 1){   // one number is a dot: the league ended there and that is all we have
+      const i = s.v.findIndex(y => y !== null && isFinite(y));
+      const [cx, cy] = at(s.d0 + i, s.v[i]);
+      return '<circle cx="' + cx.toFixed(1) + '" cy="' + cy.toFixed(1) + '" r="2.6" fill="' + col(s) + '"' +
+        (dim(s) ? ' style="fill-opacity:' + dim(s) + '"' : '') + '/>';
+    }
     const d = linePath(s.v, s.d0, x0, xw, lo, span, w, h);
     return d ? '<path d="' + d + '" fill="none" stroke="' + col(s) + '"' + (dim(s) ? ' style="stroke-opacity:' + dim(s) + '"' : '') +
       (dash(s) ? ' stroke-dasharray="' + dash(s) + '"' : '') +
@@ -1069,10 +1080,16 @@ function bigLine(vals, label, lh){
   const key = lines.map(s => {
     const n = realDays(s.v);
     return n ? '<li><i style="border-color:' + col(s) + (dim(s) ? ';opacity:' + dim(s) : '') +
-      (dash(s) ? ';border-top-style:dashed' : '') + '"></i>' + esc(s.n) +
+      (dash(s) ? ';border-top-style:dashed' : '') + '"></i>' + esc(s.n) + (s.src === 'ninja' ? NINJA_MARK : '') +
       (n < 14 ? '<span>' + n + (n === 1 ? ' day' : ' days') + '</span>' : '') + '</li>' : '';
   }).join('');
-  const said = [back.length ? 'Daily price in this league and the three before it.' : '',
+  // what the lines are: a past league we have days for is a line, one we have a single number for is the
+  // price it ended at, and whose number that is belongs in the same breath
+  const dots = back.filter(s => realDays(s.v) === 1);
+  const said = [back.length ? (dots.length === back.length
+      ? 'Daily price this league. Before it, the price each league ended at.'
+      : 'Daily price in this league and the three before it.') : '',
+    back.some(s => s.src === 'ninja') ? 'Past leagues: poe.ninja.' : '',
     (lh && lh.note) || ''].filter(Boolean).join(' ');
   return '<figure class="chart"><figcaption>' + label + '</figcaption><svg viewBox="0 0 ' + w + ' ' + h +
     '" preserveAspectRatio="none" aria-hidden="true">' + paths + '</svg><ul class="chart-key">' + key + '</ul>' +
