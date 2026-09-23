@@ -1239,7 +1239,10 @@ function bigLine(vals, label, lh){
     '" preserveAspectRatio="none" aria-hidden="true">' + paths + '</svg><ul class="chart-key">' + key + '</ul>' +
     (said ? '<figcaption class="chart-said">' + esc(said) + '</figcaption>' : '') + '</figure>';
 }
-function detailExtras(it, px){
+/* The price action under a card: this league's line with the leagues before it behind it, and where the
+   price came from. Exported because the Build tab's bill is a shopping list of cards and each one carries
+   the same chart — one drawing of a price, wherever a price is drawn. */
+export function detailExtras(it, px){
   if(!px) return '';
   let out = '';
   // px.lh carries the leagues before this one (worker/prices.js). sp is only reached with three days or fewer,

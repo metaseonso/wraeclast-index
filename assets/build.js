@@ -1,7 +1,8 @@
 /* Build tab: paste a Path of Building code, get offense-or-defense priority and a ranked list of
    investments priced with live poe.ninja data. Runs in the browser.
    PoB is used only to READ the code. Item data and prices come from the game files and poe.ninja. */
-import { D, $, esc, card, flow } from './app.js';
+import { D, $, esc, card, flow, ago, moneyHTML, priceOf, hrefOf, openDetail, detailExtras } from './app.js';
+import { classFor } from './basepool.js';
 /* The rules: assets/maths.js, the one file tools/dev/buildcheck.mjs holds against Path of Building's own
    numbers. Nothing on this page works a stat out for itself. */
 import * as M from './maths.js';
@@ -48,7 +49,7 @@ const HEADER = /^(Rarity|Unique ID|Item Level|LevelReq|Quality|Sockets|Implicits
 function parseItem(text){
   const lines = text.split('\n').map(x => x.trim()).filter(Boolean);
   // armour, evasion and es are what the game prints on the item: its own lines are already inside them
-  const it = {rarity: '', name: '', base: '', mods: [], runes: [], flags: [], lv: 0,
+  const it = {rarity: '', name: '', base: '', mods: [], runes: [], flags: [], lv: 0, sockets: 0,
     armour: 0, evasion: 0, es: 0, hit: null, rate: 0, crit: 0, quality: 0};
   let i = 0, implicits = 0;
   const r = lines[i] && lines[i].match(/^Rarity: (\w+)/);
@@ -64,6 +65,9 @@ function parseItem(text){
     if((m = l.match(/^Attacks per Second: ([\d.]+)/))){ it.rate = Number(m[1]); continue; }
     if((m = l.match(/^Critical Hit Chance: ([\d.]+)/))){ it.crit = Number(m[1]); continue; }
     if((m = l.match(/^Quality: \+?(\d+)/))){ it.quality = Number(m[1]); continue; }
+    // the sockets the item itself says it has, and one line per socket that is filled. An item carrying
+    // its own lines twice over lists them twice over too, so the sockets are the count that holds.
+    if((m = l.match(/^Sockets: (\S.*)$/))){ if(!it.sockets) it.sockets = m[1].trim().split(/\s+/).length; continue; }
     if((m = l.match(/^Rune: (.+)/))){ it.runes.push(m[1]); continue; }
     if((m = l.match(/^LevelReq: (\d+)/))){ it.lv = +m[1]; continue; }
     if((m = l.match(/^Implicits: (\d+)/))){ implicits = +m[1]; continue; }
@@ -72,6 +76,7 @@ function parseItem(text){
     if(l) it.mods.push(l);
   }
   it.implicits = implicits;
+  if(it.sockets && it.runes.length > it.sockets) it.runes.length = it.sockets;
   return it;
 }
 function read(doc){
@@ -109,9 +114,11 @@ function read(doc){
   const set = I && (I.querySelector(':scope > ItemSet[id="' + I.getAttribute('activeItemSet') + '"]') || I.querySelector(':scope > ItemSet'));
   const swap = I && I.getAttribute('useSecondWeaponSet') === 'true';
   b.items = [];
+  const filled = new Set();
   if(set) for(const s of set.querySelectorAll(':scope > Slot')){
     const name = s.getAttribute('name') || '', id = s.getAttribute('itemId');
     if(!id || id === '0' || !byId[id]) continue;
+    filled.add(name);
     if(/^Weapon \d$/.test(name) && swap) continue;
     if(/^Weapon \d Swap$/.test(name) && !swap) continue;
     if(/^(Flask|Charm) \d/.test(name) && s.getAttribute('active') === 'false') continue;
@@ -122,12 +129,21 @@ function read(doc){
     const id = s.getAttribute('itemId');
     if(id && id !== '0' && byId[id]) b.items.push({slot: 'Jewel', ...parseItem(byId[id])});
   }
+  // the order a character is worn in, so the gear and the bill read top to bottom rather than in whatever
+  // order the slots were last touched in
+  b.items.sort((x, y) => (SLOTS.indexOf(x.slot) + 1 || 99) - (SLOTS.indexOf(y.slot) + 1 || 99));
+  // the slots the code itself lists empty, out of the ones a character has one of whatever the build: a
+  // second weapon is a question about the first one's grip, and a third ring is not a slot the game gives
+  b.empty = set ? GEAR.filter(n => !filled.has(n)) : [];
   const T = doc.querySelector('Tree');
   const specs = [...(T ? T.querySelectorAll(':scope > Spec') : [])];
   const spec = specs[(num(T && T.getAttribute('activeSpec')) || 1) - 1] || specs[0];
   b.nodes = ((spec && spec.getAttribute('nodes')) || '').split(',').filter(Boolean).map(Number);
   return b;
 }
+const SLOTS = ['Weapon 1', 'Weapon 2', 'Helmet', 'Body Armour', 'Gloves', 'Boots', 'Amulet',
+  'Ring 1', 'Ring 2', 'Ring 3', 'Belt', 'Flask 1', 'Flask 2', 'Charm 1', 'Charm 2', 'Charm 3', 'Jewel'];
+const GEAR = ['Weapon 1', 'Helmet', 'Body Armour', 'Gloves', 'Boots', 'Amulet', 'Ring 1', 'Ring 2', 'Belt', 'Flask 1', 'Flask 2'];
 
 /* ---------- 3. what the numbers say ----------
    Rules of thumb for Path of Exile 2 endgame, scaled by character level. They are guides, not law. */
@@ -416,6 +432,65 @@ function wireMaths(host, b){
   draw();
 }
 
+/* ---------- 3c. what is still open ----------
+   What the build has not spent, and every number in it the game's own. An item class holds so many
+   prefixes and so many suffixes and takes so many augment sockets (data/craft.json, tools/craft.py, read
+   through assets/basepool.js the way the Trade page and the bench read it); a base's own implicit moves a
+   cap and says so on the item, so that line is read off the item rather than assumed.
+
+   The supports a skill still has room for are assets/maths.js's `socketsLeft`, and the two numbers behind
+   it are named where they are shown (M.SOURCE.sockets) because the export states neither.
+
+   Passive points unspent is a floor, not a figure: levelling gives one point per level and quest points
+   come on top of that, so it is only ever said where the tree holds fewer passives than levelling alone
+   has already given. */
+const ALLOW = /^([+-]\d+) (Prefix|Suffix) Modifier allowed$/;
+const SEALED = f => /Corrupt|Mirrored/.test(f);
+function affixRoom(x, cl){
+  if(!/^(RARE|MAGIC)$/.test(x.rarity) || x.flags.some(SEALED)) return 0;
+  const mx = cl && cl.mx ? cl.mx : [3, 3];
+  const room = x.rarity === 'MAGIC' ? [1, 1] : [mx[0], mx[1]];
+  for(const l of x.mods){
+    const m = l.match(ALLOW);
+    if(m) room[m[2] === 'Prefix' ? 0 : 1] += +m[1];
+  }
+  const cap = Math.max(0, room[0]) + Math.max(0, room[1]);
+  return Math.max(0, cap - Math.max(0, x.mods.length - x.implicits));
+}
+async function stillOpen(b){
+  const rows = [], list = [];
+  for(const x of b.items) list.push([x, await classFor({k: 'base', v: x.base}).catch(() => null)]);
+  for(const n of b.empty) rows.push([n, 'empty']);
+  for(const [x, cl] of list){
+    const bits = [], a = affixRoom(x, cl);
+    // the sockets the item itself declares where it declares any — a unique carries its own number — and
+    // otherwise what its item class comes with
+    const all = x.sockets || (cl && cl.so) || 0;
+    const sock = Math.max(0, all - x.runes.length);
+    if(a) bits.push(a + (a === 1 ? ' affix' : ' affixes'));
+    if(sock) bits.push(sock + (sock === 1 ? ' socket' : ' sockets'));
+    if(bits.length) rows.push([x.slot + (x.name && x.name !== x.base ? ' · ' + x.name : ''), bits.join(' · ')]);
+  }
+  const free = Math.max(0, (b.level - 1) - b.nodes.length);
+  if(free) rows.push(['Passives', free + ' unspent']);
+  if(!b.asc) rows.push(['Ascendancy', 'none taken']);
+  if(b.gems.length){
+    const s = M.socketsLeft(b.gems);
+    if(s.over) rows.push(['Supports', s.held + ', ' + s.over + ' over ' + s.room]);
+    else if(s.held < s.room) rows.push(['Supports', (s.room - s.held) + ' of ' + s.room + ' free']);
+  }
+  return rows;
+}
+function openHTML(rows){
+  if(!rows.length) return '<div class="panel"><p class="note">Nothing open. Every slot is filled and every affix is chosen.</p></div>';
+  const said = ['Affix caps and augment sockets come from the item class.',
+    rows.some(r => r[0] === 'Passives') ? 'Levelling gives one passive point, and quest points come on top.' : '',
+    rows.some(r => r[0] === 'Supports') ? M.SOURCE.sockets : ''].filter(Boolean).join(' ');
+  return '<div class="panel"><dl class="bs-grid">' +
+    rows.map(([k, v]) => '<div><dt>' + esc(k) + '</dt><dd>' + esc(v) + '</dd></div>').join('') +
+    '</dl><p class="note" style="margin-top:10px">' + esc(said) + '</p></div>';
+}
+
 /* ---------- 4. what to buy, priced live ---------- */
 const ARMOUR_SLOTS = /^(Armour|Body Armour|Helmet|Gloves|Boots|Shield|Buckler|Shield or Buckler|All)$/;
 const ATTACK_SLOTS = /^(Martial Weapon|Martial Or Caster Weapon|Martial Weapon Wand or Staff|All)$/;
@@ -517,6 +592,98 @@ function gemEntry(g){
   return D.index.items.find(it => it.k === 'g' && it._nl === n) || null;
 }
 
+/* ---------- 4b. Build it ----------
+   Every piece of the build, what the market asks for it today, and the total of the ones it prices.
+
+   A price is the in-game Currency Exchange or a live trade listing and nothing else (worker/prices.js), so
+   a piece the market does not price today carries no number at all — and a rare carries none ever, because
+   a rare is not a listed item. The total is the sum of what is priced and says so beside itself, rather
+   than a figure that quietly leaves the rest out (docs/proposal-builder.md, "Why the budget is not money").
+
+   Nothing here is new furniture. A piece is a card, its price line is the card's own, its price action is
+   the chart every card draws (app.js detailExtras), Trade is the trade panel the popup already opens on an
+   item's own lines (assets/trade.js), and Bench is the crafting bench opened on the base
+   (assets/craftsim.js). */
+let BILL = new Map();
+function pieces(b){
+  const out = [];
+  for(const x of b.items){
+    const uq = /^(UNIQUE|RELIC)$/.test(x.rarity) ? uniqueEntry(x) : null;
+    if(uq) out.push({key: 'p:' + x.slot + ':' + uq.id, it: uq, px: priceOf(uq), slot: x.slot, href: hrefOf(uq)});
+    else out.push({key: 'p:' + x.slot + ':' + out.length, it: gearItem(x), px: null, slot: x.slot, base: x.base, own: true});
+    x.runes.forEach((r, i) => {
+      const c = D.byKey.get('c:' + r);
+      if(c) out.push({key: 'p:' + x.slot + ':' + i + ':' + r, it: c, px: priceOf(c), slot: x.slot + ' socket', href: hrefFor(c)});
+    });
+  }
+  for(const g of b.gems){
+    const c = D.byKey.get('c:' + g.name);
+    if(c) out.push({key: 'p:gem:' + g.name, it: c, px: priceOf(c), slot: g.support ? 'Support' : 'Main skill', href: hrefFor(c)});
+  }
+  for(const p of out) p.bench = !!(p.own && p.base && D.byKey.get('b:' + p.base));
+  return out;
+}
+const paid = px => px && px.v !== null && px.v !== undefined && isFinite(px.v);
+function billHTML(list){
+  const has = list.filter(p => paid(p.px)), total = has.reduce((n, p) => n + p.px.v, 0);
+  const own = list.filter(p => p.own).length, blank = list.length - has.length - own;
+  const K = D.market || {};
+  const said = ['Prices are the Currency Exchange and live trade listings.',
+    own ? own + (own === 1 ? ' piece is one of yours: ' : ' pieces are your own: ') +
+      'the market lists no rare and no magic item, so they carry no price.' : '',
+    blank ? blank + (blank === 1 ? ' piece has no listing today.' : ' pieces have no listing today.') : ''].filter(Boolean).join(' ');
+  return '<div class="panel buildsum">' +
+    '<div class="bs-hd"><h3>Build it</h3><span class="card-sub">' + esc(K.league || 'Standard') +
+      (K.updated ? ' · ' + esc(ago(K.updated)) : '') + '</span></div>' +
+    '<dl class="bs-grid">' +
+      '<div><dt>Total</dt><dd>' + (has.length ? moneyHTML(total) : '—') + '</dd></div>' +
+      '<div><dt>Priced</dt><dd>' + has.length + ' of ' + list.length + '</dd></div>' +
+      '<div><dt>Pieces</dt><dd>' + list.length + '</dd></div>' +
+    '</dl><p class="note">' + esc(said) + '</p></div>' +
+    '<div class="cards" id="bill"></div>';
+}
+function billCard(p){
+  const go = '<div class="row" style="margin-top:9px">' +
+    '<button type="button" class="btn" data-bill="trade">Trade</button>' +
+    (p.bench ? '<button type="button" class="btn" data-bill="bench">Crafting bench</button>' : '') + '</div>';
+  return card(p.it, {price: p.px || null, kind: p.slot, href: p.href || null, builds: false,
+    invest: paid(p.px) ? {label: 'Price now', div: p.px.v}
+      : {label: 'Price now', note: p.own ? 'not a listed item' : 'no price today'},
+    extra: go + detailExtras(p.it, p.px)});
+}
+/* The piece's own card, with the trade panel already open on it: the panel turns the item's own lines into
+   the search the trade site reads, so the link a player follows is built from the item and from nothing
+   written here. */
+function openTrade(p){
+  openDetail(p.it, {price: p.px || null, kind: p.slot, builds: false}, p.href || null);
+  const tb = document.querySelector('.ov-go .ttoggle');
+  if(tb && tb.getAttribute('aria-expanded') !== 'true') tb.click();
+}
+async function openCraft(p){
+  const base = D.byKey.get('b:' + p.base);
+  if(!base) return;
+  const m = await import('./craftsim.js').catch(() => null);
+  if(m) m.openBench(base);
+}
+function buildIt(b, host){
+  const list = pieces(b);
+  BILL = new Map(list.map(p => [p.key, p]));
+  if(!list.length){
+    host.innerHTML = '<div class="panel" style="margin-top:14px"><p class="note">No gear in this build. There is nothing to price.</p></div>';
+    return;
+  }
+  host.innerHTML = billHTML(list);
+  const grid = $('#bill', host);
+  flow(grid, list, billCard);
+  grid.addEventListener('click', e => {
+    const btn = e.target.closest('[data-bill]');
+    if(!btn) return;
+    const p = BILL.get((btn.closest('[data-key]') || {dataset: {}}).dataset.key);
+    if(!p) return;
+    if(btn.dataset.bill === 'trade') openTrade(p); else openCraft(p);
+  });
+}
+
 /* ---------- 5. a guide somebody else wrote ----------
    Linked where it helps a player, named where it is shown, never ours. The list is data/guides.json
    (tools/guides.py), which reads every address on every publish, so a link that rots is a fault with its own
@@ -532,7 +699,7 @@ async function guides(el){
 }
 
 /* ---------- 6. the page ---------- */
-let EL;
+let EL, LAST = null;
 export function mount(el){
   EL = el;
   el.innerHTML =
@@ -564,6 +731,11 @@ async function run(code){
   const recs = D.market ? recommend(b, A) : [];
   out.innerHTML = summaryHTML(b, A) +
     '<div id="mxout"></div>' +
+    '<div class="sect"><h3>Still open</h3><p>What this build has not spent yet.</p></div>' +
+    '<div id="popen"></div><div id="pobopt"></div>' +
+    '<div class="row" style="margin:14px 0 0"><button type="button" class="btn primary" id="pobbuild">Build it</button>' +
+      '<span class="note">Every piece priced, and where to get it.</span></div>' +
+    '<div id="pobbill"></div>' +
     '<div class="sect"><h3>Buy next</h3><p>Best first. Prices are live.</p></div>' +
     '<div class="cards" id="recs"></div>' +
     '<div class="sect"><h3>Your gear</h3><p>What it\'s worth today.</p></div><div class="cards" id="gear"></div>' +
@@ -585,6 +757,29 @@ async function run(code){
 
   flow($('#gear', out), b.items.map((x, i) => ({key: 'gear:' + i, x})), g => gearCard(g.x));
   flow($('#gems', out), b.gems.map((g, i) => ({key: 'gem:' + i, g, main: i === 0})), x => gemCard(x.g, x.main));
+
+  const bill = $('#pobbill', out);
+  $('#pobbuild', out).addEventListener('click', () => buildIt(b, bill));
+  // what is still open needs the item classes' own file, so it lands a moment later. A second code read
+  // while it is in the air wins: only the build on screen writes into the box.
+  const mine = LAST = {};
+  stillOpen(b).then(rows => {
+    if(LAST !== mine) return;
+    const box = $('#popen', out);
+    if(box) box.innerHTML = openHTML(rows);
+    optimise(b, A, rows);
+  }, () => {});
+}
+/* The pass that aims a build at offence, defence or neutral is its own module. Where it ships it is handed
+   the build, what the numbers said about it and what is still open, and it draws its own control in the
+   box left for it; where it does not, the page stands without one and nothing here knows how it works. */
+let OPT;
+async function optimise(b, A, open){
+  const host = $('#pobopt', EL);
+  if(!host) return;
+  if(OPT === undefined) OPT = import('./optimise.js').catch(() => null);
+  const m = await OPT;
+  if(m && m.mount) try { m.mount(host, {build: b, assess: A, open}); } catch {}
 }
 function hrefFor(it){ return it.k === 'c' ? '#/currency?c=' + encodeURIComponent(it.id) : undefined; }
 
@@ -609,6 +804,14 @@ function summaryHTML(b, A){
     '</dl></div>';
 }
 
+/* A piece of gear the index has no card for — a rare, a magic item — as a card of its own: its base, its
+   slot, the lines it carries and how many of them are implicits, which is what tells the trade panel an
+   implicit from a modifier when it turns those lines into a search. */
+function gearItem(x){
+  return {k: 'b', id: x.slot, n: x.name || x.base, s: (x.base !== x.name ? x.base + ' · ' : '') + x.slot,
+    ls: x.mods, ...(x.implicits ? {ni: x.implicits} : {}), ...(x.base !== x.name ? {base: x.base} : {}),
+    rq: x.lv ? [x.lv, 0, 0, 0] : undefined, cor: x.flags.some(f => /Corrupt/.test(f)) ? 1 : 0};
+}
 function uniqueEntry(x){
   const n = x.name.toLowerCase();
   const cands = D.index.items.filter(it => it.k === 'u' && it._nl === n);
@@ -624,8 +827,7 @@ function gearCard(x){
       return card(it, {price: px || null, why, kind: x.slot, invest: px ? {label: 'Worth now', div: px.v} : undefined});
     }
   }
-  const it = {k: 'b', id: x.slot, n: x.name || x.base, s: (x.base !== x.name ? x.base + ' · ' : '') + x.slot,
-    ls: x.mods, rq: x.lv ? [x.lv, 0, 0, 0] : undefined, cor: x.flags.some(f => /Corrupt/.test(f)) ? 1 : 0};
+  const it = gearItem(x);
   const runes = x.runes.length ? '<p class="card-facts">Sockets: ' + esc(x.runes.join(', ')) + '</p>' : '';
   return card(it, {href: null, builds: false, kind: x.slot, extra: runes,
     invest: {label: 'Market price', note: x.rarity === 'RARE' ? 'check trade' : x.rarity.toLowerCase()}});

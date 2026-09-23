@@ -3,6 +3,55 @@
 The full list of changes. The public patch notes (data/changelog.json, shown on the site) stay short.
 Add the details here first, then a short public line there.
 
+## Next — What is still open in a build, and Build it
+
+- Ticket 55, the Build tab's second function: the build you already have. The page read a Path of Building
+  code and said what to buy next. It now also says **what is still open in it**, and **Build it** prices
+  every piece of it.
+- **What is still open** — the slots Path of Building itself lists empty, the affixes each item still has
+  room for, the augment sockets still empty, whether an ascendancy has been taken, and the supports the main
+  skill still has room for. Every cap is the game's own, off `data/craft.json` through
+  `assets/basepool.js` — the same file and the same reader the Trade page and the bench use, so one number
+  is never written twice. A base that moves its own cap says so on the item (`+1 Prefix Modifier allowed`),
+  and that line is read off the item rather than assumed; an item that carries its own socket count
+  (Morior Invictus has eight) is taken at its word over its item class.
+- **The supports are `assets/maths.js`'s `socketsLeft`**, and the two numbers behind it are the owner's own
+  knowledge of the game, printed word for word under the panel (`M.SOURCE.sockets`) because the export
+  states neither.
+- **Passive points unspent is a floor, not a figure.** Levelling gives one point per level and quest points
+  come on top, so it is only ever said where the tree holds fewer passives than levelling alone has already
+  given. Nothing we ship says how many quest points a character has, and no number nobody published is
+  printed here.
+- **Build it** — every piece of the build as a card, with what the market asks for it today and the total of
+  the ones it prices. The total says *Priced 16 of 25* beside itself rather than quietly leaving the rest
+  out, which is the rule the builder already keeps (docs/proposal-builder.md, "Why the budget is not money").
+- **Real prices only.** A price is the in-game Currency Exchange feed or a live trade listing and nothing
+  else. A rare and a magic item are not listed things, so they carry no price ever and the panel says so in
+  words. A unique the market has no listing for today shows no number at all — *The Bringer of Rain* on the
+  build tested carried no price and drew none.
+- **The pieces worth making rather than buying carry the bench.** A piece the market will not sell is a
+  piece you make, so its card carries a button that opens the crafting bench on that base — the bench's own
+  `openBench`, on the base card out of the index, never a second bench.
+- **The trade link is the trade panel's.** A piece's card carries Trade, which opens the panel that turns an
+  item's own lines into the search the trade site reads (`assets/trade.js`), already open. A rare goes out
+  as its base type with rarity narrowed; a unique goes out by name and base. Nothing here builds a second
+  query and nothing here knows the trade site's shape.
+- **Price action is a card's own chart**, lifted out of the popup and named: `detailExtras` in
+  `assets/app.js` now draws wherever a price is drawn. This league's line, the leagues before it behind it
+  each in its own colour and dash, poe.ninja named where a past league is theirs, and under it where the
+  price came from — how many are listed, or how much traded on the Currency Exchange in 24 hours.
+- **No new component.** A piece is a card, its price line is the card's, its chart is the card's, Trade is
+  the trade panel, Bench is the bench, the summary is the build summary's own grid. The only markup written
+  for this is the rows of the two panels.
+- **The offence / defence / neutral pass is not here.** It is its own module and is called where it ships:
+  the Build tab hands it the build, what the numbers said and what is still open, and leaves it a box to
+  draw its own control in. Without it the page stands as it is.
+- Three things the tab got wrong before and now does not. Path of Building writes its slots in whatever
+  order they were last touched, so the gear read as a shuffled list and is now in the order a character is
+  worn. A gear card handed the trade panel its lines without saying how many of them were implicits, so an
+  implicit was searched for as a modifier. And an item that carries its own lines twice over in the export
+  had its runes counted twice — Morior Invictus came back with twelve runes in eight sockets, and the
+  sockets the item declares are now the count that holds, for the bill and for the maths alike.
 ## Next — The end of the data server that was never set up
 
 - Ticket 69. `tools/vm/` described deploying the hourly jobs to an Oracle server over SSH that was never set
