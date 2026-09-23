@@ -817,7 +817,8 @@ function budgetHTML(b, full){
   return '<div class="bd-budget"><p class="card-facts">Budgets</p>' +
     rows.slice(0, over ? cap : rows.length).join('') +
     (over ? '<p class="card-facts">' + esc(FRAME.more(over)) + '</p>' : '') +
-    (b.big ? '<p class="card-src">This file is ' + b.big.toLocaleString() + ' bytes, over the 16,384 it may hold.</p>' : '') +
+    (b.big ? '<p class="card-src">This file came to ' + b.big.toLocaleString() +
+      ' bytes, over the 16,384 a file holds, so it stands as it was.</p>' : '') +
     '</div>';
 }
 /* A jewel in a socket, and the cluster it is socketed against. No file we read carries a jewel's radius in

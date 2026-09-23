@@ -11,7 +11,10 @@
 
    Three files open at once, and a guest keeps what is open: sessionStorage, one key, the same store and the
    same try/catch the bench uses. A file is one row stored as a blob, not a row per pooled card — one write
-   to save and one read to open, against 120 writes for a 60-card pool the other way round.
+   to save and one read to open, against 120 writes for a 60-card pool the other way round. Twelve is the
+   number an account keeps, and the two write guards that go with it — a save every ten seconds at most, and
+   sixty saves a file a day — belong to the sign-in route, which does not exist yet: nothing here writes to
+   the database, so none of that arithmetic is spent.
 
    Data: data/craft.json and data/craft/<kind>.json for the slots, the affix caps and the modifiers a base
    can roll (tools/craft.py, from the game files); data/tree-shape.json and data/clusters.json for the tree
@@ -136,12 +139,18 @@ function held(){
   for(const f of B.files) f.jewels = (f.jewels || []).map(x => typeof x === 'string' ? {k: x, c: ''} : x || null);
   return B;
 }
+/* A file over the cap is refused with its size on screen, never trimmed behind the player: the change is
+   rolled back to what was stored and the card says how big the file came to. */
 function save(){
-  for(const f of held().files){
-    const size = JSON.stringify(f).length;
-    f.big = size > CAP ? size : 0;    // over the cap: the card says how big it is and the file stands as it is
+  const b = held(), was = get(KEY), old = (was && was.files) || [];
+  for(let i = 0; i < b.files.length; i++){
+    const size = JSON.stringify(b.files[i]).length;
+    if(size <= CAP){ b.files[i].big = 0; continue; }
+    const kept = old.find(x => x && x.id === b.files[i].id);
+    if(kept) b.files[i] = kept;
+    b.files[i].big = size;
   }
-  put(KEY, B);
+  put(KEY, b);
 }
 function newFile(){
   const b = held();
@@ -450,18 +459,20 @@ export async function openBuild(id){
   const f = fileOf(id) || current() || newFile();
   if(!f) return;
   held().on = f.id;
-  save();
-  openDetail(await entry(f), {drawn: true, price: null, builds: false, kind: 'Build', on: onBuild}, null);
+  save();                          // ...which may hand the file back as it was, so the card is drawn from that
+  const now = current();
+  if(!now) return;
+  openDetail(await entry(now), {drawn: true, price: null, builds: false, kind: 'Build', on: onBuild}, null);
 }
 /* a build card reached any other way — the trail's own Forward after a close */
 export async function openCard(){
   return openBuild(held().on);
 }
 async function paint(){
+  save();                          // the change first, because a file over the cap is handed back as it was
   const f = current();
   if(!f) return;
   await entry(f);
-  save();
   repaint();
 }
 
