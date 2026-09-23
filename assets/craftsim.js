@@ -333,6 +333,20 @@ function onBench(what, el, e){
     BENCH.ilvl = +el.value;
     return void paint();
   }
+  /* the bench's own search: it answers on every keystroke, only the tab is drawn again, and the box the
+     redraw threw away is put back under the cursor where it was. */
+  if(verb === 'find'){
+    if(!live && e && e.type === 'change') return;   // one answer per keystroke, not two
+    TAB.q = el.value;
+    const at = el.selectionStart;
+    tab().then(() => {
+      const box = TAB.node && TAB.node.querySelector('.bn-q');
+      if(!box || box === document.activeElement) return;
+      box.focus();
+      try { box.setSelectionRange(at, at); } catch {}
+    });
+    return;
+  }
   if(live) return;                              // a list answers on change, not on every keystroke in it
   if(verb === 'kind'){ BENCH.cls = el.value; BENCH.base = ''; return void paint(); }
   if(verb === 'base'){ BENCH.base = el.value; return void paint(); }
@@ -353,7 +367,7 @@ function onBench(what, el, e){
    The game's own tab, expanded: the orbs in the middle, the mechanic currency along the sides, and each side
    opening into its full list in the middle. On a phone the whole of it is a sheet at the bottom of the
    screen — the groups along the top of it, one list at a time, and the handle pulls the full tab up. */
-const TAB = {open: 'orb', up: false, node: null};
+const TAB = {open: 'orb', up: false, node: null, q: ''};
 
 export function fill(host, it){
   if(it.k === 'r') return fillRun(host, it);
@@ -384,15 +398,29 @@ async function tab(){
   const top = was ? was.scrollTop : 0;
   node.dataset.open = TAB.open;
   node.classList.toggle('up', TAB.up);
+  /* What the middle of the tab shows: the group you are in, or — the moment anything is typed — whatever
+     answers to it across every group, because a player looking for the Chaos Orb should not have to know
+     which shelf the game keeps it on. Each found row still says the group it came from. */
+  const q = TAB.q.trim().toLowerCase();
+  const found = q ? GROUPS.flatMap(g => (all[g.g] || []).filter(x => x.n.toLowerCase().includes(q))
+    .map(x => ({x, g: g.n}))) : null;
   node.innerHTML =
     '<button type="button" class="bn-grip" data-do="grip" aria-label="' +
       (TAB.up ? 'Close the currency tab' : 'Open the full currency tab') + '"><span></span></button>' +
     '<div class="bn-sides">' + GROUPS.filter(g => g.mid || all[g.g].length).map(g =>
-      '<button type="button" class="bn-gt" data-do="group:' + g.g + '" aria-pressed="' + (TAB.open === g.g) +
+      '<button type="button" class="bn-gt" data-do="group:' + g.g + '" aria-pressed="' + (!q && TAB.open === g.g) +
       '">' + icHTML((all[g.g][0] || {}).n || '') + '<span>' + esc(g.n) + '<i>' + all[g.g].length +
       '</i></span></button>').join('') + '</div>' +
-    '<div class="bn-mid"><p class="bn-h4">' + esc(mid.n) + ' <span>' + all[TAB.open].length + '</span></p>' +
-      '<div class="bn-cells">' + all[TAB.open].map(x => cellHTML(x, cl, held.has(pickKey(x)))).join('') +
+    '<div class="bn-mid">' +
+      '<div class="bn-find"><input class="bn-q" type="search" data-find data-do="find" ' +
+        'placeholder="Search every currency…" autocomplete="off" spellcheck="false" ' +
+        'aria-label="Search every currency on the bench" value="' + esc(TAB.q) + '"></div>' +
+      '<p class="bn-h4">' + (found ? 'Found' : esc(mid.n)) + ' <span>' +
+        (found ? found.length : all[TAB.open].length) + '</span></p>' +
+      '<div class="bn-cells">' + (found
+        ? (found.length ? found.map(({x, g}) => cellHTML(x, cl, held.has(pickKey(x)), g)).join('')
+           : '<p class="note">Nothing by that name.</p>')
+        : all[TAB.open].map(x => cellHTML(x, cl, held.has(pickKey(x)))).join('')) +
     '</div></div>';
   const now = node.querySelector('.bn-cells');
   if(now) now.scrollTop = top;
@@ -403,12 +431,14 @@ async function tab(){
    (MARKS in assets/app.js). */
 const cardMark = n => '<button type="button" class="bn-card" data-do="card:' + esc(n) + '" title="' +
   esc(n) + ' card" aria-label="' + esc(n) + ' card">' + markHTML('ask') + '</button>';
-function cellHTML(x, cl, on){
+// `from` is the group a found row came from, said on the row, because a search crosses every shelf
+function cellHTML(x, cl, on, from){
   const why = fits(x, cl), v = priceOf(x.n);
   return '<div class="bn-cellw' + (why ? ' off' : '') + '">' +
     '<button type="button" class="bn-cell" data-do="pick:' + esc(pickKey(x)) + '" aria-pressed="' + on + '"' +
       (why ? ' disabled' : '') + '>' + icHTML(x.n) +
       '<span class="bn-cn"><b>' + esc(x.n) + '</b>' +
+      (from ? '<span class="bn-from">' + esc(from) + '</span>' : '') +
       (x.sub || x.t ? '<span>' + esc(x.sub || x.t) + '</span>' : '') + '</span>' +
       (v !== null ? '<span class="bn-px">' + moneyHTML(v) + '</span>' : '') + '</button>' +
     (indexCard(x.n) ? cardMark(x.n) : '') +

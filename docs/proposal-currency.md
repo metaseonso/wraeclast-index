@@ -113,7 +113,7 @@ types with a different word in front.
 | Field | Type | Slot | Reads | Draws | Cost |
 |---|---|---|---|---|---|
 | `rides` | `text` | pill | which orb an omen rides on | *Rides on an Exalted Orb* | one entry |
-| `floor` | `number` | fact | an upgraded orb's lowest modifier level | *Modifier level 50 or higher · poe2db* | one entry |
+| `floor` | `number` | fact | an upgraded orb's lowest modifier level | *nothing below modifier level 50 · poe2db* | one entry |
 | `quality` | `text` | pill | a catalyst's tag and what it goes on | *Life quality · rings and amulets* | one entry |
 | `useson` | `text` | pill | what a bone desecrates, and its level cap | *Amulet, ring or belt · level 64 or less* | one entry |
 | `perslot` | **new** | body | the item's own line, split on its own separator | a two-column list: the slot, what it gives there. 4 lines in the grid, all of them in the popup | one entry, one renderer |
@@ -213,7 +213,7 @@ does not publish.
 So the card says three things, in three slots, and a reader can take any one of them on its own:
 
 > **Augments a Rare item with a new random modifier** — the game's own line
-> **Modifier level 50 or higher** · poe2db — a fact, with its source
+> **nothing below modifier level 50** · poe2db — a fact, with its source
 > **1,245 × Exalted Orb** · checked 41 min ago — a price, with its age
 
 Welded into one sentence it reads as a single claim that is half true by the hour, and it is not how

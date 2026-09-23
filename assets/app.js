@@ -295,7 +295,7 @@ export function ago(iso){
 }
 
 /* ---------- icons ---------- */
-function iconHTML(it){
+export function iconHTML(it){
   if(it.img) return '<img src="' + esc(it.img) + '" alt="" loading="lazy" decoding="async">';
   const S = D.index && D.index.sprites;
   if(it.ic && S){
@@ -962,7 +962,8 @@ export const TYPE = {
         '<span class="lad-n">' + esc(name) + '</span>' +
         '<span class="lad-p">' + (v !== null ? moneyHTML(v) : '<span class="lad-no">no price today</span>') +
           (x !== null && x >= 1.05 ? '<em>×' + (x >= 100 ? Math.round(x).toLocaleString() : +x.toPrecision(3)) + '</em>' : '') + '</span>' +
-        '<span class="lad-f">' + (floor ? 'modifier level ' + floor + ' or higher' : '') + '</span></li>';
+        // the same words the bench already uses for the same fact, so the site says it once and one way
+        '<span class="lad-f">' + (floor ? 'nothing below modifier level ' + floor : '') + '</span></li>';
     };
     return '<div class="card-lad"><p class="card-facts">' + esc(f.label || '') + '</p><ul>' +
       step(lad[0], 0) + lad.slice(1).map(([n, lv]) => step(n, lv)).join('') + '</ul>' +
@@ -1678,7 +1679,10 @@ function closeDetail(){
    and then leaves it (the Escape handler above), so the card stays open either way. */
 function cardFilter(){
   const box = OV.querySelector('.ov-box');
-  let q = box.querySelector('.uses-q');
+  // a card that is an application drew its own box over its own list: that is the list you are looking at,
+  // so the key goes there rather than building a second one over the lines behind it
+  let q = box.querySelector('input[type=search][data-find]');
+  if(!q) q = box.querySelector('.uses-q');
   if(q) q.hidden = false;                                  // a short Connections list keeps its box out of the way until now
   else if(box.querySelector('.uses-list')) return false;   // a list still loading, or with nothing in it to filter
   else q = lineFilter(box);

@@ -1,7 +1,7 @@
 /* Currency tab: every currency-type item, what it does, how its price moves, trading routes,
    and a watch list. Prices: data/market.json: what each currency traded for on the in-game Currency Exchange
    (GGG's public hourly feed, tools/exchange.py). */
-import { D, $, esc, card, flow, money, moneyHTML, params, openDetail, openBox, actHTML, runAct } from './app.js';
+import { D, $, esc, card, flow, money, moneyHTML, params, openDetail, openBox, actHTML, runAct, iconHTML } from './app.js';
 import { ASKS, ASK } from './kinds.js';   // the questions the page is asked, and which group answers which
 
 const WATCH_KEY = 'wi.watch';
@@ -137,9 +137,16 @@ function currencyCard(r){
 function markets(host){
   const M = (D.market.markets || []).filter(x => D.byKey.get('c:' + x[0])).slice(0, 24);
   if(!M.length){ host.innerHTML = '<p class="note">No exchange data yet.</p>'; return; }
-  host.innerHTML = M.map(([a, b, r, vol]) => '<button type="button" class="cxm-row" data-k="' + esc(a) + '">' +
-    '<b>' + esc(a) + '</b><span class="cxm-for">1 = ' + (r >= 100 ? Math.round(r).toLocaleString() : +r.toPrecision(3)) + ' ' + esc(b) + '</span>' +
-    '<span class="cxm-vol">' + compact(vol) + ' div traded</span></button>').join('');
+  // both ends wear their own art, the way every other row on the site does: this for that, at a glance
+  host.innerHTML = M.map(([a, b, r, vol]) => {
+    const A = D.byKey.get('c:' + a), B = D.byKey.get('c:' + b);
+    return '<button type="button" class="cxm-row" data-k="' + esc(a) + '">' +
+      '<span class="cxm-ic">' + iconHTML(A || {n: a}) + '</span>' +
+      '<b>' + esc(a) + '</b>' +
+      '<span class="cxm-for">1 = ' + (r >= 100 ? Math.round(r).toLocaleString() : +r.toPrecision(3)) +
+        (B ? '<span class="cxm-ic sm">' + iconHTML(B) + '</span>' : ' ') + esc(b) + '</span>' +
+      '<span class="cxm-vol">' + compact(vol) + ' div traded</span></button>';
+  }).join('');
   host.addEventListener('click', e => { const b = e.target.closest('.cxm-row'); const it = b && D.byKey.get('c:' + b.dataset.k); if(it) openDetail(it, {}, null); });
 }
 function routeCard(r){
