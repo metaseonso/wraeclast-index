@@ -98,3 +98,10 @@
   background:var(--sunken); border:1px solid var(--line-soft)}
 .bd-prow .bn-ic{border:0; cursor:pointer; padding:0}
 .bd-prow .btn{flex:none; padding:4px 12px; font-size:12px; min-height:44px}
+
+/* ---------- a jewel, and the cluster it is socketed against ---------- */
+.bd-jewel{display:grid; gap:6px; margin-top:8px; padding:8px 10px; border-radius:8px; background:var(--raised);
+  border:1px solid var(--line-soft)}
+.bd-jewel .bd-nm{justify-self:start; padding:0; border:0; background:none; color:var(--text);
+  font:600 12.5px/1.4 inherit; cursor:pointer}
+.bd-jewel .bd-nm:hover{color:var(--accent)}

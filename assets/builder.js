@@ -133,6 +133,7 @@ function held(){
   const was = get(KEY);
   B = was && was.v === 1 && Array.isArray(was.files) ? was : {v: 1, files: [], on: ''};
   B.files = B.files.filter(f => f && f.v === 1 && f.n).slice(0, OPEN);
+  for(const f of B.files) f.jewels = (f.jewels || []).map(x => typeof x === 'string' ? {k: x, c: ''} : x || null);
   return B;
 }
 function save(){
@@ -354,9 +355,21 @@ function gearTiles(f, sockets){
     const got = f.gear[id];
     return {id, n: label, it: got ? D.byKey.get(got.k) || null : null};
   });
-  for(let i = 0; i < sockets; i++)
-    out.push({id: 'jewel' + i, n: 'Jewel', jewel: i, it: f.jewels[i] ? D.byKey.get(f.jewels[i]) || null : null});
+  for(let i = 0; i < sockets; i++){
+    const got = f.jewels[i];
+    out.push({id: 'jewel' + i, n: 'Jewel', jewel: i, it: got ? D.byKey.get(got.k) || null : null});
+  }
   return out;
+}
+/* A jewel is socketed against a cluster the player names. The radius in game units is in nothing we read —
+   not the tree, not the jewel pools, not the export's file list — so the builder asks which cluster the
+   socket covers rather than working a distance out of a number nobody has published. */
+function jewelRows(f, p){
+  const taken = p.steps.map(s => ({c: s.c, n: s.n}));
+  return f.jewels.map((got, i) => got ? {
+    i, n: (D.byKey.get(got.k) || {}).n || got.k, key: got.k, c: got.c || '',
+    clusters: taken,
+  } : null).filter(Boolean);
 }
 /* The tree preview: the whole main tree behind, what is allocated over it, and the path between. The
    backdrop is worked out once a visit and the picture drawn once per change, not per frame. */
@@ -397,7 +410,7 @@ function view(f, d){
     files: held().files.map(x => ({id: x.id, n: x.n, on: x.id === f.id})), open: OPEN,
     rows: budgetRows(f, d),
     supports: f.pool.filter(k => { const c = D.byKey.get(k); return c && c.k === 'g' && isSupport(c); }).length,
-    jewels: {held: f.jewels.filter(Boolean).length, of: sockets},
+    jewels: {held: f.jewels.filter(Boolean).length, of: sockets, rows: jewelRows(f, p)},
     points: {steps: p.steps, path: p.path.length, total: p.total},
     gear: gearTiles(f, sockets),
     tree: SHAPE ? treeView(f, p) : null,
@@ -486,7 +499,12 @@ function onBuild(what, el, e){
   if(verb === 'row'){ const got = f.gear[rest]; if(got) got.open = !got.open; return void paint(); }
   if(verb === 'take'){ const it = D.byKey.get(rest); if(it) choose(f, it); return void paint(); }
   if(verb === 'drop'){ delete f.gear[rest]; return void paint(); }
-  if(verb === 'dropjewel'){ f.jewels[+rest] = ''; return void paint(); }
+  if(verb === 'dropjewel'){ f.jewels[+rest] = null; return void paint(); }
+  if(verb === 'socket'){                     // which cluster this jewel covers, since no radius is published
+    const got = f.jewels[+rest];
+    if(got) got.c = el.value;
+    return void paint();
+  }
   if(verb === 'out'){
     const at = f.pool.indexOf(rest);
     if(at >= 0) f.pool.splice(at, 1);
@@ -525,7 +543,7 @@ function choose(f, it){
   }
   if(classOf(it) === 'jewel'){
     const at = f.jewels.findIndex(x => !x);
-    f.jewels[at < 0 ? f.jewels.length : at] = it.k + ':' + it.id;
+    f.jewels[at < 0 ? f.jewels.length : at] = {k: it.k + ':' + it.id, c: ''};
     return;
   }
   const slots = slotsFor(it);

@@ -804,7 +804,7 @@ function budgetHTML(b, full){
   if(!b) return '';
   const rows = [...b.rows.map(budgetRow),
     '<div class="bn-side bd-brow"><p class="bn-h4">Jewels<span>' + b.jewels.held + '/' + b.jewels.of + '</span></p>' +
-      '<p class="note">The sockets the tree gives.</p></div>',
+      '<p class="note">The sockets the tree gives.</p>' + b.jewels.rows.map(jewelRow).join('') + '</div>',
     '<div class="bn-side bd-brow"><p class="bn-h4">Supports<span>' + b.supports + '</span></p>' +
       '<p class="note">The game decides how many fit.</p></div>',
     '<div class="bn-side bd-brow"><p class="bn-h4">Points<span>' + b.points.total + '</span></p>' +
@@ -818,6 +818,20 @@ function budgetHTML(b, full){
     rows.slice(0, over ? cap : rows.length).join('') +
     (over ? '<p class="card-facts">' + esc(FRAME.more(over)) + '</p>' : '') +
     (b.big ? '<p class="card-src">This file is ' + b.big.toLocaleString() + ' bytes, over the 16,384 it may hold.</p>' : '') +
+    '</div>';
+}
+/* A jewel in a socket, and the cluster it is socketed against. No file we read carries a jewel's radius in
+   game units, so the player says which cluster the socket covers and the row says why it asks. */
+function jewelRow(j){
+  return '<div class="bd-jewel"><button type="button" class="bd-nm" data-do="see:' + esc(j.key) + '">' +
+    esc(j.n) + '</button>' +
+    (j.clusters.length
+      ? '<label class="bn-lab"><span class="lbl">Socketed against</span>' +
+        '<select class="field" data-do="socket:' + j.i + '"><option value="">No cluster</option>' +
+        j.clusters.map(c => '<option value="' + esc(c.c) + '"' + (c.c === j.c ? ' selected' : '') + '>' +
+          esc(c.n) + '</option>').join('') + '</select></label>'
+      : '<p class="note">No cluster taken yet.</p>') +
+    '<p class="card-src">The radius is not published, so this jewel covers the cluster it is socketed against.</p>' +
     '</div>';
 }
 /* The gear preview: one tile per slot, filled in the frame's fixed order, with an empty box where nothing is
