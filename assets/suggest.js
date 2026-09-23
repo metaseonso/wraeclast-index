@@ -25,6 +25,54 @@ export function mountSuggest(){
 /* the mark in a card's corner: the same box, about that card */
 export function openSuggest(card){ open(card || ''); }
 
+/* ---------- the owner's own flag ----------
+   Typed, not clicked, and nowhere on the page: the owner reads a card, sees the site talking like an
+   assistant instead of like the game, and types the sequence. It sends the page and the card it was sent
+   from down the same path a note takes, with CDA as its text, so it lands in the notes with everything else
+   and whoever reads them can find every one at once.
+   The sequence resets on any other key and after a pause, and never fires while a box is being typed in, so
+   it cannot go off inside a search. The only thing it shows is a small word for a moment: enough to know it
+   landed, not enough to be a feature. */
+// the key and the key's own place on the board, because a number row and a number pad are the same key to
+// whoever typed it, and some keyboards hand over a name where others hand over the character
+const FLAG = [['-', 'Minus', 'NumpadSubtract'], ['0', 'Digit0', 'Numpad0'],
+              ['9', 'Digit9', 'Numpad9'], ['8', 'Digit8', 'Numpad8']];
+const hit = (e, i) => FLAG[i] && (FLAG[i][0] === e.key || FLAG[i][1] === e.code || FLAG[i][2] === e.code);
+const PAUSE = 2000;   // a sequence typed slower than this is not a sequence
+let at = 0, last = 0;
+function typing(el){
+  if(!el || typeof el.closest !== 'function') return false;   // the key was not aimed at anything on the page
+  return !!(el.closest('input, textarea, select') || el.closest('[contenteditable]:not([contenteditable="false"])'));
+}
+function flagged(){
+  const card = (document.querySelector('.ov-box .card-ask') || {}).dataset;
+  fetch('api/suggest', {method: 'POST', headers: {'Content-Type': 'application/json', 'X-WI': '1'},
+    body: JSON.stringify({text: 'CDA', page: location.pathname + location.hash.split('?')[0],
+      card: (card && card.ask) || ''})}).catch(() => {});
+  let note = document.querySelector('.cda-said');
+  if(!note){
+    note = document.createElement('p');
+    note.className = 'cda-said';
+    note.setAttribute('role', 'status');
+    document.body.appendChild(note);
+  }
+  note.textContent = 'Flagged.';
+  clearTimeout(note._go);
+  note._go = setTimeout(() => note.remove(), 1400);
+}
+export function mountFlag(){
+  if(window.__wiFlag) return;
+  window.__wiFlag = true;
+  addEventListener('keydown', e => {
+    if(e.ctrlKey || e.metaKey || e.altKey || typing(e.target)) return;
+    const now = Date.now();
+    if(now - last > PAUSE) at = 0;
+    last = now;
+    at = hit(e, at) ? at + 1 : (hit(e, 0) ? 1 : 0);
+    if(at === FLAG.length){ at = 0; flagged(); }
+  });
+}
+
 function open(card){
   const it = card ? D.byKey.get(card) : null;
   const box = document.createElement('section');

@@ -4,6 +4,7 @@
      bash:        WI_OWNER_KEY=... node tools/dev/dash.mjs
      node tools/dev/dash.mjs http://127.0.0.1:8787      another address (default https://wraeclastindex.fyi)
      node tools/dev/dash.mjs --raw stats                dump that one answer as JSON
+     node tools/dev/dash.mjs --cda                     only the pages and cards flagged as CDA
 
    One block per endpoint: the status, the bytes back, the top-level keys and a line of shape
    (how long each list is, what came back null or missing). The key only reads; it cannot write
@@ -15,6 +16,7 @@ if(!KEY){
   process.exit(1);
 }
 const args = process.argv.slice(2);
+const cda = args.includes('--cda');   // the owner's own flag: the sequence typed on a page that talks like an assistant
 const rawAt = args.indexOf('--raw');
 const only = rawAt >= 0 ? args[rawAt + 1] : null;
 const base = (args.find(a => /^https?:\/\//.test(a)) || 'https://wraeclastindex.fyi').replace(/\/+$/, '');
@@ -71,6 +73,19 @@ const list = only ? CALLS.filter(c => c.name === only) : CALLS;
 if(!list.length){
   console.error('No such endpoint: ' + only + ' (have: ' + CALLS.map(c => c.name).join(', ') + ')');
   process.exit(1);
+}
+/* The flags, and nothing else: every note whose text is the sequence's own word, newest first, with the page
+   and the card it was sent from. One line each, because the job is to go and read that card. */
+if(cda){
+  const r = await ask({name: 'suggestions', path: '/api/admin/suggestions'});
+  if(r.bad || r.status !== 200){
+    console.log('FAIL ' + (r.bad || ('HTTP ' + r.status)));
+    process.exit(1);
+  }
+  const rows = ((r.body || {}).notes || []).filter(n => (n.text || '').trim().toUpperCase() === 'CDA');
+  for(const n of rows) console.log(pad(n.at || '', 22) + pad(n.page || '(no page)', 26) + (n.card || '(no card)'));
+  console.log(rows.length ? rows.length + ' flagged' : 'nothing flagged');
+  process.exit(0);
 }
 if(!only) console.log('dash · ' + base + ' · ' + list.length + ' reads');
 

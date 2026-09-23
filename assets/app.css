@@ -872,3 +872,8 @@ small.at-bonus{display:block}
 @media (max-width:640px){
   .mp-fig{margin-inline:-16px; border-left:0; border-right:0; border-radius:0}
 }
+
+/* the word that says a flag landed: bottom of the screen, gone in a moment, nowhere in the layout */
+.cda-said{position:fixed; left:50%; bottom:18px; transform:translateX(-50%); z-index:60; margin:0;
+  padding:5px 12px; border:1px solid var(--line); border-radius:8px; background:var(--sunken);
+  color:var(--muted); font-size:12px; pointer-events:none}

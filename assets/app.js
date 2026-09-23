@@ -1983,7 +1983,7 @@ export function mountTopSearch(host){
 }
 // every keyboard shortcut lives in keys.js; "Search everything" jumps into the big box on home, the top box everywhere else
 initKeys(() => (IS_APP && route() === 'home' && document.getElementById('q')) || TOPQ);
-lazy('./suggest.js').then(m => m.mountSuggest()).catch(() => {});   // the Suggest button, on every page
+lazy('./suggest.js').then(m => { m.mountSuggest(); m.mountFlag(); }).catch(() => {});   // the Suggest button, and the owner's own flag
 lazy('./notes.js').then(m => m.mountNotes()).catch(() => {});       // Patch notes, on every page
 lazy('./support.js').then(m => m.mountSupport()).catch(() => {});   // Support link, once data/support.json is filled in
 lazy('./track.js').then(m => m.mountTrack()).catch(() => {});       // page views and clicks for the owner's dashboard
