@@ -1864,7 +1864,7 @@ function kwSpread(id){
 const weigh = (map, k, w) => map.set(k, (map.get(k) || 0) + w);
 /* What the trail has in common, worked out again whenever it moves. Nothing here runs until a card has been
    opened, and nothing at all before something is typed. */
-let NEAR = null;
+let NEAR = null, NEARN = 0;   // NEARN counts the times it has been worked out, and stamps what the cards keep
 function nearness(){
   const keys = seenKeys().slice(0, SEEN_MAX);
   if(!keys.length) return null;              // nothing opened yet: there is no trail to be near, and no cost
@@ -1882,15 +1882,19 @@ function nearness(){
     }
     w *= SEEN_FADE;
   }
-  NEAR = {sig, v: D.index, group, card, kw};
+  NEAR = {sig, v: D.index, n: ++NEARN, group, card, kw};
   return NEAR;
 }
-// one card against the trail: every share of it counted, then capped
+/* One card against the trail: every share of it counted, then capped. Worked out once per card and kept on
+   the card until the trail moves, because a search is a whole list of matches scored again on every
+   keystroke, and between two keystrokes none of this has changed. */
 function nearScore(it, N){
+  if(it._ncs === N.n) return it._ncv;
   let c = N.card.get(it.k + ':' + it.id) || 0;
   for(const g of edges.groupsOf(it)) c += N.group.get(g[0]) || 0;
   for(const id of it.kw || []) c += N.kw.get(id) || 0;
-  return c && Math.min(NEAR_CAP, c * NEAR_STEP);
+  it._ncs = N.n;
+  return it._ncv = c && Math.min(NEAR_CAP, c * NEAR_STEP);
 }
 
 /* ---------- search ---------- */
