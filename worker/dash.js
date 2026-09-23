@@ -309,7 +309,7 @@ export async function stats(env, url){
 /* ---------- GET /api/admin/heat ---------- */
 async function heatmap(env, url){
   const route = url.searchParams.get('route'), device = url.searchParams.get('device') || 'desktop';
-  if(!ROUTE.has(route) || !DEVICE.has(device)) return json(400, {error: 'Pick a page and a device.'});
+  if(!ROUTE.has(route) || !DEVICE.has(device)) return json(400, {error: 'No such page or device.'});
   const days = rangeOf(url);
   const rows = await env.DB.prepare('SELECT xb, yb, SUM(n) AS n FROM heat WHERE route = ? AND day >= ? AND device = ? GROUP BY xb, yb')
     .bind(route, sinceOf(days), device).all();

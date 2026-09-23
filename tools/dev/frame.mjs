@@ -281,7 +281,7 @@ export async function checkCards(evalJS){
 }
 
 /* on its own: the table half, against this worktree's shipped index */
-if(import.meta.url === 'file:///' + process.argv[1].replace(/\\/g, '/').replace(/^\//, '')){
+if(import.meta.url === 'file:///' + (process.argv[1] || '').replace(/\\/g, '/').replace(/^\//, '')){
   const index = JSON.parse(await readFile(join(ROOT, 'data', 'index.json'), 'utf8'));
   const seen = [...new Set(index.items.map(it => it.k))];
   const boss = await readFile(join(ROOT, 'data', 'bosses.json'), 'utf8').then(s => JSON.parse(s)).catch(() => null);

@@ -18,7 +18,7 @@
    that is not what a player sees. What is left is the strings, the markup and the page text.
 
    Run on its own:  node tools/dev/voice.mjs        ...or as the guard's "voice" check. */
-import { readFile } from 'node:fs/promises';
+import { readdir, readFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -27,15 +27,20 @@ const ROOT = join(HERE, '..', '..');
 
 /* Every file whose words reach a player. The worker's crawler pages are in it too: a search engine reads
    them, and so does anyone who lands on one. */
-export const FILES = [
-  'index.html', 'explore.html', 'privacy.html',
-  'assets/app.js', 'assets/builder.js', 'assets/craft.js', 'assets/craftsim.js', 'assets/engine.js', 'assets/trade.js',
-  'assets/tradepage.js', 'assets/build.js', 'assets/currency.js', 'assets/farms.js', 'assets/atlas.js',
-  'assets/bosses.js', 'assets/map.js', 'assets/basepool.js', 'assets/bridge.js', 'assets/edges.js',
-  'assets/kinds.js', 'assets/keys.js', 'assets/league.js', 'assets/marks.js', 'assets/notes.js',
-  'assets/suggest.js', 'assets/support.js', 'assets/track.js', 'assets/clarify.js',
-  'worker/seo.js', 'tools/mechanics.py', 'tools/interactions.py',
-];
+/* Every file whose words reach a player, worked out rather than listed: a list is a thing that drifts, and
+   a file left off it is copy nobody checks. Everything the browser runs, every page, everything the worker
+   answers with (its crawler pages and the lines it writes onto a card), and the tools that write card text.
+   A tool that starts writing copy is caught by being a .py in here, not by anyone remembering. */
+const READS = [['', /\.html$/], ['assets', /\.js$/], ['worker', /\.js$/], ['tools', /^(mechanics|interactions)\.py$/]];
+export async function files(){
+  const out = [];
+  for(const [dir, want] of READS){
+    let names = [];
+    try { names = await readdir(join(ROOT, dir)); } catch { continue; }
+    for(const n of names.sort()) if(want.test(n)) out.push(dir ? dir + '/' + n : n);
+  }
+  return out;
+}
 
 /* The shapes, each with the plain reason it is wrong, because a fail that only says "no" teaches nobody. */
 export const SHAPES = [
@@ -89,7 +94,9 @@ export function strip(src){
 export async function checkVoice(){
   const bad = [];
   let read = 0, lines = 0;
-  for(const f of FILES){
+  const list = await files();
+  if(list.length < 20) bad.push('the voice check found only ' + list.length + ' files to read: it is looking in the wrong place');
+  for(const f of list){
     let src = null;
     try { src = await readFile(join(ROOT, f), 'utf8'); } catch { continue; }
     read++;
@@ -109,7 +116,7 @@ export async function checkVoice(){
   return {bad, said: read + ' files, ' + lines.toLocaleString() + ' lines of copy, ' + SHAPES.length + ' shapes'};
 }
 
-if(import.meta.url === 'file:///' + process.argv[1].replace(/\\/g, '/').replace(/^\//, '')){
+if(import.meta.url === 'file:///' + (process.argv[1] || '').replace(/\\/g, '/').replace(/^\//, '')){
   const r = await checkVoice();
   for(const b of r.bad) console.log('FAIL ' + b);
   console.log(r.bad.length ? r.bad.length + ' broken' : 'ok   voice   ' + r.said + ' · the game does the talking');

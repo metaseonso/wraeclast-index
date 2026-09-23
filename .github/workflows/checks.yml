@@ -1,0 +1,37 @@
+# The guard, on every push and every pull request. The parts that need no browser: the card counts, every
+# deep link, the public pages, no raw game code, the voice a player reads, and the frame.
+# Cloudflare builds and publishes the site on its own, so this does not hold a deploy back — it puts a red
+# cross on the commit that broke something, which is what a check that nobody has to remember is for.
+# The browser halves (dash, phone, and the frame's own card pass) need Chrome and run locally: tools/dev/guard.mjs.
+name: Checks
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: checks-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  guard:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: The voice a player reads
+        run: node tools/dev/voice.mjs
+      - name: The frame
+        run: node tools/dev/frame.mjs
+      - name: The guard, without the browser halves
+        run: node tools/dev/guard.mjs --no-phone
+      - name: The bench's own rolls
+        run: node tools/dev/simcheck.mjs
