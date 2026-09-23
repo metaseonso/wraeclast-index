@@ -47,7 +47,9 @@ const num = v => {
 const HEADER = /^(Rarity|Unique ID|Item Level|LevelReq|Quality|Sockets|Implicits|League|Variant|Selected Variant|Has Alt Variant|Crafted|Prefix|Suffix|Radius|Limited to|Requires|Armour|Evasion|Energy Shield|Runic Ward|Ward|Spirit|Charm Slots|Catalyst|CatalystQuality|Talisman Tier|Item Class|Corrupted|Twice Corrupted|Mirrored|Sanctified|Unmodifiable|Split|Foil|BasePercentile|ArmourBasePercentile|EvasionBasePercentile|EnergyShieldBasePercentile)\b/;
 function parseItem(text){
   const lines = text.split('\n').map(x => x.trim()).filter(Boolean);
-  const it = {rarity: '', name: '', base: '', mods: [], runes: [], flags: [], lv: 0};
+  // armour, evasion and es are what the game prints on the item: its own lines are already inside them
+  const it = {rarity: '', name: '', base: '', mods: [], runes: [], flags: [], lv: 0,
+    armour: 0, evasion: 0, es: 0, hit: null, rate: 0, crit: 0, quality: 0};
   let i = 0, implicits = 0;
   const r = lines[i] && lines[i].match(/^Rarity: (\w+)/);
   if(r){ it.rarity = r[1]; i++; }
@@ -61,6 +63,7 @@ function parseItem(text){
     if((m = l.match(/^\w* ?Damage: ([\d.]+)-([\d.]+)/))) { it.hit = [Number(m[1]), Number(m[2])]; continue; }
     if((m = l.match(/^Attacks per Second: ([\d.]+)/))){ it.rate = Number(m[1]); continue; }
     if((m = l.match(/^Critical Hit Chance: ([\d.]+)/))){ it.crit = Number(m[1]); continue; }
+    if((m = l.match(/^Quality: \+?(\d+)/))){ it.quality = Number(m[1]); continue; }
     if((m = l.match(/^Rune: (.+)/))){ it.runes.push(m[1]); continue; }
     if((m = l.match(/^LevelReq: (\d+)/))){ it.lv = +m[1]; continue; }
     if((m = l.match(/^Implicits: (\d+)/))){ implicits = +m[1]; continue; }
@@ -233,9 +236,9 @@ function linesOf(b){
 }
 /* One answer. `take` settles an unknown: true takes it the way that helps, false the way that does not,
    and anything else leaves it open, which is what widens the range. */
-function once(b, take, part){
+function once(b, take, had){
   const cls = (GAME.classes || []).find(c => c.n === b.cls);
-  const {stats, unread, named} = M.read(linesOf(b));
+  const {stats, unread, named} = had;
   const at = k => stats.get(k) || {flat: 0, inc: 0, more: 1};
   const total = (k, base) => (base + at(k).flat) * (1 + at(k).inc / 100) * at(k).more;
   const free = take.anyattribute ? at('anyattribute').flat : 0;
@@ -260,20 +263,32 @@ function once(b, take, part){
   const hits = {};
   for(const t of M.TYPES) hits[t] = Math.round(M.maxHit(t, d));
   return {stats, unread, named, cls, str, life, d, hits,
+    pool: d.es + (d.mom ? Math.min(d.mana, d.mom) : 0) + d.life,
     dex: Math.round(total('dex', (cls ? cls.dex : 0) + free)),
     int: Math.round(total('int', (cls ? cls.int : 0) + free)),
-    dps: damage(b, stats, part)};
+    dps: damage(b, stats)};
 }
 /* The damage side, out of the weapon the build carries. A skill gem's own base damage is not in the data
    this page holds, so a build whose damage comes off the skill and not the weapon says so instead. */
-function damage(b, stats, part){
-  const w = b.items.find(it => /^Weapon 1$/.test(it.slot) && it.hit && it.rate);
+function damage(b, stats){
+  const w = b.items.find(it => /^Weapon 1$/.test(it.slot));
   if(!w) return null;
+  // a rare weapon's code carries only its base, and what a base is worth is a card on this site already.
+  // Found once and kept on the item: the card list is every card on the site and walking it is not free.
+  if(w.card === undefined) w.card = w.hit && w.rate ? null
+    : (D.index && D.index.items.find(x => x.k === 'b' && (x.n || '').toLowerCase() === (w.base || '').toLowerCase())) || null;
+  const pr = w.card ? (w.card.pr || []) : [];
+  const take = re => { for(const l of pr){ const m = l.match(re); if(m) return m; } return null; };
+  const dmg = w.hit ? w.hit : (x => x ? [Number(x[1]), Number(x[2])] : null)(take(/^\w* ?Damage: ([\d.]+)-([\d.]+)/));
+  const rate = w.rate || Number((take(/^Attacks per Second: ([\d.]+)/) || [])[1] || 0);
+  const crit = w.crit || Number((take(/^Critical Hit Chance: ([\d.]+)/) || [])[1] || 0);
+  if(!dmg || !rate) return null;
   const at = k => stats.get(k) || {flat: 0, inc: 0, more: 1};
-  const base = {physical: (w.hit[0] + w.hit[1]) / 2};
-  const h = M.hit({stats, base, crit: w.crit, kind: 'attack'});
-  const rate = w.rate * (1 + at('attackspeed').inc / 100) * at('attackspeed').more;
-  return {perHit: h.average, rate, dps: h.average * rate, weapon: w.name || w.base, crit: h.crit};
+  // quality is the weapon's own, and the game applies it to the weapon's Physical Damage before anything else
+  const base = {physical: (dmg[0] + dmg[1]) / 2 * (1 + (w.quality || 0) / 100)};
+  const h = M.hit({stats, base, crit, kind: 'attack'});
+  const swings = rate * (1 + at('attackspeed').inc / 100) * at('attackspeed').more;
+  return {perHit: h.average, rate: swings, dps: h.average * swings, weapon: w.name || w.base, crit: h.crit};
 }
 /* What the answer is worked against, out of the game's own table of one monster per level. */
 function monster(level){
@@ -285,8 +300,11 @@ function monster(level){
 }
 /* The whole answer: every unknown the build meets, taken both ways unless the player has set it. */
 function answer(b, set){
+  // the stat table is built once per build, not once per corner: nothing a switch does changes what the
+  // lines say, only what is done with them afterwards
+  const had = b.read || (b.read = M.read(linesOf(b)));
   const open = [];
-  const probe = once(b, {}, 0.5);
+  const probe = once(b, {}, had);
   if((probe.stats.get('anyattribute') || {flat: 0}).flat) open.push('anyattribute');
   if([...probe.unread, ...probe.named].some(x => /mind over matter/.test(x))) open.push('mindovermatter');
   const loose = open.filter(id => set[id] === undefined);
@@ -294,7 +312,7 @@ function answer(b, set){
   for(let i = 0; i < (1 << loose.length); i++){
     const take = {...set};
     loose.forEach((id, k) => { take[id] = !!(i & (1 << k)); });
-    corners.push(once(b, take, 0.5));
+    corners.push(once(b, take, had));
   }
   const span = pick => {
     const v = corners.map(pick);
@@ -305,6 +323,7 @@ function answer(b, set){
     life: span(c => c.life), es: span(c => c.d.es), armour: span(c => c.d.armour),
     evasion: span(c => c.d.evasion), str: span(c => c.str), dex: span(c => c.dex), int: span(c => c.int),
     hits: Object.fromEntries(M.TYPES.map(t => [t, span(c => c.hits[t])])),
+    corners,
     dps: corners[0].dps ? span(c => c.dps.dps) : null,
     unread: corners[0].unread.length, named: corners[0].named.length,
   };
@@ -314,6 +333,24 @@ function answer(b, set){
 const fmt = v => v >= 1e6 ? (v / 1e6).toFixed(1) + 'M' : v >= 1e4 ? Math.round(v / 1e3) + 'k'
   : Math.round(v).toLocaleString();
 const spanText = s => s.lo === s.hi ? fmt(s.lo) : fmt(s.lo) + '–' + fmt(s.hi);
+/* Two rows that move with the monster level, because a number worked against nothing means nothing: how
+   many of its own hits the pools stand, and what a second of your damage does once its armour has had its
+   share. Both run the same steps as everything else — STEPS.cuts, then STEPS.pools. */
+function stands(A, m){
+  const v = A.corners.map(c => {
+    const each = M.taken(m.damage, 'physical', c.d);
+    return each > 0 ? Math.floor(c.pool / each) : 0;
+  });
+  return {lo: Math.min(...v), hi: Math.max(...v)};
+}
+function intoIt(A, m){
+  const v = A.corners.map(c => {
+    if(!c.dps) return 0;
+    const cut = m ? M.armourCut(m.armour, c.dps.perHit) : 0;
+    return c.dps.dps * (1 - cut);
+  });
+  return {lo: Math.min(...v), hi: Math.max(...v)};
+}
 function mathsHTML(b, A, level){
   const m = monster(level);
   const row = (name, s, note) => '<div><dt>' + esc(name) + '</dt><dd>' + esc(spanText(s)) +
@@ -338,7 +375,8 @@ function mathsHTML(b, A, level){
       row('Life', A.life) + row('Energy Shield', A.es) + row('Armour', A.armour) + row('Evasion', A.evasion) +
       row('Strength', A.str) + row('Dexterity', A.dex) + row('Intelligence', A.int) +
       M.TYPES.map(t => row('Biggest ' + t + ' hit', A.hits[t])).join('') +
-      (A.dps ? row('Damage a second', A.dps, 'with ' + (A.one.dps.weapon || 'the weapon')) : '') +
+      (m ? row('Hits from it you stand', stands(A, m)) : '') +
+      (A.dps ? row('Damage a second into it', intoIt(A, m), 'with ' + (A.one.dps.weapon || 'the weapon')) : '') +
     '</dl>' +
     (A.dps ? '' : '<p class="note">The damage comes off the skill gem, and a gem’s own base damage is not in this page’s data. The defences above are.</p>') +
     (widened.length ? '<p class="mx-wide">Widened by: ' + esc(widened.join('; ')) + '</p>' : '') +
@@ -357,8 +395,12 @@ function wireMaths(host, b){
   const draw = () => {
     const t0 = performance.now();
     const A = answer(b, set);
+    const worked = performance.now() - t0;
     host.innerHTML = mathsHTML(b, A, level);
     const took = performance.now() - t0;
+    // what one evaluation costs on the machine it is running on, measured rather than assumed
+    host.dataset.answer = (worked / Math.max(1, A.corners.length)).toFixed(3);
+    host.dataset.corners = String(A.corners.length);
     const box = $('#mxlvl', host);
     if(box){
       box.addEventListener('input', () => { level = Math.max(1, Math.min(GAME.monsters.rows.length, Number(box.value) || 1)); draw(); });
