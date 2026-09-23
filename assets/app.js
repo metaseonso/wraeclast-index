@@ -561,8 +561,9 @@ function sideHTML(p, a, label){
     (rows.length ? '<ul class="bn-mods">' + rows.map(modLi).join('') + '</ul>' : '') + '</div>';
 }
 /* the pool as it stands: what one more roll can still land on. The first 40 of them, then the count of the
-   rest — the Craft tab draws the whole table for a kind of item. */
-function poolHTML(p){
+   rest — the Craft tab draws the whole table for a kind of item. (A base item's card has a pool block of its
+   own, above: that one is what the base can ever have, this one is what this item can still take.) */
+function benchPoolHTML(p){
   const pool = p.pool;
   if(!pool || !pool.rows.length) return '';
   const cap = 40, over = Math.max(0, pool.rows.length - cap);
@@ -608,7 +609,7 @@ function benchItemHTML(p){
     ? '<button type="button" class="bn-item use r-' + p.rarity + '" data-do="use" aria-label="' +
       esc(p.use) + '">' + body + '<span class="bn-useon">' + esc(p.use) + '</span></button>'
     : '<div class="bn-item r-' + p.rarity + '">' + body + '</div>';
-  return pick + item + poolHTML(p);
+  return pick + item + benchPoolHTML(p);
 }
 /* what the bench is holding, in the order it was picked, each one removable */
 function picksHTML(p){

@@ -585,7 +585,7 @@ thing already in hand:
 | an orb or omen card (kind `c`) | that currency picked, the item left as it was |
 | an essence card (kind `c`) | that essence picked; from one of the rows under *What it adds*, that kind of item chosen with it |
 | a bone or a rune card | that currency picked, and the kinds of item it works on offered first |
-| a kind-of-item row on the Craft tab | that kind chosen, no base yet |
+| an item class card (kind `i`) | that kind chosen, no base yet |
 | the tab, or a link with nothing on it | the session's last item, or empty |
 
 That is one act on the card you came from, the way `ACTS.craft` already works on a base card, plus the

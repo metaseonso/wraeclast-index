@@ -166,13 +166,21 @@ async function ready(plan){
   plan.picks = plan.picks.filter(k => have.has(k));
   return b;
 }
-/* the card you came from, in hand: a base lands as the item, a currency lands picked, and an essence or a
-   rune this kind of item takes nothing from opens the bench on a kind that does take it */
+/* the card you came from, in hand: a base lands as the item, an item class picks that kind with no base
+   yet, a currency lands picked, and an essence or a rune this kind of item takes nothing from opens the
+   bench on a kind that does take it */
 async function handed(plan, from){
   if(!from) return '';
   if(from.k === 'b' && from.cr && cls(from.cr)){
     plan.cls = from.cr;
     plan.base = from.n;
+    plan.ilvl = X.ilvl;
+    return '';
+  }
+  // an item class is its own class (KINDS make), so its card names the kind and nothing else
+  if(from.k === 'i' && cls(from.cr || from.id)){
+    plan.cls = from.cr || from.id;
+    plan.base = '';
     plan.ilvl = X.ilvl;
     return '';
   }
