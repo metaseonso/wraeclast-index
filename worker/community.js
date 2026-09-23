@@ -38,19 +38,63 @@ export async function allowed(env, request, action, max){
 /* ---------- the Suggest button: short notes from players ----------
    A note keeps where it came from and nothing else: the page, and the key of the card it was sent from
    where the mark in a card's corner sent it (assets/suggest.js). Never a word typed elsewhere on the page,
-   never anything about the person. */
+   never anything about the person.
+
+   An interaction card holds a question open rather than answering one (tools/interactions.py), so the same
+   note carries an answer where it was sent from one: which way the player says it works, the name they gave
+   themselves and where it comes from — their own testing, or a source they name (migration 0010). One path,
+   one table, one rate limit. What is public is the lean, the name and the source, which is what the card
+   shows: the note's own words stay the owner's, as they always have. Nothing a player wrote is ever drawn as
+   the game's own word (assets/clarify.js). */
 const KEY = /^[a-z]{1,2}:[^\u0000-\u001f]{1,78}$/;   // a card's own key, "<kind>:<id>"
-export async function suggest(request, env, url){
+const LEAN = new Set(['works', 'no', 'unclear']);    // which way it works, in the three words the card offers
+const NAME = /^[\w '.-]{1,24}$/;                     // a name a player gave themselves, and nothing else
+const said = (v, n) => text(v, n).replace(/[\u0000-\u001f<>]/g, '').trim();
+
+export async function suggest(request, env, url, ctx){
+  if(request.method === 'GET') return reported(env, ctx, url);
   if(request.method !== 'POST' || !sameSite(request, url)) return json(403, {error: 'Not allowed.'});
   let body = {};
   try { body = await request.json(); } catch {}
   const note = (typeof body.text === 'string' ? body.text : '').trim().slice(0, 500);
-  if(note.length < 3) return json(400, {error: 'Write a little more.'});
+  const lean = LEAN.has(body.lean) ? body.lean : '';
+  if(!lean && note.length < 3) return json(400, {error: 'Write a little more.'});
   if(!(await allowed(env, request, 'suggest', 5))) return json(429, {error: 'Too many notes for now.'});
-  const card = text(body.card, 80);
-  await env.DB.prepare('INSERT INTO suggestions (text, page, card, at) VALUES (?, ?, ?, ?)')
-    .bind(note, text(body.page, 120), KEY.test(card) ? card : '', new Date().toISOString()).run();
-  return json(200, {ok: true});
+  const card = text(body.card, 80), key = KEY.test(card) ? card : '';
+  if(lean && !key) return json(400, {error: 'Nothing to answer.'});
+  const who = said(body.who, 24), src = said(body.src, 80);
+  await env.DB.prepare('INSERT INTO suggestions (text, page, card, at, lean, who, src) VALUES (?, ?, ?, ?, ?, ?, ?)')
+    .bind(note, text(body.page, 120), key, new Date().toISOString(), lean, NAME.test(who) ? who : '', src).run();
+  // an answer gets the card's own tally straight back, so the card is right the moment it is sent: the read
+  // below is cached at the edge for a minute and would still be showing the answer before this one
+  return json(200, lean ? {ok: true, ...(await reportOn(env, key))} : {ok: true});
+}
+
+/* What players have said about one interaction, and how often each open interaction gets an answer at all.
+   The lean is a tally, the names are the names players gave themselves, and a row we have checked ourselves
+   is marked as ours. A row the owner has hidden is in none of it. */
+async function reportOn(env, card){
+  const [tally, rows, heat] = (await env.DB.batch([
+    env.DB.prepare("SELECT lean, COUNT(*) AS n FROM suggestions WHERE card = ? AND lean != '' AND shown >= 0 GROUP BY lean").bind(card),
+    env.DB.prepare("SELECT who, lean, src, at, shown FROM suggestions WHERE card = ? AND lean != '' AND shown >= 0 ORDER BY id DESC LIMIT 20").bind(card),
+    env.DB.prepare("SELECT card, COUNT(*) AS n FROM suggestions WHERE lean != '' AND shown >= 0 AND card != '' GROUP BY card ORDER BY n DESC LIMIT 60"),
+  ])).map(r => (r && r.results) || []);
+  const lean = {works: 0, no: 0, unclear: 0};
+  for(const r of tally) if(lean[r.lean] !== undefined) lean[r.lean] = r.n;
+  return {card, lean, n: lean.works + lean.no + lean.unclear,
+    who: rows.map(r => ({who: r.who || '', lean: r.lean, src: r.src || '', at: r.at, ours: r.shown === 1 ? 1 : 0})),
+    heat: heat.map(r => [r.card, r.n])};
+}
+
+async function reported(env, ctx, url){
+  const card = text(url.searchParams.get('card'), 80);
+  if(card && !KEY.test(card)) return json(400, {error: 'No such card.'});
+  const key = new Request(url.origin + '/api/suggest?card=' + encodeURIComponent(card));
+  const hit = await caches.default.match(key);
+  if(hit) return hit;
+  const res = json(200, await reportOn(env, card), {'Cache-Control': 'public, max-age=60'});
+  if(ctx) ctx.waitUntil(caches.default.put(key, res.clone()));
+  return res;
 }
 
 /* ---------- popular trade searches ---------- */

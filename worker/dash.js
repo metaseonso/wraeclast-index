@@ -10,7 +10,8 @@
      GET  /api/admin/suggestions?before=<id>  a hundred notes, newest first, and how many of each kind.
                                      A note carries where it came from: the page, and the key of the card
                                      it was sent from where there was one (worker/community.js)
-     POST /api/admin/suggestion      {id, status: new|read|done}
+     POST /api/admin/suggestion      {id, status: new|read|done}, or {id, shown: -1|0|1} for an answer to an
+                                     interaction: taken down, as it was sent, or checked by us
    admin.html itself holds no data: everything comes from here, behind the cookie.
    DASH_HASH is "pbkdf2$<iterations>$<salt base64>$<hash base64>" (PBKDF2-SHA256 of the password).
    The owner's key reads the same numbers without a password: "Authorization: Bearer <key>" on the four
@@ -23,6 +24,7 @@ import { health } from './health.js';
 
 export const ROUTES = Object.keys(PAGES);
 const ROUTE = new Set(ROUTES), DEVICE = new Set(['phone', 'tablet', 'desktop']), STATUS = new Set(['new', 'read', 'done']);
+const SHOWN = new Set([-1, 0, 1]);   // an answer taken down, as it was sent, or checked by us (migration 0010)
 export const MAX = {views: 50, clicks: 200, heat: 200};
 const NOTES = 100;   // notes from players per page, here and in /api/admin/suggestions
 const LOAD_KINDS = ['trade_search', 'trade_fetch', 'trade_limited', 'trade_error', 'site_view', 'site_batch', 'd1_writes'];
@@ -239,7 +241,7 @@ export async function stats(env, url){
   const [v, c, sg, sgCount, ld, ts] = (await env.DB.batch([
     env.DB.prepare('SELECT day, route, source, device, country, n FROM views WHERE day >= ?').bind(since),
     env.DB.prepare('SELECT route, label, SUM(n) AS n FROM clicks WHERE day >= ? GROUP BY route, label').bind(since),
-    env.DB.prepare('SELECT id, text, page, card, at, status FROM suggestions ORDER BY id DESC LIMIT ' + NOTES),
+    env.DB.prepare('SELECT id, text, page, card, at, status, lean, who, src, shown FROM suggestions ORDER BY id DESC LIMIT ' + NOTES),
     env.DB.prepare('SELECT status, COUNT(*) AS n FROM suggestions GROUP BY status'),
     env.DB.prepare('SELECT hour, kind, n FROM load WHERE hour >= ?').bind(since48),
     env.DB.prepare('SELECT state, n, last FROM trade_searches WHERE last >= ? ORDER BY n DESC, last DESC LIMIT 10').bind(since),
@@ -295,7 +297,7 @@ export async function stats(env, url){
     devices: top(devices, 3, 'device'),
     clicks: {total: clicks, all: top(all, 50, 'label'),
       byRoute: Object.fromEntries(Object.entries(byRoute).map(([k, m]) => [k, top(m, 50, 'label')]))},
-    suggestions: {count: status, list: sg.map(r => ({id: r.id, text: r.text, page: r.page || '', card: r.card || '', at: r.at, status: r.status}))},
+    suggestions: {count: status, list: sg.map(note)},
     load: {hours, perHour, today: todayLoad, tradeLimitPerHour: 100},
     searches: ts.map(r => ({...searchName(r.state), n: r.n, last: r.last})),
     plan: {free: FREE, today: {views: todayLoad.site_view, batches: todayLoad.site_batch, requests, trackingWrites, priceWrites, writes},
@@ -315,19 +317,24 @@ async function heatmap(env, url){
   return json(200, {route, device, days, cells, total: cells.reduce((a, x) => a + x[2], 0), max: cells.reduce((a, x) => Math.max(a, x[2]), 0)});
 }
 
+/* One note as the dashboard reads it. An answer to an interaction carries three more things of its own —
+   which way the player says it works, the name they gave and where it comes from — and whether we have
+   checked it (`shown` 1) or taken it down (-1): worker/community.js, migration 0010. */
+const note = r => ({id: r.id, text: r.text, page: r.page || '', card: r.card || '', at: r.at, status: r.status,
+  lean: r.lean || '', who: r.who || '', src: r.src || '', shown: r.shown === undefined || r.shown === null ? 0 : r.shown});
+
 /* ---------- GET /api/admin/suggestions?before=<id> ---------- */
 /* a hundred notes, newest first, with how many there are of each kind. The dashboard's notes tab loads
    from here on its own, so it never waits on the rest of the numbers. */
 async function olderSuggestions(env, url){
   const before = int(url.searchParams.get('before'), 1, 2 ** 31) || 2 ** 31;
   const [sg, count] = (await env.DB.batch([
-    env.DB.prepare('SELECT id, text, page, card, at, status FROM suggestions WHERE id < ? ORDER BY id DESC LIMIT ?').bind(before, NOTES + 1),
+    env.DB.prepare('SELECT id, text, page, card, at, status, lean, who, src, shown FROM suggestions WHERE id < ? ORDER BY id DESC LIMIT ?').bind(before, NOTES + 1),
     env.DB.prepare('SELECT status, COUNT(*) AS n FROM suggestions GROUP BY status'),
   ])).map(r => (r && r.results) || []);
   const status = Object.fromEntries(['new', 'read', 'done'].map(s => [s, 0]));
   for(const r of count) if(r.status in status) status[r.status] = r.n;
-  return {list: sg.slice(0, NOTES).map(x => ({id: x.id, text: x.text, page: x.page || '', card: x.card || '', at: x.at, status: x.status})),
-    more: sg.length > NOTES, count: status};
+  return {list: sg.slice(0, NOTES).map(note), more: sg.length > NOTES, count: status};
 }
 
 /* ---------- POST /api/admin/suggestion ---------- */
@@ -335,7 +342,12 @@ async function setSuggestion(request, env){
   let body = {};
   try { body = await request.json(); } catch {}
   const id = int(body && body.id, 1, 2 ** 31);
-  if(!id || !Number.isInteger(+body.id) || !STATUS.has(body.status)) return json(400, {error: 'Bad note.'});
-  const r = await env.DB.prepare('UPDATE suggestions SET status = ? WHERE id = ?').bind(body.status, id).run();
+  if(!id || !Number.isInteger(+body.id)) return json(400, {error: 'Bad note.'});
+  // where it is kept, and — for an answer to an interaction — whether the card marks it as ours or drops it
+  const shown = SHOWN.has(body.shown) ? body.shown : null;
+  if(!STATUS.has(body.status) && shown === null) return json(400, {error: 'Bad note.'});
+  const r = shown === null
+    ? await env.DB.prepare('UPDATE suggestions SET status = ? WHERE id = ?').bind(body.status, id).run()
+    : await env.DB.prepare('UPDATE suggestions SET shown = ? WHERE id = ?').bind(shown, id).run();
   return json(200, {ok: true, changed: (r && r.meta && r.meta.changes) || 0});
 }

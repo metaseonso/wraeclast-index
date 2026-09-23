@@ -7,7 +7,9 @@
      node tools/dev/guard.mjs --no-phone      skip the headless Chrome pass
 
    Seven checks, one line each, non-zero exit on any FAIL:
-     cards   how many cards of each kind, against tools/dev/guard-baseline.json
+     cards   how many cards of each kind, against tools/dev/guard-baseline.json, and every interaction the
+             game's wording names: how many open a card, how many are marked unclear, how many are left as
+             plain text (tools/interactions.py, data/interactions.json)
      links   every deep link the code emits lands on a real row in the data
      pages   every public page answers 200; the sitemap and llms.txt did not shrink
      rawcode no stat ids, [Word|Word] markup or {0} placeholders where a player can read them
@@ -161,7 +163,20 @@ function countKinds(index){
   for(const it of index.items) if(KIND[it.k]) out[it.k] = (out[it.k] || 0) + 1;
   return out;
 }
-function checkCards(now, want){
+/* ---------- 1b. every interaction the game's wording names ----------
+   tools/interactions.py settles each one into a bucket and writes the count (data/interactions.json). The
+   cards line carries it every run, and a word the game writes that nothing reaches — a new patch's wording —
+   fails, because an interaction left as plain text is the thing this is here to stop. */
+function interactionLine(ix, bad){
+  if(!ix || !ix.n) return bad.push('data/interactions.json is not there: run python tools/interactions.py'), '';
+  const n = ix.n;
+  if(n.plain) bad.push(fmt(n.plain) + ' interaction ' + (n.plain === 1 ? 'word is' : 'words are') +
+    ' left as plain text (data/interactions.json "plain")');
+  if(!n.marked) bad.push('no interaction is marked unclear: the cards are not in the index');
+  return ' · interactions ' + fmt(n.mapped) + ' mapped, ' + fmt(n.marked) + ' marked unclear over ' +
+    fmt(n.cards) + ' cards, ' + fmt(n.itself + n.unmarked + n.shared) + ' spoken for, ' + fmt(n.plain) + ' plain';
+}
+function checkCards(now, want, ix){
   const bad = [], moved = [];
   for(const [k, n] of Object.entries(want)){
     const got = now[k] || 0;
@@ -171,8 +186,10 @@ function checkCards(now, want){
   }
   for(const k of Object.keys(now)) if(!(k in want)) moved.push(KIND[k] + ' new');
   const total = Object.values(now).reduce((a, b) => a + b, 0);
+  const said = interactionLine(ix, bad);
   say('cards', !bad.length, bad.length ? bad.join(', ')
-    : Object.keys(now).length + ' kinds, ' + fmt(total) + ' cards' + (moved.length ? ' \u00b7 ' + moved.join(', ') : ' \u00b7 no change'));
+    : Object.keys(now).length + ' kinds, ' + fmt(total) + ' cards' +
+      (moved.length ? ' \u00b7 ' + moved.join(', ') : ' \u00b7 no change') + said);
 }
 
 /* ---------- 2. deep links ----------
@@ -709,7 +726,7 @@ try {
   const index = await getJSON('/data/index.json');
   const market = await getJSON('/data/market.json').catch(() => null);
   now = countKinds(index);
-  checkCards(now, want.kinds || now);
+  checkCards(now, want.kinds || now, await getJSON('/data/interactions.json').catch(() => null));
   await checkLinks(index, market);
   const pages = await checkPages(want.pages);
   counts = pages.counts;

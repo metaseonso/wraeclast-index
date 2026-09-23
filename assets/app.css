@@ -747,6 +747,8 @@ small.at-bonus{display:block}
 .dv-note{display:grid; gap:6px; padding:10px 12px; border-radius:8px; background:var(--sunken); box-shadow:inset 0 0 0 1px var(--line-soft)}
 .dv-note.s-new{box-shadow:inset 3px 0 0 var(--accent), inset 0 0 0 1px var(--line-soft)}
 .dv-note.s-done .dv-note-t{color:var(--muted)}
+/* an answer to an interaction (worker/community.js): which way it works, who said so and where from */
+.dv-note-l{margin:0; font:11px/1.45 var(--mono); color:var(--accent); overflow-wrap:anywhere}
 .dv-note-t{margin:0; font-size:13.5px; line-height:1.5; cursor:pointer; white-space:pre-wrap; overflow-wrap:anywhere;
   display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:4; overflow:hidden}
 .dv-note-ft{display:flex; flex-wrap:wrap; gap:6px; align-items:center}
