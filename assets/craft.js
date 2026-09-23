@@ -546,8 +546,9 @@ function poolHTML(){
   const only = UI.f && UI.f.only;
   const shown = fams.filter(f => (!UI.tag || f.fam[2].includes(UI.tag)) && (!only || f.fam[0] === only) &&
     q.every(w => (f.fam[1].join(' ') + ' ' + f.tiers.map(i => P.mods[i][4]).join(' ')).toLowerCase().includes(w)));
-  const live = a => shown.filter(f => f.fam[0] === a && f.tiers.some(i => eligible(i, ''))).length;
-  const word = a => a === 'p' ? 'prefixes' : 'suffixes';
+  // a row is a family with its tiers on one slider; the tally counts the mods in them, the way a base card does
+  const live = a => shown.filter(f => f.fam[0] === a)
+    .reduce((n, f) => n + f.tiers.filter(i => eligible(i, '')).length, 0);
   const col = a => {
     const list = shown.filter(f => f.fam[0] === a);
     if(TOT) list.sort((x, y) => famWeight(y) - famWeight(x) || x.f - y.f);   // likeliest roll on top, at this item level
@@ -556,7 +557,7 @@ function poolHTML(){
       '</h4>' + (TOT ? '<span class="cr-lead">likeliest first</span>' : '') + '</div>' +
       (list.length ? '<div class="cr-mods2">' + rows.map(modRowHTML).join('') + '</div>' +
         (rows.length < list.length ? '<button type="button" class="cr-mall" data-all="' + a + '">' +
-          '<span>' + (list.length - rows.length) + ' more ' + word(a) + '</span><span class="cr-lk">Show all</span></button>' : '')
+          '<span>' + (list.length - rows.length) + ' more</span><span class="cr-lk">Show all</span></button>' : '')
         : '<p class="note">None.</p>') + '</section>';
   };
   return '<div class="cr-bar"><input class="field" type="search" data-k="q" placeholder="Filter mods (e.g. life, fire res)" value="' + esc(UI.q) + '" autocomplete="off">' +
@@ -1170,8 +1171,7 @@ export async function mount(el){
   return {update};
 }
 function head(){
-  return '<div class="pagehd"><h2>Craft</h2><p>Every modifier a base can roll at its item level, ' +
-    'and where each one comes from.</p></div>';
+  return '<div class="pagehd"><h2>Craft</h2><p>What mods a base can roll, and how to get the one you want.</p></div>';
 }
 /* Two questions, one item. The switch is the site's own segmented control, and which question is being asked
    is in the address, so a link opens on the question it was sent about. */
