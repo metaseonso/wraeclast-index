@@ -418,3 +418,50 @@ export function range(run, unknowns){
 export function widenedBy(list){
   return list.map(id => (unknown(id) || {n: id}).n);
 }
+
+/* ---------- the whole character, in one call ----------
+   The steps above, assembled in the order STEPS names, out of plain numbers. It lived in the Build tab while
+   the Build tab was the only thing that worked a character out; the optimise button works one out several
+   hundred times a step, so the assembly moved here, where tools/dev/buildcheck.mjs already holds the rules
+   it is made of. There is one copy of it and both read this one.
+
+   `m` is {level, cls, stats, gear, take}: the character's level, its class row out of the game's export, the
+   stat table `read` came back with, what the gear itself carries before a line is read, and which way each
+   unsettled thing is taken. */
+export function character(m){
+  const stats = m.stats, cls = m.cls, take = m.take || {}, gear = m.gear || {};
+  const at = k => stats.get(k) || {flat: 0, inc: 0, more: 1};
+  const total = (k, base) => (base + at(k).flat) * (1 + at(k).inc / 100) * at(k).more;
+  const free = take.anyattribute ? at('anyattribute').flat : 0;
+  const str = Math.round(total('str', (cls ? cls.str : 0) + free));
+  const halved = !!at('halflifefromstrength').flat;
+  const life = Math.round(baseLife(m.level, str, halved) * (1 + (BASE.lifeInc + at('life').inc) / 100)
+    * at('life').more + at('life').flat * (1 + (BASE.lifeInc + at('life').inc) / 100));
+  const res = {}, resmax = {};
+  for(const e of [...ELEMENTS, 'chaos']){
+    resmax[e] = Math.min(RES_CEILING, RES_DEFAULT + at('resmax.' + e).flat);
+    res[e] = Math.min(Math.round(total('res.' + e, 0)), resmax[e]);
+  }
+  const mana = Math.round(total('mana', cls ? baseMana(cls, m.level) : 0));
+  const d = {
+    armour: Math.round(total('armour', gear.armour || 0)),
+    evasion: Math.round(total('evasion', (gear.evasion || 0) + BASE.evasion)),
+    es: Math.round(total('es', gear.es || 0)), life, mana,
+    mom: take.mindovermatter ? mana : 0, res, resmax, pen: {},
+  };
+  const hits = {};
+  for(const t of TYPES) hits[t] = Math.round(maxHit(t, d));
+  return {cls, str, life, d, hits,
+    pool: d.es + (d.mom ? Math.min(d.mana, d.mom) : 0) + d.life,
+    dex: Math.round(total('dex', (cls ? cls.dex : 0) + free)),
+    int: Math.round(total('int', (cls ? cls.int : 0) + free))};
+}
+/* One weapon, swung. Quality is the weapon's own and the game puts it on the weapon's Physical Damage before
+   anything else, so it is in the base handed to `hit` and not a multiplier after it. */
+export function attack(m){
+  const at = k => m.stats.get(k) || {flat: 0, inc: 0, more: 1};
+  const base = {physical: (m.dmg[0] + m.dmg[1]) / 2 * (1 + (m.quality || 0) / 100)};
+  const h = hit({stats: m.stats, base, crit: m.crit, kind: 'attack'});
+  const swings = m.rate * (1 + at('attackspeed').inc / 100) * at('attackspeed').more;
+  return {perHit: h.average, rate: swings, dps: h.average * swings, crit: h.crit};
+}

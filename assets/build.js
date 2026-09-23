@@ -239,34 +239,10 @@ function linesOf(b){
 function once(b, take, had){
   const cls = (GAME.classes || []).find(c => c.n === b.cls);
   const {stats, unread, named} = had;
-  const at = k => stats.get(k) || {flat: 0, inc: 0, more: 1};
-  const total = (k, base) => (base + at(k).flat) * (1 + at(k).inc / 100) * at(k).more;
-  const free = take.anyattribute ? at('anyattribute').flat : 0;
-  let armour = 0, evasion = 0, es = 0;
-  for(const it of b.items){ armour += it.armour; evasion += it.evasion; es += it.es; }
-  const str = Math.round(total('str', (cls ? cls.str : 0) + free));
-  const halved = !!at('halflifefromstrength').flat;
-  const life = Math.round(M.baseLife(b.level, str, halved) * (1 + (M.BASE.lifeInc + at('life').inc) / 100)
-    * at('life').more + at('life').flat * (1 + (M.BASE.lifeInc + at('life').inc) / 100));
-  const res = {}, resmax = {};
-  for(const e of ['fire', 'cold', 'lightning', 'chaos']){
-    resmax[e] = Math.min(M.RES_CEILING, M.RES_DEFAULT + at('resmax.' + e).flat);
-    res[e] = Math.min(Math.round(total('res.' + e, 0)), resmax[e]);
-  }
-  const d = {
-    armour: Math.round(total('armour', armour)), evasion: Math.round(total('evasion', evasion + M.BASE.evasion)),
-    es: Math.round(total('es', es)), life,
-    mana: Math.round(total('mana', cls ? M.baseMana(cls, b.level) : 0)),
-    mom: take.mindovermatter ? Math.round(total('mana', cls ? M.baseMana(cls, b.level) : 0)) : 0,
-    res, resmax, pen: {},
-  };
-  const hits = {};
-  for(const t of M.TYPES) hits[t] = Math.round(M.maxHit(t, d));
-  return {stats, unread, named, cls, str, life, d, hits,
-    pool: d.es + (d.mom ? Math.min(d.mana, d.mom) : 0) + d.life,
-    dex: Math.round(total('dex', (cls ? cls.dex : 0) + free)),
-    int: Math.round(total('int', (cls ? cls.int : 0) + free)),
-    dps: damage(b, stats)};
+  const gear = {armour: 0, evasion: 0, es: 0};
+  for(const it of b.items){ gear.armour += it.armour; gear.evasion += it.evasion; gear.es += it.es; }
+  const c = M.character({level: b.level, cls, stats, gear, take});
+  return {stats, unread, named, ...c, dps: damage(b, stats)};
 }
 /* The damage side, out of the weapon the build carries. A skill gem's own base damage is not in the data
    this page holds, so a build whose damage comes off the skill and not the weapon says so instead. */
@@ -283,12 +259,7 @@ function damage(b, stats){
   const rate = w.rate || Number((take(/^Attacks per Second: ([\d.]+)/) || [])[1] || 0);
   const crit = w.crit || Number((take(/^Critical Hit Chance: ([\d.]+)/) || [])[1] || 0);
   if(!dmg || !rate) return null;
-  const at = k => stats.get(k) || {flat: 0, inc: 0, more: 1};
-  // quality is the weapon's own, and the game applies it to the weapon's Physical Damage before anything else
-  const base = {physical: (dmg[0] + dmg[1]) / 2 * (1 + (w.quality || 0) / 100)};
-  const h = M.hit({stats, base, crit, kind: 'attack'});
-  const swings = rate * (1 + at('attackspeed').inc / 100) * at('attackspeed').more;
-  return {perHit: h.average, rate: swings, dps: h.average * swings, weapon: w.name || w.base, crit: h.crit};
+  return {...M.attack({stats, dmg, rate, crit, quality: w.quality}), weapon: w.name || w.base};
 }
 /* What the answer is worked against, out of the game's own table of one monster per level. */
 function monster(level){
