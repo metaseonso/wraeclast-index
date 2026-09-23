@@ -218,12 +218,12 @@ function render(fresh){
     lhd.querySelector('h3').textContent = title;
     seg.setAttribute('aria-label', title);
     seg.innerHTML = opts.map(([k, l]) => '<button type="button" data-v="' + esc(k) + '" aria-pressed="' + (k === cur) + '">' + esc(l) + '</button>').join('');
-    box.innerHTML = rows.length ? rows.join('') : '<div class="empty"><h3>Nothing matches</h3><p>Try fewer words.</p></div>';
+    box.innerHTML = rows.length ? rows.join('') : '<div class="empty"><h3>Nothing matches</h3></div>';
   }
   const shown = list.length, lines = S.sec === 'tree' ? treeCount(q, S.sub) : rows.filter(r => r.startsWith('<div')).length;
   $('#atstatus', EL).innerHTML = S.sec === 'tree' ? '<b>' + lines + '</b> of ' + treeCount('', S.sub) + ' passives' :
     '<b>' + shown + '</b> item' + (shown === 1 ? '' : 's') + (opts ? ' · <b>' + lines + '</b> mods' : '');
-  if(S.sec !== 'tree' && !shown) grid.innerHTML = '<div class="empty" style="grid-column:1/-1"><h3>Nothing matches</h3><p>Try fewer words.</p></div>';
+  if(S.sec !== 'tree' && !shown) grid.innerHTML = '<div class="empty" style="grid-column:1/-1"><h3>Nothing matches</h3></div>';
 }
 function treeCount(q, sub = 'all'){
   let n = 0;

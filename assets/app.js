@@ -677,7 +677,7 @@ function benchItemHTML(p){
 function picksHTML(p){
   if(!p || !p.base) return '';
   const list = p.picks || [];
-  if(!list.length) return '<p class="note bn-nopick">Nothing picked yet — take what you want to craft with from the tab.</p>';
+  if(!list.length) return '<p class="note bn-nopick">Nothing picked yet.</p>';
   return '<div class="bn-holding"><p class="bn-h4">Picked <span>' + list.length + '</span></p><ul class="bn-picks">' +
     list.map((x, i) => '<li class="bn-prow' + (x.omen ? ' omen' : '') + '">' +
       '<span class="bn-ic">' + (x.img ? '<img src="' + esc(x.img) + '" alt="" loading="lazy" decoding="async">' : '') + '</span>' +
@@ -1716,7 +1716,7 @@ function homeRender(){
   if(!D.full && !H.marked){ H.marked = true; ready.then(() => remark($('#cards')), () => {}); }
   more.hidden = list.length <= H.shown;
   if(has && !list.length){
-    $('#cards').innerHTML = '<div class="empty" style="grid-column:1/-1"><h3>Nothing matches</h3><p>Try fewer words.</p></div>';
+    $('#cards').innerHTML = '<div class="empty" style="grid-column:1/-1"><h3>Nothing matches</h3></div>';
   }
 }
 

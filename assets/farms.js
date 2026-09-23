@@ -283,5 +283,5 @@ function render(){
   $('#fmcount', EL).innerHTML = '<b>' + list.length + '</b> farm' + (list.length === 1 ? '' : 's');
   const grid = $('#fmcards', EL);
   flow(grid, list.map(r => ({key: r.f.id, r})), x => farmCard(x.r));
-  if(!list.length) grid.innerHTML = '<div class="empty" style="grid-column:1/-1"><h3>Nothing here</h3><p>Try fewer filters.</p></div>';
+  if(!list.length) grid.innerHTML = '<div class="empty" style="grid-column:1/-1"><h3>Nothing here</h3></div>';
 }
