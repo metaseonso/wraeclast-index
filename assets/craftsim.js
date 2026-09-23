@@ -640,7 +640,9 @@ function land(run, x, on, r, why){
   run.used[x.n] = (run.used[x.n] || 0) + 1;
   for(const n of on) run.used[n] = (run.used[n] || 0) + 1;
   note(run, {n: x.n, om: on, ok: true, what: r.what, note: r.note || why || '',
-    lines: [...(r.added || []).map(m => '+ ' + m.lines.join(' / ')),
+    // a modifier that landed is written the way the game writes it, sign and all: a "+" in front of
+    // "+49 to Accuracy Rating" is the same plus twice. Only what was taken off needs a mark of its own.
+    lines: [...(r.added || []).map(m => m.lines.join(' / ')),
             ...(r.removed || []).map(m => '− ' + m.lines.join(' / '))]});
 }
 function note(run, line){
