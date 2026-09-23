@@ -2,7 +2,8 @@
    Pick the item, add groups of mods ("must have", "at least N of these", "add these up", "must not have"),
    set details and price, then open the search. The whole search lives in the address, so it can be shared. */
 import { D, $, esc } from './app.js';
-import { tradeData, searchURL, valueFor, valHTML, syncVal, stepOf, heatNote, rollFor } from './trade.js';
+import { tradeData, searchURL, valueFor, valHTML, syncVal, stepOf, heatNote, rollFor, key, range } from './trade.js';
+import * as bp from './basepool.js';
 
 const GROUPS = {
   and:    {label: 'Must have', hint: 'Every mod here must be on the item.'},
@@ -24,7 +25,7 @@ const EXAMPLES = [
   ['Cheapest Headhunter, not corrupted', {item: {k: 'unique', v: 'Headhunter', n: 'Headhunter'}, states: {corrupted: 'no'}}],
 ];
 const blank = () => ({item: null, rarity: '', types: [], groups: [], ilvl: '', quality: '', lvl: '', sockets: '', states: {},
-  price: '', cur: 'divine', indexed: '', online: false});
+  price: '', cur: 'divine', indexed: '', online: false, narrow: true});
 
 let T, EL, S = blank(), MOD = new Map(), POP = [];
 
@@ -41,12 +42,100 @@ function save(){
   try { localStorage.setItem('wi.trade', JSON.stringify(S)); } catch {}
 }
 
+/* ---------- what the chosen base narrows the search to ----------
+   A base item can only ever have what its own item class's table says it can: the modifiers its pool rolls,
+   the ones a desecration or a corruption adds, the augments its sockets take and its own implicit
+   (data/craft/<class>.json, tools/craft.py — assets/basepool.js reads its shape). Joined to the trade
+   site's own list by the wording of the line, that gives the mods this base can be searched for, the
+   defence mixes it comes in, and the ends and the tiers of each slider.
+   It narrows nothing until that table is in, and nothing ever disappears without the page saying so: the
+   Mods list and the Type row both carry the note, and one tap on it puts everything back. */
+const CSRC = {m: ['explicit'], d: ['desecrated', 'explicit'], c: ['enchant', 'implicit']};
+// the trade site lists "reduced" and "less" as "increased" and "more" with a negative number (assets/craft.js)
+const flip = line => /\b(reduced|less)\b/.test(line) ? line.replace(/\breduced\b/, 'increased').replace(/\bless\b/, 'more') : null;
+let NAR = null, NARFOR = null;   // what the item narrows to, and the item it was worked out for
+const narrowing = () => (S.narrow === false ? null : NAR);
+function statOf(line, which, cl){
+  const tail = cl.g === 'Flasks' ? (cl.id === 'charm' ? ' (charm)' : ' (flask)') : '';   // "... (Charm)" on the trade site
+  const find = k => {
+    for(const kind of CSRC[which] || []){
+      if(cl.loc && T.local[kind] && T.local[kind][k]) return T.local[kind][k];
+      if(T.by[kind] && T.by[kind][k]) return T.by[kind][k];
+    }
+    return null;
+  };
+  const one = l => (tail && find(key(l) + tail)) || find(key(l));
+  return one(line) || (flip(line) && one(flip(line))) || null;
+}
+/* {n, cat, ids, ranges, types}: what this base is called, its trade category, the mods it can have, the ends
+   and tiers of each of those, and the defence mixes it comes in. */
+function narrowOf(P, base, cl){
+  const ids = new Set(), ranges = new Map();
+  // the ends and the tiers of a slider are what the base rolls; two mods that read as one line on the trade
+  // site keep the ends and lose the tiers, rather than drawing one mod's tiers over another's
+  for(const f of bp.famsOf(P, base, 'm')) for(const t of f.tiers) for(const line of t.lines){
+    const id = statOf(line, 'm', cl), r = id && range(line);
+    if(!id) continue;
+    ids.add(id);
+    if(!r) continue;
+    const got = ranges.get(id);
+    if(!got){ ranges.set(id, {f: f.f, lo: r.lo, hi: r.hi, tiers: [[r.lo, r.hi, t.lvl]]}); continue; }
+    got.lo = Math.min(got.lo, r.lo); got.hi = Math.max(got.hi, r.hi);
+    if(got.f === f.f && got.tiers) got.tiers.push([r.lo, r.hi, t.lvl]);
+    else got.tiers = null;
+  }
+  // a desecration, a corruption, a rune in a socket and the base's own implicit: things it can have, with
+  // no rolling tiers of their own here
+  for(const which of ['d', 'c']) for(const f of bp.famsOf(P, base, which))
+    for(const t of f.tiers) for(const line of t.lines) ids.add(statOf(line, which, cl));
+  if(cl.so) for(const a of P.aug || []) for(const line of [...(a[3] || []), ...(a[4] || [])])
+    ids.add(statOf(line, 'm', cl));
+  for(const b of base ? [base] : P.bases) for(const line of b.im || []) ids.add(statOf(line, 'c', cl));
+  ids.delete(null);
+  for(const r of ranges.values()){
+    if(r.tiers) r.tiers.sort((a, b) => a[0] - b[0] || a[1] - b[1]);
+    if(r.tiers && r.tiers.length < 2) r.tiers = null;
+  }
+  return {n: base ? base.n : cl.n, cat: cl.cat, ids, ranges, types: bp.typingsOf(P, base)};
+}
+async function loadNarrow(){
+  const sig = S.item ? S.item.k + '|' + S.item.v : '';
+  if(sig === NARFOR) return;
+  NARFOR = sig;
+  NAR = null;
+  if(!S.item || (S.item.k !== 'base' && S.item.k !== 'category')) return;
+  const cl = await bp.classFor(S.item);
+  const P = cl && await bp.table('data/craft/' + cl.id + '.json');
+  if(NARFOR !== sig) return;   // the item was changed while its table was coming
+  if(P) NAR = narrowOf(P, bp.baseOf(P, S.item.k === 'base' ? S.item.v : ''), cl);
+  if(NAR) repaint();
+}
+/* the note, wherever something is being narrowed: what it is narrowed to, and the way out beside it */
+function narrowNote(){
+  const n = narrowing();
+  if(n) return '<p class="cr-fnote tp-fnote"><span class="cr-flab">Narrowed to</span>' +
+    '<button type="button" class="cr-foff" data-act="wide">what ' + esc(n.n) + ' can have<i aria-hidden="true">✕</i></button></p>';
+  return NAR ? '<p class="note tp-fnote"><button type="button" class="linkbtn" data-act="narrow">Narrow to what ' +
+    esc(NAR.n) + ' can have</button></p>' : '';
+}
+
 /* ---------- defence types (gear kinds only) ----------
    Each ticked type is a mix like "Evasion + Energy Shield". A defence every ticked type has must be there,
    one that none of them has must be missing, the rest are free. */
 const DEF = {ar: 'Armour', ev: 'Evasion', es: 'Energy Shield'};
 const typeName = t => t.split('+').map(d => DEF[d]).join(' + ');
-const typesFor = () => (S.item && S.item.k === 'category' && T.typings && T.typings[S.item.v]) || null;
+const sortMix = v => v.split('+').sort().join('+');
+/* Every defence mix this kind of item is listed under, or — where a base narrows it — only the mixes that
+   base really comes in. A mix already ticked stays on the list whatever happens, so a tick never vanishes. */
+function typesFor(){
+  const cat = S.item && (S.item.k === 'category' ? S.item.v : NAR && S.item.k === 'base' ? NAR.cat : '');
+  const all = (cat && T.typings && T.typings[cat]) || null;
+  const n = narrowing();
+  if(!all || !n) return all;
+  const mine = new Set(n.types.map(sortMix)), ticked = new Set(S.types || []);
+  const keep = all.filter(t => mine.has(sortMix(t.join('+'))) || ticked.has(t.join('+')));
+  return keep.length ? keep : all;
+}
 function defenceFilters(){
   const all = typesFor(); if(!all || !S.types || !S.types.length) return {};
   const picked = S.types.map(t => t.split('+')), out = {};
@@ -183,8 +272,10 @@ function itemMatches(q){
 function modMatches(q){
   const words = q.trim().toLowerCase().split(/\s+/).filter(Boolean);
   if(!words.length) return [];
-  const out = [];
-  for(const [id, m] of MOD) if(words.every(w => m.l.includes(w))) out.push({id, ...m});
+  const n = narrowing(), out = [];
+  // a total is worked out from whatever is on the item, so it is not one of the base's own mods
+  const here = id => !n || id.startsWith('pseudo.') || n.ids.has(id);
+  for(const [id, m] of MOD) if(here(id) && words.every(w => m.l.includes(w))) out.push({id, ...m});
   const rank = m => (m.k === 'pseudo' ? 0 : m.k === 'explicit' ? 1 : m.k === 'implicit' ? 2 : 3) + m.t.length / 1000;
   return out.sort((a, b) => rank(a) - rank(b)).slice(0, 14);
 }
@@ -234,7 +325,13 @@ function sel(name, opts, val, first){
 function num(name, val, ph){ return '<input class="field tp-num" type="number" data-k="' + name + '" value="' + esc(val) + '" placeholder="' + esc(ph || '') + '">'; }
 /* a number box, with a slider beside it when the range is known (o: slider ends, step, tiers) */
 function vnum(name, val, ph, o){ return o ? valHTML({...o, k: name, v: val}, num(name, val, ph)) : num(name, val, ph); }
-function modSlide(id, info){ return info.r ? {lo: info.r[0], hi: info.r[1], step: stepOf(info.r[0], info.r[1], info.tiers), tiers: info.tiers, prices: rollFor(id)} : null; }
+/* the ends of a slider: what this mod rolls anywhere, or — where a base narrows it — what it rolls on that
+   base, with that base's own tiers on the track */
+function modSlide(id, info){
+  const n = narrowing(), own = n && n.ranges.get(id);
+  const r = own ? [own.lo, own.hi] : info.r, tiers = own ? own.tiers : info.tiers;
+  return r ? {lo: r[0], hi: r[1], step: stepOf(r[0], r[1], tiers), tiers, prices: rollFor(id)} : null;
+}
 function totalSlide(g){   // the most the mods in an 'add these up' group can reach
   if(!g.mods.length || !g.mods.every(m => (MOD.get(m.id) || {}).r)) return null;
   const hi = g.mods.reduce((a, m) => a + (+m.w || 1) * MOD.get(m.id).r[1], 0);
@@ -248,7 +345,11 @@ function groupHTML(g, gi){
     (g.t === 'count' ? '<div class="trow"><span>How many</span>' + vnum('n', g.n ?? 1, '', g.mods.length > 1 ? {lo: 1, hi: g.mods.length, step: 1, heat: false} : null) + '</div>' : '') +
     g.mods.map((m, mi) => {
       const info = MOD.get(m.id) || {t: m.id, k: ''};
-      return '<div class="tp-mod" data-m="' + mi + '"><span class="tp-mtext">' + esc(info.t) + ' <span class="pill">' + (KIND[info.k] || '') + '</span></span>' +
+      const n = narrowing();
+      // a mod that was already here when the base was picked stays, and says where it stands
+      const off = n && !m.id.startsWith('pseudo.') && !n.ids.has(m.id)
+        ? '<span class="tp-off">' + esc(n.n) + ' cannot roll it</span>' : '';
+      return '<div class="tp-mod" data-m="' + mi + '"><span class="tp-mtext">' + esc(info.t) + ' <span class="pill">' + (KIND[info.k] || '') + '</span>' + off + '</span>' +
         (g.t === 'and' || g.t === 'count' || g.t === 'or' ? '<div class="seg" data-k="op">' + OPS.map(([o, l]) =>
           '<button type="button" data-v="' + o + '" aria-pressed="' + ((m.op || 'min') === o) + '">' + l + '</button>').join('') + '</div>' + vnum('v', m.v ?? '', 'any', modSlide(m.id, info)) : '') +
         (g.t === 'weight' ? '<span class="note">counts ×</span>' + vnum('w', m.w ?? 1, '', {lo: 1, hi: 10, step: 1, heat: false}) : '') +
@@ -273,8 +374,9 @@ function draw(){
         : '<div class="tp-pick" data-picker="item"></div>') +
         '<label class="lbl">Rarity</label>' + sel('rarity', T.options.rarity, S.rarity, 'Any') + '</div>' +
       (typesFor() ? '<div class="tp-types"><span class="lbl">Type</span>' + typesFor().map(t => { const v = t.join('+');
-        return '<label class="tp-type"><input type="checkbox" data-type="' + v + '"' + ((S.types || []).includes(v) ? ' checked' : '') + '> ' + esc(typeName(v)) + '</label>'; }).join('') + '</div>' : '') +
-      '<h3 class="tp-h">Mods</h3>' + (S.groups.some(g => g.mods.length) ? heatNote(S.groups.some(g => g.t !== 'weight' && g.t !== 'not' && g.mods.some(m => rollFor(m.id)))) : '') +
+        return '<label class="tp-type"><input type="checkbox" data-type="' + v + '"' + ((S.types || []).includes(v) ? ' checked' : '') + '> ' + esc(typeName(v)) + '</label>'; }).join('') + '</div>' + narrowNote() : '') +
+      '<h3 class="tp-h">Mods</h3>' + narrowNote() +
+      (S.groups.some(g => g.mods.length) ? heatNote(S.groups.some(g => g.t !== 'weight' && g.t !== 'not' && g.mods.some(m => rollFor(m.id)))) : '') +
       (S.groups.length ? S.groups.map(groupHTML).join('') : '<p class="note">No mods yet. Add a group below.</p>') +
       '<div class="row tp-addg">' + Object.entries(GROUPS).map(([t, g]) => '<button type="button" class="btn" data-addg="' + t + '">+ ' + g.label + '</button>').join('') + '</div>' +
       '<h3 class="tp-h">Item details</h3>' +
@@ -295,8 +397,11 @@ function draw(){
     '<div class="panel tp-out"><p class="tp-sum">' + esc(summary()) + '</p>' +
       '<div class="tgo"><button type="button" class="btn tcopy">Copy link</button><a class="btn gold" target="_blank" rel="noopener" href="' + esc(url) + '">Open on trade ↗</a></div></div>';
 
+  // the chosen base's own table, the first time it is asked for: it narrows once it is in, and a table that
+  // does not come leaves the whole list where it was rather than half of it
+  loadNarrow().catch(() => {});
   const ip = EL.querySelector('[data-picker="item"]');
-  if(ip) picker(ip, 'An item, a unique or a kind (e.g. ring, Headhunter, boots)', itemMatches, it => { S.item = it; S.types = []; commit(); });
+  if(ip) picker(ip, 'An item, a unique or a kind (e.g. ring, Headhunter, boots)', itemMatches, it => { S.item = it; S.types = []; S.narrow = true; commit(); });
   EL.querySelectorAll('[data-picker="mod"]').forEach(h => {
     const gi = +h.closest('.tp-group').dataset.g;
     picker(h, 'Add a mod: type any words (e.g. life, fire res, total)', modMatches, m => {
@@ -309,6 +414,7 @@ function draw(){
 }
 function commit(focusLast){ save(); const y = scrollY; draw(); scrollTo(0, y);
   if(focusLast){ const f = [...EL.querySelectorAll('.tp-add input')].pop(); if(f) f.focus({preventScroll: true}); } }
+function repaint(){ const y = scrollY; draw(); scrollTo(0, y); }   // the page again, nothing about the search changed
 function refresh(){   // values changed: keep the inputs, redo the summary and the link
   save();
   EL.querySelector('.tp-sum').textContent = summary();
@@ -347,7 +453,9 @@ function wire(){
     if(b.dataset.ex !== undefined){ S = {...blank(), ...JSON.parse(JSON.stringify(EXAMPLES[+b.dataset.ex][1]))}; return commit(); }
     if(b.dataset.addg){ S.groups.push(b.dataset.addg === 'count' ? {t: 'count', n: 1, mods: []} : {t: b.dataset.addg, mods: []}); return commit(); }
     if(b.dataset.act === 'reset'){ S = blank(); return commit(); }
-    if(b.dataset.act === 'clearitem'){ S.item = null; S.types = []; return commit(); }
+    if(b.dataset.act === 'clearitem'){ S.item = null; S.types = []; S.narrow = true; return commit(); }
+    if(b.dataset.act === 'wide'){ S.narrow = false; return commit(); }
+    if(b.dataset.act === 'narrow'){ S.narrow = true; return commit(); }
     if(b.dataset.act === 'delgroup'){ S.groups.splice(+g.dataset.g, 1); return commit(); }
     if(b.dataset.act === 'delmod'){ S.groups[+g.dataset.g].mods.splice(+m.dataset.m, 1); return commit(); }
     if(seg && seg.dataset.k === 'op'){ S.groups[+g.dataset.g].mods[+m.dataset.m].op = b.dataset.v; return commit(); }

@@ -67,6 +67,68 @@ Add the details here first, then a short public line there.
   days old reads stopped; a fresh row in the files table over a five-day-old backup copy reads fine off its
   arrival; and a backup file with no `updated` reads unknown. The owner's Data jobs block was drawn in a real
   headless Chrome for all five. `node tools/dev/guard.mjs`: 7 ok, 0 failed.
+## Next — The base you pick narrows the trade filters, and says so
+
+- From the suggestion box: *"trade page can be better if filter and modifier options automatically change
+  live to only show what is available for the base."*
+- **Pick a base on the Trade page and the search narrows to it.** The mod list drops to the mods that base
+  can really have, the defence types drop to the mixes it really comes in, and a slider's ends become what
+  that mod rolls on that base. A gloves base: the mod picker goes from 8,001 to what it can carry, "spell
+  damage" finds nothing there, and the type row is Armour and nothing else where before it showed none at
+  all for a base.
+- **The join was already shipped.** `data/craft/<class>.json` holds each class's pool (`tools/craft.py`)
+  and `data/trade.json` holds the trade site's own list (`tools/tradedata.py`); they meet on the wording of
+  a line with the numbers taken out, the same match the Craft tab makes when it builds a trade search. Of
+  the 956 modifier families across all 31 classes, 951 land on a trade mod; the five that do not are not on
+  the trade site at all. `assets/basepool.js` is the one place that reads the class table's shape, so a
+  base narrows a card and a search to the same thing.
+- **What a base can have is more than what it rolls.** A desecration, a corruption, a rune or soul core in
+  a socket and the base's own implicit are all on the list. Totals ("+# total to Fire Resistance") stay
+  whatever the base is: they are worked out from whatever is on the item, not rolled on it.
+- **Nothing disappears without the page saying so.** The note sits with the Mods list and with the Type
+  row — *Narrowed to what Stocky Mitts can have ✕* — and one tap puts everything back, with the way to
+  narrow it again in the same place. A mod already in a group when the base was picked stays where it is
+  and says the base cannot roll it. A defence type already ticked stays on the list whatever the base is.
+  Same shape and the same styling as the Craft tab's own "Narrowed by".
+- **The sliders keep the base's own tiers**, and where two of the base's mods read as one line on the trade
+  site the slider keeps the ends and drops the tiers rather than drawing one mod's bands over another's.
+- The class table is fetched when a base is picked, never before, and a table that does not come leaves
+  the whole list where it was rather than half of it.
+
+## Next — What a base can already have, and a switch where the player is
+
+- From the suggestion box: *"gloves need a stonefist toggle and existing available modifiers to a base need
+  to be shown for base as well as corruption options intuitively designed and presented. lightweight but
+  responsive UI."*
+- **A base item's card now lists what it can already have.** Its implicits and its properties were already
+  on it; under them are **Modifiers it can roll** — every modifier family its own pool rolls, with which
+  side it lands on, how many tiers it has here and the item level the first one needs — and **A corruption
+  can add**, the outcomes a Vaal Orb can put on that base. Stocky Mitts: 27 modifiers and 9 corruption
+  outcomes. Sapphire Ring: 31 and 12. Crescent Quarterstaff: 23 and 13.
+- **It came out of the frame, not out of card code.** Both are the same new field type (`pool`), one entry
+  each in `FIELDS` with `of` saying which list of the base's pool it reads, so a third list is one more line
+  and no code. The data is the one the Craft tab already works from (`data/craft/<class>.json`,
+  `tools/craft.py`) — nothing new was pulled, and the corruption outcomes were already shipped.
+- **A field's table may now be one file per item class.** `file` takes `@field` and fills it in from the
+  entry the way a gold button's link already does, so `data/craft/@cr.json` reaches every base of every
+  class with no class named in the code. A base whose class has no table draws nothing rather than
+  breaking — the 27 relics and wombgifts among the base cards are exactly that.
+- **Nothing of it is in first paint.** Both fields draw on an opened card only, so the grid keeps its shape
+  and the widest card is where it was (body 3 of 6). The class table and the small reader that shapes it
+  (`assets/basepool.js`) are both fetched the first time a card is opened on a base, and a card that is
+  never opened asks for neither. Checked in a headless Chrome: the home page asks for no craft file.
+- **The Stonefist toggle is a switch on the card, not a panel.** A new field type (`swap`): the declaration
+  says which entries carry it (gloves), the word on the switch, and the card it comes from. What it does is
+  that card's own lines — Way of the Stonefist's own three lines, read off the passive card the site
+  already has — so the game's wording is never written down twice, and the passive is one tap away under
+  it. Every kind carries the field, so the next switch is one more line in the table.
+- **On the Craft tab too.** The base card there is the same card, so it gained the corruption list and the
+  switch with no work; it leaves the "modifiers it can roll" field off, because the whole table with tiers
+  and roll chances is right under it. That is a caller's own call (`without`), like a card drawn with no
+  price, never a rule about a kind.
+- `tools/dev/frame.mjs` now fails a switch with no rule, no word or no card, and a switch from a card whose
+  kind the table does not have. `docs/frame.md` settles three more cases: a table that is one file per item
+  class, a switch on a card, and a page that already draws a field in full.
 
 ## Next — The frame: one card, one map, and a loop with two moves
 

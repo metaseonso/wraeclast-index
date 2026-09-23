@@ -262,6 +262,10 @@ a.pill.fm-tq small{margin-left:2px; color:var(--faint)}
 .tp-grid .tp-num{width:100%}
 .tp-out{position:sticky; bottom:10px; margin-top:12px; display:flex; gap:12px; align-items:center; flex-wrap:wrap; z-index:5; box-shadow:0 10px 30px rgba(0,0,0,.45)}
 .tp-sum{margin:0; flex:1 1 320px; font-size:13px; line-height:1.5}
+/* what the chosen base is narrowing: the Craft tab's own note, drawn beside each list it narrows rather
+   than pinned over the page */
+.tp-fnote{position:static; margin:0}
+.tp-off{font:11px var(--mono); color:var(--neg); margin-left:8px}
 
 /* Atlas tab */
 .at-secs{justify-content:flex-start; margin:0 0 12px}

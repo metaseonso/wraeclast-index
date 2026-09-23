@@ -16,6 +16,7 @@
      * a rule applied to some kinds and not others: a field marked `every` that a kind drops
      * a slot with no cap, a box no field fills, an edge whose map or list is not declared
      * a second list of the site's own pages, kept beside the table instead of read out of it
+     * a card a field offers, or a switch a card carries, whose kind the table does not have
 
    The map, against the declarations it was drawn from (tools/map.py names no kind of its own):
      * a kind drawn in a palette token assets/theme.css does not have
@@ -89,6 +90,13 @@ export function checkTable(seen = [], types = null){
     if(!o.card || !o.when) bad.push('field "' + name + '" offers a card with no key or no rule for when');
     else if(!KIND[o.card.slice(0, o.card.indexOf(':'))])
       bad.push('field "' + name + '" offers "' + o.card + '", whose kind is no kind');
+  }
+  /* a switch on a card says which entries carry it, what the switch reads, and the card it comes from —
+     what it does is that card's own lines, so a switch with no card behind it says nothing */
+  for(const [name, f] of Object.entries(FIELDS)) if(f.type === 'swap') for(const s of f.of || []){
+    if(!s.on || !s.label || !s.card) bad.push('field "' + name + '" carries a switch with no rule, no word or no card');
+    else if(!KIND[s.card.slice(0, s.card.indexOf(':'))])
+      bad.push('field "' + name + '" carries a switch from "' + s.card + '", whose kind is no kind');
   }
   for(const s of SLOTS) if(s !== 'head' && !(s in FRAME.cap)) bad.push('slot "' + s + '" has no cap in FRAME.cap');
   for(const s of Object.keys(FRAME.cap)) if(!slots.has(s)) bad.push('FRAME.cap caps "' + s + '", which is no slot');
