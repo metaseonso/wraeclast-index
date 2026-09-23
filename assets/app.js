@@ -475,7 +475,7 @@ function offerHTML(it, f, full){
   // never on a card of a kind one of them leads to: a mechanics card already says it
   if(list.some(o => it.k === o.card.slice(0, o.card.indexOf(':')))) return '';
   const marks = list.filter(o => o.when.test(it._hay) && MARKS[o.mark]).map(o =>
-    '<button type="button" class="card-offer" data-h="' + esc(o.card) + '" title="' + esc(o.is + ' · ' + o.sub) +
+    '<button type="button" class="card-offer" data-h="' + esc(o.card) + '" data-tip="' + esc(o.is) +
     '" aria-label="' + esc(o.is) + '"><svg viewBox="0 0 20 20" aria-hidden="true">' + MARKS[o.mark] +
     '</svg></button>').join('');
   // both of them move together, so a narrow card never leaves one mark behind on its own line

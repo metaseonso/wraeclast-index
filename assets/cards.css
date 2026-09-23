@@ -135,13 +135,24 @@
 /* a flowchart card, offered beside the name of a card whose text is about what it lays out (offerHTML in
    assets/app.js): a small mark, because it is a way out and not what the card came to say */
 .card-marks{display:inline-flex; gap:5px; margin-left:6px; vertical-align:-7px; white-space:nowrap}
-.card-offer{display:inline-flex; align-items:center; justify-content:center; width:26px; height:26px;
+.card-offer{position:relative; display:inline-flex; align-items:center; justify-content:center; width:26px; height:26px;
   margin:0; padding:0; background:transparent; border:1px solid var(--line);
   border-radius:7px; color:var(--faint); cursor:pointer}
 .card-offer svg{width:15px; height:15px; fill:none; stroke:currentColor; stroke-width:1.5;
   stroke-linecap:round; stroke-linejoin:round}
 .card-offer:hover, .card-offer:focus-visible{border-color:var(--accent); color:var(--accent)}
 .card-offer:focus-visible{outline:2px solid var(--accent); outline-offset:2px}
+/* the mark carries a question mark, so a card says there is something behind it before anyone hovers, and
+   the words it opens on hover and on focus. A finger gets no hover, which is what the mark is there for. */
+.card-offer::before{content:'?'; position:absolute; top:-4px; right:-4px; width:11px; height:11px;
+  border-radius:50%; background:var(--sunken); border:1px solid var(--line); color:var(--faint);
+  font-size:8px; line-height:9px; text-align:center; font-weight:600}
+.card-offer:hover::before, .card-offer:focus-visible::before{border-color:var(--accent); color:var(--accent)}
+.card-offer::after{content:attr(data-tip); position:absolute; top:calc(100% + 7px); left:50%;
+  transform:translateX(-50%); z-index:3; white-space:nowrap; font-size:11.5px; padding:3px 8px;
+  background:var(--sunken); border:1px solid var(--line); border-radius:6px; color:var(--text);
+  opacity:0; pointer-events:none; transition:opacity .12s}
+.card-offer:hover::after, .card-offer:focus-visible::after{opacity:1}
 @media (pointer:coarse){.card-offer{width:34px; height:34px}
   .card-marks{vertical-align:-11px}
   .card-offer svg{width:17px; height:17px}}
