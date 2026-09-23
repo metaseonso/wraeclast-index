@@ -14,7 +14,7 @@
 
    Nothing here prints a chance per hit, a "1 in N" or a cost to hit, in any form. A pool nobody has measured
    rolls evenly, says so in one line, and prints no share on any row. */
-import { D, esc, moneyHTML, openDetail, hrefOf, repaint } from './app.js';
+import { D, esc, moneyHTML, openDetail, hrefOf, repaint, markHTML } from './app.js';
 import * as E from './engine.js';
 
 const HOURS = 12;                 // a craft older than this is dropped on read, tab or no tab
@@ -376,6 +376,12 @@ async function tab(){
   const now = node.querySelector('.bn-cells');
   if(now) now.scrollTop = top;
 }
+/* the way to that currency's own card, on every row: the mark for "what is this" and no word, so the row
+   keeps its width and the name reads as the name. The name is in the hover text and for a screen reader,
+   so nothing is lost to anyone who cannot see the mark. The shape is declared with the rest of them
+   (MARKS in assets/app.js). */
+const cardMark = n => '<button type="button" class="bn-card" data-do="card:' + esc(n) + '" title="' +
+  esc(n) + ' card" aria-label="' + esc(n) + ' card">' + markHTML('ask') + '</button>';
 function cellHTML(x, cl, on){
   const why = fits(x, cl), v = priceOf(x.n);
   return '<div class="bn-cellw' + (why ? ' off' : '') + '">' +
@@ -384,8 +390,7 @@ function cellHTML(x, cl, on){
       '<span class="bn-cn"><b>' + esc(x.n) + '</b>' +
       (x.sub || x.t ? '<span>' + esc(x.sub || x.t) + '</span>' : '') + '</span>' +
       (v !== null ? '<span class="bn-px">' + moneyHTML(v) + '</span>' : '') + '</button>' +
-    (indexCard(x.n) ? '<button type="button" class="bn-card" data-do="card:' + esc(x.n) +
-      '" aria-label="' + esc(x.n) + ' card">Card</button>' : '') +
+    (indexCard(x.n) ? cardMark(x.n) : '') +
     (why ? '<span class="bn-why">' + esc(why) + '</span>' : '') + '</div>';
 }
 
@@ -616,8 +621,7 @@ const logHTML = (run, even) => (even ? '<p class="card-src bn-note">' + esc(even
 const runCell = (run, k, x) => '<div class="bn-cellw"><button type="button" class="bn-cell" data-do="sel:' +
   esc(k) + '" aria-pressed="' + (run.sel === k) + '">' + icHTML(x.n) + '<span class="bn-cn"><b>' + esc(x.n) +
   '</b>' + (run.used[x.n] ? '<span>used ' + run.used[x.n] + '</span>' : '') + '</span></button>' +
-  (indexCard(x.n) ? '<button type="button" class="bn-card" data-do="card:' + esc(x.n) + '" aria-label="' +
-    esc(x.n) + ' card">Card</button>' : '') + '</div>';
+  (indexCard(x.n) ? cardMark(x.n) : '') + '</div>';
 const stepHTML = l => '<li class="' + (l.ok ? 'on' : 'no') + '"><span class="bn-sn">' + esc(l.n) +
   ((l.om || []).length ? ' <i>' + l.om.map(n => esc(n.replace(/^Omen of /, ''))).join(', ') + '</i>' : '') +
   '</span><span class="bn-sw">' + esc(l.ok ? l.what : l.why) + '</span>' +
