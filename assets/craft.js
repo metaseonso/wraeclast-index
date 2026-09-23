@@ -865,7 +865,7 @@ function planNote(){
   const c = counts();
   if(!S.m.length) return '';
   return '<p class="note">On the item: ' + c.p + ' of ' + CL.mx[0] + ' prefixes, ' + c.s + ' of ' + CL.mx[1] +
-    ' suffixes · <button type="button" class="linkbtn" data-ask="base">what this base can roll</button></p>';
+    ' suffixes · <button type="button" class="linkbtn" data-ask="base">the whole pool</button></p>';
 }
 /* The essences on this very base that put the modifier on, with the bench one tap behind each of them. What
    guarantees it whatever the item is, is its own block in the answer beside this rail. */
@@ -1172,9 +1172,9 @@ function head(){
 }
 /* Two questions, one item. The switch is the site's own segmented control, and which question is being asked
    is in the address, so a link opens on the question it was sent about. */
-const ASKS = [['base', 'What can this base roll'], ['mod', 'How do I get this mod']];
+const ASKS = [['base', 'By base'], ['mod', 'By mod']];
 function askHTML(){
-  return '<div class="seg cr-ask" role="group" aria-label="What you are asking">' + ASKS.map(([k, l]) =>
+  return '<div class="seg cr-ask" role="group" aria-label="Start from">' + ASKS.map(([k, l]) =>
     '<button type="button" data-ask="' + k + '" aria-pressed="' + (ASK === k) + '">' + l + '</button>').join('') + '</div>';
 }
 const ilvlHTML = () => valHTML({k: 'ilvl', lo: 1, hi: X.ilvl, step: 1, v: S.l, heat: false},
