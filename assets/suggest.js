@@ -81,10 +81,10 @@ export function mountFlag(){
 
 /* ---------- the cheat code ----------
    It does nothing yet, and that is the whole of it: the words, and the gas poured over them. The gas is its
-   own art, made for being poured — three plates that are heavy where they enter and thin as they fall
-   (tools/art.py, assets/brand/cheat-gas-*.webp). The crest's fog is built to hang and drift sideways and
-   was the wrong shape for this. Four layers, one of them a mirror, screen-blended and moved by CSS alone, so
-   nothing is drawn frame by frame. It clears itself.
+   own art (tools/art.py, assets/brand/cheat-gas-*.webp). Each layer is one plate and its own mirror, meeting
+   down the middle, and the pair opens outward from that line — so the gas radiates from behind the words
+   rather than travelling across them, and the one edge either half has is the one buried in the join. Three
+   pairs, screen-blended, moved by CSS alone, nothing drawn frame by frame. It clears itself.
    The words are the crest's own hand, forged the same way and made the same way (tools/art.py): dark metal,
    bone bevels, green stone lit from inside it. A typeface would have been the site's headings, not its badge.
    Where the reader has asked for less motion, the words come up and the gas does not. */
@@ -95,9 +95,11 @@ function cheat(){
   box.setAttribute('role', 'status');
   const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
   box.innerHTML = (still ? '' :
-    [['1', ''], ['2', ''], ['3', ''], ['2', ' m']].map(([n, mirror], i) =>
-      '<img class="cheat-gas g' + (i + 1) + mirror + '" src="assets/brand/cheat-gas-' + n +
-      '.webp" alt="" decoding="async">').join('')) +
+    ['1', '2', '3'].map((n, i) =>
+      '<span class="cheat-pair g' + (i + 1) + '">' +
+      '<img src="assets/brand/cheat-gas-' + n + '.webp" alt="" decoding="async">' +
+      '<img class="flip" src="assets/brand/cheat-gas-' + n + '.webp" alt="" decoding="async">' +
+      '</span>').join('')) +
     '<img class="cheat-said" src="assets/brand/cheat-words.webp" alt="Cheat Code Activated" decoding="async">';
   document.body.appendChild(box);
   setTimeout(() => box.remove(), still ? 2200 : 4200);

@@ -889,31 +889,52 @@ small.at-bonus{display:block}
   width:min(560px, 82vw); height:auto; margin:0;
   filter:drop-shadow(0 0 30px rgba(140,203,63,.3)) drop-shadow(0 10px 34px rgba(0,0,0,.9));
   animation:cheat-in .5s cubic-bezier(.2,.8,.2,1) both}
-.cheat-gas{position:absolute; left:50%; width:min(760px, 150vw); height:auto; mix-blend-mode:screen;
-  opacity:0; will-change:transform, opacity; pointer-events:none}
-/* an animation's own transform wins, so a mirrored layer carries the flip in its keyframes,
-   the way the crest's fog does (assets/theme.css wi-haze-m) */
-.cheat-gas.m{animation-name:cheat-pour-m}
-.g1{animation:cheat-pour 3.6s ease-out both}
-.g2{animation:cheat-pour 3.6s ease-out .25s both}
-.g3{animation:cheat-pour 3.6s ease-out .5s both}
-.g4{animation:cheat-pour 3.6s ease-out .75s both}
-@keyframes cheat-pour-m{
-  0%{transform:scaleX(-1) translate(50%, -60vh) scale(.6); opacity:0}
-  25%{opacity:.5}
-  70%{opacity:.34}
-  100%{transform:scaleX(-1) translate(50%, 18vh) scale(1.5); opacity:0}
-}
+/* A layer is one plate and its own mirror, laid edge to edge down the middle of the screen. The pair opens
+   outward from that line, so the gas radiates from behind the words instead of travelling across them, and
+   the only straight edge either half owns is the one buried in the join. */
+.cheat-pair{position:absolute; left:50%; top:50%; display:flex; align-items:center;
+  transform-origin:50% 50%; opacity:0; will-change:transform, opacity; pointer-events:none}
+.cheat-pair img{display:block; width:min(560px, 52vw); height:auto; mix-blend-mode:screen}
+.cheat-pair .flip{transform:scaleX(-1)}
+.g1{animation:cheat-out-1 3.4s cubic-bezier(.12,.62,.24,1) both}
+.g2{animation:cheat-out-2 4.3s cubic-bezier(.12,.62,.24,1) .22s both}
+.g3{animation:cheat-out-3 3.8s cubic-bezier(.12,.62,.24,1) .5s both}
 @keyframes cheat-in{from{opacity:0; transform:translateY(8px) scale(.97)} to{opacity:1; transform:none}}
 @keyframes cheat-out{to{opacity:0}}
-/* poured from above the words, spreading as it settles over them */
-@keyframes cheat-pour{
-  0%{transform:translate(-50%, -60vh) scale(.6); opacity:0}
-  25%{opacity:.5}
-  70%{opacity:.34}
-  100%{transform:translate(-50%, 18vh) scale(1.5); opacity:0}
+@keyframes cheat-out-1{
+  0%{transform:translate(-50%, -50%) scale(.2); opacity:0}
+  16%{opacity:.6}
+  60%{opacity:.4}
+  100%{transform:translate(-50%, -50%) scale(1.55); opacity:0}
+}
+@keyframes cheat-out-2{
+  0%{transform:translate(-50%, -50%) scale(.26) rotate(2deg); opacity:0}
+  20%{opacity:.5}
+  62%{opacity:.32}
+  100%{transform:translate(-50%, -50%) scale(1.75) rotate(-2deg); opacity:0}
+}
+@keyframes cheat-out-3{
+  0%{transform:translate(-50%, -50%) scale(.16); opacity:0}
+  18%{opacity:.42}
+  58%{opacity:.28}
+  100%{transform:translate(-50%, -50%) scale(1.95); opacity:0}
 }
 @media (prefers-reduced-motion: reduce){
   .cheat{animation-duration:.4s; animation-delay:1.7s}
   .cheat-said{animation:none}
+/* Build: the numbers worked out on this page, as a range, with what widened it underneath
+   (assets/build.js, assets/maths.js) */
+.mx{border-left:3px solid var(--accent)}
+.mx-lvl{align-items:center; gap:10px; flex-wrap:wrap}
+.mx-lvl .lbl{margin:0}
+.field.sm{width:84px; padding:5px 8px; font-size:13px}
+.btn.sm{padding:4px 12px; font-size:12px}
+.mx-wide{margin:0; font-size:13px; color:var(--text); padding:8px 12px; border-radius:8px; background:var(--raised)}
+.mx-uns{display:grid; gap:10px}
+.mx-un{display:grid; gap:6px; padding:10px 12px; border:1px solid var(--line); border-radius:8px}
+.mx-un .note{margin:0}
+.mx-unname{margin:0; font-size:13.5px; font-weight:600}
+@media (max-width:640px){
+  .mx-lvl{align-items:flex-start}
+  .mx-un .row{flex-wrap:wrap}
 }

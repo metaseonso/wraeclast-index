@@ -92,6 +92,59 @@ Add the details here first, then a short public line there.
   of naming kinds itself, and honours each card's own gate — so the picture counts the interaction words,
   and the mechanics words whose gate is `any`, which it was missing. The map is 10 kinds, 6,690 dots and
   28,421 lines.
+## Next — The character worked out here, as a range, with what widened it named
+
+- Ticket 53, the heaviest piece of the character builder. The Build tab read a Path of Building code and
+  printed Path of Building's own answers back. Now it reads the same code and works the character out
+  itself: Life, Energy Shield, Armour, Evasion, the attributes, the biggest hit of each type the pools
+  stand, how many of a monster's hits they stand, and the damage a second into that monster's armour.
+- **`assets/maths.js` is the rules and nothing else**, the way `assets/engine.js` is the crafting rules.
+  The Build tab and `tools/dev/buildcheck.mjs` import the same file, so what the check proves is what a
+  player gets. `docs/build-maths.md` states every rule in words and every hole in the model.
+- **One table, not a rule per wording.** Every line off an item, a passive or a gem goes through 27 shapes —
+  `+# to <noun>`, `#% increased <noun>`, `#% more <noun>`, `adds # to # <type> damage`, conversion, gained
+  as extra, resistances, penetration. A line has three ways out and never two: **read**, a number in the
+  table; **named**, a real mechanic this version does not count; **unread**, a wording nothing here knows.
+  An unread line is never a silent zero — the card counts it and the check stands the answer down on every
+  stat the line's own words name. A line that overrides or removes a stat ("Maximum Life is 1", "Immune to
+  Chaos Damage") is never *named*, because it changes a number we do work out.
+- **What the table reads, printed on every run of the check**: 64% of craftable lines, 45% of unique lines,
+  31% of passive lines, with another 22%, 24% and 22% named as outside this version. `--gaps` prints the
+  rest, most-read first, which is the list of work.
+- **The order of operations is the cards'.** `STEPS` is written out as the words on "How damage works" and
+  "How defences work", and guard 1 reads those two cards out of the shipped index and fails the moment
+  either list moves. A card edited without the model following breaks the build, not the numbers.
+- **Every answer is a floor and a ceiling with the reason beside it.** The tree grants points a player puts
+  into any attribute and nothing we ship says which one took them, so the answer widens and names it — and
+  because Life is worked out off Strength, Life widens with it. Each unknown carries a switch: *as if they
+  went here* / *as if they went elsewhere* / *both ways*.
+- **Against Path of Building, without running Path of Building.** A build code is compressed XML and the XML
+  carries Path of Building's own `PlayerStat` answers. `tools/dev/pob` holds twelve codes their authors
+  shared publicly on poe.ninja — level 1, 15, 44 and 100, an attack build, two spell builds, two armour
+  builds, two that block, one with the attributes stacked. 37 stats held to a band, 37 inside it, none
+  outside; 95 stood down and every one named.
+- **What stands a stat down, and why it is not a guess.** The game lowers your Elemental Resistances as you
+  progress and publishes no number for it, so the three elemental resistances are never claimed (Chaos takes
+  no penalty and is held to the band). Which of an item's lines are already inside the Armour, Evasion or
+  Energy Shield printed on it is not something the line says, so those three stand down wherever the build
+  has a defensive item. Our craft data marks local lines per item class, which is how that one closes.
+- **`data/treelines.json`** (`tools/treelines.py`): what every passive says, keyed by the number the tree
+  calls it. The cards are keyed by name and the tree's small passives have no card, so neither road got from
+  a build's node to its wording. 4,453 passives, 2,569 wordings, 191 KB, 49 KB over the wire, fetched on the
+  Build tab only and after the first paint.
+- **What it costs.** On this machine one evaluation is 17 microseconds, a floor and a ceiling 29, and three
+  unknowns taken both ways 109. In a phone-sized Chrome one evaluation is 0.15 milliseconds and a whole
+  repaint 2.8 — a sixth of a frame. The stat table is built once per build and not once per corner, which is
+  what took a corner from 3.9 milliseconds to 0.15.
+- **What v1.0 does not cover**, said here and on the card: damage over time and ailments, minions, totems,
+  traps and triggers, leech, recoup and regeneration, stun, auras and curses on others, duration, area,
+  movement, cost and reservation — and a skill gem's own base damage, so an attack build gets a damage
+  number and a spell build is told its damage comes off the gem.
+- **What may be claimed.** More careful, never that it knows more. The card says: worked out from the game's
+  own data, in the order the mechanics cards state, and where something is not known the range says so.
+- Two numbers on the card are the owner's own knowledge of the game and are named as such: a skill gem takes
+  up to 5 supports, and a skill gem that casts another skill gem counts to 6 in total, so skill → skill
+  leaves four. The export states neither.
 
 ## Next — Found first: a rich result for anything in the index, and terms that ask to be cited
 

@@ -3,6 +3,9 @@
    PoB is used only to READ the code. Item data and prices come from the game files and poe.ninja. */
 import { D, $, esc, card, flow, ago, moneyHTML, priceOf, hrefOf, openDetail, detailExtras } from './app.js';
 import { classFor } from './basepool.js';
+/* The rules: assets/maths.js, the one file tools/dev/buildcheck.mjs holds against Path of Building's own
+   numbers. Nothing on this page works a stat out for itself. */
+import * as M from './maths.js';
 
 /* ---------- 1. code -> XML ----------
    PoB: base64url( zlib( xml ) ). DecompressionStream('deflate') reads zlib. */
@@ -45,7 +48,9 @@ const num = v => {
 const HEADER = /^(Rarity|Unique ID|Item Level|LevelReq|Quality|Sockets|Implicits|League|Variant|Selected Variant|Has Alt Variant|Crafted|Prefix|Suffix|Radius|Limited to|Requires|Armour|Evasion|Energy Shield|Runic Ward|Ward|Spirit|Charm Slots|Catalyst|CatalystQuality|Talisman Tier|Item Class|Corrupted|Twice Corrupted|Mirrored|Sanctified|Unmodifiable|Split|Foil|BasePercentile|ArmourBasePercentile|EvasionBasePercentile|EnergyShieldBasePercentile)\b/;
 function parseItem(text){
   const lines = text.split('\n').map(x => x.trim()).filter(Boolean);
-  const it = {rarity: '', name: '', base: '', mods: [], runes: [], flags: [], lv: 0};
+  // armour, evasion and es are what the game prints on the item: its own lines are already inside them
+  const it = {rarity: '', name: '', base: '', mods: [], runes: [], flags: [], lv: 0,
+    armour: 0, evasion: 0, es: 0, hit: null, rate: 0, crit: 0, quality: 0};
   let i = 0, implicits = 0;
   const r = lines[i] && lines[i].match(/^Rarity: (\w+)/);
   if(r){ it.rarity = r[1]; i++; }
@@ -54,6 +59,12 @@ function parseItem(text){
   for(; i < lines.length; i++){
     const l = lines[i].replace(/\{[^}]*\}/g, '').trim();
     let m;
+    if((m = l.match(/^(Armour|Evasion|Energy Shield): ([\d.]+)/))){
+      it[{Armour: 'armour', Evasion: 'evasion', 'Energy Shield': 'es'}[m[1]]] = Number(m[2]); continue; }
+    if((m = l.match(/^\w* ?Damage: ([\d.]+)-([\d.]+)/))) { it.hit = [Number(m[1]), Number(m[2])]; continue; }
+    if((m = l.match(/^Attacks per Second: ([\d.]+)/))){ it.rate = Number(m[1]); continue; }
+    if((m = l.match(/^Critical Hit Chance: ([\d.]+)/))){ it.crit = Number(m[1]); continue; }
+    if((m = l.match(/^Quality: \+?(\d+)/))){ it.quality = Number(m[1]); continue; }
     if((m = l.match(/^Rune: (.+)/))){ it.runes.push(m[1]); continue; }
     if((m = l.match(/^LevelReq: (\d+)/))){ it.lv = +m[1]; continue; }
     if((m = l.match(/^Implicits: (\d+)/))){ implicits = +m[1]; continue; }
@@ -92,13 +103,6 @@ function read(doc){
     b.gems = pick ? [pick, ...gems.filter(g => g !== pick)] : gems;
   }
 
-  // the tree it is standing on: Path of Building keeps one spec per stage of a build, and activeSpec says
-  // which of them is live. The passives on that one are the passives this character has spent.
-  const TR = doc.querySelector('Tree');
-  const specs = TR ? [...TR.querySelectorAll(':scope > Spec')] : [];
-  const spec = specs[(num(TR && TR.getAttribute('activeSpec')) || 1) - 1] || specs[0] || null;
-  b.spent = spec ? (spec.getAttribute('nodes') || '').split(',').filter(Boolean).length : 0;
-
   // gear: the active item set; weapon swap decides which weapon pair is live
   const I = doc.querySelector('Items');
   const byId = {};
@@ -106,10 +110,9 @@ function read(doc){
   const set = I && (I.querySelector(':scope > ItemSet[id="' + I.getAttribute('activeItemSet') + '"]') || I.querySelector(':scope > ItemSet'));
   const swap = I && I.getAttribute('useSecondWeaponSet') === 'true';
   b.items = [];
-  const filled = new Set(), jewels = new Set();
+  const filled = new Set();
   if(set) for(const s of set.querySelectorAll(':scope > Slot')){
     const name = s.getAttribute('name') || '', id = s.getAttribute('itemId');
-    if(/^Jewel /.test(name)) jewels.add(name);
     if(!id || id === '0' || !byId[id]) continue;
     filled.add(name);
     if(/^Weapon \d$/.test(name) && swap) continue;
@@ -117,20 +120,25 @@ function read(doc){
     if(/^(Flask|Charm) \d/.test(name) && s.getAttribute('active') === 'false') continue;
     b.items.push({slot: name.replace(/ Swap$/, ''), ...parseItem(byId[id])});
   }
+  // the jewels sit on the tree rather than in a slot
+  for(const s of doc.querySelectorAll('Spec > Sockets > Socket')){
+    const id = s.getAttribute('itemId');
+    if(id && id !== '0' && byId[id]) b.items.push({slot: 'Jewel', ...parseItem(byId[id])});
+  }
+  // the order a character is worn in, so the gear and the bill read top to bottom rather than in whatever
+  // order the slots were last touched in
   b.items.sort((x, y) => (SLOTS.indexOf(x.slot) + 1 || 99) - (SLOTS.indexOf(y.slot) + 1 || 99));
-  // the slots the code itself lists empty. Only the ones the character has one of, whatever the build:
-  // a second weapon is a question about the first one's grip, and a third ring is not a slot the game gives.
+  // the slots the code itself lists empty, out of the ones a character has one of whatever the build: a
+  // second weapon is a question about the first one's grip, and a third ring is not a slot the game gives
   b.empty = set ? GEAR.filter(n => !filled.has(n)) : [];
-  // the jewel sockets the tree gives, and the ones nothing is in
-  if(set) for(const s of set.querySelectorAll(':scope > SocketIdURL')) jewels.add(s.getAttribute('name') || '');
-  b.jewels = {all: jewels.size, empty: [...jewels].filter(n => !filled.has(n)).length};
+  const T = doc.querySelector('Tree');
+  const specs = [...(T ? T.querySelectorAll(':scope > Spec') : [])];
+  const spec = specs[(num(T && T.getAttribute('activeSpec')) || 1) - 1] || specs[0];
+  b.nodes = ((spec && spec.getAttribute('nodes')) || '').split(',').filter(Boolean).map(Number);
   return b;
 }
-// the order a character is worn in, so the gear and the bill both read top to bottom instead of in
-// whatever order the code was written in
 const SLOTS = ['Weapon 1', 'Weapon 2', 'Helmet', 'Body Armour', 'Gloves', 'Boots', 'Amulet',
-  'Ring 1', 'Ring 2', 'Ring 3', 'Belt', 'Flask 1', 'Flask 2', 'Charm 1', 'Charm 2', 'Charm 3'];
-// ...and the slots a character has one of whatever the build, which is what an empty one is measured against
+  'Ring 1', 'Ring 2', 'Ring 3', 'Belt', 'Flask 1', 'Flask 2', 'Charm 1', 'Charm 2', 'Charm 3', 'Jewel'];
 const GEAR = ['Weapon 1', 'Helmet', 'Body Armour', 'Gloves', 'Boots', 'Amulet', 'Ring 1', 'Ring 2', 'Belt', 'Flask 1', 'Flask 2'];
 
 /* ---------- 3. what the numbers say ----------
@@ -198,17 +206,240 @@ function assess(b){
 }
 function short(n){ return n >= 1e6 ? (n / 1e6).toFixed(n >= 1e7 ? 0 : 1) + 'M' : n >= 1e3 ? Math.round(n / 1e3) + 'k' : String(Math.round(n)); }
 
-/* ---------- 3b. what is still open ----------
-   What the build has not spent, and every number in it the game's own. An item class holds so many prefixes
-   and so many suffixes and takes so many augment sockets (data/craft.json, tools/craft.py, read through
-   assets/basepool.js the way the Trade page and the bench read it); a base's own implicit moves a cap and
-   says so on the item, so the line is read off the item rather than assumed. The empty slots and the empty
-   jewel sockets are the ones Path of Building itself lists empty.
+/* ---------- 3b. worked out here ----------
+   The same rules the check runs: assets/maths.js reads the build's lines into one stat table, the maths
+   runs over the table, and the answer comes back as a floor and a ceiling with the reason beside it.
 
-   How many supports a skill socket takes is in no file the site reads — not the gem data, not the game
-   export (docs/proposal-builder.md, 1.4). So the supports row counts what is picked and prints no cap
-   beside it. Levelling gives one passive point, and quest points come on top of that, so a tree with fewer
-   passives than the level has given has that many unspent at the very least. */
+   Two files come down the first time a build is read and stay for the session: what every passive on the
+   tree says (data/treelines.json, tools/treelines.py) and what a class starts with and what one monster of
+   each level is worth (data/gamestats.json, the game's own export). */
+let TREE = null, GAME = null;
+async function mathsData(){
+  if(TREE && GAME) return true;
+  try {
+    const [t, g] = await Promise.all([
+      TREE || fetch('data/treelines.json').then(r => r.json()),
+      GAME || fetch('data/gamestats.json').then(r => r.json()),
+    ]);
+    TREE = TREE || t; GAME = GAME || g;
+    return true;
+  } catch { return false; }
+}
+/* Which of an item's lines are its own. A line naming a defence the item carries is already inside the
+   number the game prints on the item, so it is read and dropped rather than counted twice. */
+const OWN = /^(#% (increased|reduced) (armour|evasion rating|maximum energy shield|energy shield|armour and evasion rating|armour and evasion|armour and energy shield|evasion and energy shield|evasion rating and energy shield|armour, evasion and energy shield|armour, evasion rating and energy shield)|# to (armour|evasion rating|maximum energy shield|energy shield))$/;
+function linesOf(b){
+  const out = [];
+  for(const it of b.items){
+    for(const text of it.mods){
+      const k = M.key(M.plain(text));
+      const names = [['armour', /armour/], ['evasion', /evasion/], ['es', /energy shield/]]
+        .filter(([, re]) => re.test(k)).map(([w]) => w);
+      out.push({text, local: OWN.test(k) && names.length > 0 && names.every(w => it[w] > 0)});
+    }
+    for(const r of it.runes) out.push({text: r, local: false});
+  }
+  for(const h of b.nodes || []){
+    const got = TREE && TREE.n[String(h)];
+    if(!got){ out.push({text: 'a passive this data does not carry', local: false}); continue; }
+    for(const i of got) out.push({text: TREE.w[i], local: false});
+  }
+  return out;
+}
+/* One answer. `take` settles an unknown: true takes it the way that helps, false the way that does not,
+   and anything else leaves it open, which is what widens the range. */
+function once(b, take, had){
+  const cls = (GAME.classes || []).find(c => c.n === b.cls);
+  const {stats, unread, named} = had;
+  const at = k => stats.get(k) || {flat: 0, inc: 0, more: 1};
+  const total = (k, base) => (base + at(k).flat) * (1 + at(k).inc / 100) * at(k).more;
+  const free = take.anyattribute ? at('anyattribute').flat : 0;
+  let armour = 0, evasion = 0, es = 0;
+  for(const it of b.items){ armour += it.armour; evasion += it.evasion; es += it.es; }
+  const str = Math.round(total('str', (cls ? cls.str : 0) + free));
+  const halved = !!at('halflifefromstrength').flat;
+  const life = Math.round(M.baseLife(b.level, str, halved) * (1 + (M.BASE.lifeInc + at('life').inc) / 100)
+    * at('life').more + at('life').flat * (1 + (M.BASE.lifeInc + at('life').inc) / 100));
+  const res = {}, resmax = {};
+  for(const e of ['fire', 'cold', 'lightning', 'chaos']){
+    resmax[e] = Math.min(M.RES_CEILING, M.RES_DEFAULT + at('resmax.' + e).flat);
+    res[e] = Math.min(Math.round(total('res.' + e, 0)), resmax[e]);
+  }
+  const d = {
+    armour: Math.round(total('armour', armour)), evasion: Math.round(total('evasion', evasion + M.BASE.evasion)),
+    es: Math.round(total('es', es)), life,
+    mana: Math.round(total('mana', cls ? M.baseMana(cls, b.level) : 0)),
+    mom: take.mindovermatter ? Math.round(total('mana', cls ? M.baseMana(cls, b.level) : 0)) : 0,
+    res, resmax, pen: {},
+  };
+  const hits = {};
+  for(const t of M.TYPES) hits[t] = Math.round(M.maxHit(t, d));
+  return {stats, unread, named, cls, str, life, d, hits,
+    pool: d.es + (d.mom ? Math.min(d.mana, d.mom) : 0) + d.life,
+    dex: Math.round(total('dex', (cls ? cls.dex : 0) + free)),
+    int: Math.round(total('int', (cls ? cls.int : 0) + free)),
+    dps: damage(b, stats)};
+}
+/* The damage side, out of the weapon the build carries. A skill gem's own base damage is not in the data
+   this page holds, so a build whose damage comes off the skill and not the weapon says so instead. */
+function damage(b, stats){
+  const w = b.items.find(it => /^Weapon 1$/.test(it.slot));
+  if(!w) return null;
+  // a rare weapon's code carries only its base, and what a base is worth is a card on this site already.
+  // Found once and kept on the item: the card list is every card on the site and walking it is not free.
+  if(w.card === undefined) w.card = w.hit && w.rate ? null
+    : (D.index && D.index.items.find(x => x.k === 'b' && (x.n || '').toLowerCase() === (w.base || '').toLowerCase())) || null;
+  const pr = w.card ? (w.card.pr || []) : [];
+  const take = re => { for(const l of pr){ const m = l.match(re); if(m) return m; } return null; };
+  const dmg = w.hit ? w.hit : (x => x ? [Number(x[1]), Number(x[2])] : null)(take(/^\w* ?Damage: ([\d.]+)-([\d.]+)/));
+  const rate = w.rate || Number((take(/^Attacks per Second: ([\d.]+)/) || [])[1] || 0);
+  const crit = w.crit || Number((take(/^Critical Hit Chance: ([\d.]+)/) || [])[1] || 0);
+  if(!dmg || !rate) return null;
+  const at = k => stats.get(k) || {flat: 0, inc: 0, more: 1};
+  // quality is the weapon's own, and the game applies it to the weapon's Physical Damage before anything else
+  const base = {physical: (dmg[0] + dmg[1]) / 2 * (1 + (w.quality || 0) / 100)};
+  const h = M.hit({stats, base, crit, kind: 'attack'});
+  const swings = rate * (1 + at('attackspeed').inc / 100) * at('attackspeed').more;
+  return {perHit: h.average, rate: swings, dps: h.average * swings, weapon: w.name || w.base, crit: h.crit};
+}
+/* What the answer is worked against, out of the game's own table of one monster per level. */
+function monster(level){
+  const cols = Object.fromEntries(GAME.monsters.cols.map((c, i) => [c, i]));
+  const rows = GAME.monsters.rows;
+  const r = rows.find(x => x[cols.level] === Math.max(1, Math.min(rows.length, level)));
+  return r ? {level: r[cols.level], life: r[cols.life], damage: r[cols.damage],
+    accuracy: r[cols.accuracy], armour: r[cols.armour], evasion: r[cols.evasion]} : null;
+}
+/* The whole answer: every unknown the build meets, taken both ways unless the player has set it. */
+function answer(b, set){
+  // the stat table is built once per build, not once per corner: nothing a switch does changes what the
+  // lines say, only what is done with them afterwards
+  const had = b.read || (b.read = M.read(linesOf(b)));
+  const open = [];
+  const probe = once(b, {}, had);
+  if((probe.stats.get('anyattribute') || {flat: 0}).flat) open.push('anyattribute');
+  if([...probe.unread, ...probe.named].some(x => /mind over matter/.test(x))) open.push('mindovermatter');
+  const loose = open.filter(id => set[id] === undefined);
+  const corners = [];
+  for(let i = 0; i < (1 << loose.length); i++){
+    const take = {...set};
+    loose.forEach((id, k) => { take[id] = !!(i & (1 << k)); });
+    corners.push(once(b, take, had));
+  }
+  const span = pick => {
+    const v = corners.map(pick);
+    return {lo: Math.min(...v), hi: Math.max(...v)};
+  };
+  return {
+    open, loose, one: corners[0],
+    life: span(c => c.life), es: span(c => c.d.es), armour: span(c => c.d.armour),
+    evasion: span(c => c.d.evasion), str: span(c => c.str), dex: span(c => c.dex), int: span(c => c.int),
+    hits: Object.fromEntries(M.TYPES.map(t => [t, span(c => c.hits[t])])),
+    corners,
+    dps: corners[0].dps ? span(c => c.dps.dps) : null,
+    unread: corners[0].unread.length, named: corners[0].named.length,
+  };
+}
+
+/* ---------- what it draws ---------- */
+const fmt = v => v >= 1e6 ? (v / 1e6).toFixed(1) + 'M' : v >= 1e4 ? Math.round(v / 1e3) + 'k'
+  : Math.round(v).toLocaleString();
+const spanText = s => s.lo === s.hi ? fmt(s.lo) : fmt(s.lo) + '–' + fmt(s.hi);
+/* Two rows that move with the monster level, because a number worked against nothing means nothing: how
+   many of its own hits the pools stand, and what a second of your damage does once its armour has had its
+   share. Both run the same steps as everything else — STEPS.cuts, then STEPS.pools. */
+function stands(A, m){
+  const v = A.corners.map(c => {
+    const each = M.taken(m.damage, 'physical', c.d);
+    return each > 0 ? Math.floor(c.pool / each) : 0;
+  });
+  return {lo: Math.min(...v), hi: Math.max(...v)};
+}
+function intoIt(A, m){
+  const v = A.corners.map(c => {
+    if(!c.dps) return 0;
+    const cut = m ? M.armourCut(m.armour, c.dps.perHit) : 0;
+    return c.dps.dps * (1 - cut);
+  });
+  return {lo: Math.min(...v), hi: Math.max(...v)};
+}
+function mathsHTML(b, A, level){
+  const m = monster(level);
+  const row = (name, s, note) => '<div><dt>' + esc(name) + '</dt><dd>' + esc(spanText(s)) +
+    (note ? ' <small>' + esc(note) + '</small>' : '') + '</dd></div>';
+  const widened = A.loose.map(id => (M.unknown(id) || {n: id}).n);
+  const switches = A.open.map(id => {
+    const u = M.unknown(id) || {id, n: id, on: 'As if it works', off: 'As if it does not'};
+    return '<div class="mx-un"><p class="mx-unname">' + esc(u.n) + '</p><p class="note">' + esc(u.why) + '</p>' +
+      '<div class="row"><button type="button" class="btn sm" data-un="' + esc(id) + '" data-take="1">' + esc(u.on) + '</button>' +
+      '<button type="button" class="btn sm" data-un="' + esc(id) + '" data-take="0">' + esc(u.off) + '</button>' +
+      '<button type="button" class="btn sm" data-un="' + esc(id) + '" data-take="">Both ways</button></div></div>';
+  }).join('');
+  return '<div class="panel buildsum mx">' +
+    '<div class="bs-hd"><h3>Worked out here</h3><span class="card-sub">' +
+      esc(b.asc || b.cls) + ' · level ' + b.level + (m ? ' · against a level ' + m.level + ' monster' : '') +
+    '</span></div>' +
+    '<div class="row mx-lvl"><label class="lbl" for="mxlvl">Monster level</label>' +
+      '<input class="field sm" id="mxlvl" type="number" min="1" max="' + GAME.monsters.rows.length + '" value="' + level + '">' +
+      (m ? '<span class="note">' + fmt(m.life) + ' life · ' + fmt(m.armour) + ' armour · ' + fmt(m.evasion) + ' evasion · hits for ' + fmt(m.damage) + '</span>' : '') +
+    '</div>' +
+    '<dl class="bs-grid">' +
+      row('Life', A.life) + row('Energy Shield', A.es) + row('Armour', A.armour) + row('Evasion', A.evasion) +
+      row('Strength', A.str) + row('Dexterity', A.dex) + row('Intelligence', A.int) +
+      M.TYPES.map(t => row('Biggest ' + t + ' hit', A.hits[t])).join('') +
+      (m ? row('Hits from it you stand', stands(A, m)) : '') +
+      (A.dps ? row('Damage a second into it', intoIt(A, m), 'with ' + (A.one.dps.weapon || 'the weapon')) : '') +
+    '</dl>' +
+    (A.dps ? '' : '<p class="note">The damage comes off the skill gem, and a gem’s own base damage is not in this page’s data. The defences above are.</p>') +
+    (widened.length ? '<p class="mx-wide">Widened by: ' + esc(widened.join('; ')) + '</p>' : '') +
+    (switches ? '<div class="mx-uns">' + switches + '</div>' : '') +
+    '<p class="note">' + A.unread + ' lines are not in these numbers. ' + A.named +
+      ' more name a mechanic this version does not count: damage over time, ailments, minions, totems, ' +
+      'triggers, leech, recoup, regeneration, stun, duration and area.</p>' +
+    '<p class="note">' + esc(M.SOURCE.order) + ' ' + esc(M.SOURCE.monster) + ' ' + esc(M.BASE_SOURCE) + '</p>' +
+  '</div>';
+}
+/* The controls. Every one of them redraws the numbers off the same engine, so nothing on screen is a second
+   copy of a rule. */
+function wireMaths(host, b){
+  const set = {};
+  let level = b.level;
+  const draw = () => {
+    const t0 = performance.now();
+    const A = answer(b, set);
+    const worked = performance.now() - t0;
+    host.innerHTML = mathsHTML(b, A, level);
+    const took = performance.now() - t0;
+    // what one evaluation costs on the machine it is running on, measured rather than assumed
+    host.dataset.answer = (worked / Math.max(1, A.corners.length)).toFixed(3);
+    host.dataset.corners = String(A.corners.length);
+    const box = $('#mxlvl', host);
+    if(box){
+      box.addEventListener('input', () => { level = Math.max(1, Math.min(GAME.monsters.rows.length, Number(box.value) || 1)); draw(); });
+      box.focus({preventScroll: true});
+    }
+    for(const btn of host.querySelectorAll('[data-un]')) btn.addEventListener('click', () => {
+      const id = btn.dataset.un;
+      if(btn.dataset.take === '') delete set[id]; else set[id] = btn.dataset.take === '1';
+      draw();
+    });
+    host.dataset.took = took.toFixed(3);
+  };
+  draw();
+}
+
+/* ---------- 3c. what is still open ----------
+   What the build has not spent, and every number in it the game's own. An item class holds so many
+   prefixes and so many suffixes and takes so many augment sockets (data/craft.json, tools/craft.py, read
+   through assets/basepool.js the way the Trade page and the bench read it); a base's own implicit moves a
+   cap and says so on the item, so that line is read off the item rather than assumed.
+
+   The supports a skill still has room for are assets/maths.js's `socketsLeft`, and the two numbers behind
+   it are named where they are shown (M.SOURCE.sockets) because the export states neither.
+
+   Passive points unspent is a floor, not a figure: levelling gives one point per level and quest points
+   come on top of that, so it is only ever said where the tree holds fewer passives than levelling alone
+   has already given. */
 const ALLOW = /^([+-]\d+) (Prefix|Suffix) Modifier allowed$/;
 const SEALED = f => /Corrupt|Mirrored/.test(f);
 function affixRoom(x, cl){
@@ -231,14 +462,15 @@ async function stillOpen(b){
     const sock = cl && cl.so ? Math.max(0, cl.so - x.runes.length) : 0;
     if(a) bits.push(a + (a === 1 ? ' affix' : ' affixes'));
     if(sock) bits.push(sock + (sock === 1 ? ' socket' : ' sockets'));
-    if(bits.length) rows.push([x.slot, bits.join(' · ')]);
+    if(bits.length) rows.push([x.slot + (x.name && x.name !== x.base ? ' · ' + x.name : ''), bits.join(' · ')]);
   }
-  if(b.jewels.empty) rows.push(['Jewel sockets', b.jewels.empty + ' of ' + b.jewels.all + ' empty']);
-  const free = Math.max(0, (b.level - 1) - (b.spent || 0));
+  const free = Math.max(0, (b.level - 1) - b.nodes.length);
   if(free) rows.push(['Passives', free + ' unspent']);
   if(!b.asc) rows.push(['Ascendancy', 'none taken']);
-  const sup = b.gems.filter(g => g.support).length;
-  if(b.gems.length) rows.push(['Supports', sup + ' on ' + (b.gems[0] ? b.gems[0].name : 'the main skill')]);
+  if(b.gems.length){
+    const s = M.socketsLeft(b.gems);
+    rows.push(['Supports', s.over ? s.held + ', ' + s.over + ' over' : s.held + ' of ' + s.room]);
+  }
   return rows;
 }
 function openHTML(rows){
@@ -246,8 +478,7 @@ function openHTML(rows){
   return '<div class="panel"><dl class="bs-grid">' +
     rows.map(([k, v]) => '<div><dt>' + esc(k) + '</dt><dd>' + esc(v) + '</dd></div>').join('') +
     '</dl><p class="note" style="margin-top:10px">Affix caps and augment sockets come from the item class. ' +
-    'Levelling gives one passive point, and quest points come on top. How many supports a socket takes is not published, ' +
-    'so the supports are counted and no cap is drawn against them.</p></div>';
+    'Levelling gives one passive point, and quest points come on top. ' + esc(M.SOURCE.sockets) + '</p></div>';
 }
 
 /* ---------- 4. what to buy, priced live ---------- */
@@ -357,21 +588,22 @@ function gemEntry(g){
    A price is the in-game Currency Exchange or a live trade listing and nothing else (worker/prices.js), so
    a piece the market does not price today carries no number at all — and a rare carries none ever, because
    a rare is not a listed item. The total is the sum of what is priced and says so beside itself, rather
-   than a figure that quietly leaves the rest out.
+   than a figure that quietly leaves the rest out (docs/proposal-builder.md, "Why the budget is not money").
 
    Nothing here is new furniture. A piece is a card, its price line is the card's own, its price action is
    the chart every card draws (app.js detailExtras), Trade is the trade panel the popup already opens on an
-   item's own lines (assets/trade.js), and Bench is the crafting bench opened on the base (assets/craftsim.js). */
+   item's own lines (assets/trade.js), and Bench is the crafting bench opened on the base
+   (assets/craftsim.js). */
 let BILL = new Map();
 function pieces(b){
   const out = [];
   for(const x of b.items){
     const uq = /^(UNIQUE|RELIC)$/.test(x.rarity) ? uniqueEntry(x) : null;
     if(uq) out.push({key: 'p:' + x.slot + ':' + uq.id, it: uq, px: priceOf(uq), slot: x.slot, href: hrefOf(uq)});
-    else out.push({key: 'p:' + x.slot, it: gearItem(x), px: null, slot: x.slot, base: x.base, own: true});
+    else out.push({key: 'p:' + x.slot + ':' + out.length, it: gearItem(x), px: null, slot: x.slot, base: x.base, own: true});
     x.runes.forEach((r, i) => {
       const c = D.byKey.get('c:' + r);
-      if(c) out.push({key: 'p:' + x.slot + ':' + i, it: c, px: priceOf(c), slot: x.slot + ' socket', href: hrefFor(c)});
+      if(c) out.push({key: 'p:' + x.slot + ':' + i + ':' + r, it: c, px: priceOf(c), slot: x.slot + ' socket', href: hrefFor(c)});
     });
   }
   for(const g of b.gems){
@@ -385,14 +617,14 @@ const paid = px => px && px.v !== null && px.v !== undefined && isFinite(px.v);
 function billHTML(list){
   const has = list.filter(p => paid(p.px)), total = has.reduce((n, p) => n + p.px.v, 0);
   const own = list.filter(p => p.own).length, blank = list.length - has.length - own;
-  const M = D.market || {};
+  const K = D.market || {};
   const said = ['Prices are the Currency Exchange and live trade listings.',
     own ? own + (own === 1 ? ' piece is one of yours: ' : ' pieces are your own: ') +
       'the market lists no rare and no magic item, so they carry no price.' : '',
     blank ? blank + (blank === 1 ? ' piece has no listing today.' : ' pieces have no listing today.') : ''].filter(Boolean).join(' ');
   return '<div class="panel buildsum">' +
-    '<div class="bs-hd"><h3>Build it</h3><span class="card-sub">' + esc(M.league || 'Standard') +
-      (M.updated ? ' · ' + esc(ago(M.updated)) : '') + '</span></div>' +
+    '<div class="bs-hd"><h3>Build it</h3><span class="card-sub">' + esc(K.league || 'Standard') +
+      (K.updated ? ' · ' + esc(ago(K.updated)) : '') + '</span></div>' +
     '<dl class="bs-grid">' +
       '<div><dt>Total</dt><dd>' + (has.length ? moneyHTML(total) : '—') + '</dd></div>' +
       '<div><dt>Priced</dt><dd>' + has.length + ' of ' + list.length + '</dd></div>' +
@@ -488,6 +720,7 @@ async function run(code){
   const A = assess(b);
   const recs = D.market ? recommend(b, A) : [];
   out.innerHTML = summaryHTML(b, A) +
+    '<div id="mxout"></div>' +
     '<div class="sect"><h3>Still open</h3><p>What this build has not spent yet.</p></div>' +
     '<div id="popen"></div><div id="pobopt"></div>' +
     '<div class="row" style="margin:14px 0 0"><button type="button" class="btn primary" id="pobbuild">Build it</button>' +
@@ -499,6 +732,10 @@ async function run(code){
     '<div class="sect"><h3>Main skill</h3><p>And its supports.</p></div><div class="cards" id="gems"></div>' +
     '<p class="note" style="margin-top:18px">Stats come from Path of Building. Goals at level ' + b.level + ': ' + short(A.t.dps) +
     ' damage per second, and surviving a ' + A.t.hit.toLocaleString() + ' hit.</p>';
+
+  // our own numbers, off assets/maths.js. The two files it needs come down once and stay for the session,
+  // and the panel draws only once they are in, so the first paint above never waits on them.
+  mathsData().then(ok => { const host = $('#mxout', out); if(ok && host) wireMaths(host, b); });
 
   const recCards = recs.filter(r => r.it).map((r, i) => ({key: 'rec:' + i + ':' + r.it.id, r}));
   const info = recs.filter(r => r.info);

@@ -6,7 +6,9 @@ and a plate nobody likes is a prompt to change rather than a file to hunt for.
 
 What comes back is a picture on a black field, and the black has to become nothing so the plate can be laid
 over anything. Two ways, because a gas and a badge are not the same thing:
-  glow  the plate's own brightness is its alpha, so a wisp fades out the way it is painted. Gas.
+  glow  the plate's own brightness is its alpha, so a wisp fades out the way it is painted, and the frame's
+        own edges are faded out with it. A plate that reaches its edge shows that edge as a straight line
+        the moment it moves, which is the one thing gas must never have. Gas.
   cut   only the black around the shape goes; the shape itself stays as solid as it was painted, so the dark
         metal of a letter is metal and not a hole. Lettering.
 Nothing is traced by hand afterwards.
@@ -51,19 +53,19 @@ BADGE = ('Dark fantasy game logo in the style of Path of Exile, drawn as one pie
 # never a finished thing on its own, which is why every one of them is loose and off-centre rather than posed.
 GLOW, CUT = 'glow', 'cut'
 PLATES = {
-    'cheat-gas-1': LOOK + ' A thick column of poisonous green smoke pouring straight down from the top of the '
-                          'frame, heaviest and brightest where it enters at the top, spreading and thinning as '
-                          'it falls, wisps curling outward at the bottom edges. Sickly toxic green, bright '
-                          'where it is dense, fading to nothing at the edges.',
-    'cheat-gas-2': LOOK + ' A wide rolling bank of poisonous green vapour spilling downward and outward, like '
-                          'gas poured over a surface and spreading across it, heavy in the middle, tendrils '
-                          'reaching left and right. Sickly toxic green, soft edges, fading to nothing.',
+    'cheat-gas-1': LOOK + ' One billowing cloud of poisonous green smoke floating in the middle of the frame, '
+                          'dense and bright at its heart, breaking into curling wisps at its outside. It sits '
+                          'well inside the frame with a wide margin of empty black all the way around it, and '
+                          'touches no edge. Sickly toxic green.',
+    'cheat-gas-2': LOOK + ' One low rolling cloud of poisonous green vapour, wider than it is tall, heavy in '
+                          'the middle and breaking into tendrils at either side. It sits well inside the frame '
+                          'with empty black all the way around it and touches no edge. Sickly toxic green.',
     'cheat-words': (CUT, BADGE + ' Two lines of capitals, centred, the first line reading exactly '
                     '"CHEAT CODE" and the second line reading exactly "ACTIVATED". Spelled exactly that way '
                     'and nothing else written anywhere.'),
-    'cheat-gas-3': LOOK + ' Thin ragged streamers of poisonous green gas falling, broken and uneven, wisps and '
-                          'tatters rather than a solid mass, some curling upward as they fall. Sickly toxic '
-                          'green, very soft, most of the frame empty black.',
+    'cheat-gas-3': LOOK + ' A few thin ragged wisps of poisonous green gas, torn and uneven, drifting apart, '
+                          'nothing solid. They sit in the middle of the frame with empty black all around '
+                          'them and touch no edge. Sickly toxic green, very soft.',
 }
 
 
@@ -112,11 +114,37 @@ def plate(raw, how=GLOW, width=1024):
         im = im.resize((width, round(im.height * width / im.width)), Image.LANCZOS)
     grey = im.convert('L')
     # cut: black is nothing, anything above a whisper is whole, with a short ramp between so no edge is a stair
+    alpha = grey.point(lambda v: 0 if v < 8 else min(255, (v - 8) * 12)) if how == CUT else grey
+    if how == GLOW:
+        alpha = feather(alpha)
     out = im.convert('RGBA')
-    out.putalpha(grey.point(lambda v: 0 if v < 8 else min(255, (v - 8) * 12)) if how == CUT else grey)
+    out.putalpha(alpha)
     buf = io.BytesIO()
     out.save(buf, 'WEBP', quality=82, method=6)
     return buf.getvalue()
+
+
+def feather(alpha, part=0.16):
+    """The frame's own edges taken to nothing. A cloud that reaches its edge shows a straight line the moment
+       it is moved, and nothing about gas is straight."""
+    from PIL import Image
+    w, h = alpha.size
+    dx, dy = max(1, round(w * part)), max(1, round(h * part))
+    ramp_w = Image.linear_gradient('L').resize((dx, 1)).rotate(0)
+    mask = Image.new('L', (w, h), 255)
+    px = mask.load()
+    for x in range(dx):
+        v = round(255 * (x / dx))
+        for y in range(h):
+            px[x, y] = min(px[x, y], v)
+            px[w - 1 - x, y] = min(px[w - 1 - x, y], v)
+    for y in range(dy):
+        v = round(255 * (y / dy))
+        for x in range(w):
+            px[x, y] = min(px[x, y], v)
+            px[x, h - 1 - y] = min(px[x, h - 1 - y], v)
+    from PIL import ImageChops
+    return ImageChops.multiply(alpha, mask)
 
 
 def make(name, over):
