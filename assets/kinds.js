@@ -1,13 +1,14 @@
-/* Every kind of thing the site cards, in one table.
+/* Every kind of thing the site cards, in one table — the framework's declarations.
    Nothing here draws anything: it says what a kind is called, which fields its cards carry, which actions they
-   offer and which related lists they can build. assets/app.js turns that into a card (one renderer, one
-   function per field type) and tools/dev/guard.mjs reads the same table instead of reading names back out of
-   the code. A new kind — a new league's items, a new list — is one entry in KINDS plus its rows in the index,
-   and no card code.
+   offer and which related lists they can build. assets/app.js is the framework's one generic renderer: it
+   turns a declaration into a card (one function per field type, none of them per kind), and tools/dev/guard.mjs
+   reads the same table instead of reading names back out of the code. A new kind that fits the framework — a
+   new league's items, a new list — is one entry in KINDS plus its rows in the index, and no card code.
 
    There is one card and one map, so a rule written here reaches every card at once. A rule that would reach
-   only some of them is the wrong shape: it belongs in a declaration below, never in the drawing code.
-   docs/frame.md states the whole frame, and tools/dev/frame.mjs fails a build that breaks it.
+   only some of them does not fit the framework: it belongs in a declaration below, never in the drawing code
+   — that is how the framework gets widened. docs/frame.md is the framework's own document, and
+   tools/dev/frame.mjs fails a build that breaks it.
 
    KINDS, per kind:
      k        the letter the index marks it with

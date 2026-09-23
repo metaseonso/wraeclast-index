@@ -1,19 +1,28 @@
 # The frame
 
-One card. One map. Every kind of thing on the site goes through them, and what a card looks like is decided
-here and nowhere else: `assets/kinds.js` holds the frame, `assets/app.js` draws it, `tools/dev/frame.mjs`
-fails a build that breaks it.
+**The framework** is the whole thing — declarations plus one generic renderer, where new data needs data and
+not code.
+
+**A frame** is one surface inside it: fixed slots, a fill order, an overflow rule. The card is a frame, the
+map is a frame, the bench is a frame.
+
+Something new either **fits the framework** — add the data, and it appears everywhere — or it does not, and
+then we **widen the framework** once, and it fits for good. "Schema-driven" is the outside word for the same
+thing, for anyone who does not speak ours.
+
+This page states the frame in full — the card's and the map's both: `assets/kinds.js` holds it, `assets/app.js`
+draws it, `tools/dev/frame.mjs` fails a build that breaks it.
 
 ## The loop
 
 Two moves. There is no third.
 
-**(a) The frame already supports it.** Add the data to the index. Stop. No card code, no card review, no
+**(a) It fits the framework already.** Add the data to the index. Stop. No card code, no card review, no
 page to update — the cards, the search, the connections and the map take it as they are.
 
-**(b) The frame does not support it yet.** Extend the frame once, in the table. From then on it is supported
-for good, for every kind alike. Never a special case for one data set: a rule that would reach one kind is
-the wrong shape, and the guard fails it.
+**(b) It does not fit the framework yet.** Widen the framework once, in the table. From then on it is
+supported for good, for every kind alike. Never a special case for one data set: a rule that would reach one
+kind is the wrong shape, and the guard fails it.
 
 ### (b) as a procedure
 
