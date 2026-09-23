@@ -1,6 +1,5 @@
-"""Real prices from the official trade site, for every price on the site. Runs once an hour on the data server
-(tools/vm/; until the move is done, also in .github/workflows/prices.yml) and spreads its checks over about
-55 minutes, never in a burst.
+"""Real prices from the official trade site, for every price on the site. Runs once an hour, in
+.github/workflows/prices.yml, and spreads its checks over about 55 minutes, never in a burst.
 
 Currency prices come from the in-game Currency Exchange instead (tools/exchange.py), hourly, so they are not
 in this budget at all.
@@ -32,14 +31,14 @@ What the base items took: the pass went from 9 hours to 10, and a unique's share
 way. All 1,554 bases would not: 2,352 things is a 27-hour pass, which is why the list is the 108 (and where
 it widens: tools/baseprices.py).
 
-Signing in to the site: on the data server, the key in WI_INGEST_KEY (the site keeps only its SHA-256).
-In GitHub Actions, GitHub gives this job a short-lived signed token (OpenID Connect); the site checks it.
-Where the input files come from (data/ or WI_DATA_DIR): tools/sitedata.py.
+Signing in to the site: in GitHub Actions, GitHub gives this job a short-lived signed token (OpenID Connect);
+the site checks it. Run by hand somewhere else, the key in WI_INGEST_KEY instead (the site keeps only its
+SHA-256). Where the input files come from (data/ or WI_DATA_DIR): tools/sitedata.py.
 
 The trade site's limits come back in the X-Rate-Limit headers: searches about 100 an hour (this makes 88),
 It slows down near a limit and stops if one is hit.
 
-    python tools/pricepull.py                       # on the data server, or in GitHub Actions
+    python tools/pricepull.py                       # in GitHub Actions, or by hand
     python tools/pricepull.py --dry 2 0             # locally: 2 searches, printed, not sent
     python tools/pricepull.py --offline --state f   # what a run would check, from a saved /api/prices/state
     python tools/pricepull.py --offline --cut 16    # the same, as if the site cut the run short after 16

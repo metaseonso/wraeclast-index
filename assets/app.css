@@ -883,7 +883,7 @@ small.at-bonus{display:block}
    one is poured and that one hangs. CSS alone, four layers on their own loops, and the whole thing takes
    itself off the page when it is done. */
 .cheat{position:fixed; inset:0; z-index:300; display:grid; place-items:center; pointer-events:none;   /* over everything the site draws, which tops out at 200 */
-  animation:cheat-out .5s ease-in 3.7s both}
+  animation:cheat-out .45s ease-in 2.75s both}
 /* the words are the crest's own badge, forged the same way (tools/art.py cheat-words), not a typeface */
 .cheat-said{position:relative; z-index:2;   /* the gas is poured over it, not in front of it */
   width:min(560px, 82vw); height:auto; margin:0;
@@ -896,28 +896,28 @@ small.at-bonus{display:block}
   transform-origin:50% 50%; opacity:0; will-change:transform, opacity; pointer-events:none}
 .cheat-pair img{display:block; width:min(560px, 52vw); height:auto; mix-blend-mode:screen}
 .cheat-pair .flip{transform:scaleX(-1)}
-.g1{animation:cheat-out-1 3.4s cubic-bezier(.12,.62,.24,1) both}
-.g2{animation:cheat-out-2 4.3s cubic-bezier(.12,.62,.24,1) .22s both}
-.g3{animation:cheat-out-3 3.8s cubic-bezier(.12,.62,.24,1) .5s both}
+.g1{animation:cheat-out-1 2.2s cubic-bezier(.08,.72,.2,1) both}
+.g2{animation:cheat-out-2 2.9s cubic-bezier(.08,.72,.2,1) .12s both}
+.g3{animation:cheat-out-3 2.5s cubic-bezier(.08,.72,.2,1) .3s both}
 @keyframes cheat-in{from{opacity:0; transform:translateY(8px) scale(.97)} to{opacity:1; transform:none}}
 @keyframes cheat-out{to{opacity:0}}
 @keyframes cheat-out-1{
-  0%{transform:translate(-50%, -50%) scale(.2); opacity:0}
-  16%{opacity:.6}
-  60%{opacity:.4}
-  100%{transform:translate(-50%, -50%) scale(1.55); opacity:0}
+  0%{transform:translate(-50%, -50%) scale(.08); opacity:0}
+  10%{opacity:.85}
+  50%{opacity:.55}
+  100%{transform:translate(-50%, -50%) scale(2.3); opacity:0}
 }
 @keyframes cheat-out-2{
-  0%{transform:translate(-50%, -50%) scale(.26) rotate(2deg); opacity:0}
-  20%{opacity:.5}
-  62%{opacity:.32}
-  100%{transform:translate(-50%, -50%) scale(1.75) rotate(-2deg); opacity:0}
+  0%{transform:translate(-50%, -50%) scale(.1) rotate(3deg); opacity:0}
+  12%{opacity:.7}
+  52%{opacity:.42}
+  100%{transform:translate(-50%, -50%) scale(2.9) rotate(-3deg); opacity:0}
 }
 @keyframes cheat-out-3{
-  0%{transform:translate(-50%, -50%) scale(.16); opacity:0}
-  18%{opacity:.42}
-  58%{opacity:.28}
-  100%{transform:translate(-50%, -50%) scale(1.95); opacity:0}
+  0%{transform:translate(-50%, -50%) scale(.06); opacity:0}
+  10%{opacity:.6}
+  48%{opacity:.34}
+  100%{transform:translate(-50%, -50%) scale(3.4); opacity:0}
 }
 @media (prefers-reduced-motion: reduce){
   .cheat{animation-duration:.4s; animation-delay:1.7s}

@@ -28,7 +28,7 @@ Standards every page follows:
 
 ## How it works
 
-The site is static. GitHub Pages serves it; a GitHub Action (`.github/workflows/pages.yml`) runs every hour, fetches prices with `tools/market.py`, and publishes.
+The site is static, and every hourly job that keeps it live runs on GitHub Actions — nothing of ours is deployed anywhere. `.github/workflows/pages.yml` runs every hour (and on every push to main): fetches prices with `tools/market.py`, currency prices with `tools/exchange.py`, league dates with `tools/leagues.py`, then publishes to GitHub Pages. `.github/workflows/prices.yml` runs every hour too, checking real listings on the official trade site with `tools/pricepull.py` and sending them to the site.
 
 | File | What it is |
 |---|---|

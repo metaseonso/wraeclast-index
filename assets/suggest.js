@@ -102,7 +102,7 @@ function cheat(){
       '</span>').join('')) +
     '<img class="cheat-said" src="assets/brand/cheat-words.webp" alt="Cheat Code Activated" decoding="async">';
   document.body.appendChild(box);
-  setTimeout(() => box.remove(), still ? 2200 : 4200);
+  setTimeout(() => box.remove(), still ? 2000 : 3200);
 }
 
 function open(card){

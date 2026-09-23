@@ -1,9 +1,11 @@
 """Where the hourly jobs (market.py, exchange.py, leagues.py, pricepull.py) keep their files, and how they send
 them to the site.
 
-  no WI_DATA_DIR    a repo checkout (GitHub Actions, or by hand): files live in data/, as always
-  WI_DATA_DIR=dir   the data server (tools/vm/): files live in dir. Site files a job reads but does not make
-                    (index.json, trade.json, ...) come from the live site and are kept there, refreshed every 6 hours.
+  no WI_DATA_DIR    a repo checkout (GitHub Actions, where the hourly jobs run today, or by hand): files
+                    live in data/, as always
+  WI_DATA_DIR=dir   run by hand somewhere else: files live in dir instead. Site files a job reads but does
+                    not make (index.json, trade.json, ...) come from the live site and are kept there,
+                    refreshed every 6 hours.
   WI_INGEST_KEY     each finished file is also sent to the site (POST /api/data/put), signed with this key
   WI_SITE           the site (default https://wraeclastindex.fyi)
 """

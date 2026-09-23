@@ -3,8 +3,9 @@ the next league when it has been announced. The home page shows how long the cur
 the next one starts; a card's price chart draws each retired league in its own colour.
 
 Source: poe2db's league list (https://poe2db.tw/us/League; their robots.txt allows it; credited on the page).
-One request, every 6 hours on the data server (tools/vm/; until the move is done, also hourly in
-.github/workflows/pages.yml). Where the file goes and how it reaches the site: tools/sitedata.py.
+One request, every hour, in .github/workflows/pages.yml (it only needs 6-hourly; it runs on pages.yml's own
+hourly timer instead, since that is what triggers it). Where the file goes and how it reaches the site:
+tools/sitedata.py.
 
 A league's colour is GGG's own, sampled once from the art they published for that league (the banner their
 announcement post opens with, from the Path of Exile 2 announcements forum; their robots.txt allows both).

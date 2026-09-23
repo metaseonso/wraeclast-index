@@ -1,8 +1,11 @@
 /* Data files the hourly jobs send in: the Currency Exchange prices (exchange.json, tools/exchange.py), the
    currency catalogue (market.json, tools/market.py), the league dates (leagues.json, tools/leagues.py) and
    the list of sections serving an older copy (faults.json, tools/lastgood.py).
-   The jobs run on the data server (tools/vm/) and send each file here when it is done. Kept in D1 (table files).
-     POST /api/data/put?name=<file>        the file as the body, signed with the data server's key
+   The jobs run on GitHub Actions (.github/workflows/pages.yml) and send each file here when it is done. Kept
+   in D1 (table files).
+     POST /api/data/put?name=<file>        the file as the body, signed with the ingest key (worker/prices.js
+                                           signed): GitHub's own short-lived token in Actions, or a key of
+                                           its own for a run by hand somewhere else
      published(env, origin, name, ctx)     a file, parsed; each data centre keeps a copy for 5 minutes
      publishedRow(env, origin, name, ctx)  the same, with when it came in and which source answered
                                            ({data, at, from}), so what is built from it can say how old it is
@@ -11,9 +14,9 @@
    beats nothing), and its age travels with it, so a stale file can never pass for a fresh one.
    The key: "Authorization: Bearer <key>". Only its SHA-256 (hex) is stored, in the INGEST_HASH secret.
    No INGEST_HASH: no key works.
-   Until the move to the data server is done, a file that never came in is read from the old GitHub Pages copy.
-   That copy comes with no arrival time ("from: backup"), so the time the file gives for itself stands in for
-   it (ownTime): the hour the data was made, which is never newer than the moment the file arrived. */
+   A file that never came in this way is read from the old GitHub Pages copy instead. That copy comes with no
+   arrival time ("from: backup"), so the time the file gives for itself stands in for it (ownTime): the hour
+   the data was made, which is never newer than the moment the file arrived. */
 import { same } from './dash.js';
 
 const NAMES = new Set(['exchange.json', 'market.json', 'leagues.json', 'faults.json']);
@@ -30,7 +33,7 @@ const enc = new TextEncoder();
 const json = (status, body) => new Response(JSON.stringify(body), {status, headers: {'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store'}});
 const copyOf = (origin, name) => new Request(origin + '/data/' + name + '?from=d1');
 
-/* the data server's key */
+/* the manual ingest key: a run by hand, not GitHub Actions (worker/prices.js fromGitHub is the other one) */
 export async function fromServer(request, env){
   const want = String(env.INGEST_HASH || '').trim().toLowerCase();
   if(!/^[0-9a-f]{64}$/.test(want)) return false;

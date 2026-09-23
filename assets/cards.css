@@ -376,7 +376,7 @@ header.top .keysbtn{margin-left:auto}   /* far right, even when the header wraps
 .suggestbtn:hover, .suggestbtn:focus-visible{border-color:#C9A24E; color:#F6DC9A; box-shadow:0 0 12px rgba(201,162,78,.35); outline:none}
 body > .suggestbtn{position:fixed; left:14px; bottom:14px; z-index:90}   /* a page with no top bar */
 header.top .suggestbtn{margin-left:auto}
-header.top .suggestbtn + .keysbtn{margin-left:0}
+header.top .suggestbtn ~ .keysbtn{margin-left:0}   /* ~, not +: assets/pins.js may sit between them */
 .suggest{padding:18px}
 .suggest h3{margin:0 0 4px}
 .suggest textarea{width:100%; margin:10px 0 8px; resize:vertical; min-height:110px; font:inherit}
@@ -396,8 +396,22 @@ header.top .notesbtn ~ .suggestbtn{margin-left:0}
 .notes-v ul{margin:0; padding-left:18px; color:var(--muted); font-size:13px; line-height:1.5}
 @media (max-width:640px){ .notesbtn .ct{display:none} }
 .ct.wait{visibility:hidden}   /* the version's place, kept until assets/notes.js writes it (the top bar never jumps) */
-.notes, .suggest{background:var(--surface); border:2px solid var(--line); border-radius:var(--r, 10px)}
+.notes, .suggest, .pins{background:var(--surface); border:2px solid var(--line); border-radius:var(--r, 10px)}
 .tall{margin:2px 0 8px; font-weight:600}
+/* Pins (assets/pins.js): top bar button, between Suggest and the keybind button, and the box it opens */
+.pinsbtn{order:98; flex:none; align-self:center; height:34px; padding:0 10px; cursor:pointer; font:500 12px/1 var(--sans);
+  color:var(--muted); background:var(--surface); border:2px solid var(--line); border-radius:8px; transition:color .15s, border-color .15s}
+.pinsbtn:hover, .pinsbtn:focus-visible{color:var(--text); border-color:var(--accent); outline:none}
+.pinsbtn .ct{font-family:var(--mono); font-size:10.5px; color:var(--faint); margin-left:4px}
+@media (max-width:640px){ .pinsbtn .ct{display:none} }
+.pins{padding:18px}
+.pins h3{margin:0 0 4px}
+.pins-list{display:grid; gap:4px; margin-top:10px; max-height:60vh; overflow:auto; overscroll-behavior:contain}
+.pin-row{display:flex; align-items:center; gap:8px; padding:8px 10px; border:1px solid var(--line); border-radius:8px}
+.pin-row .star{font-size:16px}
+.pin-go{flex:1; display:flex; align-items:baseline; gap:8px; min-width:0; background:none; border:0; padding:0; text-align:left; cursor:pointer; font:inherit; color:inherit}
+.pin-nm{font-weight:600; font-size:13px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.pin-kind{font-size:11px; color:var(--faint); white-space:nowrap}
 /* Support popup (assets/support.js) */
 .supportbox{padding:18px; background:var(--surface); border:2px solid var(--line); border-radius:var(--r, 10px)}
 .supportbox h3{margin:0 0 4px} .supportbox h4{margin:14px 0 6px}

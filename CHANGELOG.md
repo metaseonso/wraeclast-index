@@ -52,6 +52,28 @@ Add the details here first, then a short public line there.
   implicit was searched for as a modifier. And an item that carries its own lines twice over in the export
   had its runes counted twice — Morior Invictus came back with twelve runes in eight sockets, and the
   sockets the item declares are now the count that holds, for the bill and for the maths alike.
+## Next — The end of the data server that was never set up
+
+- Ticket 69. `tools/vm/` described deploying the hourly jobs to an Oracle server over SSH that was never set
+  up — `deploy.sh --status` failed at the first hop, and the owner nearly deployed to it. The jobs have always
+  really run on GitHub Actions (`tools/pricepull.py` in `.github/workflows/prices.yml`, `tools/market.py`,
+  `tools/exchange.py` and `tools/leagues.py` in `pages.yml`); nothing of ours needs deploying anywhere.
+  `tools/vm/` is deleted, the README says where the jobs run, and every comment that pointed at it
+  (`tools/exchange.py`, `market.py`, `leagues.py`, `pricepull.py`, `sitedata.py`, `worker/files.js`,
+  `worker/prices.js`, `wrangler.jsonc`) points at the workflow instead.
+
+## Next — Pins
+
+- Ticket 8. A player pins any card and gets it back in one place. The way onto the list is a Pin button,
+  declared once in `ACTS` (`assets/kinds.js`) like Trade or Full stats, so every kind that carries it in its
+  own `acts` — gems, uniques, passives, clusters, bases, item classes, Atlas, currency, keywords, mechanics,
+  interactions, bosses — gets it from the declaration, not from a copy of the Currency tab's own star.
+- Session only: `assets/app.js` keeps the list in `sessionStorage` (`isPinned`, `togglePin`, `pinnedKeys`),
+  the way the crafting bench keeps its craft, so it dies with the tab. That is the seam for the accounts
+  ticket (7): a signed-in read and write of the same list, keyed the same way ("kind:id"), in place of
+  `loadPins`/`savePins`, and nothing else moves.
+- `assets/pins.js` is the other half — a Pins button in the top bar with a count, and the box it opens: every
+  pinned card, a star to unpin it in place, and a tap to open its own card.
 
 ## Next — Every interaction the game's wording names, and a way to settle the ones nobody has
 
