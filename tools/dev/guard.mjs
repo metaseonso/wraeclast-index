@@ -11,6 +11,7 @@
      links   every deep link the code emits lands on a real row in the data
      pages   every public page answers 200; the sitemap and llms.txt did not shrink
      rawcode no stat ids, [Word|Word] markup or {0} placeholders where a player can read them
+     voice   every word a player reads is the game's, not an assistant's (tools/dev/voice.mjs)
      frame   every card and the map keep to the frame: slots, caps, counts, one rule for every kind
              (tools/dev/frame.mjs)
      dash    the owner's dashboard: all eight tabs fill, no block is left empty (tools/dev/dash-fixture)
@@ -29,6 +30,8 @@ import * as seo from '../../worker/seo.js';
 import { KINDS, NAMES, ROUTES, SECTIONS, FRAME } from '../../assets/kinds.js';
 // the frame itself: the slots, the caps and the rules that hold for every kind alike
 import { checkTable, checkMap, checkOneTable, checkCards as drawCards } from './frame.mjs';
+// the voice: the copy a player reads, held to the game's register and not an assistant's
+import { checkVoice } from './voice.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(HERE, '..', '..');
@@ -713,6 +716,10 @@ try {
   const html = (await get('/explore')).text;
   const files = JSON.parse((html.match(/var F=(\{[^}]*\})/) || ['', '{}'])[1]);
   raw = await checkRaw(index, files, pages.got, want);
+  const voice = await checkVoice();
+  say('voice', !voice.bad.length, voice.bad.length
+    ? voice.bad.length + ' broken: ' + clip(voice.bad.slice(0, 2).join(' | '), 220)
+    : voice.said + ' · the game does the talking');
   if(!noPhone){
     const kws = index.items.filter(it => it.k === 'w' && it.use);
     kws.sort((a, b) => Object.values(b.use).reduce((x, y) => x + y, 0) - Object.values(a.use).reduce((x, y) => x + y, 0));

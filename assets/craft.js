@@ -569,7 +569,7 @@ function modHits(){
 function findBarHTML(){
   const tags = TAGS.filter(([t]) => MX.rows.some(r => r.tags.includes(t)));
   return '<div class="cr-bar"><input class="field" type="search" data-k="find" value="' + esc(MOD.q) +
-    '" placeholder="A modifier in its own words (e.g. fire res, attack speed)" autocomplete="off" aria-label="Find a modifier">' +
+    '" placeholder="Fire res, attack speed, minion damage…" autocomplete="off" aria-label="Find a modifier">' +
     '<div class="kinds cr-chips" role="group" aria-label="Tags">' + [['', 'All'], ...tags].map(([t, l]) =>
       '<button type="button" class="chip" data-mtag="' + t + '" aria-pressed="' + (MOD.tag === t) + '">' + l + '</button>').join('') +
     '</div></div>';
@@ -596,7 +596,7 @@ function hitsHTML(){
    weight and its share of that side at this item level, drawn by the same row the pool draws */
 function answerHTML(){
   const r = modOf(MOD.key);
-  if(!r) return '<p class="note">Pick a modifier and this is where it says what can carry it.</p>';
+  if(!r) return '<p class="note">No modifier selected.</p>';
   const on = r.cls.map(([i, lvl]) => ({cl: X.classes.find(c => c.id === MX.cl[i]), lvl})).filter(x => x.cl);
   const here = CL && B && on.some(x => x.cl.id === CL.id);
   return '<div class="cr-ahd"><h3 class="cr-h">' + r.lines.map(esc).join('<br>') + '</h3>' +
@@ -606,7 +606,7 @@ function answerHTML(){
     '<div class="kinds cr-chips" role="group" aria-label="Kinds of item">' + on.map(x =>
       '<button type="button" class="chip" data-class="' + x.cl.id + '" aria-pressed="' + (CL && x.cl.id === CL.id) + '">' +
       esc(x.cl.n + (x.lvl > 1 ? ' · level ' + x.lvl + '+' : '')) + '</button>').join('') + '</div>' +
-    (here ? onItemHTML(r) : '<p class="note">Pick one of them: the tiers it has, how often it rolls and how to get it all depend on the item.</p>');
+    (here ? onItemHTML(r) : '<p class="note">Select a kind of item. Tiers and weights are the item’s own.</p>');
 }
 /* A kind of item with 294 bases has a handful of pools, and the pool is what decides whether the modifier is
    in it at all — so the bases are offered as their pools, by the defences they come in, and picking one picks
@@ -739,12 +739,10 @@ function vaalHTML(){
 }
 function railHTML(){
   const r = modOf(MOD.key);
-  if(!r) return railHead(false, []) + '<p class="note">Pick a modifier and this says what guarantees it, what can ' +
-    'add one, and what each costs today.</p>';
+  if(!r) return railHead(false, []) + '<p class="note">No modifier selected.</p>';
   // the ways to a modifier are the item's, so there is nothing to say until the item can carry it
   if(!B || !r.cls.some(([i]) => MX.cl[i] === CL.id))
-    return railHead(false, []) + '<p class="note">Pick a kind of item that can carry it: what guarantees a modifier, ' +
-      'and what can add one, are the item’s own.</p>';
+    return railHead(false, []) + '<p class="note">Select a kind of item that carries it.</p>';
   const f = famHere(r), ess = f ? essFor(f) : [];
   return railHead(true, railWith(r, ess)) + planNote() + guaranteeHTML(ess) + omenSideHTML(r) + addsHTML(r, f);
 }
@@ -916,8 +914,8 @@ export async function mount(el){
   return {update};
 }
 function head(){
-  return '<div class="pagehd"><h2>Craft</h2><p>Every mod a base can roll at its item level, and where a mod ' +
-    'you want comes from. Plan the item, practise it at the bench, then find it on trade.</p></div>';
+  return '<div class="pagehd"><h2>Craft</h2><p>Every modifier a base can roll at its item level, ' +
+    'and where each one comes from.</p></div>';
 }
 /* Two questions, one item. The switch is the site's own segmented control, and which question is being asked
    is in the address, so a link opens on the question it was sent about. */
