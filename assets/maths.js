@@ -129,7 +129,8 @@ const PAIRS = {
 const ATTR = {strength: 'str', dexterity: 'dex', intelligence: 'int'};
 /* Which damage a line names. "Damage" on its own is every type. */
 const DAMAGE = {
-  'damage': 'all', 'physical damage': 'physical', 'fire damage': 'fire', 'cold damage': 'cold',
+  'damage': 'all', 'damage with hits': 'all',
+  'physical damage': 'physical', 'fire damage': 'fire', 'cold damage': 'cold',
   'lightning damage': 'lightning', 'chaos damage': 'chaos', 'elemental damage': 'elemental',
   'elemental damage with attacks': 'elemental', 'attack damage': 'attack', 'spell damage': 'spell',
   'melee damage': 'melee', 'projectile damage': 'projectile', 'area damage': 'area',
@@ -176,6 +177,9 @@ export const TABLE = [
     for(const s of p) into(s, 'inc', m[1] === 'reduced' ? -v[0] : v[0]); return true; }],
   ['more or less a stat', /^#% (more|less) (.+)$/, (m, v, into) => {
     const s = NOUN[m[2]]; if(!s) return false; into(s, 'more', m[1] === 'less' ? -v[0] : v[0]); return true; }],
+  ['more or less a pair', /^#% (more|less) (.+)$/, (m, v, into) => {
+    const p = PAIRS[m[2]]; if(!p) return false;
+    for(const s of p) into(s, 'more', m[1] === 'less' ? -v[0] : v[0]); return true; }],
   ['flat to an attribute', /^# to (strength|dexterity|intelligence)$/, (m, v, into) => {
     into(ATTR[m[1]], 'flat', v[0]); return true; }],
   ['flat to every attribute', /^# to all attributes$/, (m, v, into) => {

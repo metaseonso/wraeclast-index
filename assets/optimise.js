@@ -1,0 +1,328 @@
+/* The optimise button, and the live recommendations under the numbers: one machine, run two ways.
+
+   It takes what the player has chosen and fills what is still open toward offence, defence or balanced. It
+   never replaces a choice. A slot the player filled, a modifier they picked, a cluster they took: all fixed.
+   That is what makes the change list mean anything — every row in it is a thing that was empty.
+
+   docs/proposal-builder.md section 4 states the rules and the arithmetic. What is here:
+
+     the search      greedy, a beam of four, then a pair pass over the top forty it rejected (4.2)
+     the clock       a first answer at 250ms on a beam of one, the full pass capped at 3s (4.3)
+     the answer      ties are shown and not taken; nothing improving is an answer; the budget running out
+                     is an answer, with how far it got (4.4)
+
+   Why not brute force: five supports out of a median 243 legal ones is 6,774,333,588 combinations before
+   gear and before the tree. At the cost tools/dev/buildcheck.mjs measures that is half a day.
+
+   Why not branch and bound: a bound worth having has to know the best a stat can still become, which means
+   knowing how each candidate interacts with the rest — the thing v1.0 does not model. Without a tight bound
+   it is this search with more bookkeeping.
+
+   It imports the rules and nothing else. No DOM, no fetch, no prices: the caller works out what is open and
+   hands the candidates over, and the caller draws the answer. assets/builder.js is that caller, for both the
+   button and the live recommendations, so a recommendation the panel shows is one the button would take. */
+import * as M from './maths.js';
+
+/* What a player is optimising for. The label is the word on the chip. */
+export const AIMS = [['off', 'Offence'], ['def', 'Defence'], ['both', 'Balanced']];
+export const aimName = a => (AIMS.find(x => x[0] === a) || [, a])[1];
+
+export const BEAM = 4;        // how many part-answers a step carries forward
+export const STEPS = 20;      // and how many steps it takes before it has had its go
+export const REJECTS = 40;    // the rejects the pair pass goes back over: 780 pairs
+export const FIRST = 250;     // milliseconds to a first answer, on a beam of one
+export const CAP = 3000;      // and what the whole pass never runs past
+const TIE = 1e-9;             // two scores this close are the same score
+
+/* ---------- the score ----------
+   One number per aim, each a ratio against the build as it stands, so a change is worth what it moved and
+   the three aims are on the same scale.
+
+   Offence is damage per second. Defence is effective life over the five damage types — the biggest hit of
+   each type the pools stand, at their geometric mean, so a change is worth most where the build is thinnest
+   and no single hole swallows the number. Balanced is the two of them, evenly.
+
+   Every score is taken at the floor: each thing the model cannot settle is read the way that does not
+   flatter the build. A change that is only good under a generous reading of an unknown does not win here,
+   and 4.4 says which unknown when that is what separated two answers. */
+export function effectiveLife(c){
+  let log = 0, n = 0;
+  for(const t of M.TYPES){
+    const v = c.hits[t];
+    if(!(v > 0)) return 0;
+    if(!isFinite(v)) return Infinity;      // a resistance at a hundred: nothing of that type lands at all
+    log += Math.log(v); n++;
+  }
+  return n ? Math.exp(log / n) : 0;
+}
+export function scoreOf(c, dps, aim, was){
+  const off = was.dps > 0 ? (dps && dps.dps > 0 ? dps.dps / was.dps : 0) : (dps && dps.dps > 0 ? 1 : 0);
+  const def = was.life > 0 ? effectiveLife(c) / was.life : 0;
+  if(aim === 'off') return was.dps > 0 ? off : def;   // no weapon to swing: offence has nothing to rank by
+  if(aim === 'def') return def;
+  return was.dps > 0 ? Math.sqrt(Math.max(0, off) * Math.max(0, def)) : def;
+}
+
+/* ---------- the stat table, one change at a time ----------
+   Rebuilding the table costs a hundred and sixty times what working the character out does, so the search
+   never rebuilds it. A candidate's own lines are pushed onto the table, the character is worked out, and the
+   keys those lines touched are put back exactly as they were. */
+function push(stats, lines){
+  const was = new Map();
+  const into = (k, form, v) => {
+    if(!was.has(k)) was.set(k, stats.has(k) ? {...stats.get(k)} : null);
+    const at = stats.get(k) || {flat: 0, inc: 0, more: 1};
+    if(form === 'more') at.more *= 1 + v / 100; else at[form] += v;
+    stats.set(k, at);
+  };
+  let unread = 0;
+  for(const ln of lines || []) if(M.readLine(ln, into) === 'unread') unread++;
+  return {was, unread};
+}
+function pop(stats, was){
+  for(const [k, v] of was) if(v) stats.set(k, v); else stats.delete(k);
+}
+const cloneStats = stats => { const out = new Map(); for(const [k, v] of stats) out.set(k, {...v}); return out; };
+
+/* One character, out of a table and what the gear itself carries. The same call the Build tab makes. */
+function work(S, stats, gear, take){
+  const c = M.character({level: S.level, cls: S.cls, stats, gear, take: take || {}});
+  const w = S.weapon;
+  const dps = w ? M.attack({stats, dmg: w.dmg, rate: w.rate, crit: w.crit, quality: w.quality}) : null;
+  return {c, dps};
+}
+const addGear = (a, b) => ({armour: a.armour + (b.armour || 0), evasion: a.evasion + (b.evasion || 0),
+  es: a.es + (b.es || 0)});
+
+/* ---------- what a part-answer is ----------
+   A node is a list of changes taken, the table they came to, what the gear under them carries, and what is
+   still open from there. Cloning the table per node costs about what four evaluations cost, and a node is
+   made once a step. */
+function node(S, taken, stats, gear, points, score){
+  return {taken, stats, gear, points, score,
+    shut: new Set(taken.map(t => t.fills)),
+    sides: sidesOf(taken)};
+}
+function sidesOf(taken){
+  const by = {};
+  for(const t of taken) if(t.kind === 'mod'){
+    const s = by[t.slot] || (by[t.slot] = {p: 0, s: 0});
+    s[t.side]++;
+  }
+  return by;
+}
+/* Whether a node can still take this one: its opening is not already filled, the side it lands on has room,
+   it does not need a change this node has not made, and there are points left for it. */
+function allows(S, nd, x){
+  if(nd.shut.has(x.fills)) return false;
+  if(x.needs && !nd.taken.some(t => t.fills === x.needs)) return false;
+  if(x.points && nd.points + x.points > S.points.cap) return false;
+  if(x.kind === 'mod'){
+    const s = nd.sides[x.slot];
+    if(s && x.caps && s[x.side] >= x.caps[x.side]) return false;
+  }
+  return true;
+}
+
+/* ---------- the search ----------
+   `start` hands back something the caller drives: tick it with a slice of milliseconds, it does as many
+   candidates as fit and comes back. The page keeps answering between slices, and the answer improves while
+   the button says how far it has got. */
+export function start(S, aim, opt){
+  const o = opt || {};
+  const beam = o.beam || BEAM;
+  const cap = o.cap == null ? CAP : o.cap;
+  const steps = o.steps || STEPS;
+  const was = work(S, S.stats, S.gear, {});
+  const base = {dps: was.dps ? was.dps.dps : 0, life: effectiveLife(was.c)};
+  const rank = (c, dps) => scoreOf(c, dps, aim, base);
+
+  const first = node(S, [], cloneStats(S.stats), {...S.gear}, S.points.spent, 1);
+  let live = [first];
+  let best = first;
+  const state = {
+    aim, base, was, tried: 0, steps: 0, ms: 0, done: false, stopped: '',
+    ties: [], rejects: [], turned: null, pairs: 0,
+  };
+
+  /* One step over one node: every change it could still make, scored. */
+  function over(nd){
+    const out = [];
+    for(const x of S.open){
+      if(!allows(S, nd, x)) continue;
+      const {was: back, unread} = push(nd.stats, x.lines);
+      const gear = addGear(nd.gear, x.gear || {});
+      const {c, dps} = work(S, nd.stats, gear, {});
+      pop(nd.stats, back);
+      state.tried++;
+      out.push({x, score: rank(c, dps), c, dps, unread, at: nd});
+    }
+    return out;
+  }
+
+  function take(nd, hit){
+    const stats = cloneStats(nd.stats);
+    push(stats, hit.x.lines);
+    return node(S, [...nd.taken, hit.x], stats, addGear(nd.gear, hit.x.gear || {}),
+      nd.points + (hit.x.points || 0), hit.score);
+  }
+
+  /* The pair pass: the repair for what a greedy search is bad at — two changes that are only good together.
+     Over the top rejects, two at a time, and a pair is taken only where it beats the settled answer. */
+  let pairAt = 0, pairList = null;
+  function pairStep(deadline){
+    if(!pairList){
+      const seen = new Set(best.taken.map(t => t.fills));
+      pairList = state.rejects.filter(x => !seen.has(x.fills)).slice(0, REJECTS);
+      pairAt = 0;
+    }
+    const n = pairList.length;
+    while(pairAt < n * n){
+      if(performance.now() > deadline) return false;
+      const i = Math.floor(pairAt / n), j = pairAt % n;
+      pairAt++;
+      if(j <= i) continue;
+      const a = pairList[i], b = pairList[j];
+      if(a.fills === b.fills) continue;
+      if(!allows(S, best, a) || !allows(S, best, b)) continue;
+      if((best.points + (a.points || 0) + (b.points || 0)) > S.points.cap) continue;
+      const one = push(best.stats, a.lines), two = push(best.stats, b.lines);
+      const gear = addGear(addGear(best.gear, a.gear || {}), b.gear || {});
+      const {c, dps} = work(S, best.stats, gear, {});
+      pop(best.stats, two.was); pop(best.stats, one.was);
+      state.tried++; state.pairs++;
+      const score = rank(c, dps);
+      if(score > best.score * (1 + TIE)){
+        const mid = take(best, {x: a, score});
+        best = take(mid, {x: b, score});
+      }
+    }
+    return true;
+  }
+
+  let phase = 'greedy';
+  const began = performance.now();
+
+  function tick(slice){
+    if(state.done) return state;
+    const deadline = Math.min(performance.now() + (slice || 16), began + cap);
+    while(performance.now() < deadline){
+      if(phase === 'greedy'){
+        if(state.steps >= steps){ phase = 'pairs'; continue; }
+        const all = [];
+        for(const nd of live) all.push(...over(nd));
+        if(!all.length){ phase = 'pairs'; state.stopped = state.stopped || 'nothing'; continue; }
+        all.sort((a, z) => z.score - a.score);
+        if(state.steps === 0) state.rejects = all.slice(1).map(h => h.x);
+        const top = all[0];
+        if(top.score <= best.score * (1 + TIE)){
+          state.ties = tiesAt(all, best.score);
+          phase = 'pairs';
+          state.stopped = state.stopped || 'nothing';
+          continue;
+        }
+        live = all.slice(0, beam).filter(h => h.score > h.at.score * (1 + TIE)).map(h => take(h.at, h));
+        if(!live.length){ phase = 'pairs'; continue; }
+        best = live.reduce((a, z) => z.score > a.score ? z : a, live[0]);
+        state.ties = tiesAt(all, top.score);
+        state.steps++;
+      } else if(phase === 'pairs'){
+        if(o.pairs === false){ phase = 'done'; continue; }
+        if(!pairStep(deadline)) break;      // the slice ran out mid-pass; it carries on where it stopped
+        phase = 'done';
+      } else break;
+    }
+    state.ms = performance.now() - began;
+    if(phase === 'done') state.done = true;
+    else if(state.ms >= cap){ state.done = true; state.stopped = 'clock'; }
+    state.best = best;
+    state.steps_of = steps;
+    return state;
+  }
+  return {tick, state, steps, cap,
+    get answer(){ return answerOf(S, state, best, aim); }};
+}
+/* Two answers the same score are two answers. What separates them is named where there is something: a real
+   price, points, or how much of it the model does not read. */
+function tiesAt(all, score){
+  const out = [];
+  for(const h of all){
+    if(h.score < score * (1 - TIE) || h.score > score * (1 + TIE)) continue;
+    out.push(h);
+    if(out.length > 4) break;
+  }
+  return out.length > 1 ? out : [];
+}
+export function separates(a, b){
+  if(a.x.price != null && b.x.price != null && a.x.price !== b.x.price) return 'cheaper';
+  if((a.x.points || 0) !== (b.x.points || 0)) return 'fewer points';
+  if(a.unread !== b.unread) return 'fewer unknowns';
+  return '';
+}
+
+/* ---------- the answer ----------
+   Every change, in the order it was made, with what it did to the numbers on its own — which is what the row
+   puts back. And what it did not reach. */
+function answerOf(S, state, best, aim){
+  const rows = [];
+  const stats = cloneStats(S.stats);
+  let gear = {...S.gear}, before = work(S, stats, gear, {});
+  let score = scoreOf(before.c, before.dps, aim, state.base);
+  for(const x of best.taken){
+    push(stats, x.lines);
+    gear = addGear(gear, x.gear || {});
+    const now = work(S, stats, gear, {});
+    rows.push({x, moved: moved(before, now), score: scoreOf(now.c, now.dps, aim, state.base) - score,
+      needs: x.needs || ''});
+    before = now; score += rows[rows.length - 1].score;
+  }
+  return {
+    aim, rows, tried: state.tried, steps: state.steps, of: state.steps_of, ms: state.ms,
+    pairs: state.pairs, stopped: state.stopped, done: state.done,
+    ties: state.ties, was: state.was, now: before,
+    score: scoreOf(before.c, before.dps, aim, state.base),
+    points: best.points,
+  };
+}
+/* What one change did, in the words the card prints beside it: the biggest of the numbers it moved. */
+export function moved(a, z){
+  const dps = (z.dps ? z.dps.dps : 0) - (a.dps ? a.dps.dps : 0);
+  const life = effectiveLife(z.c) - effectiveLife(a.c);
+  const pool = z.c.pool - a.c.pool;
+  return {dps, life, pool,
+    dpsPct: a.dps && a.dps.dps > 0 ? dps / a.dps.dps * 100 : 0,
+    lifePct: effectiveLife(a.c) > 0 ? life / effectiveLife(a.c) * 100 : 0};
+}
+
+/* ---------- which unknown decided it ----------
+   Where the best change is only best under one reading of an unsettled thing, the card says which one and
+   shows the answer both ways. Cheap because it re-scores the two candidates that came top, and nothing
+   else: the search itself never runs on the flattering reading. */
+export function turnedBy(S, aim, a, b, ids){
+  for(const id of ids || []){
+    const take = {[id]: true};
+    const one = scoreAt(S, aim, a, take), two = scoreAt(S, aim, b, take);
+    const flat = scoreAt(S, aim, a, {}), flatTwo = scoreAt(S, aim, b, {});
+    if((flat >= flatTwo) !== (one >= two)) return id;
+  }
+  return '';
+}
+function scoreAt(S, aim, x, take){
+  const stats = cloneStats(S.stats);
+  push(stats, x.lines);
+  const gear = addGear({...S.gear}, x.gear || {});
+  const c = M.character({level: S.level, cls: S.cls, stats, gear, take});
+  const w = S.weapon;
+  const dps = w ? M.attack({stats, dmg: w.dmg, rate: w.rate, crit: w.crit, quality: w.quality}) : null;
+  const was = work(S, S.stats, S.gear, take);
+  return scoreOf(c, dps, aim, {dps: was.dps ? was.dps.dps : 0, life: effectiveLife(was.c)});
+}
+
+/* ---------- run it to the end, without a page ----------
+   One call, for the live recommendations and for anything checking this file. The button does not use it:
+   the button ticks, so the page never stops answering. */
+export function run(S, aim, opt){
+  const s = start(S, aim, opt);
+  while(!s.state.done) s.tick(1e9);
+  return s.answer;
+}
