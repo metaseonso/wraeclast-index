@@ -372,7 +372,8 @@ def write(index, rep=None):
         'open': open_rows,
         'plain': [[p, n] for p, n in rep['plain'].most_common()],
     }
-    OUT.write_text(json.dumps(body, ensure_ascii=False, separators=(',', ':')) + '\n', encoding='utf-8')
+    # written as bytes, so the one newline in it is the one the repo keeps (.gitattributes eol=lf)
+    OUT.write_bytes(json.dumps(body, ensure_ascii=False, separators=(',', ':')).encode('utf-8') + b'\n')
     return body
 
 

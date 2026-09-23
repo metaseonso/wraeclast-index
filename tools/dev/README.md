@@ -6,9 +6,12 @@ Checks to run by hand. Nothing here ships (`.assetsignore`) and nothing here tou
 worktree (the static files plus `worker/seo.js`, same process, no wrangler) and prints one line per check,
 `ok` or `FAIL`; non-zero exit on any FAIL.
 
-- **cards** how many of each kind, against `guard-baseline.json` · **links** every deep link the code emits
+- **cards** how many of each kind, against `guard-baseline.json`, and every interaction the game's wording
+  names: how many open a card, how many are marked unclear, how many are left plain (`tools/interactions.py`,
+  `data/interactions.json` — a site left plain fails) · **links** every deep link the code emits
   lands on a real row · **pages** every public page 200, sitemap and llms.txt did not shrink · **rawcode**
-  no stat ids, `[Word|Word]` markup or `{0}` placeholders where a player reads them · **frame** every card
+  no stat ids, `[Word|Word]` markup or `{0}` placeholders where a player reads them · **voice** every word a
+  player reads is the game's, not an assistant's (`voice.mjs`) · **frame** every card
   and the map keep to the frame · **dash** the owner's dashboard opens and all eight tabs fill · **phone**
   375x812 with touch: a card and a boss card stay open through a tap, a drag and a selection, the Bosses
   table fits, no sideways scroll, no console errors
