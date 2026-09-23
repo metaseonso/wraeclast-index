@@ -64,6 +64,17 @@ export const SHAPES = [
   /* A label is a word, not a sentence. "Suffix · A desecration adds it · 3 kinds of item" reads as someone
      explaining the row; "Suffix · Desecration · 3 kinds of item" is the row. */
   [/\b(a|an) [\w-]+ (adds|guarantees|gives|puts|makes|carries) it\b/i, 'a sentence where a label belongs'],
+  /* An empty search or filter is a fact, not a support ticket. "Nothing matches. Try fewer words." coaches the
+     reader on how to use the search box they are already looking at; "Nothing matches." is the fact. */
+  [/\btry fewer\b/i,            'coaches the reader on their own search'],
+  [/\bloosen a filter\b/i,      'coaches the reader on their own search'],
+  /* Pointing at the page instead of stating the fact on it. "Pick one of the bases above" and "tap one" name
+     a direction and a gesture, as if the reader could not see the button they are being told to press. */
+  [/\btap one\b/i,              'points at the page instead of the fact'],
+  [/\b(pick|choose|select|add|tap|search)\b[^.!?<]{0,40}\b(above|below)\b/i, 'points at the page instead of the fact'],
+  /* "Select an item class." commands the reader; "No item class selected." says what is true. Every other
+     empty state on the site already says what is true — these two were the odd ones out. */
+  [/(?:^|[>'`])(select|choose|pick) (?:a|an|the) [a-z][a-z ]*\.(?=['`<])/i, 'a command where a state belongs'],
 ];
 
 /* What a player never reads: the comments. Block comments go whole; a line comment goes from // to the end of

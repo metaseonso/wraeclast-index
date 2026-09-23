@@ -375,7 +375,7 @@ details.tech>summary{color:var(--faint)}
       <tbody id="tbody"></tbody>
     </table>
     <div class="more" id="more" hidden></div>
-    <div class="empty" id="empty" hidden><h3>Nothing matches</h3><p>Loosen a filter or clear the search.</p></div>
+    <div class="empty" id="empty" hidden><h3>Nothing matches</h3></div>
   </div>
 
   <p class="foot" id="foot"></p>
@@ -410,7 +410,7 @@ details.tech>summary{color:var(--faint)}
   <div class="tablewrap">
     <table id="utbl"><thead><tr id="uhrow"></tr></thead><tbody id="utbody"></tbody></table>
     <div class="more" id="umore" hidden></div>
-    <div class="empty" id="uempty" hidden><h3>Nothing matches</h3><p>Loosen a filter or clear the search.</p></div>
+    <div class="empty" id="uempty" hidden><h3>Nothing matches</h3></div>
   </div>
   <p class="foot" id="ufoot"></p>
 </section>
@@ -428,7 +428,7 @@ details.tech>summary{color:var(--faint)}
       </div>
       <div class="seg" id="tattr" role="group" aria-label="Attribute"></div>
       <button class="chip" id="tanoint" type="button" aria-pressed="false"
-        title="874 notables can be anointed onto an amulet with three Distilled emotions. Turning this on sorts by what those three cost.">Anointable only</button>
+        title="874 notables can be anointed onto an amulet with three Distilled emotions. Sorts by what those three cost.">Anointable only</button>
       <button class="chip" id="tcollapse" type="button" aria-pressed="true"
         title="The tree carries 293 nodes called Attribute and 3,760 smalls that are only 1,035 distinct effects. Merged, each one is a single row with a count.">Merging duplicates</button>
       <button class="linkbtn" id="treset" type="button">Reset all</button>
@@ -444,7 +444,7 @@ details.tech>summary{color:var(--faint)}
   <div class="tablewrap">
     <table id="ttbl"><thead><tr id="throw"></tr></thead><tbody id="ttbody"></tbody></table>
     <div class="more" id="tmore" hidden></div>
-    <div class="empty" id="tempty" hidden><h3>Nothing matches</h3><p>Loosen a filter or clear the search.</p></div>
+    <div class="empty" id="tempty" hidden><h3>Nothing matches</h3></div>
   </div>
 
   <h2 class="secttl" id="jewels">Timeless jewels &mdash; every conqueror and its seed range</h2>
@@ -957,7 +957,7 @@ const COLS_ACTIVE = COL_COMMON.concat([
   {k:'cost', label:'Cost', num:true,         get:(g,L)=>{const c=costOf(g,L); return c?c.v:null;},
              cell:(g,L)=>{const c=costOf(g,L); return c&&c.v!==null? n0(c.v)+' <span class="elem">'+(COSTUNIT[c.k]||c.k)+'</span>' : nil;}},
   {k:'spir', label:'Spirit', num:true,       get:(g,L)=>spiritOf(g,L),cell:(g,L)=>n0(spiritOf(g,L))},
-  {k:'qv',   label:'Quality value', num:true, title:'The first number in the gem\u2019s quality line, at the quality set above. Units differ from gem to gem \u2014 pick a quality bonus above to compare like with like.',
+  {k:'qv',   label:'Quality value', num:true, title:'The first number in the gem\u2019s quality line, at the quality bonus set above. Units differ from gem to gem, so only equal quality bonuses compare.',
              get:(g)=>{const q=qPrimary(g,S.Q); return q?q.n:null;},
              cell:(g)=>{const q=qPrimary(g,S.Q); return q&&q.n!==null?trimNum(q.n,2):nil;}},
   {k:'qt',   label:'Quality gives', num:false, title:'What 1\u201320% quality adds to this gem.',
