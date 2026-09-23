@@ -377,7 +377,7 @@ function draw(){
         return '<label class="tp-type"><input type="checkbox" data-type="' + v + '"' + ((S.types || []).includes(v) ? ' checked' : '') + '> ' + esc(typeName(v)) + '</label>'; }).join('') + '</div>' + narrowNote() : '') +
       '<h3 class="tp-h">Mods</h3>' + narrowNote() +
       (S.groups.some(g => g.mods.length) ? heatNote(S.groups.some(g => g.t !== 'weight' && g.t !== 'not' && g.mods.some(m => rollFor(m.id)))) : '') +
-      (S.groups.length ? S.groups.map(groupHTML).join('') : '<p class="note">No mods yet. Add a group below.</p>') +
+      (S.groups.length ? S.groups.map(groupHTML).join('') : '<p class="note">No mods yet.</p>') +
       '<div class="row tp-addg">' + Object.entries(GROUPS).map(([t, g]) => '<button type="button" class="btn" data-addg="' + t + '">+ ' + g.label + '</button>').join('') + '</div>' +
       '<h3 class="tp-h">Item details</h3>' +
       '<div class="tp-grid">' +

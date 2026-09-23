@@ -542,7 +542,7 @@ function listPage(m, name){
 
 function notFound(m){
   return page(m, {title: 'Not found | Wraeclast Index', desc: 'Nothing here.', path: '/404', noindex: true, body:
-    '<div class="pagehd"><h1>Not found</h1><p>Nothing here. Try the <a href="/">search</a> or a list.</p></div>' + browse()});
+    '<div class="pagehd"><h1>Not found</h1><p>Nothing here. <a href="/">Wraeclast Index</a>, or a list below.</p></div>' + browse()});
 }
 
 /* ---------- the page shell ---------- */
