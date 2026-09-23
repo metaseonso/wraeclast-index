@@ -279,12 +279,15 @@ const total = (stats, k, base = 0) => (base + at(stats, k).flat) * (1 + at(stats
    here, in one place and not two. */
 export const UNKNOWNS = [
   {id: 'anyattribute', n: 'which attribute the tree’s free points went to',
-   why: 'The tree grants points a player puts into any attribute. The build does not say which.'},
+   why: 'The tree grants points a player puts into any attribute. The build does not say which.',
+   on: 'As if they went here', off: 'As if they went elsewhere'},
   {id: 'mindovermatter', n: 'how much Mana stands in front of Life when the hit lands',
    why: 'Mind Over Matter takes damage from Mana before Life. What Mana is left at that moment is not a '
-      + 'number a build carries.'},
+      + 'number a build carries.',
+   on: 'As if Mana is full', off: 'As if Mana is spent'},
   {id: 'unrolled', n: 'a modifier that has not been rolled yet',
-   why: 'The floor takes the bottom of the range the game prints, the ceiling the top.'},
+   why: 'The floor takes the bottom of the range the game prints, the ceiling the top.',
+   on: 'As if it rolled its best', off: 'As if it rolled its worst'},
 ];
 export const unknown = id => UNKNOWNS.find(u => u.id === id);
 

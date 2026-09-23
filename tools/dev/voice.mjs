@@ -29,7 +29,8 @@ const ROOT = join(HERE, '..', '..');
    them, and so does anyone who lands on one. */
 export const FILES = [
   'index.html', 'explore.html', 'privacy.html',
-  'assets/app.js', 'assets/craft.js', 'assets/craftsim.js', 'assets/engine.js', 'assets/trade.js',
+  'assets/app.js', 'assets/craft.js', 'assets/craftsim.js', 'assets/engine.js', 'assets/maths.js',
+  'assets/trade.js',
   'assets/tradepage.js', 'assets/build.js', 'assets/currency.js', 'assets/farms.js', 'assets/atlas.js',
   'assets/bosses.js', 'assets/map.js', 'assets/basepool.js', 'assets/bridge.js', 'assets/edges.js',
   'assets/kinds.js', 'assets/keys.js', 'assets/league.js', 'assets/marks.js', 'assets/notes.js',

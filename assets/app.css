@@ -850,3 +850,20 @@ small.at-bonus{display:block}
 @media (max-width:640px){
   .mp-fig{margin-inline:-16px; border-left:0; border-right:0; border-radius:0}
 }
+
+/* Build: the numbers worked out on this page, as a range, with what widened it underneath
+   (assets/build.js, assets/maths.js) */
+.mx{border-left:3px solid var(--accent)}
+.mx-lvl{align-items:center; gap:10px; flex-wrap:wrap}
+.mx-lvl .lbl{margin:0}
+.field.sm{width:84px; padding:5px 8px; font-size:13px}
+.btn.sm{padding:4px 12px; font-size:12px}
+.mx-wide{margin:0; font-size:13px; color:var(--text); padding:8px 12px; border-radius:8px; background:var(--raised)}
+.mx-uns{display:grid; gap:10px}
+.mx-un{display:grid; gap:6px; padding:10px 12px; border:1px solid var(--line); border-radius:8px}
+.mx-un .note{margin:0}
+.mx-unname{margin:0; font-size:13.5px; font-weight:600}
+@media (max-width:640px){
+  .mx-lvl{align-items:flex-start}
+  .mx-un .row{flex-wrap:wrap}
+}
