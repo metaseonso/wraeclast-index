@@ -8,17 +8,20 @@ Add the details here first, then a short public line there.
 - Ticket 55, the Build tab's second function: the build you already have. The page read a Path of Building
   code and said what to buy next. It now also says **what is still open in it**, and **Build it** prices
   every piece of it.
-- **What is still open** — the slots Path of Building itself lists empty, the jewel sockets the tree gives
-  that nothing is in, the affixes each item still has room for, the augment sockets still empty, whether an
-  ascendancy has been taken, and how many supports sit on the main skill. Every cap is the game's own, off
-  `data/craft.json` through `assets/basepool.js` — the same file and the same reader the Trade page and the
-  bench use, so one number is never written twice. A base that moves its own cap says so on the item
-  (`+1 Prefix Modifier allowed`), and that line is read off the item rather than assumed.
-- **Two numbers are not printed, because nobody published them.** How many supports a skill socket takes is
-  in no file the site reads (docs/proposal-builder.md, 1.4), so the supports are counted and no cap is drawn
-  against them. Passive points unspent is a floor, not a figure: levelling gives one point per level and
-  quest points come on top, so it is only ever said where the tree holds fewer passives than levelling alone
-  has given.
+- **What is still open** — the slots Path of Building itself lists empty, the affixes each item still has
+  room for, the augment sockets still empty, whether an ascendancy has been taken, and the supports the main
+  skill still has room for. Every cap is the game's own, off `data/craft.json` through
+  `assets/basepool.js` — the same file and the same reader the Trade page and the bench use, so one number
+  is never written twice. A base that moves its own cap says so on the item (`+1 Prefix Modifier allowed`),
+  and that line is read off the item rather than assumed; an item that carries its own socket count
+  (Morior Invictus has eight) is taken at its word over its item class.
+- **The supports are `assets/maths.js`'s `socketsLeft`**, and the two numbers behind it are the owner's own
+  knowledge of the game, printed word for word under the panel (`M.SOURCE.sockets`) because the export
+  states neither.
+- **Passive points unspent is a floor, not a figure.** Levelling gives one point per level and quest points
+  come on top, so it is only ever said where the tree holds fewer passives than levelling alone has already
+  given. Nothing we ship says how many quest points a character has, and no number nobody published is
+  printed here.
 - **Build it** — every piece of the build as a card, with what the market asks for it today and the total of
   the ones it prices. The total says *Priced 16 of 25* beside itself rather than quietly leaving the rest
   out, which is the rule the builder already keeps (docs/proposal-builder.md, "Why the budget is not money").
@@ -43,10 +46,12 @@ Add the details here first, then a short public line there.
 - **The offence / defence / neutral pass is not here.** It is its own module and is called where it ships:
   the Build tab hands it the build, what the numbers said and what is still open, and leaves it a box to
   draw its own control in. Without it the page stands as it is.
-- Two things the tab got wrong before and now does not: Path of Building writes its slots in whatever order
-  they were last touched, so the gear read as a shuffled list and is now in the order a character is worn;
-  and a gear card handed the trade panel its lines without saying how many of them were implicits, so an
-  implicit was searched for as a modifier.
+- Three things the tab got wrong before and now does not. Path of Building writes its slots in whatever
+  order they were last touched, so the gear read as a shuffled list and is now in the order a character is
+  worn. A gear card handed the trade panel its lines without saying how many of them were implicits, so an
+  implicit was searched for as a modifier. And an item that carries its own lines twice over in the export
+  had its runes counted twice — Morior Invictus came back with twelve runes in eight sockets, and the
+  sockets the item declares are now the count that holds, for the bill and for the maths alike.
 
 ## Next — Every interaction the game's wording names, and a way to settle the ones nobody has
 

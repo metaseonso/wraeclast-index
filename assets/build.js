@@ -49,7 +49,7 @@ const HEADER = /^(Rarity|Unique ID|Item Level|LevelReq|Quality|Sockets|Implicits
 function parseItem(text){
   const lines = text.split('\n').map(x => x.trim()).filter(Boolean);
   // armour, evasion and es are what the game prints on the item: its own lines are already inside them
-  const it = {rarity: '', name: '', base: '', mods: [], runes: [], flags: [], lv: 0,
+  const it = {rarity: '', name: '', base: '', mods: [], runes: [], flags: [], lv: 0, sockets: 0,
     armour: 0, evasion: 0, es: 0, hit: null, rate: 0, crit: 0, quality: 0};
   let i = 0, implicits = 0;
   const r = lines[i] && lines[i].match(/^Rarity: (\w+)/);
@@ -65,6 +65,9 @@ function parseItem(text){
     if((m = l.match(/^Attacks per Second: ([\d.]+)/))){ it.rate = Number(m[1]); continue; }
     if((m = l.match(/^Critical Hit Chance: ([\d.]+)/))){ it.crit = Number(m[1]); continue; }
     if((m = l.match(/^Quality: \+?(\d+)/))){ it.quality = Number(m[1]); continue; }
+    // the sockets the item itself says it has, and one line per socket that is filled. An item carrying
+    // its own lines twice over lists them twice over too, so the sockets are the count that holds.
+    if((m = l.match(/^Sockets: (\S.*)$/))){ if(!it.sockets) it.sockets = m[1].trim().split(/\s+/).length; continue; }
     if((m = l.match(/^Rune: (.+)/))){ it.runes.push(m[1]); continue; }
     if((m = l.match(/^LevelReq: (\d+)/))){ it.lv = +m[1]; continue; }
     if((m = l.match(/^Implicits: (\d+)/))){ implicits = +m[1]; continue; }
@@ -73,6 +76,7 @@ function parseItem(text){
     if(l) it.mods.push(l);
   }
   it.implicits = implicits;
+  if(it.sockets && it.runes.length > it.sockets) it.runes.length = it.sockets;
   return it;
 }
 function read(doc){
@@ -459,7 +463,10 @@ async function stillOpen(b){
   for(const n of b.empty) rows.push([n, 'empty']);
   for(const [x, cl] of list){
     const bits = [], a = affixRoom(x, cl);
-    const sock = cl && cl.so ? Math.max(0, cl.so - x.runes.length) : 0;
+    // the sockets the item itself declares where it declares any — a unique carries its own number — and
+    // otherwise what its item class comes with
+    const all = x.sockets || (cl && cl.so) || 0;
+    const sock = Math.max(0, all - x.runes.length);
     if(a) bits.push(a + (a === 1 ? ' affix' : ' affixes'));
     if(sock) bits.push(sock + (sock === 1 ? ' socket' : ' sockets'));
     if(bits.length) rows.push([x.slot + (x.name && x.name !== x.base ? ' · ' + x.name : ''), bits.join(' · ')]);
@@ -799,7 +806,7 @@ function summaryHTML(b, A){
    implicit from a modifier when it turns those lines into a search. */
 function gearItem(x){
   return {k: 'b', id: x.slot, n: x.name || x.base, s: (x.base !== x.name ? x.base + ' · ' : '') + x.slot,
-    ls: x.mods, ni: x.implicits || 0, ...(x.base !== x.name ? {base: x.base} : {}),
+    ls: x.mods, ...(x.implicits ? {ni: x.implicits} : {}), ...(x.base !== x.name ? {base: x.base} : {}),
     rq: x.lv ? [x.lv, 0, 0, 0] : undefined, cor: x.flags.some(f => /Corrupt/.test(f)) ? 1 : 0};
 }
 function uniqueEntry(x){
