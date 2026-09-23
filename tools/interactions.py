@@ -63,7 +63,9 @@ OUT = ROOT / 'data' / 'interactions.json'
 # The lines a player reads, per kind of card: the game's own wording, wherever the site shows it.
 LINE_FIELDS = {'u': 'ls', 'b': 'ls', 'p': 'ls', 'g': 't', 'h': 'ls', 'w': 't', 'a': 'ls', 'c': 't'}
 
-# What one of the five families is, in the game's own terms. The sub line of a card is its family.
+# What one of the five families is, in the game's own terms. A card's sub line says what it is and which
+# family it is in, so the card states its own standing before a word of it is read.
+SUB = 'Not settled · '
 FAMILIES = {
     'recovery':   'Recovery',
     'conversion': 'Conversion',
@@ -232,7 +234,7 @@ def build():
     """The interaction cards, as the index holds them."""
     out = []
     for c in CARDS:
-        out.append({'k': KIND, 'id': c['id'], 'n': c['n'], 's': FAMILIES[c['fam']], 'ls': list(c['ls']),
+        out.append({'k': KIND, 'id': c['id'], 'n': c['n'], 's': SUB + FAMILIES[c['fam']], 'ls': list(c['ls']),
                     'q': c['q'], 'src': GAME, 'f': list(c['words']), 'fg': 'any'})
     return out
 
@@ -360,7 +362,7 @@ def write(index, rep=None):
     open_rows = []
     for c in CARDS:
         key = KIND + ':' + c['id']
-        open_rows.append({'k': key, 'n': c['n'], 'fam': c['fam'], 'sub': FAMILIES[c['fam']],
+        open_rows.append({'k': key, 'n': c['n'], 'fam': c['fam'], 'sub': SUB + FAMILIES[c['fam']],
                           'read': rep['to'][key], 'on': len(rep['on'][key])})
     body = {
         'gen': index.get('gen') or '',
