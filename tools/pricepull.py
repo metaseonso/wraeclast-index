@@ -7,6 +7,9 @@ in this budget at all.
 What it checks (it asks the site, GET /api/prices/state, when each was last checked):
   - uniques: the 10 cheapest listings from online sellers (the site uses the middle of the 5 cheapest)
   - the uniques the Bosses tab shows: the same checks, on a share of their own
+  - base items, white: the best base of each shape a player shops in (data/basequeries.json,
+    tools/baseprices.py, which states which bases and why). The white one only — a rare of the same name is
+    another item at another price and never stands in for it.
   - trade slider tiers (data/pricejobs.json, tools/rollprices.py), farm inputs (data/farmqueries.json) and the
     boss entry items the in-game Currency Exchange does not trade (data/bossqueries.json, by hand).
 Results go to POST /api/prices/ingest a few at a time. The site works out each price (the middle of those
@@ -18,11 +21,16 @@ the same time and there is one cycle number for the whole site; the kinds are th
 (plan()) with each kind's first check at the front, so a run the trade site cuts short still covers all of
 them. Inside a kind it is oldest first, and nothing is carried over: the next run starts from what the site
 says is oldest, which is wherever this one stopped.
-The arithmetic, on today's lists (798 things: 644 uniques, 66 of them on the Bosses tab, 55 slider points,
-32 farm inputs, 1 boss entry item): seeing all of them inside a day needs 798/24 = 34 checks an hour to
-land. BUDGET is 88, a full pass every 9 hours, so the site can turn away most of a run and the day still
-holds. A whole day of nothing but 16-search runs (the worst we have seen) is 384 checks, a 50-hour pass:
-that misses the day, the run says so in as many words, and the age on every price on the site says so too.
+The arithmetic, on today's lists (906 things: 644 uniques, 66 more of them on the Bosses tab, 108 base items,
+55 slider points, 32 farm inputs, 1 boss entry item): seeing all of them inside a day needs 906/24 = 38
+checks an hour to land. BUDGET is 88, a full pass every 10 hours, so the site can turn away most of a run and
+the day still holds. A whole day of nothing but 16-search runs (the worst we have seen) is 384 checks, a
+57-hour pass: that misses the day, the run says so in as many words, and the age on every price on the site
+says so too.
+What the base items took: the pass went from 9 hours to 10, and a unique's share of one run from 71 checks to
+63, so every other kind comes round about an hour and a quarter later than it did. The 24 hours hold either
+way. All 1,554 bases would not: 2,352 things is a 27-hour pass, which is why the list is the 108 (and where
+it widens: tools/baseprices.py).
 
 Signing in to the site: on the data server, the key in WI_INGEST_KEY (the site keeps only its SHA-256).
 In GitHub Actions, GitHub gives this job a short-lived signed token (OpenID Connect); the site checks it.
@@ -55,9 +63,9 @@ SPAN = 55 * 60
 BUDGET = 88          # searches in one run: the trade site allows about 100 an hour from one address
 FLOOR = 1            # and every kind gets at least this many of them, so none can starve
 CYCLE = 24           # hours a full pass of everything should take
-KINDS = ('uniq', 'bossuniq', 'roll', 'farm', 'boss')      # what a search can be spent on, in plain words:
-NAMES = {'uniq': 'uniques', 'bossuniq': 'boss uniques', 'roll': 'mod rolls', 'farm': 'farm inputs',
-         'boss': 'boss entry items', 'cur': 'currency'}
+KINDS = ('uniq', 'bossuniq', 'base', 'roll', 'farm', 'boss')   # what a search can be spent on, in plain words:
+NAMES = {'uniq': 'uniques', 'bossuniq': 'boss uniques', 'base': 'base items', 'roll': 'mod rolls',
+         'farm': 'farm inputs', 'boss': 'boss entry items', 'cur': 'currency'}
 EXCHANGE = 0                                    # currency comes from the Currency Exchange feed now
 BATCH = 12
 
@@ -125,7 +133,7 @@ def bossitems(bosses):
 
 
 def jobs(catalogue):
-    out = {'roll': [], 'farm': [], 'boss': [], 'uniq': [], 'bossuniq': [], 'cur': []}
+    out = {'roll': [], 'farm': [], 'boss': [], 'base': [], 'uniq': [], 'bossuniq': [], 'cur': []}
     roll = sitedata.site_file('pricejobs.json')
     for stat, values in roll.get('roll', []):
         for v in values:
@@ -134,7 +142,9 @@ def jobs(catalogue):
                           'stats': [{'type': 'and', 'filters': [{'id': stat, 'value': {'min': v}}]}],
                           'filters': {'type_filters': {'filters': {'rarity': {'option': 'nonunique'}}}}},
                 'sort': {'price': 'asc'}}))
-    for kind, name in (('farm', 'farmqueries.json'), ('boss', 'bossqueries.json')):
+    # the base items keep their own name as the key, the way the uniques do, so the site needs no second
+    # list to turn a check back into the card it belongs to (worker/prices.js)
+    for kind, name in (('farm', 'farmqueries.json'), ('boss', 'bossqueries.json'), ('base', 'basequeries.json')):
         written = sitedata.site_file(name, required=False)
         if written is None:
             continue
