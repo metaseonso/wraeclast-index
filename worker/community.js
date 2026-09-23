@@ -71,12 +71,14 @@ export async function suggest(request, env, url, ctx){
 }
 
 /* What players have said about one interaction, and how often each open interaction gets an answer at all.
-   The lean is a tally, the names are the names players gave themselves, and a row we have checked ourselves
-   is marked as ours. A row the owner has hidden is in none of it. */
+   The lean is a tally and counts the moment it is sent: a count carries nobody's words, so nothing anyone
+   types can ride in on it. A name and a source are words someone typed, and they go on the page only once
+   the owner has looked at that row (shown 1) — a page nobody moderates is a page anyone can write on. A row
+   taken down (-1) is in none of it. */
 async function reportOn(env, card){
   const [tally, rows, heat] = (await env.DB.batch([
     env.DB.prepare("SELECT lean, COUNT(*) AS n FROM suggestions WHERE card = ? AND lean != '' AND shown >= 0 GROUP BY lean").bind(card),
-    env.DB.prepare("SELECT who, lean, src, at, shown FROM suggestions WHERE card = ? AND lean != '' AND shown >= 0 ORDER BY id DESC LIMIT 20").bind(card),
+    env.DB.prepare("SELECT who, lean, src, at, shown FROM suggestions WHERE card = ? AND lean != '' AND shown = 1 ORDER BY id DESC LIMIT 20").bind(card),
     env.DB.prepare("SELECT card, COUNT(*) AS n FROM suggestions WHERE lean != '' AND shown >= 0 AND card != '' GROUP BY card ORDER BY n DESC LIMIT 60"),
   ])).map(r => (r && r.results) || []);
   const lean = {works: 0, no: 0, unclear: 0};

@@ -7,6 +7,8 @@
                answer standing in for the rest: the lean is a tally with every side on it, each name is
                beside what that player said and where it came from, and a row we have checked ourselves is
                marked as ours. What a player wrote is drawn as theirs and never as the game's own word.
+               A tally counts the moment it is sent; a name and a source are words someone typed, so they
+               reach the page once we have looked at that row (worker/community.js reportOn).
      heat      how often each open interaction gets answered at all, every one of them at once, the busiest
                first. Each cell is the card it counts, so the ones players keep answering rise to the top
                and are one press away.
@@ -109,7 +111,8 @@ function playersHTML(key, r){
   return '<p class="card-facts">What players report</p>' +
     (n ? bars(lean, n) : '<p class="clar-none">No answers yet.</p>') +
     (who.length ? '<ul class="clar-who">' + who.map(whoRow).join('') + '</ul>' +
-      '<p class="clar-mine">Players’ own words, not the game’s.</p>' : '') +
+      '<p class="clar-mine">Players’ own words, not the game’s.</p>'
+      : n ? '<p class="clar-mine">Names go up once we have read them.</p>' : '') +
     (OPENED.has(key) ? formHTML() : '<div class="clar-go"><button type="button" class="btn clar-say">' +
       'Weigh in</button></div>') +
     asIfHTML(key);
