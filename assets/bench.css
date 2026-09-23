@@ -111,8 +111,10 @@ button.bn-item:focus-visible{outline:2px solid var(--accent); outline-offset:2px
 .bn-cn b{font-weight:600; color:var(--text); overflow-wrap:anywhere}
 .bn-cn span{font-size:10.5px; color:var(--faint); display:-webkit-box; -webkit-line-clamp:2;
   -webkit-box-orient:vertical; overflow:hidden}
-.bn-card{flex:none; min-width:44px; min-height:48px; padding:0 8px; border:1px solid var(--line-soft);
-  border-radius:8px; background:none; color:var(--muted); cursor:pointer; font-size:10.5px}
+/* the way to that currency's own card: the "what is this" mark and no word (cardMark in
+   assets/craftsim.js), so the row keeps the width the word was taking */
+.bn-card{flex:none; display:inline-grid; place-items:center; min-width:44px; min-height:48px; padding:0 8px;
+  border:1px solid var(--line-soft); border-radius:8px; background:none; color:var(--muted); cursor:pointer}
 .bn-card:hover{color:var(--accent); border-color:var(--accent)}
 .bn-card:focus-visible{outline:2px solid var(--accent); outline-offset:2px}
 .bn-cellw .bn-why{flex-basis:100%; font-size:11px; line-height:1.4; color:var(--muted)}

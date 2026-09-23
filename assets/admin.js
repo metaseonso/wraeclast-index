@@ -6,7 +6,7 @@
    try/catch, and whatever breaks also goes in one line at the top of the page. A tab draws its blocks
    again when it opens - a pane is first filled while it is still hidden - and anything still empty says
    "No data.", so no tab can come up blank. */
-import { PAGES, SECTIONS } from './kinds.js';   // what each page is called, from the one table the site reads
+import { PAGES, SECTIONS, KIND } from './kinds.js';   // what each page is called, from the one table the site reads
 
 const $ = (s, el = document) => el.querySelector(s);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c]));
@@ -605,12 +605,21 @@ $('#heatdev').addEventListener('click', e => {
 const NEXT = {new: [['read', 'Mark read'], ['done', 'Done']], read: [['done', 'Done'], ['new', 'Mark new']], done: [['new', 'Mark new']]};
 const noteButtons = n => (NEXT[n.status] || NEXT.done).map(([s, l]) =>
   '<button type="button" class="btn" data-id="' + esc(n.id) + '" data-s="' + s + '">' + l + '</button>').join('');
+/* the card a note was sent from, in the words the site uses for it: a note from before this was kept, or one
+   sent from a page and not from a card, has none and says nothing */
+function cardName(c){
+  const s = String(c ?? ''), i = s.indexOf(':');
+  if(i < 1) return '';
+  const d = KIND[s.slice(0, i)];
+  return (d ? d.one + ' · ' : '') + s.slice(i + 1);
+}
+const noteCard = n => { const w = cardName(n.card); return w ? '<span class="dv-note-c">' + esc(w) + '</span>' : ''; };
 const noteBox = () => obj(S.sg || obj(obj(S.data).suggestions));
 function notesList(sg){
   const list = arr(obj(sg).list).map(obj).filter(n => S.filter === 'all' || n.status === S.filter);
   return list.length ? list.map(n => '<li class="dv-note s-' + esc(n.status) + '">' +
     '<p class="dv-note-t" data-open="' + esc(n.id) + '" tabindex="0">' + esc(n.text) + '</p>' +
-    '<div class="dv-note-ft"><span class="note">' + esc(pageName(n.page)) + ' · ' + esc(ago(n.at)) + '</span>' +
+    '<div class="dv-note-ft">' + noteCard(n) + '<span class="note">' + esc(pageName(n.page)) + ' · ' + esc(ago(n.at)) + '</span>' +
     '<span class="grow"></span>' + noteButtons(n) + '</div></li>').join('')
     : '<li class="note dv-none">Nothing here.</li>';
 }
@@ -644,7 +653,7 @@ function openNote(id){
   const box = document.createElement('section');
   box.className = 'panel dv-pop';
   const paint = () => {
-    box.innerHTML = '<h3>Note</h3><p class="note">' + esc(pageName(n.page)) + ' · ' + esc(ago(n.at)) + '</p>' +
+    box.innerHTML = '<h3>Note</h3><p class="note">' + noteCard(n) + ' ' + esc(pageName(n.page)) + ' · ' + esc(ago(n.at)) + '</p>' +
       '<p class="dv-note-full">' + esc(n.text) + '</p><div class="ov-go">' + noteButtons(n) + '</div>';
   };
   paint();

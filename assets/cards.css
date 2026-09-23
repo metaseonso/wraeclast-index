@@ -134,18 +134,31 @@
 .flow-col li{position:relative; padding-left:10px; margin-top:4px; font-size:11.5px; line-height:1.45; color:var(--muted)}
 .flow-col li::before{content:''; position:absolute; left:0; top:.6em; width:4px; height:4px; border-radius:50%;
   background:var(--line-soft); border:1px solid var(--line)}
+/* Every mark on the site is one shape off the same table (MARKS in assets/app.js), drawn at one size in
+   the colour of whatever carries it. ".mk" is that size, wherever a mark lands; an empty one holds the
+   place a page keeps for it, so a top bar never jumps on first paint. */
+.mk{display:inline-block; width:15px; height:15px; flex:none; fill:none; stroke:currentColor;
+  stroke-width:1.5; stroke-linecap:round; stroke-linejoin:round}
 /* a flowchart card, offered beside the name of a card whose text is about what it lays out (offerHTML in
-   assets/app.js): a small mark, because it is a way out and not what the card came to say */
+   assets/app.js): a small mark, because it is a way out and not what the card came to say. The mark in the
+   card's own corner is a note about the card (askHTML): the same control, alone, out of the way of the words. */
 .card-marks{display:inline-flex; gap:5px; margin-left:6px; vertical-align:-7px; white-space:nowrap}
-.card-offer{position:relative; display:inline-flex; align-items:center; justify-content:center; width:26px; height:26px;
+.card-offer, .card-ask{display:inline-flex; align-items:center; justify-content:center; width:26px; height:26px;
   margin:0; padding:0; background:transparent; border:1px solid var(--line);
   border-radius:7px; color:var(--faint); cursor:pointer}
-.card-offer svg{width:15px; height:15px; fill:none; stroke:currentColor; stroke-width:1.5;
-  stroke-linecap:round; stroke-linejoin:round}
-.card-offer:hover, .card-offer:focus-visible{border-color:var(--accent); color:var(--accent)}
-.card-offer:focus-visible{outline:2px solid var(--accent); outline-offset:2px}
-/* the mark carries a question mark, so a card says there is something behind it before anyone hovers, and
-   the words it opens on hover and on focus. A finger gets no hover, which is what the mark is there for. */
+.card-offer{position:relative}
+.card-ask{position:absolute; top:11px; right:12px; z-index:2; background:var(--surface)}
+.card.detail .card-ask{top:16px; right:16px}
+/* it is drawn the size of every other mark and it stands alone, so a finger gets the full 44px around it */
+.card-ask::after{content:''; position:absolute; inset:-6px}
+/* the corner keeps its own room, so a price never runs under the mark */
+.card-hd:has(.card-ask){padding-right:34px}
+@media (pointer:coarse){.card-hd:has(.card-ask){padding-right:42px}}
+.card-offer:hover, .card-offer:focus-visible, .card-ask:hover, .card-ask:focus-visible{border-color:var(--accent); color:var(--accent)}
+.card-offer:focus-visible, .card-ask:focus-visible{outline:2px solid var(--accent); outline-offset:2px}
+/* a mark that opens a card of ours carries a question mark in its corner, so a card says there is something
+   behind it before anyone hovers, and the words it opens come up on hover and on focus. A finger gets no
+   hover, which is what the question mark is there for. */
 .card-offer::before{content:'?'; position:absolute; top:-4px; right:-4px; width:11px; height:11px;
   border-radius:50%; background:var(--sunken); border:1px solid var(--line); color:var(--faint);
   font-size:8px; line-height:9px; text-align:center; font-weight:600}
@@ -155,9 +168,9 @@
   background:var(--sunken); border:1px solid var(--line); border-radius:6px; color:var(--text);
   opacity:0; pointer-events:none; transition:opacity .12s}
 .card-offer:hover::after, .card-offer:focus-visible::after{opacity:1}
-@media (pointer:coarse){.card-offer{width:34px; height:34px}
+@media (pointer:coarse){.card-offer, .card-ask{width:34px; height:34px}
   .card-marks{vertical-align:-11px}
-  .card-offer svg{width:17px; height:17px}}
+  .mk{width:17px; height:17px}}
 .card-tags{margin:0; font-size:11px; color:var(--faint); letter-spacing:.02em}
 .card-ft{margin-top:auto; display:flex; align-items:center; gap:10px; min-height:22px; font-size:11px; color:var(--faint)}
 .card-ft .spark{width:84px; height:22px; flex:none}
@@ -348,7 +361,8 @@ header.top .keysbtn{margin-left:auto}   /* far right, even when the header wraps
 .tp-type{display:inline-flex; align-items:center; gap:6px; font-size:13px; color:var(--text); cursor:pointer}
 @media (max-width:520px){ .tslide{flex-basis:100%; max-width:none} }
 /* the Suggest button (assets/suggest.js): top bar, left of the keybind button */
-.suggestbtn{order:98; flex:none; align-self:center; height:34px; padding:0 12px; font:500 12px/1 var(--sans); letter-spacing:.03em;
+.suggestbtn{order:98; flex:none; align-self:center; display:inline-flex; align-items:center; gap:7px;
+  height:34px; padding:0 12px; font:500 12px/1 var(--sans); letter-spacing:.03em;
   color:#E8C77A; background:#0B0B09; border:2px solid #7A5F2C; border-radius:8px; cursor:pointer;
   transition:box-shadow .15s, border-color .15s, color .15s}
 .suggestbtn:hover, .suggestbtn:focus-visible{border-color:#C9A24E; color:#F6DC9A; box-shadow:0 0 12px rgba(201,162,78,.35); outline:none}

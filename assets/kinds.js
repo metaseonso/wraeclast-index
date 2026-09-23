@@ -200,6 +200,10 @@ export const FIELDS = {
     {card: 'h:HowDefences', when: /\b(?:armour|evasion|block|energy shield|resistance)/, mark: 'shield',
      is: 'How defences work', sub: 'the order a hit you take runs through'},
   ]},
+  /* Saying something about this card, from this card: the same mark shape as an offer, alone in the card's
+     own corner. What goes with the note is the page and this card's own key and nothing else — never a word
+     typed elsewhere on the page, never anything about the person (assets/suggest.js, worker/community.js). */
+  ask:      {type: 'ask', slot: 'head', box: 'sub', every: 1},
   /* A switch on the card for something outside the item that changes what the item is while it is worn —
      the Monk notable that turns a pair of gloves into something else. It sits where the player is reading
      the item, not in a panel of its own, and it is off until it is pressed. Each one is `on` (which entries
@@ -290,7 +294,7 @@ export const REL = {
   namedby:  {label: 'Named by', edge: 'namedby'},
 };
 
-const HEAD = ['art', 'name', 'sub', 'offer', 'price'];
+const HEAD = ['art', 'name', 'sub', 'offer', 'ask', 'price'];
 // the words first, then the rest of the body: a kind with more to say puts it between the two (the currency)
 const SAYS = ['lines', 'text'];
 const REST = ['quote', 'options', 'flow', 'source', 'swaps', 'tags', 'anoint', 'keywords'];

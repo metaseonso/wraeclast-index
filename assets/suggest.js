@@ -1,6 +1,9 @@
-/* Suggest: a small button on every page. Players send a short note, no sign-in.
-   Notes go to the site's database (worker/community.js) and show on the owner's dashboard only. */
-import { openBox } from './app.js';
+/* Suggest: a small button on every page, and the same mark in the corner of every card (askHTML in
+   assets/app.js). Players send a short note, no sign-in. A note carries where it came from — the page, and
+   the card it was sent from where it was sent from one — so the owner's dashboard shows it against the
+   thing it is about. Nothing else goes with it: no words typed elsewhere on the page, nothing about the
+   person. Notes go to the site's database (worker/community.js) and show on the owner's dashboard only. */
+import { openBox, esc, markHTML, D } from './app.js';
 
 export function mountSuggest(){
   let b = document.getElementById('suggestbtn');   // the pages write it in their top bar (no jump on first paint)
@@ -8,19 +11,26 @@ export function mountSuggest(){
   if(!b){
     b = document.createElement('button');
     b.id = 'suggestbtn'; b.type = 'button'; b.className = 'suggestbtn';
-    b.textContent = 'Suggest'; b.title = 'Send an idea or report a problem';
+    b.innerHTML = '<i class="mk"></i>Suggest'; b.title = 'Send an idea or report a problem';
     const keys = document.getElementById('keysbtn');   // top bar, just left of the keybind button
     if(keys) keys.before(b); else document.body.appendChild(b);
   }
+  // the words stay: this is where a player meets the mark first, and the words are what explain it
+  const box = b.querySelector('.mk');
+  if(box) box.outerHTML = markHTML('say');
   b.dataset.on = '1';
-  b.addEventListener('click', open);
+  b.addEventListener('click', () => open(''));
 }
 
-function open(){
+/* the mark in a card's corner: the same box, about that card */
+export function openSuggest(card){ open(card || ''); }
+
+function open(card){
+  const it = card ? D.byKey.get(card) : null;
   const box = document.createElement('section');
   box.className = 'suggest panel';
   box.innerHTML = '<h3>Got an idea or found a problem?</h3>' +
-    '<p class="note">Keep it short. No sign-in, no name needed.</p>' +
+    '<p class="note">' + (it ? 'About <b>' + esc(it.n) + '</b>. ' : '') + 'Keep it short. No sign-in, no name needed.</p>' +
     '<textarea class="field" maxlength="500" rows="5" placeholder="What should we add or fix?" aria-label="Your note"></textarea>' +
     '<div class="sug-row"><span class="note sug-count">0 / 500</span><button type="button" class="btn gold sug-send">Send</button></div>' +
     '<p class="note sug-msg" aria-live="polite"></p>';
@@ -32,7 +42,7 @@ function open(){
     send.disabled = true; msg.textContent = 'Sending…';
     try {
       const r = await fetch('api/suggest', {method: 'POST', headers: {'Content-Type': 'application/json', 'X-WI': '1'},
-        body: JSON.stringify({text, page: location.pathname + location.hash.split('?')[0]})});
+        body: JSON.stringify({text, page: location.pathname + location.hash.split('?')[0], card})});
       if(r.ok){ box.innerHTML = '<h3>Thanks!</h3><p class="note">Got it. We read every note.</p>'; return; }
       msg.textContent = r.status === 429 ? 'That is a lot of notes. Try again later.' : 'Could not send. Try again later.';
     } catch { msg.textContent = 'Could not send. Try again later.'; }
