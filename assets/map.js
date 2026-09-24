@@ -15,7 +15,8 @@
                      a few dozen draws, no allocation, nothing measured.
    It stops dead when the tab is hidden and when the picture is scrolled off. Ask for less motion and none of
    it runs: app.css turns every animation off, and the loop is never started. */
-import { $, esc, first, D } from './app.js';
+import { $, esc, first, D, words, hits, openDetail, hrefOf } from './app.js';
+import { KIND } from './kinds.js';
 
 const TRIP = 11;         // seconds for a light to travel the length of its edge
 const BEAT = 8.5;        // seconds for a hub to breathe in and out
@@ -25,6 +26,14 @@ const still = matchMedia('(prefers-reduced-motion: reduce)');
 
 let M = null, CV = null, CX = null, HALO = null, HEAD = null;
 let raf = 0, clock = 0, last = 0, onScreen = true;
+/* Every card's seat on the picture (data/map-nodes.json, tools/map.py). The picture is drawn once at build
+   time and these are where it put each dot, so a dot can be pointed at, opened, and found by name without
+   the picture being redrawn or the index being read for anything but the card behind a seat.
+   Fetched only once somebody opens this tab, and only after the picture itself is up. */
+let SX = null, SY = null, SR = null, SKEY = null, GRID = null, GW = 0, GH = 0;
+const CELL = 14;          // map units to a bucket: about 5,000 buckets for 7,707 seats
+let OVER = -1;            // the seat the pointer is on, or -1
+let FOUND = null;         // the seats a search matched, or null for no search
 
 export async function mount(el){
   el.innerHTML = head() + '<p class="note">Loading the map…</p>';
@@ -49,19 +58,135 @@ export async function mount(el){
   tick();
   // the picture was made from one build of the index; if the site has moved on since, say so rather than
   // letting its counts read as today's
-  first.then(() => {
-    const now = D.index && D.index.v;
-    if(now && M.index && now !== M.index) $('.mp-age', el).innerHTML =
-      ' <b>The index has been rebuilt since this picture was drawn</b>, so its counts are the ones it was drawn from.';
-  }, () => {});
+  seats(el);   // the seats behind the dots, once the picture is on screen
+  first.then(() => age(el), () => {});
   return {update: tick};   // the router calls this every time the tab is opened again
+}
+
+/* How this picture stands against the site as it is now: drawn from one build of the index, and the site
+   carries more cards than that by the time it runs. Both halves are a number, never an "etc". Called twice,
+   because the index and the seats arrive separately and either one can be the last to land. */
+function age(el){
+  const box = $('.mp-age', el);
+  if(!box || !M) return;
+  const now = D.index && D.index.v;
+  let says = now && M.index && now !== M.index
+    ? ' <b>The index has been rebuilt since this picture was drawn</b>, so its counts are the ones it was drawn from.' : '';
+  if(SKEY && D.index && D.index.items){
+    const seated = new Set(SKEY);
+    const n = D.index.items.filter(it => !seated.has(it.k + ':' + it.id)).length;
+    if(n) says += ' <b>' + num(n) + '</b> cards the site carries today have no dot here: the currency the ' +
+      'market prices beyond the catalogue, and the bosses, both made while the site runs.';
+  }
+  box.innerHTML = says;
+}
+
+/* ---------- the seats ----------
+   The seats arrive as one file per build, laid out by kind. They are flattened into plain arrays and dropped
+   into a grid of buckets, so pointing at the picture is a look in one bucket and its neighbours rather than a
+   walk over 7,707 dots on every mouse move. */
+async function seats(el){
+  let d;
+  try { d = await (await fetch('data/map-nodes.json')).json(); } catch { return; }
+  if(!d || !d.nodes || d.index !== M.index) return;   // seats from another build would sit in the wrong places
+  const all = [];
+  for(const [k, list] of Object.entries(d.nodes)) for(const n of list) all.push([k + ':' + n[0], n[1], n[2], n[3]]);
+  const n = all.length;
+  SX = new Float32Array(n); SY = new Float32Array(n); SR = new Float32Array(n); SKEY = new Array(n);
+  for(let i = 0; i < n; i++){ SKEY[i] = all[i][0]; SX[i] = all[i][1]; SY[i] = all[i][2]; SR[i] = all[i][3]; }
+  GW = Math.ceil((M.w || 1600) / CELL); GH = Math.ceil((M.h || 800) / CELL);
+  GRID = Array.from({length: GW * GH}, () => null);
+  for(let i = 0; i < n; i++){
+    const b = (Math.min(GH - 1, Math.max(0, Math.floor(SY[i] / CELL)))) * GW +
+              (Math.min(GW - 1, Math.max(0, Math.floor(SX[i] / CELL))));
+    (GRID[b] || (GRID[b] = [])).push(i);
+  }
+  const fig = $('.mp-fig', el);
+  fig.classList.add('mp-on');
+  fig.addEventListener('pointermove', e => over(e, el));
+  fig.addEventListener('pointerleave', () => { if(OVER !== -1){ OVER = -1; say(el); paint(); } });
+  fig.addEventListener('click', () => { const it = cardAt(OVER); if(it) openDetail(it, {}, hrefOf(it)); });
+  age(el);   // the seats are in: what the picture does not hold can be counted now
+  const box = $('.mp-find', el);
+  box.hidden = false;
+  $('input', box).addEventListener('input', e => find(e.target.value, el));
+  $('input', box).addEventListener('keydown', e => {
+    if(e.key !== 'Enter' || !FOUND || !FOUND.length) return;
+    const it = cardAt(FOUND[0]);
+    if(it) openDetail(it, {}, hrefOf(it));
+  });
+}
+const cardAt = i => i >= 0 && SKEY && D.byKey ? D.byKey.get(SKEY[i]) || null : null;
+
+/* The seat under the pointer: the picture's own pixels, worked back through the box it is really drawn in,
+   so the slow drift over it costs nothing to follow. */
+function over(e, el){
+  const img = $('.mp-still', el), r = img.getBoundingClientRect();
+  if(!r.width) return;
+  const x = (e.clientX - r.left) / r.width * (M.w || 1600);
+  const y = (e.clientY - r.top) / r.height * (M.h || 800);
+  const cx = Math.floor(x / CELL), cy = Math.floor(y / CELL);
+  let best = -1, bd = 64;                       // 8 map units, squared
+  for(let gy = cy - 1; gy <= cy + 1; gy++){
+    if(gy < 0 || gy >= GH) continue;
+    for(let gx = cx - 1; gx <= cx + 1; gx++){
+      if(gx < 0 || gx >= GW) continue;
+      const cell = GRID[gy * GW + gx];
+      if(!cell) continue;
+      for(const i of cell){
+        const dx = SX[i] - x, dy = SY[i] - y, d = dx * dx + dy * dy;
+        if(d < bd){ bd = d; best = i; }
+      }
+    }
+  }
+  if(best === OVER) return;
+  OVER = best;
+  say(el);
+  paint();
+}
+/* What is under the pointer, in the card's own words and never its id. */
+function say(el){
+  const lab = $('.mp-say', el);
+  const it = cardAt(OVER);
+  if(!it){ lab.hidden = true; return; }
+  lab.innerHTML = '<b>' + esc(it.n) + '</b><span>' + esc((KIND[it.k] || {}).one || '') + '</span>';
+  lab.hidden = false;
+}
+
+/* A name typed, and every seat it lands on. The same words the search itself uses, so a slip finds the dot
+   the way it finds the card. */
+function find(q, el){
+  const out = $('.mp-found', el);
+  if(!SKEY || !D.byKey){ return; }
+  const t = String(q || '').trim();
+  if(!t){ FOUND = null; out.textContent = ''; paint(); return; }
+  const ws = words(t.toLowerCase());
+  const hit = [];
+  for(let i = 0; i < SKEY.length; i++){
+    const it = D.byKey.get(SKEY[i]);
+    if(it && hits(it, ws) !== null) hit.push(i);
+  }
+  FOUND = hit;
+  /* A card can answer the words and still have no dot: the picture is drawn from the index at build time and
+     the site carries more than that by the time it runs — the currency the market prices beyond the
+     catalogue, and the bosses out of their own file. Saying "none" for a card that plainly exists is the
+     wrong answer, so where the words land on cards that have no seat, that is what it says. */
+  if(hit.length) out.textContent = hit.length.toLocaleString() + ' on the map';
+  else {
+    let any = 0;
+    for(const it of (D.index && D.index.items) || []) if(hits(it, ws) !== null) any++;
+    out.textContent = any ? any.toLocaleString() + (any === 1 ? ' card, none on this picture' : ' cards, none on this picture')
+      : 'Nothing by that name';
+  }
+  paint();
 }
 
 /* ---------- the words ---------- */
 function head(){
   return '<div class="pagehd"><h2>The index as a map</h2>' +
     '<p>Every card in the index is a dot, coloured by what kind of thing it is, and every connection the ' +
-    'site can follow between two cards is a line. Nothing to click: this is the shape of the whole thing.</p></div>';
+    'site can follow between two cards is a line. Point at a dot for its name, press it for its card, or ' +
+    'find one by name below.</p></div>';
 }
 
 function figure(){
@@ -70,7 +195,11 @@ function figure(){
     'decoding="async" alt="The index drawn as a net: ' + num(M.cards) + ' dots, one per card, coloured by kind, ' +
     'with ' + num(M.edges) + ' lines between them. A bright crowded middle where the keywords sit, arms of gems, ' +
     'uniques, bases and Atlas cards around it, and a ring of dots nothing connects to.">' +
-    '<canvas class="mp-live" aria-hidden="true"></canvas></div></figure>';
+    '<canvas class="mp-live" aria-hidden="true"></canvas></div>' +
+    '<p class="mp-say" hidden></p></figure>' +
+    '<div class="row mp-find" hidden><input class="field" type="search" placeholder="Find a card on the map…" ' +
+      'autocomplete="off" spellcheck="false" aria-label="Find a card on the map">' +
+      '<span class="note mp-found"></span></div>';
 }
 
 function legend(){
@@ -133,7 +262,34 @@ function tick(){
   else if(!go && raf){
     cancelAnimationFrame(raf);
     raf = 0;
-    CX.clearRect(0, 0, CV.width, CV.height);
+    paint();
+  }
+}
+/* What a pointer and a search put on the canvas. The lights clear it every frame and draw these last, so
+   there is one of them; with the lights off — a hidden tab, or less motion asked for — this is the draw. */
+function paint(){
+  if(!CX || raf) return;
+  CX.clearRect(0, 0, CV.width, CV.height);
+  marks();
+}
+function marks(){
+  if(!M || !CV.width) return;
+  const s = CV.width / (M.w || 1600), on = Math.min(devicePixelRatio || 1, 2);
+  if(FOUND && FOUND.length){
+    CX.strokeStyle = 'rgba(226,248,196,.92)';
+    CX.lineWidth = 1.5 * on;
+    for(const i of FOUND){
+      CX.beginPath();
+      CX.arc(SX[i] * s, SY[i] * s, Math.max(3.2 * on, SR[i] * s + 2.4 * on), 0, 6.283);
+      CX.stroke();
+    }
+  }
+  if(OVER >= 0){
+    CX.strokeStyle = 'rgba(140,203,63,1)';
+    CX.lineWidth = 2 * on;
+    CX.beginPath();
+    CX.arc(SX[OVER] * s, SY[OVER] * s, Math.max(5 * on, SR[OVER] * s + 4 * on), 0, 6.283);
+    CX.stroke();
   }
 }
 
@@ -180,4 +336,5 @@ function frame(now){
   }
   CX.globalAlpha = 1;
   CX.globalCompositeOperation = 'source-over';
+  marks();
 }

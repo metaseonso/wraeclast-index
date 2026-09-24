@@ -18,8 +18,9 @@ What it writes:
   data/map.json        what the page reads: the key (one line per kind, with its colour and its count), the
                        busiest card of each kind, a handful of edges for the lights that travel, what the
                        picture leaves out, and which data it was built from. Small enough to fetch with it.
-  data/map-nodes.json  every card's seat: kind, id, x, y and how big its dot is. Nothing reads it today; it
-                       is here so a later pass can put a click on a dot without laying anything out again.
+  data/map-nodes.json  every card's seat: kind, id, x, y and how big its dot is. assets/map.js reads it to
+                       answer a pointer, open the card behind a dot and ring the ones a search lands on,
+                       none of which lays anything out again.
 
 Nothing about a kind is written into this file. The kinds, their names, their colours and their counts come
 from the declarations the cards themselves live by (assets/kinds.js, and the palette tokens in
