@@ -254,7 +254,7 @@ function openPicker(){
 /* ---------- view ---------- */
 export function mount(el){
   EL = el;
-  if(!D.market){ el.innerHTML = '<div class="pagehd"><h2>Currency</h2><p class="err">Prices are not loaded. Try again in a minute.</p></div>'; return {}; }
+  if(!D.market){ el.innerHTML = '<div class="pagehd"><h2>Currency</h2><p class="err">Prices are not loaded.</p></div>'; return {}; }
   ALL = rows();
   const kinds = ['all', ...cats()];
   /* The currency a player came for is the top of the page. The busiest markets are a thing to browse once

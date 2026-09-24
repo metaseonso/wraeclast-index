@@ -295,7 +295,7 @@ function versionHTML(){
   const yt = (s.links || []).find(l => l.t === 'YouTube');
   const by = yt ? '<a href="' + esc(yt.u) + '" target="_blank" rel="noopener">' + esc(s.author) + '</a>' : esc(s.author);
   const warn = [];
-  if(!lg) warn.push('Prices are not loaded. Try again in a minute.');
+  if(!lg) warn.push('Prices are not loaded.');
   else if(s.league && lg !== s.league) warn.push('This list is from an older league. Prices below are from ' + esc(lg) + '.');
   if(patch && s.version && patch !== s.version && !patch.startsWith(s.version + '.')) warn.push('The game is on patch ' + esc(patch) + ' now.');
   const entries = n => n + ' entr' + (n === 1 ? 'y is' : 'ies are');
@@ -316,7 +316,7 @@ export async function mount(el){
   el.innerHTML = '<div class="pagehd"><h2>Farms</h2></div><p class="note">Loading…</p>';
   const [data, qs, fp] = await Promise.all([getJSON('data/farms.json'), getJSON('data/farmqueries.json'), getJSON('data/farmprices.json')]);
   if(!data || !data.farms){
-    el.innerHTML = '<div class="pagehd"><h2>Farms</h2><p class="err">Could not load the farms. Try again in a minute.</p></div>';
+    el.innerHTML = '<div class="pagehd"><h2>Farms</h2><p class="err">The farms did not load.</p></div>';
     return {};
   }
   SRC = data.source;

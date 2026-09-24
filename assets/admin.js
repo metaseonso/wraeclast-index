@@ -90,7 +90,7 @@ $('#signform').addEventListener('submit', async e => {
       pw.value = ''; msg.textContent = '';
       try { if(localStorage.getItem('wi-notrack') === null) localStorage.setItem('wi-notrack', '1'); } catch {}
       start();
-    } else msg.textContent = {401: 'Wrong password.', 429: 'Too many tries. Try again in an hour.', 503: 'Not set up yet.'}[r.status] || 'Could not sign in.';
+    } else msg.textContent = {401: 'Wrong password.', 429: 'Too many tries. Locked for an hour.', 503: 'Not set up yet.'}[r.status] || 'Could not sign in.';
   } catch { msg.textContent = 'Could not reach the site.'; }
   btn.disabled = false;
 });

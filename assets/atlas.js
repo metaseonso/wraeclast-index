@@ -126,7 +126,7 @@ export async function mount(el){
     if(!r.ok) throw new Error(r.status);
     A = await r.json();
   } catch(e){
-    el.querySelector('.note').outerHTML = '<p class="err">Could not load the Atlas data. Try again in a minute.</p>';
+    el.querySelector('.note').outerHTML = '<p class="err">The Atlas did not load.</p>';
     return {};
   }
   build();

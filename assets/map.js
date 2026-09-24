@@ -42,7 +42,7 @@ export async function mount(el){
     if(!r.ok) throw new Error('data/map.json ' + r.status);
     M = await r.json();
   } catch {
-    el.innerHTML = head() + '<p class="err">Could not load the map. Try again in a minute.</p>';
+    el.innerHTML = head() + '<p class="err">The map did not load.</p>';
     return;
   }
   el.innerHTML = head() + figure() + legend() + foot();
@@ -70,13 +70,11 @@ function age(el){
   const box = $('.mp-age', el);
   if(!box || !M) return;
   const now = D.index && D.index.v;
-  let says = now && M.index && now !== M.index
-    ? ' <b>The index has been rebuilt since this picture was drawn</b>, so its counts are the ones it was drawn from.' : '';
+  let says = now && M.index && now !== M.index ? ' <b>Drawn before the last index rebuild.</b>' : '';
   if(SKEY && D.index && D.index.items){
     const seated = new Set(SKEY);
     const n = D.index.items.filter(it => !seated.has(it.k + ':' + it.id)).length;
-    if(n) says += ' <b>' + num(n) + '</b> cards the site carries today have no dot here: the currency the ' +
-      'market prices beyond the catalogue, and the bosses, both made while the site runs.';
+    if(n) says += ' <b>' + num(n) + '</b> cards have no dot: currency beyond the catalogue, and bosses.';
   }
   box.innerHTML = says;
 }
@@ -184,9 +182,8 @@ function find(q, el){
 /* ---------- the words ---------- */
 function head(){
   return '<div class="pagehd"><h2>The index as a map</h2>' +
-    '<p>Every card in the index is a dot, coloured by what kind of thing it is, and every connection the ' +
-    'site can follow between two cards is a line. Point at a dot for its name, press it for its card, or ' +
-    'find one by name below.</p></div>';
+    '<p>Every card is a dot, coloured by its kind. Every connection between two cards is a line. ' +
+    'A dot opens its card.</p></div>';
 }
 
 function figure(){
@@ -214,18 +211,16 @@ function foot(){
   const big = (M.hubs || [])[0];
   const groups = out.by ? Object.entries(out.by).sort((a, b) => b[1] - a[1])
     .map(([name, n]) => num(n) + ' ' + name).join(', ') : '';
-  return '<p class="note mp-foot">' + num(M.cards) + ' cards over ' + num((M.kinds || []).length) + ' kinds, ' +
-      num(M.edges) + ' connections. A dot grows with the number it carries' +
-      (big ? '; the busiest is <b>' + esc(big.n) + '</b>, on ' + num(big.deg) : '') + '. ' +
-      'Drawn from the index of ' + esc(patch(M.index)) + (M.gen ? ', built ' + esc(M.gen) : '') +
+  const DOT = ' · ';
+  return '<p class="note mp-foot">' + num(M.cards) + ' cards' + DOT + num((M.kinds || []).length) + ' kinds' +
+      DOT + num(M.edges) + ' connections. A bigger dot carries more' +
+      (big ? '; the heaviest is <b>' + esc(big.n) + '</b>, on ' + num(big.deg) : '') + '. ' +
+      'P' + esc(patch(M.index)).slice(1) + (M.gen ? ', drawn ' + esc(M.gen) : '') +
       '.<span class="mp-age"></span></p>' +
-    '<p class="note">Left out: ' +
-      (out.groups ? 'the big groups a card sits in, which are not links between two things — ' +
-        num(out.groups) + ' pairs' + (groups ? ' (' + esc(groups) + ')' : '') + '. ' : '') +
-      (out.rows ? num(out.rows) + ' rows in the keyword lists no card of its own answers to. ' : '') +
-      ((out.kinds || []).length ? esc(out.kinds.join(', ')) + ': built while the site runs, out of their own ' +
-        'file, with nothing joining them to the index. ' : '') +
-      'Everything else the site holds is drawn: none sampled, none thinned.</p>';
+    '<p class="note">Not drawn: ' +
+      [out.groups ? num(out.groups) + ' group pairs' + (groups ? ' (' + esc(groups) + ')' : '') : '',
+       out.rows ? num(out.rows) + ' keyword rows with no card of their own' : '',
+       (out.kinds || []).length ? esc(out.kinds.join(', ')) : ''].filter(Boolean).join(DOT) + '.</p>';
 }
 
 // the client build (4.5.5.2) as players know it: patch 0.5.5, the same reading index.html gives the footer

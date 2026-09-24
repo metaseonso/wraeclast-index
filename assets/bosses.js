@@ -450,7 +450,7 @@ export async function mount(el){
   EL = el;
   el.innerHTML = head() + '<p class="note">Loading…</p>';
   if(!await load()){
-    el.innerHTML = head() + '<p class="err">Could not load the bosses. Try again in a minute.</p>';
+    el.innerHTML = head() + '<p class="err">The bosses did not load.</p>';
     return {};
   }
   const count = {all: ROWS.length, pin: ROWS.filter(r => r.b.pinnacle).length, drops: ROWS.filter(r => r.drops.length).length};

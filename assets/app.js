@@ -1878,7 +1878,7 @@ function paintRel(sec){
       '</div>';
   }).join('');
   const note = waiting ? '<p class="note">Looking…</p>' : relBad && !cats.length
-    ? '<p class="note">Could not load this list. Try again in a minute.</p>' : '';
+    ? '<p class="note">This list did not load.</p>' : '';
   const filter = all.length > 1 ? '<input class="uses-q" type="search" autocomplete="off" spellcheck="false"' +
     (all.length > USE_FILTER ? '' : ' hidden') +
     ' placeholder="Filter this list…" aria-label="Filter these connections">' : '';

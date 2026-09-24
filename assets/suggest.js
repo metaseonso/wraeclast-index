@@ -189,8 +189,8 @@ function open(card){
       const r = await fetch('api/suggest', {method: 'POST', headers: {'Content-Type': 'application/json', 'X-WI': '1'},
         body: JSON.stringify({text, page: location.pathname + location.hash.split('?')[0], card})});
       if(r.ok){ box.innerHTML = '<h3>Thanks!</h3><p class="note">Got it. We read every note.</p>'; return; }
-      msg.textContent = r.status === 429 ? 'That is a lot of notes. Try again later.' : 'Could not send. Try again later.';
-    } catch { msg.textContent = 'Could not send. Try again later.'; }
+      msg.textContent = r.status === 429 ? 'That is a lot of notes.' : 'It did not send.';
+    } catch { msg.textContent = 'It did not send.'; }
     send.disabled = false;
   });
   import('./support.js').then(async s => { if(await s.support()) box.insertAdjacentHTML('beforeend', '<p class="note">' + s.supportLink() + '</p>'); }).catch(() => {});

@@ -206,7 +206,7 @@ async function send(box){
     return;
   }
   go.disabled = false;
-  msg.textContent = r && r.status === 429 ? 'That is a lot of answers. Try again later.' : 'Could not send. Try again later.';
+  msg.textContent = r && r.status === 429 ? 'That is a lot of answers.' : 'It did not send.';
 }
 
 /* The same two fields on their own, for a page that is not a card: the open interactions and what players

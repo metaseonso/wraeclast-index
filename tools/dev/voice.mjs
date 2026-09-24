@@ -61,6 +61,10 @@ export const SHAPES = [
      string, so every one of these got past it by carrying on past the noun. A state is not a tutorial. */
   [/(?:^|[.!?)>”"]\s+)(pick|choose|select|plan|practise|paste|press|tap)\b[^.!?<]{0,60},\s*(then|and)\s+\w/i,
                                 'walks the reader through steps'],
+  /* Telling a player what to do about a fault of ours: "Could not load the bosses. Try again in a
+     minute." The fault is the message; what they do about it is theirs. It sat in eight places. */
+  [/\b(try|check|refresh|reload)(?!\s*[{(])\b[^.!?<]{0,40}\b(again|later|in a (minute|moment|bit))\b/i,
+                                'tells the reader what to do about a fault'],
   [/\bdon'?t worry\b/i,         'coaches the reader'],
   [/\b(make|be) sure to\b/i,    'coaches the reader'],
   [/\bhelps? you\b/i,           'sells the feature'],

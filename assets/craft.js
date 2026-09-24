@@ -1168,7 +1168,7 @@ export async function mount(el){
     if(!r.ok) throw new Error(r.status);
     X = await r.json();
   } catch(e){
-    el.innerHTML = head() + '<p class="err">Could not load the crafting data. Try again in a minute.</p>';
+    el.innerHTML = head() + '<p class="err">The crafting data did not load.</p>';
     return {};
   }
   tradeData().then(t => { T = t; if(B) paint('item'); }).catch(() => {});
@@ -1194,7 +1194,7 @@ const ilvlHTML = () => valHTML({k: 'ilvl', lo: 1, hi: X.ilvl, step: 1, v: S.l, h
 /* the mod screen: the search, the hits, the answer and the rail. On a phone they are one job at a time — the
    hits until a modifier is picked, then the modifier and how to get it (.cr-mods[data-picked], app.css). */
 function modHTML(){
-  if(!MX) return '<p class="err">Could not load the modifier list. Try again in a minute.</p>';
+  if(!MX) return '<p class="err">The modifier list did not load.</p>';
   return '<div class="panel cr-top">' + findBarHTML() + '</div>' +
     '<div class="cr-main cr-mods" data-picked="' + (MOD.key ? 1 : 0) + '">' +
     '<section class="panel cr-hits" data-part="hits"></section>' +
