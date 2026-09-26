@@ -98,10 +98,12 @@ TOPSEARCH = ('<div class="topsearch" id="topsearch"><div class="tsearch"><svg vi
              '<input type="search" placeholder="Search the index" autocomplete="off" spellcheck="false" aria-label="Search the index" '
              'role="combobox" aria-expanded="false" aria-autocomplete="list"><kbd aria-hidden="true">/</kbd>'
              '<div class="tsearch-drop" role="listbox" hidden></div></div></div>')
-SUGGEST_BTN = '<button id="suggestbtn" type="button" class="suggestbtn" title="Send an idea or report a problem">Suggest</button>'
+SUGGEST_BTN = '<button id="suggestbtn" type="button" class="suggestbtn" title="Send an idea or report a problem"><i class="mk"></i>Suggest</button>'
+SUGGEST_OLD = '<button id="suggestbtn" type="button" class="suggestbtn" title="Send an idea or report a problem">Suggest</button>'   # before its mark
 CL_BTN = '<button class="clbtn" id="clbtn" type="button">Patch notes <span class="ct wait">v0.00</span></button>'   # assets/notes.js writes the version
 CL_NEW = TOPSEARCH + '\n    ' + SUGGEST_BTN + '\n    ' + KEYS_BTN + '\n    ' + CL_BTN
 CL_PREV = '<div class="topsearch" id="topsearch"></div>\n    ' + KEYS_BTN + '\n    ' + CL_OLD
+CL_NOMARK = TOPSEARCH + '\n    ' + SUGGEST_OLD + '\n    ' + KEYS_BTN + '\n    ' + CL_BTN
 
 RAW = re.compile(r'(?<![\w\[./-])[a-z][a-z0-9]*(?:_[a-z0-9%+]+){2,}(?:\s*=\s*-?\d+)?|\{[^}\s]{1,80}\}')
 
@@ -731,7 +733,8 @@ def site_scripts(html):
     html = re.sub(r'<b id="total">[^<]*</b>', '<b id="total">{:,}</b>'.format(live), html, count=1)
     for pat, words in BUILD_COPY:   # the foot copy says the patch, not the client build
         html = pat.sub(words % patch, html, count=1)
-    left = sorted(set(COPY_IDS.findall(html)))   # a reworded artifact that still carries game code
+    # a reworded artifact that still carries game code, in the page itself: the data blocks keep their ids
+    left = sorted(set(COPY_IDS.findall(BLOCK.sub('', html))))
     if left:
         sys.exit('the drill-down copy still names %s; update the copy pairs in tools/sync.py' % ', '.join(left))
     return html
@@ -884,7 +887,7 @@ def explore_page(html):
     if HEAD not in html:
         html = html.replace(HEAD_OLD, HEAD, 1) if HEAD_OLD in html else html.replace(TITLE, '', 1).replace('</head>', HEAD + '</head>', 1)
     html = live_prices(html)
-    for new, olds in ((MAST_NEW, (MAST_NOBOSS, MAST_PREV, MAST_OLD)), (CL_NEW, (CL_PREV, CL_OLD))):
+    for new, olds in ((MAST_NEW, (MAST_NOBOSS, MAST_PREV, MAST_OLD)), (CL_NEW, (CL_NOMARK, CL_PREV, CL_OLD))):
         if new not in html:
             old = next((o for o in olds if o in html), None)
             if not old:
