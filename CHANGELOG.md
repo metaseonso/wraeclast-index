@@ -81,8 +81,14 @@ main thread busy 2.8 s with a 471 ms frame; 5.4k elements after every tab; /expl
 - **After** (same check, the minified build, 4x slower): home parses 251 KB before the index loads in idle time
   (3.7 MB before) and idles at 118 ms busy in 5 s (293 ms, with 7 endless animations); typing "fireball" 368 ms
   busy, longest frame 162 ms (2,827 and 471); 229 elements after every tab (5,397).
-- **Held for a look:** the fog in 2 plain layers instead of 6 blended ones, and a card painted with one shadow
-  (branch `speed-preview`).
+- **Today's look, for less.** The owner turned down the fog in 2 layers and the card with one shadow: *"keep
+  today's look. Just optimize them down to the wire."* So the six fog layers stay, and a 1x screen gets copies cut
+  to the width they are drawn (`haze-680.webp`, `fog-bank-728.webp`, through `srcset`; `aspect-ratio` pins the
+  box): Chrome rasters each layer at the picture's own size, so decoded images 14.6 → 7.2 MB and tile memory
+  about 30 MB less. 2x screens are pixel for pixel as before; 1x differs by at most 8/255 on 0.2% of pixels.
+- **A card's hover cross-fades two frames** (`.card-hd::before` resting, `::after` hovered, both `display:none` at
+  rest) instead of animating `box-shadow`: rest and end state are pixel-identical, hovering 4 cards 934–1145 →
+  324–352 ms busy at 4x slower, 380 → 32 paints. A browser without `transition-behavior` keeps the old hover.
 - **Prices were kept 4 hours in browsers.** The zone's Browser Cache TTL (4 h) overrode the worker's 5 minutes
   on `market.json` and the other live files; set to "Respect Existing Headers" on 26 September 2026.
 
