@@ -2,6 +2,10 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
+<script>/* a weak machine, a saver connection or a player who asks for less motion: html.lite, before the first paint.
+   The fog is never drawn, the wisp rises once, nothing blends and the map runs at half speed (theme.css, app.css,
+   assets/app.js later(), assets/map.js). The same line is in explore.html (tools/sync.py DATA_JS). */
+if(navigator.deviceMemory<=4||navigator.hardwareConcurrency<=4||matchMedia("(prefers-reduced-motion: reduce)").matches||(navigator.connection&&navigator.connection.saveData))document.documentElement.classList.add("lite");</script>
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,interactive-widget=resizes-content">
 <title>Wraeclast Index · Path of Exile 2, made easier for every kind of player</title>
 <meta name="description" content="Path of Exile 2, made easier for every kind of player. Live prices, the crafting bench, trade search in plain words, and every gem, unique, passive, currency and keyword.">

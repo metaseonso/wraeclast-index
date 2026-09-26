@@ -13,8 +13,10 @@
      the lights      a canvas over the picture, at most twice the size it is shown at. One frame is a clear,
                      one soft glow per kind's busiest card, and one line and one head per travelling light —
                      a few dozen draws, no allocation, nothing measured.
-   It stops dead when the tab is hidden and when the picture is scrolled off. Ask for less motion and none of
-   it runs: app.css turns every animation off, and the loop is never started. */
+   It stops dead when the tab is hidden and when the picture is scrolled off, and the drift and haze stop with
+   it. Ask for less motion and none of it runs: app.css turns every animation off, and the loop is never
+   started. A weak machine (html.lite, set in index.html's <head>) gets the lights at half the frames and one
+   canvas pixel per pixel on screen. */
 import { $, esc, first, D, words, hits, openDetail, hrefOf } from './app.js';
 import { KIND } from './kinds.js';
 import { onType } from './app.js';   // the search box waits out a burst of keys, like every box on the site
@@ -24,6 +26,9 @@ const BEAT = 8.5;        // seconds for a hub to breathe in and out
 const GOLD = 0.6180339887;
 const num = n => (+n || 0).toLocaleString('en');
 const still = matchMedia('(prefers-reduced-motion: reduce)');
+const LITE = document.documentElement.classList.contains('lite');
+// canvas pixels per pixel on screen: the screen's own, never more than two, and one on a weak machine
+const ratio = () => LITE ? 1 : Math.min(devicePixelRatio || 1, 2);
 
 let M = null, CV = null, CX = null, HALO = null, HEAD = null;
 let raf = 0, clock = 0, last = 0, onScreen = true;
@@ -248,13 +253,14 @@ function sprite(size, rgb){
 function size(){
   if(!CV) return;
   const box = CV.getBoundingClientRect();
-  const dpr = Math.min(devicePixelRatio || 1, 2);
+  const dpr = ratio();
   const w = Math.max(1, Math.round(box.width * dpr)), h = Math.max(1, Math.round(box.height * dpr));
   if(CV.width !== w || CV.height !== h){ CV.width = w; CV.height = h; }
 }
 
 function tick(){
   const go = onScreen && !document.hidden && !still.matches && M;
+  if(CV) CV.closest('.mp-fig').classList.toggle('mp-rest', !go);   // the drift and haze in app.css hold still with the lights
   if(go && !raf){ last = 0; raf = requestAnimationFrame(frame); }
   else if(!go && raf){
     cancelAnimationFrame(raf);
@@ -271,7 +277,7 @@ function paint(){
 }
 function marks(){
   if(!M || !CV.width) return;
-  const s = CV.width / (M.w || 1600), on = Math.min(devicePixelRatio || 1, 2);
+  const s = CV.width / (M.w || 1600), on = ratio();
   if(FOUND && FOUND.length){
     CX.strokeStyle = 'rgba(226,248,196,.92)';
     CX.lineWidth = 1.5 * on;
@@ -292,11 +298,12 @@ function marks(){
 
 function frame(now){
   raf = requestAnimationFrame(frame);
+  if(LITE && last && now - last < 30) return;   // a weak machine: every other frame at 60 Hz, about 30 a second anywhere
   clock += last ? Math.min(0.05, (now - last) / 1000) : 0;   // a long gap is one step, never a jump
   last = now;
   const w = CV.width, h = CV.height;
   const s = w / (M.w || 1600);                     // picture pixels to canvas pixels
-  const on = Math.min(devicePixelRatio || 1, 2);   // canvas pixels per pixel on screen
+  const on = ratio();                              // canvas pixels per pixel on screen
   CX.clearRect(0, 0, w, h);
   CX.globalCompositeOperation = 'lighter';
 
