@@ -2057,15 +2057,34 @@ function nearScore(it, N){
    words, once, on that keystroke. */
 const NEAR_LETTERS = 6;   // from here up a word is allowed two slips; under it, one
 let VOCAB = null, VOCAB_AT = -1;
+const wordsOf = (set, it) => { for(const w of (it._hay || '').match(/[a-z0-9]+/g) || []) if(w.length > 2) set.add(w); };
 function vocab(){
   const n = D.index && D.index.items ? D.index.items.length : 0;
   if(VOCAB && VOCAB_AT === n) return VOCAB;
   const set = new Set();
-  for(const it of (D.index && D.index.items) || [])
-    for(const w of (it._hay || '').match(/[a-z0-9]+/g) || []) if(w.length > 2) set.add(w);
+  for(const it of (D.index && D.index.items) || []) wordsOf(set, it);
   VOCAB_AT = n;
   return VOCAB = [...set];
 }
+/* The list is worked out while the page has nothing else to do, a few milliseconds at a time, once the whole
+   index is in, so the first key typed never pays for it. A key that comes before it is finished builds the
+   list whole, there and then, and this stops. */
+function vocabLater(){
+  const items = D.index.items, n = items.length, set = new Set();
+  let i = 0;
+  const slice = () => {
+    if(VOCAB_AT === n || D.index.items !== items) return;
+    const stop = performance.now() + 6;
+    while(i < n){
+      wordsOf(set, items[i++]);
+      if(!(i & 127) && performance.now() > stop) return void idle(slice);
+    }
+    VOCAB_AT = n;
+    VOCAB = [...set];
+  };
+  idle(slice);
+}
+ready.then(vocabLater, () => {});
 /* Damerau–Levenshtein, given up on as soon as the whole row is already further than max. */
 function apart(a, b, max){
   const al = a.length, bl = b.length;
