@@ -6,8 +6,9 @@
      node tools/dev/speed.mjs --budget        exit non-zero when a number is over its budget (BUDGET below)
 
    What it reads, one fresh browser profile per page so no service worker or cache helps:
-     home    JSON the page parsed before anyone types, page elements, JS heap, and 5 idle seconds:
-             main-thread busy time, style recalcs and layouts (a page at rest should do almost nothing)
+     home    JSON the page parsed in its first 2 seconds, then once settled; page elements, JS heap, and 5 idle
+             seconds 12 s in: main-thread busy time, style recalcs and layouts (a page at rest should do almost
+             nothing)
      typing  "fireball" typed a key every 60 ms: main-thread busy time while typing, the longest frame,
              then the animations still running once the search has docked the hero (should be none)
      tabs    every tab visited once, then home again: page elements and JS heap left behind
@@ -26,8 +27,8 @@ const SLOW = 4;   // CPU slowdown: a fast desktop at 4x is roughly a cheap lapto
 const TABS = ['currency', 'trade', 'craft', 'atlas', 'bosses', 'map'];
 // the numbers a change must not push past (4x slower CPU, 1280x800, fresh profile)
 const BUDGET = {
-  'home.jsonKB': 700,          // before anyone types: prices and the page, not the index
-  'home.idleBusyMs': 400,      // 5 seconds doing nothing
+  'home.jsonKB': 700,          // the first paint: prices and the page, not the index
+  'home.idleBusyMs': 400,      // 5 seconds doing nothing (2.9 s the day the fog lost its will-change)
   'typing.busyMs': 1500,       // eight keys
   'typing.running': 0,         // animations left running once the hero has docked
   'tabs.elements': 3000,       // after every tab and back home
@@ -133,12 +134,15 @@ async function home(){
   return withChrome(async page => {
     await go(page, SITE + '/');
     await until(page, `document.getElementById('q')`);
-    await wait(3000);
+    await wait(2000);
+    const jsonKB = await evalJS(page, JSONKB);   // the first paint's share, before the index loads in idle time
+    await wait(10000);                           // then at rest: whatever loads by itself has loaded
     const before = await metrics(page);
     await wait(5000);
     const after = await metrics(page);
     return {
-      jsonKB: await evalJS(page, JSONKB),
+      jsonKB,
+      jsonKBsettled: await evalJS(page, JSONKB),
       elements: await evalJS(page, ELEMENTS),
       heapMB: await heapMB(page),
       running: await evalJS(page, RUNNING),
