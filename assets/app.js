@@ -2147,25 +2147,8 @@ export function search(q, kind = 'all'){
   return out.map(x => x.it);
 }
 
-/* biggest price moves this week, for the empty home page */
-function movers(){
-  const M = D.market && D.market.items;
-  if(!M) return [];
-  const list = [];
-  for(const it of D.index.items){
-    const m = M[it.k + ':' + it.id] || M[it.k + ':' + it.n];
-    if(!m || m.ch === undefined || m.ch === null) continue;
-    // a thin market swings on one listing: how thin is too thin is the kind's own "few", and a kind that
-    // does not say is never held back
-    const few = (KIND[it.k] || {}).few;
-    if(few && (m[few.at] ?? 0) < few.under) continue;
-    list.push({it, s: Math.abs(m.ch) * Math.log10(10 + (m.ls ?? m.vol ?? 10))});
-  }
-  list.sort((a, b) => b.s - a.s);
-  return list.map(x => x.it);
-}
-
-/* ---------- home view ---------- */
+/* ---------- home view ----------
+   The search bar and nothing under it until something is typed. */
 const PAGE = 30;   // cards added each time the list reaches the bottom of the screen
 const H = {q:'', kind:'all', shown:PAGE, list:[]};
 function homeInit(){
@@ -2218,12 +2201,11 @@ function homeRender(){
     label = list.length ? '<b>' + list.length.toLocaleString() + '</b> match' + (list.length === 1 ? '' : 'es') : '';
   } else {
     for(const b of $('#kinds').children) b.querySelector('.ct').textContent = '';
-    list = movers().filter(it => H.kind === 'all' || it.k === H.kind);
-    label = list.length ? 'Biggest price moves this week' + (D.market ? ' · ' + esc(D.market.league) : '') : 'Start typing to search.';
+    list = []; label = '';
   }
   status.innerHTML = label;
-  $('#cards').classList.remove('wait');   // the first cards are in: the grid takes its own height
-  $('#quote').hidden = has || !list.length;
+  $('#cards').classList.remove('wait');   // the first answer is in: the grid takes its own height
+  $('#quote').hidden = has;
   const shown = list.slice(0, H.shown);
   flow($('#cards'), shown.map(it => ({key: it.k + ':' + it.id, it})), x => card(x.it));
   // these are the only cards drawn before the whole index is in: they take their keyword marks when it lands

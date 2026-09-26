@@ -25,7 +25,7 @@ from pathlib import Path
 import lastgood
 
 ROOT = Path(__file__).resolve().parent.parent
-CORE_KINDS = ('u', 'c')   # uniques and currency: every card the home page's "biggest price moves" can show
+CORE_KINDS = ('u', 'c')   # uniques and currency: the part of the index that loads first
 
 
 def renumber(lx, keys, table, at):

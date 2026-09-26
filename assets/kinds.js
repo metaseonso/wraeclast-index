@@ -28,7 +28,6 @@
      notitem  a test: an entry that answers it is not an item, whatever the kind says
      sprite   the sheet its art is cut from, where its art is in one
      px       where else its price may be listed: {as} the kind it is listed under, {at} only when it carries it
-     few      how thin a market is ignored on the home page's price moves: {at} the count, {under} the floor
      rank     what the search adds to or takes off this kind, where it should not rank beside the rest
      builds   which of poe.ninja's build lists this kind is in: the first test that answers wins
      mark     the field whose lines already carry the index's own marks (tools/nodelinks.py)
@@ -202,7 +201,7 @@ export const MAPS = {
 /* Every declaration a kind may carry. A key that is not here is a rule that reaches one kind, which is the
    shape the frame does not have: it belongs in FIELDS, FRAME, MAPS or REL. */
 export const DECL = ['k', 'one', 'many', 'tone', 'place', 'sec', 'search', 'item', 'index', 'crawl', 'own',
-  'fields', 'acts', 'rel', 'link', 'gone', 'notitem', 'sprite', 'px', 'few', 'rank', 'builds', 'mark', 'make',
+  'fields', 'acts', 'rel', 'link', 'gone', 'notitem', 'sprite', 'px', 'rank', 'builds', 'mark', 'make',
   'kw', 'words'];
 
 export const FIELDS = {
@@ -440,7 +439,7 @@ export const KINDS = [
 
   {k: 'u', one: 'Unique', tone: 'c-unique', many: 'Uniques', place: 'Uniques', sec: 'uniques', link: 'explore#uniques=@n', mark: 'ls',
    index: true, search: true, item: true, crawl: true,
-   sprite: 'uniques', make: {base: 'sub1'}, few: {at: 'ls', under: 10},
+   sprite: 'uniques', make: {base: 'sub1'},
    builds: [{key: 'items'}],
    fields: [...HEAD, 'reqs', 'corrupt', 'limit', 'group', 'props', 'implicit', ...BODY, ...FOOT],
    acts: ['trade', 'pool', 'full', 'pin', 'open'],
@@ -488,7 +487,7 @@ export const KINDS = [
 
   {k: 'c', one: 'Currency', tone: 'c-currency', many: 'Currency', place: 'Currency', link: './#/currency?c=@id',
    index: true, search: true, item: true, crawl: true,
-   px: {as: 'c'}, make: {nx: 'yes'}, gone: {at: 'nx'}, few: {at: 'vol', under: 1},
+   px: {as: 'c'}, make: {nx: 'yes'}, gone: {at: 'nx'},
    fields: [...HEAD, 'droplv', ...SAYS, 'perslot', 'ladder', 'adds', ...REST, ...FOOT],
    acts: ['trade', 'pool', 'bench', 'pin', 'open'],
    rel: ['named', 'namedby', 'job', 'cat']},
