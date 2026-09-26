@@ -861,14 +861,16 @@ small.at-bonus{display:block}
 /* The picture is one finished image; all this does is frame it and let it breathe. The drift is a transform
    and the haze an opacity, both on their own layer, so the compositor carries them without a repaint and the
    shape never smears. A slide of a third of a percent only ever uncovers ground the same black as the
-   picture's own. Less motion: the rule at the top of this file stops both, and assets/map.js never starts
-   the lights. */
+   picture's own. Both hold still whenever the lights do (.mp-rest, assets/map.js tick()): a hidden tab, the
+   picture scrolled off. Less motion: the rule at the top of this file stops both, and assets/map.js never
+   starts the lights. */
 .mp-fig{margin:0; position:relative; overflow:hidden; max-width:1180px;
   border:1px solid var(--line); border-radius:var(--r); background:var(--sunken); box-shadow:var(--shadow)}
 .mp-fig::after{content:''; position:absolute; inset:0; pointer-events:none;
   background:radial-gradient(58% 78% at 52% 45%, rgba(140,203,63,.07), transparent 72%);
   animation:mp-haze 13s ease-in-out infinite alternate}
-.mp-drift{position:relative; will-change:transform; animation:mp-drift 53s ease-in-out infinite alternate}
+.mp-drift{position:relative; animation:mp-drift 53s ease-in-out infinite alternate}
+.mp-rest::after, .mp-rest .mp-drift{animation-play-state:paused}
 .mp-still{display:block; width:100%; height:auto}
 .mp-live{position:absolute; inset:0; width:100%; height:100%; pointer-events:none}
 /* the picture answers a pointer once its seats are in (assets/map.js): a name where the pointer is, and the
