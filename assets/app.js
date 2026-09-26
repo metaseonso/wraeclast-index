@@ -2299,9 +2299,10 @@ function homeInit(){
   // endless list: when the bottom comes into view, the next 30 cards fly in, up to ENDLESS; then Show more
   const more = $('#more');
   more.addEventListener('click', homeMore);
-  new IntersectionObserver(es => {
+  H.io = new IntersectionObserver(es => {
     if(es.some(e => e.isIntersecting) && !more.hidden && H.shown < ENDLESS && route() === 'home') homeMore();
-  }, {rootMargin: '600px 0px'}).observe(more);
+  }, {rootMargin: '600px 0px'});
+  H.io.observe(more);
 }
 /* The next page of the list, added under the cards already there: nothing above it is searched, drawn or
    moved again. */
@@ -2316,6 +2317,8 @@ function homeMore(){
     n.animate([{opacity:0, transform:'translateY(18px) scale(.97)'}, {opacity:1, transform:'none'}],
       {duration:420, delay:k * 24, easing:'cubic-bezier(.2,.8,.2,1)', fill:'backwards'}));
   paintMore();
+  // the observer only speaks when the bottom crosses into view: a page that left it in view is asked again
+  if(H.io){ H.io.unobserve($('#more')); H.io.observe($('#more')); }
 }
 // under the list: the words that say more is on its way while it still comes by itself, a button after
 function paintMore(){
