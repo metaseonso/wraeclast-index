@@ -57,6 +57,13 @@ function build(){
     return {key: sec + ':' + x.n, it, px: priceOf(x.n), kind: x.kind, note: x.note, h: hay(x.n, x.s, x.kind, x.ls, x.t)};
   };
   CARDS = {ways, tabs, keys: A.keys.map(thing('k')), items: A.items.map(thing('i'))};
+  // ...and every row of the lists under them, its words joined once here: a key typed is a lookup in each,
+  // never the row's lines joined again
+  for(const g of A.wmods){ g._h = hay(g.a, g.r.map(r => [r.ls, r.b])); g._t = 'mod'; }
+  for(const d of A.wdes){ d._h = hay(d.a, d.ls, d.b, 'desecrated'); d._t = 'des'; }
+  for(const e of A.wemo){ e._h = hay(e.n, e.ls, 'liquid emotion'); e._t = 'emo'; }
+  for(const m of A.tmods) m._h = hay(m.a, m.ls, m.on || 'all tablets');
+  for(const g of A.tree) for(const n of g.nodes) n._h = hay(n.n, n.ls, n.o, TY[n.ty], g.n);
 }
 
 function make(c){
@@ -81,30 +88,34 @@ function modRow(name, k, rows, extra){
     (same && rows[0].b && rows[0].b.length ? '<p class="at-bonus">Reward: ' + rows[0].b.map(esc).join(' · ') + '</p>' : '') +
     (extra || '') + '</div>';
 }
-function wayList(q){
+/* The rows a search keeps, and the rows drawn, are two steps: the chips count the first and only the section on
+   screen pays for the second. */
+function wayHits(q){
   const out = [];
   if(S.wk === 'all' || S.wk === 'p' || S.wk === 's')
-    for(const g of A.wmods) if((S.wk === 'all' || S.wk === g.k) && has(hay(g.a, g.r.map(r => [r.ls, r.b])), q)) out.push(modRow(g.a, g.k, g.r));
-  if(S.wk === 'all' || S.wk === 'des')
-    for(const d of A.wdes) if(has(hay(d.a, d.ls, d.b, 'desecrated'), q))
-      out.push(modRow(d.a, d.k, [{ls: d.ls, b: d.b}], '<p class="at-on">Desecrated · Preserved Vertebrae</p>'));
-  if(S.wk === 'all' || S.wk === 'emo')
-    for(const e of A.wemo) if(has(hay(e.n, e.ls, 'liquid emotion'), q))
-      out.push('<div class="at-row"><div class="at-hd"><b>' + esc(e.n) + '</b><span class="at-tag">Instilled</span></div><ul class="at-ls">' +
-        e.ls.map(x => '<li><span>' + esc(x) + '</span></li>').join('') + '</ul></div>');
+    for(const g of A.wmods) if((S.wk === 'all' || S.wk === g.k) && has(g._h, q)) out.push(g);
+  if(S.wk === 'all' || S.wk === 'des') for(const d of A.wdes) if(has(d._h, q)) out.push(d);
+  if(S.wk === 'all' || S.wk === 'emo') for(const e of A.wemo) if(has(e._h, q)) out.push(e);
   return out;
 }
+function wayRow(x){
+  if(x._t === 'mod') return modRow(x.a, x.k, x.r);
+  if(x._t === 'des') return modRow(x.a, x.k, [{ls: x.ls, b: x.b}], '<p class="at-on">Desecrated · Preserved Vertebrae</p>');
+  return '<div class="at-row"><div class="at-hd"><b>' + esc(x.n) + '</b><span class="at-tag">Instilled</span></div><ul class="at-ls">' +
+    x.ls.map(l => '<li><span>' + esc(l) + '</span></li>').join('') + '</ul></div>';
+}
+const wayList = q => wayHits(q).map(wayRow);
+const tabHits = q => A.tmods.filter(m => (S.tb === 'all' || !m.on || m.on.includes(S.tb)) && has(m._h, q));
 function tabList(q){
   const all = A.tabs.length;
-  return A.tmods.filter(m => (S.tb === 'all' || !m.on || m.on.includes(S.tb)) && has(hay(m.a, m.ls, m.on || 'all tablets'), q))
-    .sort((a, b) => !!b.on - !!a.on)
+  return tabHits(q).sort((a, b) => !!b.on - !!a.on)
     .map(m => modRow(m.a, m.k, [{ls: m.ls}], '<p class="at-on">' + (m.on && m.on.length < all ? esc(m.on.join(', ')) : 'All tablets') + '</p>'));
 }
 function treeList(q){
   const out = [];
   for(const g of A.tree){
     if(S.sub !== 'all' && S.sub !== g.n) continue;
-    const rows = g.nodes.filter(n => has(hay(n.n, n.ls, n.o, TY[n.ty], g.n), q));
+    const rows = g.nodes.filter(n => has(n._h, q));
     if(!rows.length) continue;
     out.push('<h4 class="at-grp">' + esc(g.n) + '<span>' + rows.reduce((a, n) => a + (n.x || 1), 0) + '</span></h4>');
     out.push(...rows.map(n => '<div class="at-row"><div class="at-hd"><span class="dot t-' + n.ty + '"></span><b>' + esc(n.n) + '</b>' +
@@ -188,8 +199,8 @@ function render(fresh){
     b.setAttribute('aria-pressed', String(b.dataset.v === S.sec));
     const ct = b.querySelector('.ct');
     if(!q) ct.textContent = '';
-    else ct.textContent = b.dataset.v === 'tree' ? treeCount(q) : b.dataset.v === 'ways' ? CARDS.ways.filter(c => has(c.h, q)).length + wayList(q).length
-      : CARDS[b.dataset.v].filter(c => has(c.h, q)).length + (b.dataset.v === 'tabs' ? tabList(q).length : 0);
+    else ct.textContent = b.dataset.v === 'tree' ? treeCount(q) : b.dataset.v === 'ways' ? CARDS.ways.filter(c => has(c.h, q)).length + wayHits(q).length
+      : CARDS[b.dataset.v].filter(c => has(c.h, q)).length + (b.dataset.v === 'tabs' ? tabHits(q).length : 0);
   }
   const qi = $('#atq', EL);
   qi.placeholder = HINT[S.sec];
@@ -221,7 +232,7 @@ function render(fresh){
     seg.innerHTML = opts.map(([k, l]) => '<button type="button" data-v="' + esc(k) + '" aria-pressed="' + (k === cur) + '">' + esc(l) + '</button>').join('');
     box.innerHTML = rows.length ? rows.join('') : '<div class="empty"><h3>Nothing matches</h3></div>';
   }
-  const shown = list.length, lines = S.sec === 'tree' ? treeCount(q, S.sub) : rows.filter(r => r.startsWith('<div')).length;
+  const shown = list.length, lines = S.sec === 'tree' ? treeCount(q, S.sub) : rows.length;   // one row a mod
   $('#atstatus', EL).innerHTML = S.sec === 'tree' ? '<b>' + lines + '</b> of ' + treeCount('', S.sub) + ' passives' :
     '<b>' + shown + '</b> item' + (shown === 1 ? '' : 's') + (opts ? ' · <b>' + lines + '</b> mods' : '');
   if(S.sec !== 'tree' && !shown) grid.innerHTML = '<div class="empty" style="grid-column:1/-1"><h3>Nothing matches</h3></div>';
