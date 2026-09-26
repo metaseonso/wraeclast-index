@@ -31,7 +31,16 @@ export async function mountLeague(el){
     up.textContent = span(t - when(cur.start));
     if(down) down.textContent = span(when(next.start) - t);
   };
-  tick();
-  setInterval(tick, 1000);
+  /* The clocks sit on the home page, so they tick only while it is the page on screen: a hidden browser tab or
+     any other page of the site stops them, and they catch up to the second the moment they are seen again. */
+  let timer = 0;
+  const run = () => {
+    const on = !document.hidden && (document.body.dataset.route || 'home') === 'home';
+    if(on && !timer){ tick(); timer = setInterval(tick, 1000); }
+    else if(!on && timer){ clearInterval(timer); timer = 0; }
+  };
+  document.addEventListener('visibilitychange', run);
+  addEventListener('hashchange', run);   // the router has already marked the new page by now (assets/app.js show)
+  run();
   el.hidden = false;
 }
