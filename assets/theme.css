@@ -183,8 +183,11 @@ input[type=range], input[type=checkbox]{accent-color:#4E7A28}
 .ov-open .fog img, .hero.away .fog img{animation-play-state:paused}
 
 /* Horizontal fog only, centred on the crest: every layer has a mirrored twin (.m) that drifts
-   the other way, so the fog mass stays balanced left and right. */
-.fog .haze{top:14%; width:640px; translate:-50% 0; animation:wi-haze 23s ease-in-out infinite}
+   the other way, so the fog mass stays balanced left and right.
+   Each picture comes in two sizes (index.html srcset): a 1x screen gets one cut to the most it is ever drawn at
+   (640px x 1.06 for the haze, 560px x 1.3 for the bank), so it decodes and holds under half the pixels; a sharper
+   screen gets the full one. The box keeps the full picture's shape (aspect-ratio) whichever size comes. */
+.fog .haze{top:14%; width:640px; aspect-ratio:1000/468; translate:-50% 0; animation:wi-haze 23s ease-in-out infinite}
 .fog .haze.m{animation-name:wi-haze-m; animation-delay:-11.5s}
 @keyframes wi-haze{
   0%,100%{transform:translateX(-4%) scale(1); opacity:.35}
@@ -195,7 +198,7 @@ input[type=range], input[type=checkbox]{accent-color:#4E7A28}
   50%{transform:scaleX(-1) translateX(4%) scale(1.06); opacity:.55}
 }
 /* the bank: pools at the base, spreads outward, hangs, fades */
-.fog .bank{bottom:-2%; width:560px; translate:-50% 0}
+.fog .bank{bottom:-2%; width:560px; aspect-ratio:1200/307; translate:-50% 0}
 .fog .b1{animation:wi-spill 17s ease-in-out infinite}
 .fog .b1.m{animation-name:wi-spill-m; animation-delay:-8.5s}
 .fog .b2{animation:wi-front 19.5s ease-in-out infinite; animation-delay:-4.5s}

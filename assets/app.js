@@ -2644,7 +2644,8 @@ ready.then(() => {
 }
 
 /* ---------- after the first paint ----------
-   Decoration that must never hold up the page: the fog and wisps (index.html and explore.html give them data-src).
+   Decoration that must never hold up the page: the fog and wisps (index.html and explore.html give them data-src,
+   the fog a data-srcset too).
    Each fog layer fades in once its images are in, so the drifting starts smooth; a wisp starts its loop when loaded.
    A weak machine (html.lite, set in the page's <head>) draws no fog, so its images are never fetched. The fog holds
    still once the crest is scrolled off (.hero.away, theme.css). */
@@ -2659,6 +2660,7 @@ export function later(){
         img.classList.add('on');
         if(box !== img && [...box.querySelectorAll('img')].every(x => x.classList.contains('on'))) box.classList.add('on');
       }, {once: true});
+      if(img.dataset.srcset){ img.srcset = img.dataset.srcset; img.removeAttribute('data-srcset'); }
       img.src = img.dataset.src; img.removeAttribute('data-src');
     }
     const hero = document.getElementById('hero'), crest = hero && hero.querySelector('.emblem');
