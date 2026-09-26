@@ -1376,7 +1376,12 @@ function ensureOV(){
       const row = t.closest('.uses-row[data-key]');
       if(row){ const c = D.byKey.get(row.dataset.key); if(c) openDetail(c, {nested: true}, hrefOf(c)); return; }
       const all = t.closest('.uses-all');   // "See all": the rest of that category, drawn here
-      if(all){ const sec = all.closest('.uses'); sec._open.add(all.dataset.c); paintRel(sec); return; }
+      if(all){   // ...or, on a category already opened, its next rows
+        const sec = all.closest('.uses'), c = all.dataset.c;
+        if(sec._open.has(c)) sec._more[c] = (sec._more[c] || REL_STEP) + REL_STEP; else sec._open.add(c);
+        paintRel(sec);
+        return;
+      }
       const cur = CUR();
       // an act a module of ours answers: the module and the call are in the act's own declaration (ACTS go),
       // so one route covers every act of that shape and no module is named here
@@ -1790,6 +1795,9 @@ function needFiles(names){
 // rows per category before the "See all", the slack that is not worth a button, and the width a section
 // gets its filter box at: the frame's own numbers, the same on every card (assets/kinds.js FRAME.rel)
 const {cap: CAP, slack: SLACK, filter: USE_FILTER} = FRAME.rel;
+// ...and what "See all" draws at a time: a keyword like Hit is on 1,448 things, and a thousand rows at once is
+// a long wait on a weak machine. The rest is one Show more away, and the filter box searches all of it.
+const REL_STEP = 200;
 edges.setup({D, keywordCard, keywordIdOf, kindOf: k => KIND[k]});
 
 /* one row: anything with a card of its own opens it, an Atlas row without one goes to its tab, and the rest
@@ -1848,6 +1856,7 @@ function relSection(it, want){
   sec.className = 'uses';
   sec._it = it;
   sec._open = new Set((want && want.open) || []);
+  sec._more = {...((want && want.more) || {})};   // an opened category drawn past its first REL_STEP rows
   sec._want = want || null;
   const need = paintRel(sec);
   if(need.length) needFiles(need).then(() => { paintRel(sec); if(sec._then) sec._then(); });
@@ -1864,7 +1873,9 @@ function paintRel(sec){
   if(sec.hidden){ sec.innerHTML = ''; sec._rows = []; return got.need; }
   const all = [];   // every row drawn, in order, for the filter box
   const blocks = cats.map(c => {
-    const show = sec._open.has(c.id) || c.total <= CAP + SLACK ? c.total : CAP;
+    const open = sec._open.has(c.id);
+    const show = open ? Math.min(c.total, sec._more[c.id] || REL_STEP) : c.total <= CAP + SLACK ? c.total : CAP;
+    c.drawn = show;
     const drawn = c.rows.slice(0, show).map(relRow);
     all.push(...drawn);
     const left = c.total - show, more = seeAllHTML(it, c);
@@ -1873,8 +1884,8 @@ function paintRel(sec){
       '>' + c.total.toLocaleString() + '</span></p>' +
       drawn.map(x => x.html).join('') +
       (left > 0 || more ? '<p class="uses-more">' +
-        (left > 0 ? '<button type="button" class="uses-all" data-c="' + esc(c.id) + '">See all ' +
-          c.total.toLocaleString() + '</button>' : '') + more + '</p>' : '') +
+        (left > 0 ? '<button type="button" class="uses-all" data-c="' + esc(c.id) + '">' +
+          (open ? 'Show more' : 'See all ' + c.total.toLocaleString()) + '</button>' : '') + more + '</p>' : '') +
       '</div>';
   }).join('');
   const note = waiting ? '<p class="note">Looking…</p>' : relBad && !cats.length
@@ -1888,9 +1899,29 @@ function paintRel(sec){
   const q = sec.querySelector('.uses-q');
   if(q) q.addEventListener('input', () => {
     const words = q.value.trim().toLowerCase().split(/\s+/).filter(Boolean);
+    for(const x of sec.querySelectorAll('.uses-extra')) x.remove();
     const els = [...sec.querySelectorAll('.uses-row')];
     let shown = 0;
     els.forEach((el, i) => { const hit = words.every(w => (all[i] || {hay: ''}).hay.includes(w)); el.hidden = !hit; shown += hit; });
+    /* A category opened with "See all" draws REL_STEP rows at a time, but the filter still answers for all of
+       it: the rows not drawn yet are searched too, and the ones that match are drawn under the rest, up to
+       REL_STEP of them. They go again with the next letter typed. */
+    if(words.length) for(const c of cats){
+      if(!sec._open.has(c.id) || c.drawn >= c.total) continue;
+      const box = sec.querySelector('.uses-cat[data-c="' + CSS.escape(c.id) + '"] .uses-more');
+      if(!box) continue;
+      let html = '', n = 0;
+      for(let i = c.drawn; i < c.total && n < REL_STEP; i++){
+        const r = c.rows[i]._row || (c.rows[i]._row = relRow(c.rows[i]));
+        if(words.every(w => r.hay.includes(w))){ html += r.html; n++; }
+      }
+      if(!n) continue;
+      const t = document.createElement('template');
+      t.innerHTML = html;
+      for(const el of t.content.children) el.classList.add('uses-extra');
+      box.before(t.content);
+      shown += n;
+    }
     for(const cat of sec.querySelectorAll('.uses-cat'))
       cat.hidden = ![...cat.querySelectorAll('.uses-row')].some(r => !r.hidden);
     sec.querySelector('.uses-none').hidden = shown > 0;

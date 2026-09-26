@@ -17,9 +17,12 @@ const PAIR = {divine: 'Divine Orbs', exalted: 'Exalted Orbs', chaos: 'Chaos Orbs
 const MIN_VOL = 5;        // divine traded per day before a price counts as a market
 const ROUTE_MIN = 3, ROUTE_MAX = 60, ROUTE_VOL = 25;
 const PAGE = 48;          // rows the grid adds at a time
+const MOST = 200;         // ...and the most one press of Show all draws: past it, the rest is another press
+// the button that draws the rest says how much it draws: all of it, or the next MOST
+const allLabel = (n, shown) => n - shown <= MOST ? 'Show all ' + n : 'Show ' + MOST + ' more';
 
 const S = {ask: 'all', cat: 'all', trend: 'all', sort: 'move', q: '', words: [], liquid: true, shown: PAGE, watch: loadWatch()};
-let EL, ALL = [];
+let EL, ALL = [], ALLOF = null;   // the rows, and the prices they were made from
 
 /* ---------- signals ---------- */
 function swing(sp){   // the largest single-day move in the 7-day line, in points
@@ -225,7 +228,7 @@ function paintPick(groups){
   $('.cxp-list', PEL).innerHTML = list.length ? list.slice(0, PICK.shown).map(pickRow).join('')
     : '<p class="note">' + (PICK.cat === 'watch' && !PICK.q ? 'No stars yet.' : 'Nothing by that name.') + '</p>';
   $('.cxp-ft', PEL).innerHTML = list.length + (list.length === 1 ? ' currency' : ' currencies') +
-    (list.length > PICK.shown ? ' · <button type="button" class="btn cxp-more">Show all ' + list.length + '</button>' : '');
+    (list.length > PICK.shown ? ' · <button type="button" class="btn cxp-more">' + allLabel(list.length, PICK.shown) + '</button>' : '');
 }
 function openPicker(){
   const box = document.createElement('section');
@@ -243,7 +246,7 @@ function openPicker(){
     if(c){ PICK.cat = c.dataset.c; PICK.fam = ''; PICK.shown = PICK_PAGE; paintPick(true); return; }
     const f = e.target.closest('.cxp-fams .chip');
     if(f){ PICK.fam = PICK.fam === f.dataset.f ? '' : f.dataset.f; PICK.shown = PICK_PAGE; paintPick(true); return; }
-    if(e.target.closest('.cxp-more')){ PICK.shown = Infinity; paintPick(); return; }
+    if(e.target.closest('.cxp-more')){ PICK.shown += MOST; paintPick(); return; }
     const row = e.target.closest('.cxp-row');
     if(row) toggleWatch(row.dataset.id);
   });
