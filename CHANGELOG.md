@@ -3,6 +3,50 @@
 The full list of changes. The public patch notes (data/changelog.json, shown on the site) stay short.
 Add the details here first, then a short public line there.
 
+## Next — Speed: the site on a slow machine
+
+Measured with `tools/dev/speed.mjs` (headless Chrome, CPU 4x slower, fresh profile) on 26 September 2026, before:
+home parsed 3.7 MB of JSON before a key was pressed and ran 7 endless animations; typing "fireball" kept the
+main thread busy 2.8 s with a 471 ms frame; 5.4k elements after every tab; /explore#tree parsed 8.7 MB.
+
+- **Home is the search bar.** The owner: *"clean up the biggest price moves from the homepage, and let the search
+  be the main thing present."* `movers()` and the kinds' `few` are gone; nothing draws under the bar until a
+  word is typed.
+- **The index loads on need.** `need()` in app.js starts index-core, index-rest, bosses and the market facts
+  once: a tap or key in a search box, `/`, `?q=`, any tab, a popup, or home idle after 3 s. Importing app.js
+  fetches only `market.json?part=live`. The history (`hist()`) waits for the first chart. `leagues()` is one
+  shared promise (league.js used to fetch it again).
+- **Three short price parts beside the old two.** `?part=live` is today's prices without the catalogue facts,
+  one timestamp per source (`a`: 0 the Exchange, n = `t0` + n seconds, rounded down so a price never reads
+  newer than it is). `?part=facts&v=<sha256-12>` is the catalogue, kept a year when `v` matches. `?part=hist`
+  is `h:[firstDay, v…]`. `now`, `past` and the plain file are byte for byte what they were, so a page from an
+  older deploy and the GitHub Pages backup read what they always read. Each part is built with its pair: the
+  database reads per hour are unchanged. 467 → 189 KB live, 579 → 279 KB history.
+- **The index says each word once.** `tools/appdata.py` moves every repeated string field (`img`, `kw`, `ckw`,
+  `rec`, `s`, `pr`, `ls`, `reg`…) into one `dict` per part; index-rest 2.35 → 1.58 MB. `g.q` keeps the search
+  words the tags do not show and drops the underscore ids. appdata carries `up` (the orb ladders) over from the
+  current core, which a hand run used to drop. `tools/sprites.py` cuts 1x sheets (gems 666 → 331 KB, uniques
+  519 → 182 KB) for screens of one pixel per point; `image-set` picks.
+- **Every search box waits out a burst.** `onType()` in app.js: 120 ms after the last key; Enter answers at
+  once, Escape drops what is pending, an emptied box or a scripted input is not delayed. Home, top search,
+  currency and its watch list, bosses, map, trade pickers, atlas.
+- **Lists stop growing without end.** The home list keeps its answer (`H.all`/`H.list`): a kind chip or the
+  next page is a slice, never a second search; pages are appended and the endless list stops at 150 for a
+  Show more. The observer is re-armed after each page so it cannot stall with the bottom already in view.
+  Connections See all and Currency Show all draw 200 at a time.
+- **`flow()`** reads every card's place once before and once after, moves only cards within 300 px of the
+  screen, and does not glide above 40 cards, under `.lite` or with reduced motion.
+- **A tab is taken down when you leave it.** `show()` calls the module's `unmount()` and empties the view;
+  filters, picks, the craft plan and the scroll position (by address) come back with it. The map stays
+  mounted. 5.4k → about 800 elements after every tab.
+- **Memory that only grew:** trail steps more than 5 away drop their Trade and act panels; `_mk` keeps 600
+  cards; `kwuse.json` is let go 60 s after the popup closes (only with the service worker, which keeps a copy).
+  The typo word list is built in idle slices. The builder paints at most 4 times a second during a run and
+  saves once. The league clock ticks only while home is on screen and the tab is visible. Craft's resize
+  listener lives and dies with the tab.
+- **Prices were kept 4 hours in browsers.** The zone's Browser Cache TTL (4 h) overrode the worker's 5 minutes
+  on `market.json` and the other live files; set to "Respect Existing Headers" on 26 September 2026.
+
 ## Next — The bench is one screen, and the Currency tab asks a question
 
 - **The bench and the craft are one card.** The owner, 24 September 2026: *"lets make it so bench and the
