@@ -40,6 +40,7 @@ The site is static, and every hourly job that keeps it live runs on GitHub Actio
 | `explore.html` | The drill-down page (built from the Wraeclast Index artifact); its data sits in `data/explore/` (files named by their content) |
 | `data/index.json` | Search index, built by `tools/sync.py`; the base item, Atlas and extra currency cards come from `tools/morecards.py` (kinds `b`, `a`, `c`), and the keyword cards the artifact does not carry, the item classes, plus the ascendancy notables whose whole effect is a skill, from `tools/gamelib.py` (kinds `w`, `i` and `p`), and the mechanics cards from `tools/mechanics.py` (kind `h`), and the tree's small passives plus the conquerors a timeless jewel rolls from `tools/treecards.py` (kind `p`, marked `lo`: they rank below every other card the same words match); the phrases in a card's lines that name another card are marked by `tools/nodelinks.py` (`lx` on the card, `lxk` the key table). `tools/carddata.py` then joins on everything a card can say that was shipped but never reached one: the game's flavour line for uniques and keystones (`qt`), what an Atlas key or item is for (`t`), how many mods can roll on a base and whether their weights are measured (`cw`), and the official text for a name the market prices but no card covers (`ix`). The home page loads it in two parts, `data/index-core.json` and `data/index-rest.json` (`tools/appdata.py`) |
 | `sw.js` | The service worker (see Speed) |
+| `tools/build.mjs`, `package.json` | What Cloudflare serves: before every deploy (`wrangler.jsonc` `build`) the files `.assetsignore` lets through are copied into `dist/` and the JS, CSS and the pages' inline scripts minified by esbuild, one file at a time. `dist/sw-files.json` lists every path with a hash of its bytes for `sw.js`. A file esbuild cannot read ships as it is, and no esbuild at all ships the plain copy. `dist/` is never committed; GitHub Pages and the checks read the repo itself |
 | `assets/fonts/` | The site's own copies of its fonts (Cinzel, IBM Plex Sans, IBM Plex Mono; SIL Open Font License) |
 | `data/kwuse.json` | What uses each keyword (the nine groups under Connections on a keyword card), built by `tools/kwuse.py` for every keyword the site cards, not only the ones the drill-down page carries. It also names the keywords that page can filter its own lists by (`dd`), which is what decides whether a card's "See all in Gems" has a list to send anyone to. Loaded the first time a card that needs it opens |
 | `data/grants.json` | What grants a skill and what each skill is granted by (base items, ascendancy notables and uniques), both directions, built by `tools/grants.py`. Loaded the first time a card that needs it opens, like `data/kwuse.json` |
@@ -93,8 +94,10 @@ card without it snapping shut. See [`tools/dev/README.md`](tools/dev/README.md).
 - **Repeat visits** open from the browser's own copy: `sw.js` keeps each deploy's files together. The worker writes the
   deploy's version id into it, so every deploy is a new copy and a page is never a mix of two deploys. After a deploy,
   the next load still opens the copy it has while the new one downloads; the load after that is the new deploy (reload
-  twice to check a deploy in a browser that has visited before). Never kept: `/api/*`, `/admin`, the crawler pages and
-  the live price files (market, leagues, roll and farm prices).
+  twice to check a deploy in a browser that has visited before). A new deploy downloads only what changed: every file
+  whose bytes match `dist/sw-files.json` is taken over from the last copy, the home page's first-paint files are fetched
+  if they changed, and everything else is kept the first time a page asks for it. Never kept: `/api/*`, `/admin`, the
+  crawler pages and the live price files (market, leagues, roll and farm prices).
 - **Nothing to run by hand:** `tools/sync.py` and `tools/kwuse.py` write the index parts and the drill-down files; after
   editing `data/index.json` by hand, run `python tools/appdata.py` (or `python tools/nodelinks.py`, which finds the
   references in the lines again and then writes the parts). To switch the service worker off everywhere, make
