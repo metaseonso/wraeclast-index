@@ -57,13 +57,13 @@ html:root:not([data-theme="none"]){
   --sans:'IBM Plex Sans', 'Plex fallback', system-ui, -apple-system, 'Segoe UI', sans-serif;
 }
 
-/* miasma: a faint green haze pooled at the top of every page */
+/* miasma: a faint green haze pooled at the top of every page. It scrolls with the page: pinned to the screen, it
+   was repainted on every frame of a scroll. */
 html:root:not([data-theme="none"]) body{
   background:
     radial-gradient(1100px 520px at 50% -140px, rgba(120,190,50,.04), transparent 70%),
     radial-gradient(700px 400px at 100% 0, rgba(179,38,30,.05), transparent 70%),
     var(--ground);
-  background-attachment:fixed;
 }
 ::selection{background:rgba(140,203,63,.35); color:#fff}
 html:root:not([data-theme="none"]){scrollbar-color:#2A3627 #070907}
