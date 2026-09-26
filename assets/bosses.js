@@ -7,7 +7,7 @@
    Prices: data/bossprices.json (worker/prices.js) resolves every name at once from the unique checks, the
    in-game Currency Exchange and the trade searches in data/bossqueries.json; a name it does not carry falls back to
    the card's own market price. Real prices only, and a rate never meets one: no value per kill, here or anywhere. */
-import { D, $, esc, card, openDetail, priceOf, hrefOf, money as coin, moneyHTML, change, spark, ago, params } from './app.js';
+import { D, $, esc, card, openDetail, priceOf, hrefOf, money as coin, moneyHTML, change, spark, ago, params, onType } from './app.js';
 
 const SHOW = [['all', 'All'], ['pin', 'Pinnacle'], ['drops', 'With drops']];
 const SORTS = [['name', 'Name'], ['way', 'Way in']];
@@ -477,7 +477,8 @@ export async function mount(el){
     ((B.notes || []).length ? '<div class="sect"><h3>Gaps in the lists</h3></div><ul class="note bo-gaps">' +
       B.notes.map(n => '<li>' + esc(n) + '</li>').join('') + '</ul>' : '');
 
-  $('#boq', el).addEventListener('input', e => { S.q = e.target.value; render(); sync(); });
+  const bq = $('#boq', el);
+  onType(bq, () => { S.q = bq.value; render(); sync(); });
   $('#boq', el).addEventListener('keydown', e => { if(e.key === 'Escape'){ e.target.value = ''; S.q = ''; render(); sync(); } });
   $('#boshow', el).addEventListener('click', e => {
     const b = e.target.closest('button'); if(!b) return;
@@ -539,3 +540,6 @@ function render(){
       list.map(listRow).join('')
     : '<div class="empty"><h3>Nothing matches</h3></div>';
 }
+/* Off the tab: the page goes, the rows and what the page was showing (S) stay. The listener that opens a drop
+   from a boss card stays too: the card is the popup's, and the search opens it with the tab shut. */
+export function unmount(){ EL = null; }

@@ -509,6 +509,20 @@ async function paint(){
   await entry(f);
   repaint();
 }
+/* A run in flight is drawn a few times a second, not every frame: nothing in the build file moves while it
+   searches (it only works answers out), so it is not saved on each one either — finish draws it with paint,
+   which saves the once. */
+const RUN_DRAW = 250;   // ms between two draws of a run in flight
+let runDrawn = 0;
+async function runPaint(){
+  const t = performance.now();
+  if(t - runDrawn < RUN_DRAW) return;
+  runDrawn = t;
+  const f = current();
+  if(!f) return;
+  await entry(f);
+  repaint();
+}
 
 /* every control on the build card says what it does, and this is what it does. Nothing else answers them. */
 const split = s => { const i = String(s).indexOf(':'); return i < 0 ? [s, ''] : [s.slice(0, i), s.slice(i + 1)]; };
@@ -993,11 +1007,12 @@ function slice(){
       run.answers[a] = run.runs[a].answer;
     }
     for(const [a] of AIMS) run.runs[a] = O.start(run.S, a, {cap: O.CAP - run.ms});
-    paint();
+    runDrawn = 0;                              // the first answer is always drawn
+    runPaint();
     return void requestAnimationFrame(slice);
   }
   if(all) return void finish('');
-  paint();
+  runPaint();
   requestAnimationFrame(slice);
 }
 function finish(why){

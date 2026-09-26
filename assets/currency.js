@@ -1,7 +1,7 @@
 /* Currency tab: every currency-type item, what it does, how its price moves, trading routes,
    and a watch list. Prices: data/market.json: what each currency traded for on the in-game Currency Exchange
    (GGG's public hourly feed, tools/exchange.py). */
-import { D, $, esc, card, flow, money, moneyHTML, params, openDetail, openBox, actHTML, runAct, iconHTML, words, hits } from './app.js';
+import { D, $, esc, card, flow, money, moneyHTML, params, openDetail, openBox, actHTML, runAct, iconHTML, words, hits, onType } from './app.js';
 import { ASKS, ASK } from './kinds.js';   // the questions the page is asked, and which group answers which
 
 const WATCH_KEY = 'wi.watch';
@@ -17,9 +17,12 @@ const PAIR = {divine: 'Divine Orbs', exalted: 'Exalted Orbs', chaos: 'Chaos Orbs
 const MIN_VOL = 5;        // divine traded per day before a price counts as a market
 const ROUTE_MIN = 3, ROUTE_MAX = 60, ROUTE_VOL = 25;
 const PAGE = 48;          // rows the grid adds at a time
+const MOST = 200;         // ...and the most one press of Show all draws: past it, the rest is another press
+// the button that draws the rest says how much it draws: all of it, or the next MOST
+const allLabel = (n, shown) => n - shown <= MOST ? 'Show all ' + n : 'Show ' + MOST + ' more';
 
 const S = {ask: 'all', cat: 'all', trend: 'all', sort: 'move', q: '', words: [], liquid: true, shown: PAGE, watch: loadWatch()};
-let EL, ALL = [];
+let EL, ALL = [], ALLOF = null;   // the rows, and the prices they were made from
 
 /* ---------- signals ---------- */
 function swing(sp){   // the largest single-day move in the 7-day line, in points
@@ -225,7 +228,7 @@ function paintPick(groups){
   $('.cxp-list', PEL).innerHTML = list.length ? list.slice(0, PICK.shown).map(pickRow).join('')
     : '<p class="note">' + (PICK.cat === 'watch' && !PICK.q ? 'No stars yet.' : 'Nothing by that name.') + '</p>';
   $('.cxp-ft', PEL).innerHTML = list.length + (list.length === 1 ? ' currency' : ' currencies') +
-    (list.length > PICK.shown ? ' · <button type="button" class="btn cxp-more">Show all ' + list.length + '</button>' : '');
+    (list.length > PICK.shown ? ' · <button type="button" class="btn cxp-more">' + allLabel(list.length, PICK.shown) + '</button>' : '');
 }
 function openPicker(){
   const box = document.createElement('section');
@@ -236,13 +239,14 @@ function openPicker(){
     '<div class="cxp-list"></div><p class="note cxp-ft" aria-live="polite"></p>';
   PEL = box;
   PICK.q = ''; PICK.cat = 'all'; PICK.fam = ''; PICK.shown = PICK_PAGE;
-  $('.cxp-q', box).addEventListener('input', e => { PICK.q = e.target.value.trim().toLowerCase(); PICK.shown = PICK_PAGE; paintPick(); });
+  const pq = $('.cxp-q', box);
+  onType(pq, () => { PICK.q = pq.value.trim().toLowerCase(); PICK.shown = PICK_PAGE; paintPick(); });
   box.addEventListener('click', e => {
     const c = e.target.closest('.cxp-cats .chip');
     if(c){ PICK.cat = c.dataset.c; PICK.fam = ''; PICK.shown = PICK_PAGE; paintPick(true); return; }
     const f = e.target.closest('.cxp-fams .chip');
     if(f){ PICK.fam = PICK.fam === f.dataset.f ? '' : f.dataset.f; PICK.shown = PICK_PAGE; paintPick(true); return; }
-    if(e.target.closest('.cxp-more')){ PICK.shown = Infinity; paintPick(); return; }
+    if(e.target.closest('.cxp-more')){ PICK.shown += MOST; paintPick(); return; }
     const row = e.target.closest('.cxp-row');
     if(row) toggleWatch(row.dataset.id);
   });
@@ -255,7 +259,8 @@ function openPicker(){
 export function mount(el){
   EL = el;
   if(!D.market){ el.innerHTML = '<div class="pagehd"><h2>Currency</h2><p class="err">Prices are not loaded.</p></div>'; return {}; }
-  ALL = rows();
+  // the rows are made once per set of prices: coming back to the tab draws them again, it does not remake them
+  if(ALLOF !== D.market){ ALL = rows(); ALLOF = D.market; }
   const kinds = ['all', ...cats()];
   /* The currency a player came for is the top of the page. The busiest markets are a thing to browse once
      you are done, so they sit under the grid rather than 24 rows above it. */
@@ -309,20 +314,19 @@ export function mount(el){
     render();
   });
   paintCats();
-  $('#cxq', el).addEventListener('input', e => { S.q = e.target.value.trim().toLowerCase();
-    S.words = S.q ? words(S.q) : []; S.shown = PAGE; render(); });
+  const cq = $('#cxq', el);
+  onType(cq, () => { S.q = cq.value.trim().toLowerCase(); S.words = S.q ? words(S.q) : []; S.shown = PAGE; render(); });
+  // back on the tab: the boxes say what the list is already filtered by
+  cq.value = S.q;
+  $('#cxliq', el).checked = S.liquid;
+  $('#cxtrend', el).value = S.trend;
+  $('#cxsort', el).value = S.sort;
   $('#cxsort', el).addEventListener('change', e => { S.sort = e.target.value; render(); });
   $('#cxliq', el).addEventListener('change', e => { S.liquid = e.target.checked; S.shown = PAGE; render(); });
   $('.cx-next', el).addEventListener('click', () => { S.shown += PAGE; render(); });
-  $('.cx-all', el).addEventListener('click', () => { S.shown = Infinity; render(); });
+  $('.cx-all', el).addEventListener('click', () => { S.shown += MOST; render(); });
   $('#cxpick', el).addEventListener('click', openPicker);
-  el.addEventListener('click', e => {
-    const act = e.target.closest('.card-do[data-act]');
-    if(act){ e.preventDefault(); e.stopPropagation(); runAct(act.dataset.act, D.byKey.get('c:' + act.dataset.id)); return; }
-    const b = e.target.closest('.star'); if(!b) return;
-    e.preventDefault();
-    toggleWatch(b.dataset.id);
-  });
+  el.addEventListener('click', onPage);
 
   markets($('#cxmarkets', el));
   return {update};
@@ -341,11 +345,12 @@ function update(){
 
 /* The group chips, drawn again whenever the question changes: All, then every group the question covers. */
 function paintCats(){
-  const box = $('#cxcat', EL); if(!box) return;
+  const box = EL && $('#cxcat', EL); if(!box) return;
   box.innerHTML = ['all', ...askCats()].map(c => '<button type="button" data-v="' + esc(c) + '" aria-pressed="' +
     (c === S.cat) + '">' + (c === 'all' ? 'All' : esc(c)) + '</button>').join('');
 }
 function render(){
+  if(!EL) return;   // off the tab (a star from the popup): the tab draws the list from S when it is back
   const list = ALL.filter(match).sort(SORTER[S.sort]);
   $('#cxcount', EL).textContent = list.length + ' item' + (list.length === 1 ? '' : 's');
   const grid = $('#cxcards', EL);
@@ -354,5 +359,20 @@ function render(){
     (S.trend === 'watch' ? '<p>Nothing watched yet.</p>' : '') + '</div>';
   const more = $('#cxmore', EL);
   more.hidden = list.length <= S.shown;
-  if(!more.hidden) $('.cx-all', more).textContent = 'Show all ' + list.length;
+  if(!more.hidden) $('.cx-all', more).textContent = allLabel(list.length, S.shown);
+}
+/* The one listener on the tab's own box rather than on something drawn inside it, so it is taken off with the
+   page: the box stays when the page goes, and a second one would star every card twice. */
+function onPage(e){
+  const act = e.target.closest('.card-do[data-act]');
+  if(act){ e.preventDefault(); e.stopPropagation(); runAct(act.dataset.act, D.byKey.get('c:' + act.dataset.id)); return; }
+  const b = e.target.closest('.star'); if(!b) return;
+  e.preventDefault();
+  toggleWatch(b.dataset.id);
+}
+/* Off the tab: its page goes, and what it was showing stays in S for the next time it is drawn. The watch list
+   box lives in the popup, not on the page, so it is left alone. */
+export function unmount(){
+  if(EL) EL.removeEventListener('click', onPage);
+  EL = null;
 }

@@ -1162,23 +1162,36 @@ function openBase(){
 /* ---------- page ---------- */
 export async function mount(el){
   EL = el;
-  el.innerHTML = head() + '<p class="note">Loading…</p>';
-  try {
-    const r = await fetch('data/craft.json');
-    if(!r.ok) throw new Error(r.status);
-    X = await r.json();
-  } catch(e){
-    el.innerHTML = head() + '<p class="err">The crafting data did not load.</p>';
-    return {};
+  if(!X){
+    el.innerHTML = head() + '<p class="note">Loading…</p>';
+    try {
+      const r = await fetch('data/craft.json');
+      if(!r.ok) throw new Error(r.status);
+      X = await r.json();
+    } catch(e){
+      el.innerHTML = head() + '<p class="err">The crafting data did not load.</p>';
+      return {};
+    }
+    tradeData().then(t => { T = t; if(B && EL) paint('item'); }).catch(() => {});
+    S = load();
   }
-  tradeData().then(t => { T = t; if(B) paint('item'); }).catch(() => {});
+  // back on the tab: the plan in hand is drawn again as it was, unless the address brings another one
+  else if(location.hash !== HREF && PLAN.test(location.hash)) S = load();
   topOffset();
-  addEventListener('resize', topOffset);
-  wire();
-  S = load();
+  addEventListener('resize', onResize);
+  if(!wired){ wired = true; wire(); }   // on the tab's own box, which stays when the page goes
   await draw();
   return {update};
 }
+/* Off the tab: the page goes, and the plan (S, ASK, the filters in UI) stays for the way back. The bench is a
+   card in the popup and keeps its own craft (assets/craftsim.js), so it is not touched. */
+export function unmount(){
+  removeEventListener('resize', onResize);
+  cancelAnimationFrame(sized); sized = 0;
+  clearTimeout(raf);
+}
+const PLAN = /[?&](base|kind|ilvl|mods|s|ask|mod|find)=/;   // an address that names a plan
+let wired = false;
 function head(){
   return '<div class="pagehd"><h2>Craft</h2><p>What mods a base can roll, and how to get the one you want.</p></div>';
 }
@@ -1217,9 +1230,14 @@ function topOffset(){
   const t = document.querySelector('.top');
   EL.style.setProperty('--crtop', Math.round(t ? t.getBoundingClientRect().height : 0) + 'px');
 }
+// a window being dragged wider fires this on every pixel: the bar is measured once a frame, at most
+let sized = 0;
+function onResize(){
+  if(!sized) sized = requestAnimationFrame(() => { sized = 0; if(EL && !EL.hidden) topOffset(); });
+}
 async function update(){
   if(location.hash === HREF) return;   // the address we wrote ourselves
-  if(/[?&](base|kind|ilvl|mods|s|ask|mod|find)=/.test(location.hash)){ S = load(); await draw(); }
+  if(PLAN.test(location.hash)){ S = load(); await draw(); }
   else if(B) save();   // the Craft tab link: keep the plan in the address
 }
 async function draw(){

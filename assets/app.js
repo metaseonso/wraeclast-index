@@ -423,9 +423,17 @@ const mechSpans = (spans, lxk) => (spans || [])
   .filter(x => ours(lxk[x[2]])).map(x => [x[0], x[1], lxk[x[2]]]);
 /* A card is drawn again every time it is opened, stepped back to, filtered or scrolled past, and its lines do
    not change between draws: each line keeps the form it was marked into, until the index itself moves on. */
+/* Only so many cards keep their lines, though: a long visit draws thousands of cards, and each would carry its
+   lines for good. The oldest to be drawn lets go first, and draws them fresh if it is ever drawn again. */
+const MK_KEPT = 600;
+const MK = new Set();   // the cards holding their lines, oldest first
 function lineHTML(it, at, i, text, marked){
   const v = marks.version();
-  if(it._mkv !== v){ it._mkv = v; it._mk = {}; }
+  if(it._mkv !== v){
+    it._mkv = v; it._mk = {};
+    MK.delete(it); MK.add(it);
+    if(MK.size > MK_KEPT){ const old = MK.values().next().value; MK.delete(old); old._mk = null; old._mkv = undefined; }
+  }
   const key = at + i;
   let html = it._mk[key];
   if(html === undefined) it._mk[key] = html =
@@ -1190,6 +1198,7 @@ export function card(it, opts = {}){
 const typing = el => el && (/^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName) || el.isContentEditable);   // same guard as keys.js
 const TAP = 10;   // px a finger may slide and still count as a tap, not a drag
 const TRAIL_MAX = 50;   // cards kept on the trail; all of it is in this browser, so nothing is paid for it
+const PANELS_KEPT = 5;  // ...and how many steps either side of the one on show keep their Trade or act panel
 let OV = null, lastFocus = null;
 let TRAIL = [], AT = -1, SEQ = 0, PEND = null;   // the trail, where you are on it, the next step id, a card still loading
 const CUR = () => TRAIL[AT] || null;   // the card on show
@@ -1202,10 +1211,13 @@ function saveStep(){
   if(!step || !OV || OV.hidden) return;
   const box = OV.querySelector('.ov-box'), sec = box.querySelector('.uses');
   step.top = box.scrollTop;
-  step.uses = sec && !sec.hidden ? {open: [...(sec._open || [])], q: (sec.querySelector('.uses-q') || {}).value || '',
-    top: (sec.querySelector('.uses-list') || {}).scrollTop || 0} : null;
+  step.uses = sec && !sec.hidden ? {open: [...(sec._open || [])], more: {...(sec._more || {})},
+    q: (sec.querySelector('.uses-q') || {}).value || '', top: (sec.querySelector('.uses-list') || {}).scrollTop || 0} : null;
   step.trade = box.querySelector('.trade') || null;
   step.panel = box.querySelector('.ov-panel') || null;   // ...and the panel one of its acts opened
+  // a panel is a whole piece of page, kept whole: only the few steps nearest are worth that. Further back, a
+  // step keeps its scroll and its list, and its panel is opened again by hand if it is wanted
+  TRAIL.forEach((s, i) => { if(Math.abs(i - AT) > PANELS_KEPT) s.trade = s.panel = null; });
 }
 // a box you are typing in, brought back above the keyboard. Twice: once now, once after the keyboard has settled
 function keepInView(el){
@@ -1376,7 +1388,12 @@ function ensureOV(){
       const row = t.closest('.uses-row[data-key]');
       if(row){ const c = D.byKey.get(row.dataset.key); if(c) openDetail(c, {nested: true}, hrefOf(c)); return; }
       const all = t.closest('.uses-all');   // "See all": the rest of that category, drawn here
-      if(all){ const sec = all.closest('.uses'); sec._open.add(all.dataset.c); paintRel(sec); return; }
+      if(all){   // ...or, on a category already opened, its next rows
+        const sec = all.closest('.uses'), c = all.dataset.c;
+        if(sec._open.has(c)) sec._more[c] = (sec._more[c] || REL_STEP) + REL_STEP; else sec._open.add(c);
+        paintRel(sec);
+        return;
+      }
       const cur = CUR();
       // an act a module of ours answers: the module and the call are in the act's own declaration (ACTS go),
       // so one route covers every act of that shape and no module is named here
@@ -1674,12 +1691,14 @@ function showOV(){
   lastFocus = document.activeElement;
   OV.hidden = false;
   document.body.classList.add('ov-open');
+  holdFiles();
   focusBox();
 }
 function hideDetail(){
   if(!OV || OV.hidden) return;
   OV.hidden = true;
   document.body.classList.remove('ov-open');
+  releaseFiles();
   if(lastFocus && lastFocus.focus && document.contains(lastFocus)) lastFocus.focus({preventScroll: true});   // back on the row that opened it
 }
 // Close means closed: every entry the popup pushed is unwound, so one more Back leaves the page
@@ -1782,6 +1801,21 @@ function drillKw(){
   if(!HAVE.kwuse) return null;
   return DRILL || (DRILL = new Set(HAVE.kwuse.dd || []));
 }
+/* The keyword lists are the biggest of them (data/kwuse.json, near 800 KB, and more once read). With the popup
+   closed for a minute they are let go, and the next card that wants them reads them again. Only where the
+   service worker is running: it keeps every file of the deploy in this browser (sw.js), so reading it again is
+   a read off the disk and never the network, and never a newer file than the index this page has. */
+const LET_GO = 60000;
+let letGo = 0;
+function holdFiles(){ clearTimeout(letGo); letGo = 0; }
+function releaseFiles(){
+  holdFiles();
+  if(!HAVE.kwuse || !(navigator.serviceWorker && navigator.serviceWorker.controller)) return;
+  letGo = setTimeout(() => {
+    if(OV && !OV.hidden) return;
+    delete HAVE.kwuse; delete JOB.kwuse; DRILL = null;
+  }, LET_GO);
+}
 let relBad = false;         // a fetch that failed: the card says so instead of waiting for ever
 function needFiles(names){
   return Promise.all(names.map(f => JOB[f] || (JOB[f] =
@@ -1790,6 +1824,9 @@ function needFiles(names){
 // rows per category before the "See all", the slack that is not worth a button, and the width a section
 // gets its filter box at: the frame's own numbers, the same on every card (assets/kinds.js FRAME.rel)
 const {cap: CAP, slack: SLACK, filter: USE_FILTER} = FRAME.rel;
+// ...and what "See all" draws at a time: a keyword like Hit is on 1,448 things, and a thousand rows at once is
+// a long wait on a weak machine. The rest is one Show more away, and the filter box searches all of it.
+const REL_STEP = 200;
 edges.setup({D, keywordCard, keywordIdOf, kindOf: k => KIND[k]});
 
 /* one row: anything with a card of its own opens it, an Atlas row without one goes to its tab, and the rest
@@ -1848,6 +1885,7 @@ function relSection(it, want){
   sec.className = 'uses';
   sec._it = it;
   sec._open = new Set((want && want.open) || []);
+  sec._more = {...((want && want.more) || {})};   // an opened category drawn past its first REL_STEP rows
   sec._want = want || null;
   const need = paintRel(sec);
   if(need.length) needFiles(need).then(() => { paintRel(sec); if(sec._then) sec._then(); });
@@ -1864,7 +1902,9 @@ function paintRel(sec){
   if(sec.hidden){ sec.innerHTML = ''; sec._rows = []; return got.need; }
   const all = [];   // every row drawn, in order, for the filter box
   const blocks = cats.map(c => {
-    const show = sec._open.has(c.id) || c.total <= CAP + SLACK ? c.total : CAP;
+    const open = sec._open.has(c.id);
+    const show = open ? Math.min(c.total, sec._more[c.id] || REL_STEP) : c.total <= CAP + SLACK ? c.total : CAP;
+    c.drawn = show;
     const drawn = c.rows.slice(0, show).map(relRow);
     all.push(...drawn);
     const left = c.total - show, more = seeAllHTML(it, c);
@@ -1873,8 +1913,8 @@ function paintRel(sec){
       '>' + c.total.toLocaleString() + '</span></p>' +
       drawn.map(x => x.html).join('') +
       (left > 0 || more ? '<p class="uses-more">' +
-        (left > 0 ? '<button type="button" class="uses-all" data-c="' + esc(c.id) + '">See all ' +
-          c.total.toLocaleString() + '</button>' : '') + more + '</p>' : '') +
+        (left > 0 ? '<button type="button" class="uses-all" data-c="' + esc(c.id) + '">' +
+          (open ? 'Show more' : 'See all ' + c.total.toLocaleString()) + '</button>' : '') + more + '</p>' : '') +
       '</div>';
   }).join('');
   const note = waiting ? '<p class="note">Looking…</p>' : relBad && !cats.length
@@ -1888,9 +1928,29 @@ function paintRel(sec){
   const q = sec.querySelector('.uses-q');
   if(q) q.addEventListener('input', () => {
     const words = q.value.trim().toLowerCase().split(/\s+/).filter(Boolean);
+    for(const x of sec.querySelectorAll('.uses-extra')) x.remove();
     const els = [...sec.querySelectorAll('.uses-row')];
     let shown = 0;
     els.forEach((el, i) => { const hit = words.every(w => (all[i] || {hay: ''}).hay.includes(w)); el.hidden = !hit; shown += hit; });
+    /* A category opened with "See all" draws REL_STEP rows at a time, but the filter still answers for all of
+       it: the rows not drawn yet are searched too, and the ones that match are drawn under the rest, up to
+       REL_STEP of them. They go again with the next letter typed. */
+    if(words.length) for(const c of cats){
+      if(!sec._open.has(c.id) || c.drawn >= c.total) continue;
+      const box = sec.querySelector('.uses-cat[data-c="' + CSS.escape(c.id) + '"] .uses-more');
+      if(!box) continue;
+      let html = '', n = 0;
+      for(let i = c.drawn; i < c.total && n < REL_STEP; i++){
+        const r = c.rows[i]._row || (c.rows[i]._row = relRow(c.rows[i]));
+        if(words.every(w => r.hay.includes(w))){ html += r.html; n++; }
+      }
+      if(!n) continue;
+      const t = document.createElement('template');
+      t.innerHTML = html;
+      for(const el of t.content.children) el.classList.add('uses-extra');
+      box.before(t.content);
+      shown += n;
+    }
     for(const cat of sec.querySelectorAll('.uses-cat'))
       cat.hidden = ![...cat.querySelectorAll('.uses-row')].some(r => !r.hidden);
     sec.querySelector('.uses-none').hidden = shown > 0;
@@ -1905,12 +1965,27 @@ function paintRel(sec){
   return got.need;
 }
 /* Render a list of cards into a grid. Cards that stay glide to their new place, new cards fly in,
-   and cards that leave fade out where they stood (FLIP, Web Animations API). */
+   and cards that leave fade out where they stood (FLIP, Web Animations API).
+   What it costs is the reading of where each card sits, so every place is read in one pass before anything
+   is written, and again in one pass after: a read between two writes is a whole layout of the page, once per
+   card. Only a card on screen, or near it, is moved: one far below is never seen gliding. And a draw that
+   moves a great many cards at once does not glide them at all — nobody follows forty cards moving, and a
+   weak machine pays for every one. */
+const GLIDE_MAX = 40;    // cards on the grid before a draw, past which it is simply redrawn in its new order
+const NEAR_VIEW = 300;   // px above and below the screen a card still counts as on it
+// no motion where it was asked for, and none on a machine the page has marked as slow (the class "lite")
+function calm(){ return reduceMotion || document.documentElement.classList.contains('lite'); }
 export function flow(grid, list, make){
+  const old = new Map();
+  for(const c of grid.children) if(c.dataset.key) old.set(c.dataset.key, c);
+  // every card on the grid now either stays or leaves, so that is the number of cards that would move
+  const still = calm(), glide = !still && old.size > 0 && old.size <= GLIDE_MAX;
   const before = new Map();
-  for(const c of grid.children) if(c.dataset.key) before.set(c.dataset.key, c.getBoundingClientRect());
-  const gridBox = grid.getBoundingClientRect();
-  const old = new Map([...grid.children].filter(c => c.dataset.key).map(c => [c.dataset.key, c]));
+  let gridBox = null;
+  if(glide){
+    gridBox = grid.getBoundingClientRect();
+    for(const [k, c] of old) before.set(k, c.getBoundingClientRect());
+  }
   const nodes = list.map(x => {
     let n = old.get(x.key);
     if(n) old.delete(x.key);
@@ -1919,10 +1994,14 @@ export function flow(grid, list, make){
   });
   const leaving = [...old.values()];
   grid.replaceChildren(...nodes);
-  if(reduceMotion) return;
+  if(still){ for(const n of nodes) n._fresh = false; return; }
+  const lo = -NEAR_VIEW, hi = innerHeight + NEAR_VIEW;
+  const seen = r => r && r.bottom > lo && r.top < hi;
+  // the new places, all read before the first animation is started
+  const after = nodes.map(n => n._fresh || glide ? n.getBoundingClientRect() : null);
   // ghosts for cards that left, so they fade where they were instead of vanishing
-  leaving.slice(0, 12).forEach(n => {
-    const r = before.get(n.dataset.key); if(!r) return;
+  if(glide) leaving.slice(0, 12).forEach(n => {
+    const r = before.get(n.dataset.key); if(!seen(r)) return;
     Object.assign(n.style, {position:'absolute', left:(r.left - gridBox.left) + 'px', top:(r.top - gridBox.top) + 'px',
       width:r.width + 'px', height:r.height + 'px', margin:0, pointerEvents:'none', zIndex:0});
     grid.appendChild(n);
@@ -1930,14 +2009,15 @@ export function flow(grid, list, make){
       .onfinish = () => n.remove();
   });
   let k = 0;
-  nodes.forEach(n => {
+  nodes.forEach((n, i) => {
+    const b = after[i];
     if(n._fresh){
       n._fresh = false;
-      n.animate([{opacity:0, transform:'translateY(18px) scale(.97)'}, {opacity:1, transform:'none'}],
+      if(seen(b)) n.animate([{opacity:0, transform:'translateY(18px) scale(.97)'}, {opacity:1, transform:'none'}],
         {duration:420, delay:Math.min(k++, 16) * 24, easing:'cubic-bezier(.2,.8,.2,1)', fill:'backwards'});
-    } else {
-      const a = before.get(n.dataset.key), b = n.getBoundingClientRect();
-      if(!a) return;
+    } else if(glide){
+      const a = before.get(n.dataset.key);
+      if(!a || !(seen(a) || seen(b))) return;
       const dx = a.left - b.left, dy = a.top - b.top;
       if(Math.abs(dx) > 1 || Math.abs(dy) > 1)
         n.animate([{transform:'translate(' + dx + 'px,' + dy + 'px)'}, {transform:'none'}],
@@ -2037,15 +2117,34 @@ function nearScore(it, N){
    words, once, on that keystroke. */
 const NEAR_LETTERS = 6;   // from here up a word is allowed two slips; under it, one
 let VOCAB = null, VOCAB_AT = -1;
+const wordsOf = (set, it) => { for(const w of (it._hay || '').match(/[a-z0-9]+/g) || []) if(w.length > 2) set.add(w); };
 function vocab(){
   const n = D.index && D.index.items ? D.index.items.length : 0;
   if(VOCAB && VOCAB_AT === n) return VOCAB;
   const set = new Set();
-  for(const it of (D.index && D.index.items) || [])
-    for(const w of (it._hay || '').match(/[a-z0-9]+/g) || []) if(w.length > 2) set.add(w);
+  for(const it of (D.index && D.index.items) || []) wordsOf(set, it);
   VOCAB_AT = n;
   return VOCAB = [...set];
 }
+/* The list is worked out while the page has nothing else to do, a few milliseconds at a time, once the whole
+   index is in, so the first key typed never pays for it. A key that comes before it is finished builds the
+   list whole, there and then, and this stops. */
+function vocabLater(){
+  const items = D.index.items, n = items.length, set = new Set();
+  let i = 0;
+  const slice = () => {
+    if(VOCAB_AT === n || D.index.items !== items) return;
+    const stop = performance.now() + 6;
+    while(i < n){
+      wordsOf(set, items[i++]);
+      if(!(i & 127) && performance.now() > stop) return void idle(slice);
+    }
+    VOCAB_AT = n;
+    VOCAB = [...set];
+  };
+  idle(slice);
+}
+ready.then(vocabLater, () => {});
 /* Damerau–Levenshtein, given up on as soon as the whole row is already further than max. */
 function apart(a, b, max){
   const al = a.length, bl = b.length;
@@ -2110,6 +2209,31 @@ export function hits(it, ws){
   return s;
 }
 
+/* ---------- a box that answers as you type ----------
+   Every search box on the site runs through here. A hand at the keys types five letters in a burst, and only
+   the last of them is worth answering: each box waits TYPE_WAIT after the last key and then answers once.
+   Three things never wait. Enter acts on the text as it stands, so the answer it opens is the one for every
+   letter typed. Escape drops whatever was waiting, and the box's own Escape does the rest at once. And a box
+   emptied, or changed by the page itself rather than a key (a script, the popup's own Escape), answers at once,
+   because there is no burst to wait out. `run` reads the box itself; the function handed back runs it now. */
+const TYPE_WAIT = 120;
+export function onType(box, run, wait = TYPE_WAIT){
+  let t = 0;
+  const now = () => { clearTimeout(t); t = 0; run(); };
+  box.addEventListener('input', e => {
+    clearTimeout(t);
+    if(!e.isTrusted || !box.value.trim()) return void now();
+    t = setTimeout(now, wait);
+  });
+  // capture: on the box itself it runs before the box's own keys, so Enter already sees the answer
+  box.addEventListener('keydown', e => {
+    if(!t) return;
+    if(e.key === 'Enter') now();
+    else if(e.key === 'Escape'){ clearTimeout(t); t = 0; }
+  }, true);
+  return () => { if(t) now(); };
+}
+
 /* ---------- search ---------- */
 export function search(q, kind = 'all'){
   const qs = q.trim().toLowerCase();
@@ -2150,7 +2274,11 @@ export function search(q, kind = 'all'){
 /* ---------- home view ----------
    The search bar and nothing under it until something is typed. */
 const PAGE = 30;   // cards added each time the list reaches the bottom of the screen
-const H = {q:'', kind:'all', shown:PAGE, list:[]};
+const ENDLESS = 150;   // cards the list adds by itself; past this, one more page is a press of Show more
+/* H.all is every match for the words typed, H.list the part of it the kind chip lets through. Both are kept
+   between draws: a chip, or the next page of the list, is a slice of what the search already answered and
+   never a second search. */
+const H = {q:'', kind:'all', shown:PAGE, all:[], list:[]};
 function homeInit(){
   const q = $('#q'), kinds = $('#kinds');
   // index.html draws these chips itself, so the bar never changes shape on the first paint; the table is the
@@ -2161,25 +2289,48 @@ function homeInit(){
     const b = e.target.closest('button'); if(!b) return;
     H.kind = b.dataset.k; H.shown = PAGE;
     [...kinds.children].forEach(c => c.setAttribute('aria-pressed', String(c === b)));
-    homeRender(); q.focus();
+    homeRender(true); q.focus();
   });
-  q.addEventListener('input', () => { H.q = q.value; H.shown = PAGE; homeRender(); syncHash(); });
+  onType(q, () => { H.q = q.value; H.shown = PAGE; homeRender(); syncHash(); });
   q.addEventListener('keydown', e => {
     if(e.key === 'Escape'){ q.value = ''; H.q = ''; homeRender(); syncHash(); }
     if(e.key === 'Enter'){ const first = $('#cards .card .card-link'); if(first) first.click(); }
   });
-  // endless list: when the bottom comes into view, the next 30 cards fly in
+  // endless list: when the bottom comes into view, the next 30 cards fly in, up to ENDLESS; then Show more
   const more = $('#more');
-  more.addEventListener('click', () => { H.shown += PAGE; homeRender(); });
+  more.addEventListener('click', homeMore);
   new IntersectionObserver(es => {
-    if(es.some(e => e.isIntersecting) && !more.hidden && route() === 'home'){ H.shown += PAGE; homeRender(); }
+    if(es.some(e => e.isIntersecting) && !more.hidden && H.shown < ENDLESS && route() === 'home') homeMore();
   }, {rootMargin: '600px 0px'}).observe(more);
+}
+/* The next page of the list, added under the cards already there: nothing above it is searched, drawn or
+   moved again. */
+function homeMore(){
+  const from = H.shown;
+  H.shown += PAGE;
+  const add = H.list.slice(from, H.shown), grid = $('#cards');
+  if(!add.length) return paintMore();
+  const nodes = add.map(it => { const n = card(it); n.dataset.key = it.k + ':' + it.id; return n; });
+  grid.append(...nodes);
+  if(!calm()) nodes.slice(0, 16).forEach((n, k) =>
+    n.animate([{opacity:0, transform:'translateY(18px) scale(.97)'}, {opacity:1, transform:'none'}],
+      {duration:420, delay:k * 24, easing:'cubic-bezier(.2,.8,.2,1)', fill:'backwards'}));
+  paintMore();
+}
+// under the list: the words that say more is on its way while it still comes by itself, a button after
+function paintMore(){
+  const more = $('#more'), auto = H.shown < ENDLESS;
+  more.hidden = H.list.length <= H.shown;
+  if(more.dataset.auto === String(auto)) return;
+  more.dataset.auto = String(auto);
+  more.innerHTML = auto ? '<span class="note">Loading more…</span>' : '<button type="button" class="btn">Show more</button>';
 }
 function syncHash(){
   const h = H.q ? '#/?q=' + encodeURIComponent(H.q) : '#/';
   if(location.hash !== h) history.replaceState(null, '', h);
 }
-function homeRender(){
+/* again: the words have not changed (a kind chip), so the matches already worked out are the ones drawn */
+function homeRender(again){
   const hero = $('#hero'), status = $('#status'), more = $('#more');
   const has = H.q.trim().length > 0;
   hero.classList.toggle('docked', has);
@@ -2193,7 +2344,8 @@ function homeRender(){
     return;
   }
   if(has){
-    const all = search(H.q, 'all');
+    const all = again && H.allq === H.q ? H.all : search(H.q, 'all');
+    H.all = all; H.allq = H.q;
     const counts = {all: all.length};
     for(const it of all) counts[it.k] = (counts[it.k] || 0) + 1;
     for(const b of $('#kinds').children) b.querySelector('.ct').textContent = counts[b.dataset.k] || 0;
@@ -2201,8 +2353,9 @@ function homeRender(){
     label = list.length ? '<b>' + list.length.toLocaleString() + '</b> match' + (list.length === 1 ? '' : 'es') : '';
   } else {
     for(const b of $('#kinds').children) b.querySelector('.ct').textContent = '';
-    list = []; label = '';
+    list = []; label = ''; H.all = []; H.allq = '';
   }
+  H.list = list;
   status.innerHTML = label;
   $('#cards').classList.remove('wait');   // the first answer is in: the grid takes its own height
   $('#quote').hidden = has;
@@ -2210,7 +2363,7 @@ function homeRender(){
   flow($('#cards'), shown.map(it => ({key: it.k + ':' + it.id, it})), x => card(x.it));
   // these are the only cards drawn before the whole index is in: they take their keyword marks when it lands
   if(!D.full && !H.marked){ H.marked = true; ready.then(() => remark($('#cards')), () => {}); }
-  more.hidden = list.length <= H.shown;
+  paintMore();
   if(has && !list.length){
     $('#cards').innerHTML = '<div class="empty" style="grid-column:1/-1"><h3>Nothing matches</h3></div>';
   }
@@ -2240,9 +2393,10 @@ export function mountTopSearch(host){
     : '<div class="tsearch-none">Nothing matches.</div>';
     drop.hidden = false; q.setAttribute('aria-expanded', 'true');
   };
-  q.addEventListener('input', async () => {
-    await ready;
+  onType(q, async () => {
+    if(!D.full) await ready;   // in, it answers at once, so Enter picks from the rows for every letter typed
     if(!q.value.trim()){ close(); return; }
+    if(document.activeElement !== q) return;   // left the box before its answer came: nothing drops open behind it
     const all = search(q.value);
     total = all.length; rows = all.slice(0, 10); sel = 0; paint();
   });
@@ -2286,9 +2440,39 @@ async function mountGuide(){
 /* ---------- router ---------- */
 function route(){ const m = location.hash.match(/^#\/(\w+)/); return m ? m[1] : 'home'; }
 export function params(){ const i = location.hash.indexOf('?'); return new URLSearchParams(i >= 0 ? location.hash.slice(i + 1) : ''); }
-const loaded = {};
-async function show(){
+/* A tab is drawn when it is opened and taken down when it is left: a page that kept every tab it had ever
+   shown grew from a thousand elements to six thousand in a few clicks, and a weak machine pays for each one on
+   every layout. What a tab was showing — its filters, its picks, the plan on the bench — is kept by its own
+   module (each keeps an S), so coming back draws the same page again, scrolled where it was.
+   A tab takes part by exporting unmount(), which lets go of whatever the page itself does not hold: a listener
+   on the window, an observer, a timer. A tab without one stays drawn and hidden, the way every tab used to. */
+const MODS = {};    // the module behind each tab, fetched once
+const LIVE = {};    // the tabs drawn right now: a promise of what their mount handed back
+const LEFT = {};    // where each tab was scrolled when it was left, and the address it was left at
+let ON = null;      // the tab on show
+const modOf = r => MODS[r] || (MODS[r] = lazy('./' + ({trade: 'tradepage'}[r] || r) + '.js', 'This tab'));
+function leave(r, at){
+  const view = $('#view-' + r);
+  if(!view) return;
+  LEFT[r] = {y: scrollY, at};
+  if(r in SHUT){ view.replaceChildren(); return; }
+  const live = LIVE[r];
+  if(!live) return;
+  Promise.all([modOf(r), live]).then(([m]) => {
+    // back on it before its mount had finished, or drawn again since: it stays
+    if(!m.unmount || ON === r || LIVE[r] !== live) return;
+    delete LIVE[r];
+    m.unmount();
+    view.replaceChildren();
+  }, () => { if(LIVE[r] === live) delete LIVE[r]; });
+}
+async function show(e){
   const r = route() in ROUTES ? route() : 'home';
+  // the address the tab was left at is the one before this change: the tab may have written its own since
+  const was = e && e.oldURL ? new URL(e.oldURL).hash : '';
+  if(ON && ON !== r && ON !== 'home') leave(ON, was);   // home is the page itself: its search bar is never taken down
+  const back = ON !== r && LEFT[r] && LEFT[r].at === location.hash ? LEFT[r].y : null;
+  ON = r;
   document.body.dataset.route = r;
   document.querySelectorAll('.view').forEach(v => v.hidden = v.dataset.view !== r);
   document.querySelectorAll('.tabs a[data-route]').forEach(a => { if(a.dataset.route === r) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current'); });
@@ -2306,9 +2490,15 @@ async function show(){
     if(!matchMedia('(pointer:coarse)').matches) $('#q').focus({preventScroll:true});
   } else {
     if(r !== 'map') await ready;   // every other tab draws cards out of the index; the map is a finished picture
-    if(!loaded[r]) loaded[r] = lazy('./' + ({trade: 'tradepage'}[r] || r) + '.js', 'This tab').then(m => m.mount($('#view-' + r)));
-    const m = await loaded[r];
-    if(m && m.update) m.update();
+    if(ON !== r) return;           // left again while the index came in: nothing to draw
+    const view = $('#view-' + r);
+    if(!LIVE[r]) LIVE[r] = modOf(r).then(m => m.mount(view));
+    const live = LIVE[r];
+    const m = await live;
+    if(ON !== r || LIVE[r] !== live) return;
+    if(m && m.update) await m.update();
+    // the same address it was left at: the page it was, where it was
+    if(back !== null && ON === r) scrollTo(0, back);
   }
 }
 
