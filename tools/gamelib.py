@@ -40,7 +40,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from gamepull import official, patch, state  # noqa: E402
 from sync import (BLANK_NODE, CUT, DNT, DNT_GEMS, KWREF, RAW, SHOWN_FIELDS,  # noqa: E402
-                  data_files, plain, shows)
+                  data_files, plain, shows, whole)
 
 ROOT = Path(__file__).resolve().parent.parent
 INDEX = ROOT / 'data' / 'index.json'
@@ -114,10 +114,11 @@ def drilldown(block):
     """One of the drill-down page's data blocks, from the file explore.html names for it. Never by glob:
     data/explore/ keeps the last version's files too, so two hashes of the same block can sit there."""
     page = ROOT / 'explore.html'
-    f = data_files(page.read_text(encoding='utf-8')).get(block) if page.exists() else None
+    files = data_files(page.read_text(encoding='utf-8')) if page.exists() else {}
+    f = files.get(block)
     if not f:
         sys.exit('explore.html does not name a %s file — run tools/sync.py first' % block)
-    return json.loads((ROOT / f).read_text(encoding='utf-8'))
+    return whole(block, json.loads((ROOT / f).read_text(encoding='utf-8')), files)   # a gem's level text is a file of its own
 
 
 def pick(index):

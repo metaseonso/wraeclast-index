@@ -98,10 +98,12 @@ TOPSEARCH = ('<div class="topsearch" id="topsearch"><div class="tsearch"><svg vi
              '<input type="search" placeholder="Search the index" autocomplete="off" spellcheck="false" aria-label="Search the index" '
              'role="combobox" aria-expanded="false" aria-autocomplete="list"><kbd aria-hidden="true">/</kbd>'
              '<div class="tsearch-drop" role="listbox" hidden></div></div></div>')
-SUGGEST_BTN = '<button id="suggestbtn" type="button" class="suggestbtn" title="Send an idea or report a problem">Suggest</button>'
+SUGGEST_BTN = '<button id="suggestbtn" type="button" class="suggestbtn" title="Send an idea or report a problem"><i class="mk"></i>Suggest</button>'
+SUGGEST_OLD = '<button id="suggestbtn" type="button" class="suggestbtn" title="Send an idea or report a problem">Suggest</button>'   # before its mark
 CL_BTN = '<button class="clbtn" id="clbtn" type="button">Patch notes <span class="ct wait">v0.00</span></button>'   # assets/notes.js writes the version
 CL_NEW = TOPSEARCH + '\n    ' + SUGGEST_BTN + '\n    ' + KEYS_BTN + '\n    ' + CL_BTN
 CL_PREV = '<div class="topsearch" id="topsearch"></div>\n    ' + KEYS_BTN + '\n    ' + CL_OLD
+CL_NOMARK = TOPSEARCH + '\n    ' + SUGGEST_OLD + '\n    ' + KEYS_BTN + '\n    ' + CL_BTN
 
 RAW = re.compile(r'(?<![\w\[./-])[a-z][a-z0-9]*(?:_[a-z0-9%+]+){2,}(?:\s*=\s*-?\d+)?|\{[^}\s]{1,80}\}')
 
@@ -111,9 +113,10 @@ def block(html, bid):
     m = re.search(r'<script id="%s" type="application/json">(.*?)</script>' % bid, html, re.S)
     if m:
         return json.loads(m.group(1))
-    f = data_files(html).get(bid)
+    files = data_files(html)
+    f = files.get(bid)
     if f and (ROOT / f).exists():
-        return json.loads((ROOT / f).read_text(encoding='utf-8'))
+        return whole(bid, json.loads((ROOT / f).read_text(encoding='utf-8')), files)
     sys.exit('missing data block: ' + bid)
 
 
@@ -598,47 +601,84 @@ def build_index(html):
 
 # Prices on the drill-down page: never the snapshot baked into the artifact (poe.ninja), only the site's live file
 # (/data/market.json: uniques from real trade listings, emotions from the Currency Exchange; ?part=now is every price
-# without the day-by-day history, worker/prices.js). The baked numbers are removed; the page's own script waits (at
-# most 3 s) for the live file and fills them in before it draws, so its price sorting and filters work on real prices.
-LIVE = ('window.WI_MARKET=(window.WI_DATA&&WI_DATA.one||Promise.resolve()).then(function(){return fetch("data/market.json?part=now")})'   # after the Gems table's files
+# without the day-by-day history, worker/prices.js). The baked numbers are removed. The file is asked for from <head>,
+# beside the tab's own files (quietly on the Gems tab, which shows no price), and the site's app takes the same answer
+# (window.WI_MARKET, assets/app.js), so it comes down once. wiLive(UQ, TR, ms) fills the prices in: the Uniques tab
+# waits for them (at most ms, 3 s by default: its default sort is the price), the tree draws first and its panel reads
+# the emotion prices once they land (ms 0: no limit).
+LIVE = ('window.WI_MARKET=fetch("data/market.json?part=now",{priority:WI_DATA.tab==="gems"?"low":"auto"})'
         '.then(function(r){return r.ok?r.json():null}).catch(function(){return null});'
-        'window.wiLive=async function(UQ,TR){var m=await Promise.race([window.WI_MARKET,new Promise(function(r){setTimeout(function(){r(null)},3000)})]);'
-        'if(!m||!m.items)return;var I=m.items;(UQ.items||[]).forEach(function(u){var p=I["u:"+u.n+" | "+u.b]||I["u:"+u.n];'
+        'window.wiLive=function(UQ,TR,ms){return(ms===0?WI_MARKET:Promise.race([WI_MARKET,new Promise(function(r){setTimeout(r,ms||3000,null)})])).then(function(m){'
+        'if(!m||!m.items)return false;var I=m.items;((UQ&&UQ.items)||[]).forEach(function(u){var p=I["u:"+u.n+" | "+u.b]||I["u:"+u.n];'
         'if(p&&p.v!=null){u.v=p.v;u.ls=p.ls;if(p.ch!=null)u.ch=p.ch;}});var E=(TR&&TR.emotions)||{};Object.keys(E).forEach(function(k){'
-        'var p=I["c:"+E[k].name];if(p&&p.v!=null){E[k].v=p.v;if(p.ch!=null)E[k].ch=p.ch;}});};')
+        'var p=I["c:"+E[k].name];if(p&&p.v!=null){E[k].v=p.v;if(p.ch!=null)E[k].ch=p.ch;}});return true})};')
 LIVE_TAG = re.compile(r'<script>window\.WI_MARKET=.*?</script>', re.S)   # the price script before ticket 39
 
 # ---- the drill-down page's data, outside the page ----
 # The artifact carries its data inline (<script type="application/json"> blocks, 4.7 MB). The site's page keeps only the
 # page: each block goes to data/explore/<name>.<hash>.json (a new name whenever it changes, so browsers keep the files a
-# year and the page never mixes two versions), fetched from <head> while the page paints (DATA_JS): the Gems table's
-# files first (FIRST), the rest right after them. The page's own scripts run in their order, each once the files it
-# reads are in (WI_DATA.run). Until the page has drawn its table (assets/bridge.js calls WI_DATA.show), the space under
-# the header stays empty, so nothing jumps.
+# year and the page never mixes two versions). DATA_JS fetches the files of the tab in the address from <head>, while
+# the page paints (FIRST); every other file waits until a script asks for it (WI_DATA.get): a tab's files when the tab
+# first opens, a gem's level text when a gem's own panel first opens (GEMTEXT). The page's own scripts run in their
+# order, each once the files it reads are in (WI_DATA.run). Until the page has drawn its table (assets/bridge.js calls
+# WI_DATA.show), the space under the header stays empty, so nothing jumps.
 # cldata (the artifact's old changelog) is dropped: Patch notes come from data/changelog.json (assets/notes.js).
 # `python tools/sync.py explore.html` works too: inline() puts the page back in the artifact's form first.
 EXPLORE = ROOT / 'data' / 'explore'
 DATA_FILES = {'gemdata': 'gems', 'uqdata': 'uniques', 'trdata': 'tree', 'kwdata': 'keywords', 'jwdata': 'jewels'}
 DROP_BLOCKS = ('cldata',)
-FIRST = ('kwdata', 'gemdata')   # the Gems table, the page's first view
+FIRST = {'gems': ('kwdata', 'gemdata'), 'uniques': ('kwdata', 'uqdata'), 'tree': ('kwdata', 'trdata', 'jwdata')}   # each tab's table
 BLOCK = re.compile(r'<script id="(\w+)" type="application/json">(.*?)</script>\n?', re.S)
 PARSE = re.compile(r"JSON\.parse\(document\.getElementById\('(\w+)'\)\.textContent\)")
 RUN = re.compile(r'<script>WI_DATA\.run\((\[[^\]]*\]),function\(\)\{(.*?)\}\);</script>', re.S)
 DATA_TAG = re.compile(r'<script id="wi-data">.*?</script>', re.S)
-DATA_JS = ('<script id="wi-data">/* the page\'s data (tools/sync.py): every file at once; each script runs in order once its files are in */\n'
+DATA_JS = ('<script id="wi-data">/* the page\'s data (tools/sync.py): the tab in the address first, every other file when a script asks for it */\n'
            'if(navigator.deviceMemory<=4||navigator.hardwareConcurrency<=4||matchMedia("(prefers-reduced-motion: reduce)").matches||(navigator.connection&&navigator.connection.saveData))document.documentElement.classList.add("lite");\n'   # a weak machine: html.lite, as in index.html
            '(function(){var F=__FILES__,W=__FIRST__;var D=window.WI_DATA={files:F},q=Promise.resolve(),got={};'
            'document.documentElement.classList.add("wi-wait");'
            'function load(b,n){return fetch(F[b]).then(function(r){if(!r.ok)throw Error(F[b]+" "+r.status);return r.json()})'
            '.catch(function(e){if(n)throw e;return load(b,1)})}'
            'function get(b){return got[b]||(got[b]=load(b,0).then(function(o){return D[b]=o}))}'
-           'D.one=Promise.all(W.filter(function(b){return F[b]}).map(get)).then(null,function(){});'
-           'D.one.then(function(){for(var b in F)get(b)});'   # the rest once the first view's files are in
-           'D.run=function(need,fn){var p=D.q=q=q.then(function(){return Promise.all(need.map(get))}).then(fn).catch(function(e){console.error(e)});'
-           'if(need.indexOf("gemdata")>=0)D.gems=p;return p};'
+           'D.get=get;D.tab=(/^#(gems|uniques|tree)/.exec(location.hash)||[0,"gems"])[1];'
+           '(W[D.tab]||[]).forEach(function(b){if(F[b])get(b).catch(function(){})});'   # the tab in the address, from <head>
+           'D.run=function(need,fn){return D.q=q=q.then(function(){return Promise.all(need.map(get))}).then(fn).catch(function(e){console.error(e)})};'
            'D.show=function(){document.documentElement.classList.remove("wi-wait")};'
            'addEventListener("DOMContentLoaded",function(){q.then(function(){setTimeout(D.show,1500)})});'   # in case assets/bridge.js never runs
            '})();\n' + LIVE + '</script>')
+
+# ---- a gem's level-by-level text, in a file of its own ----
+# Every stat line of every gem at every level (each stat set's "txL", 1.07 MB of the 2.7 MB gem file) is read in one
+# place: a gem's own panel. When the page asks for it by name (WI_DATA.get('gemtext'), explore.html openPanel), it goes
+# to data/explore/gemtext.<hash>.json, {gem id: [each stat set's txL, or null]}, fetched the first time a panel opens.
+# block(), inline() and tools/gamelib.py put it back, so every tool still reads the gem file whole (tools/kwuse.py).
+GEMTEXT = 'gemtext'
+
+
+def split_gemtext(gems):
+    """The gem file without its level text, and the level text on its own."""
+    text = {}
+    for g in gems['gems']:
+        got = [s.pop('txL', None) for s in g.get('ss') or []]
+        if any(got):
+            text[g['id']] = got
+    return gems, text
+
+
+def join_gemtext(gems, text):
+    """The level text back on its gems (split_gemtext, the other way)."""
+    for g in gems.get('gems') or []:
+        for s, t in zip(g.get('ss') or [], text.get(g['id']) or []):
+            if t:
+                s['txL'] = t
+    return gems
+
+
+def whole(bid, obj, files):
+    """A block as the artifact had it: the gem file with its level text back in, when the page keeps it apart."""
+    f = files.get(GEMTEXT)
+    if bid == 'gemdata' and f and (ROOT / f).exists():
+        join_gemtext(obj, json.loads((ROOT / f).read_text(encoding='utf-8')))
+    return obj
 
 
 def data_files(html):
@@ -653,14 +693,17 @@ def inline(html):
     html = LIVE_TAG.sub('', DATA_TAG.sub('', html))
     if not files:
         return html
+    ids = '|'.join(DATA_FILES)   # the blocks only: WI_DATA.get, .run and the rest are the page's own calls
 
     def unwrap(m):
-        body = re.sub(r'\bWI_DATA\.(\w+)\b', lambda x: "JSON.parse(document.getElementById('%s').textContent)" % x.group(1), m.group(2))
+        body = re.sub(r'\bWI_DATA\.(%s)\b' % ids, lambda x: "JSON.parse(document.getElementById('%s').textContent)" % x.group(1), m.group(2))
         return '<script>' + re.sub(r'^(\s*)return \(async function\(\)\{', r'\1(async function(){', body, count=1) + '</script>'
     html = RUN.sub(unwrap, html)
     at = html.index('<script>', html.index('<body>'))
-    blocks = ''.join('<script id="%s" type="application/json">%s</script>\n' % (b, (ROOT / f).read_text(encoding='utf-8'))
-                     for b, f in files.items())
+    blocks = ''.join('<script id="%s" type="application/json">%s</script>\n'
+                     % (b, json.dumps(whole(b, json.loads((ROOT / f).read_text(encoding='utf-8')), files),
+                                      ensure_ascii=False, separators=(',', ':')))
+                     for b, f in files.items() if b in DATA_FILES)
     return html[:at] + blocks + html[at:]
 
 
@@ -668,16 +711,24 @@ def externalize(html):
     """The data blocks out of the page into data/explore/, and the page's scripts made to wait for them."""
     EXPLORE.mkdir(parents=True, exist_ok=True)
     files = {}
+
+    def write(bid, name, obj):
+        body = json.dumps(obj, ensure_ascii=False, separators=(',', ':'))
+        rel = 'data/explore/%s.%s.json' % (name, hashlib.sha1(body.encode('utf-8')).hexdigest()[:10])
+        (ROOT / rel).write_text(body, encoding='utf-8')
+        files[bid] = rel
+    apart = ("WI_DATA.get('%s')" % GEMTEXT) in html   # the page fetches a gem's level text on its own
     for m in BLOCK.finditer(html):
         bid = m.group(1)
         if bid in DROP_BLOCKS:
             continue
         if bid not in DATA_FILES:
             sys.exit('the artifact has a new data block %r: add it to DATA_FILES in tools/sync.py' % bid)
-        body = json.dumps(json.loads(m.group(2)), ensure_ascii=False, separators=(',', ':'))
-        rel = 'data/explore/%s.%s.json' % (DATA_FILES[bid], hashlib.sha1(body.encode('utf-8')).hexdigest()[:10])
-        (ROOT / rel).write_text(body, encoding='utf-8')
-        files[bid] = rel
+        obj = json.loads(m.group(2))
+        if bid == 'gemdata' and apart:
+            obj, text = split_gemtext(obj)
+            write(GEMTEXT, GEMTEXT, text)
+        write(bid, DATA_FILES[bid], obj)
     # older versions go, except the one the site serves now: a page loaded just before the new one goes live still finds its files
     live = ROOT / 'explore.html'
     keep = set(files.values()) | set(data_files(live.read_text(encoding='utf-8')).values() if live.exists() else ())
@@ -689,7 +740,7 @@ def externalize(html):
     def wrap(m):
         body = m.group(1)
         need = sorted(set(PARSE.findall(body)))
-        if not need:
+        if not need and 'WI_DATA.' not in body:   # neither reads a block nor asks the loader for a file
             return m.group(0)
         missing = [b for b in need if b not in files]
         if missing:
@@ -697,7 +748,7 @@ def externalize(html):
         body = re.sub(r'^(\s*)\(async function\(\)\{', r'\1return (async function(){', PARSE.sub(lambda x: 'WI_DATA.' + x.group(1), body), count=1)
         return '<script>WI_DATA.run(%s,function(){%s});</script>' % (json.dumps(need, separators=(',', ':')), body)
     html = re.sub(r'<script>(.*?)</script>', wrap, html, flags=re.S)
-    js = DATA_JS.replace('__FILES__', json.dumps(files, separators=(',', ':'))).replace('__FIRST__', json.dumps(list(FIRST)))
+    js = DATA_JS.replace('__FILES__', json.dumps(files, separators=(',', ':'))).replace('__FIRST__', json.dumps(FIRST, separators=(',', ':')))
     return html.replace('</head>', js + '</head>', 1)
 
 
@@ -710,6 +761,12 @@ NAV_NEW = "const nav = $('#nav');\nnav.textContent = '';   // the header has the
 # the Gems table shows before this script runs (assets/bridge.js): its first go() keeps where the player has scrolled to
 BOOT_OLD = "/* boot */\ngo('gems');\n"
 BOOT_NEW = "/* boot */\n{ const y = scrollY; go('gems'); if(y) scrollTo(0, y); }   // tools/sync.py BOOT_NEW\n"
+# Since the speed pass the page's own scripts (explore.html, edited there) build each tab the first time it opens and
+# fetch its files then (DATA_JS): the boot goes straight to the tab in the address, and the tabs' script reads no data
+# block up front (LAZY). The patches above are for an artifact from before it, which still works as it did: every
+# script waits for the files it reads.
+BOOT_LAZY = "{ const y = scrollY; await go(CURSEC); if(y) scrollTo(0, y); }   // tools/sync.py BOOT_LAZY\n"
+LAZY = "let UQ = null, TR = null, JW = null;"
 
 
 def site_scripts(html):
@@ -721,7 +778,7 @@ def site_scripts(html):
         if NAV_OLD not in html:
             sys.exit('the drill-down script changed; update NAV_OLD in tools/sync.py')
         html = html.replace(NAV_OLD, NAV_NEW, 1)
-    if BOOT_NEW not in html:
+    if BOOT_NEW not in html and BOOT_LAZY not in html:
         if BOOT_OLD not in html:
             sys.exit('the drill-down script changed; update BOOT_OLD in tools/sync.py')
         html = html.replace(BOOT_OLD, BOOT_NEW, 1)
@@ -732,7 +789,8 @@ def site_scripts(html):
     html = re.sub(r'<b id="total">[^<]*</b>', '<b id="total">{:,}</b>'.format(live), html, count=1)
     for pat, words in BUILD_COPY:   # the foot copy says the patch, not the client build
         html = pat.sub(words % patch, html, count=1)
-    left = sorted(set(COPY_IDS.findall(html)))   # a reworded artifact that still carries game code
+    # a reworded artifact that still carries game code, in the page itself: the data blocks keep their ids
+    left = sorted(set(COPY_IDS.findall(BLOCK.sub('', html))))
     if left:
         sys.exit('the drill-down copy still names %s; update the copy pairs in tools/sync.py' % ', '.join(left))
     return html
@@ -834,7 +892,7 @@ def live_prices(html):
         e.pop('ch', None)
     tr['rates'] = {}
     html = put(html, 'trdata', tr)
-    if UQ_NEW not in html:
+    if UQ_NEW not in html and LAZY not in html:
         if UQ_OLD not in html or TR_OLD not in html:
             sys.exit('the drill-down script changed; update UQ_OLD / TR_OLD in tools/sync.py')
         html = html.replace(UQ_OLD, UQ_NEW, 1).replace(TR_OLD, TR_NEW, 1)
@@ -885,7 +943,7 @@ def explore_page(html):
     if HEAD not in html:
         html = html.replace(HEAD_OLD, HEAD, 1) if HEAD_OLD in html else html.replace(TITLE, '', 1).replace('</head>', HEAD + '</head>', 1)
     html = live_prices(html)
-    for new, olds in ((MAST_NEW, (MAST_NOBOSS, MAST_PREV, MAST_OLD)), (CL_NEW, (CL_PREV, CL_OLD))):
+    for new, olds in ((MAST_NEW, (MAST_NOBOSS, MAST_PREV, MAST_OLD)), (CL_NEW, (CL_NOMARK, CL_PREV, CL_OLD))):
         if new not in html:
             old = next((o for o in olds if o in html), None)
             if not old:
