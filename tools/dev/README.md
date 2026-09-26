@@ -57,6 +57,13 @@ Exaltation only adds a modifier sharing a tag; and no omen grants its currency a
 `--craft` for one craft printed step by step. Seeded, so the same seed prints the same table. Reads the data
 files and nothing else, writes nothing, no network. Not part of `guard.mjs`: it is the bench's own check.
 
+`speed.mjs`: how the site runs on a slow machine. Headless Chrome with the CPU slowed 4x and a fresh profile per
+page, so no cache or service worker helps. It reads home at rest (JSON parsed before anyone types, elements, heap,
+main-thread time over 5 idle seconds), typing "fireball" (busy time, longest frame, endless animations left once the
+hero docks), every tab and back home (elements and heap left behind) and /explore#tree (JSON and time to the first
+row). `node tools/dev/speed.mjs` against the live site, or pass any `http://...`; `--json` for a before and an after,
+`--budget` to fail when a number is over `BUDGET`. About two minutes. Writes nothing.
+
 `faults.mjs`: the last-good rule (`tools/lastgood.py`) without the network. It runs a fake builder four
 ways — a source that gives nothing, one that gives 60% of its rows, one that throws, and a builder that dies
 before its pull is even checked — and each time checks that the committed file is untouched, the loud line was
