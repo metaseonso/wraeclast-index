@@ -3,7 +3,7 @@
    Every item is a live card: price and 7-day trend where poe.ninja has one, the popup, and the Trade button
    (the bulk exchange for exchange items, a trade search by base type with mod rows for tablets).
    Bosses sit under this tab: the link at the top of the page opens #/bosses (assets/bosses.js). */
-import { D, $, esc, card, flow, params } from './app.js';
+import { D, $, esc, card, flow, params, onType } from './app.js';
 
 const SECTS = [['ways', 'Waystones'], ['tabs', 'Tablets'], ['keys', 'Keys & invitations'], ['items', 'Atlas items'], ['tree', 'Atlas tree']];
 const HINT = {ways: 'Search waystones and mods…', tabs: 'Search tablets and mods…', keys: 'Search keys…',
@@ -150,7 +150,8 @@ export async function mount(el){
     S.sec = b.dataset.v;
     render(true); sync();
   });
-  $('#atq', el).addEventListener('input', e => { S.q = e.target.value; render(); sync(); });
+  const aq = $('#atq', el);
+  onType(aq, () => { S.q = aq.value; render(); sync(); });
   $('#atq', el).addEventListener('keydown', e => { if(e.key === 'Escape'){ e.target.value = ''; S.q = ''; render(); sync(); } });
   $('#atsort', el).addEventListener('click', e => {
     const b = e.target.closest('button'); if(!b) return;

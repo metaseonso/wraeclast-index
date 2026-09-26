@@ -1,7 +1,7 @@
 /* Currency tab: every currency-type item, what it does, how its price moves, trading routes,
    and a watch list. Prices: data/market.json: what each currency traded for on the in-game Currency Exchange
    (GGG's public hourly feed, tools/exchange.py). */
-import { D, $, esc, card, flow, money, moneyHTML, params, openDetail, openBox, actHTML, runAct, iconHTML, words, hits } from './app.js';
+import { D, $, esc, card, flow, money, moneyHTML, params, openDetail, openBox, actHTML, runAct, iconHTML, words, hits, onType } from './app.js';
 import { ASKS, ASK } from './kinds.js';   // the questions the page is asked, and which group answers which
 
 const WATCH_KEY = 'wi.watch';
@@ -236,7 +236,8 @@ function openPicker(){
     '<div class="cxp-list"></div><p class="note cxp-ft" aria-live="polite"></p>';
   PEL = box;
   PICK.q = ''; PICK.cat = 'all'; PICK.fam = ''; PICK.shown = PICK_PAGE;
-  $('.cxp-q', box).addEventListener('input', e => { PICK.q = e.target.value.trim().toLowerCase(); PICK.shown = PICK_PAGE; paintPick(); });
+  const pq = $('.cxp-q', box);
+  onType(pq, () => { PICK.q = pq.value.trim().toLowerCase(); PICK.shown = PICK_PAGE; paintPick(); });
   box.addEventListener('click', e => {
     const c = e.target.closest('.cxp-cats .chip');
     if(c){ PICK.cat = c.dataset.c; PICK.fam = ''; PICK.shown = PICK_PAGE; paintPick(true); return; }
@@ -309,8 +310,13 @@ export function mount(el){
     render();
   });
   paintCats();
-  $('#cxq', el).addEventListener('input', e => { S.q = e.target.value.trim().toLowerCase();
-    S.words = S.q ? words(S.q) : []; S.shown = PAGE; render(); });
+  const cq = $('#cxq', el);
+  onType(cq, () => { S.q = cq.value.trim().toLowerCase(); S.words = S.q ? words(S.q) : []; S.shown = PAGE; render(); });
+  // back on the tab: the boxes say what the list is already filtered by
+  cq.value = S.q;
+  $('#cxliq', el).checked = S.liquid;
+  $('#cxtrend', el).value = S.trend;
+  $('#cxsort', el).value = S.sort;
   $('#cxsort', el).addEventListener('change', e => { S.sort = e.target.value; render(); });
   $('#cxliq', el).addEventListener('change', e => { S.liquid = e.target.checked; S.shown = PAGE; render(); });
   $('.cx-next', el).addEventListener('click', () => { S.shown += PAGE; render(); });

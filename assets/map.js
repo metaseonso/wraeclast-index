@@ -17,6 +17,7 @@
    it runs: app.css turns every animation off, and the loop is never started. */
 import { $, esc, first, D, words, hits, openDetail, hrefOf } from './app.js';
 import { KIND } from './kinds.js';
+import { onType } from './app.js';   // the search box waits out a burst of keys, like every box on the site
 
 const TRIP = 11;         // seconds for a light to travel the length of its edge
 const BEAT = 8.5;        // seconds for a hub to breathe in and out
@@ -107,7 +108,8 @@ async function seats(el){
   age(el);   // the seats are in: what the picture does not hold can be counted now
   const box = $('.mp-find', el);
   box.hidden = false;
-  $('input', box).addEventListener('input', e => find(e.target.value, el));
+  const mq = $('input', box);
+  onType(mq, () => find(mq.value, el));
   $('input', box).addEventListener('keydown', e => {
     if(e.key !== 'Enter' || !FOUND || !FOUND.length) return;
     const it = cardAt(FOUND[0]);
