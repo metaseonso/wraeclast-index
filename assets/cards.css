@@ -7,6 +7,15 @@
   color:inherit; text-decoration:none; min-width:0; transition:box-shadow .2s, border-color .2s, translate .2s}
 .card:hover{box-shadow:var(--shadow-hi); border-color:color-mix(in srgb, var(--accent) 45%, var(--line)); translate:0 -1px}
 .card:focus-visible,.card:has(.card-link:focus-visible){outline:2px solid var(--accent); outline-offset:2px}
+/* A long list paints only the cards near the screen. One not yet seen holds a typical card's height (most grid cards
+   measure 190 to 225px), then its own once it has been drawn. What a card paints is clipped to it, so the clip is let
+   out far enough for the clasp and the rank badge over its top rim (look.css), and a card under the pointer or
+   holding focus is drawn whole, for the tip under a mark (.card-offer). Where the clip cannot be let out, every card
+   is drawn. */
+@supports (overflow-clip-margin:1px){
+  .cards > .card{content-visibility:auto; contain-intrinsic-size:auto 215px; overflow-clip-margin:24px}
+  .cards > .card:hover, .cards > .card:focus-within{content-visibility:visible}
+}
 .card-link{color:inherit; text-decoration:none}
 .card-link:focus-visible{outline:none}
 .card-link::after{content:''; position:absolute; inset:0; border-radius:inherit; z-index:0}
