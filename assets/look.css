@@ -39,6 +39,33 @@ html:not(#_) .card::before{
     linear-gradient(135deg, #EACD92 0%, #A8844A 40%, #4A3B26 100%);
   box-shadow:0 0 0 1px #0A0806, 0 2px 4px rgba(0,0,0,.8);
 }
+/* The hover on a grid card, off the main thread. A box-shadow that changes is painted again on every frame of its
+   .2s, card after card as the pointer crosses a grid; an opacity is not. So while a grid card is hovered, and for the
+   .2s after, it hands its frame to two layers of its own: the resting frame on .card-hd::before, the hovered one on
+   ::after, each the rules above to the pixel, and the hover cross-fades them. Each is a whole frame (rim, face, every
+   shadow in its order), since a shadow laid over a rim someone else drew darkens the rim's edge. At rest the layers
+   are not there at all (display:none), so a card costs what it did to draw and to scroll past. They sit under the
+   card's content (z-index -1), inside the card: a hovered card is its own stacking context (translate), and so is
+   one fading back (translate, then content-visibility, cards.css). A browser that cannot hold display through a
+   fade (transition-behavior) keeps the moving box-shadow above. tools/dev/speed.mjs: 4 hovers at 4x slower went
+   from about 1 s of main-thread work to 0.35 s; scrolling a long list costs what it did. */
+@supports (overflow-clip-margin:1px) and (transition-behavior:allow-discrete){
+  html:not(#_) .cards > .card:has(> .card-hd){transition:border-color .2s, translate .2s, background-image 0s .2s allow-discrete, box-shadow 0s .2s}
+  html:not(#_) .cards > .card:hover:has(> .card-hd){background-image:none; box-shadow:none; transition:border-color .2s, translate .2s}
+  html:not(#_) .cards > .card > .card-hd::before, html:not(#_) .cards > .card:has(> .card-hd)::after{
+    content:''; display:none; position:absolute; inset:-3px; z-index:-1; border:3px solid transparent; border-radius:var(--r);
+    background:var(--fa-face) padding-box, var(--fa-rim) border-box; pointer-events:none; transition:opacity .2s, display 0s .2s allow-discrete}
+  html:not(#_) .cards > .card > .card-hd::before{box-shadow:var(--fa-lip), inset 0 0 26px rgba(0,0,0,.55), var(--fa-drop)}
+  html:not(#_) .cards > .card:has(> .card-hd)::after{opacity:0;
+    box-shadow:inset 0 0 0 2px rgba(140,203,63,.42), inset 0 2px 0 1px rgba(214,178,110,.06), inset 0 0 26px rgba(140,203,63,.045),
+      0 2px 3px rgba(0,0,0,.7), 0 14px 30px rgba(0,0,0,.6)}
+  html:not(#_) .cards > .card:hover > .card-hd::before{display:block; opacity:0; transition:opacity .2s}
+  html:not(#_) .cards > .card:hover:has(> .card-hd)::after{display:block; opacity:1; transition:opacity .2s}
+  @starting-style{
+    html:not(#_) .cards > .card:hover > .card-hd::before{opacity:1}
+    html:not(#_) .cards > .card:hover:has(> .card-hd)::after{opacity:0}
+  }
+}
 html:not(#_) .card-ic{
   background:radial-gradient(circle at 50% 38%, #1A1B17, #060706);
   box-shadow:0 0 0 2px #4A3B26, 0 0 0 3px #0A0806, inset 0 0 12px rgba(0,0,0,.85);
