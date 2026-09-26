@@ -1905,12 +1905,27 @@ function paintRel(sec){
   return got.need;
 }
 /* Render a list of cards into a grid. Cards that stay glide to their new place, new cards fly in,
-   and cards that leave fade out where they stood (FLIP, Web Animations API). */
+   and cards that leave fade out where they stood (FLIP, Web Animations API).
+   What it costs is the reading of where each card sits, so every place is read in one pass before anything
+   is written, and again in one pass after: a read between two writes is a whole layout of the page, once per
+   card. Only a card on screen, or near it, is moved: one far below is never seen gliding. And a draw that
+   moves a great many cards at once does not glide them at all — nobody follows forty cards moving, and a
+   weak machine pays for every one. */
+const GLIDE_MAX = 40;    // cards on the grid before a draw, past which it is simply redrawn in its new order
+const NEAR_VIEW = 300;   // px above and below the screen a card still counts as on it
+// no motion where it was asked for, and none on a machine the page has marked as slow (the class "lite")
+function calm(){ return reduceMotion || document.documentElement.classList.contains('lite'); }
 export function flow(grid, list, make){
+  const old = new Map();
+  for(const c of grid.children) if(c.dataset.key) old.set(c.dataset.key, c);
+  // every card on the grid now either stays or leaves, so that is the number of cards that would move
+  const still = calm(), glide = !still && old.size > 0 && old.size <= GLIDE_MAX;
   const before = new Map();
-  for(const c of grid.children) if(c.dataset.key) before.set(c.dataset.key, c.getBoundingClientRect());
-  const gridBox = grid.getBoundingClientRect();
-  const old = new Map([...grid.children].filter(c => c.dataset.key).map(c => [c.dataset.key, c]));
+  let gridBox = null;
+  if(glide){
+    gridBox = grid.getBoundingClientRect();
+    for(const [k, c] of old) before.set(k, c.getBoundingClientRect());
+  }
   const nodes = list.map(x => {
     let n = old.get(x.key);
     if(n) old.delete(x.key);
@@ -1919,10 +1934,14 @@ export function flow(grid, list, make){
   });
   const leaving = [...old.values()];
   grid.replaceChildren(...nodes);
-  if(reduceMotion) return;
+  if(still){ for(const n of nodes) n._fresh = false; return; }
+  const lo = -NEAR_VIEW, hi = innerHeight + NEAR_VIEW;
+  const seen = r => r && r.bottom > lo && r.top < hi;
+  // the new places, all read before the first animation is started
+  const after = nodes.map(n => n._fresh || glide ? n.getBoundingClientRect() : null);
   // ghosts for cards that left, so they fade where they were instead of vanishing
-  leaving.slice(0, 12).forEach(n => {
-    const r = before.get(n.dataset.key); if(!r) return;
+  if(glide) leaving.slice(0, 12).forEach(n => {
+    const r = before.get(n.dataset.key); if(!seen(r)) return;
     Object.assign(n.style, {position:'absolute', left:(r.left - gridBox.left) + 'px', top:(r.top - gridBox.top) + 'px',
       width:r.width + 'px', height:r.height + 'px', margin:0, pointerEvents:'none', zIndex:0});
     grid.appendChild(n);
@@ -1930,14 +1949,15 @@ export function flow(grid, list, make){
       .onfinish = () => n.remove();
   });
   let k = 0;
-  nodes.forEach(n => {
+  nodes.forEach((n, i) => {
+    const b = after[i];
     if(n._fresh){
       n._fresh = false;
-      n.animate([{opacity:0, transform:'translateY(18px) scale(.97)'}, {opacity:1, transform:'none'}],
+      if(seen(b)) n.animate([{opacity:0, transform:'translateY(18px) scale(.97)'}, {opacity:1, transform:'none'}],
         {duration:420, delay:Math.min(k++, 16) * 24, easing:'cubic-bezier(.2,.8,.2,1)', fill:'backwards'});
-    } else {
-      const a = before.get(n.dataset.key), b = n.getBoundingClientRect();
-      if(!a) return;
+    } else if(glide){
+      const a = before.get(n.dataset.key);
+      if(!a || !(seen(a) || seen(b))) return;
       const dx = a.left - b.left, dy = a.top - b.top;
       if(Math.abs(dx) > 1 || Math.abs(dy) > 1)
         n.animate([{transform:'translate(' + dx + 'px,' + dy + 'px)'}, {transform:'none'}],
