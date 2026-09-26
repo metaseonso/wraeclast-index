@@ -6,6 +6,7 @@
      A filter the page itself owns is handed to the page (PoE.deep)
    - rows and keywords open the same card popup as the rest of the site (price, trade, builds, what uses a keyword);
      the page's own panel stays one click away ("Full stats")
+   - loads the app (assets/app.js) when it is first needed, or once the page is idle after its table
    - makes the list rows fly into place when a chip, a tab of a list or a column head filters or sorts it   */
 import {SECTIONS} from './kinds.js';   // what each section is called: the one table the site reads
 (function(){
@@ -30,33 +31,65 @@ import {SECTIONS} from './kinds.js';   // what each section is called: the one t
   }
   const host = document.getElementById('topsearch');   // the same top search as the app, with the same popups
   let M = null;   // the app module, once loaded: its cards and popup
-  // the page's data comes in files (tools/sync.py DATA_JS); WI_DATA.q is done when its scripts have drawn the page
+  const idle = f => (window.requestIdleCallback || (g => setTimeout(g, 1200)))(f, {timeout: 4000});
+  // the page's data comes in files (tools/sync.py DATA_JS); WI_DATA.q is done when its scripts have drawn the tab in the address
   const drawn = window.WI_DATA && WI_DATA.q ? WI_DATA.q : null;
   const reveal = () => { if(window.WI_DATA && WI_DATA.show) WI_DATA.show(); };
-  // the plain Gems view shows as soon as its table is drawn; a link to a row, a keyword or another section waits for the whole page
-  if(drawn && WI_DATA.gems && /^(#gems)?$/.test(location.hash)) WI_DATA.gems.then(reveal);
-  // the app (top search, card popups) loads after the page's own data, so it never slows the tables down
-  const app = Promise.resolve(drawn).then(() => import('./app.js')).then(m => { M = m; if(host) m.mountTopSearch(host); return m; });
-  app.catch(() => host && host.remove());
-  // after the page: the wisp over the crest, then (once idle) the service worker (assets/app.js)
-  Promise.all([app, drawn]).then(([m]) => {
-    m.later();
-    (window.requestIdleCallback || (f => setTimeout(f, 1200)))(() => m.registerSW(), {timeout: 4000});
-  }).catch(() => {});
+  // a plain tab shows as soon as its table is drawn; a link to a row or a filtered list waits until it is there (open)
+  if(drawn && !/[=?]/.test(location.hash)) drawn.then(reveal);
+  /* The app (top search, card popups, the header's buttons) is not part of the page's first paint. It is asked for
+     when first needed (the top search, a key, a pointer over the header or a table, a row or keyword that opens a
+     card) or once the page is idle after its table, whichever comes first. It takes the page's own price file
+     (window.WI_MARKET, tools/sync.py LIVE), so that file comes down once. The index behind the cards is its own
+     step (need() in app.js): a pointer over a list's rows asks for it, and so does a click that opens a card. */
+  let app = null;
+  function loadApp(){
+    if(app) return app;
+    app = import('./app.js').then(m => {
+      M = m;
+      if(host){
+        m.mountTopSearch(host);
+        const q = host.querySelector('input');   // typed while the app was on its way
+        if(q && q.value.trim() && document.activeElement === q) q.dispatchEvent(new Event('input', {bubbles: true}));
+      }
+      m.later();                   // the wisp over the crest
+      idle(() => m.registerSW());  // then the service worker
+      return m;
+    });
+    app.catch(() => host && host.remove());
+    return app;
+  }
+  // everything a card needs (the whole index): asked for once, then the app's own promise
+  const whole = m => Promise.resolve(m.need ? m.need() : m.ready);
+  const soon = () => { loadApp().catch(() => {}); };
+  const cards = () => { loadApp().then(whole).catch(() => {}); };
+  Promise.resolve(drawn).then(() => idle(loadApp));
+  const mast = document.querySelector('.mast');
+  if(mast) for(const t of ['pointerover', 'focusin', 'touchstart']) mast.addEventListener(t, soon, {once: true, passive: true});
+  addEventListener('keydown', soon, {once: true});   // the keybindings, the run counter, "/" into the top search
+  for(const t of ['pointerover', 'touchstart']) for(const b of Object.values(SEC)){   // a pointer over rows: their cards
+    const tb = document.querySelector(b.body);
+    if(tb) tb.addEventListener(t, cards, {once: true, passive: true});
+  }
 
   // GGG's own wording for fan sites, and the privacy page, at the foot of the drill-down too
   if(!document.querySelector('.ggg-note')) document.body.insertAdjacentHTML('beforeend',
     '<p class="ggg-note">This product isn’t affiliated with or endorsed by Grinding Gear Games in any way. <a href="privacy">Privacy</a></p>');
 
   const sleep = ms => new Promise(r => setTimeout(r, ms));
-  // the page builds its sections once its data and live prices are in (tools/sync.py): wait for that
+  // the page builds the tab in the address once its files are in (tools/sync.py): wait for that
   async function navReady(){
     if(drawn) return drawn;
     for(let i = 0; i < 100 && !document.querySelector('#nav button'); i++) await sleep(50);
   }
-  function navTo(label){
-    const b = [...document.querySelectorAll('#nav button')].find(x => x.textContent.trim().startsWith(label));
-    if(b && b.getAttribute('aria-pressed') !== 'true') b.click();
+  // another tab: its files and table the first time it opens, so this waits for them (PoE.go)
+  function navTo(sec){
+    const b = document.querySelector('#nav button[data-k="' + sec + '"]') ||
+      [...document.querySelectorAll('#nav button')].find(x => x.textContent.trim().startsWith(SECTIONS[sec]));
+    if(!b || b.getAttribute('aria-pressed') === 'true') return null;
+    if(window.PoE && PoE.go) return PoE.go(sec);
+    b.click();
+    return null;
   }
   function rowName(tr){
     const n = tr.querySelector('.nmtxt');
@@ -73,7 +106,7 @@ import {SECTIONS} from './kinds.js';   // what each section is called: the one t
     const m = location.hash.match(/^#(gems|uniques|tree)(?:=(.*))?$/);
     if(!m) return;
     const sec = m[1], name = m[2] ? decodeURIComponent(m[2]) : '';
-    navTo(SECTIONS[sec]);
+    await navTo(sec);
     if(!name) return;
     if(sec === 'gems') everyGem();
     const input = document.querySelector(SEC[sec].input);
@@ -97,7 +130,7 @@ import {SECTIONS} from './kinds.js';   // what each section is called: the one t
      keyword picker; anything else is the page's to apply (PoE.deep), so this file never knows what a base
      item is. */
   async function filterBy(sec, p){
-    navTo(SECTIONS[sec]);
+    await navTo(sec);
     await sleep(60);
     if(sec === 'gems') everyGem();
     const k = p.get('kw');
@@ -115,7 +148,8 @@ import {SECTIONS} from './kinds.js';   // what each section is called: the one t
 
   /* ---------- rows and keywords open the site's card popup ----------
      Caught on the way down (window, capture) so the page's own row and keyword handlers don't also run.
-     Anything the app has no card for still opens the page's own panel. */
+     Anything the app has no card for still opens the page's own panel. A click that comes before the app and its
+     index are in waits for them, the way a card opened anywhere else on the site waits (openDetail in app.js). */
   const ROWS = Object.values(BODY).map(b => b + ' tr').join(', ');
   let byName = null;
   function itemFor(tr){
@@ -142,34 +176,45 @@ import {SECTIONS} from './kinds.js';   // what each section is called: the one t
     }
     return null;
   }
-  addEventListener('click', e => {
-    if(!M || !M.D.full || e.button !== 0 || e.ctrlKey || e.metaKey || e.shiftKey || e.altKey) return;
-    if(e.target.closest('.ov')) return;   // inside the popup itself
-    const kw = e.target.closest('.kw[data-k]');
+  const ready = () => M && M.D.full;
+  // the card for a keyword or a row, opened; false when the app has none (the page's own panel then)
+  function cardFor(kw, tr){
     if(kw){
       const c = M.keywordCard(kw.dataset.k);
-      if(!c) return;   // no card: the page's own keyword panel
-      e.stopImmediatePropagation(); e.preventDefault();
-      M.openDetail(c, {}, null);
-      return;
+      if(c) M.openDetail(c, {}, null);
+      return !!c;
     }
-    const tr = e.target.closest(ROWS);
-    if(!tr || e.target.closest('a, button, input, select, label, summary')) return;
     const it = itemFor(tr);
-    if(!it || typeof tr.onclick !== 'function') return;
-    e.stopImmediatePropagation(); e.preventDefault();
+    if(!it) return false;
     document.querySelectorAll('tbody tr[aria-selected]').forEach(r => r.removeAttribute('aria-selected'));
     tr.setAttribute('aria-selected', 'true');
     const full = tr.onclick;
     M.openDetail(it, {onFull: () => full.call(tr)}, null);   // no "Open in" link: this is the drill-down
+    return true;
+  }
+  const ownPanel = (kw, tr) => kw ? window.PoE && PoE.openKeyword(kw.dataset.k) : tr.onclick.call(tr);
+  function take(e, kw, tr){
+    if(ready()){
+      if(cardFor(kw, tr)){ e.stopImmediatePropagation(); e.preventDefault(); }
+      return;
+    }
+    if(M && M.D.failed) return;   // no index to be had: the page's own panel
+    e.stopImmediatePropagation(); e.preventDefault();
+    if(tr) tr.setAttribute('aria-selected', 'true');
+    loadApp().then(whole).then(() => { if(!ready() || !cardFor(kw, tr)) ownPanel(kw, tr); }, () => ownPanel(kw, tr));
+  }
+  addEventListener('click', e => {
+    if(e.button !== 0 || e.ctrlKey || e.metaKey || e.shiftKey || e.altKey) return;
+    if(e.target.closest('.ov')) return;   // inside the popup itself
+    const kw = e.target.closest('.kw[data-k]');
+    const tr = kw ? null : e.target.closest(ROWS);
+    if(!kw && (!tr || e.target.closest('a, button, input, select, label, summary') || typeof tr.onclick !== 'function')) return;
+    take(e, kw, tr);
   }, true);
   addEventListener('keydown', e => {   // Enter on a keyword does the same as a click
-    if(e.key !== 'Enter' || !M || !M.D.full) return;
+    if(e.key !== 'Enter') return;
     const kw = e.target.closest && e.target.closest('.kw[data-k]');
-    const c = kw && M.keywordCard(kw.dataset.k);
-    if(!c) return;
-    e.stopImmediatePropagation(); e.preventDefault();
-    M.openDetail(c, {}, null);
+    if(kw) take(e, kw, null);
   }, true);
   addEventListener('hashchange', open);
   if(document.readyState === 'complete') open(); else addEventListener('load', open);
@@ -184,7 +229,6 @@ import {SECTIONS} from './kinds.js';   // what each section is called: the one t
   const still = matchMedia('(prefers-reduced-motion: reduce)');
   const EASE = 'cubic-bezier(.2,.8,.2,1)', LOTS = 150;
   const lite = () => document.documentElement.classList.contains('lite');
-  const idle = f => (window.requestIdleCallback || (g => setTimeout(g, 1200)))(f, {timeout: 4000});
   const bodies = Object.values(BODY).map(s => document.querySelector(s)).filter(Boolean);
   const snap = new Map();   // tbody -> Map(row key -> {top, tr}), top within the tbody
   const seen = el => el.getClientRects().length > 0;
