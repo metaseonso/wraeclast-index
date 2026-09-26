@@ -44,6 +44,45 @@ main thread busy 2.8 s with a 471 ms frame; 5.4k elements after every tab; /expl
   The typo word list is built in idle slices. The builder paints at most 4 times a second during a run and
   saves once. The league clock ticks only while home is on screen and the tab is visible. Craft's resize
   listener lives and dies with the tab.
+- **Nothing loops unseen.** `html.lite` (set in the `<head>` of both pages and by `tools/sync.py`: 4 GB or less,
+  4 cores or less, reduced motion, or save-data) never draws the fog, lets the wisp rise once with no blend,
+  and runs the map at 30 fps and 1x. Docked under a search the fog is `display:none`; under a popup
+  (`body.ov-open`) or scrolled off (`.hero.away`, an IntersectionObserver in `later()`) it is paused. The map's
+  drift and haze pause with its lights (`.mp-rest`).
+- **The wisp rises three times and rests** — as one 22.5 s animation (`wi-mark-3`). As two stacked on the same
+  property (three rises, then a delayed rest) Chrome ran it on the main thread: 2.9 s busy in every 5 idle
+  seconds at 4x slower, caught by `tools/dev/speed.mjs` before it shipped. The dashboard's loading screen keeps
+  `wi-mark`.
+- **No blur behind anything.** The top bar is solid `--ground` (it was 92% opaque under an 8px backdrop blur);
+  the popup's shade is .75 black with no blur. The page's haze scrolls with it (`background-attachment:fixed`
+  repainted the screen on every scroll frame). The hero docks at once and settles on transform and opacity,
+  not on height, padding and margin.
+- **Cards off screen are not painted.** `.cards > .card` is `content-visibility:auto` (intrinsic 215px), with
+  `overflow-clip-margin:24px` so the clasp and rank badge draw as before; hovered and focused cards are left
+  visible so the offer tip is never cut. Scrolling 270 cards at 4x slower: 65.7 → 31.2 ms a frame.
+- **/explore loads the tab in the address.** `FIRST` in `tools/sync.py` is chosen from the hash: the tree takes
+  keywords, tree and jewels; gems and uniques load when opened, and a gem's level text
+  (`data/explore/gemtext.<hash>.json`) when its panel first opens (`block()`, `inline()` and `gamelib` put it
+  back, so `kwuse.json` is unchanged). The tree draws at once and its anoint prices fill in. `market.json` is
+  fetched once (`WI_MARKET`), app.js is imported on need or idle, and `need()` fires on a row. #tree: 2.4 → 1.3 s
+  to the first row, 8.7 → 1.7 MB of JSON, 8.5k → 3.5k elements. The old gems file stays for pages from before.
+- **/explore tables draw once per change:** typing waits 120 ms, sliders draw once a frame, sort keys are worked
+  out once, Show more appends, chips are drawn once and toggled, rows fly only after a click and are measured in
+  idle time. `sync.py` round-trips explore.html byte for byte again.
+- **The site ships minified.** `tools/build.mjs` (the wrangler `build` command) copies what `.assetsignore`
+  allows into `dist/` and minifies JS, CSS, the pages' inline code and `sw.js` with esbuild, an optional
+  dependency: a file esbuild refuses ships as it is, and no esbuild ships the plain copy, so the deploy never
+  fails on it. JS 833 → 431 KB, CSS 169 → 136 KB. `dist/sw-files.json` hashes every served path and names the
+  home shell. The GitHub Pages backup still serves the repo as it is.
+- **A deploy downloads only what changed.** `sw.js` precaches the home shell only, takes every unchanged file
+  over from the last copy by hash, and keeps the rest on first use when its hash matches; with no list it falls
+  back to the old full install. A returning visitor after a one-file deploy: 49–64 requests (up to 10.5 MB) →
+  2 requests and the changed file.
+- **After** (same check, the minified build, 4x slower): home parses 251 KB before the index loads in idle time
+  (3.7 MB before) and idles at 118 ms busy in 5 s (293 ms, with 7 endless animations); typing "fireball" 368 ms
+  busy, longest frame 162 ms (2,827 and 471); 229 elements after every tab (5,397).
+- **Held for a look:** the fog in 2 plain layers instead of 6 blended ones, and a card painted with one shadow
+  (branch `speed-preview`).
 - **Prices were kept 4 hours in browsers.** The zone's Browser Cache TTL (4 h) overrode the worker's 5 minutes
   on `market.json` and the other live files; set to "Respect Existing Headers" on 26 September 2026.
 
