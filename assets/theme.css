@@ -153,7 +153,12 @@ input[type=range], input[type=checkbox]{accent-color:#4E7A28}
 .fog.back, .fog.front{z-index:3}   /* all fog drifts in front of the crest */
 .fog{transition:opacity 1.2s ease}
 .fog:not(.on){opacity:0}   /* each layer fades in once its images are in (they load after the first cards: assets/app.js later()) */
-.fog img{position:absolute; left:50%; height:auto; mix-blend-mode:screen; opacity:0; will-change:transform, opacity}
+.fog img{position:absolute; left:50%; height:auto; mix-blend-mode:screen; opacity:0}
+/* The fog only moves while it can be seen. Docked under a search it is not drawn at all, which frees its layers; under
+   a card's popup and once the crest is scrolled off (.hero.away, assets/app.js later()) it holds still. A weak machine
+   (html.lite) never draws it. */
+.hero.docked .fog, .lite .fog{display:none}
+.ov-open .fog img, .hero.away .fog img{animation-play-state:paused}
 
 /* Horizontal fog only, centred on the crest: every layer has a mirrored twin (.m) that drifts
    the other way, so the fog mass stays balanced left and right. */
