@@ -152,8 +152,7 @@ input[type=range], input[type=checkbox]{accent-color:#4E7A28}
   100%{transform:translate(2px, -3px) scale(.92); opacity:.42}
 }
 
-.emblem{position:relative; width:260px; height:230px; margin:0 auto 4px;
-  transition:height .45s cubic-bezier(.2,.8,.2,1), opacity .3s, margin .45s}
+.emblem{position:relative; width:260px; height:230px; margin:0 auto 4px; transition:opacity .3s}
 .emblem-logo{position:absolute; left:50%; top:50%; translate:-50% -50%; z-index:2; height:200px; width:auto; pointer-events:none;
   filter:drop-shadow(0 0 24px rgba(140,203,63,.09)) drop-shadow(0 10px 30px rgba(0,0,0,.8))}
 .fog{position:absolute; inset:0; pointer-events:none}
@@ -210,7 +209,7 @@ input[type=range], input[type=checkbox]{accent-color:#4E7A28}
   100%{transform:scaleX(-1) translate(3%, 14px) scaleX(1.3) scaleY(.9); opacity:0}
 }
 .hero-title{font-size:clamp(28px, 4.6vw, 42px)}
-.hero.docked .emblem{height:0; opacity:0; margin:0}
+.hero.docked .emblem{height:0; opacity:0; margin:0; transition:none}   /* at once: app.css .hero.docked */
 @media (prefers-reduced-motion: reduce){
   .fog img{animation:none !important; opacity:.25}
   .mark-wisp{display:none}

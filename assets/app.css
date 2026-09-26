@@ -70,15 +70,21 @@ h1,h2,h3{margin:0; text-wrap:balance}
 /* ---------- home ---------- */
 .view{max-width:1400px; margin:0 auto; padding:0 16px 40px}
 .hero{display:flex; flex-direction:column; align-items:center; text-align:center;
-  padding-top:clamp(40px, 16vh, 150px); padding-bottom:18px; transition:padding .45s cubic-bezier(.2,.8,.2,1)}
+  padding-top:clamp(40px, 16vh, 150px); padding-bottom:18px}
 .hero.docked{padding-top:22px}
 .hero-title{font-family:var(--disp); font-weight:600; font-size:clamp(34px, 6vw, 54px); letter-spacing:-.02em;
-  transition:opacity .3s, transform .45s cubic-bezier(.2,.8,.2,1), max-height .45s; max-height:80px; overflow:hidden}
+  transition:opacity .3s, transform .45s cubic-bezier(.2,.8,.2,1); max-height:80px; overflow:hidden}
 .hero-title em{font-style:normal; color:var(--accent)}
-.hero-sub{color:var(--muted); margin:6px 0 22px; font-size:14px; transition:opacity .3s, max-height .45s, margin .45s; max-height:90px; overflow:hidden}
+.hero-sub{color:var(--muted); margin:6px 0 22px; font-size:14px; transition:opacity .3s; max-height:90px; overflow:hidden}
 .hero-tag{display:block; font-family:var(--disp); font-size:17px; color:var(--text); letter-spacing:.02em}
 .hero-more{display:block; margin-top:4px; font-size:13px}
-.hero.docked .hero-title,.hero.docked .hero-sub,.hero.docked .guide{opacity:0; max-height:0; margin:0; transform:translateY(-8px); overflow:hidden}
+/* Docking under a search moves the layout at once, and only a transform and an opacity are animated: an animated
+   height or padding lays the whole page out again on every frame. The crest and its words go at once and the bar
+   settles into its place; clearing the search fades them back in (the crest: theme.css .emblem). */
+.hero.docked .hero-title,.hero.docked .hero-sub,.hero.docked .guide{opacity:0; max-height:0; margin:0; transform:translateY(-8px); overflow:hidden;
+  transition:none}
+.hero.docked .searchbox, .hero.docked .kinds{animation:hero-dock .3s cubic-bezier(.2,.8,.2,1)}
+@keyframes hero-dock{from{transform:translateY(14px)}}
 
 .searchbox{position:relative; width:min(720px, 100%)}
 .searchbox input{width:100%; height:56px; border-radius:14px; border:1px solid var(--line); background:var(--surface);
