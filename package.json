@@ -1,0 +1,9 @@
+{
+  "name": "wraeclast-index",
+  "private": true,
+  "type": "module",
+  "description": "The site is static files; tools/build.mjs minifies them into dist/ for Cloudflare (wrangler.jsonc build). esbuild is optional: without it the files ship as they are.",
+  "optionalDependencies": {
+    "esbuild": "0.28.1"
+  }
+}

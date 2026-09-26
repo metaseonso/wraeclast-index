@@ -1,5 +1,6 @@
 // Cloudflare Worker for wraeclastindex.fyi. Cloudflare builds and publishes this on every push to main.
-// The site itself is static files (served straight from the edge); the worker only answers
+// The site itself is static files (served straight from the edge, out of dist/: tools/build.mjs copies the repo's
+// website files there and minifies them, before every deploy); the worker only answers
 // /data/market.json (live prices), /sw.js (the service worker, stamped with the deploy), /api/* (things a browser cannot fetch on its own) and the
 // plain pages for search engines and AI search (worker/seo.js: item pages, lists, sitemap, llms.txt).
 // The hourly data jobs (tools/pricepull.py, exchange.py, market.py, leagues.py) run on GitHub Actions
@@ -10,8 +11,11 @@
   "name": "wraeclast-index",
   "main": "worker/index.js",
   "compatibility_date": "2026-08-01",
+  // runs before every deploy: the files .assetsignore lets through, minified, into dist/ (never fails on a file it
+  // cannot minify; that file ships as it is)
+  "build": { "command": "node tools/build.mjs" },
   "assets": {
-    "directory": ".",
+    "directory": "dist",
     "binding": "ASSETS",
     "run_worker_first": ["/data/market.json", "/sw.js", "/data/leagues.json", "/data/rollprices.json", "/data/farmprices.json", "/data/bossprices.json", "/api/*", "/item/*", "/gems", "/uniques", "/passives", "/bases", "/atlas", "/currency",
                          "/keywords", "/sitemap.xml", "/llms.txt", "/llms-full.txt", "/search"]
