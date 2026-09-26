@@ -98,12 +98,10 @@ TOPSEARCH = ('<div class="topsearch" id="topsearch"><div class="tsearch"><svg vi
              '<input type="search" placeholder="Search the index" autocomplete="off" spellcheck="false" aria-label="Search the index" '
              'role="combobox" aria-expanded="false" aria-autocomplete="list"><kbd aria-hidden="true">/</kbd>'
              '<div class="tsearch-drop" role="listbox" hidden></div></div></div>')
-SUGGEST_BTN = '<button id="suggestbtn" type="button" class="suggestbtn" title="Send an idea or report a problem"><i class="mk"></i>Suggest</button>'
-SUGGEST_OLD = '<button id="suggestbtn" type="button" class="suggestbtn" title="Send an idea or report a problem">Suggest</button>'   # before its mark
+SUGGEST_BTN = '<button id="suggestbtn" type="button" class="suggestbtn" title="Send an idea or report a problem">Suggest</button>'
 CL_BTN = '<button class="clbtn" id="clbtn" type="button">Patch notes <span class="ct wait">v0.00</span></button>'   # assets/notes.js writes the version
 CL_NEW = TOPSEARCH + '\n    ' + SUGGEST_BTN + '\n    ' + KEYS_BTN + '\n    ' + CL_BTN
 CL_PREV = '<div class="topsearch" id="topsearch"></div>\n    ' + KEYS_BTN + '\n    ' + CL_OLD
-CL_NOMARK = TOPSEARCH + '\n    ' + SUGGEST_OLD + '\n    ' + KEYS_BTN + '\n    ' + CL_BTN
 
 RAW = re.compile(r'(?<![\w\[./-])[a-z][a-z0-9]*(?:_[a-z0-9%+]+){2,}(?:\s*=\s*-?\d+)?|\{[^}\s]{1,80}\}')
 
@@ -733,8 +731,7 @@ def site_scripts(html):
     html = re.sub(r'<b id="total">[^<]*</b>', '<b id="total">{:,}</b>'.format(live), html, count=1)
     for pat, words in BUILD_COPY:   # the foot copy says the patch, not the client build
         html = pat.sub(words % patch, html, count=1)
-    # a reworded artifact that still carries game code, in the page itself: the data blocks keep their ids
-    left = sorted(set(COPY_IDS.findall(BLOCK.sub('', html))))
+    left = sorted(set(COPY_IDS.findall(html)))   # a reworded artifact that still carries game code
     if left:
         sys.exit('the drill-down copy still names %s; update the copy pairs in tools/sync.py' % ', '.join(left))
     return html
@@ -747,8 +744,9 @@ TR_NEW = TR_OLD + "await wiLive(UQ, TR);   // live prices first (tools/sync.py L
 # ---- the drill-down's own copy ----
 # Four places where the artifact wrote game code into a sentence a player reads: the jewel's file name and the
 # stat that picks its conqueror, a Gemling flag, the id a Delirium anoint node starts with, and the folder the
-# item art came out of. Each pair is (what the artifact says, what the site says), and COPY_IDS at the end of
-# site_scripts stops the build if a reworded artifact still carries any of them.
+# item art came out of. A closed "Technical details" box is the one place an internal id belongs; running copy
+# is not it. Each pair is (what the artifact says, what the site says), and COPY_IDS at the end of site_scripts
+# stops the build if a reworded artifact still carries any of them.
 JLEDE_OLD = """'Seven factions sit in the mod files as <code>UniqueJewelAlternateTreeInRadius…</code>. Each jewel rolls three numbers: a '+
     '<b>version</b> fixed by which jewel it is, a <b>seed</b> inside the range below, and a <b>conqueror roll</b> that picks which '+
     'leader the jewel belongs to. The stat that picks the conqueror is named <code>local_unique_jewel_alternate_tree_keystone</code> '+
@@ -784,17 +782,6 @@ KWHEAD_NEW = """'<div class="sub" style="margin-top:3px">Keyword'+(meta.ks?' · 
 STATID_OLD = ("'Effects are translated from raw stat ids using the game’s own description files; about 0.7% of lines "
               "have no description entry and are shown as the raw id and value instead of being dropped. '")
 STATID_NEW = "'Effects are worded from the game’s own description files, so every line here reads as it does in game. '"
-# The gem and passive panels closed on a "Technical details" box: the internal id, the node hashes and every
-# raw stat id with its number. None of it is game text, so both boxes go, and so does the stat map they read
-# (live_prices drops each passive's "s"): the tree search no longer finds a passive by stat id either.
-TECH_GEM = """  P.push('<details class="tech"><summary>Technical details</summary><div class="setname">Internal id: '+g.id+'</div></details>');\n"""
-TECH_TREE = ("""      const tech = (p.s && Object.keys(p.s).length) ? '<div class="setname">Game stats</div>'+\n"""
-             """        Object.keys(p.s).map(k=>'<div class="statline"><span class="setname">'+esc(k)+'</span> = <b>'+esc(p.s[k])+'</b></div>').join('') : '';\n""")
-TECH_TREE_BOX = ("""      P.push('<details class="tech"><summary>Technical details</summary>'+tech+'<div class="setname">Internal id: '+esc(p.id||'')+\n"""
-                 """        (p.copies>1 ? ' · '+p.copies+' nodes, hashes '+p.hashes.slice(0,6).join(', ')+(p.copies>6?'…':'')\n"""
-                 """                    : ' · hash '+p.h)+'</div></details>');\n""")
-TQ_OLD = 'placeholder="Search a passive by name, effect, or stat id…"'
-TQ_NEW = 'placeholder="Search a passive by name or effect…"'
 # The foot copy named the client build three times. A player knows the patch, which the header already shows, so
 # these rewrite the sentence around whatever build the artifact carries (site_scripts works out the patch).
 BUILD_COPY = [
@@ -807,7 +794,7 @@ BUILD_COPY = [
 ]
 COPY_IDS = re.compile(r'UniqueJewelAlternateTreeInRadius|local_unique_jewel_alternate_tree_keystone'
                       r'|ascendancy_gemling_enable_thaumaturgy_quality_stats|DeliriumAnoint_'
-                      r'|Art/2DItems|<code>4\.[\d.]+</code>|raw id and value|Technical details|Internal id'
+                      r'|Art/2DItems|<code>4\.[\d.]+</code>|raw id and value'
                       r"|<code>[^<]*'\s*\+")   # a code span the page fills in: an id printed into reading view
 TEXT = [
     (JLEDE_OLD, JLEDE_NEW),
@@ -816,10 +803,6 @@ TEXT = [
     (ART_OLD, ART_NEW),
     (STATID_OLD, STATID_NEW),
     (KWHEAD_OLD, KWHEAD_NEW),
-    (TECH_GEM, ''),
-    (TECH_TREE, ''),
-    (TECH_TREE_BOX, ''),
-    (TQ_OLD, TQ_NEW),
     ('Prices are divine, from poe.ninja, Forbidden Rites', 'Prices in divine, from live trade listings'),
     ('Modifier text and prices come from poe.ninja\u2019s Forbidden Rites stash snapshot; the item list itself comes from the ',
      'Modifier text comes from the official game data and prices from live trade listings; the item list itself comes from the '),
@@ -849,8 +832,6 @@ def live_prices(html):
         e.pop('v', None)
         e.pop('ch', None)
     tr['rates'] = {}
-    for p in tr['passives']:
-        p.pop('s', None)   # the raw stat map: nothing on the page reads it now (TECH_TREE)
     html = put(html, 'trdata', tr)
     if UQ_NEW not in html:
         if UQ_OLD not in html or TR_OLD not in html:
@@ -903,7 +884,7 @@ def explore_page(html):
     if HEAD not in html:
         html = html.replace(HEAD_OLD, HEAD, 1) if HEAD_OLD in html else html.replace(TITLE, '', 1).replace('</head>', HEAD + '</head>', 1)
     html = live_prices(html)
-    for new, olds in ((MAST_NEW, (MAST_NOBOSS, MAST_PREV, MAST_OLD)), (CL_NEW, (CL_NOMARK, CL_PREV, CL_OLD))):
+    for new, olds in ((MAST_NEW, (MAST_NOBOSS, MAST_PREV, MAST_OLD)), (CL_NEW, (CL_PREV, CL_OLD))):
         if new not in html:
             old = next((o for o in olds if o in html), None)
             if not old:

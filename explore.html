@@ -1,5 +1,5 @@
 <!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover,interactive-widget=resizes-content"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style><title>PoE2 gems, uniques and passive tree · Wraeclast Index</title><meta name="description" content="Full tables of every Path of Exile 2 gem, unique and passive: requirements, official mod lines, tags and the passive tree."><link rel="canonical" href="https://wraeclastindex.fyi/explore"><meta name="theme-color" content="#070807"><meta property="og:type" content="website"><meta property="og:site_name" content="Wraeclast Index"><meta property="og:title" content="PoE2 gems, uniques and passive tree · Wraeclast Index"><meta property="og:description" content="Full tables of every Path of Exile 2 gem, unique and passive, from the game files."><meta property="og:url" content="https://wraeclastindex.fyi/explore"><meta property="og:image" content="https://wraeclastindex.fyi/assets/brand/social.png"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta property="og:image:alt" content="Wraeclast Index"><meta name="twitter:card" content="summary_large_image"><script type="application/ld+json">{"@context":"https://schema.org","@type":"WebPage","@id":"https://wraeclastindex.fyi/explore","url":"https://wraeclastindex.fyi/explore","name":"PoE2 gems, uniques and passive tree","inLanguage":"en","isPartOf":{"@type":"WebSite","@id":"https://wraeclastindex.fyi/#website","name":"Wraeclast Index","url":"https://wraeclastindex.fyi/"},"about":{"@type":"VideoGame","@id":"https://wraeclastindex.fyi/#game","name":"Path of Exile 2"}}</script><link rel="icon" type="image/png" sizes="64x64" href="assets/brand/favicon-64.png"><link rel="preload" href="assets/fonts/ibmplexsans-latin.woff2" as="font" type="font/woff2" crossorigin><link rel="preload" href="assets/fonts/cinzel-latin.woff2" as="font" type="font/woff2" crossorigin><link rel="stylesheet" href="assets/cards.css"><link rel="stylesheet" href="assets/theme.css"><link rel="stylesheet" href="assets/bridge.css"><link rel="stylesheet" href="assets/look.css"><script id="wi-data">/* the page's data (tools/sync.py): every file at once; each script runs in order once its files are in */
-(function(){var F={"gemdata":"data/explore/gems.9b8a02fcf1.json","uqdata":"data/explore/uniques.afc15012da.json","trdata":"data/explore/tree.ea7f39f158.json","jwdata":"data/explore/jewels.6eb97e6f0b.json","kwdata":"data/explore/keywords.ff077c72a1.json"},W=["kwdata", "gemdata"];var D=window.WI_DATA={files:F},q=Promise.resolve(),got={};document.documentElement.classList.add("wi-wait");function load(b,n){return fetch(F[b]).then(function(r){if(!r.ok)throw Error(F[b]+" "+r.status);return r.json()}).catch(function(e){if(n)throw e;return load(b,1)})}function get(b){return got[b]||(got[b]=load(b,0).then(function(o){return D[b]=o}))}D.one=Promise.all(W.filter(function(b){return F[b]}).map(get)).then(null,function(){});D.one.then(function(){for(var b in F)get(b)});D.run=function(need,fn){var p=D.q=q=q.then(function(){return Promise.all(need.map(get))}).then(fn).catch(function(e){console.error(e)});if(need.indexOf("gemdata")>=0)D.gems=p;return p};D.show=function(){document.documentElement.classList.remove("wi-wait")};addEventListener("DOMContentLoaded",function(){q.then(function(){setTimeout(D.show,1500)})});})();
+(function(){var F={"gemdata":"data/explore/gems.9b8a02fcf1.json","uqdata":"data/explore/uniques.afc15012da.json","trdata":"data/explore/tree.d94ecbfeea.json","jwdata":"data/explore/jewels.6eb97e6f0b.json","kwdata":"data/explore/keywords.ff077c72a1.json"},W=["kwdata", "gemdata"];var D=window.WI_DATA={files:F},q=Promise.resolve(),got={};document.documentElement.classList.add("wi-wait");function load(b,n){return fetch(F[b]).then(function(r){if(!r.ok)throw Error(F[b]+" "+r.status);return r.json()}).catch(function(e){if(n)throw e;return load(b,1)})}function get(b){return got[b]||(got[b]=load(b,0).then(function(o){return D[b]=o}))}D.one=Promise.all(W.filter(function(b){return F[b]}).map(get)).then(null,function(){});D.one.then(function(){for(var b in F)get(b)});D.run=function(need,fn){var p=D.q=q=q.then(function(){return Promise.all(need.map(get))}).then(fn).catch(function(e){console.error(e)});if(need.indexOf("gemdata")>=0)D.gems=p;return p};D.show=function(){document.documentElement.classList.remove("wi-wait")};addEventListener("DOMContentLoaded",function(){q.then(function(){setTimeout(D.show,1500)})});})();
 window.WI_MARKET=(window.WI_DATA&&WI_DATA.one||Promise.resolve()).then(function(){return fetch("data/market.json?part=now")}).then(function(r){return r.ok?r.json():null}).catch(function(){return null});window.wiLive=async function(UQ,TR){var m=await Promise.race([window.WI_MARKET,new Promise(function(r){setTimeout(function(){r(null)},3000)})]);if(!m||!m.items)return;var I=m.items;(UQ.items||[]).forEach(function(u){var p=I["u:"+u.n+" | "+u.b]||I["u:"+u.n];if(p&&p.v!=null){u.v=p.v;u.ls=p.ls;if(p.ch!=null)u.ch=p.ch;}});var E=(TR&&TR.emotions)||{};Object.keys(E).forEach(function(k){var p=I["c:"+E[k].name];if(p&&p.v!=null){E[k].v=p.v;if(p.ch!=null)E[k].ch=p.ch;}});};</script></head><body>
 
 <style>
@@ -419,7 +419,7 @@ details.tech>summary{color:var(--faint)}
   <div class="controls">
     <div class="row">
       <div class="seg" id="tkinds" role="group" aria-label="Passive kind"></div>
-      <input class="search" id="tq" type="search" placeholder="Search a passive by name or effect…" autocomplete="off">
+      <input class="search" id="tq" type="search" placeholder="Search a passive by name, effect, or stat id…" autocomplete="off">
     </div>
     <div class="row">
       <div class="lvlbox" style="flex:0 1 400px">
@@ -1394,6 +1394,7 @@ function openPanel(g, tr){
         rich(m.text||titleize(m.id))+'</div>').join(''));
   }
 
+  P.push('<details class="tech"><summary>Technical details</summary><div class="setname">Internal id: '+g.id+'</div></details>');
 
   const panel=$('#panel');
   panel.innerHTML = P.join('');
@@ -1865,8 +1866,13 @@ function tbuild(){
           '<p class="hint" style="margin:6px 0 0">Three Distilled emotions on an amulet. Prices are today’s Currency Exchange prices.</p>');
       }
       P.push(kwBlock(p.kw, 'Keywords'));
+      const tech = (p.s && Object.keys(p.s).length) ? '<div class="setname">Game stats</div>'+
+        Object.keys(p.s).map(k=>'<div class="statline"><span class="setname">'+esc(k)+'</span> = <b>'+esc(p.s[k])+'</b></div>').join('') : '';
       if(p.k==='anoint') P.push('<p class="hint" style="margin-top:12px">An anoint-only notable. It exists only as an anoint and is not something you path to with points.</p>');
       if(p.f) P.push('<div class="sect">Flavour</div><p class="blurb" style="max-width:none;font-style:italic">'+esc(p.f)+'</p>');
+      P.push('<details class="tech"><summary>Technical details</summary>'+tech+'<div class="setname">Internal id: '+esc(p.id||'')+
+        (p.copies>1 ? ' · '+p.copies+' nodes, hashes '+p.hashes.slice(0,6).join(', ')+(p.copies>6?'…':'')
+                    : ' · hash '+p.h)+'</div></details>');
       openDetail(P.join(''));
     }
   });
