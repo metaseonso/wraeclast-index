@@ -423,9 +423,17 @@ const mechSpans = (spans, lxk) => (spans || [])
   .filter(x => ours(lxk[x[2]])).map(x => [x[0], x[1], lxk[x[2]]]);
 /* A card is drawn again every time it is opened, stepped back to, filtered or scrolled past, and its lines do
    not change between draws: each line keeps the form it was marked into, until the index itself moves on. */
+/* Only so many cards keep their lines, though: a long visit draws thousands of cards, and each would carry its
+   lines for good. The oldest to be drawn lets go first, and draws them fresh if it is ever drawn again. */
+const MK_KEPT = 600;
+const MK = new Set();   // the cards holding their lines, oldest first
 function lineHTML(it, at, i, text, marked){
   const v = marks.version();
-  if(it._mkv !== v){ it._mkv = v; it._mk = {}; }
+  if(it._mkv !== v){
+    it._mkv = v; it._mk = {};
+    MK.delete(it); MK.add(it);
+    if(MK.size > MK_KEPT){ const old = MK.values().next().value; MK.delete(old); old._mk = null; old._mkv = undefined; }
+  }
   const key = at + i;
   let html = it._mk[key];
   if(html === undefined) it._mk[key] = html =
@@ -1190,6 +1198,7 @@ export function card(it, opts = {}){
 const typing = el => el && (/^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName) || el.isContentEditable);   // same guard as keys.js
 const TAP = 10;   // px a finger may slide and still count as a tap, not a drag
 const TRAIL_MAX = 50;   // cards kept on the trail; all of it is in this browser, so nothing is paid for it
+const PANELS_KEPT = 5;  // ...and how many steps either side of the one on show keep their Trade or act panel
 let OV = null, lastFocus = null;
 let TRAIL = [], AT = -1, SEQ = 0, PEND = null;   // the trail, where you are on it, the next step id, a card still loading
 const CUR = () => TRAIL[AT] || null;   // the card on show
@@ -1202,10 +1211,13 @@ function saveStep(){
   if(!step || !OV || OV.hidden) return;
   const box = OV.querySelector('.ov-box'), sec = box.querySelector('.uses');
   step.top = box.scrollTop;
-  step.uses = sec && !sec.hidden ? {open: [...(sec._open || [])], q: (sec.querySelector('.uses-q') || {}).value || '',
-    top: (sec.querySelector('.uses-list') || {}).scrollTop || 0} : null;
+  step.uses = sec && !sec.hidden ? {open: [...(sec._open || [])], more: {...(sec._more || {})},
+    q: (sec.querySelector('.uses-q') || {}).value || '', top: (sec.querySelector('.uses-list') || {}).scrollTop || 0} : null;
   step.trade = box.querySelector('.trade') || null;
   step.panel = box.querySelector('.ov-panel') || null;   // ...and the panel one of its acts opened
+  // a panel is a whole piece of page, kept whole: only the few steps nearest are worth that. Further back, a
+  // step keeps its scroll and its list, and its panel is opened again by hand if it is wanted
+  TRAIL.forEach((s, i) => { if(Math.abs(i - AT) > PANELS_KEPT) s.trade = s.panel = null; });
 }
 // a box you are typing in, brought back above the keyboard. Twice: once now, once after the keyboard has settled
 function keepInView(el){
@@ -1679,12 +1691,14 @@ function showOV(){
   lastFocus = document.activeElement;
   OV.hidden = false;
   document.body.classList.add('ov-open');
+  holdFiles();
   focusBox();
 }
 function hideDetail(){
   if(!OV || OV.hidden) return;
   OV.hidden = true;
   document.body.classList.remove('ov-open');
+  releaseFiles();
   if(lastFocus && lastFocus.focus && document.contains(lastFocus)) lastFocus.focus({preventScroll: true});   // back on the row that opened it
 }
 // Close means closed: every entry the popup pushed is unwound, so one more Back leaves the page
@@ -1786,6 +1800,21 @@ let DRILL = null;           // the keywords the drill-down page can filter by, o
 function drillKw(){
   if(!HAVE.kwuse) return null;
   return DRILL || (DRILL = new Set(HAVE.kwuse.dd || []));
+}
+/* The keyword lists are the biggest of them (data/kwuse.json, near 800 KB, and more once read). With the popup
+   closed for a minute they are let go, and the next card that wants them reads them again. Only where the
+   service worker is running: it keeps every file of the deploy in this browser (sw.js), so reading it again is
+   a read off the disk and never the network, and never a newer file than the index this page has. */
+const LET_GO = 60000;
+let letGo = 0;
+function holdFiles(){ clearTimeout(letGo); letGo = 0; }
+function releaseFiles(){
+  holdFiles();
+  if(!HAVE.kwuse || !(navigator.serviceWorker && navigator.serviceWorker.controller)) return;
+  letGo = setTimeout(() => {
+    if(OV && !OV.hidden) return;
+    delete HAVE.kwuse; delete JOB.kwuse; DRILL = null;
+  }, LET_GO);
 }
 let relBad = false;         // a fetch that failed: the card says so instead of waiting for ever
 function needFiles(names){
