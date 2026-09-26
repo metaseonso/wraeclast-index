@@ -6,7 +6,7 @@
      A filter the page itself owns is handed to the page (PoE.deep)
    - rows and keywords open the same card popup as the rest of the site (price, trade, builds, what uses a keyword);
      the page's own panel stays one click away ("Full stats")
-   - makes the list rows fly into place when a list filters or sorts   */
+   - makes the list rows fly into place when a chip, a tab of a list or a column head filters or sorts it   */
 import {SECTIONS} from './kinds.js';   // what each section is called: the one table the site reads
 (function(){
   'use strict';
@@ -175,16 +175,21 @@ import {SECTIONS} from './kinds.js';   // what each section is called: the one t
   if(document.readyState === 'complete') open(); else addEventListener('load', open);
 
   /* ---------- flying rows ----------
-     When a list filters or sorts, its rows glide into place like the home page cards (flow() in app.js):
-     rows that stay slide to their new spot, new rows fly in, rows that leave fade where they stood.
-     The page's own script rebuilds the rows; this only watches them and animates (FLIP, Web Animations API). */
+     When a chip, a tab of a list or a column head filters or sorts a list, its rows glide into place like the home
+     page cards (flow() in app.js): rows that stay slide to their new spot, new rows fly in, rows that leave fade where
+     they stood. Typing, a slider and "Show more" draw without it, and so does a list longer than LOTS rows or a page
+     in its light mode (the "lite" class). The page's own script rebuilds the rows; this only watches them and
+     animates (FLIP, Web Animations API). The places it flies from are the ones it took after the last change, when
+     the page was idle, so nothing is measured while a player types or clicks. */
   const still = matchMedia('(prefers-reduced-motion: reduce)');
-  const EASE = 'cubic-bezier(.2,.8,.2,1)', LOTS = 150;   // more rows than LOTS changing at once: no animation
+  const EASE = 'cubic-bezier(.2,.8,.2,1)', LOTS = 150;
+  const lite = () => document.documentElement.classList.contains('lite');
+  const idle = f => (window.requestIdleCallback || (g => setTimeout(g, 1200)))(f, {timeout: 4000});
   const bodies = Object.values(BODY).map(s => document.querySelector(s)).filter(Boolean);
   const snap = new Map();   // tbody -> Map(row key -> {top, tr}), top within the tbody
   const seen = el => el.getClientRects().length > 0;
   function measure(tb){
-    if(!seen(tb)){ snap.delete(tb); return; }   // a hidden list has no positions to glide from
+    if(!seen(tb) || tb.rows.length > LOTS){ snap.delete(tb); return; }   // hidden, or too long to fly: nothing to glide from
     const m = new Map(), count = new Map(), base = tb.offsetTop;
     for(const tr of tb.rows){   // key: the gem id, else the name; rows that share a name are told apart by order
       const n = tr.dataset.id || (tr.querySelector('.nmtxt') || tr.cells[0] || tr).textContent.trim();
@@ -207,11 +212,27 @@ import {SECTIONS} from './kinds.js';   // what each section is called: the one t
     table.parentElement.appendChild(g);
     g.animate([{opacity: 1}, {opacity: 0}], {duration: 180, easing: 'ease-in'}).onfinish = () => g.remove();
   }
+  let armed = 0;   // when a chip, a list's tab or a column head was last clicked: only those make rows fly
+  const ARM = '.chip, .seg button, thead th';
+  const waiting = new Set();
+  let idleSet = false;
+  // a list that changed without flying takes its new places once the page is idle, for the next click to fly from
+  function settle(tb){
+    snap.delete(tb);
+    if(lite() || still.matches) return;
+    waiting.add(tb);
+    if(idleSet) return;
+    idleSet = true;
+    idle(() => { idleSet = false; waiting.forEach(measure); waiting.clear(); });
+  }
   function fly(tb){
     const old = snap.get(tb);
+    const asked = armed && performance.now() - armed < 1000;
+    if(!asked || !old || still.matches || lite() || tb.rows.length > LOTS){ settle(tb); return; }
+    armed = 0;
     measure(tb);
     const now = snap.get(tb);
-    if(!old || !now || still.matches) return;
+    if(!now) return;
     let changed = 0;
     for(const [k, v] of now){ const o = old.get(k); if(!o || o.top !== v.top) changed++; }
     if(!changed || changed > LOTS) return;
@@ -230,12 +251,9 @@ import {SECTIONS} from './kinds.js';   // what each section is called: the one t
     for(const [key, o] of old) if(!now.has(key) && gone < 12 && near(top + o.top)){ gone++; ghost(tb, o); }
   }
   if(bodies.length && 'animate' in Element.prototype){
-    bodies.forEach(measure);
     const mo = new MutationObserver(recs => new Set(recs.map(r => r.target)).forEach(fly));
     bodies.forEach(tb => mo.observe(tb, {childList: true}));
-    // measure again just before anything the player does, so a resize or a font load never leaves stale positions.
-    // While a card covers the page the rows behind it cannot move, so skip it: typing in the card stays smooth
-    for(const t of ['input', 'change', 'click'])
-      document.addEventListener(t, () => { if(!document.body.classList.contains('ov-open')) bodies.forEach(measure); }, true);
+    document.addEventListener('click', e => { if(e.target.closest && e.target.closest(ARM)) armed = performance.now(); }, true);
+    addEventListener('resize', () => bodies.forEach(settle), {passive: true});   // new places for a new width
   }
 })();
