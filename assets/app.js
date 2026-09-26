@@ -2195,7 +2195,11 @@ export function search(q, kind = 'all'){
 /* ---------- home view ----------
    The search bar and nothing under it until something is typed. */
 const PAGE = 30;   // cards added each time the list reaches the bottom of the screen
-const H = {q:'', kind:'all', shown:PAGE, list:[]};
+const ENDLESS = 150;   // cards the list adds by itself; past this, one more page is a press of Show more
+/* H.all is every match for the words typed, H.list the part of it the kind chip lets through. Both are kept
+   between draws: a chip, or the next page of the list, is a slice of what the search already answered and
+   never a second search. */
+const H = {q:'', kind:'all', shown:PAGE, all:[], list:[]};
 function homeInit(){
   const q = $('#q'), kinds = $('#kinds');
   // index.html draws these chips itself, so the bar never changes shape on the first paint; the table is the
@@ -2213,18 +2217,41 @@ function homeInit(){
     if(e.key === 'Escape'){ q.value = ''; H.q = ''; homeRender(); syncHash(); }
     if(e.key === 'Enter'){ const first = $('#cards .card .card-link'); if(first) first.click(); }
   });
-  // endless list: when the bottom comes into view, the next 30 cards fly in
+  // endless list: when the bottom comes into view, the next 30 cards fly in, up to ENDLESS; then Show more
   const more = $('#more');
-  more.addEventListener('click', () => { H.shown += PAGE; homeRender(); });
+  more.addEventListener('click', homeMore);
   new IntersectionObserver(es => {
-    if(es.some(e => e.isIntersecting) && !more.hidden && route() === 'home'){ H.shown += PAGE; homeRender(); }
+    if(es.some(e => e.isIntersecting) && !more.hidden && H.shown < ENDLESS && route() === 'home') homeMore();
   }, {rootMargin: '600px 0px'}).observe(more);
+}
+/* The next page of the list, added under the cards already there: nothing above it is searched, drawn or
+   moved again. */
+function homeMore(){
+  const from = H.shown;
+  H.shown += PAGE;
+  const add = H.list.slice(from, H.shown), grid = $('#cards');
+  if(!add.length) return paintMore();
+  const nodes = add.map(it => { const n = card(it); n.dataset.key = it.k + ':' + it.id; return n; });
+  grid.append(...nodes);
+  if(!calm()) nodes.slice(0, 16).forEach((n, k) =>
+    n.animate([{opacity:0, transform:'translateY(18px) scale(.97)'}, {opacity:1, transform:'none'}],
+      {duration:420, delay:k * 24, easing:'cubic-bezier(.2,.8,.2,1)', fill:'backwards'}));
+  paintMore();
+}
+// under the list: the words that say more is on its way while it still comes by itself, a button after
+function paintMore(){
+  const more = $('#more'), auto = H.shown < ENDLESS;
+  more.hidden = H.list.length <= H.shown;
+  if(more.dataset.auto === String(auto)) return;
+  more.dataset.auto = String(auto);
+  more.innerHTML = auto ? '<span class="note">Loading more…</span>' : '<button type="button" class="btn">Show more</button>';
 }
 function syncHash(){
   const h = H.q ? '#/?q=' + encodeURIComponent(H.q) : '#/';
   if(location.hash !== h) history.replaceState(null, '', h);
 }
-function homeRender(){
+/* again: the words have not changed (a kind chip), so the matches already worked out are the ones drawn */
+function homeRender(again){
   const hero = $('#hero'), status = $('#status'), more = $('#more');
   const has = H.q.trim().length > 0;
   hero.classList.toggle('docked', has);
@@ -2238,7 +2265,8 @@ function homeRender(){
     return;
   }
   if(has){
-    const all = search(H.q, 'all');
+    const all = again && H.allq === H.q ? H.all : search(H.q, 'all');
+    H.all = all; H.allq = H.q;
     const counts = {all: all.length};
     for(const it of all) counts[it.k] = (counts[it.k] || 0) + 1;
     for(const b of $('#kinds').children) b.querySelector('.ct').textContent = counts[b.dataset.k] || 0;
@@ -2246,8 +2274,9 @@ function homeRender(){
     label = list.length ? '<b>' + list.length.toLocaleString() + '</b> match' + (list.length === 1 ? '' : 'es') : '';
   } else {
     for(const b of $('#kinds').children) b.querySelector('.ct').textContent = '';
-    list = []; label = '';
+    list = []; label = ''; H.all = []; H.allq = '';
   }
+  H.list = list;
   status.innerHTML = label;
   $('#cards').classList.remove('wait');   // the first answer is in: the grid takes its own height
   $('#quote').hidden = has;
@@ -2255,7 +2284,7 @@ function homeRender(){
   flow($('#cards'), shown.map(it => ({key: it.k + ':' + it.id, it})), x => card(x.it));
   // these are the only cards drawn before the whole index is in: they take their keyword marks when it lands
   if(!D.full && !H.marked){ H.marked = true; ready.then(() => remark($('#cards')), () => {}); }
-  more.hidden = list.length <= H.shown;
+  paintMore();
   if(has && !list.length){
     $('#cards').innerHTML = '<div class="empty" style="grid-column:1/-1"><h3>Nothing matches</h3></div>';
   }
