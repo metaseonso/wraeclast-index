@@ -540,3 +540,6 @@ function render(){
       list.map(listRow).join('')
     : '<div class="empty"><h3>Nothing matches</h3></div>';
 }
+/* Off the tab: the page goes, the rows and what the page was showing (S) stay. The listener that opens a drop
+   from a boss card stays too: the card is the popup's, and the search opens it with the tab shut. */
+export function unmount(){ EL = null; }

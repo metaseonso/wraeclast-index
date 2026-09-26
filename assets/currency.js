@@ -259,7 +259,8 @@ function openPicker(){
 export function mount(el){
   EL = el;
   if(!D.market){ el.innerHTML = '<div class="pagehd"><h2>Currency</h2><p class="err">Prices are not loaded.</p></div>'; return {}; }
-  ALL = rows();
+  // the rows are made once per set of prices: coming back to the tab draws them again, it does not remake them
+  if(ALLOF !== D.market){ ALL = rows(); ALLOF = D.market; }
   const kinds = ['all', ...cats()];
   /* The currency a player came for is the top of the page. The busiest markets are a thing to browse once
      you are done, so they sit under the grid rather than 24 rows above it. */
@@ -323,15 +324,9 @@ export function mount(el){
   $('#cxsort', el).addEventListener('change', e => { S.sort = e.target.value; render(); });
   $('#cxliq', el).addEventListener('change', e => { S.liquid = e.target.checked; S.shown = PAGE; render(); });
   $('.cx-next', el).addEventListener('click', () => { S.shown += PAGE; render(); });
-  $('.cx-all', el).addEventListener('click', () => { S.shown = Infinity; render(); });
+  $('.cx-all', el).addEventListener('click', () => { S.shown += MOST; render(); });
   $('#cxpick', el).addEventListener('click', openPicker);
-  el.addEventListener('click', e => {
-    const act = e.target.closest('.card-do[data-act]');
-    if(act){ e.preventDefault(); e.stopPropagation(); runAct(act.dataset.act, D.byKey.get('c:' + act.dataset.id)); return; }
-    const b = e.target.closest('.star'); if(!b) return;
-    e.preventDefault();
-    toggleWatch(b.dataset.id);
-  });
+  el.addEventListener('click', onPage);
 
   markets($('#cxmarkets', el));
   return {update};
@@ -350,11 +345,12 @@ function update(){
 
 /* The group chips, drawn again whenever the question changes: All, then every group the question covers. */
 function paintCats(){
-  const box = $('#cxcat', EL); if(!box) return;
+  const box = EL && $('#cxcat', EL); if(!box) return;
   box.innerHTML = ['all', ...askCats()].map(c => '<button type="button" data-v="' + esc(c) + '" aria-pressed="' +
     (c === S.cat) + '">' + (c === 'all' ? 'All' : esc(c)) + '</button>').join('');
 }
 function render(){
+  if(!EL) return;   // off the tab (a star from the popup): the tab draws the list from S when it is back
   const list = ALL.filter(match).sort(SORTER[S.sort]);
   $('#cxcount', EL).textContent = list.length + ' item' + (list.length === 1 ? '' : 's');
   const grid = $('#cxcards', EL);
@@ -363,5 +359,20 @@ function render(){
     (S.trend === 'watch' ? '<p>Nothing watched yet.</p>' : '') + '</div>';
   const more = $('#cxmore', EL);
   more.hidden = list.length <= S.shown;
-  if(!more.hidden) $('.cx-all', more).textContent = 'Show all ' + list.length;
+  if(!more.hidden) $('.cx-all', more).textContent = allLabel(list.length, S.shown);
+}
+/* The one listener on the tab's own box rather than on something drawn inside it, so it is taken off with the
+   page: the box stays when the page goes, and a second one would star every card twice. */
+function onPage(e){
+  const act = e.target.closest('.card-do[data-act]');
+  if(act){ e.preventDefault(); e.stopPropagation(); runAct(act.dataset.act, D.byKey.get('c:' + act.dataset.id)); return; }
+  const b = e.target.closest('.star'); if(!b) return;
+  e.preventDefault();
+  toggleWatch(b.dataset.id);
+}
+/* Off the tab: its page goes, and what it was showing stays in S for the next time it is drawn. The watch list
+   box lives in the popup, not on the page, so it is left alone. */
+export function unmount(){
+  if(EL) EL.removeEventListener('click', onPage);
+  EL = null;
 }

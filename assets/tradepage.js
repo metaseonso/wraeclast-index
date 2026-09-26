@@ -544,18 +544,24 @@ function picker(host, placeholder, find, pick){
 /* ---------- page ---------- */
 export async function mount(el){
   EL = el;
-  el.innerHTML = '<div class="pagehd"><h2>Trade</h2><p>Build any trade search in plain words, then open it on the official site.</p></div><p class="note">Loading…</p>';
-  T = await tradeData();
-  for(const [id, t, lo, hi, tk] of T.mods){   // lo/hi: the slider's ends; tk: its tiers
-    const k = id.split('.')[0];
-    MOD.set(id, {t: t.replace(/\s*\n\s*/g, ' / '), k, l: t.toLowerCase(),
-      r: lo === undefined ? null : [lo, hi], tiers: tk ? T.tiers[tk] : null});
+  // the trade site's lists are read once: coming back to the tab only draws the page again
+  if(!T){
+    el.innerHTML = '<div class="pagehd"><h2>Trade</h2><p>Build any trade search in plain words, then open it on the official site.</p></div><p class="note">Loading…</p>';
+    T = await tradeData();
+    for(const [id, t, lo, hi, tk] of T.mods){   // lo/hi: the slider's ends; tk: its tiers
+      const k = id.split('.')[0];
+      MOD.set(id, {t: t.replace(/\s*\n\s*/g, ' / '), k, l: t.toLowerCase(),
+        r: lo === undefined ? null : [lo, hi], tiers: tk ? T.tiers[tk] : null});
+    }
+    loadPop();
   }
   S = load();
   draw();
-  loadPop();
   return {update};
 }
+/* Off the tab: the page goes. Its listeners sit on the tab's own box, which stays, so they are there again the
+   moment it is drawn; the search itself is in the address and this browser (save). */
+export function unmount(){}
 function update(){ const s = load(); if(JSON.stringify(s) !== JSON.stringify(S)){ S = s; draw(); } }
 
 function sel(name, opts, val, first){

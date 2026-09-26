@@ -130,17 +130,20 @@ function treeList(q){
 /* ---------- view ---------- */
 export async function mount(el){
   EL = el;
-  el.innerHTML = '<div class="pagehd"><h2>Atlas</h2><p>Waystones, tablets, keys and the Atlas tree.' +
-    (D.market ? ' Prices: ' + esc(D.market.league) + ', checked over the day.' : '') + '</p></div><p class="note">Loading…</p>';
-  try {
-    const r = await fetch('data/atlas.json');
-    if(!r.ok) throw new Error(r.status);
-    A = await r.json();
-  } catch(e){
-    el.querySelector('.note').outerHTML = '<p class="err">The Atlas did not load.</p>';
-    return {};
+  // the file and the cards made from it are kept when the tab is left, so coming back is only the drawing
+  if(!A){
+    el.innerHTML = '<div class="pagehd"><h2>Atlas</h2><p>Waystones, tablets, keys and the Atlas tree.' +
+      (D.market ? ' Prices: ' + esc(D.market.league) + ', checked over the day.' : '') + '</p></div><p class="note">Loading…</p>';
+    try {
+      const r = await fetch('data/atlas.json');
+      if(!r.ok) throw new Error(r.status);
+      A = await r.json();
+    } catch(e){
+      el.querySelector('.note').outerHTML = '<p class="err">The Atlas did not load.</p>';
+      return {};
+    }
+    build();
   }
-  build();
   el.innerHTML =
     '<div class="pagehd"><h2>Atlas</h2><p>Waystones, tablets, keys and the Atlas tree. Patch ' + esc(A.patch) +
       (D.market ? ' · prices ' + esc(D.market.league) + ', checked over the day.' : '.') + '</p></div>' +
@@ -239,6 +242,8 @@ function render(fresh){
 }
 function treeCount(q, sub = 'all'){
   let n = 0;
-  for(const g of A.tree) if(sub === 'all' || sub === g.n) for(const x of g.nodes) if(has(hay(x.n, x.ls, x.o, TY[x.ty], g.n), q)) n += x.x || 1;
+  for(const g of A.tree) if(sub === 'all' || sub === g.n) for(const x of g.nodes) if(has(x._h, q)) n += x.x || 1;
   return n;
 }
+/* Off the tab: the page goes. The file, the cards and what the page was showing (S) stay for the way back. */
+export function unmount(){ EL = null; }
