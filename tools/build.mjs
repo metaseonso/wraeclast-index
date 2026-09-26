@@ -7,8 +7,9 @@
    1. Copy. Every file .assetsignore lets through, read the way wrangler reads it from the repo root (plus _headers,
       which Cloudflare reads from the folder it serves), so dist/ serves exactly the paths the repo root served.
    2. Smaller. The .js and .css files, and the inline <script>/<style> of the pages, through esbuild: one file at a
-      time, no bundling, every import path and export name kept, whitespace and comments gone. sw.js is left as it
-      is (worker/index.js writes the deploy's id into its '__WI_BUILD__'). A file esbuild throws on ships as it is.
+      time, no bundling, every import path and export name kept, whitespace and comments gone. sw.js keeps its
+      '__WI_BUILD__' exactly (worker/index.js writes the deploy's id over it) or ships as it is. A file esbuild throws
+      on ships as it is.
    3. sw-files.json: every path the site serves with a short hash of its bytes, and the files the home page needs
       before its first paint (read off index.html and what its modules import). sw.js keeps only those at install,
       takes every unchanged file over from the last deploy's copy, and checks what it keeps against the hashes.
@@ -111,7 +112,15 @@ async function copyAll(files){
 /* ---------- 2. smaller ---------- */
 const JS = {loader: 'js', minify: true, target: 'es2020', legalComments: 'none'};
 const CSS = {loader: 'css', minify: true, target: ['chrome90', 'edge90', 'firefox88', 'safari14'], legalComments: 'none'};
-const KEEP = new Set(['sw.js']);   // worker/index.js stamps this one by its exact text
+// worker/index.js stamps sw.js by its exact text '__WI_BUILD__' (single quotes): esbuild writes strings in double
+// quotes, so the one literal is put back, and a sw.js where that is not exactly one literal ships as it is
+const STAMP = "'__WI_BUILD__'";
+function stampKept(src, out){
+  if(src.split('__WI_BUILD__').length !== 2 || src.split(STAMP).length !== 2) throw new Error('sw.js does not hold one ' + STAMP);
+  const back = out.split('"__WI_BUILD__"').join(STAMP);
+  if(back.split('__WI_BUILD__').length !== 2 || back.split(STAMP).length !== 2) throw new Error('the stamp did not survive');
+  return back;
+}
 async function smaller(files){
   let esbuild;
   try { esbuild = await import('esbuild'); }
@@ -120,20 +129,20 @@ async function smaller(files){
   const count = (kind, a, b) => { const t = tally[kind] || (tally[kind] = {files: 0, before: 0, after: 0, gzBefore: 0, gzAfter: 0}); t.files++; t.before += a.length; t.after += b.length; t.gzBefore += gzipSync(a).length; t.gzAfter += gzipSync(b).length; };
   for(const f of files){
     const ext = (f.match(/\.(\w+)$/) || [])[1];
-    if(!['js', 'mjs', 'css', 'html'].includes(ext) || KEEP.has(f)) continue;
+    if(!['js', 'mjs', 'css', 'html'].includes(ext)) continue;
     const src = await readFile(join(OUT, f), 'utf8');
     let out = src;
     try {
       if(ext === 'html') out = await inline(esbuild, src, f);
       else {
         const r = await esbuild.transform(src, ext === 'css' ? CSS : JS);
-        out = r.code;
+        out = f === 'sw.js' ? stampKept(src, r.code) : r.code;
         if(!out.trim() && src.trim()) throw new Error('came out empty');
       }
     } catch(e){ warn(f + ' ships as it is: ' + why(e)); out = src; }
     if(out.length >= src.length) out = src;
     if(out !== src) await writeFile(join(OUT, f), out);
-    count(f.startsWith('assets/') && ext !== 'html' ? 'assets/*.' + ext : ext === 'html' ? 'pages' : ext, Buffer.from(src), Buffer.from(out));
+    count(f.startsWith('assets/') && ext !== 'html' ? 'assets/*.' + ext : ext === 'html' ? 'pages' : f, Buffer.from(src), Buffer.from(out));
   }
   const kb = n => (n / 1024).toFixed(1) + ' KB';
   for(const [k, t] of Object.entries(tally))
