@@ -407,8 +407,10 @@ export function iconHTML(it){
     const sp = S[(KIND[it.k] || {}).sprite];   // the sheet this kind's art is cut from (KINDS sprite)
     if(sp){
       const sc = Math.min(34 / sp.cw, 38 / sp.ch), w = sp.cw * sc, h = sp.ch * sc;
-      return '<span class="ic" style="width:' + w + 'px;height:' + h + 'px;background-image:url(sprites/' + sp.file +
-        ');background-size:' + (sp.w * sc) + 'px ' + (sp.h * sc) + 'px;background-position:' + (-it.ic[0] * w) + 'px ' + (-it.ic[1] * h) + 'px"></span>';
+      // a screen of one pixel per point takes the sheet cut to this size (tools/sprites.py); the grid is the same
+      const url = 'url(sprites/' + sp.file + ')', lo = sp.lo ? ';background-image:image-set(url(sprites/' + sp.lo + ') 1x,' + url + ' 2x)' : '';
+      return '<span class="ic" style="width:' + w + 'px;height:' + h + 'px;background-image:' + url + lo +
+        ';background-size:' + (sp.w * sc) + 'px ' + (sp.h * sc) + 'px;background-position:' + (-it.ic[0] * w) + 'px ' + (-it.ic[1] * h) + 'px"></span>';
     }
   }
   return '<span class="glyph">' + esc((it.n || '?').replace(/^[^A-Za-z]+/, '').charAt(0)) + '</span>';
