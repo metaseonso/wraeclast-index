@@ -39,7 +39,8 @@
                        and late is true once a job has missed a run (worker/health.js): the page stamps them.
                        ?part=now: the same without the day-by-day history (h) and the exchange pairs (half the size:
                        what the first cards need); ?part=past: only those and the past leagues' lines (lh), for
-                       the charts (assets/app.js)
+                       the charts (assets/app.js); ?part=live, ?part=hist: the same two written shorter, and
+                       ?part=facts: the catalogue's own words, kept a year by name (the compact parts, below)
    /data/rollprices.json, /data/farmprices.json   the slider and farm prices
    /data/bossprices.json   what every item on the Bosses tab costs, from all three places at once */
 
@@ -382,10 +383,24 @@ const stale = (t, where, name) => !t || Date.now() - Date.parse(t) >= lateAfter(
 /* ---------- /data/market.json ---------- */
 const DROP = ['v', 'ch', 'sp', 'vol', 'pair', 'gap', 'routes', 'arb', 'h', 'ls'];   // the catalogue's own prices: never shown
 const LATER = ['h', 'lh', 'pairs'];   // the fields ?part=past carries and ?part=now leaves out
+/* The parts, and which of them are made together. A part is cached with the others of its group, so a page on
+   this deploy and one still on the last (which asks for now and past) cost the database one build between them.
+     now, past   today's prices and the history, in the shape the pages have always read. Pages from an older
+                 deploy and the drill-down page's own tables still ask for these, so they never change shape.
+     live        now, without what the catalogue says (?part=facts), and with its times written shorter
+     hist        past, with its days written shorter and each note said once
+     facts       what the catalogue says about each currency, named by its content (v): a page asks for the
+                 one live names, and that one never changes, so the browser keeps it for a year
+   The three short ones are below (the compact parts). */
+const GROUP = {now: ['now', 'live'], live: ['now', 'live'], past: ['past', 'hist'], hist: ['past', 'hist']};
+const PARTS = {now: 1, past: 1, live: 1, hist: 1, facts: 1};
+const marketKey = (origin, part) => new Request(origin + '/data/market.json?from=trade' + (part ? '&part=' + part : ''));
+const JSON_TYPE = {'Content-Type': 'application/json; charset=utf-8'};
+const SHORT = 'public, max-age=300, stale-while-revalidate=600';
 export async function serveMarket(request, env, ctx){
-  const url = new URL(request.url), part = ({now: 'now', past: 'past'})[url.searchParams.get('part')] || '';
-  const ck = new Request(url.origin + '/data/market.json?from=trade' + (part ? '&part=' + part : ''));
-  const hit = await caches.default.match(ck);
+  const url = new URL(request.url), asked = url.searchParams.get('part'), part = PARTS[asked] ? asked : '';
+  if(part === 'facts') return serveFacts(url, env, ctx);
+  const hit = await caches.default.match(marketKey(url.origin, part));
   if(hit) return hit;
   const catRow = await publishedRow(env, url.origin, 'market.json', ctx), cat = (catRow && catRow.data) || {items: {}};
   const cxRow = await publishedRow(env, url.origin, 'exchange.json', ctx), cx = (cxRow && cxRow.data) || {items: {}};
@@ -412,6 +427,7 @@ export async function serveMarket(request, env, ctx){
   const updated = older(currencyAt, tradeAt);
   const late = stale(currencyAt, 'file', 'exchange.json') || (!!tradeAt && stale(tradeAt, 'price', 'uniq'));
   const own = new Map();   // which price_leagues row each item is, and where this league's own line starts
+  const days = new Map();  // each item's own days as they came ("2026-09-05"): hist writes h from these
   // currency: what it traded for on the Currency Exchange over the last 24 hours
   if(cx.league === league) for(const [name, x] of Object.entries(cx.items || {})){
     const o = {v: x.v, vol: x.vol, at: currencyAt, src: 'cx'};
@@ -420,6 +436,7 @@ export async function serveMarket(request, env, ctx){
     if(x.h && x.h.length >= 2){
       o.h = x.h.map(([d, v]) => [MON[+d.slice(5, 7) - 1] + ' ' + +d.slice(8, 10), v]);
       o.sp = x.h.slice(-7).map(p => p[1]);
+      days.set('c:' + name, x.h);
     }
     if(x.ch !== undefined) o.ch = x.ch;
     items['c:' + name] = {...(items['c:' + name] || {n: name}), ...o};
@@ -433,16 +450,20 @@ export async function serveMarket(request, env, ctx){
   for(const r of rows.results || []){
     const base = r.key.startsWith('base:'), k = (base ? 'b:' : 'u:') + r.key.slice(5);
     items[k] = {...fields(r), src: 'trade', ...(base ? {as: 'white'} : {})};
+    if(items[k].h) days.set(k, parse(r.h));
     const pts = points(r.h);
     own.set(k, {k: r.key, f: pts.length ? pts[0][0] : null, n: pts.length, g: gapsOf(pts)});
   }
-  // the past leagues' lines. Left out of ?part=now, so the first cards never wait for them.
-  if(part !== 'now') await addLeagueLines(env, url.origin, ctx, league, items, own);
-  let out = {league, updated, late, times: {currency: currencyAt, trade: tradeAt, catalogue: came(catRow)},
+  const group = GROUP[part] || [''];
+  // the past leagues' lines. Left out of now and live, so the first cards never wait for them.
+  if(!group.includes('now')) await addLeagueLines(env, url.origin, ctx, league, items, own);
+  const top = {league, updated, late, times: {currency: currencyAt, trade: tradeAt, catalogue: came(catRow)},
     primary: 'divine', rates: rate ? {exalted: rate} : {},
     source: 'Currency Exchange and trade site listings', builds: cat.builds,
-    markets: cx.league === league ? (cx.markets || []).slice(0, 40) : [], items};
-  if(part){   // each part cached on its own (a few minutes apart at most: the history moves once a day)
+    markets: cx.league === league ? (cx.markets || []).slice(0, 40) : []};
+  const bodies = {};
+  if(!part) bodies[''] = {...top, items};
+  else {   // each part cached on its own (a few minutes apart at most: the history moves once a day)
     const now = {}, past = {};
     for(const [k, it] of Object.entries(items)){
       const a = {}, b = {};
@@ -450,12 +471,120 @@ export async function serveMarket(request, env, ctx){
       now[k] = a;
       if(Object.keys(b).length) past[k] = b;
     }
-    out = part === 'now' ? {...out, part, items: now} : {league, updated, part, items: past};
+    if(group.includes('now')){
+      const facts = await factsOf(cat);
+      ctx.waitUntil(keepFacts(url.origin, facts));
+      bodies.now = {...top, part: 'now', items: now};
+      bodies.live = {...top, part: 'live', facts: facts.v, ...liveItems(now, cat, currencyAt)};
+    } else {
+      bodies.past = {league, updated, part: 'past', items: past};
+      bodies.hist = {league, updated, part: 'hist', ...histItems(past, days)};
+    }
   }
-  const res = new Response(JSON.stringify(out), {headers: {'Content-Type': 'application/json; charset=utf-8',
-    'Cache-Control': 'public, max-age=300, stale-while-revalidate=600'}});
-  ctx.waitUntil(caches.default.put(ck, res.clone()));
+  let res = null;
+  for(const [p, body] of Object.entries(bodies)){
+    const r = new Response(JSON.stringify(body), {headers: {...JSON_TYPE, 'Cache-Control': SHORT}});
+    if(p === part) res = r.clone();
+    ctx.waitUntil(caches.default.put(marketKey(url.origin, p), r));
+  }
   return res;
+}
+
+/* ---------- the compact parts: live, hist and facts ----------
+   assets/app.js turns these back into the now and past shapes in one place, so nothing else on the page sees
+   the difference. Every value is the one the old parts carry; only how it is written down changes.
+   live   an item leaves out what the catalogue says (it is in facts), and its age is one number, a:
+            a: 0    a Currency Exchange price: at is times.currency, src is "cx"
+            a: n    a trade listing: at is t0 plus n seconds, src is "trade". Rounded down to the second, so
+                    a price is never made to look newer than it is
+          an item whose age is anything else keeps its own at and src, as now writes them. facts: the v of
+          the facts file that goes with it.
+   hist   h is [first day, price, price, ...]: the first day counted from d0, one price a day after it, and hg
+          ([[place in the prices, days missing before it], ...]) where a day nothing was checked is left out. An
+          item whose days do not run in order keeps its h as past writes it. lh.note is a place in notes, and
+          the currency a pair trades against a place in pn: the same few words stand for a thousand items.
+   facts  the catalogue's own fields for each currency (names, pictures, what it does, drop level). n is left
+          out where it is the name in the key, and a picture on GGG's image server leaves off the start of its
+          address (icp). v names the content: the first 12 hex of its SHA-256. */
+const ICP = 'https://web.poecdn.com/gen/image/';
+async function factsOf(cat){
+  const items = {};
+  for(const [k, it] of Object.entries(cat.items || {})){
+    if(!k.startsWith('c:')) continue;
+    const o = {};
+    for(const [f, v] of Object.entries(it)) if(!DROP.includes(f)) o[f] = v;
+    if(o.n === k.slice(2)) delete o.n;
+    if(typeof o.ic === 'string' && o.ic.startsWith(ICP)) o.ic = o.ic.slice(ICP.length);
+    items[k] = o;
+  }
+  const text = JSON.stringify({icp: ICP, items});
+  const sum = new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text)));
+  const v = [...sum.slice(0, 6)].map(b => b.toString(16).padStart(2, '0')).join('');
+  return {v, body: '{"part":"facts","v":"' + v + '",' + text.slice(1)};
+}
+const keepFacts = (origin, facts) => caches.default.put(marketKey(origin, 'facts'),
+  new Response(facts.body, {headers: {...JSON_TYPE, 'Cache-Control': SHORT, 'X-Facts': facts.v}}));
+async function serveFacts(url, env, ctx){
+  let facts = null;
+  const hit = await caches.default.match(marketKey(url.origin, 'facts'));
+  if(hit && hit.headers.get('X-Facts')) facts = {v: hit.headers.get('X-Facts'), body: await hit.text()};
+  else {
+    facts = await factsOf((await published(env, url.origin, 'market.json', ctx)) || {items: {}});
+    ctx.waitUntil(keepFacts(url.origin, facts));
+  }
+  // the one the page asked for by name is kept a year; any other answer (a newer catalogue came in between)
+  // only as long as the prices are
+  const named = url.searchParams.get('v') === facts.v;
+  return new Response(facts.body, {headers: {...JSON_TYPE, 'Cache-Control': named ? 'public, max-age=31536000, immutable' : SHORT}});
+}
+function liveItems(now, cat, currencyAt){
+  let t0 = null;
+  for(const it of Object.values(now)) if(it.src === 'trade'){
+    const t = Date.parse(it.at);
+    if(t && (t0 === null || t < t0)) t0 = t;
+  }
+  if(t0 !== null) t0 = Math.floor(t0 / 1000) * 1000 - 1000;   // a second before the oldest: every n is at least 1
+  const items = {};
+  for(const [k, it] of Object.entries(now)){
+    const said = (k.startsWith('c:') && (cat.items || {})[k]) || {}, o = {};
+    for(const [f, v] of Object.entries(it)){
+      if(f === 'n' && k.startsWith('c:') && v === k.slice(2)) continue;
+      if(f !== 'at' && f !== 'src' && f in said && !DROP.includes(f)) continue;   // in facts
+      o[f] = v;
+    }
+    const t = Date.parse(it.at);
+    if(it.src === 'cx' && it.at === currencyAt){ delete o.at; delete o.src; o.a = 0; }
+    else if(it.src === 'trade' && t && t0 !== null){ delete o.at; delete o.src; o.a = Math.floor((t - t0) / 1000); }
+    items[k] = o;
+  }
+  return {t0: t0 === null ? null : new Date(t0).toISOString(), items};
+}
+const DAY = /^\d{4}-\d{2}-\d{2}$/;
+const once = (list, at, s) => { if(!at.has(s)){ at.set(s, list.length); list.push(s); } return at.get(s); };   // its place in list
+function histItems(past, days){
+  let d0 = null;
+  for(const k of Object.keys(past)){
+    const pts = days.get(k) || [];
+    if(pts.length && DAY.test(pts[0][0])){ const n = dayNo(pts[0][0]); if(d0 === null || n < d0) d0 = n; }
+  }
+  const notes = [], noteAt = new Map(), names = [], nameAt = new Map(), items = {};
+  for(const [k, it] of Object.entries(past)){
+    const o = {...it}, pts = days.get(k);
+    if(it.h && pts && pts.length === it.h.length && d0 !== null){
+      const n = pts.map(p => DAY.test(p[0]) ? dayNo(p[0]) : NaN);
+      if(n.every((x, i) => isFinite(x) && (!i || x > n[i - 1]))){
+        o.h = [n[0] - d0, ...it.h.map(p => p[1])];
+        const g = [];
+        for(let i = 1; i < n.length; i++) if(n[i] - n[i - 1] > 1) g.push([i, n[i] - n[i - 1] - 1]);
+        if(g.length) o.hg = g;
+      }
+    }
+    if(it.lh && typeof it.lh.note === 'string') o.lh = {...it.lh, note: once(notes, noteAt, it.lh.note)};
+    if(Array.isArray(it.pairs) && it.pairs.every(x => Array.isArray(x) && typeof x[0] === 'string'))
+      o.pairs = it.pairs.map(([n, ...x]) => [once(names, nameAt, n), ...x]);
+    items[k] = o;
+  }
+  return {d0: d0 === null ? null : new Date(d0 * 864e5).toISOString().slice(0, 10), notes, pn: names, items};
 }
 
 /* ---------- /data/rollprices.json and /data/farmprices.json ---------- */

@@ -1,7 +1,7 @@
 /* The league clock in the top bar of the home page: the current league and how long it has run, and a live
    countdown to the next one (data/leagues.json, from poe2db's league list, refreshed hourly by
    tools/leagues.py). poe2db gives dates only, so both clocks count from the start of that day (UTC). */
-import { D, esc } from './app.js';
+import { D, esc, leagues } from './app.js';
 
 const when = iso => Date.parse(iso + 'T00:00:00Z');
 const nice = iso => new Date(when(iso)).toLocaleDateString('en-GB', {day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC'});
@@ -12,8 +12,8 @@ function span(ms){
 }
 
 export async function mountLeague(el){
-  let data;
-  try { data = await (await fetch('data/leagues.json')).json(); } catch { return; }
+  const data = await leagues();   // the one copy the page reads (assets/app.js)
+  if(!data) return;
   const list = (data && data.leagues) || [];
   const now = Date.now();
   const started = list.filter(l => when(l.start) <= now).sort((a, b) => b.start.localeCompare(a.start));

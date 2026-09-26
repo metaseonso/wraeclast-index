@@ -1,6 +1,6 @@
 /* Wraeclast Index on Cloudflare.
    Static files are served straight from the edge. This worker only answers:
-     /data/market.json   every price, from real trade listings only (worker/prices.js serveMarket; ?part=now|past)
+     /data/market.json   every price, from real trade listings only (worker/prices.js serveMarket; ?part=now|past|live|hist|facts)
      /sw.js              the service worker (sw.js), with this deploy's version id written in: a new one every deploy
      /data/leagues.json  league dates (poe2db), sent in by the data server: worker/files.js
      /api/pob?url=...    the build code behind a pobb.in, poe.ninja, maxroll, mobalytics, poe2db or pastebin link

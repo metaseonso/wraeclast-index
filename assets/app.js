@@ -67,36 +67,130 @@ function stuck(what){
 }
 
 /* ---------- data ----------
-   Two parts each, so the first cards never wait for the whole index (tools/appdata.py):
-     data/index-core.json   the uniques and currency cards: all the home page's first cards need
-     data/index-rest.json   everything else (gems, passives, keywords, bases, the Atlas)
-     data/market.json?part=now    every price, without the day-by-day history (worker/prices.js)
-     data/market.json?part=past   the history, for the charts
-   `first` is the core with today's prices: the home page's first cards. `ready` is all of it: search, the popups
-   and the other tabs wait for it (a moment later; the rest loads while the first cards fly in). */
+   Nothing of the index is fetched until the page needs it (need(), below). The home page is a search bar, so all
+   its first paint takes is today's prices, for the stamp in the top bar.
+     data/market.json?part=live   every price, without the day-by-day history, written short (worker/prices.js).
+                                  index.html asks for it before its styles; the drill-down page hands in the
+                                  ?part=now it has already read (window.WI_MARKET), so no page asks twice
+     data/market.json?part=facts  what the catalogue says about each currency: its name, picture and what it does.
+                                  Named by its content, so the browser keeps it for a year
+     data/index-core.json, data/index-rest.json   the search index, in two parts (tools/appdata.py)
+     data/bosses.json             the bosses, which join the search (tools/bosses.py)
+     data/market.json?part=hist   the history, for the charts: only once a chart or a popup asks (hist())
+   need() starts the index, once: a search box touched, the "/" key, a search in the address, any tab but home, a
+   card or a box opened, or the home page sitting idle a few seconds after it is drawn. `first` is the core with
+   today's prices, `ready` is all of it: search, the popups and the other tabs wait for it. Neither starts
+   anything by itself, so anything that waits on one of them calls need() first. */
 export const D = { index: null, market: null, usage: null, byKey: new Map(), full: false };   // usage stays empty: see buildsHref
 async function getJSON(url, opt, early){
   const r = await (early || fetch(url, opt));   // the browser keeps it for 2 minutes (_headers), then checks for a new one
+  if(!r) return getJSON(url, opt);              // the copy handed in never came: ask
+  if(typeof r.json !== 'function') return r;    // the drill-down page's own copy, already read
   if(!r.ok) throw new Error(url + ' ' + r.status);
   return r.json();
 }
-const EARLY = window.WI_FIRST || {};   // index.html asks for these two before its styles
-const CORE = getJSON('data/index-core.json', undefined, EARLY.core);
-const NOW = getJSON('data/market.json?part=now', undefined, EARLY.now).catch(() => null);
-// the rest starts once the first cards' files are in, so it never slows them down
-const AFTER = Promise.all([CORE, NOW]).catch(() => null);
-const REST = AFTER.then(() => getJSON('data/index-rest.json', {priority: 'low'}));
-// the bosses keep their own file (data/bosses.json, tools/bosses.py); it joins the search with the rest
-const BOSS = AFTER.then(() => getJSON('data/bosses.json', {priority: 'low'}).catch(() => null));
-// the history, only when the worker split it off (the backup site's market file has no parts: it is all in NOW)
-const PAST = AFTER.then(() => NOW).then(m => m && m.part === 'now' ? getJSON('data/market.json?part=past', {priority: 'low'}).catch(() => null) : null);
+const EARLY = window.WI_FIRST || {};   // index.html asks for today's prices before its styles
+const NOW = getJSON('data/market.json?part=live', undefined, EARLY.now || window.WI_MARKET)
+  .then(m => (D.market = live(m)), () => null);
+let go;
+const GO = new Promise(r => { go = r; });
+export function need(){ go(); return ready; }
+const CORE = GO.then(() => getJSON('data/index-core.json', undefined, EARLY.core)).then(unpack);
+const REST = GO.then(() => getJSON('data/index-rest.json')).then(unpack);
+const BOSS = GO.then(() => getJSON('data/bosses.json', {priority: 'low'}).catch(() => null));
+// the catalogue's words, when today's prices came without them (the drill-down page's copy has them already)
+const FACTS = GO.then(() => NOW).then(m => m && m.part === 'live'
+  ? getJSON('data/market.json?part=facts&v=' + encodeURIComponent(m.facts || '')).then(f => facts(m, f)) : null).catch(() => null);
+// the league dates: the league clock and the charts' colours read the one copy (assets/league.js)
+let LEAGUES = null;
+export const leagues = () => LEAGUES || (LEAGUES = getJSON('data/leagues.json').catch(() => null));
 /* Each league's own colour, by name (data/leagues.json, tools/leagues.py): GGG's colour for that league,
    sampled from their art for it and already lifted to read on the chart's ground. A card's price chart
    draws a retired league in it (bigLine). A league without one keeps the faded ladder, and so does every
-   league until this lands — it loads with the rest, long before a card can be opened. */
+   league until this lands — it comes with the history, before a chart is drawn. */
 const LEAGUE_COLOUR = new Map();
-AFTER.then(() => getJSON('data/leagues.json', {priority: 'low'}))
-  .then(f => { for(const l of (f && f.leagues) || []) if(l.colour) LEAGUE_COLOUR.set(l.name, l.colour); }, () => {});
+/* The history, the first time a chart or a popup needs it: the day-by-day prices, the exchange pairs and the past
+   leagues' lines join today's prices, with the leagues' colours. Only when the worker split it off (the backup
+   site's market file has no parts: it is all in NOW). D.past once it is in, or has failed: a popup never waits
+   twice. */
+let HIST = null;
+export function hist(){
+  return HIST || (HIST = Promise.all([
+    NOW.then(m => m && m.part ? getJSON('data/market.json?part=hist', {priority: 'low'}) : null).then(p => past(D.market, p), () => {}),
+    leagues().then(f => { for(const l of (f && f.leagues) || []) if(l.colour) LEAGUE_COLOUR.set(l.name, l.colour); }),
+  ]).then(() => { D.past = true; }));
+}
+/* The page asks for the index as soon as a player reaches for search: a tap or a key in a search box, or the "/"
+   that jumps to one. Not when the home page puts the cursor in its own box as it opens: that is before anyone has
+   touched the page. */
+const BOX = '#view-home #q, .tsearch input';
+const touched = e => { const t = e.target; if(t && t.closest && t.closest(BOX)) need(); };
+addEventListener('pointerdown', touched, {capture: true, passive: true});
+addEventListener('keydown', e => { if(e.key === '/') need(); else touched(e); }, {capture: true, passive: true});
+addEventListener('focusin', e => { const u = navigator.userActivation; if(!u || u.hasBeenActive) touched(e); }, true);
+
+/* ---------- the short files, read back ----------
+   Every file above that is written short is put back into the shape the rest of the page reads here, as it
+   arrives, and nowhere else: nothing past this point knows it was short.
+   unpack   an index part: every word said once in its "dict", back on each card (tools/appdata.py)
+   live     today's prices: n where it is the name in the key, and each price's age and source from "a"
+   facts    the catalogue's words (names, pictures, what it does) onto today's prices
+   past     the history (hist): the days back from numbers to "Sep 5", and each note and each pair's currency
+            back from its place in notes and pn. The old ?part=past is joined as it comes
+   (worker/prices.js "the compact parts") */
+function unpack(part){
+  const W = part && part.dict;
+  if(!W) return part;
+  const word = (f, v) => typeof v === 'number' ? W[f][v] : Array.isArray(v) ? v.map(i => W[f][i]) : v;
+  for(const list of Object.values(part)) if(Array.isArray(list)) for(const it of list)
+    if(it && typeof it === 'object' && !Array.isArray(it)) for(const f in W) if(it[f] !== undefined) it[f] = word(f, it[f]);
+  if(part.ckw && W.kw) for(const key in part.ckw) part.ckw[key] = word('kw', part.ckw[key]);
+  delete part.dict;
+  return part;
+}
+function live(m){
+  if(!m || m.part !== 'live' || !m.items) return m;
+  const t0 = m.t0 ? Date.parse(m.t0) : null, cx = m.times ? m.times.currency : null;
+  for(const [k, it] of Object.entries(m.items)){
+    if(k.startsWith('c:') && it.n === undefined) it.n = k.slice(2);
+    if(it.a === 0){ it.at = cx; it.src = 'cx'; }
+    else if(typeof it.a === 'number' && t0 !== null){ it.at = new Date(t0 + it.a * 1000).toISOString(); it.src = 'trade'; }
+    delete it.a;
+  }
+  return m;
+}
+function facts(m, f){
+  if(!m || !m.items || !f || !f.items) return;
+  for(const [k, x] of Object.entries(f.items)){
+    const it = m.items[k] || (m.items[k] = {n: k.slice(2)});
+    for(const [at, v] of Object.entries(x)) it[at] = at === 'ic' && f.icp && !String(v).includes('://') ? f.icp + v : v;
+  }
+}
+const MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+const dayLabel = n => { const d = new Date(n * 864e5); return MON[d.getUTCMonth()] + ' ' + d.getUTCDate(); };
+function past(m, p){
+  if(!m || !m.items || !p || !p.items) return;
+  const d0 = p.d0 ? Date.parse(p.d0 + 'T00:00:00Z') / 864e5 : null, notes = p.notes || [], names = p.pn || [];
+  for(const [k, x] of Object.entries(p.items)){
+    const it = m.items[k];
+    if(!it) continue;
+    if(p.part === 'hist'){
+      if(Array.isArray(x.h) && typeof x.h[0] === 'number' && d0 !== null){
+        const g = x.hg || [], out = [];
+        let day = d0 + x.h[0], gi = 0;
+        for(let i = 1; i < x.h.length; i++){
+          if(gi < g.length && g[gi][0] === i - 1) day += g[gi++][1];   // days nothing was checked, left out
+          out.push([dayLabel(day++), x.h[i]]);
+        }
+        x.h = out;
+      }
+      delete x.hg;
+      if(x.lh && typeof x.lh.note === 'number') x.lh.note = notes[x.lh.note];
+      if(Array.isArray(x.pairs)) x.pairs = x.pairs.map(([n, ...r]) => [typeof n === 'number' ? names[n] : n, ...r]);
+    }
+    Object.assign(it, x);
+  }
+}
 
 function prep(it, k, IMGS, lxk){   // once per card: its kind, full image link, mechanics links and search words
   if(it._nl !== undefined) return it;
@@ -230,21 +324,20 @@ function assemble(core, rest){
   D.byKey = byKey;
 }
 export const first = (async () => {
-  const [core, market] = await Promise.all([CORE, NOW]);
-  D.market = market; D.core = core;
+  const [core] = await Promise.all([CORE, NOW, FACTS]);
+  D.core = core;
   assemble(core, null);
   return D;
 })();
 export const ready = (async () => {
-  let [, rest, past, boss] = await Promise.all([first, REST, PAST, BOSS]);
+  let [, rest, boss] = await Promise.all([first, REST, BOSS]);
   let core = D.core;
   D.bosses = boss;
   if(rest.id !== core.id){   // two versions (a new one went live between the two files): both again, fresh
-    [core, rest] = await Promise.all([getJSON('data/index-core.json', {cache: 'no-cache'}), getJSON('data/index-rest.json', {cache: 'no-cache'})]);
+    [core, rest] = await Promise.all([getJSON('data/index-core.json', {cache: 'no-cache'}).then(unpack),
+      getJSON('data/index-rest.json', {cache: 'no-cache'}).then(unpack)]);
     D.core = core;
   }
-  if(past && past.items && D.market && D.market.items)   // the history joins today's prices
-    for(const [key, h] of Object.entries(past.items)) if(D.market.items[key]) Object.assign(D.market.items[key], h);
   assemble(core, rest);
   D.full = true;
   return D;
@@ -314,8 +407,10 @@ export function iconHTML(it){
     const sp = S[(KIND[it.k] || {}).sprite];   // the sheet this kind's art is cut from (KINDS sprite)
     if(sp){
       const sc = Math.min(34 / sp.cw, 38 / sp.ch), w = sp.cw * sc, h = sp.ch * sc;
-      return '<span class="ic" style="width:' + w + 'px;height:' + h + 'px;background-image:url(sprites/' + sp.file +
-        ');background-size:' + (sp.w * sc) + 'px ' + (sp.h * sc) + 'px;background-position:' + (-it.ic[0] * w) + 'px ' + (-it.ic[1] * h) + 'px"></span>';
+      // a screen of one pixel per point takes the sheet cut to this size (tools/sprites.py); the grid is the same
+      const url = 'url(sprites/' + sp.file + ')', lo = sp.lo ? ';background-image:image-set(url(sprites/' + sp.lo + ') 1x,' + url + ' 2x)' : '';
+      return '<span class="ic" style="width:' + w + 'px;height:' + h + 'px;background-image:' + url + lo +
+        ';background-size:' + (sp.w * sc) + 'px ' + (sp.h * sc) + 'px;background-position:' + (-it.ic[0] * w) + 'px ' + (-it.ic[1] * h) + 'px"></span>';
     }
   }
   return '<span class="glyph">' + esc((it.n || '?').replace(/^[^A-Za-z]+/, '').charAt(0)) + '</span>';
@@ -1495,6 +1590,7 @@ export function actPanel(node, tag){
 }
 /* the same popup for anything else (e.g. the Suggest box): no card, so no trail */
 export function openBox(node, label = 'Details'){
+  need();   // a box can name cards (Pins): the index, if it is not on its way already
   ensureOV();
   TRAIL = []; AT = -1;
   OV.querySelector('.ov-box').setAttribute('aria-label', label);
@@ -1506,11 +1602,11 @@ export function openBox(node, label = 'Details'){
 /* opts.nested: opened from inside the popup (a keyword, or something that uses it).
    opts.onFull: the drill-down page's own full-stats panel, offered as a button. */
 export function openDetail(it, opts = {}, href){
-  if(!D.full && !D.failed){
+  if(!(D.full && D.past) && !D.failed){
     // its keywords and history: a moment away. A second tap while it loads takes over, so one tap, one card
     const mine = PEND = {};
     const go = () => { if(PEND !== mine) return; PEND = null; openDetail(it, opts, href); };
-    ready.then(go, go);
+    need(); Promise.all([ready, hist()]).then(go, go);
     return;
   }
   PEND = null;
@@ -2486,13 +2582,15 @@ async function show(e){
     return;
   }
   if(r === 'home'){
-    await first;   // the core and today's prices: the first cards (search waits for the rest itself)
     const q = params().get('q') || '';
+    if(q) need();   // a search in the address (search waits for the index itself)
     if(q !== H.q){ H.q = q; $('#q').value = q; }
     homeRender();
     if(!matchMedia('(pointer:coarse)').matches) $('#q').focus({preventScroll:true});
   } else {
-    if(r !== 'map') await ready;   // every other tab draws cards out of the index; the map is a finished picture
+    need();
+    // every other tab draws cards out of the index, with their charts; the map is a finished picture
+    if(r !== 'map') await Promise.all([ready, hist()]);
     if(ON !== r) return;           // left again while the index came in: nothing to draw
     const view = $('#view-' + r);
     if(!LIVE[r]) LIVE[r] = modOf(r).then(m => m.mount(view));
@@ -2519,19 +2617,22 @@ mountTopSearch(document.getElementById('topsearch'));
 addEventListener('hashchange', show);
 show();
 const failed = err => { $('#status').innerHTML = '<span class="err">Could not load the index: ' + esc(err.message) + '</span>'; };
-first.then(() => {
-  // the client build (4.5.5.2) as players know it: patch 0.5.5
-  $('#gamever').textContent = (D.index.v || '').replace(/^4\.(\d+)\.(\d+).*$/, '0.$1.$2');
+NOW.then(M => {
   const st = $('#stamp');
   st.classList.remove('wait');
   // the real age of the data behind the prices (worker/prices.js), and a word when a job has missed a run
-  const M = D.market;
   if(M && M.updated) st.innerHTML = 'Prices: <b>' + esc(M.league) + '</b> · ' + ago(M.updated) +
     (M.late ? ' · <span class="err">waiting for new prices</span>' : '');
   else st.textContent = 'Prices not loaded yet';
   lazy('./league.js').then(m => m.mountLeague($('#leagueclock'))).catch(() => {});   // the league clock
+  later();   // the crest's fog, once the stamp is in
+  // a player who has not reached for search yet: the index comes in while the page sits idle
+  setTimeout(() => idle(need), 3000);
+});
+first.then(() => {
+  // the client build (4.5.5.2) as players know it: patch 0.5.5
+  $('#gamever').textContent = (D.index.v || '').replace(/^4\.(\d+)\.(\d+).*$/, '0.$1.$2');
 }).catch(failed);
-first.then(later, later);   // the crest's fog, once the first cards are on screen
 ready.then(() => {
   // once this page is idle: the service worker (repeat visits paint from this browser's copy, and it keeps a copy of
   // the drill-down page, so Gems / Uniques / Passive tree open fast); without one, fetch the drill-down page ahead

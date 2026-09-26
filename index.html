@@ -28,9 +28,9 @@
 {"@type":"VideoGame","@id":"https://wraeclastindex.fyi/#game","name":"Path of Exile 2"}
 ]}
 </script>
-<script>/* what the first cards need, asked for before anything else: the index's core and today's prices (assets/app.js
-   takes these; the rest of the index follows them) */
-window.WI_FIRST = {core: fetch('data/index-core.json'), now: fetch('data/market.json?part=now')};
+<script>/* what the first paint needs, asked for before anything else: today's prices, for the stamp (assets/app.js takes
+   it; the index follows once the page needs it) */
+window.WI_FIRST = {now: fetch('data/market.json?part=live')};
 for(var k in WI_FIRST) WI_FIRST[k].catch(function(){});</script>
 <link rel="stylesheet" href="assets/app.css">
 <link rel="stylesheet" href="assets/cards.css">

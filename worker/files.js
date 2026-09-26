@@ -27,7 +27,8 @@ const UA = 'wraeclast-index/1.0 (contact: https://wraeclastindex.fyi/)';
 const HOSTS = ['https://wraeclastindex.fyi', 'https://www.wraeclastindex.fyi'];
 // what the worker builds from these files and keeps for a while: dropped when a new file comes in
 const BUILT = ['/data/market.json?from=trade', '/data/market.json?from=trade&part=now', '/data/market.json?from=trade&part=past',
-  '/data/rollprices.json', '/data/farmprices.json', '/data/bossprices.json'];   // market.json and its two parts (worker/prices.js serveMarket)
+  '/data/market.json?from=trade&part=live', '/data/market.json?from=trade&part=hist', '/data/market.json?from=trade&part=facts',
+  '/data/rollprices.json', '/data/farmprices.json', '/data/bossprices.json'];   // market.json and its parts (worker/prices.js serveMarket)
 
 const enc = new TextEncoder();
 const json = (status, body) => new Response(JSON.stringify(body), {status, headers: {'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store'}});
