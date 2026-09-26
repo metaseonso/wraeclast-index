@@ -31,6 +31,8 @@ const at = args.indexOf('--out');
 const OUT = at >= 0 && args[at + 1] ? resolve(args[at + 1]) : join(ROOT, 'dist');
 const PLAIN = args.includes('--plain');
 const warn = m => console.warn('build: warning: ' + m);
+// esbuild's own first error, with its line; anything else, its first line
+const why = e => { const x = e && e.errors && e.errors[0]; return x ? x.text + (x.location ? ' (line ' + x.location.line + ')' : '') : String(e && e.message || e).split('\n')[0]; };
 
 /* ---------- which files the site serves: .assetsignore, as wrangler reads it (gitignore rules) ---------- */
 // wrangler always leaves out its own three files; .assetsignore adds the rest (workers-shared createAssetsIgnoreFunction)
@@ -128,7 +130,7 @@ async function smaller(files){
         out = r.code;
         if(!out.trim() && src.trim()) throw new Error('came out empty');
       }
-    } catch(e){ warn(f + ' ships as it is: ' + String(e && e.message || e).split('\n')[0]); out = src; }
+    } catch(e){ warn(f + ' ships as it is: ' + why(e)); out = src; }
     if(out.length >= src.length) out = src;
     if(out !== src) await writeFile(join(OUT, f), out);
     count(f.startsWith('assets/') && ext !== 'html' ? 'assets/*.' + ext : ext === 'html' ? 'pages' : ext, Buffer.from(src), Buffer.from(out));
@@ -155,7 +157,7 @@ async function inline(esbuild, html, f){
         const r = await esbuild.transform(body, script ? JS : CSS);
         const code = r.code.replace(/\n$/, '');
         if(code.trim() && !(script ? /<\/script|<!--|<script/i : /<\/style/i).test(code)) done = code;
-      } catch(e){ warn(f + ': one ' + (script ? 'script' : 'style') + ' block ships as it is: ' + String(e && e.message || e).split('\n')[0]); }
+      } catch(e){ warn(f + ': one ' + (script ? 'script' : 'style') + ' block ships as it is: ' + why(e)); }
     }
     parts.push((script ? m[1] : m[5]) + done + (script ? m[4] : m[8]));
   }
