@@ -2300,7 +2300,8 @@
      ],
      "by": [
       "row",
-      "name"
+      "name",
+      "mondanger"
      ],
      "need": 1,
      "drawn": 1
@@ -3747,6 +3748,7 @@
     "adds",
     "cancorrupt",
     "canroll",
+    "mondanger",
     "name",
     "row"
    ]

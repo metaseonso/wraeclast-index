@@ -269,6 +269,12 @@ export const FIELDS = {
      item class, so the field's own "file" carries the class the entry names (tools/craft.py). */
   canroll:  {type: 'pool', at: 'n', slot: 'body', file: 'data/craft/@cr.json', of: 'm', label: 'Modifiers it can roll'},
   cancorrupt: {type: 'pool', at: 'n', slot: 'body', file: 'data/craft/@cr.json', of: 'c', label: 'A corruption can add'},
+  /* What it does to you, in one list of words shared by every file that tags a danger (tools/monstermods.py,
+     and the map modifiers that use the same words), so one word means one thing wherever it is read. The row is
+     found by the card's own name in the field's table. A tag read off the name alone, because the game gives the
+     thing no words, says Estimate beside it; a tag with the game's own line behind it shows that line on hover. */
+  mondanger: {type: 'danger', at: 'n', slot: 'body', file: 'data/monstermods.json',
+    label: 'On a rare monster, what it does to you'},
   quote:    {type: 'quote', at: 'qt', slot: 'body', every: 1},   // the game's own flavour line
   options:  {type: 'options', at: 'o', slot: 'body', every: 1},
   flow:     {type: 'flow', at: 'fl', slot: 'body', every: 1},
@@ -522,7 +528,7 @@ export const KINDS = [
 
   {k: 'w', one: 'Keyword', tone: 'accent', many: 'Keywords', sec: 'keywords', index: true, search: true, crawl: {word: 'keyword', list: 'keywords', rank: 3, is: 'DefinedTerm'},
    kw: 'id', rank: -25, words: {n: 'own', f: 'alt', mark: 'game'},
-   fields: [...HEAD, 'uses', ...BODY, ...FOOT],
+   fields: [...HEAD, 'uses', ...SAYS, 'mondanger', ...REST, ...FOOT],
    acts: ['full', 'pin'],
    rel: [...KWUSE, 'named', 'namedby']},
 
