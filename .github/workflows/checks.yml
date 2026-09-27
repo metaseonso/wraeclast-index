@@ -1,5 +1,6 @@
 # The guard, on every push and every pull request. The parts that need no browser: the card counts, every
-# deep link, the public pages, no raw game code, the voice a player reads, the frame, and the budget.
+# deep link, the public pages, no raw game code, the voice a player reads, the frame, and the budget. Then the
+# patch registry (data/patches.json lists the index's build) and the change files (every row names a card).
 # Cloudflare builds and publishes the site on its own, so this does not hold a deploy back — it puts a red
 # cross on the commit that broke something, which is what a check that nobody has to remember is for.
 # The browser halves (dash, phone, and the frame's own card pass) need Chrome and run locally: tools/dev/guard.mjs.
@@ -35,6 +36,10 @@ jobs:
         run: node tools/dev/guard.mjs --no-phone
       - name: The bench's own rolls
         run: node tools/dev/simcheck.mjs
+      - name: The patch registry, and every change row names a card
+        run: |
+          python3 tools/patches.py --check
+          python3 tools/diff.py --check
 
   # A pull request that touches data/: what the rebuild changed, file by file, kind by kind and field by field
   # (tools/dev/dumpreport.mjs), as one comment on the pull request that each push rewrites, and in the run's

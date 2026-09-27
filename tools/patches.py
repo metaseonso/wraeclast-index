@@ -26,7 +26,8 @@ A field nothing states is left out, never guessed: a client build is tied to its
     python tools/patches.py --notes      also read the patch notes forum, newest page first, until a page
                                          brings nothing new (--all: every page, about ten)
     python tools/patches.py --tree       also read the passive tree export's commits and tags
-    python tools/patches.py --check      check the file and write nothing (exit 1 on a bad row)
+    python tools/patches.py --check      check the file and write nothing (exit 1 on a bad row, or when the
+                                         index carries a build the file does not list)
 
 A forum or GitHub read that fails is a fault (tools/lastgood.py): the committed file stays, the run says so, a
 data-fault issue goes up, and the run exits non-zero.
@@ -287,6 +288,9 @@ def main():
     had = lastgood.committed(FILE, quiet=True) or {'patches': [], 'builds': []}
     if args.check:
         bad = check(had, leagues)
+        b, _ = index_build()
+        if b and not any(x.get('build') == b for x in had.get('builds', [])):
+            bad.append('the index carries build %s, which data/%s does not list: run python tools/patches.py' % (b, FILE))
         for b in bad:
             print('  ' + b)
         print('patches: %d rows, %d builds, %s' % (len(had.get('patches', [])), len(had.get('builds', [])),
