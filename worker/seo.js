@@ -667,14 +667,45 @@ const CSS = `.seo{max-width:960px; width:100%; margin:0 auto; padding:10px 16px 
 .ilist .px small{margin-left:2px; font-size:10.5px; font-weight:500; color:var(--faint)}
 .browse{display:flex; flex-wrap:wrap; gap:6px; align-items:center; margin-top:30px; font-size:12.5px; color:var(--faint)}`;
 
+/* The site's top bar (index.html), without the app: the index in its groups, run by assets/topnav.js; the search
+   button goes to the home page's search, and the menu button holds the index on a narrow screen. The lists
+   themselves are linked from every page's foot (browse). */
+const TOPBAR = `<header class="top">
+  <div class="top-in">
+    <a class="brand" href="/"><span class="mark" aria-hidden="true"><img class="mark-wisp on" src="/assets/brand/wisp-b.webp" alt="" decoding="async" fetchpriority="low"><img class="mark-logo" src="/assets/brand/logo-64.webp" alt="" width="51" height="64"></span>Wraeclast <em>Index</em></a>
+    <div class="topmenu" id="topmenu">
+      <nav class="tabs topnav" aria-label="Index">
+        <a href="/#/"><i class="ti ti-search" aria-hidden="true"></i>Search</a>
+        <div class="navdrop"><button type="button" class="navdrop-b" aria-expanded="false" aria-controls="nd-items">Items<svg class="caret" viewBox="0 0 10 10" aria-hidden="true"><path d="M2 3.5 5 6.5 8 3.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          <div class="navdrop-m" id="nd-items">
+            <a href="/explore#uniques"><i class="ti ti-uniques" aria-hidden="true"></i>Uniques</a>
+            <a href="/explore#gems"><i class="ti ti-gems" aria-hidden="true"></i>Gems</a>
+            <a href="/#/currency"><i class="ti ti-currency" aria-hidden="true"></i>Currency</a>
+          </div></div>
+        <a href="/explore#tree"><i class="ti ti-tree" aria-hidden="true"></i>Passive tree</a>
+        <div class="navdrop"><button type="button" class="navdrop-b" aria-expanded="false" aria-controls="nd-endgame">Endgame<svg class="caret" viewBox="0 0 10 10" aria-hidden="true"><path d="M2 3.5 5 6.5 8 3.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          <div class="navdrop-m" id="nd-endgame">
+            <a href="/#/atlas"><i class="ti ti-atlas" aria-hidden="true"></i>Atlas</a>
+            <a href="/#/bosses"><i class="ti ti-bosses" aria-hidden="true"></i>Bosses</a>
+          </div></div>
+        <a href="/#/trade"><i class="ti ti-trade" aria-hidden="true"></i>Trade</a>
+        <a href="/#/craft"><i class="ti ti-craft" aria-hidden="true"></i>Craft</a>
+      </nav>
+    </div>
+    <span class="grow"></span>
+    <a class="topbtn topfind" id="topfind" href="/#/" aria-label="Search the index"><svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="8.5" cy="8.5" r="5.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M13 13l4.5 4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></a>
+    <button class="topbtn narrow" id="topburger" type="button" aria-label="Menu" aria-expanded="false" aria-controls="topmenu"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3.5 5.5h13M3.5 10h13M3.5 14.5h13" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></button>
+  </div>
+</header>
+<script src="/assets/topnav.js" type="module"></script>`;
+
 /* `art` is the card's own picture, where the thing has one of its own. A page that has one says so instead of
    the brand card: a share of one unique shows that unique, and a crawler is handed the same picture the
    structured data points at. A page with none keeps the wide brand card. */
-function page(m, {title, desc, path, list, body, ld: data, noindex, art, alt}){
+function page(m, {title, desc, path, body, ld: data, noindex, art, alt}){
   const url = SITE + path;
   const img = art || SITE + '/assets/brand/social.png';
   const imgAlt = art ? alt || title : 'Wraeclast Index: Path of Exile 2, made easier for every kind of player.';
-  const tabs = '<a href="/">Search</a>' + ORDER.map(l => '<a href="/' + l + '"' + (l === list ? ' aria-current="page"' : '') + '>' + LISTS[l].h1 + '</a>').join('');
   return `<!doctype html>
 <html lang="en">
 <head>
@@ -703,12 +734,7 @@ ${art ? '' : '<meta property="og:image:width" content="1200">\n<meta property="o
 ${data ? '<script type="application/ld+json">' + JSON.stringify(data).replace(/</g, '\\u003c') + '</script>' : ''}
 </head>
 <body>
-<header class="top">
-  <div class="top-in">
-    <a class="brand" href="/"><span class="mark" aria-hidden="true"><img class="mark-wisp on" src="/assets/brand/wisp-b.webp" alt="" decoding="async" fetchpriority="low"><img class="mark-logo" src="/assets/brand/logo-64.webp" alt="" width="51" height="64"></span>Wraeclast <em>Index</em></a>
-    <nav class="tabs" aria-label="Sections">${tabs}</nav>
-  </div>
-</header>
+${TOPBAR}
 <main class="seo">
 ${body}
 </main>
