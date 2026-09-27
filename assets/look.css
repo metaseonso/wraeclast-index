@@ -137,7 +137,7 @@ html:not(#_) .tabs, html:not(#_) .seg, html:not(#_) .nav, html:not(#_) .applinks
   background:var(--fa-sunk) padding-box, var(--fa-rim-dim) border-box;
   box-shadow:inset 0 2px 6px rgba(0,0,0,.75), 0 1px 2px rgba(0,0,0,.6);
 }
-html:not(#_) .tabs a[aria-current="page"], html:not(#_) .seg button[aria-pressed="true"], html:not(#_) .nav button[aria-pressed="true"]{
+html:not(#_) .tabs a[aria-current="page"], html:not(#_) .tabs .navdrop-b[aria-current="true"], html:not(#_) .seg button[aria-pressed="true"], html:not(#_) .nav button[aria-pressed="true"]{
   background:var(--fa-plate-hi);
   box-shadow:inset 0 1px 0 rgba(230,200,140,.14), inset 0 -2px 0 var(--accent), 0 1px 3px rgba(0,0,0,.85);
 }
@@ -160,7 +160,8 @@ html:not(#_) .kwq:focus, html:not(#_) .lvlbox:focus-within{
 html:not(#_) .searchbox-kbd, html:not(#_) .tsearch kbd, html:not(#_) .hint kbd{border-color:#4A3D2A; background:#12130F}
 
 /* ---------- panels and boxes: the card's frame, larger ---------- */
-html:not(#_) .view .panel, html:not(#_) .trade, html:not(#_) .tablewrap, html:not(#_) .tsearch-drop{
+html:not(#_) .view .panel, html:not(#_) .trade, html:not(#_) .tablewrap, html:not(#_) .tsearch-drop,
+html:not(#_) .navdrop-m, html:not(#_) .topmore{
   border:2px solid transparent;
   background:var(--fa-face) padding-box, var(--fa-rim) border-box;
   box-shadow:var(--fa-lip), inset 0 0 40px rgba(0,0,0,.45), var(--fa-drop);
@@ -181,7 +182,7 @@ html:not(#_) aside.panel{border-left:2px solid #6B5636; background:#0C0D0B; box-
 html:not(#_) aside.panel .panel-hd{background:#0C0D0B; border-bottom:2px solid #3E3427}
 
 /* ---------- header rail: a forged bar under the top bar ---------- */
-html:not(#_) .top, html:not(#_) .mast{
+html:not(#_) .top, html:not(#_) .mast, html:not(#_) .topmenu{
   border-bottom:2px solid transparent;
   border-image:linear-gradient(90deg, rgba(107,86,54,0), #6B5636 14%, #C3A266 50%, #6B5636 86%, rgba(107,86,54,0)) 1;
   box-shadow:0 4px 14px rgba(0,0,0,.55);

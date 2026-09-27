@@ -56,25 +56,35 @@ document.body.dataset.route = (function(r){ return ['build','currency','trade','
 <header class="top">
   <div class="top-in">
     <a class="brand" href="#/"><span class="mark" aria-hidden="true"><img class="mark-wisp" data-src="assets/brand/wisp-b.webp" alt="" decoding="async"><img class="mark-logo" src="assets/brand/logo-64.webp" alt="" width="51" height="64"></span>Wraeclast <em>Index</em></a>
-    <nav class="tabs" aria-label="Play">
-      <a href="#/" data-route="home"><i class="ti ti-search" aria-hidden="true"></i>Search</a>
-      <a href="#/trade" data-route="trade"><i class="ti ti-trade" aria-hidden="true"></i>Trade</a>
-    </nav>
-    <nav class="tabs" aria-label="Look up">
-      <a href="#/craft" data-route="craft"><i class="ti ti-craft" aria-hidden="true"></i>Craft</a>
-      <a href="#/currency" data-route="currency"><i class="ti ti-currency" aria-hidden="true"></i>Currency</a>
-      <a href="explore#tree"><i class="ti ti-tree" aria-hidden="true"></i>Passive tree</a>
-      <a href="explore#uniques"><i class="ti ti-uniques" aria-hidden="true"></i>Uniques</a>
-      <a href="explore#gems"><i class="ti ti-gems" aria-hidden="true"></i>Gems</a>
-      <a href="#/atlas" data-route="atlas"><i class="ti ti-atlas" aria-hidden="true"></i>Atlas</a>
-      <a href="#/bosses" data-route="bosses"><i class="ti ti-bosses" aria-hidden="true"></i>Bosses</a>
-    </nav>
+    <div class="topmenu" id="topmenu">
+      <nav class="tabs topnav" aria-label="Index">
+        <a href="#/" data-route="home"><i class="ti ti-search" aria-hidden="true"></i>Search</a>
+        <div class="navdrop"><button type="button" class="navdrop-b" aria-expanded="false" aria-controls="nd-items">Items<svg class="caret" viewBox="0 0 10 10" aria-hidden="true"><path d="M2 3.5 5 6.5 8 3.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          <div class="navdrop-m" id="nd-items">
+            <a href="explore#uniques"><i class="ti ti-uniques" aria-hidden="true"></i>Uniques</a>
+            <a href="explore#gems"><i class="ti ti-gems" aria-hidden="true"></i>Gems</a>
+            <a href="#/currency" data-route="currency"><i class="ti ti-currency" aria-hidden="true"></i>Currency</a>
+          </div></div>
+        <a href="explore#tree"><i class="ti ti-tree" aria-hidden="true"></i>Passive tree</a>
+        <div class="navdrop"><button type="button" class="navdrop-b" aria-expanded="false" aria-controls="nd-endgame">Endgame<svg class="caret" viewBox="0 0 10 10" aria-hidden="true"><path d="M2 3.5 5 6.5 8 3.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          <div class="navdrop-m" id="nd-endgame">
+            <a href="#/atlas" data-route="atlas"><i class="ti ti-atlas" aria-hidden="true"></i>Atlas</a>
+            <a href="#/bosses" data-route="bosses"><i class="ti ti-bosses" aria-hidden="true"></i>Bosses</a>
+          </div></div>
+        <a href="#/trade" data-route="trade"><i class="ti ti-trade" aria-hidden="true"></i>Trade</a>
+        <a href="#/craft" data-route="craft"><i class="ti ti-craft" aria-hidden="true"></i>Craft</a>
+      </nav>
+      <div class="topmore" id="topmore">
+        <button id="notesbtn" type="button" class="notesbtn">Patch notes <span class="ct wait">v0.00</span></button>
+        <button id="suggestbtn" type="button" class="suggestbtn" title="Send an idea or report a problem"><i class="mk"></i>Suggest</button>
+        <button class="keysbtn" id="keysbtn" type="button" aria-haspopup="dialog" aria-label="Keybindings" title="Keybindings"><svg viewBox="0 0 20 20" aria-hidden="true"><rect x="2" y="5" width="16" height="10.5" rx="2" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M5.6 8.6h.1M8.6 8.6h.1M11.4 8.6h.1M14.4 8.6h.1M6.5 12.1h7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg><span class="keys-lbl">Keybindings</span></button>
+      </div>
+    </div>
     <span class="grow"></span>
     <div class="topsearch" id="topsearch"><div class="tsearch"><svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="8.5" cy="8.5" r="5.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M13 13l4.5 4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><input type="search" placeholder="Search the index" autocomplete="off" spellcheck="false" aria-label="Search the index" role="combobox" aria-expanded="false" aria-autocomplete="list"><kbd aria-hidden="true">/</kbd><div class="tsearch-drop" role="listbox" hidden></div></div></div>
-    <button id="notesbtn" type="button" class="notesbtn">Patch notes <span class="ct wait">v0.00</span></button>
-    <button id="suggestbtn" type="button" class="suggestbtn" title="Send an idea or report a problem"><i class="mk"></i>Suggest</button>
-    <button class="keysbtn" id="keysbtn" type="button" aria-haspopup="dialog" aria-label="Keybindings" title="Keybindings"><svg viewBox="0 0 20 20" aria-hidden="true"><rect x="2" y="5" width="16" height="10.5" rx="2" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M5.6 8.6h.1M8.6 8.6h.1M11.4 8.6h.1M14.4 8.6h.1M6.5 12.1h7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></button>
     <span class="stamp wait" id="stamp">Loading prices…</span>
+    <button class="topbtn topfind" id="topfind" type="button" aria-label="Search the index" aria-expanded="false"><svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="8.5" cy="8.5" r="5.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M13 13l4.5 4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button>
+    <button class="topbtn" id="topburger" type="button" aria-label="Menu" aria-expanded="false" aria-controls="topmenu"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3.5 5.5h13M3.5 10h13M3.5 14.5h13" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></button>
   </div>
 </header>
 
@@ -146,6 +156,7 @@ document.body.dataset.route = (function(r){ return ['build','currency','trade','
   This product isn't affiliated with or endorsed by Grinding Gear Games in any way. <a href="#/map">The index as a map</a> · <a href="privacy">Privacy</a></p>
 </footer>
 
+<script src="assets/topnav.js" type="module"></script>
 <script src="assets/app.js" type="module"></script>
 </body>
 </html>
