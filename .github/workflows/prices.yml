@@ -12,6 +12,7 @@ permissions:
   contents: read
   id-token: write
   actions: write
+  issues: write     # one data-fault issue when the checks keep failing (tools/pricepull.py alarm)
 concurrency:
   group: trade-prices
   cancel-in-progress: false
@@ -25,8 +26,11 @@ jobs:
         with:
           python-version: '3.12'
       - name: Pull prices through the hour
+        # ends red, with one data-fault issue, when the checks keep failing; the next steps run all the same
         run: python tools/pricepull.py
         continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
       - name: Keep to one run an hour, then start the next run and refresh currency prices
         if: always()
         env:

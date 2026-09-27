@@ -35,6 +35,12 @@ Signing in to the site: in GitHub Actions, GitHub gives this job a short-lived s
 the site checks it. Run by hand somewhere else, the key in WI_INGEST_KEY instead (the site keeps only its
 SHA-256). Where the input files come from (data/ or WI_DATA_DIR): tools/sitedata.py.
 
+Every batch also carries the run's own account (Tally): checks tried, came back, failed and why (rate limited,
+no listings, HTTP errors), by kind. The site keeps it for the job watch, so the dashboard says "Unique prices: 15
+of 22 checks failed this hour" rather than "on time". Past a quarter of a run failing, or one check failing 3
+runs running, the run says so in plain words, opens or adds to one data-fault issue (tools/lastgood.py ticket)
+and ends red. The prices already on the site stay, each with its own age.
+
 The trade site's limits come back in the X-Rate-Limit headers: searches about 100 an hour (this makes 88),
 It slows down near a limit and stops if one is hit.
 
@@ -43,6 +49,7 @@ It slows down near a limit and stops if one is hit.
     python tools/pricepull.py --offline --state f   # what a run would check, from a saved /api/prices/state
     python tools/pricepull.py --offline --cut 16    # the same, as if the site cut the run short after 16
 """
+import datetime as dt
 import json
 import os
 import statistics
@@ -52,6 +59,7 @@ import urllib.error
 import urllib.parse
 import urllib.request
 
+import lastgood
 import sitedata
 
 SITE = sitedata.SITE
@@ -283,6 +291,110 @@ def report(todo, planned, done, failed, why):
     print('  currency prices are not in this budget: they come from the Currency Exchange feed, hourly')
 
 
+# ---------- the run's own account of itself ----------
+FAIL_SHARE = 0.25              # more than this share of a run's checks failing is a data fault
+FAIL_RUNS = 3                  # and so is the same check failing this many runs running
+FAULT = 'Trade price checks'   # the section name on the data-fault issue (tools/lastgood.py ticket)
+
+
+def cause(e):
+    """Why a check failed, in a few words the dashboard can show."""
+    if isinstance(e, urllib.error.HTTPError):
+        return 'HTTP %d' % e.code
+    if isinstance(e, (urllib.error.URLError, TimeoutError, OSError)):
+        return 'no answer'
+    return type(e).__name__
+
+
+class Tally:
+    """What this run tried, what came back and why the rest did not, by kind of key (uniq, base, roll, ...).
+    Sent with every batch (worker/prices.js ingest keeps it for the job watch, worker/health.js), so a failing
+    check shows on the dashboard within the hour instead of only in this log. A check the trade site turned
+    away (rate limited) counts as failed; one that found nobody selling came back, with no listings."""
+
+    def __init__(self, planned):
+        self.id = os.environ.get('GITHUB_RUN_ID') or str(int(time.time()))
+        self.planned = planned
+        self.tried = self.ok = self.failed = self.empty = self.limited = 0
+        self.why, self.kinds, self.new, self.streak = {}, {}, [], {}
+
+    def kind(self, key):
+        self.tried += 1
+        k = self.kinds.setdefault(key.split(':', 1)[0], {'tried': 0, 'ok': 0, 'failed': 0, 'empty': 0})
+        k['tried'] += 1
+        return k
+
+    def good(self, key, res):
+        k = self.kind(key)
+        self.ok += 1
+        k['ok'] += 1
+        if not res.get('p'):
+            self.empty += 1
+            k['empty'] += 1
+
+    def bad(self, key, why, limited=False):
+        k = self.kind(key)
+        self.failed += 1
+        k['failed'] += 1
+        self.why[why] = self.why.get(why, 0) + 1
+        if limited:
+            self.limited += 1
+        else:
+            self.new.append([key, why])   # the trade site turning the run away is not this item's fault
+
+    def run(self, final=False):
+        return {'id': self.id, 'final': final, 'tried': self.tried, 'ok': self.ok, 'failed': self.failed, 'empty': self.empty,
+                'limited': self.limited, 'skipped': max(0, self.planned - self.tried), 'why': self.why, 'kinds': self.kinds}
+
+
+def said_before(f):
+    """Whether the open data-fault issue already gives this cause last, so a failing hour does not say the same
+    thing on it again (tools/lastgood.py ticket adds to the issue whenever f['said'] differs)."""
+    r = lastgood.gh('issue', 'list', '--label', lastgood.LABEL, '--state', 'open', '--limit', '100', '--json', 'title,body,comments')
+    if not r or r.returncode != 0:
+        return False
+    try:
+        issues = json.loads(r.stdout or '[]')
+    except ValueError:
+        return False
+    for x in issues:
+        if x.get('title') == '%s: %s' % (lastgood.LABEL, f['section']):
+            said = [x.get('body') or ''] + [c.get('body') or '' for c in x.get('comments') or []]
+            return ('- Likely cause: %s\n' % f['why']) in said[-1]
+    return False
+
+
+def alarm(t, dry):
+    """Say it plainly when the checks are failing: more than FAIL_SHARE of this run, or the same check FAIL_RUNS
+    runs running (the site keeps that count: worker/prices.js). Then one data-fault issue, opened or added to.
+    The prices already on the site stay as they are, each with its own age: nothing is blanked.
+    Returns the exit code: 1 on a fault, so the step goes red."""
+    share = t.failed / t.tried if t.tried else 0
+    stuck = sorted(k for k, n in t.streak.items() if n >= FAIL_RUNS)
+    causes = ', '.join('%s %d' % kv for kv in sorted(t.why.items(), key=lambda kv: -kv[1]))
+    print('checks this run: %d tried, %d came back (%d with no listings), %d failed%s, %d not reached' % (
+        t.tried, t.ok, t.empty, t.failed, ' (' + causes + ')' if causes else '', max(0, t.planned - t.tried)))
+    if not ((t.tried >= 4 and share > FAIL_SHARE) or stuck):
+        return 0
+    print('PRICE CHECKS FAILING: %d of %d checks failed this run (%s).' % (t.failed, t.tried, causes))
+    if stuck:
+        print('  failing %d runs running: %s' % (FAIL_RUNS, ', '.join(stuck[:20])))
+    print('  the prices already on the site stay, each with its own age: nothing was blanked')
+    if dry:
+        return 0
+    now = dt.datetime.now(dt.timezone.utc).isoformat(timespec='minutes')
+    why = 'checks failing (%s)' % ', '.join(sorted(t.why)) + (
+        '; failing %d runs running: %s' % (FAIL_RUNS, ', '.join(stuck[:10])) if stuck else '')
+    f = {'section': FAULT, 'file': 'trade prices (the site database)', 'url': API, 'was': t.tried, 'now': t.ok,
+         'gone': sorted(k for k, v in t.kinds.items() if v['tried'] and not v['ok']), 'why': why, 'good': '',
+         'since': now, 'at': now}
+    if said_before(f):
+        f['said'] = '%d/%s' % (f['now'], f['why'])
+    told = lastgood.ticket(f)
+    print('  Ticket: %s / %s - %s' % (lastgood.LABEL, FAULT, told or 'not raised here (WI_NO_TICKET)'))
+    return 1
+
+
 def flag(name, n=0):
     """The whole numbers written after --name, at most n of them. None when the flag is not there at all."""
     if name not in sys.argv:
@@ -321,6 +433,7 @@ def main():
     print(league, len(searches), 'searches (one every %.0f s),' % gap_s, len(exchanges), 'exchange checks (one every %.0f s)' % gap_e)
     counts = {'trade_search': 0, 'trade_fetch': 0, 'trade_exchange': 0, 'trade_limited': 0, 'trade_error': 0}
     rows, rate, done, tried, failed, why = [], None, {}, 0, 0, None
+    tally = Tally(len(searches) + len(exchanges))
     start = time.time()
     lanes = {'s': {'list': searches, 'i': 0, 'gap': gap_s, 'next': start, 'on': True},
              'e': {'list': exchanges, 'i': 0, 'gap': gap_e, 'next': start, 'on': True}}
@@ -329,12 +442,14 @@ def main():
         nonlocal rows, counts
         if not rows and not force:
             return
-        payload = {'league': league, 'rows': rows, 'load': counts}
+        payload = {'league': league, 'rows': rows, 'load': counts, 'run': tally.run(final=force), 'failedKeys': tally.new}
         if dry:
             print(json.dumps(payload)[:600])
-        elif rows or any(counts.values()):
-            print('sent', len(rows), site('/api/prices/ingest', payload))
-        rows, counts = [], {k: 0 for k in counts}
+        elif rows or any(counts.values()) or tally.tried:
+            got = site('/api/prices/ingest', payload)
+            tally.streak.update(got.get('streak') or {})
+            print('sent', len(rows), got)
+        rows, counts, tally.new = [], {k: 0 for k in counts}, []
 
     while True:
         live = [(k, l) for k, l in lanes.items() if l['on'] and l['i'] < len(l['list'])]
@@ -360,17 +475,20 @@ def main():
                 else:
                     res, wait = exchange_offers(league, what, ['divine', 'exalted'], rate, counts)
             rows.append({'key': key, **res})
+            tally.good(key, res)
             done[kind] = done.get(kind, 0) + 1
             if dry:
                 print('  %-9s %s' % (kind, key))
         except Limited as e:
             counts['trade_limited'] += 1
+            tally.bad(key, 'rate limited', limited=True)
             why = 'the trade site cut this run short after %d checks: %s' % (sum(done.values()), e)
             print('lane', k, 'stopped:', e)
             lane['on'] = False
         except Exception as e:   # one bad check: note it and go on
             counts['trade_error'] += 1
             failed += 1
+            tally.bad(key, cause(e))
             print('error', key, e)
         lane['next'] = max(lane['next'] + lane['gap'], time.time() + wait)
         if len(rows) >= BATCH:
@@ -378,7 +496,8 @@ def main():
     flush(force=True)
     print('done in %.0f s' % (time.time() - start))
     report(todo, planned, done, failed, why)
+    return alarm(tally, dry)
 
 
 if __name__ == '__main__':
-    main()
+    sys.exit(main())
