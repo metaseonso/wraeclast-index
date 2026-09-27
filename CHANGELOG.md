@@ -3,6 +3,36 @@
 The full list of changes. The public patch notes (data/changelog.json, shown on the site) stay short.
 Add the details here first, then a short public line there.
 
+## Hotfix — 27 Sep 2026: database reads, silent price failures, the site fetching itself
+
+Found by the 1.0 review. The owner: "fix now."
+
+- **D1 reads went over the free cap** (5,041,267 rows on 25 Sep; the free plan allows 5,000,000 a day, and past
+  it every query fails until midnight). `serveMarket` rebuilt the price file on every data-centre cache miss:
+  all of `trade_prices` for the league (no index, LIKE filters) and `price_leagues` twice. Each group of parts is
+  now built when its inputs change (a price ingest, a file through `/api/data/put`, the daily currency roll) and
+  stored in the `files` table under reserved `built:<deploy>:…` names, split over 1.2 MB. A stored part records
+  what it was built from and is served only while nothing is newer and never past the moment its late flag turns
+  on; otherwise it is built the old way and stored. A miss reads 8 rows instead of 1,000–11,000; every part's
+  values are the same as before. `/api/health` reads a few `meta` rows instead of the whole table. Migration
+  `0011_trade_league_index.sql` indexes `trade_prices(league, key)`; the code does not need it.
+- **The dashboard counts reads.** The plan meter reads Cloudflare's own D1 rows-read for today against 5 M and
+  turns amber and red on it; exchange checks are shown.
+- **About 15 price checks failed every hour, and the dashboard said every job was on time.** The same 15 uniques
+  (Ab Aeterno, Infernoclasp and 13 more) are filed under an item class, not a base, so the trade site answered
+  400; never priced, they were always the oldest and went first, and the trade site cut each run short after
+  about 22 checks. They now search on their real base from `data/uniques.json`, or by name where there is no
+  single base. Every ingest carries the run's counts (tried, ok, failed, no listings, rate limited, reasons, per
+  kind) and the failed keys; over 25% failed in a run, or one key failing 3 runs running, says so in the log,
+  opens or updates one `data-fault` issue (`lastgood.ticket()`) and ends the step red. The next run still starts
+  (`continue-on-error`, `if: always()`). The dashboard line reads, for example, "Unique prices: 15 of 18 checks
+  failed this hour, most of them HTTP 400."
+- **"Something" pulling the price files was the worker itself.** `pages.yml` never sent its files to
+  `/api/data/put` (no ingest key), so D1 had none, every file read "from: backup", and every read fetched the
+  GitHub Pages copy without keeping it. `/api/data/put` now also takes GitHub's own signed token from the Publish
+  site workflow on main (issuer, audience, repository, ref and workflow all checked), and the backup's answer is
+  kept 5 minutes like any other copy. `pastprices.json` is read from the site's own files.
+
 ## Next — Speed: the site on a slow machine
 
 Measured with `tools/dev/speed.mjs` (headless Chrome, CPU 4x slower, fresh profile) on 26 September 2026, before:
