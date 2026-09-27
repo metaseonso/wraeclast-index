@@ -350,7 +350,8 @@
      ],
      "by": [
       "row",
-      "name"
+      "name",
+      "weight"
      ],
      "need": 1,
      "drawn": 1
@@ -2300,7 +2301,8 @@
      ],
      "by": [
       "row",
-      "name"
+      "name",
+      "weight"
      ],
      "need": 1,
      "drawn": 1
@@ -3748,7 +3750,8 @@
     "cancorrupt",
     "canroll",
     "name",
-    "row"
+    "row",
+    "weight"
    ]
   },
   "name": {

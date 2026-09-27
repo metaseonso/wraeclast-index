@@ -910,6 +910,33 @@ function poolFill(host, it, f){
   }).catch(() => {});
 }
 
+/* ---------- how often it rolls, where the game rolls unseen ----------
+   data/odds.json (tools/odds.py): one pool per weight table in the game's own files, each outcome with its weight
+   and 1 in how many. The card's name is matched to an outcome's name exactly. One line per pool it is in, a
+   weight of 0 drawing nothing; a pool whose shape is our reading of the table carries the file's own flag, its
+   tooltip and the reason. The source closes the block. No price is multiplied into it, ever. */
+function oddsHTML(it, t, f){
+  const rows = [];
+  for(const p of t.pools || []) for(const o of p.outcomes || [])
+    if(o.name === it[f.at] && o.weight > 0) rows.push([p, o]);
+  if(!rows.length) return '';
+  const flags = t.flags || {};
+  return '<p class="card-facts">' + esc(f.label || '') + '</p><ul class="card-pool">' + rows.map(([p, o]) =>
+    '<li><span class="pool-ml">' + esc(p.pool) + ': 1 in ' + esc(o.oneIn.toLocaleString()) + '</span>' +
+    '<span class="pool-rs">' + esc(p.of) + (p.sure ? '' : ' · <span title="' + esc((flags[p.flag] || '') +
+      (p.why ? ' ' + p.why : '')) + '">' + esc(p.flag) + '</span>') + '</span></li>').join('') + '</ul>' +
+    (t.source ? '<p class="card-src">Source: ' + esc(t.source) + '</p>' : '');
+}
+function oddsFill(host, it, f){
+  if(!host) return;
+  tableOf(f.file).then(t => {
+    const html = t && oddsHTML(it, t, f);
+    if(!html || !host.isConnected) return;
+    host.innerHTML = html;
+    host.hidden = false;
+  });
+}
+
 /* ---------- a switch on the card ----------
    Something outside the item changes what the item is while it is worn. The switch sits on the card the
    player is already reading, off until it is pressed, and what it does is the granting card's own lines —
@@ -1263,6 +1290,8 @@ export const TYPE = {
         '<li data-mk="' + f.at + ':' + i + '">' + lineHTML(it, f.at, i, x, false) + '</li>').join('') + '</ul>' : '');
   }},
   adds:   {raw: 1, fill: addsFill, v: (it, f, o, name) => o.full && it[f.at]
+    ? '<div class="card-addsbox" data-fill="' + esc(name) + '" hidden></div>' : ''},
+  odds:   {raw: 1, fill: oddsFill, v: (it, f, o, name) => o.full && it[f.at]
     ? '<div class="card-addsbox" data-fill="' + esc(name) + '" hidden></div>' : ''},
   pool:   {raw: 1, fill: poolFill, v: (it, f, o, name) => o.full && it[f.at] && fileOf(f, it)
     ? '<div class="card-addsbox" data-fill="' + esc(name) + '" hidden></div>' : ''},

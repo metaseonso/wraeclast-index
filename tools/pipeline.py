@@ -105,6 +105,8 @@ STAGES = [
     dict(name='datpull', run=['tools/datpull.mjs'], cadence='patch', source='game files',
          reads=[CDN, DATSCHEMA, REPOE], writes=['data/game/*.json'],
          count={'data/game/_meta.json': 'files', 'data/game/*.json': 'rows'}),
+    dict(name='odds', run=['tools/odds.py'], cadence='patch', source='game files',
+         reads=['data/game/*.json'], writes=['data/odds.json'], count={'data/odds.json': 'pools'}),
     dict(name='tradedata', run=['tools/tradedata.py'], cadence='patch', source='trade',
          reads=[TRADE, REPOE], writes=['data/trade.json']),
     dict(name='rollprices', run=['tools/rollprices.py'], cadence='patch', source='files',
