@@ -526,9 +526,9 @@ def build_index(html):
         elif p.get('reg'):
             it['reg'] = p['reg']
         if p.get('rec'):
+            # the recipe only: its cost is the three emotions' live Currency Exchange prices, added up where
+            # the card is drawn, never a number saved in here
             it['rec'] = [emo.get(r, {}).get('name', '') for r in p['rec']]
-            if p.get('ac'):
-                it['ac'] = p['ac']
         if refs(p):
             it['kw'] = refs(p)
         items.append(it)
@@ -617,7 +617,7 @@ LIVE = ('window.WI_MARKET=fetch("data/market.json?part=now",{priority:WI_DATA.ta
         'window.wiLive=function(UQ,TR,ms){return(ms===0?WI_MARKET:Promise.race([WI_MARKET,new Promise(function(r){setTimeout(r,ms||3000,null)})])).then(function(m){'
         'if(!m||!m.items)return false;var I=m.items;((UQ&&UQ.items)||[]).forEach(function(u){var p=I["u:"+u.n+" | "+u.b]||I["u:"+u.n];'
         'if(p&&p.v!=null){u.v=p.v;u.ls=p.ls;if(p.ch!=null)u.ch=p.ch;}});var E=(TR&&TR.emotions)||{};Object.keys(E).forEach(function(k){'
-        'var p=I["c:"+E[k].name];if(p&&p.v!=null){E[k].v=p.v;if(p.ch!=null)E[k].ch=p.ch;}});return true})};')
+        'var p=I["c:"+E[k].name];if(p&&p.v!=null){E[k].v=p.v;E[k].at=p.at||(m.times&&m.times.currency)||m.updated;if(p.ch!=null)E[k].ch=p.ch;}});return true})};')
 LIVE_TAG = re.compile(r'<script>window\.WI_MARKET=.*?</script>', re.S)   # the price script before ticket 39
 
 # ---- the drill-down page's data, outside the page ----
@@ -897,6 +897,8 @@ def unpriced(bid, obj):
         for e in (obj.get('emotions') or {}).values():
             e.pop('v', None)
             e.pop('ch', None)
+        for p in obj.get('passives') or []:   # the artifact's anoint cost: the page adds the live prices up itself
+            p.pop('ac', None)
         obj['rates'] = {}
     return obj
 
