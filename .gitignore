@@ -5,3 +5,4 @@ node_modules/
 tools/cache/
 data/exchange-state.json
 dist/
+build/

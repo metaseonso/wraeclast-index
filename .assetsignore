@@ -16,3 +16,4 @@ data/exchange-state.json
 package.json
 package-lock.json
 dist
+/build/
