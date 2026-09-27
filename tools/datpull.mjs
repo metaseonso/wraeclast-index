@@ -428,7 +428,7 @@ const FILES = [
      'holds in those biomes only. set is a column dat-schema does not name: rows in different sets may be different pools; not verified.',
    rows: ({T, R}) => T.EndgameMapContent.rows.map((c, i) => { const s = R.statsOf(c.Stats, c.StatValues);
      const w = T.EndgameMapContentWeightings.rows.filter(x => x.MapContent === i).map(x => drop({set: x.Unknown1,
-       biomes: (x.MapBiome || []).map(b => R.name('EndgameMapBiomes', b)), weight: x.Weighting.length > 1 && new Set(x.Weighting).size === 1 ? x.Weighting[0] : x.Weighting}));
+       biomes: (x.MapBiome || []).map(b => R.name('EndgameMapBiomes', b)), weight: new Set(x.Weighting).size === 1 ? x.Weighting[0] : x.Weighting}));
      return real(c.Name) ? drop({name: clean(c.Name), id: c.Id, text: clean(c.Description), weights: w.map(x => ({set: 0, ...x})), hidden: s.hidden}) : null; }).filter(Boolean)},
   {file: 'azmeri_spirits', tables: ['TormentSpirits', 'MonsterVarieties', 'Mods', 'Stats'], ids: ['hidden'],
    note: 'Azmeri spirits: the weight each spawns with, the area levels it spawns in, and what it grants a monster it ' +
