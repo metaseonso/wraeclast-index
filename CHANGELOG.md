@@ -28,6 +28,15 @@ The owner, 27 September 2026, on the framework plan: "A" — start now, in order
 - **Last good reads shape as well as count:** a field that falls away (on half the rows or more, losing 40% of
   its share), a field that comes back in a new shape, or raw game ids where a player reads them fails the pull
   and keeps the last good copy. The fields a player never reads (Technical details, search words) may hold ids.
+- **Gems and keywords come from the game files, not the artifact.** `tools/gems.py` (RePoE `skill_gems`, `skills`,
+  `gem_tags`) and `tools/keywords.py` (`keywords`, with counts from the other blocks) build the drill-down's gem
+  and keyword files; `python tools/sync.py --from-game [gems,keywords]` runs them with `explore.html` as its own
+  source, each through last good, and the artifact path still works. `tools/dev/explorecmp.py` compares every
+  field with the committed copy: on 0.5.5 every gem field matches except 8 level counts (meta and Hydra gems, which
+  the game files give one level) and 23 fixed stat values the artifact dropped (Tornado Shot's 15 s duration and
+  22 more), both now as the game files have them; 8 keyword counts are made from the rows. `gemtext` is
+  byte-identical. Where each field comes from: `docs/sources-explore.md`. Uniques, the tree and jewels are next.
+- `tools/sync.py` deletes the previous drill-down data file when it writes a new one.
 - **Every patch is kept.** `data/patches.json` lists 260 patches, hotfixes and restarts since 0.1: the UTC hour
   from GGG's patch-notes forum, the league (poe2db), the thread and the passive-tree export tag; `tools/patches.py`
   keeps it, and the checks fail when the index carries a client build it does not list. The live index is on
