@@ -36,6 +36,15 @@ What counts as a fault:
   under floor  fewer than the least a working source has ever given (floor=, where one is known)
   collapsed    fewer than 80% of the entries the committed copy holds (TOLERANCE; pass tolerance= per section)
   a kind gone  a group that had entries in the committed copy has none now
+  a new shape  a field whose values were one shape (a list, a number, words) comes back as another, or as
+               a shape its declaration does not allow (data/schema.json, for a file whose rows are cards)
+  gone empty   a field half the rows or more carried is now on far fewer of them: on 90% of the cards
+               before and under 54% now (EMPTY_DROP). The count is whole and the rows are hollow: a parser
+               that lost its hold on one column
+  raw ids      a value shaped like the game's own ids (Metadata/..., a snake_case stat id, [DNT]) in any field
+               a card draws as words, or in a field that held none before. A field no card draws may hold
+               them: the "Technical details" ids, the search words, a keyword chip's ids (data/schema.json,
+               written from assets/kinds.js; issue #12)
 
 at= says what to count: one part of the file ("items"), or several with a floor each
 ({'mods': 1000, 'uniques': 100}), or nothing to count the whole file. A file is only as good as its
@@ -44,7 +53,13 @@ worst part, so one thin part keeps the whole file on its last good copy.
 20% is the default because an ordinary game patch moves a list by a few percent: a fifth of a list
 disappearing is never a patch, it is the source or the parsing breaking.
 
+The three shape rules read the rows the count reads (at=), group them the way a kind gone is spotted, and
+judge a field against the committed copy only in a group of SHAPE_ROWS rows or more. The live price files
+(LIVE) skip the empty rule: a price that thins out is the market, not the parse. shape=False on one pull
+turns the shape rules off for it.
+
 Run without writing anything:  WI_NO_TICKET=1 keeps it off GitHub; the record and the printing still happen.
+The shape rules, shown on a spoiled copy of the committed index, nothing written:  python tools/lastgood.py --shape
 """
 import datetime as dt
 import json
@@ -67,6 +82,14 @@ MONTHS = ('Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 
 STAMPS = ('updated', 'gen', 'made', 'checked')   # a file that says when it was built says so in one of these
 KEY_KIND = re.compile(r'^([a-z]{1,4}):')         # the market's keys: "c:Divine Orb", "u:Name | Base"
 ROW_KIND = ('k', 'cat', 'kind', 'g')             # a field on a row that says what kind of row it is
+SHAPE_ROWS = 20             # a group of rows needs this many before its fields are held to the last copy
+EMPTY_DROP = 0.4            # a field on half the rows or more may lose this share of them, no more
+LIVE = ('market.json', 'exchange.json', 'leagues.json')   # prices thin out on their own: no empty rule
+SCHEMA = 'schema.json'      # the declarations, per kind (tools/dev/schema.mjs writes it from assets/kinds.js)
+RAW_ID = (('a game file path', re.compile(r'Metadata/')),
+          ('a stat id', re.compile(r'(?:^|[^A-Za-z0-9_])[a-z][a-z0-9]*(?:_[a-z0-9+%]+)+(?![A-Za-z0-9_])')),
+          ('a DNT marker', re.compile(r'\[DNT')))
+ID_FIELD = re.compile(r'^(?:id|ids|key|keys|h|hash|hashes|stat|stats)$|_id$|Id$')   # named for what it holds
 
 FOUND = []    # the faults this run turned up
 FINE = []     # the sections that came back fine this run: their old faults are dropped
@@ -150,7 +173,7 @@ def why_broke(e):
     return 'the pull broke: ' + (one or type(e).__name__)
 
 
-def look(new, old, at=None, tolerance=TOLERANCE, floor=0, error=None):
+def look(new, old, at=None, tolerance=TOLERANCE, floor=0, error=None, file='', shape=True):
     """What is wrong with a fresh pull, or None when it holds up.
 
     at names the part to count: one path ("items"), several ({"mods": 1000, "uniques": 100} — each with its
@@ -160,7 +183,7 @@ def look(new, old, at=None, tolerance=TOLERANCE, floor=0, error=None):
         return {'was': rows(old, part(at)), 'now': 0, 'gone': [], 'why': why_broke(error)}
     if isinstance(at, (list, dict, tuple)):
         for one in at:
-            bad = look(new, old, one, tolerance, at[one] if isinstance(at, dict) else floor)
+            bad = look(new, old, one, tolerance, at[one] if isinstance(at, dict) else floor, file=file, shape=shape)
             if bad:
                 bad['why'] += ' in "%s"' % one
                 return bad
@@ -178,10 +201,154 @@ def look(new, old, at=None, tolerance=TOLERANCE, floor=0, error=None):
     gone = sorted(k for k, n in kinds(old, at).items() if n and not fresh.get(k))
     if gone:
         return {'was': was, 'now': now, 'gone': gone, 'why': 'nothing came back for ' + ', '.join(gone)}
+    why = shaped(new, old, at, file) if shape else None
+    if why:
+        return {'was': was, 'now': now, 'gone': [], 'why': why}
     return None
 
 
-def pull(section, build, *, file='', url='', at=None, tolerance=TOLERANCE, floor=0, old=None):
+# ---------------------------------------------------------------- the shape of the rows
+def json_of(v):
+    """The shape of one value, in JSON's words: a number is a number, int or float."""
+    if v is None:
+        return 'null'
+    if isinstance(v, bool):
+        return 'boolean'
+    if isinstance(v, (int, float)):
+        return 'number'
+    if isinstance(v, str):
+        return 'string'
+    return 'array' if isinstance(v, list) else 'object' if isinstance(v, dict) else type(v).__name__
+
+
+def blank(v):
+    return v is None or v == '' or v == [] or v == {}
+
+
+def raw_id(v):
+    """The kind of raw game id a value holds, anywhere inside it (a key of a map counts), or None."""
+    if isinstance(v, str):
+        return next((name for name, r in RAW_ID if r.search(v)), None)
+    if isinstance(v, list):
+        return next(filter(None, (raw_id(x) for x in v)), None)
+    if isinstance(v, dict):
+        return next(filter(None, (raw_id(x) for x in list(v) + list(v.values()))), None)
+    return None
+
+
+def entries(data, at=None):
+    """The rows to judge: a list of them, or a map whose values are rows. A row is a dict; a part that is
+    mostly something else has no fields to judge and gives nothing."""
+    v = dig(data, at)
+    got = v if isinstance(v, list) else list(v.values()) if isinstance(v, dict) else []
+    out = [x for x in got if isinstance(x, dict)]
+    return out if out and len(out) * 2 >= len(got) else []
+
+
+def groups(got):
+    """The rows by what kind they are (the field kinds() reads), or all of them as one."""
+    field = next((f for f in ROW_KIND if got and all(f in x for x in got)), None)
+    out = {}
+    for x in got:
+        out.setdefault(str(x[field]) if field else '', []).append(x)
+    return out
+
+
+def profile(got):
+    """Per field: how many rows carry it, the shapes it comes in, and how many hold a raw id."""
+    out = {}
+    for x in got:
+        for f, v in x.items():
+            p = out.setdefault(f, {'has': 0, 'json': {}, 'raw': 0, 'eg': None})
+            if blank(v):
+                continue
+            p['has'] += 1
+            j = json_of(v)
+            p['json'][j] = p['json'].get(j, 0) + 1
+            r = raw_id(v)
+            if r:
+                p['raw'] += 1
+                p['eg'] = p['eg'] or (r, v)
+    return out
+
+
+_SCHEMA = {}
+
+
+def declared(file):
+    """The declarations for a file whose rows are cards (data/schema.json "rows"): (at, by, kind, kinds),
+    or None for any other file."""
+    if 'schema' not in _SCHEMA:
+        _SCHEMA['schema'] = committed(SCHEMA, quiet=True) or json_file(ROOT / 'data' / SCHEMA) or {}
+    s = _SCHEMA['schema']
+    r = (s.get('rows') or {}).get(Path(file).name) if file and '*' not in file else None
+    return (r.get('at'), r.get('by'), r.get('kind'), s.get('kinds') or {}) if r else None
+
+
+def json_file(p):
+    try:
+        return json.loads(Path(p).read_text(encoding='utf-8'))
+    except Exception:
+        return None
+
+
+def show(v, n=48):
+    t = v if isinstance(v, str) else json.dumps(v, ensure_ascii=False)
+    return json.dumps(t[:n] + ('...' if len(t) > n else ''), ensure_ascii=False)
+
+
+def shaped(new, old, at=None, file=''):
+    """What is wrong with the shape of a fresh pull, in one line, or None when its rows hold up: against the
+    committed copy (a new shape, a field gone empty, raw ids where there were none) and, for a file whose rows
+    are cards, against the declarations (a shape the kind does not declare, a raw id where a player reads)."""
+    fresh = entries(new, at)
+    if not fresh:
+        return None
+    had = groups(entries(old, at)) if old is not None else {}
+    decl = declared(file)
+    if decl and (at or decl[0]) != decl[0]:
+        decl = None                           # the count read another part: the declarations are not for it
+    live = Path(file or '').name in LIVE
+    for g, now_rows in sorted(groups(fresh).items()):
+        now = profile(now_rows)
+        was_rows = had.get(g) or []
+        was = profile(was_rows)
+        name = ('the "%s" rows' % g) if g else 'the rows'
+        kind = (decl[3].get(decl[2] or g) or {}).get('fields') if decl else None
+        for f, p in sorted(now.items()):
+            w = was.get(f)
+            # a shape the declarations do not allow, or one the committed copy never had
+            if kind is not None and f in kind:
+                odd = sorted(set(p['json']) - set(kind[f].get('json') or []))
+                if odd:
+                    return 'field "%s" on %s is %s, and its declaration says %s' % (
+                        f, name, ' and '.join(odd), ' or '.join(kind[f].get('json') or ['nothing']))
+            if w and w['has'] >= SHAPE_ROWS and len(was_rows) >= SHAPE_ROWS:
+                odd = sorted(set(p['json']) - set(w['json']))
+                if odd:
+                    return 'field "%s" on %s came back as %s, where it was %s' % (
+                        f, name, ' and '.join(odd), ' and '.join(sorted(w['json'])))
+            # raw game ids: never in a field a card draws, and never new in a field that had none
+            if p['raw']:
+                drawn = kind is not None and (kind.get(f) or {}).get('drawn')
+                new_raw = (w is not None and not w['raw'] and w['has'] >= SHAPE_ROWS and not ID_FIELD.search(f))
+                if drawn or new_raw:
+                    r, v = p['eg']
+                    return 'field "%s" on %s holds %s where %s: %s (%d rows)' % (
+                        f, name, r, 'a player reads it' if drawn else 'it held none before', show(v), p['raw'])
+        # a field most rows carried, gone empty on far more of them
+        if live or len(was_rows) < SHAPE_ROWS or len(now_rows) < SHAPE_ROWS:
+            continue
+        for f, w in sorted(was.items()):
+            share_was = w['has'] / len(was_rows)
+            share_now = (now.get(f) or {'has': 0})['has'] / len(now_rows)
+            if share_was >= 0.5 and share_now < share_was * (1 - EMPTY_DROP):
+                return 'field "%s" on %s is on %d%% of them, where it was on %d%% before' % (
+                    f, name, round(share_now * 100), round(share_was * 100))
+    return None
+
+
+def pull(section, build, *, file='', url='', at=None, tolerance=TOLERANCE, floor=0, old=None, shape=True):
     """Run one outside pull under the rule. The fresh data when it holds up against what is committed,
     None when it does not — then the caller writes nothing and the last good file stays where it is.
     old= for a section that is not a whole file: what is on disk for it now, to be held up against."""
@@ -191,7 +358,7 @@ def pull(section, build, *, file='', url='', at=None, tolerance=TOLERANCE, floor
         new, error = None, e
     if old is None and file:
         old = committed(file, quiet=True)
-    bad = look(new, old, at, tolerance, floor, error)
+    bad = look(new, old, at, tolerance, floor, error, file=file, shape=shape)
     if not bad:
         FINE.append(section)
         return new
@@ -414,3 +581,44 @@ def report():
             print('     Source: %s' % f['url'])
         print('     Ticket: %s / %s - %s' % (LABEL, f['section'], said))
     return len(FOUND)
+
+
+def demo():
+    """python tools/lastgood.py --shape: the three shape rules, each shown on a spoiled copy of the committed
+    index in memory. Nothing is written, nothing is raised: it prints what each rule would say, and exits 1
+    if a rule let its spoiled copy through or the committed copy itself does not hold up."""
+    import copy
+    index = committed('index.json')
+    if not index:
+        print('no data/index.json to show it on')
+        return 1
+
+    def spoil(what, how):
+        n = copy.deepcopy(index)
+        how(n['items'])
+        bad = look(n, index, 'items', file='index.json')
+        print('%-40s %s' % (what, bad['why'] if bad else 'LET THROUGH'))
+        return 0 if bad else 1
+
+    def hollow(items):                  # the parser loses the flavour line on 60% of the uniques
+        us = [x for x in items if x['k'] == 'u']
+        for x in us[:int(len(us) * 0.6)]:
+            x.pop('qt', None)
+
+    def flatten(items):                 # a base's lines come back as one string instead of a list
+        for x in items:
+            if x['k'] == 'b' and x.get('ls'):
+                x['ls'] = ' / '.join(x['ls'])
+
+    def leak(items):                    # a stat id where a player reads a gem's own words
+        next(x for x in items if x['k'] == 'g')['t'] = 'local_physical_damage_+%'
+
+    whole = look(index, index, 'items', file='index.json')
+    print('%-40s %s' % ('the committed index, against itself', whole['why'] if whole else 'holds up'))
+    return (1 if whole else 0) + spoil('gone empty', hollow) + spoil('a new shape', flatten) + spoil('raw ids', leak)
+
+
+if __name__ == '__main__':
+    if '--shape' in sys.argv[1:]:
+        sys.exit(demo())
+    print(__doc__)
