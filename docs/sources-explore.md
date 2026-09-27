@@ -90,10 +90,56 @@ Immobilised and Attack; the artifact did not count it). The counts made from the
 Not adopted yet: the committed copy stands. A builder (`tools/uniqueitems.py`) is registered in `tools/fromgame.py`
 `BUILDERS`; `python tools/dev/explorecmp.py uniques` measures it once the file is there. What it reads: R `uniques`, `base_items`, `mods`, `flavour`, `stat_translations`; the sprite cell `ic` and `sprites` are ours and carry over.
 
-## Passive tree: `tree.*.json`
+## Passive tree: `tree.*.json` (`tools/tree.py`, adopted)
 
-Not adopted yet: the committed copy stands. A builder (`tools/tree.py`) is registered in `tools/fromgame.py`
-`BUILDERS`; `python tools/dev/explorecmp.py tree` measures it once the file is there. What it reads: R `passive_skill_trees/Default` and `stat_translations`; emotions from R `base_items`.
+`{meta, passives, emotions, rates, regions}`. Nothing is carried over from the committed copy.
+
+| Field | Source |
+|---|---|
+| `meta.src` | the export's build string (`gamepull.build`) |
+| `h`, `id`, `n` | R `passive_skill_trees/Default` passive `hash`, `id`, `name` |
+| `s` | R passive `stats`, plus the stats past the fourth the export drops: D `PassiveSkills` `Stats` / `Stat5Value`..`Stat7Value` (`Stats` for the ids), only where the export's own stats match the table |
+| `t` | the game's wording of `s`: R `stat_descriptions` then `passive_skill_stat_descriptions` (a stat both describe takes the passive file's entry), every entry in the files' order, the first wording whose conditions the values meet, with its index handlers. `[Id|words]` markup kept. Then `Grants Skill: <name>` (D `ClientStrings` `ItemDisplayGrantedSkillNoScaling`) with the skill's name from R `skill_gems` |
+| `k` | R passive flags; `anoint` = D `PassiveSkills` `IsAnointmentOnly` and on the anointing list |
+| `kw` | every `[Id]` its lines mark |
+| `a` | R `ascendancies` name |
+| `io`, `mco`, `mc`, `sp`, `f` | R passive `is_icon_only`, `is_multiple_choice_option`, `is_multiple_choice`, `skill_points`, `flavour_text` (styling taken off) |
+| `rec`, `emotions` | D `BlightCraftingRecipes` → `BlightCraftingResults` → `PassiveSkills`; the emotions' names from D `BlightCraftingItems` → `BaseItemTypes` |
+| `at`, `ats` | "granted" when the node's own stats give attributes; else "region" |
+| `reg`, `regions` | ours: the class start node closest by angle, seen from the middle of the tree (R node positions, class angles from R `ascendancies` `tree_region_angle`, attributes from R `characters`). The game draws the regions as art and names none |
+| `rates` | empty: prices are live on the page |
+
+No anoint cost (`ac`) any more: it was the artifact's saved price. The page adds the three emotions' live
+Currency Exchange prices up itself, with their age, and shows — while one has no price (`explore.html`,
+`tools/sync.py` `LIVE`).
+
+**Match on 0.5.5** (5,152 nodes): `a`, `ats`, `f`, `h`, `id`, `io`, `k`, `mc`, `mco`, `n`, `rec`, `sp`,
+`emotions`, `meta`, `rates`, `regions` and row order 100%. The rest, each one the game's version kept:
+
+- `t` 83.5% (703 differ, 38 new):
+  - 675 nodes: the same lines in another order. The game lists a node's lines in the description files'
+    order; the artifact did not, and puts the same two lines both ways round on different nodes (7 pairs, numbers aside; none in the game's order). Path of Building's tree
+    (`PathOfBuilding-PoE2` `src/TreeData/0_5/tree.json`) has the game's order on all 675.
+  - `Grants Skill: <name>` on all 54 skill-granting nodes (the artifact had 8): 38 nodes that had no text and
+    8 more. Jade Heritage reads "Encase in Jade", the skill's name, not "Encase in [Jade]".
+  - 12 nodes gain the stats the export drops (the `s` list below): Flesh Withstands, Cower Before the First
+    Ones, Cirel of Tarth's Light, Voll's Protection, Spaghettification, Hunter, Furious Wellspring, The Natural
+    Order, Avatar of Evolution, Sanguine Tides, Way of the Mountain, and one Huntress node whose extra stat only
+    flags a notable taken (no line of its own). Path of Building shows every one of these lines.
+  - Mhacha's Gift: "up to 3 Owl Feathers". The stat is 2 and the game's wording adds one (`add_one`); the
+    artifact and Path of Building print the raw 2.
+  - Way of the Mountain: one entry of the game's describes both its stats, so its two sentences are one line
+    with a line break, as every other two-stat entry is.
+  - Preemptive Strike, both Critical Damage vs Full Life nodes, The Mórrigan's Guidance: the full sentence
+    ("100% increased Critical Damage Bonus against Enemies that are on Full Life"), not the short
+    "...vs full life enemies@100%" form the game keeps for its stat tables, which the artifact showed.
+  - 4 nodes (Pyromantic Pact, Explosive Impact, The Mórrigan's Guidance, Embrace the Darkness) are the order case
+    above with a two-line entry.
+- `s` 99.8% (12): the stats the export drops, above.
+- `kw` 99.9% (5): the keywords of those new lines (Shock, Chaos, LightRadius, Critical), and Way of the
+  Mountain's MountainsTeachings, which the artifact left out although its own lines mark it.
+- `at`, `reg` 99.8% (7): armour48, enemies_on_full_life9, projectile_spells8, lightning50, rage29, fire1_,
+  corpses19 sit within 0.3° of the line halfway between two class starts. Neither side is a game value.
 
 ## Timeless jewels: `jewels.*.json` (`tools/jewels.py`, adopted)
 
