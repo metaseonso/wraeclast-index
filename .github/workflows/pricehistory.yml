@@ -1,0 +1,44 @@
+# Once a day: a copy of every price the site shows (tools/pricehistory.py), kept in the private data repo,
+# metaseonso/wraeclast-data, under prices/: one file a day of about 25 KB (about 10 MB a year), and one line a
+# day in prices/days.jsonl saying it was kept or why it is missing. Every day not kept is gone for good.
+# 21:37 UTC keeps well clear of midnight, so a late start by GitHub's timer still lands on the same day.
+# The data repo is another repo, so GitHub's own token cannot write to it: this needs the secret DATA_REPO_TOKEN,
+# a fine-grained token for metaseonso/wraeclast-data only, with Contents: read and write. GitHub's own token
+# (issues: write) is only for the one data-fault issue a failed copy raises here.
+name: Daily price copy
+
+on:
+  schedule:
+    - cron: '37 21 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: pricehistory
+  cancel-in-progress: false
+
+jobs:
+  copy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: The token for the data repo is there
+        env:
+          T: ${{ secrets.DATA_REPO_TOKEN }}
+        run: |
+          if [ -z "$T" ]; then
+            echo "::error::DATA_REPO_TOKEN is not set: today's prices cannot be kept. See README.md, Patches, snapshots and price history."
+            exit 1
+          fi
+      - name: Copy today's prices and keep them
+        env:
+          DATA_REPO_TOKEN: ${{ secrets.DATA_REPO_TOKEN }}
+          GH_TOKEN: ${{ github.token }}
+        run: python tools/pricehistory.py
