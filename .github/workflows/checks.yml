@@ -1,5 +1,5 @@
 # The guard, on every push and every pull request. The parts that need no browser: the card counts, every
-# deep link, the public pages, no raw game code, the voice a player reads, and the frame.
+# deep link, the public pages, no raw game code, the voice a player reads, the frame, and the budget.
 # Cloudflare builds and publishes the site on its own, so this does not hold a deploy back — it puts a red
 # cross on the commit that broke something, which is what a check that nobody has to remember is for.
 # The browser halves (dash, phone, and the frame's own card pass) need Chrome and run locally: tools/dev/guard.mjs.
@@ -35,3 +35,52 @@ jobs:
         run: node tools/dev/guard.mjs --no-phone
       - name: The bench's own rolls
         run: node tools/dev/simcheck.mjs
+
+  # A pull request that touches data/: what the rebuild changed, file by file, kind by kind and field by field
+  # (tools/dev/dumpreport.mjs), as one comment on the pull request that each push rewrites, and in the run's
+  # summary. A kind or a field that collapsed turns this red: by the last-good rule that is a fault, not news.
+  # The built-in token only; a pull request from a fork gets a read-only one, so there it is the summary alone.
+  dump:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Did data/ change
+        id: data
+        run: |
+          if git diff --quiet "origin/${{ github.base_ref }}...HEAD" -- data/; then echo "changed=no" >> "$GITHUB_OUTPUT"
+          else echo "changed=yes" >> "$GITHUB_OUTPUT"; fi
+      - uses: actions/setup-node@v4
+        if: steps.data.outputs.changed == 'yes'
+        with:
+          node-version: '22'
+      - name: The dump report
+        id: dump
+        if: steps.data.outputs.changed == 'yes'
+        run: |
+          set +e
+          node tools/dev/dumpreport.mjs "origin/${{ github.base_ref }}" --strict > dump.md
+          code=$?
+          echo "code=$code" >> "$GITHUB_OUTPUT"
+          cat dump.md >> "$GITHUB_STEP_SUMMARY"
+          if [ "$code" != 0 ] && [ "$code" != 2 ]; then exit 1; fi
+      - name: On the pull request
+        if: steps.data.outputs.changed == 'yes'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR: ${{ github.event.pull_request.number }}
+        run: |
+          id=$(gh api "repos/$GITHUB_REPOSITORY/issues/$PR/comments" --paginate --jq '.[] | select(.body | startswith("<!-- wi-dump -->")) | .id' | tail -n 1) || id=
+          if [ -n "$id" ]; then gh api -X PATCH "repos/$GITHUB_REPOSITORY/issues/comments/$id" -F body=@dump.md > /dev/null
+          else gh api "repos/$GITHUB_REPOSITORY/issues/$PR/comments" -F body=@dump.md > /dev/null; fi             || echo "::warning::The report could not be posted on the pull request; it is in the run summary."
+      - name: Nothing collapsed
+        if: steps.data.outputs.changed == 'yes' && steps.dump.outputs.code == '2'
+        run: |
+          echo "::error::The dump report flagged a collapse: see the comment on the pull request."
+          exit 1
