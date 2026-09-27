@@ -95,10 +95,21 @@ Not adopted yet: the committed copy stands. A builder (`tools/uniqueitems.py`) i
 Not adopted yet: the committed copy stands. A builder (`tools/tree.py`) is registered in `tools/fromgame.py`
 `BUILDERS`; `python tools/dev/explorecmp.py tree` measures it once the file is there. What it reads: R `passive_skill_trees/Default` and `stat_translations`; emotions from R `base_items`.
 
-## Timeless jewels: `jewels.*.json`
+## Timeless jewels: `jewels.*.json` (`tools/jewels.py`, adopted)
 
-Not adopted yet: the committed copy stands. A builder (`tools/jewels.py`) is registered in `tools/fromgame.py`
-`BUILDERS`; `python tools/dev/explorecmp.py jewels` measures it once the file is there. What it reads: R `mods` (the UniqueJewelAlternateTreeInRadius mods) and `stat_translations`; D `AlternatePassiveSkills`, `AlternateTreeVersions` where the export lacks a value.
+`{rows, seeds}`. Every value is the game's; nothing is carried over from the committed copy.
+
+| Field | Source |
+|---|---|
+| `rows[]` | one per wording of the R `stat_descriptions` entry that starts with `local_unique_jewel_alternate_tree_version`, in the game's order |
+| `ver`, `idx` | the wording's conditions on the version (the faction) and the keystone index (the conqueror) |
+| `rev` | its condition on the internal revision: `[min, max]` (`max` null when open), null when any revision reads it (Ahuana took over Zerphi's index at revision 1) |
+| `text` | the wording's first line, `{1}` left for the seed |
+| `faction` | the wording's second line, "Passives in radius are Conquered by the ..." |
+| `conqueror` | the closing run of capitalised words of the first line |
+| `seeds` | R `mods` `UniqueJewelAlternateTreeInRadius*`: per version, the mod and the seed, keystone and radius ranges it rolls |
+
+**Match on 0.5.5** (28 rows, 5 jewels): every field 100%, row order and `seeds` included.
 
 ## No official source
 

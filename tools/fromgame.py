@@ -33,7 +33,7 @@ BUILDERS = {
 # The blocks tools/sync.py --from-game rebuilds by default: each one proven against the committed copy
 # (tools/dev/explorecmp.py) and every difference explained in docs/sources-explore.md. Any other block with a
 # builder is rebuilt only when asked for by name (python tools/sync.py --from-game gems,tree).
-ADOPTED = ('gemdata', 'kwdata')
+ADOPTED = ('gemdata', 'jwdata', 'kwdata')
 # the order they are built in: the keyword file counts what the other four link to, so it goes last
 ORDER = ('gemdata', 'uqdata', 'trdata', 'jwdata', 'kwdata')
 
