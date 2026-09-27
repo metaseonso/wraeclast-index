@@ -5,8 +5,9 @@
      node tools/dev/guard.mjs http://host     against any other address
      node tools/dev/guard.mjs --bless         the same, then write today's numbers into the baseline
      node tools/dev/guard.mjs --no-phone      skip the headless Chrome pass
+     node tools/dev/guard.mjs --offline       the budget's first-paint line from the shipped copy, not the live site
 
-   Seven checks, one line each, non-zero exit on any FAIL:
+   Nine checks, one line each, non-zero exit on any FAIL:
      cards   how many cards of each kind, against tools/dev/guard-baseline.json, and every interaction the
              game's wording names: how many open a card, how many are marked unclear, how many are left as
              plain text (tools/interactions.py, data/interactions.json)
@@ -18,6 +19,9 @@
              (tools/dev/frame.mjs)
      dash    the owner's dashboard: all eight tabs fill, no block is left empty (tools/dev/dash-fixture)
      phone   a real phone-sized Chrome: cards stay open, nothing scrolls sideways, no console errors
+     budget  dist/ against the free plan: each file, the file count, what the worker parses per request, the
+             home page's first-paint JSON, what the jobs send to the database, and no data file nothing reads
+             (tools/dev/budget.mjs; it builds dist/ first when dist/ is missing or stale)
 
    The local server is this worktree's own files plus worker/seo.js, run in this process, so no
    wrangler and no deploy. Nothing is written anywhere but the baseline, and only with --bless. */
@@ -34,6 +38,8 @@ import { KINDS, NAMES, ROUTES, SECTIONS, FRAME } from '../../assets/kinds.js';
 import { checkTable, checkMap, checkOneTable, checkCards as drawCards } from './frame.mjs';
 // the voice: the copy a player reads, held to the game's register and not an assistant's
 import { checkVoice } from './voice.mjs';
+// the budget: what the free plan lets dist/ be, and no data file nothing reads
+import { checkBudget, budgetLine } from './budget.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(HERE, '..', '..');
@@ -61,7 +67,7 @@ const mark = s => { for(const [n, re] of MARKS) if(re.test(s)) return n; return 
 /* ---------- arguments ---------- */
 const argv = process.argv.slice(2);
 const has = f => argv.includes(f);
-const bless = has('--bless'), noPhone = has('--no-phone');
+const bless = has('--bless'), noPhone = has('--no-phone'), offline = has('--offline');
 const given = argv.find(a => /^https?:\/\//.test(a));
 const base = (has('--live') ? LIVE : given || '').replace(/\/$/, '');
 
@@ -737,6 +743,8 @@ try {
   say('voice', !voice.bad.length, voice.bad.length
     ? voice.bad.length + ' broken: ' + clip(voice.bad.slice(0, 2).join(' | '), 220)
     : voice.said + ' · the game does the talking');
+  try { const b = await checkBudget({offline}); say('budget', !b.bad.length, budgetLine(b)); }
+  catch(e){ say('budget', false, 'could not run: ' + clip(e && e.message || e, 160)); }
   if(!noPhone){
     const kws = index.items.filter(it => it.k === 'w' && it.use);
     kws.sort((a, b) => Object.values(b.use).reduce((x, y) => x + y, 0) - Object.values(a.use).reduce((x, y) => x + y, 0));
