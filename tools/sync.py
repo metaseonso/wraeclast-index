@@ -729,9 +729,10 @@ def externalize(html):
             obj, text = split_gemtext(obj)
             write(GEMTEXT, GEMTEXT, text)
         write(bid, DATA_FILES[bid], obj)
-    # older versions go, except the one the site serves now: a page loaded just before the new one goes live still finds its files
-    live = ROOT / 'explore.html'
-    keep = set(files.values()) | set(data_files(live.read_text(encoding='utf-8')).values() if live.exists() else ())
+    # every older version goes: the build ships only the files a page names, and a file nothing names fails
+    # the guard's budget check. A page already open keeps what it has fetched; one that asks after a deploy
+    # reloads onto the new files like any other page of the site.
+    keep = set(files.values())
     for f in EXPLORE.glob('*.json'):
         if 'data/explore/' + f.name not in keep:
             f.unlink()
