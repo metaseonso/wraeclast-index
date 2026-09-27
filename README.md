@@ -79,9 +79,20 @@ patch fills: a patch that empties one of them must not empty the price list with
 outside source to lose; the live prices (`pricepull.py`) are watched as jobs of their own. Proved without the
 network by `node tools/dev/faults.mjs`.
 
+The count is not the whole of it: a pull can keep every row and lose what is in them. So the same rule reads the
+shape of the rows too. A field that half the rows or more carried and that is now on far fewer of them (on 98% of
+the uniques before, on 38% now), a field that comes back in another shape (a list of lines turned into one
+string), and a value shaped like a raw game id (`Metadata/...`, a snake_case stat id, `[DNT]`) in a field a card
+draws as words, or in any field that held none before, are each a collapse: last good copy kept, fault, ticket.
+Which fields a card draws comes from `data/schema.json`; the fields no card draws (the Technical details ids, the
+search words, a keyword chip's ids) may hold ids. The live price files skip the "fewer of them" rule, since a
+price that thins out is the market and not the parse. `python tools/lastgood.py --shape` shows all three on a
+spoiled copy of the committed index, writing nothing.
+
 **Before every push: `node tools/dev/guard.mjs`**. It starts a local copy of the site and checks the card
 counts, every deep link the code emits, every public page, that no raw game code shows where a player reads
-it, that every card keeps to the frame (`tools/dev/frame.mjs`), and that a phone-sized Chrome still opens a
+it, that every card keeps to the frame (`tools/dev/frame.mjs`) and every shipped row to its declaration
+(`tools/dev/schema.mjs`), and that a phone-sized Chrome still opens a
 card without it snapping shut. See [`tools/dev/README.md`](tools/dev/README.md).
 
 ## Speed
@@ -141,53 +152,66 @@ The counts live in the site's D1 database, per day (tables `views`, `clicks`, `h
 
 ## Update the game data
 
-In this order (each step reads what the one before wrote):
+One command, `tools/pipeline.py`. It holds every builder in one table (`STAGES`): what each one reads, what it
+writes, where its facts come from and how often it runs. The order is the table's, so no one keeps it in their
+head. `--list` prints it.
 
-1. After a game patch: `python tools/gameinfo.py`, then `python tools/tradedata.py`
-2. `python tools/sync.py path/to/artifact.html` (after the Wraeclast Index artifact changes; `explore.html` works too, it holds the same data)
-   (builds `data/index.json`: the artifact's gems, uniques, passives and keywords, plus base items, the Atlas and the currency the
-   catalogue lacks, and the references inside each card's lines; the first run checks each new image link once, up to 20 minutes;
-   lists are cached a day in `tools/cache/`)
-3. After a game patch: `python tools/atlas.py`, then `python tools/craftweights.py` and `python tools/craft.py`, then `python tools/sync.py` again
-   (the Atlas cards come from `data/atlas.json`, and a base's Craft link only where the Craft tab has that base.
-   `tools/craftweights.py` pulls the mod weights Craft of Exile publishes, three requests, into `tools/craftweights.json`;
-   if it fails it keeps the last good file, says so and exits 1, and `tools/craft.py` then keeps the weights already
-   in `data/craft/` — so run it first and read what it says, but a bad pull never empties the page)
-4. After every `tools/sync.py`: `python tools/gamelib.py`
-   (the keyword cards the artifact does not carry and the keyword links that reach them, the item classes as cards of
-   their own, the 33 ascendancy notables whose whole effect is a skill, and `data/gamestats.json`; `tools/sync.py`
-   rebuilds `data/index.json` from the artifact, so this has to come after it, and the item classes need
-   `tools/craft.py` to have run. Every keyword card the export still holds is reworded to it each run, so a term
-   reworded upstream lands here on the next pull. Running it twice adds nothing twice, and `--report` says what it
-   would do without writing)
-5. After `tools/gamelib.py`: `python tools/treecards.py`
-   (the 893 small passives of the tree as cards, ranked low, and every conqueror a timeless jewel rolls on that
-   jewel's card; `--report` says what it would do without writing. Running it twice adds nothing twice)
-6. After `tools/treecards.py`: `python tools/grants.py`, then `python tools/nodelinks.py`
-   (`data/grants.json`, the grants-skill edges both ways; it resolves against the cards the steps above wrote, and
-   writes nothing else. `tools/nodelinks.py` after it, so the new cards' own lines get their references too.
-   `python tools/mechanics.py` does the same after changing a mechanics card's wording, without a full sync)
-6. After `tools/nodelinks.py`, and after any `tools/craft.py`: `python tools/essences.py`
-   (`data/essences.json`, what each essence adds per kind of item, off the essence tables in `data/craft/`; it marks
-   the phrases in those modifier lines the same way a card's own lines are marked, so it reads `data/index.json` and
-   writes nothing else)
-6. After any `tools/craft.py`: `python tools/craftmods.py`
-   (`data/craftmods.json`, every modifier in the game and the kinds of item that can carry it, turned out of the
-   item class files `tools/craft.py` just wrote. It reads those files and nothing else, and the Craft tab's second
-   question is the only thing that asks for it)
-7. Last, after any of the above: `python tools/kwuse.py`
-   (every keyword's Connections lists in `data/kwuse.json`: uniques, gems, passives, bases, essences, atlas, crafting, currency,
-   keywords — for every keyword the index cards, not only the ones the drill-down page carries; and the "Used by" counts in
-   `data/index.json`; it prints its counts against the artifact's own, lower only for things the site leaves out)
-8. After `tools/kwuse.py`: `python tools/map.py`
-   (`data/map.png` and the two files beside it: the whole index as one picture. It reads the finished index and
-   the finished keyword lists, so it goes last; about two and a half minutes, and `--report` counts what it
-   would draw without writing)
-9. After a game patch: `python tools/patches.py --notes`
-   (adds the index's new client build to `data/patches.json`, and the new patch notes threads with their hour;
-   the checks fail while the index carries a build the registry does not list)
-10. Commit and push to `main`. The site republishes in about a minute, and the data repo's own workflow freezes
-   the new index under its build within twelve hours (see Patches, snapshots and price history)
+```
+python tools/pipeline.py patch --artifact path/to/artifact.html     after a game patch: the whole rebuild
+python tools/pipeline.py patch                                        the same, without sync (see below)
+python tools/pipeline.py --only craft                                 one stage
+python tools/pipeline.py --from gamelib                               that stage and every one after it
+python tools/pipeline.py --check                                      the data here against the rules; writes nothing
+python tools/pipeline.py patch --dry                                  build and check in build/; nothing goes in
+```
+
+| Stages, in order | Cadence | Source |
+|---|---|---|
+| `gamepull` | daily | the game files (RePoE's export); also the gap report `tools/dev/gaps.txt` |
+| `gameinfo`, `atlas`, `craft`, `gamelib`, `treecards`, `clusters`, `grants` | patch | the game files (`craft` also checks essences and orb levels on poe2db) |
+| `tradedata` | patch | the official trade site's lists |
+| `craftweights` | patch | Craft of Exile (the mod weights the game files do not carry) |
+| `uniques` | patch | poe2db |
+| `sync` | patch | the Wraeclast Index artifact, plus RePoE and poe.ninja for the cards it lacks |
+| `rollprices`, `craftmods`, `baseprices`, `carddata`, `nodelinks`, `essences`, `kwuse`, `gemlines`, `treelines`, `map` | patch | the files the stages above wrote |
+| `guides` | daily | the community guides the Build tab links to |
+| `market`, `exchange`, `leagues` | hourly | poe.ninja, the in-game Currency Exchange, poe2db (the Publish site workflow runs these three on its own) |
+| `bosses`, `farms`, `mechanics`, `ninjapast` | by hand | the game files and poe2wiki, BawLoch's tier list sheet, our own cards, poe.ninja |
+
+`patch` runs every patch and daily stage. How a run goes:
+
+1. The worktree is copied into `build/tree/`, and every stage runs there. A builder writes where it always writes,
+   and nothing in `data/` moves while the run is going.
+2. A stage whose inputs hash the same as the last run that shipped is skipped (`tools/cache/stamps.json`, not
+   committed): its tool and every tool it imports, each file it reads, and for an outside source the patch, the
+   day or the hour its cadence goes by. A stage that reads a file a stage above it rewrote this run always runs.
+3. What a stage changed is copied to `build/<stage>/` with its log, and checked: every JSON file still reads,
+   every file it wrote holds up against the copy in `data/` under the last good rule (counts and shape, below),
+   and the index, its two parts and the bosses hold to their declarations (`data/schema.json`).
+4. Only when every stage passed does it all go into `data/` at once: each file written beside its place, then
+   all of them moved over. A stage that fails stops the run, nothing goes in, and the fault is recorded and
+   ticketed as it is for any builder.
+
+**What runs only here.** `sync` builds the index from the Wraeclast Index artifact, which is only on the owner's
+machine: without `--artifact` it is skipped with a line that says so, and every stage after it builds on the
+index already committed (`explore.html` works as the artifact too; it holds the same data). Everything else
+runs anywhere.
+
+**Game patch** (`.github/workflows/patch.yml`, started by hand from the Actions tab) runs `python tools/pipeline.py
+patch` on GitHub, then the guard, then pushes a branch `data/<patch>` and opens a pull request. It never pushes to
+`main`: merging the pull request is what ships. Its `sync` is always skipped, for the reason above. One setting,
+once, for the pull request: Settings > Actions > General > "Allow GitHub Actions to create and approve pull
+requests".
+
+**One declaration per kind.** `tools/dev/schema.mjs --write` turns `assets/kinds.js` into `data/schema.json`:
+every field an index row may carry, its shape, which kinds carry it and which must. The frame check holds every
+shipped row to it (a stale `data/schema.json` fails too), `tools/lastgood.py` holds a fresh pull to it, and
+`worker/seo.js` reads the kinds it publishes (`crawl`) from the same table. A new kind or field is one entry in
+`assets/kinds.js`, then `node tools/dev/schema.mjs --write`.
+
+After a game patch, also `python tools/patches.py --notes` (see Patches, snapshots and price history). After a run:
+`node tools/dev/guard.mjs`, commit, push to `main`. The site republishes in about a minute, and the data repo's own
+workflow freezes the new index under its build within twelve hours.
 
 ## Patches, snapshots and price history
 
