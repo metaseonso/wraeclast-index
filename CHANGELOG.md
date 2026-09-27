@@ -15,6 +15,19 @@ The owner, 27 September 2026, on the framework plan: "A" — start now, in order
   parses it per isolate — the split files fix that. `--offline` for a guard without the network.
 - The build ships only data files something on the site reads; every top-level `data/*.json` still ships for
   anyone building on the index. The drill-down's old gem copy (`gems.9b8a02fcf1.json`, 2.6 MB) is gone.
+- **Every patch is kept.** `data/patches.json` lists 260 patches, hotfixes and restarts since 0.1: the UTC hour
+  from GGG's patch-notes forum, the league (poe2db), the thread and the passive-tree export tag; `tools/patches.py`
+  keeps it, and the checks fail when the index carries a client build it does not list. The live index is on
+  4.5.5.2 while the game is on 4.5.5.3.
+- **A snapshot per client build** (`tools/snapshot.py`): every field a patch can change, for 7,685 cards over 9
+  kinds (458 KB, the same bytes from the same index), kept as the release `snapshot-<build>` on the data repo.
+  `tools/diff.py OLD NEW` writes `data/changes/<build>.json` (changed fields as old and new, added cards, removed
+  cards with their names); the checks fail on a change row that names no card.
+- **A daily copy of every price the site shows** (`tools/pricehistory.py`): key, value, unit, source, checked
+  time and the volume or listings behind it — 1,482 prices, 26 KB a day — in the data repo. A day that fails is
+  written down as missing and never filled.
+- Both run from the data repo's own workflow with its own token (the file is kept here at
+  `tools/data-repo/.github/workflows/wraeclast-index.yml`), so no secret is needed.
 - **The dump report** (`tools/dev/dumpreport.mjs <ref>`): what a data rebuild changed, per file, per kind and per
   field, with the first names, and a flag when a kind drops more than 10% or a field empties on many cards. A pull
   request that touches data/ gets it as one comment (`checks.yml` job `dump`), and a collapse turns it red.
