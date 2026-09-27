@@ -16,7 +16,7 @@ Source: the RePoE fork's PoE2 export (https://repoe-fork.github.io/poe2/), throu
                                          wheel (tree_region_angle)
   characters.min.json                    each class's name and starting attributes
 Where the export falls short, the game's own tables, decoded for 0.5.5 (metaseonso/wraeclast-data,
-game/0.5.5/out/raw/, read with the GitHub CLI and kept in tools/cache/dat/, not in git):
+game/<patch>/out/raw/, through tools/gamepull.py dat(), kept in tools/cache/dat-<patch>/, not in git):
   BlightCraftingRecipes    the three emotions of each anointing recipe (BlightCraftingItems) and its result
   BlightCraftingResults    the passive a result anoints (PassiveSkill)
   BlightCraftingItems      each emotion's base item (BaseItemType)
@@ -60,16 +60,13 @@ Usage:
 import json
 import math
 import re
-import subprocess
 import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from gamepull import build as export_build, official  # noqa: E402
+from gamepull import build as export_build, dat, official  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent
-DAT = ROOT / 'tools' / 'cache' / 'dat'
-DAT_REPO = 'repos/metaseonso/wraeclast-data/contents/game/0.5.5/out/raw/%s.json'
 KWREF = re.compile(r'\[([A-Za-z][A-Za-z0-9_-]*)(?:\|[^\]]*)?\]')
 STYLE = re.compile(r'<[^<>{}]*>\{([^{}]*)\}')   # the game's text styling, <i>{dekhara}: the words stay
 GRANTS = 'Grants Skill: %s'   # ClientStrings ItemDisplayGrantedSkillNoScaling, "Grants Skill: <underline>{{{0}}}"
@@ -79,24 +76,6 @@ ATTRS = ('strength', 'dexterity', 'intelligence')
 GIVES = re.compile(r'^(?:base_|additional_)?(strength|dexterity|intelligence|all_attributes)'
                    r'(?:_and_(strength|dexterity|intelligence))?(?:_\+%)?$')
 ANY = 'display_passive_attribute_text'   # "+5 to any Attribute"
-
-
-# ---------------------------------------------------------------- the game's tables
-
-def dat(table):
-    """One decoded game table (a list of rows), from the local copy or fetched once with the GitHub CLI."""
-    f = DAT / (table + '.json')
-    if not f.exists():
-        try:
-            body = subprocess.run(['gh', 'api', '-H', 'Accept: application/vnd.github.raw', DAT_REPO % table],
-                                  capture_output=True, check=True, timeout=300).stdout
-            rows = json.loads(body)
-        except Exception as e:
-            raise SystemExit('tree: cannot read the game table %s (gh api): %s' % (table, e))
-        DAT.mkdir(parents=True, exist_ok=True)
-        f.write_bytes(body)
-        return rows
-    return json.loads(f.read_bytes())
 
 
 # ---------------------------------------------------------------- the game's wording

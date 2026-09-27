@@ -31,6 +31,7 @@ import gzip
 import hashlib
 import json
 import re
+import subprocess
 import sys
 import time
 import urllib.error
@@ -60,11 +61,14 @@ PULL = [
     'skills.min.json',              # every skill by name (tools/grants.py turns a "Grants Skill" line into a gem)
     'keywords.min.json',            # the game's own help text (the keyword cards tools/gamelib.py adds)
     'gem_tags.min.json',            # the game's name for each gem tag (tools/gems.py)
+    'ascendancies.min.json',        # ascendancy names and each class's part of the wheel (tools/tree.py)
+    'flavour.min.json',             # every flavour text, by art id (tools/uniqueitems.py)
     'default_monster_stats.min.json',   # one monster of each level  } data/gamestats.json,
     'characters.min.json',              # what each class starts with } tools/gamelib.py
     'passive_skill_trees/Default.min.json',
     'passive_skill_trees/Atlas.min.json',
     'stat_translations/stat_descriptions.min.json',
+    'stat_translations/passive_skill_stat_descriptions.min.json',   # the tree's wording (tools/tree.py)
     'stat_translations/tablet_stat_descriptions.min.json',
     'stat_translations/endgame_map_stat_descriptions.min.json',
     'stat_translations/map_stat_descriptions.min.json',
@@ -156,19 +160,72 @@ def pull(name, force=False):
         f.write_bytes(body)
     state()['files'][name] = {'etag': head.get('ETag'), 'modified': head.get('Last-Modified'),
                               'bytes': len(body), 'sha': hashlib.sha256(body).hexdigest()[:12],
-                              'pulled': now if changed else was.get('pulled', now), 'checked': now}
+                              'pulled': now if changed else was.get('pulled', now), 'checked': now,
+                              'build': state().get('build') or was.get('build')}
     return 'new' if changed else 'same'
 
 
 def official(name):
-    """One export file, parsed. From the cache; pull it first if it is not here yet."""
+    """One export file, parsed. From the cache; pull it first if it is not here yet, or if it was last checked
+    against another client build than the one the last pull saw (a file outside PULL is refreshed by the first
+    tool that reads it after a new patch; the pull asks only whether it changed)."""
     if name not in _seen:
         f = _file(name)
-        if not f.exists():
+        now = state().get('build')
+        if not f.exists() or (now and (state()['files'].get(name) or {}).get('build') != now):
             pull(name)
             save_state()
         _seen[name] = json.loads(f.read_bytes())
     return _seen[name]
+
+
+# ---------------------------------------------------------------- the game's own tables
+
+DATA_REPO = 'repos/metaseonso/wraeclast-data/contents/game'
+_dat_ver = None
+
+
+def dat_version():
+    """The patch folder of the decoded tables to read: this patch's, else the newest the data repo has (said on
+    stderr, so a table a patch behind is never read in silence)."""
+    global _dat_ver
+    if _dat_ver is None:
+        want = patch(build(refresh=False) or build())
+        try:
+            got = subprocess.run(['gh', 'api', DATA_REPO, '--jq', '.[].name'], capture_output=True, text=True,
+                                 check=True, timeout=120).stdout.split()
+        except Exception as e:
+            got = []
+            print('  could not list %s: %s' % (DATA_REPO, e), file=sys.stderr)
+        have = sorted((v for v in got if re.fullmatch(r'\d+\.\d+\.\d+', v)), key=lambda v: [int(x) for x in v.split('.')])
+        if want in have or (not have and want):
+            _dat_ver = want
+        elif have:
+            _dat_ver = have[-1]
+            print('  the decoded game tables have no %s folder yet: reading %s' % (want or 'patch', _dat_ver),
+                  file=sys.stderr)
+        else:
+            raise SystemExit('no patch known and no decoded game tables listed (%s)' % DATA_REPO)
+    return _dat_ver
+
+
+def dat(table):
+    """One of the game's own tables, decoded (metaseonso/wraeclast-data, game/<patch>/out/raw/<table>.json): for
+    what the export leaves out. Read with the GitHub CLI once, kept in tools/cache/dat-<patch>/, so a new patch
+    reads a new folder."""
+    ver = dat_version()
+    f = ROOT / 'tools' / 'cache' / ('dat-' + ver) / (table + '.json')
+    if not f.exists():
+        try:
+            body = subprocess.run(['gh', 'api', '-H', 'Accept: application/vnd.github.raw',
+                                   '%s/%s/out/raw/%s.json' % (DATA_REPO, ver, table)],
+                                  capture_output=True, check=True, timeout=300).stdout
+            json.loads(body)   # a broken download fails here, before it is kept
+        except Exception as e:
+            raise SystemExit('cannot read the game table %s for %s (gh api): %s' % (table, ver, e))
+        f.parent.mkdir(parents=True, exist_ok=True)
+        f.write_bytes(body)
+    return json.loads(f.read_bytes())
 
 
 def home():
