@@ -67,6 +67,10 @@ NAMES = {'uniq': 'uniques', 'bossuniq': 'boss uniques', 'base': 'base items', 'r
          'farm': 'farm inputs', 'boss': 'boss entry items', 'cur': 'currency'}
 EXCHANGE = 0                                    # currency comes from the Currency Exchange feed now
 BATCH = 12
+# item classes, which the index gives in place of a base for a few uniques (jobs())
+CLASSES = {'Amulet', 'Ring', 'Belt', 'Body Armour', 'Boots', 'Gloves', 'Helmet', 'Shield', 'Buckler', 'Focus', 'Quiver',
+           'Jewel', 'Mace', 'One Hand Mace', 'Two Hand Mace', 'Sceptre', 'Staff', 'Quarterstaff', 'Wand', 'Bow',
+           'Crossbow', 'Spear', 'Flail', 'Talisman', 'Claw', 'Dagger', 'Sword', 'Axe', 'Flask', 'Charm', 'Tablet'}
 
 
 class Limited(Exception):
@@ -155,10 +159,22 @@ def jobs(catalogue):
                 out[kind].append(('%s:%s' % (kind, f['key']), body))
     ontab = bossitems(sitedata.site_file('bosses.json', required=False))
     index = sitedata.site_file('index.json')
+    # the base each unique really comes on, from the game files (data/uniques.json, "<name> | <base>")
+    real = {}
+    for k in sitedata.site_file('uniques.json', required=False) or {}:
+        if ' | ' in k:
+            n, b = k.split(' | ', 1)
+            real.setdefault(n, []).append(b)
     for it in index['items']:
         if it['k'] != 'u':
             continue
         base = (it.get('s') or '').split(' · ')[0]
+        # A unique the index files under its item class only ("Belt", "Helmet") is not a base the trade site
+        # knows: it answered HTTP 400 for all 15 of them, every run, at the front of every run (they were never
+        # priced, so always the oldest). Its one real base from the game files instead, or its name alone.
+        if base in CLASSES and base not in real.get(it['n'], []):
+            bases = real.get(it['n'], [])
+            base = bases[0] if len(bases) == 1 else ''
         q = {'status': {'option': 'online'}, 'name': it['n'],
              'filters': {'type_filters': {'filters': {'rarity': {'option': 'unique'}}}}}
         if base:
