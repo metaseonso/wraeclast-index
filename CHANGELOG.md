@@ -3,6 +3,22 @@
 The full list of changes. The public patch notes (data/changelog.json, shown on the site) stay short.
 Add the details here first, then a short public line there.
 
+## Next — Framework for big data dumps
+
+The owner, 27 September 2026, on the framework plan: "A" — start now, in order, each part tested and live as it lands.
+
+- **Guard check 9, budget** (`tools/dev/budget.mjs`): dist/ against the free plan — a served file warns at 5 MiB and
+  fails at 20 MiB (the cap is 25), dist/ warns at 10,000 files and fails at 18,000 (cap 20,000), a file the worker
+  parses warns at 512 KiB and fails at 1 MiB (10 ms of CPU a request), first-paint JSON on home fails over
+  700 KiB, a body the jobs send to D1 fails over 1.2 MB — and a data file nothing reads fails. Today: 164 files;
+  `data/index.json` (2.66 MiB, 17.4 ms to parse) is held at a 3 MiB ceiling as a warning, because `worker/seo.js`
+  parses it per isolate — the split files fix that. `--offline` for a guard without the network.
+- The build ships only data files something on the site reads; every top-level `data/*.json` still ships for
+  anyone building on the index. The drill-down's old gem copy (`gems.9b8a02fcf1.json`, 2.6 MB) is gone.
+- **The dump report** (`tools/dev/dumpreport.mjs <ref>`): what a data rebuild changed, per file, per kind and per
+  field, with the first names, and a flag when a kind drops more than 10% or a field empties on many cards. A pull
+  request that touches data/ gets it as one comment (`checks.yml` job `dump`), and a collapse turns it red.
+
 ## Hotfix — 27 Sep 2026: database reads, silent price failures, the site fetching itself
 
 Found by the 1.0 review. The owner: "fix now."
