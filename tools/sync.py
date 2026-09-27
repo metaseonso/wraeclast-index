@@ -879,19 +879,24 @@ TEXT = [
 ]
 
 
+def unpriced(bid, obj):
+    """A block without the prices baked into it (the page takes them live, LIVE), in place."""
+    if bid == 'uqdata':
+        for u in obj['items']:
+            for f in ('v', 'ls', 'ch'):
+                u.pop(f, None)
+        obj['meta']['src'] = 'RePoE ' + str(obj['meta'].get('src', '')).split('RePoE ')[-1]
+    elif bid == 'trdata':
+        for e in (obj.get('emotions') or {}).values():
+            e.pop('v', None)
+            e.pop('ch', None)
+        obj['rates'] = {}
+    return obj
+
+
 def live_prices(html):
-    uq = block(html, 'uqdata')
-    for u in uq['items']:
-        for f in ('v', 'ls', 'ch'):
-            u.pop(f, None)
-    uq['meta']['src'] = 'RePoE ' + str(uq['meta'].get('src', '')).split('RePoE ')[-1]
-    html = put(html, 'uqdata', uq)
-    tr = block(html, 'trdata')
-    for e in (tr.get('emotions') or {}).values():
-        e.pop('v', None)
-        e.pop('ch', None)
-    tr['rates'] = {}
-    html = put(html, 'trdata', tr)
+    for bid in ('uqdata', 'trdata'):
+        html = put(html, bid, unpriced(bid, block(html, bid)))
     if UQ_NEW not in html and LAZY not in html:
         if UQ_OLD not in html or TR_OLD not in html:
             sys.exit('the drill-down script changed; update UQ_OLD / TR_OLD in tools/sync.py')
