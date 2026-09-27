@@ -27,8 +27,9 @@ A stage that fails stops the run and nothing goes in: data/ keeps its last good 
 fault goes into data/faults.json and a data-fault issue is opened or reused (tools/lastgood.py; WI_NO_TICKET=1
 keeps it off GitHub). --dry and --check never write to data/, and never raise an issue.
 
-A stage that needs what only the owner's machine has — the Wraeclast Index artifact, for sync — is skipped
-with a line that says so when it is not given, and the stages after it build on the last good copy. The
+A stage that needs what only the owner's machine has is skipped with a line that says so when it is not
+given, and the stages after it build on the last good copy. Sync no longer does: without --artifact it runs
+tools/sync.py --from-game, the drill-down's data from the game files (tools/fromgame.py). The
 stages that send files to the site (the hourly ones on the Publish site workflow) never send from here: the
 keys that would let them are taken out of every stage's environment.
 """
@@ -79,6 +80,7 @@ FEED = 'https://web.poecdn.com/ (the Currency Exchange feed)'
   reads    files it reads (globs welcome) and the addresses it fetches
   writes   files it writes; count names the part of a file its rows are in, for the last good count
   needs    something only the owner's machine has: the stage is skipped with a line saying so without it
+  without  what to run instead when it is not given (sync: --from-game, the drill-down from the game files)
   last     a file it reads on purpose from the last good copy, though a later stage writes it
   minutes  how long it may take before it counts as stuck
 """
@@ -105,8 +107,9 @@ STAGES = [
          reads=['data/craft/*.json'], writes=['data/basequeries.json'], count={'data/basequeries.json': 'queries'}),
     dict(name='uniques', run=['tools/uniques.py'], cadence='patch', source='poe2db',
          reads=[POE2DB, 'data/index.json'], last=['data/index.json'], writes=['data/uniques.json']),
-    dict(name='sync', run=['tools/sync.py', '@artifact'], cadence='patch', source='the artifact',
+    dict(name='sync', run=['tools/sync.py', '@artifact'], cadence='patch', source='game files, or the artifact',
          needs='the Wraeclast Index artifact, which lives only on the owner\'s machine (--artifact PATH)',
+         without=['--from-game'],   # no artifact: the blocks tools/fromgame.py ADOPTED, from the game files
          reads=['@artifact', REPOE, NINJA, TRADE, 'data/uniques.json', 'data/market.json', 'data/reqs.json',
                 'data/trade.json', 'data/craft.json', 'data/atlas.json', 'data/info.json'],
          writes=['data/index.json', 'data/index-core.json', 'data/index-rest.json', 'explore.html',
@@ -223,6 +226,8 @@ def imports(tool, seen=None):
 
 
 def args_of(stage, artifact):
+    if not artifact and '@artifact' in stage['run'] and stage.get('without'):
+        return list(stage['without'])
     return [str(artifact) if a == '@artifact' else a for a in stage['run'][1:]]
 
 
@@ -552,7 +557,7 @@ def main():
         name = stage['name']
         out = BUILD / name
         out.mkdir(parents=True, exist_ok=True)
-        if stage.get('needs') and '@artifact' in stage['run'] and not artifact:
+        if stage.get('needs') and '@artifact' in stage['run'] and not artifact and not stage.get('without'):
             say('\n== %s: skipped. It needs %s. The stages after it build on the last good copy.' % (name, stage['needs']))
             skipped.append(name)
             report['stages'].append({'name': name, 'skipped': 'needs ' + stage['needs']})
