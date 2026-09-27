@@ -14,9 +14,11 @@ worktree (the static files plus `worker/seo.js`, same process, no wrangler) and 
   player reads is the game's, not an assistant's (`voice.mjs`) · **frame** every card
   and the map keep to the frame · **dash** the owner's dashboard opens and all eight tabs fill · **phone**
   375x812 with touch: a card and a boss card stay open through a tap, a drag and a selection, the Bosses
-  table fits, no sideways scroll, no console errors
+  table fits, no sideways scroll, no console errors · **budget** dist/ against the free plan (`budget.mjs`,
+  below)
 - `--live` check wraeclastindex.fyi instead (or pass any `http://...`) · `--no-phone` skip both Chrome
-  checks · `CHROME=<path to chrome.exe>` if Chrome is somewhere odd
+  checks · `--offline` the budget's first-paint line from the shipped copy · `CHROME=<path to chrome.exe>` if
+  Chrome is somewhere odd
 - `--bless` rewrite the baseline: the counts, and what the site is allowed to be wrong about today.
   Only after a data rebuild, and read what it says it added.
 
@@ -35,6 +37,47 @@ worktree (the static files plus `worker/seo.js`, same process, no wrangler) and 
 
 `guard.mjs` runs all three; `node tools/dev/frame.mjs` on its own does the table and the map, and needs no
 browser.
+
+`budget.mjs`: what the free plan lets the site be, and how close it is. Reads `dist/`, the site as Cloudflare
+serves it, and runs `node tools/build.mjs` first when `dist/` is missing or older than any file in the repo.
+Every number is in `LIMITS` at the top, each with where it comes from. A warn passes; a fail fails.
+
+| line | warn | fail | why |
+|---|--:|--:|---|
+| each file in `dist/` | 5 MiB | 20 MiB | Cloudflare stops at 25 MiB a file |
+| files in `dist/` | 10,000 | 18,000 | Cloudflare stops at 20,000 on the free plan |
+| a file the worker parses | 512 KiB | 1 MiB | 10 ms of CPU a request on the free plan |
+| home's JSON before a search | | 700 KiB | the owner's line, for a phone |
+| a file a job sends the database | | 1.2 MB | a D1 row holds 2 MB; `worker/files.js` takes 1.5 MB |
+
+What the worker parses is read out of `worker/`: the shipped files it fetches through `env.ASSETS` and the
+files the jobs send in (`worker/files.js` NAMES). The home page's JSON is `index.html`'s own fetches and the
+reads in `assets/app.js` that do not wait for `need()`; one the worker builds (`market.json?part=live`) is
+measured on the live site, or from the shipped copy with `--offline`. A file already over a line when this
+check came in is in `HELD`, at a ceiling and with its reason: it warns until it is back under, and fails past
+the ceiling. On 27 Sep: `data/index.json` 2.66 MiB, held at 3 MiB (`worker/seo.js` parses it once per isolate,
+17 ms here).
+
+It also fails a data file nothing reads: a file under `data/` no page, module, worker file, `sw.js`, tool or
+workflow names. A file named by its content (`name.<hash>.json`, the drill-down's data) counts only by its
+exact path; any other by its name, or by its folder where the code builds the name (`'data/craft/' + id`).
+`tools/build.mjs` already leaves such a file out of `dist/`, and every top-level `data/*.json` ships whether a
+page reads it or not: the index is open for builders.
+
+`node tools/dev/budget.mjs` prints the table: the ten biggest files and the headroom on every line. About 3
+seconds with a built `dist/`. Writes nothing but `dist/`. It is the guard's ninth check too.
+
+`dumpreport.mjs`: what a data rebuild changed, before anyone reads the diff. `node tools/dev/dumpreport.mjs`
+compares `origin/main` with this working tree; pass any ref, or `a..b` for two commits. Per file under `data/`,
+the bytes before and after. Per kind in `data/index.json`, the cards before and after and the first few added,
+removed and changed; per field, how many cards changed it, emptied it or filled it. `index-core.json` and
+`index-rest.json` list by list, words unpacked. Every other JSON file, the rows in each part. Flagged: a kind or
+a list that lost more than 10%, a field gone empty on 20 cards and a tenth of those that had it, a file gone or
+halved, a part of any other file that lost more than 10% (the last-good rule: a collapse is a fault). A drill-down
+file that came back under a new hash is replaced, not gone. Markdown to stdout, the whole report as JSON to
+`tmp/dumpreport.json` (`--json <file>` for elsewhere); `--strict` exits 2 on a flag. The Checks workflow runs it
+on every pull request that touches `data/` and keeps it as one comment there, rewritten on each push; a flag
+turns that job red. About 10 seconds, no network.
 
 `dash-fixture/`: what the live site answered on 21 Sep 2026 for the dashboard's four reads, saved as it came
 (the notes list is empty in it: that is the answer the paging bug gave). The **dash** check serves these
