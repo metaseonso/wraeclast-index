@@ -16,7 +16,8 @@
      rawcode no stat ids, [Word|Word] markup or {0} placeholders where a player can read them
      voice   every word a player reads is the game's, not an assistant's (tools/dev/voice.mjs)
      frame   every card and the map keep to the frame: slots, caps, counts, one rule for every kind
-             (tools/dev/frame.mjs)
+             (tools/dev/frame.mjs), and every row the data ships holds to its kind's declaration
+             (tools/dev/schema.mjs, data/schema.json)
      dash    the owner's dashboard: all eight tabs fill, no block is left empty (tools/dev/dash-fixture)
      phone   a real phone-sized Chrome: cards stay open, nothing scrolls sideways, no console errors
      budget  dist/ against the free plan: each file, the file count, what the worker parses per request, the
@@ -36,6 +37,8 @@ import * as seo from '../../worker/seo.js';
 import { KINDS, NAMES, ROUTES, SECTIONS, FRAME } from '../../assets/kinds.js';
 // the frame itself: the slots, the caps and the rules that hold for every kind alike
 import { checkTable, checkMap, checkOneTable, checkCards as drawCards } from './frame.mjs';
+// one declaration per kind: the shipped rows against data/schema.json, written out of the same table
+import { checkSchema } from './schema.mjs';
 // the voice: the copy a player reads, held to the game's register and not an assistant's
 import { checkVoice } from './voice.mjs';
 // the budget: what the free plan lets dist/ be, and no data file nothing reads
@@ -404,9 +407,10 @@ async function checkFrame(index, run){
   const pages = await checkOneTable();
   const map = checkMap(await readFile(join(ROOT, 'assets', 'theme.css'), 'utf8').catch(() => null),
     await getJSON('/' + FRAME.map.key).catch(() => null));
-  const bad = [...table.bad, ...pages.bad, ...map.bad, ...(cards ? cards.bad : [])];
+  const rows = await checkSchema();   // this worktree's own data/, whichever site the rest was read from
+  const bad = [...table.bad, ...pages.bad, ...map.bad, ...rows.bad, ...(cards ? cards.bad : [])];
   say('frame', !bad.length, bad.length ? bad.length + ' broken: ' + clip(bad.slice(0, 4).join(' | '), 200)
-    : table.said + ' · ' + pages.said + ' · ' + map.said + ' · ' + (cards ? cards.said : 'the table only: no browser'));
+    : table.said + ' · ' + pages.said + ' · ' + map.said + ' · ' + rows.said + ' · ' + (cards ? cards.said : 'the table only: no browser'));
 }
 
 /* ---------- 6. a real phone ---------- */

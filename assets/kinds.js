@@ -61,6 +61,9 @@
               it is in the index or in first paint, and a card whose name the table does not hold draws nothing.
               It may carry @field, filled in from the entry the way a gold button's link is, so one field can
               read a table per item class without naming one.
+     ids      its values are ids a renderer turns into words (a keyword chip), never words a player reads as
+              they stand
+     row      'price' where `at` reads the price row rather than the index entry
    A field draws nothing when the entry carries nothing for it, so one declaration covers a full entry and a
    bare one. Fields a player must never read (the search words, internal ids) are in no declaration.
 
@@ -304,7 +307,7 @@ export const FIELDS = {
   heat:     {type: 'heat', slot: 'body', api: 'api/suggest'},
   tags:     {type: 'tags', at: 'tags', slot: 'body', every: 1},
   anoint:   {type: 'anoint', at: 'rec', slot: 'body', every: 1},
-  keywords: {type: 'chips', at: 'kw', slot: 'body', every: 1},   // the popup only: a way in, not a line of text
+  keywords: {type: 'chips', at: 'kw', slot: 'body', every: 1, ids: 1},   // the popup only: a way in, not a line of text
 
   /* ---------- the crafting bench ----------
      One card, and the craft runs on it. The drawer holds the materials — what is in hand, and the whole
@@ -339,11 +342,32 @@ export const FIELDS = {
   spark:    {type: 'spark', slot: 'foot', every: 1},
   usage:    {type: 'usage', slot: 'foot', every: 1},
   // how thin the market behind the price is, off the price row: fewer than `under` listed says so
-  thin:     {type: 'thin', at: 'ls', slot: 'foot', every: 1, under: 3, is: 'few listed', note: 'Only a few listed'},
+  thin:     {type: 'thin', at: 'ls', row: 'price', slot: 'foot', every: 1, under: 3, is: 'few listed', note: 'Only a few listed'},
   builds:   {type: 'builds', slot: 'foot', every: 1},
   /* Room for the price's own history: today the popup draws it under the card from the market row
      (detailExtras in assets/app.js), and a chart of it is a field like any other here — a name, a type, a
      slot, and the kinds that declare it. Nothing about prices is worked out in this file. */
+};
+
+/* What an index row carries besides what its fields draw: who it is, and the few things the search, the art
+   and the marks read off it that no card draws as words. `json` is the shape of the value and `need` says
+   every row carries it. tools/dev/schema.mjs writes data/schema.json out of this, FIELDS and KINDS, and the
+   builders hold a fresh index to that file (tools/lastgood.py, tools/pipeline.py), so a patch that changes a
+   shape is caught where it is built and not on a card. A field no kind draws may hold the game's own ids; a
+   field a card draws may not (issue #12). */
+export const ROW = {
+  k:   {json: 'string', need: 1},    // the kind's letter
+  id:  {json: 'string', need: 1},    // what the card is looked up by: the game's own id where it has one
+  n:   {json: 'string', need: 1},    // its name: the name box
+  s:   {json: 'string', need: 1},    // its sub line
+  img: {json: 'string'},             // its picture: the art box
+  ic:  {json: 'array'},              // ...or its cell on the kind's sprite sheet
+  lx:  {json: 'array'},              // the index's own marks in its lines (tools/nodelinks.py)
+  q:   {json: 'string'},             // search words: a gem's own tag list
+  lo:  {json: 'number'},             // ranked under every other card the same words match (tools/treecards.py)
+  f:   {json: 'array'},              // its other spellings (words)
+  fg:  {json: 'string'},             // the rule each of them counts by (words, only: 'gate')
+  ac:  {json: 'number'},             // what an anointment costs, in divines
 };
 
 /* The buttons under a card in the popup. "open" is the gold one: the kind's own tab.

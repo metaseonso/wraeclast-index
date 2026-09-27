@@ -22,6 +22,9 @@
      * a kind drawn in a palette token assets/theme.css does not have
      * a kind that is in neither the map's key nor what the picture says it left out
 
+   The rows, against the declarations (tools/dev/schema.mjs, data/schema.json): every row the data ships
+   carries what its kind needs, in the shape its fields read, and nothing its kind does not declare.
+
    The cards, drawn in a real browser over the whole index:
      * a slot that drew more pieces than its cap
      * a slot that cut something and did not say how many, or said the wrong number
@@ -30,6 +33,7 @@
 import { readFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { checkSchema } from './schema.mjs';
 import { KINDS, KIND, DEFAULT, FIELDS, FRAME, SLOTS, BOXES, DECL, REL, MAPS, ROUTES, SECTIONS, PAGES, SHUT, ASKS, ASK } from '../../assets/kinds.js';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -329,8 +333,9 @@ if(import.meta.url === 'file:///' + (process.argv[1] || '').replace(/\\/g, '/').
   const p = await checkOneTable();
   const m = checkMap(await readFile(join(ROOT, 'assets', 'theme.css'), 'utf8').catch(() => null),
     await readFile(join(ROOT, FRAME.map.key), 'utf8').then(JSON.parse).catch(() => null));
-  const bad = [...r.bad, ...p.bad, ...m.bad];
+  const s = await checkSchema();
+  const bad = [...r.bad, ...p.bad, ...m.bad, ...s.bad];
   for(const b of bad) console.log('FAIL ' + b);
-  console.log(bad.length ? bad.length + ' broken' : 'ok   frame   ' + r.said + ' · ' + p.said + ' · ' + m.said + ' · the table holds');
+  console.log(bad.length ? bad.length + ' broken' : 'ok   frame   ' + r.said + ' · ' + p.said + ' · ' + m.said + ' · ' + s.said + ' · the table holds');
   process.exit(bad.length ? 1 : 0);
 }
