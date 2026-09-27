@@ -25,6 +25,10 @@ IDS = {'gems': 'gemdata', 'uniques': 'uqdata', 'tree': 'trdata', 'keywords': 'kw
 # block id -> (the builder module in tools/, the part lastgood counts, the least a working build gives)
 BUILDERS = {
     'gemdata': ('gems', 'gems', 900),
+    'uqdata': ('uniqueitems', 'items', 600),
+    'trdata': ('tree', 'passives', 4000),
+    'jwdata': ('jewels', 'rows', 20),
+    'kwdata': ('keywords', None, 300),
 }
 # the order they are built in: the keyword file counts what the other four link to, so it goes last
 ORDER = ('gemdata', 'uqdata', 'trdata', 'jwdata', 'kwdata')
@@ -48,8 +52,11 @@ def committed_file(bid):
 
 
 def builder(bid):
+    """The builder module for a block, or None while it is not written yet (the committed copy stands in)."""
     name = (BUILDERS.get(bid) or (None,))[0]
-    return importlib.import_module(name) if name else None
+    if not name or not (ROOT / 'tools' / (name + '.py')).exists():
+        return None
+    return importlib.import_module(name)
 
 
 def raw(bid, built=None):
@@ -102,7 +109,7 @@ def main():
     got = blocks()
     for name, bid in IDS.items():
         b = got[bid]
-        mod = BUILDERS.get(bid)
+        mod = BUILDERS.get(bid) if builder(bid) else None
         part = b.get(mod[1]) if mod and isinstance(b, dict) and mod[1] else b
         print('%-9s %-10s %6d rows  %s' % (name, bid, len(part or []),
                                            'from the game files (tools/%s.py)' % mod[0] if mod else 'the committed copy'))
