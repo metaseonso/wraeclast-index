@@ -1,0 +1,22 @@
+{"v":"0.5.5","was":"0.5.4","source":{},"new":["a:Royal Lenience","a:Increased Tribute"],"tree":{"new":[],"gone":[]},"n":{"g":{"changed":4,"new":0,"gone":0,"uncarded":0},"p":{"changed":3,"new":0,"gone":0,"uncarded":0},"a":{"changed":10,"new":2,"gone":0,"uncarded":0},"b":{"changed":0,"new":0,"gone":0,"uncarded":0},"i":{"changed":0,"new":0,"gone":0,"uncarded":0}},"missing":["uniques"],
+"gone":{},
+"cards":{
+"a:Balance of Power":[["","Select an Abyss Faction to always encounter","Select the Abyss Faction you encounter in non-Fissure Abysses"]],
+"a:Burst of Energy":[["","Possessed Essence Monsters release Spirits on death","Possessed Essence Monsters Release Spirits on death"]],
+"a:Curious Spirits":[["","Shrines have a 10% chance to release an Azmeri Spirit, the Shrine Buff is reapplied when it Possesses a monster","Shrines have a 10% chance to manifest an Azmeri Spirit, the Shrine Buff is reapplied when it Possesses a monster"]],
+"a:Ghastly Relics":[["","Large Abyssal Chests from the final Pit are instead an Abyssal Strongbox","Large Abyssal Chests from Abyss Pits are instead an Abyssal Strongbox"]],
+"a:Pandora's Box":[["","Possessed Strongboxes release the Azmeri Spirit when opened","Possessed Strongboxes have 10% increased Item Rarity"]],
+"a:Patient Devotion":[["","Deferring Favours at Ritual Altars in your Maps costs 50% reduced Tribute","Deferring Favours at Ritual Altars costs 50% reduced Tribute"],["","Favours Deferred at Ritual Altars in your Maps reappear 50% sooner","Favours Deferred at Ritual Altars reappear 50% sooner"]],
+"a:Patrolling Legions":[["","20% chance Vaal Beacon Unique Monsters are added to the Area for each Vaal Beacon in an Area","20% chance each Vaal Beacon adds a Vaal Unique Monster to the Area"]],
+"a:Quickened Flow":[["","Possessed Monsters have 25% chance to release Spirits on death","Possessed Monsters have 25% chance to Release Spirits on death"]],
+"a:Specialised Seeker":[["","Tablets also provide 10% increased Rarity of Items Dropped to","Tablets also provide 10% increased Rarity of Items Dropped by"]],
+"a:The Deadliest Hunt":[["","Azmeri Spirits Possess a Rogue Exile in the area when Possessed Non-Unique Monsters are slain","Rogue Exiles have 15% increased chance to have equipped Unique Items"]],
+"g:SkillGemFerociousRoar":[["Level 20","Supported Skills deal 58% increased Damage","Supported Skills deal 87% increased Damage","20-40"]],
+"g:SupportGemRetreat":[["","Supported Skills deal 20% more Projectile Damage if you have Damaged an Enemy with a Melee Hit in the last eight seconds",null],["",null,"Supported Skills deal 20% more Projectile Damage if you have Damaged an Enemy with a Melee Hit in the last 8 seconds"]],
+"g:SupportGemRetreatThree":[["","Supported Skills deal 30% more Projectile Damage if you have Damaged an Enemy with a Melee Hit in the last two seconds",null],["",null,"Supported Skills deal 30% more Projectile Damage if you have Damaged an Enemy with a Melee Hit in the last 2 seconds"]],
+"g:SupportGemRetreatTwo":[["","Supported Skills deal 25% more Projectile Damage if you have Damaged an Enemy with a Melee Hit in the last eight seconds",null],["",null,"Supported Skills deal 25% more Projectile Damage if you have Damaged an Enemy with a Melee Hit in the last 8 seconds"]],
+"p:Defences and Companion Life":[["Name","Defenses and Companion Life","Defences and Companion Life"]],
+"p:Life Leech, Armour and Evasion while Leeching":[["Name","Life Leech. Armour and Evasion while Leeching","Life Leech, Armour and Evasion while Leeching"]],
+"p:trap17":[["Name","Devestating Devices","Devastating Devices"]]
+}
+}

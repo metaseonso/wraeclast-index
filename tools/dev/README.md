@@ -9,7 +9,8 @@ worktree (the static files plus `worker/seo.js`, same process, no wrangler) and 
 - **cards** how many of each kind, against `guard-baseline.json`, and every interaction the game's wording
   names: how many open a card, how many are marked unclear, how many are left plain (`tools/interactions.py`,
   `data/interactions.json` — a site left plain fails) · **links** every deep link the code emits
-  lands on a real row · **pages** every public page 200, sitemap and llms.txt did not shrink · **rawcode**
+  lands on a real row · **pages** every public page 200, sitemap and llms.txt did not shrink · **changes** what
+  each patch changed keeps to W1 and the diff finds exactly the changes made by hand (`changes.mjs`) · **rawcode**
   no stat ids, `[Word|Word]` markup or `{0}` placeholders where a player reads them · **voice** every word a
   player reads is the game's, not an assistant's (`voice.mjs`) · **frame** every card
   and the map keep to the frame · **dash** the owner's dashboard opens and all eight tabs fill · **phone**
@@ -72,6 +73,16 @@ printed, the fault landed in `data/faults.json`, the run went red, and the dashb
 for byte, and clears the fault behind it.
 Writes only inside a temporary folder; `node tools/dev/faults.mjs` (add `--keep` to leave that folder behind).
 Not part of `guard.mjs`: it runs Python, so it is its own line.
+
+`changes.mjs`: what each patch changed (`tools/snapshot.py`, `tools/diff.py`, `design/what-changed.md`). Two parts.
+**the rule** reads every `data/changes/<patch>.json`: every change names a card the index has or one a patch marks
+removed ("Removed in 0.x"), and no row a player reads holds a stat id, markup, a placeholder or a DNT marker (#96 W1).
+**the diff** copies the newest snapshot twice into a temporary folder, makes one copy older by hand in ten places (a
+gem's damage at level 20, a line that does not scale, a gem out, a gem that never existed in, a notable's number, a
+notable out, a base's requirement, a modifier's level, an Atlas passive's wording, a unique's roll range), runs
+`tools/diff.py` on the two and fails unless it finds exactly those changes on the right cards and nothing more.
+`node tools/dev/changes.mjs` (about a second; `--keep` leaves the folder behind). Part of `guard.mjs` as the
+**changes** line; the diff half needs Python and says it skipped where there is none.
 
 `cfcheck.mjs`: every Cloudflare query the owner's dashboard makes, against the real API. Needs `CF_ANALYTICS_TOKEN`.
 

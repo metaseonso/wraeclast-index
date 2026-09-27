@@ -18,6 +18,8 @@ Writes:
                            hash, so a re-run asks for what changed and downloads only that
   data/gamedata.json       which patch the data is from, for the site to show
   tools/dev/gaps.txt       the same report this prints
+  data/history/<patch>/    the first time a patch is seen: its numbers, frozen (tools/snapshot.py), and
+  data/changes/<patch>.json  what it changed against the patch before it (tools/diff.py)
 
 Changes nothing else. The other tools still fetch their own copies; when one moves over, it is one line:
 
@@ -402,6 +404,11 @@ def main():
 
     if lastgood.pull('Game export', fresh, file='gamedata.json', url=REPOE, at='patch', floor=1) is None:
         return lastgood.report()
+    # A patch with no snapshot yet is frozen before the stamp moves on, and what it changed is worked out
+    # (tools/snapshot.py, tools/diff.py). If that breaks, the stamp stays where it was and the next run tries again.
+    if not args.report:
+        import snapshot
+        snapshot.on_pull((site('gamedata.json') or {}).get('patch', ''))
     lastgood.save(ROOT / 'data' / 'gamedata.json', json.dumps(stamp, separators=(',', ':')))
     print('\n-> data/gamedata.json, tools/dev/gaps.txt')
     return lastgood.report()

@@ -6,7 +6,7 @@
      node tools/dev/guard.mjs --bless         the same, then write today's numbers into the baseline
      node tools/dev/guard.mjs --no-phone      skip the headless Chrome pass
 
-   Seven checks, one line each, non-zero exit on any FAIL:
+   Eight checks, one line each, non-zero exit on any FAIL:
      cards   how many cards of each kind, against tools/dev/guard-baseline.json, and every interaction the
              game's wording names: how many open a card, how many are marked unclear, how many are left as
              plain text (tools/interactions.py, data/interactions.json)
@@ -14,6 +14,9 @@
      pages   every public page answers 200; the sitemap and llms.txt did not shrink
      rawcode no stat ids, [Word|Word] markup or {0} placeholders where a player can read them
      voice   every word a player reads is the game's, not an assistant's (tools/dev/voice.mjs)
+     changes what each patch changed (data/changes): every change names a card or one marked removed, no raw
+             game code; and tools/diff.py finds exactly the changes made by hand to a copy of the newest
+             snapshot (tools/dev/changes.mjs; runs Python for the second half, about a second)
      frame   every card and the map keep to the frame: slots, caps, counts, one rule for every kind
              (tools/dev/frame.mjs)
      dash    the owner's dashboard: all eight tabs fill, no block is left empty (tools/dev/dash-fixture)
@@ -34,6 +37,8 @@ import { KINDS, NAMES, ROUTES, SECTIONS, FRAME } from '../../assets/kinds.js';
 import { checkTable, checkMap, checkOneTable, checkCards as drawCards } from './frame.mjs';
 // the voice: the copy a player reads, held to the game's register and not an assistant's
 import { checkVoice } from './voice.mjs';
+// what each patch changed: the W1 rule over data/changes, and the diff against changes made by hand
+import { checkChanges, checkDiff } from './changes.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(HERE, '..', '..');
@@ -737,6 +742,10 @@ try {
   say('voice', !voice.bad.length, voice.bad.length
     ? voice.bad.length + ' broken: ' + clip(voice.bad.slice(0, 2).join(' | '), 220)
     : voice.said + ' · the game does the talking');
+  const rule = await checkChanges(index), made = await checkDiff(index);
+  const changeBad = [...rule.bad, ...made.bad];
+  say('changes', !changeBad.length, changeBad.length ? changeBad.length + ' broken: ' + clip(changeBad.slice(0, 2).join(' | '), 220)
+    : rule.said + ' · ' + made.said);
   if(!noPhone){
     const kws = index.items.filter(it => it.k === 'w' && it.use);
     kws.sort((a, b) => Object.values(b.use).reduce((x, y) => x + y, 0) - Object.values(a.use).reduce((x, y) => x + y, 0));

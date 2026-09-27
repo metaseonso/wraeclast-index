@@ -1,0 +1,28 @@
+{"v":"0.3.1","was":"0.3.0","source":{},"new":[],"tree":{"new":[],"gone":[]},"n":{"g":{"changed":13,"new":0,"gone":0,"uncarded":0},"b":{"changed":0,"new":0,"gone":0,"uncarded":0},"i":{"changed":10,"new":0,"gone":0,"uncarded":0}},"missing":["passives","atlas","uniques"],
+"gone":{},
+"cards":{
+"g:SkillGemAncestralWarriorTotem":[["",null,"Ancestral Warrior Totem: Cannot have more than 10 Ancestral Warrior Totems active"]],
+"g:SkillGemBlink":[["",null,"Blink: Must be active in both Weapon Sets"]],
+"g:SkillGemConvalescence":[["",null,"Convalescence: Must be active in both Weapon Sets"]],
+"g:SkillGemIceTippedArrows":[["",null,"Ice-Tipped Arrows: Empowers 4 Attacks"]],
+"g:SkillGemSacrifice":[["",null,"Must be active in both Weapon Sets"]],
+"g:SkillGemSiphonElements":[["Level 20","Remnants created by Supported Skills can be collected from 47% further away","Remnants created by Supported Skills can be collected from 38% further away","3-40"],["",null,"5% chance per Power to spawn a Cold Remnant on"],["",null,"Freezing a target"],["",null,"5% chance to spawn a Fire Remnant on"],["",null,"Igniting a non-Ignited target"],["",null,"5% chance to spawn a Lightning Remnant on"],["",null,"Shocking a non-Shocked target"],["",null,"At 20% Quality: 2% chance per Power to spawn a Cold Remnant on Freezing a target 2% chance to spawn a Fire Remnant on Igniting a non-Ignited target 2% chance to spawn a Lightning Remnant on Shocking a non-Shocked target"]],
+"g:SkillGemToxicDomain":[["Level 20",null,"ToxicDomainPustuleExplosion: Pustules store expected damage of Poisons inflicted on them and will Detonate early after storing 145365 Poison damage"]],
+"g:SupportGemBurningInscription":[["","Supported Skills trigger Burning Inscription after their Runic Inscriptions expire",null]],
+"g:SupportGemDissipate":[["","Remnants created by Supported Skills can be collected from 100% further away","Remnants created by Supported Skills can be collected from 35% further away"]],
+"g:SupportGemDissipateTwo":[["","Remnants created by Supported Skills can be collected from 100% further away","Remnants created by Supported Skills can be collected from 35% further away"]],
+"g:SupportGemMagnetism":[["","Remnants created by Supported Skills can be collected from 100% further away","Remnants created by Supported Skills can be collected from 35% further away"]],
+"g:SupportGemSecondWindThree":[["","Restore 2% of maximum Life on use per one second cooldown of Supported Skills",null],["",null,"When a Supported Skill consumes a cooldown use, recover 2% of maximum Life per second of cooldown"]],
+"g:SupportGemZenithTwo":[["","25% of Supported Skills costs are Recouped as Mana",null],["",null,"25% of Supported Skills' Mana cost is Recouped as Mana"]],
+"i:belt":[["Desecrated suffix",null,"Modifier level 65: (30-40)% increased Mana Regeneration Rate"],["Desecrated suffix",null,"Modifier level 65: (30-20)% reduced Duration of Bleeding on You"],["Desecrated suffix",null,"Modifier level 65: (30-20)% reduced Poison Duration on you"]],
+"i:body-armour":[["Desecrated suffix",null,"Modifier level 65: (10-20)% of Damage taken Recouped as Mana"]],
+"i:boots":[["Desecrated suffix",null,"Modifier level 65: (30-20)% reduced Duration of Bleeding on You"],["Desecrated suffix",null,"Modifier level 65: (30-20)% reduced Poison Duration on you"]],
+"i:bow":[["Desecrated suffix",null,"Modifier level 65: (40-60)% chance to Pierce an Enemy"]],
+"i:buckler":[["Desecrated suffix",null,"Modifier level 65: (10-20)% of Damage taken Recouped as Mana"]],
+"i:focus":[["Desecrated suffix",null,"Modifier level 65: +(1-2) to Level of all Minion Skills"]],
+"i:helmet":[["Desecrated suffix",null,"Modifier level 65: (10-20)% of Damage taken Recouped as Life"],["Desecrated suffix",null,"Modifier level 65: (25-35)% increased Presence Area of Effect"],["Desecrated suffix",null,"Modifier level 65: (13-20)% increased Critical Damage Bonus"]],
+"i:shield":[["Desecrated suffix",null,"Modifier level 65: (10-20)% of Damage taken Recouped as Life"],["Desecrated suffix",null,"Modifier level 65: (10-20)% of Damage taken Recouped as Mana"]],
+"i:spear":[["Desecrated suffix",null,"Modifier level 65: (40-60)% chance to Pierce an Enemy"]],
+"i:staff":[["Desecrated prefix",null,"Modifier level 65: +(35-50) to Spirit"]]
+}
+}

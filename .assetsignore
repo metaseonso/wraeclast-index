@@ -13,6 +13,7 @@ __pycache__
 node_modules
 .wrangler
 data/exchange-state.json
+data/history
 package.json
 package-lock.json
 dist

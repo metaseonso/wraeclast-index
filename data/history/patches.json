@@ -1,0 +1,131 @@
+{
+ "note": "The snapshots tools/snapshot.py has taken, oldest first: the patch, the export build it was read from, the day that export is dated, where it came from and how many entries each kind holds. Not shipped; tools/diff.py reads them.",
+ "patches": [
+  {
+   "build": "4.2.1.2",
+   "dated": "2025-06-14",
+   "from": "repoe-fork/poe2 at e463083 (export 4.2.1.2)",
+   "n": {
+    "gems": 692,
+    "bases": 906,
+    "mods": 1295
+   },
+   "v": "0.2.1"
+  },
+  {
+   "build": "4.3.0.6",
+   "dated": "2025-09-23",
+   "from": "repoe-fork/poe2 at 7c1817d (export 4.3.0.6)",
+   "n": {
+    "gems": 929,
+    "bases": 948,
+    "mods": 1338
+   },
+   "v": "0.3.0"
+  },
+  {
+   "build": "4.3.1.6",
+   "dated": "2025-12-10",
+   "from": "repoe-fork/poe2 at a9d2e12 (export 4.3.1.6)",
+   "n": {
+    "gems": 929,
+    "bases": 948,
+    "mods": 1348
+   },
+   "v": "0.3.1"
+  },
+  {
+   "build": "4.4.0.14",
+   "dated": "2026-05-26",
+   "from": "repoe-fork/poe2 at efb8839 (export 4.4.0.14)",
+   "n": {
+    "gems": 1029,
+    "passives": 4304,
+    "atlas": 227,
+    "bases": 978,
+    "mods": 2115
+   },
+   "v": "0.4.0"
+  },
+  {
+   "build": "4.5.0.3.4",
+   "dated": "2026-06-04",
+   "from": "repoe-fork/poe2 at 3b8852b (export 4.5.0.3.4)",
+   "n": {
+    "gems": 1114,
+    "bases": 1753,
+    "mods": 2191,
+    "passives": 4447,
+    "atlas": 479
+   },
+   "v": "0.5.0"
+  },
+  {
+   "build": "4.5.1.1.6",
+   "dated": "2026-06-09",
+   "from": "repoe-fork/poe2 at ab6f7fd (export 4.5.1.1.6)",
+   "n": {
+    "gems": 1114,
+    "bases": 1753,
+    "mods": 2191,
+    "passives": 4487,
+    "atlas": 503
+   },
+   "v": "0.5.1"
+  },
+  {
+   "build": "4.5.2.1.2",
+   "dated": "2026-06-12",
+   "from": "repoe-fork/poe2 at 06074a7 (export 4.5.2.1.2)",
+   "n": {
+    "gems": 1114,
+    "bases": 1753,
+    "mods": 2191,
+    "passives": 4487,
+    "atlas": 504
+   },
+   "v": "0.5.2"
+  },
+  {
+   "build": "4.5.3.1.8",
+   "dated": "2026-06-23",
+   "from": "repoe-fork/poe2 at 62a3be9 (export 4.5.3.1.8)",
+   "n": {
+    "gems": 1115,
+    "bases": 1753,
+    "mods": 2193,
+    "passives": 4489,
+    "atlas": 504
+   },
+   "v": "0.5.3"
+  },
+  {
+   "build": "4.5.4.11",
+   "dated": "2026-08-27",
+   "from": "repoe-fork/poe2 at 1f93167 (export 4.5.4.11)",
+   "n": {
+    "gems": 1117,
+    "bases": 1785,
+    "mods": 2193,
+    "passives": 4489,
+    "atlas": 528
+   },
+   "v": "0.5.4"
+  },
+  {
+   "build": "4.5.5.2",
+   "dated": "2026-09-11",
+   "from": "tools/cache/official (export 4.5.5.2)",
+   "n": {
+    "gems": 1117,
+    "passives": 4489,
+    "atlas": 530,
+    "bases": 1785,
+    "mods": 2193,
+    "uniques": 455
+   },
+   "uniques": "data/uniques.json (poe2db), frozen 2026-09-27",
+   "v": "0.5.5"
+  }
+ ]
+}

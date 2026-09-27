@@ -1,0 +1,27 @@
+{"v":"0.5.1","was":"0.5.0","source":{},"new":["p:Fire Damage","p:Cold Damage","p:cold58","p:fire85","p:Cold and Lightning Damage | 2","p:Lightning Damage","p:cold68","p:cold69_","p:cold59","p:Fire and Cold Damage","p:fire76","p:lightning68","p:lightning70","p:fire75","p:lightning69_","a:Water Mastery","a:Desert Mastery","a:Desert Biome: Drop Quantity","a:Grass Biome: Rare Packs","a:Water Biome: Drop Rarity","a:Grass Biome: Drop Quantity","a:Forest Biome: Gold Found","a:Grass Mastery","a:Mountain Biome: Pack Size","a:Swamp Biome: Pack Size","a:Desert Biome: Experience","a:Mountain Mastery","a:Forest Biome: Rare Packs","a:Mountain Biome: Drop Rarity","a:Swamp Biome: Experience","a:Forest Mastery","a:Water Biome: Gold Found","a:Swamp Mastery"],"tree":{"new":[290,1040,2617,4833,6554,8553,9884,12099,13326,13693,14265,14310,17044,18593,19936,21560,23907,24721,32340,33292,33852,34331,35387,37113,37415,37619,38696,43303,44191,44405,45377,47080,47387,50498,51328,52669,54868,55188,57928,60878],"gone":[]},"n":{"g":{"changed":11,"new":0,"gone":0,"uncarded":0},"p":{"changed":5,"new":15,"gone":0,"uncarded":0},"a":{"changed":5,"new":18,"gone":0,"uncarded":0},"b":{"changed":1,"new":0,"gone":0,"uncarded":0},"i":{"changed":0,"new":0,"gone":0,"uncarded":0}},"missing":["uniques"],
+"gone":{},
+"cards":{
+"a:Efficient Arteries":[["","20% increased effect of Room Temple Modifiers from Rooms with 4 adjacent rooms","15% increased effect of Room Temple Modifiers from Rooms with 4 adjacent rooms"]],
+"a:Power Relays":[["","20% increased effect of Room Temple Modifiers","10% increased effect of Room Temple Modifiers"]],
+"a:Serle's Legacy":[["","Ezomyte Cities contain an additional Summoning Circle","Ezomyte Cities contain a Summoning Circle"]],
+"a:Tear Open the Rift":[["","Revealing Breach Strongholds will consume an additional Breachstone if able to add Modifiers to revealed Maps","Revealing Breach Strongholds will add Modifiers to revealed Maps"]],
+"a:Xipocado's Machinations":[["","1.5% increased effect of Room Temple Modifiers for each different Room in the Temple","1% increased effect of Room Temple Modifiers for each different Room in the Temple"]],
+"b:Ornate Ringmail":[["","Armour: 225","Armour: 749"],["","Energy Shield: 66","Energy Shield: 220"]],
+"g:SkillGemConductiveRunes":[["",null,"Critical Hit Chance: 7.00%"]],
+"g:SkillGemRefutation":[["",null,"Cooldown does not recover during Buff effect"]],
+"g:SkillGemRepulsion":[["",null,"Repulsion Wave: Critical Hit Chance: 6.00%"]],
+"g:SupportGemAtzirisCommunion":[["","Supported Skills Reserve 2% of maximum Life for every",null],["","5 Spirit they would have Reserved",null],["",null,"Supported Skills Reserve a percentage of your maximum"],["",null,"Life equal to 66% of base Spirit Reservation"]],
+"g:SupportGemChaosInfusion":[["","Supported Attacks Gain 25% of Damage as extra Chaos Damage",null],["",null,"Supported Skills Gain 25% of Damage as extra Chaos Damage"]],
+"g:SupportGemColdInfusion":[["","Supported Attacks Gain 25% of Damage as extra Cold Damage",null],["","Supported Attacks deal 50% less Fire and Lightning Damage",null],["",null,"Gain 25% of Damage as Extra Cold Damage"],["",null,"Supported Skills deal 50% less Fire and Lightning Damage"]],
+"g:SupportGemFireInfusion":[["","Supported Attacks Gain 25% of Damage as extra Fire Damage",null],["","Supported Attacks deal 50% less Cold and Lightning Damage",null],["",null,"Gain 25% of Damage as Extra Fire Damage"],["",null,"Supported Skills deal 50% less Cold and Lightning Damage"]],
+"g:SupportGemIceBite":[["","Attacks Gain 25% of Damage as Cold Damage for 5 seconds on Freezing an enemy with Supported Skills",null],["",null,"Gain 25% of Damage as Cold Damage for 5 seconds on Freezing an enemy with Supported Skills"]],
+"g:SupportGemIceBiteTwo":[["","Attacks Gain 30% of Damage as Cold Damage for 6 seconds on Freezing an enemy with Supported Skills",null],["",null,"Gain 30% of Damage as Cold Damage for 6 seconds on Freezing an enemy with Supported Skills"]],
+"g:SupportGemInnervate":[["","Attacks gain 25% of Damage as Lightning Damage for 5 seconds on killing a Shocked enemy with Supported Skills",null],["",null,"Gain 25% of Damage as Lightning Damage for 5 seconds on killing a Shocked enemy with Supported Skills"]],
+"g:SupportGemLightningInfusion":[["","Supported Attacks Gain 25% of Damage as extra Lightning Damage",null],["","Supported Attacks deal 50% less Cold and Fire Damage",null],["",null,"Gain 25% of Damage as Extra Lightning Damage"],["",null,"Supported Skills deal 50% less Cold and Fire Damage"]],
+"p:Infused Spell Damage":[["","12% increased Spell Damage if you have consumed an Elemental Infusion Recently","15% increased Spell Damage if you have consumed an Elemental Infusion Recently"]],
+"p:Infusion Consumption Chance":[["","12% increased Spell Damage if you have consumed an Elemental Infusion Recently","15% increased Spell Damage if you have consumed an Elemental Infusion Recently"]],
+"p:infusion4":[["","30% increased Spell Damage if you have consumed an Elemental Infusion Recently","35% increased Spell Damage if you have consumed an Elemental Infusion Recently"]],
+"p:lightning34":[["","20% increased Elemental Infusion duration","30% increased Elemental Infusion duration"]],
+"p:oracle_archon_crit4":[["","Archon Buffs also grant +50% Critical Damage Bonus","Archon Buffs also grant 50% increased Critical Damage Bonus"],["","Archon Buffs also grant +30% Critical Hit Chance","Archon Buffs also grant 30% increased Critical Hit Chance"]]
+}
+}
