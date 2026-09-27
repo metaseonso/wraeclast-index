@@ -56,6 +56,15 @@ search, answers and training. Same page for bots and people; no cloaking.
   Grinding Gear Games. `Content-Signal: search=yes, ai-input=yes, ai-train=yes`. CORS open on `/data/*` files.
 - The dashboard counts landings on item and list pages (`assets/landing.js`, one view on hide) and groups arrivals
   as AI, Search, Social, Direct and Other.
+## Next — Boss hits: how hard things hit (#80, #126), data only
+
+- **`data/bosshits.json`** (`tools/bosshits.py`, 66.7 kB, 14 kB gzipped): per area level a normal monster's life,
+  damage, accuracy, armour and evasion; for all 104 bosses in `data/bosses.json`, life and damage multipliers,
+  attack time, resistances and four big hits with type, size at the boss's level, cooldown and the working.
+- **The formula checked:** 639 values poe2db prints for six bosses come out to the unit (without unique rarity);
+  the spell formula is Path of Building's. Boss damage on spells, unique rarity and tier bonuses are Subject to change.
+- A patch stage of `tools/pipeline.py` (`bosshits`, after `bosses`): the tables come from `gamepull.dat()`, and
+  `tools/lastgood.py` holds the file to its own `ids` list. Design for the card: `design/boss-hits.md`.
 
 ## Next — One top bar, the index in groups
 
