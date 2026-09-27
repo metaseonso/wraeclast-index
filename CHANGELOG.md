@@ -15,6 +15,19 @@ The owner, 27 September 2026, on the framework plan: "A" — start now, in order
   parses it per isolate — the split files fix that. `--offline` for a guard without the network.
 - The build ships only data files something on the site reads; every top-level `data/*.json` still ships for
   anyone building on the index. The drill-down's old gem copy (`gems.9b8a02fcf1.json`, 2.6 MB) is gone.
+- **One pipeline** (`tools/pipeline.py`): 30 stages with what each reads and writes, its source and its cadence
+  (patch, daily, hourly, by hand) replace the README's hand-kept steps. `patch` builds every stage in a copy under
+  `build/`, checks each against last good and the declarations, and swaps into `data/` only when every stage held
+  up; a stage whose inputs hash the same as the last shipped run is skipped. `--only`, `--from`, `--check`,
+  `--dry`, `--force`, `--list`, `--artifact`. The keys that send files to the site are kept from every stage.
+  The Game patch workflow (`patch.yml`, by hand) runs it on a branch `data/<patch>`, runs the guard and opens a
+  pull request; it never pushes to `main`. `sync` needs the artifact, so it only runs on the owner's machine.
+- **One declaration per kind:** `data/schema.json` is written from `assets/kinds.js` (`tools/dev/schema.mjs`);
+  the frame check holds every shipped row to it (7,811 rows today), and `worker/seo.js` reads its kinds from the
+  same table instead of its own (13 crawler pages compared before and after, identical).
+- **Last good reads shape as well as count:** a field that falls away (on half the rows or more, losing 40% of
+  its share), a field that comes back in a new shape, or raw game ids where a player reads them fails the pull
+  and keeps the last good copy. The fields a player never reads (Technical details, search words) may hold ids.
 - **Every patch is kept.** `data/patches.json` lists 260 patches, hotfixes and restarts since 0.1: the UTC hour
   from GGG's patch-notes forum, the league (poe2db), the thread and the passive-tree export tag; `tools/patches.py`
   keeps it, and the checks fail when the index carries a client build it does not list. The live index is on
