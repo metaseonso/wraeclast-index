@@ -279,9 +279,10 @@ async function checkLinks(index, market){
     }
   }
   // the crawler's own pages, over the wire: the slug redirects to its canonical spelling, so this lands on the page.
-  // Only the kinds it publishes (worker/seo.js KIND); our own mechanics cards are not game data and have none.
-  const crawled = new Set([...(src.seo.match(/const KIND = \{[\s\S]*?\n\};/) || [''])[0].matchAll(/^ {2}(\w+): \{/gm)].map(m => m[1]));
-  if(!crawled.size) miss.push('could not read the crawler kinds out of seo.js');
+  // Only the kinds it publishes (`crawl` in assets/kinds.js, which worker/seo.js reads); our own mechanics cards
+  // are not game data and have none.
+  const crawled = new Set(KINDS.filter(d => d.crawl).map(d => d.k));
+  if(!crawled.size) miss.push('no kind in assets/kinds.js says the crawler publishes it');
   const pages = [];
   for(const [k, list] of Object.entries(byKind)) if(crawled.has(k))
     for(const it of pick(list.filter(x => !CUT.test(x.n)), PAGE_SAMPLE)) pages.push(it);
