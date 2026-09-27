@@ -1,0 +1,102 @@
+# A game patch, rebuilt: every patch stage of tools/pipeline.py on a branch of its own, the guard over it, and a
+# pull request to read before any of it goes live. It never pushes to main; merging the pull request is what ships.
+#
+# What runs here: every stage that reads the game files (RePoE's export), the official trade site's lists, poe2db,
+# Craft of Exile, poe.ninja and the files already in the repo — gamepull through map, then guides.
+# What does not: sync, which builds the index from the Wraeclast Index artifact. The artifact lives only on the
+# owner's machine, so here the sync stage says so and is skipped, and every stage after it builds on the index
+# already committed. For the full rebuild, on the owner's machine:
+#     python tools/pipeline.py patch --artifact path/to/artifact.html
+#
+# A stage that fails stops the run: nothing is committed, the log says which stage and why, and the stage's
+# data-fault issue is opened or reused with the built-in token.
+#
+# One repository setting, once: Settings > Actions > General > "Allow GitHub Actions to create and approve pull
+# requests". Without it the branch is still pushed and the run names it; open the pull request by hand.
+# A pull request opened with the built-in token does not start the Checks workflow, so the guard runs here.
+name: Game patch
+
+on:
+  workflow_dispatch:
+    inputs:
+      patch:
+        description: 'The patch, for the branch name (data/<patch>). Empty: the patch the game files say.'
+        required: false
+        default: ''
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+concurrency:
+  group: patch
+  cancel-in-progress: false
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 150
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: The warm caches from the last run (the export, the picture checks)
+        uses: actions/cache@v4
+        with:
+          path: tools/cache
+          key: tools-cache-${{ github.run_id }}
+          restore-keys: tools-cache-
+      - name: Every patch stage, built aside in build/ and swapped into data/ only if all of them hold up
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python tools/pipeline.py patch
+      - name: The guard, without the browser halves
+        run: node tools/dev/guard.mjs --no-phone
+      - name: What the run built, kept for 14 days (the stage logs and what each one changed)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pipeline-build
+          path: |
+            build/*/log.txt
+            build/report.json
+          retention-days: 14
+          if-no-files-found: ignore
+      - name: A branch and a pull request, never main
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PATCH_IN: ${{ inputs.patch }}
+        run: |
+          set -euo pipefail
+          patch="${PATCH_IN:-$(python -c "import json; print(json.load(open('data/gamedata.json'))['patch'])")}"
+          if ! [[ "$patch" =~ ^[0-9A-Za-z._-]+$ ]]; then
+            echo "::error::'$patch' is no patch name: letters, numbers, dots and dashes only."
+            exit 1
+          fi
+          if [ -z "$(git status --porcelain -- data explore.html tools/craftweights.json tools/dev/gaps.txt)" ]; then
+            echo "Nothing changed: the data already matches patch $patch."
+            exit 0
+          fi
+          branch="data/$patch"
+          if git ls-remote --exit-code --heads origin "$branch" >/dev/null; then
+            branch="data/$patch-run$GITHUB_RUN_NUMBER"
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git switch -c "$branch"
+          git add -A -- data explore.html tools/craftweights.json tools/dev/gaps.txt
+          git commit -q -m "Game data for patch $patch, rebuilt by tools/pipeline.py"
+          git push origin "HEAD:refs/heads/$branch"
+          stages="$(python -c "import json; r=json.load(open('build/report.json')); print('Ran: ' + ', '.join(r['ran']) + '. Skipped: ' + (', '.join(r['skipped']) or 'none') + '. Files: ' + str(len(r['files'])) + '.')")"
+          body="Every patch stage of tools/pipeline.py, built aside and checked, and the guard over it (run $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID).
+
+          $stages
+
+          The sync stage needs the Wraeclast Index artifact, which is only on the owner's machine: this index is the committed one with every later stage run over it. Merging is what ships."
+          gh pr create --base main --head "$branch" --title "Game data for patch $patch" --body "$body" \
+            || echo "::warning::The branch $branch is pushed, but the pull request could not be opened. Open it by hand, or allow Actions to create pull requests in the repository settings."
