@@ -7,6 +7,9 @@ them to the site.
                     not make (index.json, trade.json, ...) come from the live site and are kept there,
                     refreshed every 6 hours.
   WI_INGEST_KEY     each finished file is also sent to the site (POST /api/data/put), signed with this key
+  GitHub Actions    with no key, the same, signed with GitHub's own short-lived token for the workflow (the job
+                    needs id-token: write; the site takes it from the Publish site workflow only). Before 27 Sep
+                    nothing was sent from there, so the site read every file off the GitHub Pages copy.
   WI_SITE           the site (default https://wraeclastindex.fyi)
 """
 import gzip
@@ -69,23 +72,47 @@ def latest(name):
     return json.loads(get(SITE + '/data/' + name))
 
 
+def sending():
+    """Whether finished files go to the site as well: a key, or GitHub Actions with its own token."""
+    return bool(KEY or os.environ.get('ACTIONS_ID_TOKEN_REQUEST_URL'))
+
+
+def github_token():
+    """GitHub's short-lived token for this workflow, made out to the site; None outside GitHub Actions."""
+    url, tok = os.environ.get('ACTIONS_ID_TOKEN_REQUEST_URL'), os.environ.get('ACTIONS_ID_TOKEN_REQUEST_TOKEN')
+    if not url or not tok:
+        return None
+    req = urllib.request.Request(url + '&audience=' + urllib.parse.quote(SITE), headers={'User-Agent': UA, 'Authorization': 'bearer ' + tok})
+    with urllib.request.urlopen(req, timeout=30) as r:
+        return json.load(r)['value']
+
+
 def publish(name, data):
-    """Write a finished file, and send it to the site when WI_INGEST_KEY is set."""
+    """Write a finished file, and send it to the site when there is a way to sign it (sending()).
+    With the key, a file the site would not take stops the job, as it always has. With GitHub's token it does
+    not: the file is written and goes out with the GitHub Pages copy, and the site says loudly how old its own
+    copy is (worker/health.js), so a failed send is never a failed source."""
     text = json.dumps(data, ensure_ascii=False, separators=(',', ':'))
     save(DATA / name, text)
-    if not KEY:
+    if not sending():
         return
-    req = urllib.request.Request(SITE + '/api/data/put?name=' + urllib.parse.quote(name), data=text.encode('utf-8'), method='POST',
-                                 headers={'User-Agent': UA, 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + KEY})
-    for attempt in range(3):
-        try:
-            with urllib.request.urlopen(req, timeout=60) as r:
-                print('  sent', name, json.load(r))
-                return
-        except urllib.error.HTTPError as e:
-            if e.code < 500 or attempt == 2:
-                raise
-        except (urllib.error.URLError, TimeoutError):
-            if attempt == 2:
-                raise
-        time.sleep(10 * (attempt + 1))
+    try:
+        token = KEY or github_token()
+        req = urllib.request.Request(SITE + '/api/data/put?name=' + urllib.parse.quote(name), data=text.encode('utf-8'), method='POST',
+                                     headers={'User-Agent': UA, 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token})
+        for attempt in range(3):
+            try:
+                with urllib.request.urlopen(req, timeout=60) as r:
+                    print('  sent', name, json.load(r))
+                    return
+            except urllib.error.HTTPError as e:
+                if e.code < 500 or attempt == 2:
+                    raise
+            except (urllib.error.URLError, TimeoutError):
+                if attempt == 2:
+                    raise
+            time.sleep(10 * (attempt + 1))
+    except Exception as e:
+        if KEY:
+            raise
+        print('::warning::%s was not sent to the site (%s). The site keeps its last copy, with its age.' % (name, e), file=sys.stderr)

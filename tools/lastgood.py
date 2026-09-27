@@ -325,7 +325,7 @@ def write_record(faults):
     out = {'updated': dt.datetime.now(dt.timezone.utc).isoformat(timespec='minutes'), 'note': NOTE, 'faults': rows}
     try:
         import sitedata
-        if sitedata.KEY:
+        if sitedata.sending():
             sitedata.publish(RECORD, out)   # writes it where the jobs keep their files, and sends it on
             return
     except Exception as e:

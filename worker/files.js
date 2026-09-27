@@ -3,9 +3,9 @@
    the list of sections serving an older copy (faults.json, tools/lastgood.py).
    The jobs run on GitHub Actions (.github/workflows/pages.yml) and send each file here when it is done. Kept
    in D1 (table files).
-     POST /api/data/put?name=<file>        the file as the body, signed with the ingest key (worker/prices.js
-                                           signed): GitHub's own short-lived token in Actions, or a key of
-                                           its own for a run by hand somewhere else
+     POST /api/data/put?name=<file>        the file as the body, signed: GitHub's own short-lived token from
+                                           the Publish site workflow (fromGitHub), or a key of its own for a
+                                           run by hand somewhere else (fromServer)
      published(env, origin, name, ctx)     a file, parsed; each data centre keeps a copy for 5 minutes
      publishedRow(env, origin, name, ctx)  the same, with when it came in and which source answered
                                            ({data, at, from}), so what is built from it can say how old it is
@@ -16,7 +16,12 @@
    No INGEST_HASH: no key works.
    A file that never came in this way is read from the old GitHub Pages copy instead. That copy comes with no
    arrival time ("from: backup"), so the time the file gives for itself stands in for it (ownTime): the hour
-   the data was made, which is never newer than the moment the file arrived. */
+   the data was made, which is never newer than the moment the file arrived. The backup's answer is kept in the
+   data centre for 5 minutes like any other copy: before 27 Sep it was not, so every page asking for the league
+   dates and every price build was a request to GitHub (about 4,800 a month for exchange.json alone).
+   The hourly jobs on GitHub Actions (.github/workflows/pages.yml) send their files in with GitHub's own
+   short-lived token, the same way the price job does (worker/prices.js): until 27 Sep they sent nothing, which
+   is why every file read "from: backup". */
 import { same } from './dash.js';
 
 const NAMES = new Set(['exchange.json', 'market.json', 'leagues.json', 'faults.json']);
@@ -30,6 +35,9 @@ const BUILT = ['/data/market.json?from=trade', '/data/market.json?from=trade&par
   '/data/market.json?from=trade&part=live', '/data/market.json?from=trade&part=hist', '/data/market.json?from=trade&part=facts',
   '/data/rollprices.json', '/data/farmprices.json', '/data/bossprices.json'];   // market.json and its parts (worker/prices.js serveMarket)
 
+const ISSUER = 'https://token.actions.githubusercontent.com';
+const REPO = 'metaseonso/wraeclast-index';
+const DATA_JOBS = /^metaseonso\/wraeclast-index\/\.github\/workflows\/pages\.yml@refs\/heads\/main$/;   // the hourly files
 const enc = new TextEncoder();
 const json = (status, body) => new Response(JSON.stringify(body), {status, headers: {'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store'}});
 const copyOf = (origin, name) => new Request(origin + '/data/' + name + '?from=d1');
@@ -44,6 +52,27 @@ export async function fromServer(request, env){
   return same(got, Uint8Array.from(want.match(/../g), h => parseInt(h, 16)));
 }
 
+/* GitHub's own signed token (OpenID Connect) from one workflow on main: the claims, or null. The price job
+   signs in with it (worker/prices.js) and so do the hourly data files (DATA_JOBS). */
+const unb64 = s => Uint8Array.from(atob(s.replace(/-/g, '+').replace(/_/g, '/') + '==='.slice((s.length + 3) % 4)), c => c.charCodeAt(0));
+export async function fromGitHub(request, url, workflow){
+  const m = (request.headers.get('Authorization') || '').match(/^Bearer ([\w-]+)\.([\w-]+)\.([\w-]+)$/);
+  if(!m) return null;
+  let head, claims;
+  try { head = JSON.parse(new TextDecoder().decode(unb64(m[1]))); claims = JSON.parse(new TextDecoder().decode(unb64(m[2]))); } catch { return null; }
+  if(head.alg !== 'RS256') return null;
+  const keys = await (await fetch(ISSUER + '/.well-known/jwks', {cf: {cacheTtl: 3600, cacheEverything: true}})).json();
+  const jwk = (keys.keys || []).find(k => k.kid === head.kid);
+  if(!jwk) return null;
+  const key = await crypto.subtle.importKey('jwk', {kty: jwk.kty, n: jwk.n, e: jwk.e, alg: 'RS256', ext: true},
+    {name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256'}, false, ['verify']);
+  const ok = await crypto.subtle.verify('RSASSA-PKCS1-v1_5', key, unb64(m[3]), new TextEncoder().encode(m[1] + '.' + m[2]));
+  const now = Date.now() / 1000;
+  if(!ok || claims.iss !== ISSUER || claims.aud !== url.origin || !(claims.exp > now) || (claims.nbf && claims.nbf > now + 60)) return null;
+  if(claims.repository !== REPO || claims.ref !== 'refs/heads/main' || !workflow.test(claims.workflow_ref || '')) return null;
+  return claims;
+}
+
 /* The time a file gives for itself, in unix seconds, or null when it gives none. Every job writes it at the
    top of the file it sends, in the "updated" field: in exchange.json the hour of the Currency Exchange feed
    behind it, in market.json and leagues.json the moment the file was built. Taken off the text, not the
@@ -55,50 +84,62 @@ function ownTime(body){
 }
 
 /* ---------- reading ---------- */
-/* the newest copy there is: {body, at, from}. from "jobs": a job sent it in (at: unix seconds); from "backup":
-   the old GitHub Pages copy, which carries no arrival time (at: null). null when nothing has it. */
-export async function fileRow(env, origin, name, ctx){
+/* the newest copy there is: {body, at, from, own}. from "jobs": a job sent it in (at: unix seconds); from
+   "backup": the old GitHub Pages copy, which carries no arrival time (at: null), with the time it gives for
+   itself (own). null when nothing has it. Either kind is kept in this data centre for 5 minutes.
+   fresh: the arrival time the database already holds for this file (worker/prices.js builds with it), so a
+   copy this data centre kept from before that is passed over rather than built from. */
+export async function fileRow(env, origin, name, ctx, fresh){
   const key = copyOf(origin, name);
   const hit = await caches.default.match(key);   // this data centre's copy, with the time it came in
-  if(hit) return {body: await hit.text(), at: +hit.headers.get('X-Data-At') || null, from: 'jobs'};
+  if(hit){
+    const from = hit.headers.get('X-Data-From') === 'backup' ? 'backup' : 'jobs';
+    const at = from === 'jobs' ? +hit.headers.get('X-Data-At') || null : null, own = +hit.headers.get('X-Data-Own') || null;
+    if(!fresh || (at && at >= fresh)) return {body: await hit.text(), at, from, own};
+  }
+  const keep = (body, head) => {
+    const put = caches.default.put(key, new Response(body, {headers: {
+      'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'public, max-age=' + TTL, ...head}}));
+    if(ctx && ctx.waitUntil) ctx.waitUntil(put); else return put;
+  };
   let row = null;
   try { row = await env.DB.prepare('SELECT body, at FROM files WHERE name = ?').bind(name).first(); } catch {}   // no table yet
-  if(!row){   // never came in: the old GitHub Pages copy (the edge keeps it for 5 minutes)
+  if(!row){   // never came in: the old GitHub Pages copy
     try {
       const r = await fetch(PAGES + name, {headers: {'User-Agent': UA}, cf: {cacheTtl: TTL, cacheEverything: true}});
-      if(r.ok) return {body: await r.text(), at: null, from: 'backup'};
+      if(r.ok){
+        const body = await r.text(), own = ownTime(body);
+        await keep(body, {'X-Data-From': 'backup', ...(own ? {'X-Data-Own': String(own)} : {})});
+        return {body, at: null, from: 'backup', own};
+      }
     } catch {}
     return null;
   }
-  const put = caches.default.put(key, new Response(row.body, {headers: {
-    'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'public, max-age=' + TTL, 'X-Data-At': String(row.at)}}));
-  if(ctx && ctx.waitUntil) ctx.waitUntil(put); else await put;
-  return {body: row.body, at: row.at, from: 'jobs'};
+  await keep(row.body, {'X-Data-At': String(row.at)});
+  return {body: row.body, at: row.at, from: 'jobs', own: null};
 }
 /* how old a file is and which source answered: {at, from} ("jobs", "backup" or "none"). A file a job sent in
    is timed by its arrival, and the file itself is never read. The backup site's copy has no arrival time, so
-   it is read and the time it gives for itself is used instead (at: null when it gives none). */
+   the time it gives for itself is used instead (at: null when it gives none). */
 export async function fileWhen(env, origin, name){
   const hit = await caches.default.match(copyOf(origin, name));
+  if(hit && hit.headers.get('X-Data-From') === 'backup') return {at: +hit.headers.get('X-Data-Own') || null, from: 'backup'};
   const at = hit && +hit.headers.get('X-Data-At');
   if(at) return {at, from: 'jobs'};   // a copy from before this went live has no time: ask the table instead
   let row = null;
   try { row = await env.DB.prepare('SELECT at FROM files WHERE name = ?').bind(name).first(); } catch {}   // no table yet
   if(row) return {at: row.at, from: 'jobs'};
-  try {
-    const r = await fetch(PAGES + name, {headers: {'User-Agent': UA}, cf: {cacheTtl: TTL, cacheEverything: true}});
-    if(r.ok) return {at: ownTime(await r.text()), from: 'backup'};
-  } catch {}
-  return {at: null, from: 'none'};
+  const got = await fileRow(env, origin, name);   // the backup's copy, kept here for 5 minutes
+  return got ? {at: got.own, from: 'backup'} : {at: null, from: 'none'};
 }
 export async function fileText(env, origin, name, ctx){
   const row = await fileRow(env, origin, name, ctx);
   return row ? row.body : null;
 }
-export async function publishedRow(env, origin, name, ctx){
-  const row = await fileRow(env, origin, name, ctx);
+export async function publishedRow(env, origin, name, ctx, fresh){
+  const row = await fileRow(env, origin, name, ctx, fresh);
   if(!row) return null;
-  try { return {data: JSON.parse(row.body), at: row.at, from: row.from}; } catch { return null; }
+  try { return {data: JSON.parse(row.body), at: row.at, from: row.from, own: row.own}; } catch { return null; }
 }
 export async function published(env, origin, name, ctx){
   const row = await publishedRow(env, origin, name, ctx);
@@ -108,7 +149,7 @@ export async function published(env, origin, name, ctx){
 /* ---------- POST /api/data/put?name=<file> ---------- */
 export async function putFile(request, env, url, ctx){
   if(request.method !== 'POST') return json(405, {error: 'POST only.'});
-  if(!(await fromServer(request, env))) return json(401, {error: 'Wrong key.'});
+  if(!(await fromServer(request, env)) && !(await fromGitHub(request, url, DATA_JOBS))) return json(401, {error: 'Wrong key.'});
   const name = url.searchParams.get('name') || '';
   if(!NAMES.has(name)) return json(400, {error: 'Unknown file.'});
   if(+request.headers.get('Content-Length') > MAX) return json(413, {error: 'Too big.'});
