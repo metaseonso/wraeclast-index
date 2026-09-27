@@ -64,7 +64,7 @@ import {SECTIONS} from './kinds.js';   // what each section is called: the one t
   const soon = () => { loadApp().catch(() => {}); };
   const cards = () => { loadApp().then(whole).catch(() => {}); };
   Promise.resolve(drawn).then(() => idle(loadApp));
-  const mast = document.querySelector('.mast');
+  const mast = document.querySelector('header.top, .mast');
   if(mast) for(const t of ['pointerover', 'focusin', 'touchstart']) mast.addEventListener(t, soon, {once: true, passive: true});
   addEventListener('keydown', soon, {once: true});   // the keybindings, the run counter, "/" into the top search
   for(const t of ['pointerover', 'touchstart']) for(const b of Object.values(SEC)){   // a pointer over rows: their cards

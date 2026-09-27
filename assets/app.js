@@ -2611,6 +2611,15 @@ async function show(e){
 for(const r in SHUT) document.querySelectorAll('nav a[href$="#/' + r + '"]').forEach(a => a.remove());
 
 const IS_APP = !!document.getElementById('view-home');
+/* the price stamp in the top bar, on the app and the drill-down page alike: the real age of the data behind the
+   prices (worker/prices.js), and a word when a job has missed a run */
+const STAMP = document.getElementById('stamp');
+if(STAMP) NOW.then(M => {
+  STAMP.classList.remove('wait');
+  if(M && M.updated) STAMP.innerHTML = 'Prices: <b>' + esc(M.league) + '</b> · ' + ago(M.updated) +
+    (M.late ? ' · <span class="err">waiting for new prices</span>' : '');
+  else STAMP.textContent = 'Prices not loaded yet';
+});
 if(IS_APP){
 homeInit();
 mountTopSearch(document.getElementById('topsearch'));
@@ -2618,12 +2627,6 @@ addEventListener('hashchange', show);
 show();
 const failed = err => { $('#status').innerHTML = '<span class="err">Could not load the index: ' + esc(err.message) + '</span>'; };
 NOW.then(M => {
-  const st = $('#stamp');
-  st.classList.remove('wait');
-  // the real age of the data behind the prices (worker/prices.js), and a word when a job has missed a run
-  if(M && M.updated) st.innerHTML = 'Prices: <b>' + esc(M.league) + '</b> · ' + ago(M.updated) +
-    (M.late ? ' · <span class="err">waiting for new prices</span>' : '');
-  else st.textContent = 'Prices not loaded yet';
   lazy('./league.js').then(m => m.mountLeague($('#leagueclock'))).catch(() => {});   // the league clock
   later();   // the crest's fog, once the stamp is in
   // a player who has not reached for search yet: the index comes in while the page sits idle

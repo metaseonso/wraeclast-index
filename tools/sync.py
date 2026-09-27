@@ -111,6 +111,73 @@ CL_NEW = TOPSEARCH + '\n    ' + SUGGEST_BTN + '\n    ' + KEYS_BTN + '\n    ' + C
 CL_PREV = '<div class="topsearch" id="topsearch"></div>\n    ' + KEYS_BTN + '\n    ' + CL_OLD
 CL_NOMARK = TOPSEARCH + '\n    ' + SUGGEST_OLD + '\n    ' + KEYS_BTN + '\n    ' + CL_BTN
 
+# The header is the app's own top bar (index.html): the crest, the index in its groups, the top search, the price stamp
+# and the menu button, run by assets/topnav.js, so the drill-down page has the same bar as every other page. The page's
+# own section buttons (#nav) and its patch and count line stay in the page, out of sight: its scripts still switch the
+# sections with them and write the counts into them, and assets/topnav.js reads which section is on show from them.
+# TOP_OLD is the header the steps above leave (the artifact's own, filled in); TOP_NOW is this one, rewritten each run.
+CARET = ('<svg class="caret" viewBox="0 0 10 10" aria-hidden="true"><path d="M2 3.5 5 6.5 8 3.5" fill="none" stroke="currentColor" '
+         'stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>')
+FIND_SVG = ('<svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="8.5" cy="8.5" r="5.5" fill="none" stroke="currentColor" stroke-width="1.8"/>'
+            '<path d="M13 13l4.5 4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>')
+MENU_SVG = ('<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3.5 5.5h13M3.5 10h13M3.5 14.5h13" stroke="currentColor" '
+            'stroke-width="1.7" stroke-linecap="round"/></svg>')
+TOP_OLD = re.compile(r'<div class="mast">\n  <div class="wrap mast-in">\n.*?\n  </div>\n</div>', re.S)
+TOP_NOW = re.compile(r'<header class="top">\n.*?\n</header>\n<script src="assets/topnav\.js" type="module"></script>', re.S)
+SUB = re.compile(r'<span class="sub"(?: hidden)?>Patch <b id="patch">[^\n]*')
+
+
+def topbar(sub):
+    """The app's top bar, for the drill-down page; sub is the page's own patch and count line."""
+    return ('<header class="top">\n'
+            '  <div class="top-in">\n'
+            '    <h1><a class="brand" href="./"><span class="mark" aria-hidden="true">' + WISP +
+            '<img class="mark-logo" src="assets/brand/logo-64.webp" alt="" width="51" height="64"></span>Wraeclast <em>Index</em></a></h1>\n'
+            '    <div class="topmenu" id="topmenu">\n'
+            '      <nav class="tabs topnav" aria-label="Index">\n'
+            '        <a href="./#/"><i class="ti ti-search" aria-hidden="true"></i>Search</a>\n'
+            '        <div class="navdrop"><button type="button" class="navdrop-b" aria-expanded="false" aria-controls="nd-items">Items' + CARET + '</button>\n'
+            '          <div class="navdrop-m" id="nd-items">\n'
+            '            <a href="explore#uniques"><i class="ti ti-uniques" aria-hidden="true"></i>Uniques</a>\n'
+            '            <a href="explore#gems"><i class="ti ti-gems" aria-hidden="true"></i>Gems</a>\n'
+            '            <a href="./#/currency"><i class="ti ti-currency" aria-hidden="true"></i>Currency</a>\n'
+            '          </div></div>\n'
+            '        <a href="explore#tree"><i class="ti ti-tree" aria-hidden="true"></i>Passive tree</a>\n'
+            '        <div class="navdrop"><button type="button" class="navdrop-b" aria-expanded="false" aria-controls="nd-endgame">Endgame' + CARET + '</button>\n'
+            '          <div class="navdrop-m" id="nd-endgame">\n'
+            '            <a href="./#/atlas"><i class="ti ti-atlas" aria-hidden="true"></i>Atlas</a>\n'
+            '            <a href="./#/bosses"><i class="ti ti-bosses" aria-hidden="true"></i>Bosses</a>\n'
+            '          </div></div>\n'
+            '        <a href="./#/trade"><i class="ti ti-trade" aria-hidden="true"></i>Trade</a>\n'
+            '        <a href="./#/craft"><i class="ti ti-craft" aria-hidden="true"></i>Craft</a>\n'
+            '      </nav>\n'
+            '      <div class="topmore" id="topmore">\n'
+            '        <button id="notesbtn" type="button" class="notesbtn">Patch notes <span class="ct wait">v0.00</span></button>\n'
+            '        ' + SUGGEST_BTN + '\n'
+            '        ' + KEYS_BTN.replace('</svg></button>', '</svg><span class="keys-lbl">Keybindings</span></button>') + '\n'
+            '      </div>\n'
+            '    </div>\n'
+            '    <nav class="nav" id="nav" aria-label="Sections" hidden>' + NAV_BUTTONS + '</nav>\n'
+            '    ' + sub + '\n'
+            '    <span class="grow"></span>\n'
+            '    ' + TOPSEARCH + '\n'
+            '    <span class="stamp wait" id="stamp">Loading prices\u2026</span>\n'
+            '    <button class="topbtn topfind" id="topfind" type="button" aria-label="Search the index" aria-expanded="false">' + FIND_SVG + '</button>\n'
+            '    <button class="topbtn" id="topburger" type="button" aria-label="Menu" aria-expanded="false" aria-controls="topmenu">' + MENU_SVG + '</button>\n'
+            '  </div>\n'
+            '</header>\n'
+            '<script src="assets/topnav.js" type="module"></script>')
+
+
+def with_topbar(html):
+    m = TOP_NOW.search(html) or TOP_OLD.search(html)
+    s = m and SUB.search(m.group(0))
+    if not s:
+        sys.exit('the drill-down header changed; update TOP_OLD / SUB in tools/sync.py')
+    sub = s.group(0).replace('<span class="sub">', '<span class="sub" hidden>', 1)
+    return html[:m.start()] + topbar(sub) + html[m.end():]
+
+
 RAW = re.compile(r'(?<![\w\[./-])[a-z][a-z0-9]*(?:_[a-z0-9%+]+){2,}(?:\s*=\s*-?\d+)?|\{[^}\s]{1,80}\}')
 
 
@@ -991,13 +1058,14 @@ def explore_page(html):
     if HEAD not in html:
         html = html.replace(HEAD_OLD, HEAD, 1) if HEAD_OLD in html else html.replace(TITLE, '', 1).replace('</head>', HEAD + '</head>', 1)
     html = live_prices(html)
-    for new, olds in ((MAST_NEW, (MAST_NOBOSS, MAST_PREV, MAST_OLD)), (CL_NEW, (CL_NOMARK, CL_PREV, CL_OLD))):
-        if new not in html:
-            old = next((o for o in olds if o in html), None)
-            if not old:
-                sys.exit('the drill-down header changed; update MAST_OLD / CL_OLD in tools/sync.py')
-            html = html.replace(old, new, 1)
-    return externalize(site_scripts(html))
+    if not TOP_NOW.search(html):   # the artifact's own header, filled in, then the app's top bar in its place
+        for new, olds in ((MAST_NEW, (MAST_NOBOSS, MAST_PREV, MAST_OLD)), (CL_NEW, (CL_NOMARK, CL_PREV, CL_OLD))):
+            if new not in html:
+                old = next((o for o in olds if o in html), None)
+                if not old:
+                    sys.exit('the drill-down header changed; update MAST_OLD / CL_OLD in tools/sync.py')
+                html = html.replace(old, new, 1)
+    return externalize(site_scripts(with_topbar(html)))
 
 
 if __name__ == '__main__':
