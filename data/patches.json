@@ -1,0 +1,2633 @@
+{
+ "updated": "2026-09-27T02:40+00:00",
+ "note": "Every Path of Exile 2 patch, hotfix and restart, and every client build the index has carried. Written by tools/patches.py. Times are UTC. A field nothing states is left out.",
+ "sources": {
+  "notes": {
+   "n": "Path of Exile 2 patch notes forum (Grinding Gear Games)",
+   "url": "https://www.pathofexile.com/forum/view-forum/2212"
+  },
+  "leagues": {
+   "n": "data/leagues.json (poe2db league list)",
+   "url": "https://poe2db.tw/us/League"
+  },
+  "tree": {
+   "n": "Passive tree export (Grinding Gear Games)",
+   "url": "https://github.com/grindinggear/poe2-skilltree-export"
+  },
+  "index": {
+   "n": "data/index.json: the client build the cards were built from (RePoE export)",
+   "url": "https://repoe-fork.github.io/poe2/"
+  },
+  "export": {
+   "n": "data/gamedata.json: the date the export files carry",
+   "url": "https://repoe-fork.github.io/poe2/"
+  },
+  "archive": {
+   "n": "wraeclast-data game tables (the CDN folder they were read from)",
+   "url": "https://github.com/metaseonso/wraeclast-data"
+  }
+ },
+ "patches": [
+  {
+   "id": "0.5.5c",
+   "v": "0.5.5c",
+   "kind": "patch",
+   "posted": "2026-09-17T22:30Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/4006357",
+   "title": "0.5.5c Patch Notes",
+   "league": "Forbidden Rites"
+  },
+  {
+   "id": "0.5.5b",
+   "v": "0.5.5b",
+   "kind": "patch",
+   "posted": "2026-09-11T01:39Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/4004106",
+   "title": "0.5.5b Patch Notes",
+   "league": "Forbidden Rites"
+  },
+  {
+   "id": "0.5.5 hotfix 10",
+   "v": "0.5.5",
+   "kind": "hotfix",
+   "posted": "2026-09-08T03:03Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/4002822",
+   "title": "0.5.5 Hotfix 10",
+   "n": 10,
+   "league": "Forbidden Rites"
+  },
+  {
+   "id": "0.5.5 hotfix 9",
+   "v": "0.5.5",
+   "kind": "hotfix",
+   "posted": "2026-09-07T06:26Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/4002365",
+   "title": "0.5.5 Hotfix 9",
+   "n": 9,
+   "league": "Forbidden Rites"
+  },
+  {
+   "id": "0.5.5 hotfix 8",
+   "v": "0.5.5",
+   "kind": "hotfix",
+   "posted": "2026-09-07T04:33Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/4002328",
+   "title": "0.5.5 Hotfix 8",
+   "n": 8,
+   "league": "Forbidden Rites"
+  },
+  {
+   "id": "0.5.5 hotfix 7",
+   "v": "0.5.5",
+   "kind": "hotfix",
+   "posted": "2026-09-07T00:45Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/4002255",
+   "title": "0.5.5 Hotfix 7",
+   "n": 7,
+   "league": "Forbidden Rites"
+  },
+  {
+   "id": "0.5.5 hotfix 6",
+   "v": "0.5.5",
+   "kind": "hotfix",
+   "posted": "2026-09-05T09:34Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/4001428",
+   "title": "0.5.5 Hotfix 6",
+   "n": 6,
+   "league": "Forbidden Rites"
+  },
+  {
+   "id": "0.5.5 hotfix 5",
+   "v": "0.5.5",
+   "kind": "hotfix",
+   "posted": "2026-09-05T04:57Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/4001365",
+   "title": "0.5.5 Hotfix 5",
+   "n": 5,
+   "league": "Forbidden Rites"
+  },
+  {
+   "id": "0.5.5 hotfix 4",
+   "v": "0.5.5",
+   "kind": "hotfix",
+   "posted": "2026-09-05T02:18Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/4001331",
+   "title": "0.5.5 Hotfix 4",
+   "n": 4,
+   "league": "Forbidden Rites"
+  },
+  {
+   "id": "0.5.5 hotfix 3",
+   "v": "0.5.5",
+   "kind": "hotfix",
+   "posted": "2026-09-05T00:56Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/4001313",
+   "title": "0.5.5 Hotfix 3",
+   "n": 3,
+   "league": "Forbidden Rites"
+  },
+  {
+   "id": "0.5.5 hotfix 2",
+   "v": "0.5.5",
+   "kind": "hotfix",
+   "posted": "2026-09-04T22:41Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/4001277",
+   "title": "0.5.5 Hotfix 2",
+   "n": 2,
+   "league": "Forbidden Rites"
+  },
+  {
+   "id": "0.5.5 hotfix 1",
+   "v": "0.5.5",
+   "kind": "hotfix",
+   "posted": "2026-09-04T21:22Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/4001250",
+   "title": "0.5.5 Hotfix",
+   "n": 1,
+   "league": "Forbidden Rites"
+  },
+  {
+   "id": "0.5.5",
+   "v": "0.5.5",
+   "kind": "patch",
+   "posted": "2026-09-02T22:36Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/4000864",
+   "title": "0.5.5 Patch Notes",
+   "league": "Forbidden Rites",
+   "live": "2026-09-05",
+   "tree": {
+    "commit": "bd87e6512c",
+    "at": "2026-09-04T17:12Z"
+   }
+  },
+  {
+   "id": "0.5.4f hotfix 1",
+   "v": "0.5.4f",
+   "kind": "hotfix",
+   "posted": "2026-08-13T02:52Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3996590",
+   "title": "0.5.4f Hotfix",
+   "n": 1,
+   "league": "Runes of Aldur"
+  },
+  {
+   "id": "0.5.4f",
+   "v": "0.5.4f",
+   "kind": "patch",
+   "posted": "2026-08-12T22:30Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3996513",
+   "title": "0.5.4f Patch Notes",
+   "league": "Runes of Aldur"
+  },
+  {
+   "id": "0.5.4e restart",
+   "v": "0.5.4e",
+   "kind": "restart",
+   "posted": "2026-08-06T07:37Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3994580",
+   "title": "0.5.4e Restart",
+   "league": "Runes of Aldur"
+  },
+  {
+   "id": "0.5.4e hotfix 1",
+   "v": "0.5.4e",
+   "kind": "hotfix",
+   "posted": "2026-08-05T03:16Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3994125",
+   "title": "0.5.4e Hotfix",
+   "n": 1,
+   "league": "Runes of Aldur"
+  },
+  {
+   "id": "0.5.4e maintenance",
+   "v": "0.5.4e",
+   "kind": "maintenance",
+   "posted": "2026-07-31T00:08Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3991721",
+   "title": "0.5.4e Maintenance",
+   "league": "Runes of Aldur"
+  },
+  {
+   "id": "0.5.4e",
+   "v": "0.5.4e",
+   "kind": "patch",
+   "posted": "2026-07-30T03:41Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3991222",
+   "title": "0.5.4e Patch Notes (restartless)",
+   "flags": [
+    "restartless"
+   ],
+   "league": "Runes of Aldur"
+  },
+  {
+   "id": "0.5.4d hotfix 1",
+   "v": "0.5.4d",
+   "kind": "hotfix",
+   "posted": "2026-07-28T03:40Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3990120",
+   "title": "0.5.4d Hotfix",
+   "n": 1,
+   "league": "Runes of Aldur"
+  },
+  {
+   "id": "0.5.4d",
+   "v": "0.5.4d",
+   "kind": "patch",
+   "posted": "2026-07-24T17:30Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3987607",
+   "title": "0.5.4d Patch Notes",
+   "league": "Runes of Aldur"
+  },
+  {
+   "id": "0.5.4c",
+   "v": "0.5.4c",
+   "kind": "patch",
+   "posted": "2026-07-16T18:30Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3985152",
+   "title": "0.5.4c Patch Notes",
+   "league": "Runes of Aldur"
+  },
+  {
+   "id": "0.5.4b hotfix 3",
+   "v": "0.5.4b",
+   "kind": "hotfix",
+   "posted": "2026-07-03T06:46Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3980829",
+   "title": "0.5.4b Hotfix 3",
+   "n": 3,
+   "league": "Runes of Aldur"
+  },
+  {
+   "id": "0.5.4b hotfix 2",
+   "v": "0.5.4b",
+   "kind": "hotfix",
+   "posted": "2026-07-03T03:15Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3980736",
+   "title": "0.5.4b Hotfix 2",
+   "n": 2,
+   "league": "Runes of Aldur"
+  },
+  {
+   "id": "0.5.4b hotfix 1",
+   "v": "0.5.4b",
+   "kind": "hotfix",
+   "posted": "2026-07-02T23:07Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3980584",
+   "title": "0.5.4b Hotfix 1",
+   "n": 1,
+   "league": "Runes of Aldur"
+  },
+  {
+   "id": "0.5.4b",
+   "v": "0.5.4b",
+   "kind": "patch",
+   "posted": "2026-07-02T21:33Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3980516",
+   "title": "0.5.4b Patch Notes",
+   "league": "Runes of Aldur"
+  },
+  {
+   "id": "0.5.4 hotfix 4",
+   "v": "0.5.4",
+   "kind": "hotfix",
+   "posted": "2026-06-29T01:47Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3978401",
+   "title": "0.5.4 Hotfix 4",
+   "n": 4,
+   "league": "Runes of Aldur"
+  },
+  {
+   "id": "0.5.4 hotfix 3",
+   "v": "0.5.4",
+   "kind": "hotfix",
+   "posted": "2026-06-26T03:15Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3976271",
+   "title": "0.5.4 Hotfix 3",
+   "n": 3,
+   "league": "Runes of Aldur"
+  },
+  {
+   "id": "0.5.4 hotfix 2",
+   "v": "0.5.4",
+   "kind": "hotfix",
+   "posted": "2026-06-26T01:07Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3976201",
+   "title": "0.5.4 Hotfix 2",
+   "n": 2,
+   "league": "Runes of Aldur"
+  },
+  {
+   "id": "0.5.4 hotfix 1",
+   "v": "0.5.4",
+   "kind": "hotfix",
+   "posted": "2026-06-25T07:17Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3975342",
+   "title": "0.5.4 Hotfix",
+   "n": 1,
+   "league": "Runes of Aldur"
+  },
+  {
+   "id": "0.5.4",
+   "v": "0.5.4",
+   "kind": "patch",
+   "posted": "2026-06-25T04:30Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3975218",
+   "title": "0.5.4 Patch Notes",
+   "league": "Runes of Aldur",
+   "tree": {
+    "commit": "e773f6c71d",
+    "at": "2026-09-04T17:10Z"
+   }
+  },
+  {
+   "id": "0.5.3 restart",
+   "v": "0.5.3",
+   "kind": "restart",
+   "posted": "2026-06-24T02:00Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3974332",
+   "title": "0.5.3 Restart",
+   "league": "Runes of Aldur"
+  },
+  {
+   "id": "0.5.3 hotfix 9",
+   "v": "0.5.3",
+   "kind": "hotfix",
+   "posted": "2026-06-23T06:03Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3973617",
+   "title": "0.5.3 Hotfix 9",
+   "n": 9,
+   "league": "Runes of Aldur"
+  },
+  {
+   "id": "0.5.3 hotfix 8",
+   "v": "0.5.3",
+   "kind": "hotfix",
+   "posted": "2026-06-22T07:11Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3972700",
+   "title": "0.5.3 Hotfix 8",
+   "n": 8,
+   "league": "Runes of Aldur"
+  },
+  {
+   "id": "0.5.3 hotfix 7",
+   "v": "0.5.3",
+   "kind": "hotfix",
+   "posted": "2026-06-22T03:52Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3972584",
+   "title": "0.5.3 Hotfix 7",
+   "n": 7,
+   "league": "Runes of Aldur"
+  },
+  {
+   "id": "0.5.3 hotfix 6",
+   "v": "0.5.3",
+   "kind": "hotfix",
+   "posted": "2026-06-22T01:06Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3972488",
+   "title": "0.5.3 Hotfix 6",
+   "n": 6,
+   "league": "Runes of Aldur"
+  },
+  {
+   "id": "0.5.3 hotfix 5",
+   "v": "0.5.3",
+   "kind": "hotfix",
+   "posted": "2026-06-21T03:53Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3971529",
+   "title": "0.5.3 Hotfix 5",
+   "n": 5,
+   "league": "Runes of Aldur"
+  },
+  {
+   "id": "0.5.3 hotfix 4",
+   "v": "0.5.3",
+   "kind": "hotfix",
+   "posted": "2026-06-20T08:24Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3970581",
+   "title": "0.5.3 Hotfix 4",
+   "n": 4,
+   "league": "Runes of Aldur"
+  },
+  {
+   "id": "0.5.3 hotfix 3",
+   "v": "0.5.3",
+   "kind": "hotfix",
+   "posted": "2026-06-19T03:56Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3969089",
+   "title": "0.5.3 Hotfix 3",
+   "n": 3,
+   "league": "Runes of Aldur"
+  },
+  {
+   "id": "0.5.3 hotfix 2",
+   "v": "0.5.3",
+   "kind": "hotfix",
+   "posted": "2026-06-19T01:53Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3968961",
+   "title": "0.5.3 Hotfix 2",
+   "n": 2,
+   "league": "Runes of Aldur"
+  },
+  {
+   "id": "0.5.3 hotfix 1",
+   "v": "0.5.3",
+   "kind": "hotfix",
+   "posted": "2026-06-19T00:41Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3968863",
+   "title": "0.5.3 Hotfix",
+   "n": 1,
+   "league": "Runes of Aldur"
+  },
+  {
+   "id": "0.5.3",
+   "v": "0.5.3",
+   "kind": "patch",
+   "posted": "2026-06-18T22:30Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3968601",
+   "title": "0.5.3 Patch Notes",
+   "league": "Runes of Aldur"
+  },
+  {
+   "id": "0.5.2 hotfix 4",
+   "v": "0.5.2",
+   "kind": "hotfix",
+   "posted": "2026-06-17T05:20Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3967062",
+   "title": "0.5.2 Hotfix 4",
+   "n": 4,
+   "league": "Runes of Aldur"
+  },
+  {
+   "id": "0.5.2 hotfix 3",
+   "v": "0.5.2",
+   "kind": "hotfix",
+   "posted": "2026-06-15T03:01Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3964950",
+   "title": "0.5.2 Hotfix 3",
+   "n": 3,
+   "league": "Runes of Aldur"
+  },
+  {
+   "id": "0.5.2 hotfix 2",
+   "v": "0.5.2",
+   "kind": "hotfix",
+   "posted": "2026-06-12T02:21Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3960751",
+   "title": "0.5.2 Hotfix 2",
+   "n": 2,
+   "league": "Runes of Aldur"
+  },
+  {
+   "id": "0.5.2 hotfix 1",
+   "v": "0.5.2",
+   "kind": "hotfix",
+   "posted": "2026-06-12T01:02Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3960639",
+   "title": "0.5.2 Hotfix 1",
+   "n": 1,
+   "league": "Runes of Aldur"
+  },
+  {
+   "id": "0.5.2",
+   "v": "0.5.2",
+   "kind": "patch",
+   "posted": "2026-06-11T22:28Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3960375",
+   "title": "0.5.2 Patch Notes",
+   "league": "Runes of Aldur",
+   "tree": {
+    "commit": "1e9eb2d8c1",
+    "at": "2026-06-15T23:50Z",
+    "tag": "0.5.2"
+   }
+  },
+  {
+   "id": "0.5.1 hotfix 9",
+   "v": "0.5.1",
+   "kind": "hotfix",
+   "posted": "2026-06-10T00:08Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3957958",
+   "title": "0.5.1 Hotfix 9",
+   "n": 9,
+   "league": "Runes of Aldur"
+  },
+  {
+   "id": "0.5.1 hotfix 8",
+   "v": "0.5.1",
+   "kind": "hotfix",
+   "posted": "2026-06-09T05:09Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3956720",
+   "title": "0.5.1 Hotfix 8",
+   "n": 8,
+   "league": "Runes of Aldur"
+  },
+  {
+   "id": "0.5.1 hotfix 7",
+   "v": "0.5.1",
+   "kind": "hotfix",
+   "posted": "2026-06-09T02:10Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3956589",
+   "title": "0.5.1 Hotfix 7",
+   "n": 7,
+   "league": "Runes of Aldur"
+  },
+  {
+   "id": "0.5.1 hotfix 6",
+   "v": "0.5.1",
+   "kind": "hotfix",
+   "posted": "2026-06-08T04:34Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3955250",
+   "title": "0.5.1 Hotfix 6",
+   "n": 6,
+   "league": "Runes of Aldur"
+  },
+  {
+   "id": "0.5.1 hotfix 5",
+   "v": "0.5.1",
+   "kind": "hotfix",
+   "posted": "2026-06-08T01:38Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3955108",
+   "title": "0.5.1 Hotfix 5",
+   "n": 5,
+   "league": "Runes of Aldur"
+  },
+  {
+   "id": "0.5.1 hotfix 4",
+   "v": "0.5.1",
+   "kind": "hotfix",
+   "posted": "2026-06-06T00:39Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3951518",
+   "title": "0.5.1 Hotfix 4",
+   "n": 4,
+   "league": "Runes of Aldur"
+  },
+  {
+   "id": "0.5.1 hotfix 3",
+   "v": "0.5.1",
+   "kind": "hotfix",
+   "posted": "2026-06-05T21:25Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3951282",
+   "title": "0.5.1 Hotfix 3",
+   "n": 3,
+   "league": "Runes of Aldur"
+  },
+  {
+   "id": "0.5.1 hotfix 2",
+   "v": "0.5.1",
+   "kind": "hotfix",
+   "posted": "2026-06-05T07:34Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3949984",
+   "title": "0.5.1 Hotfix 2",
+   "n": 2,
+   "league": "Runes of Aldur"
+  },
+  {
+   "id": "0.5.1 hotfix 1",
+   "v": "0.5.1",
+   "kind": "hotfix",
+   "posted": "2026-06-05T04:56Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3949789",
+   "title": "0.5.1 Hotfix",
+   "n": 1,
+   "league": "Runes of Aldur"
+  },
+  {
+   "id": "0.5.1",
+   "v": "0.5.1",
+   "kind": "patch",
+   "posted": "2026-06-04T22:30Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3949197",
+   "title": "0.5.1 Patch Notes",
+   "league": "Runes of Aldur",
+   "tree": {
+    "commit": "39eafcff84",
+    "at": "2026-06-04T23:09Z",
+    "tag": "0.5.1"
+   }
+  },
+  {
+   "id": "0.5.0b hotfix 14",
+   "v": "0.5.0b",
+   "kind": "hotfix",
+   "posted": "2026-06-03T22:53Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3946948",
+   "title": "0.5.0b Hotfix 14 (Rolled back)",
+   "n": 14,
+   "flags": [
+    "rolled back"
+   ],
+   "league": "Runes of Aldur"
+  },
+  {
+   "id": "0.5.0b hotfix 13",
+   "v": "0.5.0b",
+   "kind": "hotfix",
+   "posted": "2026-06-03T05:55Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3945385",
+   "title": "0.5.0b Hotfix 13",
+   "n": 13,
+   "league": "Runes of Aldur"
+  },
+  {
+   "id": "0.5.0b hotfix 12",
+   "v": "0.5.0b",
+   "kind": "hotfix",
+   "posted": "2026-06-03T01:50Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3945119",
+   "title": "0.5.0b Hotfix 12",
+   "n": 12,
+   "league": "Runes of Aldur"
+  },
+  {
+   "id": "0.5.0b hotfix 11",
+   "v": "0.5.0b",
+   "kind": "hotfix",
+   "posted": "2026-06-02T07:52Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3943212",
+   "title": "0.5.0b Hotfix 11",
+   "n": 11,
+   "league": "Runes of Aldur"
+  },
+  {
+   "id": "0.5.0b hotfix 10",
+   "v": "0.5.0b",
+   "kind": "hotfix",
+   "posted": "2026-06-02T04:30Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3942896",
+   "title": "0.5.0b Hotfix 10",
+   "n": 10,
+   "league": "Runes of Aldur"
+  },
+  {
+   "id": "0.5.0b hotfix 9",
+   "v": "0.5.0b",
+   "kind": "hotfix",
+   "posted": "2026-06-02T01:23Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3942687",
+   "title": "0.5.0b Hotfix 9",
+   "n": 9,
+   "league": "Runes of Aldur"
+  },
+  {
+   "id": "0.5.0b hotfix 8",
+   "v": "0.5.0b",
+   "kind": "hotfix",
+   "posted": "2026-06-01T09:47Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3940973",
+   "title": "0.5.0b Hotfix 8",
+   "n": 8,
+   "league": "Runes of Aldur"
+  },
+  {
+   "id": "0.5.0b hotfix 7",
+   "v": "0.5.0b",
+   "kind": "hotfix",
+   "posted": "2026-06-01T08:46Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3940858",
+   "title": "0.5.0b Hotfix 7",
+   "n": 7,
+   "league": "Runes of Aldur"
+  },
+  {
+   "id": "0.5.0b hotfix 6",
+   "v": "0.5.0b",
+   "kind": "hotfix",
+   "posted": "2026-06-01T05:50Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3940564",
+   "title": "0.5.0b Hotfix 6",
+   "n": 6,
+   "league": "Runes of Aldur"
+  },
+  {
+   "id": "0.5.0b hotfix 5",
+   "v": "0.5.0b",
+   "kind": "hotfix",
+   "posted": "2026-06-01T01:28Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3940102",
+   "title": "0.5.0b Hotfix 5",
+   "n": 5,
+   "league": "Runes of Aldur"
+  },
+  {
+   "id": "0.5.0b hotfix 4",
+   "v": "0.5.0b",
+   "kind": "hotfix",
+   "posted": "2026-05-31T23:37Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3939886",
+   "title": "0.5.0b Hotfix 4",
+   "n": 4,
+   "league": "Runes of Aldur"
+  },
+  {
+   "id": "0.5.0b hotfix 3",
+   "v": "0.5.0b",
+   "kind": "hotfix",
+   "posted": "2026-05-31T09:07Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3937821",
+   "title": "0.5.0b Hotfix 3",
+   "n": 3,
+   "league": "Runes of Aldur"
+  },
+  {
+   "id": "0.5.0b hotfix 2",
+   "v": "0.5.0b",
+   "kind": "hotfix",
+   "posted": "2026-05-31T05:25Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3937394",
+   "title": "0.5.0b Hotfix 2",
+   "n": 2,
+   "league": "Runes of Aldur"
+  },
+  {
+   "id": "0.5.0b hotfix 1",
+   "v": "0.5.0b",
+   "kind": "hotfix",
+   "posted": "2026-05-31T00:47Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3936971",
+   "title": "0.5.0b Hotfix 1",
+   "n": 1,
+   "league": "Runes of Aldur"
+  },
+  {
+   "id": "0.5.0b",
+   "v": "0.5.0b",
+   "kind": "patch",
+   "posted": "2026-05-30T11:06Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3935437",
+   "title": "0.5.0b Patch Notes",
+   "league": "Runes of Aldur"
+  },
+  {
+   "id": "0.5.0 hotfix 3",
+   "v": "0.5.0",
+   "kind": "hotfix",
+   "posted": "2026-05-30T02:52Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3934869",
+   "title": "0.5.0 Hotfix 3",
+   "n": 3,
+   "league": "Runes of Aldur"
+  },
+  {
+   "id": "0.5.0 hotfix 2",
+   "v": "0.5.0",
+   "kind": "hotfix",
+   "posted": "2026-05-29T23:57Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3934600",
+   "title": "0.5.0 Hotfix 2",
+   "n": 2,
+   "league": "Runes of Aldur"
+  },
+  {
+   "id": "0.5.0 hotfix 1",
+   "v": "0.5.0",
+   "kind": "hotfix",
+   "posted": "2026-05-29T22:18Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3934397",
+   "title": "0.5.0 Hotfix",
+   "n": 1,
+   "league": "Runes of Aldur"
+  },
+  {
+   "id": "0.4.0l",
+   "v": "0.4.0l",
+   "kind": "patch",
+   "posted": "2026-05-25T21:30Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3933290",
+   "title": "0.4.0l Patch Notes",
+   "league": "Fate of the Vaal"
+  },
+  {
+   "id": "0.5.0",
+   "v": "0.5.0",
+   "kind": "patch",
+   "posted": "2026-05-21T23:30Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3932540",
+   "title": "Content Update 0.5.0 — Path of Exile 2: Return of the Ancients",
+   "league": "Runes of Aldur",
+   "live": "2026-05-30",
+   "tree": {
+    "commit": "8d9b16743b",
+    "tag": "0.5.0"
+   }
+  },
+  {
+   "id": "0.4.0k",
+   "v": "0.4.0k",
+   "kind": "patch",
+   "posted": "2026-05-07T18:30Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3930451",
+   "title": "0.4.0k Patch Notes",
+   "league": "Fate of the Vaal"
+  },
+  {
+   "id": "0.4.0j",
+   "v": "0.4.0j",
+   "kind": "patch",
+   "posted": "2026-04-20T00:32Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3928891",
+   "title": "0.4.0j Patch Notes",
+   "league": "Fate of the Vaal"
+  },
+  {
+   "id": "0.4.0i",
+   "v": "0.4.0i",
+   "kind": "patch",
+   "posted": "2026-03-25T00:34Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3924026",
+   "title": "0.4.0i Patch Notes",
+   "league": "Fate of the Vaal"
+  },
+  {
+   "id": "0.4.0h hotfix 1",
+   "v": "0.4.0h",
+   "kind": "hotfix",
+   "posted": "2026-03-17T05:00Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3921167",
+   "title": "0.4.0h Hotfix 1",
+   "n": 1,
+   "league": "Fate of the Vaal"
+  },
+  {
+   "id": "0.4.0h",
+   "v": "0.4.0h",
+   "kind": "patch",
+   "posted": "2026-03-17T00:14Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3921116",
+   "title": "0.4.0h Patch Notes",
+   "league": "Fate of the Vaal"
+  },
+  {
+   "id": "0.4.0g",
+   "v": "0.4.0g",
+   "kind": "patch",
+   "posted": "2026-03-06T15:30Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3914522",
+   "title": "0.4.0g Patch Notes",
+   "league": "Fate of the Vaal"
+  },
+  {
+   "id": "0.4.0f hotfix 1",
+   "v": "0.4.0f",
+   "kind": "hotfix",
+   "posted": "2026-02-28T09:03Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3913673",
+   "title": "0.4.0f Hotfix 1",
+   "n": 1,
+   "league": "Fate of the Vaal"
+  },
+  {
+   "id": "0.4.0f",
+   "v": "0.4.0f",
+   "kind": "patch",
+   "posted": "2026-02-26T17:55Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3913352",
+   "title": "0.4.0f Patch Notes",
+   "league": "Fate of the Vaal"
+  },
+  {
+   "id": "0.4.0e hotfix 2",
+   "v": "0.4.0e",
+   "kind": "hotfix",
+   "posted": "2026-02-20T04:22Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3912620",
+   "title": "0.4.0e Hotfix 2",
+   "n": 2,
+   "league": "Fate of the Vaal"
+  },
+  {
+   "id": "0.4.0e hotfix 1",
+   "v": "0.4.0e",
+   "kind": "hotfix",
+   "posted": "2026-02-16T03:53Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3912226",
+   "title": "0.4.0e Hotfix 1",
+   "n": 1,
+   "league": "Fate of the Vaal"
+  },
+  {
+   "id": "0.4.0e",
+   "v": "0.4.0e",
+   "kind": "patch",
+   "posted": "2026-02-09T20:43Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3911322",
+   "title": "0.4.0e Patch Notes",
+   "league": "Fate of the Vaal"
+  },
+  {
+   "id": "0.4.0d hotfix 3",
+   "v": "0.4.0d",
+   "kind": "hotfix",
+   "posted": "2026-01-26T23:18Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3908664",
+   "title": "0.4.0d Hotfix 3",
+   "n": 3,
+   "league": "Fate of the Vaal"
+  },
+  {
+   "id": "0.4.0d hotfix 2",
+   "v": "0.4.0d",
+   "kind": "hotfix",
+   "posted": "2026-01-15T22:08Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3906273",
+   "title": "0.4.0d Hotfix 2",
+   "n": 2,
+   "league": "Fate of the Vaal"
+  },
+  {
+   "id": "0.4.0d hotfix 1",
+   "v": "0.4.0d",
+   "kind": "hotfix",
+   "posted": "2026-01-15T05:16Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3906077",
+   "title": "0.4.0d Hotfix 1",
+   "n": 1,
+   "league": "Fate of the Vaal"
+  },
+  {
+   "id": "0.4.0d restart",
+   "v": "0.4.0d",
+   "kind": "restart",
+   "posted": "2026-01-15T00:52Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3906006",
+   "title": "0.4.0d Restart Fix",
+   "league": "Fate of the Vaal"
+  },
+  {
+   "id": "0.4.0d",
+   "v": "0.4.0d",
+   "kind": "patch",
+   "posted": "2026-01-14T21:30Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3905934",
+   "title": "0.4.0d Patch Notes",
+   "league": "Fate of the Vaal"
+  },
+  {
+   "id": "0.4.0c hotfix 26",
+   "v": "0.4.0c",
+   "kind": "hotfix",
+   "posted": "2026-01-12T03:23Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3905188",
+   "title": "0.4.0c Hotfix 26",
+   "n": 26,
+   "league": "Fate of the Vaal"
+  },
+  {
+   "id": "0.4.0c hotfix 25",
+   "v": "0.4.0c",
+   "kind": "hotfix",
+   "posted": "2026-01-12T00:07Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3905136",
+   "title": "0.4.0c Hotfix 25",
+   "n": 25,
+   "league": "Fate of the Vaal"
+  },
+  {
+   "id": "0.4.0c hotfix 24",
+   "v": "0.4.0c",
+   "kind": "hotfix",
+   "posted": "2026-01-09T02:53Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3904255",
+   "title": "0.4.0c Hotfix 24",
+   "n": 24,
+   "league": "Fate of the Vaal"
+  },
+  {
+   "id": "0.4.0c hotfix 23",
+   "v": "0.4.0c",
+   "kind": "hotfix",
+   "posted": "2026-01-08T21:58Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3904181",
+   "title": "0.4.0c Hotfix 23",
+   "n": 23,
+   "league": "Fate of the Vaal"
+  },
+  {
+   "id": "0.4.0c hotfix 22",
+   "v": "0.4.0c",
+   "kind": "hotfix",
+   "posted": "2026-01-08T02:36Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3903874",
+   "title": "0.4.0c Hotfix 22",
+   "n": 22,
+   "league": "Fate of the Vaal"
+  },
+  {
+   "id": "0.4.0c hotfix 21",
+   "v": "0.4.0c",
+   "kind": "hotfix",
+   "posted": "2026-01-07T23:13Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3903830",
+   "title": "0.4.0c Hotfix 21",
+   "n": 21,
+   "league": "Fate of the Vaal"
+  },
+  {
+   "id": "0.4.0c hotfix 20",
+   "v": "0.4.0c",
+   "kind": "hotfix",
+   "posted": "2026-01-07T06:14Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3903565",
+   "title": "0.4.0c Hotfix 20",
+   "n": 20,
+   "league": "Fate of the Vaal"
+  },
+  {
+   "id": "0.4.0c hotfix 19",
+   "v": "0.4.0c",
+   "kind": "hotfix",
+   "posted": "2026-01-07T04:16Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3903541",
+   "title": "0.4.0c Hotfix 19",
+   "n": 19,
+   "league": "Fate of the Vaal"
+  },
+  {
+   "id": "0.4.0c hotfix 18",
+   "v": "0.4.0c",
+   "kind": "hotfix",
+   "posted": "2026-01-07T01:50Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3903517",
+   "title": "0.4.0c Hotfix 18",
+   "n": 18,
+   "league": "Fate of the Vaal"
+  },
+  {
+   "id": "0.4.0c hotfix 17",
+   "v": "0.4.0c",
+   "kind": "hotfix",
+   "posted": "2026-01-06T01:08Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3903161",
+   "title": "0.4.0c Hotfix 17",
+   "n": 17,
+   "league": "Fate of the Vaal"
+  },
+  {
+   "id": "0.4.0c hotfix 16",
+   "v": "0.4.0c",
+   "kind": "hotfix",
+   "posted": "2026-01-05T22:50Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3903127",
+   "title": "0.4.0c Hotfix 16",
+   "n": 16,
+   "league": "Fate of the Vaal"
+  },
+  {
+   "id": "0.4.0c hotfix 15",
+   "v": "0.4.0c",
+   "kind": "hotfix",
+   "posted": "2026-01-05T00:54Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3902772",
+   "title": "0.4.0c Hotfix 15",
+   "n": 15,
+   "league": "Fate of the Vaal"
+  },
+  {
+   "id": "0.4.0c hotfix 14",
+   "v": "0.4.0c",
+   "kind": "hotfix",
+   "posted": "2026-01-03T08:27Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3901911",
+   "title": "0.4.0c Hotfix 14",
+   "n": 14,
+   "league": "Fate of the Vaal"
+  },
+  {
+   "id": "0.4.0c hotfix 13",
+   "v": "0.4.0c",
+   "kind": "hotfix",
+   "posted": "2026-01-03T01:11Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3901755",
+   "title": "0.4.0c Hotfix 13",
+   "n": 13,
+   "league": "Fate of the Vaal"
+  },
+  {
+   "id": "0.4.0c hotfix 12",
+   "v": "0.4.0c",
+   "kind": "hotfix",
+   "posted": "2025-12-30T08:05Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3900341",
+   "title": "0.4.0c Hotfix 12",
+   "n": 12,
+   "league": "Fate of the Vaal"
+  },
+  {
+   "id": "0.4.0c hotfix 11",
+   "v": "0.4.0c",
+   "kind": "hotfix",
+   "posted": "2025-12-30T01:47Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3900225",
+   "title": "0.4.0c Hotfix 11",
+   "n": 11,
+   "league": "Fate of the Vaal"
+  },
+  {
+   "id": "0.4.0c hotfix 10",
+   "v": "0.4.0c",
+   "kind": "hotfix",
+   "posted": "2025-12-29T04:16Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3899833",
+   "title": "0.4.0c Hotfix 10",
+   "n": 10,
+   "league": "Fate of the Vaal"
+  },
+  {
+   "id": "0.4.0c hotfix 9",
+   "v": "0.4.0c",
+   "kind": "hotfix",
+   "posted": "2025-12-29T01:10Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3899787",
+   "title": "0.4.0c Hotfix 9",
+   "n": 9,
+   "league": "Fate of the Vaal"
+  },
+  {
+   "id": "0.4.0c hotfix 8",
+   "v": "0.4.0c",
+   "kind": "hotfix",
+   "posted": "2025-12-24T02:15Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3897428",
+   "title": "0.4.0c Hotfix 8",
+   "n": 8,
+   "league": "Fate of the Vaal"
+  },
+  {
+   "id": "0.4.0c hotfix 7",
+   "v": "0.4.0c",
+   "kind": "hotfix",
+   "posted": "2025-12-23T02:10Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3896796",
+   "title": "0.4.0c Hotfix 7",
+   "n": 7,
+   "league": "Fate of the Vaal"
+  },
+  {
+   "id": "0.4.0c hotfix 6",
+   "v": "0.4.0c",
+   "kind": "hotfix",
+   "posted": "2025-12-22T23:08Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3896714",
+   "title": "0.4.0c Hotfix 6",
+   "n": 6,
+   "league": "Fate of the Vaal"
+  },
+  {
+   "id": "0.4.0c hotfix 5",
+   "v": "0.4.0c",
+   "kind": "hotfix",
+   "posted": "2025-12-22T05:17Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3896215",
+   "title": "0.4.0c Hotfix 5",
+   "n": 5,
+   "league": "Fate of the Vaal"
+  },
+  {
+   "id": "0.4.0c hotfix 4",
+   "v": "0.4.0c",
+   "kind": "hotfix",
+   "posted": "2025-12-22T01:53Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3896134",
+   "title": "0.4.0c Hotfix 4",
+   "n": 4,
+   "league": "Fate of the Vaal"
+  },
+  {
+   "id": "0.4.0c hotfix 3",
+   "v": "0.4.0c",
+   "kind": "hotfix",
+   "posted": "2025-12-19T03:41Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3893666",
+   "title": "0.4.0c Hotfix 3",
+   "n": 3,
+   "league": "Fate of the Vaal"
+  },
+  {
+   "id": "0.4.0c hotfix 2",
+   "v": "0.4.0c",
+   "kind": "hotfix",
+   "posted": "2025-12-19T03:08Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3893635",
+   "title": "0.4.0c Hotfix 2",
+   "n": 2,
+   "league": "Fate of the Vaal"
+  },
+  {
+   "id": "0.4.0c hotfix 1",
+   "v": "0.4.0c",
+   "kind": "hotfix",
+   "posted": "2025-12-19T01:18Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3893527",
+   "title": "0.4.0c Hotfix",
+   "n": 1,
+   "league": "Fate of the Vaal"
+  },
+  {
+   "id": "0.4.0c",
+   "v": "0.4.0c",
+   "kind": "patch",
+   "posted": "2025-12-18T21:30Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3893204",
+   "title": "0.4.0c Patch Notes",
+   "league": "Fate of the Vaal"
+  },
+  {
+   "id": "0.4.0b hotfix 5",
+   "v": "0.4.0b",
+   "kind": "hotfix",
+   "posted": "2025-12-18T01:49Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3892472",
+   "title": "0.4.0b Hotfix 5",
+   "n": 5,
+   "league": "Fate of the Vaal"
+  },
+  {
+   "id": "0.4.0b hotfix 4",
+   "v": "0.4.0b",
+   "kind": "hotfix",
+   "posted": "2025-12-17T04:58Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3891565",
+   "title": "0.4.0b Hotfix 4",
+   "n": 4,
+   "league": "Fate of the Vaal"
+  },
+  {
+   "id": "0.4.0b hotfix 3",
+   "v": "0.4.0b",
+   "kind": "hotfix",
+   "posted": "2025-12-17T03:55Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3891523",
+   "title": "0.4.0b Hotfix 3",
+   "n": 3,
+   "league": "Fate of the Vaal"
+  },
+  {
+   "id": "0.4.0b hotfix 2",
+   "v": "0.4.0b",
+   "kind": "hotfix",
+   "posted": "2025-12-17T01:27Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3891410",
+   "title": "0.4.0b Hotfix 2",
+   "n": 2,
+   "league": "Fate of the Vaal"
+  },
+  {
+   "id": "0.4.0b hotfix 1",
+   "v": "0.4.0b",
+   "kind": "hotfix",
+   "posted": "2025-12-16T03:58Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3890356",
+   "title": "0.4.0b Hotfix",
+   "n": 1,
+   "league": "Fate of the Vaal"
+  },
+  {
+   "id": "0.4.0b",
+   "v": "0.4.0b",
+   "kind": "patch",
+   "posted": "2025-12-15T23:30Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3890041",
+   "title": "0.4.0b Patch Notes",
+   "league": "Fate of the Vaal"
+  },
+  {
+   "id": "0.4.0 hotfix 10",
+   "v": "0.4.0",
+   "kind": "hotfix",
+   "posted": "2025-12-15T05:03Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3888996",
+   "title": "0.4.0 Hotfix 10",
+   "n": 10,
+   "league": "Fate of the Vaal"
+  },
+  {
+   "id": "0.4.0 hotfix 9",
+   "v": "0.4.0",
+   "kind": "hotfix",
+   "posted": "2025-12-15T02:32Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3888865",
+   "title": "0.4.0 Hotfix 9",
+   "n": 9,
+   "league": "Fate of the Vaal"
+  },
+  {
+   "id": "0.4.0 hotfix 8",
+   "v": "0.4.0",
+   "kind": "hotfix",
+   "posted": "2025-12-13T22:32Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3887168",
+   "title": "0.4.0 Hotfix 8",
+   "n": 8,
+   "league": "Fate of the Vaal"
+  },
+  {
+   "id": "0.4.0 hotfix 7",
+   "v": "0.4.0",
+   "kind": "hotfix",
+   "posted": "2025-12-13T09:02Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3886203",
+   "title": "0.4.0 Hotfix 7",
+   "n": 7,
+   "league": "Fate of the Vaal"
+  },
+  {
+   "id": "0.4.0 hotfix 6",
+   "v": "0.4.0",
+   "kind": "hotfix",
+   "posted": "2025-12-13T04:19Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3885965",
+   "title": "0.4.0 Hotfix 6",
+   "n": 6,
+   "league": "Fate of the Vaal"
+  },
+  {
+   "id": "0.4.0 hotfix 5",
+   "v": "0.4.0",
+   "kind": "hotfix",
+   "posted": "2025-12-13T03:54Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3885948",
+   "title": "0.4.0 Hotfix 5",
+   "n": 5,
+   "league": "Fate of the Vaal"
+  },
+  {
+   "id": "0.4.0 hotfix 4",
+   "v": "0.4.0",
+   "kind": "hotfix",
+   "posted": "2025-12-13T02:38Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3885885",
+   "title": "0.4.0 Hotfix 4",
+   "n": 4,
+   "league": "Fate of the Vaal"
+  },
+  {
+   "id": "0.4.0 hotfix 3",
+   "v": "0.4.0",
+   "kind": "hotfix",
+   "posted": "2025-12-13T00:16Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3885647",
+   "title": "0.4.0 Hotfix 3",
+   "n": 3,
+   "league": "Fate of the Vaal"
+  },
+  {
+   "id": "0.4.0 hotfix 2",
+   "v": "0.4.0",
+   "kind": "hotfix",
+   "posted": "2025-12-12T22:20Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3885515",
+   "title": "0.4.0 Hotfix 2",
+   "n": 2,
+   "league": "Fate of the Vaal"
+  },
+  {
+   "id": "0.4.0 hotfix 1",
+   "v": "0.4.0",
+   "kind": "hotfix",
+   "posted": "2025-12-12T20:47Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3885419",
+   "title": "0.4.0 Hotfix",
+   "n": 1,
+   "league": "Fate of the Vaal"
+  },
+  {
+   "id": "0.3.1f",
+   "v": "0.3.1f",
+   "kind": "patch",
+   "posted": "2025-12-08T20:30Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3884455",
+   "title": "0.3.1f Patch Notes",
+   "league": "Rise of the Abyssal"
+  },
+  {
+   "id": "0.4.0",
+   "v": "0.4.0",
+   "kind": "patch",
+   "posted": "2025-12-04T22:00Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3883495",
+   "title": "Content Update 0.4.0 — Path of Exile 2: The Last of the Druids",
+   "league": "Fate of the Vaal",
+   "live": "2025-12-13",
+   "tree": {
+    "commit": "859f2b11e3",
+    "at": "2026-05-26T04:32Z",
+    "tag": "0.4.0"
+   }
+  },
+  {
+   "id": "0.3.1e",
+   "v": "0.3.1e",
+   "kind": "patch",
+   "posted": "2025-12-04T17:30Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3883397",
+   "title": "0.3.1e Patch Notes",
+   "league": "Rise of the Abyssal"
+  },
+  {
+   "id": "0.3.1d",
+   "v": "0.3.1d",
+   "kind": "patch",
+   "posted": "2025-10-31T15:30Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3870737",
+   "title": "0.3.1.d Patch Notes",
+   "league": "Rise of the Abyssal"
+  },
+  {
+   "id": "0.3.1c hotfix 1",
+   "v": "0.3.1c",
+   "kind": "hotfix",
+   "posted": "2025-10-23T19:20Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3869047",
+   "title": "0.3.1c Hotfix",
+   "n": 1,
+   "league": "Rise of the Abyssal"
+  },
+  {
+   "id": "0.3.1c",
+   "v": "0.3.1c",
+   "kind": "patch",
+   "posted": "2025-10-23T17:30Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3868957",
+   "title": "0.3.1c Patch Notes",
+   "league": "Rise of the Abyssal"
+  },
+  {
+   "id": "0.3.1b",
+   "v": "0.3.1b",
+   "kind": "patch",
+   "posted": "2025-10-08T23:31Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3865794",
+   "title": "0.3.1b Patchnotes",
+   "league": "Rise of the Abyssal"
+  },
+  {
+   "id": "0.3.1 hotfix 2",
+   "v": "0.3.1",
+   "kind": "hotfix",
+   "posted": "2025-10-06T04:07Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3864862",
+   "title": "0.3.1 Hotfix 2",
+   "n": 2,
+   "league": "Rise of the Abyssal"
+  },
+  {
+   "id": "0.3.1 hotfix 1",
+   "v": "0.3.1",
+   "kind": "hotfix",
+   "posted": "2025-10-02T00:32Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3862999",
+   "title": "0.3.1 Hotfix",
+   "n": 1,
+   "league": "Rise of the Abyssal"
+  },
+  {
+   "id": "0.3.1",
+   "v": "0.3.1",
+   "kind": "patch",
+   "posted": "2025-09-30T23:30Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3862213",
+   "title": "0.3.1 Patch Notes",
+   "league": "Rise of the Abyssal"
+  },
+  {
+   "id": "0.3.0c hotfix 2",
+   "v": "0.3.0c",
+   "kind": "hotfix",
+   "posted": "2025-09-22T00:21Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3858244",
+   "title": "0.3.0c Hotfix 2",
+   "n": 2,
+   "league": "Rise of the Abyssal"
+  },
+  {
+   "id": "0.3.0c hotfix 1",
+   "v": "0.3.0c",
+   "kind": "hotfix",
+   "posted": "2025-09-12T03:18Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3851559",
+   "title": "0.3.0c Hotfix",
+   "n": 1,
+   "league": "Rise of the Abyssal"
+  },
+  {
+   "id": "0.3.0c",
+   "v": "0.3.0c",
+   "kind": "patch",
+   "posted": "2025-09-11T21:30Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3851277",
+   "title": "0.3.0c Patch Notes",
+   "league": "Rise of the Abyssal"
+  },
+  {
+   "id": "0.3.0b hotfix 4",
+   "v": "0.3.0b",
+   "kind": "hotfix",
+   "posted": "2025-09-08T04:30Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3847553",
+   "title": "0.3.0b Hotfix 4",
+   "n": 4,
+   "league": "Rise of the Abyssal"
+  },
+  {
+   "id": "0.3.0b hotfix 3",
+   "v": "0.3.0b",
+   "kind": "hotfix",
+   "posted": "2025-09-08T01:26Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3847429",
+   "title": "0.3.0b Hotfix 3",
+   "n": 3,
+   "league": "Rise of the Abyssal"
+  },
+  {
+   "id": "0.3.0b hotfix 2",
+   "v": "0.3.0b",
+   "kind": "hotfix",
+   "posted": "2025-09-04T06:08Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3841566",
+   "title": "0.3.0b Hotfix 2",
+   "n": 2,
+   "league": "Rise of the Abyssal"
+  },
+  {
+   "id": "0.3.0b hotfix 1",
+   "v": "0.3.0b",
+   "kind": "hotfix",
+   "posted": "2025-09-04T01:02Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3841150",
+   "title": "0.3.0b Hotfix",
+   "n": 1,
+   "league": "Rise of the Abyssal"
+  },
+  {
+   "id": "0.3.0b",
+   "v": "0.3.0b",
+   "kind": "patch",
+   "posted": "2025-09-03T22:30Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3840893",
+   "title": "0.3.0b Patch Notes",
+   "league": "Rise of the Abyssal"
+  },
+  {
+   "id": "0.3.0 hotfix 13",
+   "v": "0.3.0",
+   "kind": "hotfix",
+   "posted": "2025-09-02T01:47Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3836996",
+   "title": "0.3.0 Hotfix 13",
+   "n": 13,
+   "league": "Rise of the Abyssal"
+  },
+  {
+   "id": "0.3.0 hotfix 12",
+   "v": "0.3.0",
+   "kind": "hotfix",
+   "posted": "2025-09-01T05:14Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3834767",
+   "title": "0.3.0 Hotfix 12",
+   "n": 12,
+   "league": "Rise of the Abyssal"
+  },
+  {
+   "id": "0.3.0 hotfix 11",
+   "v": "0.3.0",
+   "kind": "hotfix",
+   "posted": "2025-09-01T03:00Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3834579",
+   "title": "0.3.0 Hotfix 11",
+   "n": 11,
+   "league": "Rise of the Abyssal"
+  },
+  {
+   "id": "0.3.0 hotfix 10",
+   "v": "0.3.0",
+   "kind": "hotfix",
+   "posted": "2025-08-31T02:24Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3831941",
+   "title": "0.3.0 Hotfix 10",
+   "n": 10,
+   "league": "Rise of the Abyssal"
+  },
+  {
+   "id": "0.3.0 hotfix 9",
+   "v": "0.3.0",
+   "kind": "hotfix",
+   "posted": "2025-08-30T08:29Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3830320",
+   "title": "0.3.0 Hotfix 9",
+   "n": 9,
+   "league": "Rise of the Abyssal"
+  },
+  {
+   "id": "0.3.0 hotfix 8",
+   "v": "0.3.0",
+   "kind": "hotfix",
+   "posted": "2025-08-30T05:58Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3830150",
+   "title": "0.3.0 Hotfix 8",
+   "n": 8,
+   "league": "Rise of the Abyssal"
+  },
+  {
+   "id": "0.3.0 hotfix 7",
+   "v": "0.3.0",
+   "kind": "hotfix",
+   "posted": "2025-08-30T05:17Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3830106",
+   "title": "0.3.0 Hotfix 7",
+   "n": 7,
+   "league": "Rise of the Abyssal"
+  },
+  {
+   "id": "0.3.0 hotfix 6",
+   "v": "0.3.0",
+   "kind": "hotfix",
+   "posted": "2025-08-30T03:18Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3829963",
+   "title": "0.3.0 Hotfix 6",
+   "n": 6,
+   "league": "Rise of the Abyssal"
+  },
+  {
+   "id": "0.3.0 hotfix 5",
+   "v": "0.3.0",
+   "kind": "hotfix",
+   "posted": "2025-08-30T02:58Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3829934",
+   "title": "0.3.0 Hotfix 5",
+   "n": 5,
+   "league": "Rise of the Abyssal"
+  },
+  {
+   "id": "0.3.0 hotfix 4",
+   "v": "0.3.0",
+   "kind": "hotfix",
+   "posted": "2025-08-30T01:51Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3829838",
+   "title": "0.3.0 Hotfix 4",
+   "n": 4,
+   "league": "Rise of the Abyssal"
+  },
+  {
+   "id": "0.3.0 hotfix 3",
+   "v": "0.3.0",
+   "kind": "hotfix",
+   "posted": "2025-08-30T01:07Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3829783",
+   "title": "0.3.0 Hotfix 3",
+   "n": 3,
+   "league": "Rise of the Abyssal"
+  },
+  {
+   "id": "0.3.0 hotfix 2",
+   "v": "0.3.0",
+   "kind": "hotfix",
+   "posted": "2025-08-30T00:36Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3829738",
+   "title": "0.3.0 Hotfix 2",
+   "n": 2,
+   "league": "Rise of the Abyssal"
+  },
+  {
+   "id": "0.3.0 hotfix 1",
+   "v": "0.3.0",
+   "kind": "hotfix",
+   "posted": "2025-08-29T23:27Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3829630",
+   "title": "0.3.0 Hotfix",
+   "n": 1,
+   "league": "Rise of the Abyssal"
+  },
+  {
+   "id": "0.2.1e",
+   "v": "0.2.1e",
+   "kind": "patch",
+   "posted": "2025-08-26T23:30Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3828523",
+   "title": "0.2.1e Patch Notes",
+   "league": "Dawn of the Hunt"
+  },
+  {
+   "id": "0.3.0",
+   "v": "0.3.0",
+   "kind": "patch",
+   "posted": "2025-08-20T23:00Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3826682",
+   "title": "Content Update 0.3.0 — Path of Exile 2: The Third Edict",
+   "league": "Rise of the Abyssal",
+   "live": "2025-08-30"
+  },
+  {
+   "id": "0.2.1d",
+   "v": "0.2.1d",
+   "kind": "patch",
+   "posted": "2025-08-20T18:28Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3826548",
+   "title": "0.2.1d Patch Notes",
+   "league": "Dawn of the Hunt"
+  },
+  {
+   "id": "0.2.1c",
+   "v": "0.2.1c",
+   "kind": "patch",
+   "posted": "2025-08-04T00:35Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3822192",
+   "title": "0.2.1c Patch notes",
+   "league": "Dawn of the Hunt"
+  },
+  {
+   "id": "0.2.1b hotfix 1",
+   "v": "0.2.1b",
+   "kind": "hotfix",
+   "posted": "2025-07-17T02:23Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3814509",
+   "title": "0.2.1b Hotfix",
+   "n": 1,
+   "league": "Dawn of the Hunt"
+  },
+  {
+   "id": "0.2.1b",
+   "v": "0.2.1b",
+   "kind": "patch",
+   "posted": "2025-07-11T00:21Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3811180",
+   "title": "0.2.1b Patch Notes",
+   "league": "Dawn of the Hunt"
+  },
+  {
+   "id": "0.2.1 hotfix 2",
+   "v": "0.2.1",
+   "kind": "hotfix",
+   "posted": "2025-06-11T06:04Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3788896",
+   "title": "0.2.1 Hotfix 2",
+   "n": 2,
+   "league": "Dawn of the Hunt"
+  },
+  {
+   "id": "0.2.1 hotfix 1",
+   "v": "0.2.1",
+   "kind": "hotfix",
+   "posted": "2025-06-06T05:00Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3787155",
+   "title": "0.2.1 Hotfix 1",
+   "n": 1,
+   "league": "Dawn of the Hunt"
+  },
+  {
+   "id": "0.2.1",
+   "v": "0.2.1",
+   "kind": "patch",
+   "posted": "2025-06-05T23:32Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3787044",
+   "title": "0.2.1 Patch Notes",
+   "league": "Dawn of the Hunt"
+  },
+  {
+   "id": "0.2.0h restart",
+   "v": "0.2.0h",
+   "kind": "restart",
+   "posted": "2025-05-21T00:09Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3783274",
+   "title": "0.2.0h Restart Patch Notes",
+   "league": "Dawn of the Hunt"
+  },
+  {
+   "id": "0.2.0h hotfix 2",
+   "v": "0.2.0h",
+   "kind": "hotfix",
+   "posted": "2025-05-15T04:20Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3781296",
+   "title": "0.2.0h Hotfix 2",
+   "n": 2,
+   "league": "Dawn of the Hunt"
+  },
+  {
+   "id": "0.2.0h hotfix 1",
+   "v": "0.2.0h",
+   "kind": "hotfix",
+   "posted": "2025-05-15T03:36Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3781276",
+   "title": "0.2.0h Hotfix 1",
+   "n": 1,
+   "league": "Dawn of the Hunt"
+  },
+  {
+   "id": "0.2.0h",
+   "v": "0.2.0h",
+   "kind": "patch",
+   "posted": "2025-05-15T00:07Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3781189",
+   "title": "0.2.0h Patch Notes",
+   "league": "Dawn of the Hunt"
+  },
+  {
+   "id": "0.2.0g hotfix 1",
+   "v": "0.2.0g",
+   "kind": "hotfix",
+   "posted": "2025-05-02T01:21Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3775483",
+   "title": "0.2.0g Hotfix 1",
+   "n": 1,
+   "league": "Dawn of the Hunt"
+  },
+  {
+   "id": "0.2.0g",
+   "v": "0.2.0g",
+   "kind": "patch",
+   "posted": "2025-05-01T03:28Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3774660",
+   "title": "0.2.0g Patch Notes (deployed)",
+   "league": "Dawn of the Hunt"
+  },
+  {
+   "id": "0.2.0f hotfix 7",
+   "v": "0.2.0f",
+   "kind": "hotfix",
+   "posted": "2025-04-30T02:28Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3774165",
+   "title": "0.2.0f Hotfix 7",
+   "n": 7,
+   "league": "Dawn of the Hunt"
+  },
+  {
+   "id": "0.2.0f hotfix 6",
+   "v": "0.2.0f",
+   "kind": "hotfix",
+   "posted": "2025-04-23T02:21Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3770436",
+   "title": "0.2.0f Hotfix 6",
+   "n": 6,
+   "league": "Dawn of the Hunt"
+  },
+  {
+   "id": "0.2.0f hotfix 5",
+   "v": "0.2.0f",
+   "kind": "hotfix",
+   "posted": "2025-04-17T04:44Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3764908",
+   "title": "0.2.0f Hotfix 5",
+   "n": 5,
+   "league": "Dawn of the Hunt"
+  },
+  {
+   "id": "0.2.0f hotfix 4",
+   "v": "0.2.0f",
+   "kind": "hotfix",
+   "posted": "2025-04-17T01:38Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3764759",
+   "title": "0.2.0f Hotfix 4",
+   "n": 4,
+   "league": "Dawn of the Hunt"
+  },
+  {
+   "id": "0.2.0f hotfix 3",
+   "v": "0.2.0f",
+   "kind": "hotfix",
+   "posted": "2025-04-16T05:50Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3763388",
+   "title": "0.2.0f Hotfix 3",
+   "n": 3,
+   "league": "Dawn of the Hunt"
+  },
+  {
+   "id": "0.2.0f hotfix 2",
+   "v": "0.2.0f",
+   "kind": "hotfix",
+   "posted": "2025-04-16T05:25Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3763359",
+   "title": "0.2.0f Hotfix 2",
+   "n": 2,
+   "league": "Dawn of the Hunt"
+  },
+  {
+   "id": "0.2.0f hotfix 1",
+   "v": "0.2.0f",
+   "kind": "hotfix",
+   "posted": "2025-04-16T03:36Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3763221",
+   "title": "0.2.0f Hotfix",
+   "n": 1,
+   "league": "Dawn of the Hunt"
+  },
+  {
+   "id": "0.2.0f",
+   "v": "0.2.0f",
+   "kind": "patch",
+   "posted": "2025-04-16T00:30Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3762929",
+   "title": "0.2.0f Patch Notes",
+   "league": "Dawn of the Hunt"
+  },
+  {
+   "id": "0.2.0e hotfix 4",
+   "v": "0.2.0e",
+   "kind": "hotfix",
+   "posted": "2025-04-12T05:48Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3757351",
+   "title": "0.2.0e Hotfix 4",
+   "n": 4,
+   "league": "Dawn of the Hunt"
+  },
+  {
+   "id": "0.2.0e hotfix 3",
+   "v": "0.2.0e",
+   "kind": "hotfix",
+   "posted": "2025-04-11T23:43Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3756999",
+   "title": "0.2.0e Hotfix 3",
+   "n": 3,
+   "league": "Dawn of the Hunt"
+  },
+  {
+   "id": "0.2.0e hotfix 2",
+   "v": "0.2.0e",
+   "kind": "hotfix",
+   "posted": "2025-04-11T01:55Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3754973",
+   "title": "0.2.0e Hotfix 2",
+   "n": 2,
+   "league": "Dawn of the Hunt"
+  },
+  {
+   "id": "0.2.0e hotfix 1",
+   "v": "0.2.0e",
+   "kind": "hotfix",
+   "posted": "2025-04-11T00:43Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3754855",
+   "title": "0.2.0e Hotfix",
+   "n": 1,
+   "league": "Dawn of the Hunt"
+  },
+  {
+   "id": "0.2.0e",
+   "v": "0.2.0e",
+   "kind": "patch",
+   "posted": "2025-04-10T21:30Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3754474",
+   "title": "0.2.0e Patch Notes",
+   "league": "Dawn of the Hunt"
+  },
+  {
+   "id": "0.2.0d hotfix 2",
+   "v": "0.2.0d",
+   "kind": "hotfix",
+   "posted": "2025-04-09T23:54Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3752676",
+   "title": "0.2.0d Hotfix 2",
+   "n": 2,
+   "league": "Dawn of the Hunt"
+  },
+  {
+   "id": "0.2.0d hotfix 1",
+   "v": "0.2.0d",
+   "kind": "hotfix",
+   "posted": "2025-04-08T06:49Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3748960",
+   "title": "0.2.0d Hotfix",
+   "n": 1,
+   "league": "Dawn of the Hunt"
+  },
+  {
+   "id": "0.2.0d",
+   "v": "0.2.0d",
+   "kind": "patch",
+   "posted": "2025-04-08T04:04Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3748709",
+   "title": "0.2.0d Patch Notes",
+   "league": "Dawn of the Hunt"
+  },
+  {
+   "id": "0.2.0c",
+   "v": "0.2.0c",
+   "kind": "patch",
+   "posted": "2025-04-07T06:56Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3746503",
+   "title": "0.2.0c Patch Notes (restartless)",
+   "flags": [
+    "restartless"
+   ],
+   "league": "Dawn of the Hunt"
+  },
+  {
+   "id": "0.2.0b hotfix 3",
+   "v": "0.2.0b",
+   "kind": "hotfix",
+   "posted": "2025-04-07T01:37Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3746117",
+   "title": "0.2.0b Hotfix 3",
+   "n": 3,
+   "league": "Dawn of the Hunt"
+  },
+  {
+   "id": "0.2.0b hotfix 2",
+   "v": "0.2.0b",
+   "kind": "hotfix",
+   "posted": "2025-04-06T22:40Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3745868",
+   "title": "0.2.0b Hotfix 2",
+   "n": 2,
+   "league": "Dawn of the Hunt"
+  },
+  {
+   "id": "0.2.0b hotfix 1",
+   "v": "0.2.0b",
+   "kind": "hotfix",
+   "posted": "2025-04-06T03:26Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3744136",
+   "title": "0.2.0b Hotfix",
+   "n": 1,
+   "league": "Dawn of the Hunt"
+  },
+  {
+   "id": "0.2.0b",
+   "v": "0.2.0b",
+   "kind": "patch",
+   "posted": "2025-04-05T18:30Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3743395",
+   "title": "0.2.0b Patch Notes",
+   "league": "Dawn of the Hunt"
+  },
+  {
+   "id": "0.2.0 hotfix 7",
+   "v": "0.2.0",
+   "kind": "hotfix",
+   "posted": "2025-04-05T09:44Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3742600",
+   "title": "0.2.0 Hotfix 7",
+   "n": 7,
+   "league": "Dawn of the Hunt"
+  },
+  {
+   "id": "0.2.0 hotfix 6",
+   "v": "0.2.0",
+   "kind": "hotfix",
+   "posted": "2025-04-05T07:16Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3742419",
+   "title": "0.2.0 Hotfix 6",
+   "n": 6,
+   "league": "Dawn of the Hunt"
+  },
+  {
+   "id": "0.2.0 hotfix 5",
+   "v": "0.2.0",
+   "kind": "hotfix",
+   "posted": "2025-04-05T05:31Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3742286",
+   "title": "0.2.0 Hotfix 5",
+   "n": 5,
+   "league": "Dawn of the Hunt"
+  },
+  {
+   "id": "0.2.0 hotfix 4",
+   "v": "0.2.0",
+   "kind": "hotfix",
+   "posted": "2025-04-05T03:40Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3742141",
+   "title": "0.2.0 Hotfix 4",
+   "n": 4,
+   "league": "Dawn of the Hunt"
+  },
+  {
+   "id": "0.2.0 hotfix 3",
+   "v": "0.2.0",
+   "kind": "hotfix",
+   "posted": "2025-04-05T00:33Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3741888",
+   "title": "0.2.0 Hotfix 3",
+   "n": 3,
+   "league": "Dawn of the Hunt"
+  },
+  {
+   "id": "0.2.0 hotfix 2",
+   "v": "0.2.0",
+   "kind": "hotfix",
+   "posted": "2025-04-04T21:19Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3741503",
+   "title": "0.2.0 Hotfix 2",
+   "n": 2,
+   "league": "Dawn of the Hunt"
+  },
+  {
+   "id": "0.2.0 hotfix 1",
+   "v": "0.2.0",
+   "kind": "hotfix",
+   "posted": "2025-04-04T20:16Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3741313",
+   "title": "0.2.0 Hotfix",
+   "n": 1,
+   "league": "Dawn of the Hunt"
+  },
+  {
+   "id": "0.2.0",
+   "v": "0.2.0",
+   "kind": "patch",
+   "posted": "2025-04-03T00:24Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3740562",
+   "title": "Content Update 0.2.0 -- Path of Exile 2: Dawn of the Hunt",
+   "league": "Dawn of the Hunt",
+   "live": "2025-04-05"
+  },
+  {
+   "id": "0.1.1g",
+   "v": "0.1.1g",
+   "kind": "patch",
+   "posted": "2025-03-27T17:06Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3738756",
+   "title": "0.1.1g Patch Notes",
+   "league": "Early Access"
+  },
+  {
+   "id": "0.1.1f hotfix 1",
+   "v": "0.1.1f",
+   "kind": "hotfix",
+   "posted": "2025-03-06T01:58Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3732353",
+   "title": "0.1.1f Hotfix",
+   "n": 1,
+   "league": "Early Access"
+  },
+  {
+   "id": "0.1.1f",
+   "v": "0.1.1f",
+   "kind": "patch",
+   "posted": "2025-03-05T23:01Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3732259",
+   "title": "0.1.1f Patch Notes",
+   "league": "Early Access"
+  },
+  {
+   "id": "0.1.1e hotfix 2",
+   "v": "0.1.1e",
+   "kind": "hotfix",
+   "posted": "2025-02-27T04:46Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3729362",
+   "title": "0.1.1e Hotfix 2",
+   "n": 2,
+   "league": "Early Access"
+  },
+  {
+   "id": "0.1.1e hotfix 1",
+   "v": "0.1.1e",
+   "kind": "hotfix",
+   "posted": "2025-02-27T03:14Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3729326",
+   "title": "0.1.1e Hotfix",
+   "n": 1,
+   "league": "Early Access"
+  },
+  {
+   "id": "0.1.1e",
+   "v": "0.1.1e",
+   "kind": "patch",
+   "posted": "2025-02-26T23:01Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3729207",
+   "title": "0.1.1e Patch Notes",
+   "league": "Early Access"
+  },
+  {
+   "id": "0.1.1d hotfix 1",
+   "v": "0.1.1d",
+   "kind": "hotfix",
+   "posted": "2025-02-18T04:16Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3724779",
+   "title": "0.1.1d Hotfix",
+   "n": 1,
+   "league": "Early Access"
+  },
+  {
+   "id": "0.1.1d",
+   "v": "0.1.1d",
+   "kind": "patch",
+   "posted": "2025-02-16T23:40Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3723866",
+   "title": "0.1.1d Patch Notes",
+   "league": "Early Access"
+  },
+  {
+   "id": "0.1.1c hotfix 1",
+   "v": "0.1.1c",
+   "kind": "hotfix",
+   "posted": "2025-02-10T22:39Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3721134",
+   "title": "0.1.1c Hotfix 1",
+   "n": 1,
+   "league": "Early Access"
+  },
+  {
+   "id": "0.1.1c",
+   "v": "0.1.1c",
+   "kind": "patch",
+   "posted": "2025-02-04T22:00Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3717308",
+   "title": "0.1.1c Patch Notes",
+   "league": "Early Access"
+  },
+  {
+   "id": "0.1.1b hotfix 1",
+   "v": "0.1.1b",
+   "kind": "hotfix",
+   "posted": "2025-01-31T05:26Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3714228",
+   "title": "0.1.1b Hotfix",
+   "n": 1,
+   "league": "Early Access"
+  },
+  {
+   "id": "0.1.1b",
+   "v": "0.1.1b",
+   "kind": "patch",
+   "posted": "2025-01-23T21:53Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3707604",
+   "title": "0.1.1b Patch Notes (restartless)",
+   "flags": [
+    "restartless"
+   ],
+   "league": "Early Access"
+  },
+  {
+   "id": "0.1.1 hotfix 4",
+   "v": "0.1.1",
+   "kind": "hotfix",
+   "posted": "2025-01-21T01:36Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3704595",
+   "title": "0.1.1 Hotfix 4",
+   "n": 4,
+   "league": "Early Access"
+  },
+  {
+   "id": "0.1.1 hotfix 3",
+   "v": "0.1.1",
+   "kind": "hotfix",
+   "posted": "2025-01-20T02:20Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3703054",
+   "title": "0.1.1 Hotfix 3",
+   "n": 3,
+   "league": "Early Access"
+  },
+  {
+   "id": "0.1.1 hotfix 2",
+   "v": "0.1.1",
+   "kind": "hotfix",
+   "posted": "2025-01-17T07:50Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3697854",
+   "title": "0.1.1 Hotfix 2",
+   "n": 2,
+   "league": "Early Access"
+  },
+  {
+   "id": "0.1.1 hotfix 1",
+   "v": "0.1.1",
+   "kind": "hotfix",
+   "posted": "2025-01-17T01:24Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3697242",
+   "title": "0.1.1 Hotfix",
+   "n": 1,
+   "league": "Early Access"
+  },
+  {
+   "id": "0.1.1",
+   "v": "0.1.1",
+   "kind": "patch",
+   "posted": "2025-01-16T20:00Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3696353",
+   "title": "0.1.1 Patch Notes",
+   "league": "Early Access"
+  },
+  {
+   "id": "0.1.0f hotfix 3",
+   "v": "0.1.0f",
+   "kind": "hotfix",
+   "posted": "2025-01-09T22:38Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3687868",
+   "title": "0.1.0f Hotfix 3",
+   "n": 3,
+   "league": "Early Access"
+  },
+  {
+   "id": "0.1.0f hotfix 2",
+   "v": "0.1.0f",
+   "kind": "hotfix",
+   "posted": "2025-01-09T08:59Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3686954",
+   "title": "0.1.0f Hotfix 2",
+   "n": 2,
+   "league": "Early Access"
+  },
+  {
+   "id": "0.1.0f hotfix 1",
+   "v": "0.1.0f",
+   "kind": "hotfix",
+   "posted": "2025-01-09T04:15Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3686635",
+   "title": "0.1.0f Hotfix 1",
+   "n": 1,
+   "league": "Early Access"
+  },
+  {
+   "id": "0.1.0f",
+   "v": "0.1.0f",
+   "kind": "patch",
+   "posted": "2025-01-09T00:20Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3686378",
+   "title": "0.1.0f Patch Notes (restartless)",
+   "flags": [
+    "restartless"
+   ],
+   "league": "Early Access"
+  },
+  {
+   "id": "0.1.0e hotfix 7",
+   "v": "0.1.0e",
+   "kind": "hotfix",
+   "posted": "2025-01-07T01:24Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3683685",
+   "title": "0.1.0e Hotfix 7",
+   "n": 7,
+   "league": "Early Access"
+  },
+  {
+   "id": "0.1.0e hotfix 6",
+   "v": "0.1.0e",
+   "kind": "hotfix",
+   "posted": "2025-01-06T06:03Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3682380",
+   "title": "0.1.0e Hotfix 6",
+   "n": 6,
+   "league": "Early Access"
+  },
+  {
+   "id": "0.1.0e hotfix 5",
+   "v": "0.1.0e",
+   "kind": "hotfix",
+   "posted": "2025-01-02T22:26Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3677329",
+   "title": "0.1.0e Hotfix 5",
+   "n": 5,
+   "league": "Early Access"
+  },
+  {
+   "id": "0.1.0e hotfix 4",
+   "v": "0.1.0e",
+   "kind": "hotfix",
+   "posted": "2024-12-19T09:32Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3650268",
+   "title": "0.1.0e Hotfix 4",
+   "n": 4,
+   "league": "Early Access"
+  },
+  {
+   "id": "0.1.0e hotfix 3",
+   "v": "0.1.0e",
+   "kind": "hotfix",
+   "posted": "2024-12-18T08:27Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3647079",
+   "title": "0.1.0e Hotfix 3",
+   "n": 3,
+   "league": "Early Access"
+  },
+  {
+   "id": "0.1.0e hotfix 2",
+   "v": "0.1.0e",
+   "kind": "hotfix",
+   "posted": "2024-12-18T06:56Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3646886",
+   "title": "0.1.0e Hotfix 2",
+   "n": 2,
+   "league": "Early Access"
+  },
+  {
+   "id": "0.1.0e hotfix 1",
+   "v": "0.1.0e",
+   "kind": "hotfix",
+   "posted": "2024-12-18T02:48Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3646074",
+   "title": "0.1.0e Hotfix 1",
+   "n": 1,
+   "league": "Early Access"
+  },
+  {
+   "id": "0.1.0e",
+   "v": "0.1.0e",
+   "kind": "patch",
+   "posted": "2024-12-17T23:00Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3645467",
+   "title": "0.1.0e Patch Notes",
+   "league": "Early Access"
+  },
+  {
+   "id": "0.1.0d hotfix 5",
+   "v": "0.1.0d",
+   "kind": "hotfix",
+   "posted": "2024-12-14T22:55Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3634784",
+   "title": "0.1.0d Hotfix 5",
+   "n": 5,
+   "league": "Early Access"
+  },
+  {
+   "id": "0.1.0d hotfix 4",
+   "v": "0.1.0d",
+   "kind": "hotfix",
+   "posted": "2024-12-14T03:17Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3631452",
+   "title": "0.1.0d Hotfix 4",
+   "n": 4,
+   "league": "Early Access"
+  },
+  {
+   "id": "0.1.0d hotfix 3",
+   "v": "0.1.0d",
+   "kind": "hotfix",
+   "posted": "2024-12-14T02:34Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3631349",
+   "title": "0.1.0d Hotfix 3",
+   "n": 3,
+   "league": "Early Access"
+  },
+  {
+   "id": "0.1.0d hotfix 2",
+   "v": "0.1.0d",
+   "kind": "hotfix",
+   "posted": "2024-12-13T04:12Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3627221",
+   "title": "0.1.0d Hotfix 2",
+   "n": 2,
+   "league": "Early Access"
+  },
+  {
+   "id": "0.1.0d hotfix 1",
+   "v": "0.1.0d",
+   "kind": "hotfix",
+   "posted": "2024-12-12T04:37Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3621780",
+   "title": "0.1.0d Hotfix 1",
+   "n": 1,
+   "league": "Early Access"
+  },
+  {
+   "id": "0.1.0d",
+   "v": "0.1.0d",
+   "kind": "patch",
+   "posted": "2024-12-12T01:47Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3621299",
+   "title": "0.1.0d Patch Notes",
+   "league": "Early Access"
+  },
+  {
+   "id": "0.1.0c hotfix 2",
+   "v": "0.1.0c",
+   "kind": "hotfix",
+   "posted": "2024-12-11T06:24Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3617298",
+   "title": "0.1.0c Hotfix 2",
+   "n": 2,
+   "league": "Early Access"
+  },
+  {
+   "id": "0.1.0c hotfix 1",
+   "v": "0.1.0c",
+   "kind": "hotfix",
+   "posted": "2024-12-10T08:56Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3612268",
+   "title": "0.1.0c Hotfix 1",
+   "n": 1,
+   "league": "Early Access"
+  },
+  {
+   "id": "0.1.0c",
+   "v": "0.1.0c",
+   "kind": "patch",
+   "posted": "2024-12-10T05:36Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3611708",
+   "title": "0.1.0c Patch Notes (restartless)",
+   "flags": [
+    "restartless"
+   ],
+   "league": "Early Access"
+  },
+  {
+   "id": "0.1.0b",
+   "v": "0.1.0b",
+   "kind": "patch",
+   "posted": "2024-12-09T06:11Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3606561",
+   "title": "0.1.0b Patch Notes (restartless)",
+   "flags": [
+    "restartless"
+   ],
+   "league": "Early Access"
+  },
+  {
+   "id": "0.1.0 hotfix 9",
+   "v": "0.1.0",
+   "kind": "hotfix",
+   "posted": "2024-12-09T01:15Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3605558",
+   "title": "0.1.0 Hotifx 9",
+   "n": 9,
+   "league": "Early Access"
+  },
+  {
+   "id": "0.1.0 hotfix 8",
+   "v": "0.1.0",
+   "kind": "hotfix",
+   "posted": "2024-12-08T07:54Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3601143",
+   "title": "0.1.0 Hotfix 8",
+   "n": 8,
+   "league": "Early Access"
+  },
+  {
+   "id": "0.1.0 hotfix 7",
+   "v": "0.1.0",
+   "kind": "hotfix",
+   "posted": "2024-12-08T04:37Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3600564",
+   "title": "0.1.0 Hotfix 7",
+   "n": 7,
+   "league": "Early Access"
+  },
+  {
+   "id": "0.1.0 hotfix 6",
+   "v": "0.1.0",
+   "kind": "hotfix",
+   "posted": "2024-12-07T23:00Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3599322",
+   "title": "0.1.0 Hotfix 6",
+   "n": 6,
+   "league": "Early Access"
+  },
+  {
+   "id": "0.1.0 hotfix 5",
+   "v": "0.1.0",
+   "kind": "hotfix",
+   "posted": "2024-12-07T15:32Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3597430",
+   "title": "0.1.0 Hotfix 5",
+   "n": 5,
+   "league": "Early Access"
+  },
+  {
+   "id": "0.1.0 hotfix 4",
+   "v": "0.1.0",
+   "kind": "hotfix",
+   "posted": "2024-12-07T13:01Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3596774",
+   "title": "0.1.0 Hotfix 4",
+   "n": 4,
+   "league": "Early Access"
+  },
+  {
+   "id": "0.1.0 hotfix 3",
+   "v": "0.1.0",
+   "kind": "hotfix",
+   "posted": "2024-12-07T08:17Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3595823",
+   "title": "0.1.0 Hotfix 3",
+   "n": 3,
+   "league": "Early Access"
+  },
+  {
+   "id": "0.1.0 hotfix 2",
+   "v": "0.1.0",
+   "kind": "hotfix",
+   "posted": "2024-12-07T06:24Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3595427",
+   "title": "0.1.0 Hotfix 2",
+   "n": 2,
+   "league": "Early Access"
+  },
+  {
+   "id": "0.1.0 hotfix 1",
+   "v": "0.1.0",
+   "kind": "hotfix",
+   "posted": "2024-12-07T03:30Z",
+   "notes": "https://www.pathofexile.com/forum/view-thread/3594952",
+   "title": "0.1.0 Hotfix",
+   "n": 1,
+   "league": "Early Access"
+  },
+  {
+   "id": "0.1.0",
+   "v": "0.1.0",
+   "kind": "patch",
+   "league": "Early Access",
+   "live": "2024-12-07"
+  }
+ ],
+ "builds": [
+  {
+   "build": "4.5.5.3",
+   "patch": "0.5.5",
+   "seen": "2026-09-27",
+   "src": "archive",
+   "where": "wraeclast-data game/0.5.5 (all 1,023 tables, read from CDN folder 4.5.5.3)"
+  },
+  {
+   "build": "4.5.5.2",
+   "patch": "0.5.5",
+   "seen": "2026-09-18",
+   "src": "index",
+   "dated": "2026-09-11"
+  }
+ ]
+}
