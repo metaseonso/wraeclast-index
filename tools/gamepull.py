@@ -59,6 +59,7 @@ PULL = [
     'skill_gems.min.json',          # every gem, and the skills each one grants
     'skills.min.json',              # every skill by name (tools/grants.py turns a "Grants Skill" line into a gem)
     'keywords.min.json',            # the game's own help text (the keyword cards tools/gamelib.py adds)
+    'gem_tags.min.json',            # the game's name for each gem tag (tools/gems.py)
     'default_monster_stats.min.json',   # one monster of each level  } data/gamestats.json,
     'characters.min.json',              # what each class starts with } tools/gamelib.py
     'passive_skill_trees/Default.min.json',

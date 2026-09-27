@@ -30,6 +30,10 @@ BUILDERS = {
     'jwdata': ('jewels', 'rows', 20),
     'kwdata': ('keywords', None, 300),
 }
+# The blocks tools/sync.py --from-game rebuilds by default: each one proven against the committed copy
+# (tools/dev/explorecmp.py) and every difference explained in docs/sources-explore.md. Any other block with a
+# builder is rebuilt only when asked for by name (python tools/sync.py --from-game gems,tree).
+ADOPTED = ('gemdata', 'kwdata')
 # the order they are built in: the keyword file counts what the other four link to, so it goes last
 ORDER = ('gemdata', 'uqdata', 'trdata', 'jwdata', 'kwdata')
 
@@ -59,11 +63,12 @@ def builder(bid):
     return importlib.import_module(name)
 
 
-def raw(bid, built=None):
-    """One block in the artifact's form: built from the game files where a builder exists, else the
-    committed copy. built: the blocks made before it this run (the keyword file reads the other four)."""
+def raw(bid, built=None, use=None):
+    """One block in the artifact's form: built from the game files where a builder exists (and use, when
+    given, names it), else the committed copy. built: the blocks made before it this run (the keyword file
+    reads the other four)."""
     old = committed(bid)
-    mod = builder(bid)
+    mod = builder(bid) if use is None or bid in use else None
     if not mod:
         return copy.deepcopy(old)
     if getattr(mod, 'NEEDS_BLOCKS', False):
@@ -71,24 +76,25 @@ def raw(bid, built=None):
     return mod.build(old)
 
 
-def blocks():
-    """Every block, in the artifact's form, no lastgood: for the comparison and the report."""
+def blocks(use=ADOPTED):
+    """Every block, in the artifact's form, no lastgood: the ones use names built, the rest committed."""
     out = {}
     for bid in ORDER:
-        out[bid] = raw(bid, out)
+        out[bid] = raw(bid, out, use)
     return out
 
 
 def build(name, built=None):
     """One block as tools/sync.py writes it to data/explore/, for the comparison: after its own clean-up
-    (the [DNT] gems settled; the unique lines made official and the baked prices dropped)."""
-    import sync
+    (the [DNT] gems settled; the unique lines made official and the baked prices dropped). The blocks it
+    reads (the keyword file reads the other four) are the ones --from-game would give it: the adopted
+    builders' output, the committed copy for the rest."""
     bid = IDS[name]
     if built is None:
         built = {}
         if getattr(builder(bid), 'NEEDS_BLOCKS', False):
             for b in ORDER[:ORDER.index(bid)]:
-                built[b] = raw(b, built)
+                built[b] = raw(b, built, ADOPTED)
     obj = raw(bid, built)
     return site(bid, obj)
 
@@ -106,7 +112,7 @@ def site(bid, obj):
 
 
 def main():
-    got = blocks()
+    got = blocks(use=None)
     for name, bid in IDS.items():
         b = got[bid]
         mod = BUILDERS.get(bid) if builder(bid) else None

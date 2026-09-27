@@ -13,7 +13,13 @@ The artifact page (gems, uniques, passive tree) is the drill-down. This script:
      two parts the home page loads (tools/appdata.py)
   4. gives every card without a sprite an official game image (see "card images" below)
 
-Usage:  python tools/sync.py path/to/artifact.html
+Usage:
+  python tools/sync.py --from-game          the drill-down's data from the game files (tools/fromgame.py): explore.html
+                                            is its own source, the page as committed, with each adopted data block
+                                            (fromgame.ADOPTED) rebuilt by its builder, each through tools/lastgood.py
+  python tools/sync.py --from-game gems,tree   the same, for the blocks named (gems, uniques, tree, jewels, keywords)
+  python tools/sync.py path/to/artifact.html   the old way: the blocks as a saved copy of the artifact holds them
+                                            (explore.html works too; it holds the same data)
 """
 import gzip
 import hashlib
@@ -907,10 +913,40 @@ def live_prices(html):
     return html
 
 
+def from_game(only=None):
+    """The committed explore.html in the artifact's form, with every block a builder fills rebuilt from the game
+    files (tools/fromgame.py). Each builder runs under the last-good rule on its own: one that throws or comes
+    back thin keeps the committed block (and says so, and the run exits non-zero at the end), and the others
+    still land. The keyword block is built last, from the blocks before it as they stand."""
+    import fromgame
+    html = inline((ROOT / 'explore.html').read_text(encoding='utf-8'))
+    want = fromgame.ADOPTED if not only else [fromgame.IDS.get(x, x) for x in only]
+    built = {}
+    for bid in fromgame.ORDER:
+        have = block(html, bid)
+        spec = fromgame.BUILDERS.get(bid)
+        if bid not in want or not spec or not fromgame.builder(bid):
+            built[bid] = have
+            continue
+        name, at, floor = spec
+        fresh = lastgood.pull('Drill-down ' + DATA_FILES[bid], lambda: fromgame.raw(bid, built, want),
+                              file=fromgame.committed_file(bid), url=REPOE, at=at, floor=floor, old=have)
+        if fresh is None:   # the fault is recorded: the committed block stays
+            built[bid] = have
+            continue
+        print('  %s: from the game files (tools/%s.py)' % (DATA_FILES[bid], name))
+        built[bid] = fresh
+        html = put(html, bid, fresh)
+    return html
+
+
 def main():
-    if len(sys.argv) != 2:
+    if sys.argv[1:2] == ['--from-game'] and len(sys.argv) <= 3:
+        html = from_game(sys.argv[2].split(',') if len(sys.argv) == 3 else None)
+    elif len(sys.argv) == 2 and not sys.argv[1].startswith('--'):
+        html = inline(Path(sys.argv[1]).read_text(encoding='utf-8'))
+    else:
         sys.exit(__doc__)
-    html = inline(Path(sys.argv[1]).read_text(encoding='utf-8'))
     html, n = with_official_uniques(html)
     print('uniques with official lines:', n, 'changed')
     html, dropped, cleaned = with_clean_gems(html)
