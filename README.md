@@ -57,6 +57,8 @@ The site is static, and every hourly job that keeps it live runs on GitHub Actio
 | `data/gamedata.json` | Which patch the shipped data is from, written by `tools/gamepull.py` (one daily pull of the official export; it also writes the gap report `tools/dev/gaps.txt` — what the game files hold against what we card) |
 | `data/gamestats.json` | One monster of each level (life, damage, accuracy, armour, evasion) and what each class starts with, from the game files by `tools/gamelib.py`. Nothing reads it yet |
 | `data/guides.json` | The community guides the Build tab links out to: one line each, and the day the address was last read. Built by `tools/guides.py`, which holds the list and reads every address on each publish — a guide whose page has gone, or no longer carries its own words, keeps the row it last checked out on and becomes a named fault instead of a dead link. Someone else's work, named where it is shown and never ours |
+| `data/patches.json` | Every Path of Exile 2 patch, hotfix and restart since 0.1 (260 rows at 0.5.5c): the hour its notes went up (UTC), its league, its thread on the official patch notes forum, the league-opening day where a patch opened one, the passive tree export commit and tag that match it, and every client build the index has carried with the day it was first seen. Built by `tools/patches.py`; see Patches, snapshots and price history |
+| `data/changes/<build>.json` | What the game moved between two patches, card by card: old and new value per field, the cards added, and the cards removed with their names kept. Written by `tools/diff.py`, fetched the first time a card asks for it and never in first paint |
 | `data/faults.json` | Which sections are showing an older copy right now, and why, written by `tools/lastgood.py` (see below). The dashboard's Data jobs block and `/api/health` read it |
 | `data/map.png`, `data/map.json`, `data/map-nodes.json` | The map of the index (`assets/map.js`, at `#/map`, linked from the footer): every card a dot and every connection a line, in one 1600×800 picture, laid out once at build time by `tools/map.py` — a force layout over all 6,609 cards and the 24,541 edges the site can follow (`data/kwuse.json`, `data/grants.json`, a unique's base, a card's own marks, `lx`). Same data in, same picture out. `map.json` is the key, the busiest card of each kind, a few edges for the travelling lights and what the picture leaves out; `map-nodes.json` is every dot's seat, so a later pass can make a dot clickable without laying anything out again. Nothing but the tab fetches any of it, and the kinds, their names, their colours and their counts come from `assets/kinds.js` and `assets/theme.css`, never a list in the tool |
 
@@ -181,6 +183,54 @@ In this order (each step reads what the one before wrote):
    (`data/map.png` and the two files beside it: the whole index as one picture. It reads the finished index and
    the finished keyword lists, so it goes last; about two and a half minutes, and `--report` counts what it
    would draw without writing)
-9. Commit and push to `main`. The site republishes in about a minute.
+9. After a game patch: `python tools/patches.py --notes`
+   (adds the index's new client build to `data/patches.json`, and the new patch notes threads with their hour;
+   the checks fail while the index carries a build the registry does not list)
+10. Commit and push to `main`. The site republishes in about a minute, and `.github/workflows/snapshots.yml` freezes
+   the new index under its build on the data repo
+
+## Patches, snapshots and price history
+
+Each patch the index is not frozen under is gone: the export only ever holds the live one. Each day of prices not
+kept is gone too: the site's price files hold 45 days. Both are kept outside this repo's history, in the private
+data repo `metaseonso/wraeclast-data`, and nothing here is estimated or filled in.
+
+| What | Where | Size | By |
+|---|---|---|---|
+| The patch registry | `data/patches.json` (this repo) | 67 KB | `tools/patches.py` |
+| A snapshot per client build: every card's fields that can move between patches, one file per kind | the release `snapshot-<build>` on the data repo | about 460 KB a build | `tools/snapshot.py`, `.github/workflows/snapshots.yml` on every push that changes the index |
+| What changed between two builds | `data/changes/<build>.json` (this repo, served) | depends on the patch | `tools/diff.py` |
+| Every price the site shows, once a day | `prices/daily/YYYY-MM/YYYY-MM-DD.json.gz` on the data repo, and one line a day in `prices/days.jsonl` | about 25 KB a day, about 10 MB a year | `tools/pricehistory.py`, `.github/workflows/pricehistory.yml` at 21:37 UTC |
+
+- **`python tools/patches.py`** adds the index's client build (`data/index.json` `v`) when it is new, with no
+  network. `--notes` reads the official patch notes forum (forum 2212) until a page brings nothing new (`--all`
+  every page); the hour is the thread's post time, turned into UTC from the time zone the forum prints it in.
+  `--tree` reads GGG's passive tree export for the commit and tag of each patch. `--check` checks the file and
+  writes nothing. A build is tied to its patch family (4.5.5.2 is 0.5.5), never to a letter patch, until
+  something official says which. A forum that stops answering keeps the committed file (Last good wins).
+- **`python tools/snapshot.py`** freezes the current index into `tools/cache/snapshots/<build>/` (not in git):
+  `meta.json` and one `<kind>.json.gz` per kind. Kept: the fields a patch can move (lines, properties,
+  requirements, tags, numbers, a gem's text at every level). Left out: what only draws a card (pictures, link
+  marks, search words), prices, and our own mechanics cards. The same index gives the same bytes. `--upload`
+  keeps it as the release `snapshot-<build>` (an upload that would change nothing sends nothing), `--get BUILD`
+  downloads one, `--list` lists them.
+- **`python tools/diff.py <old> <new>`** writes `data/changes/<new build>.json` from two snapshots (folders or
+  build numbers). A gem's level text is compared at level 1, level 20 and its last level (`--levels all` for
+  every level). **`python tools/diff.py --check`** fails when a change row names a card that is not in the index
+  and not marked removed, when a removed card has lost its name, or when a value carries raw game code. It runs
+  in `.github/workflows/checks.yml` with `tools/patches.py --check`.
+- **`python tools/pricehistory.py`** takes the copy: `/data/market.json?part=now` (currency from the Currency
+  Exchange, uniques and bases from trade site listings, the busiest Exchange markets and the exalted rate),
+  `/data/rollprices.json`, `/data/farmprices.json` and the boss items the market does not carry. One row per
+  price: key, value, unit, source (`cx` or `trade`), when it was checked, and the volume or listing count behind
+  it. A thing shown with no price has no row. The day's file and its line go up in one commit through GitHub's
+  API. A day with no copy is written as missing, with why, and never filled; a failed copy also raises a
+  data-fault issue and ends the run red. `--out DIR` takes it without sending, `--days` lists the kept and
+  missing days.
+
+**Once, by the owner:** the secret `DATA_REPO_TOKEN` in this repo (Settings, Secrets and variables, Actions): a
+fine-grained token for `metaseonso/wraeclast-data` only, with Contents read and write. Both workflows stop with
+a red run until it is there. The first snapshot, 0.5.5 at build 4.5.5.2, is taken with
+`python tools/snapshot.py --upload` from a checkout where `gh` is signed in as the owner.
 
 Path of Exile is a trademark of Grinding Gear Games. This is a fan project and is not affiliated with them.
