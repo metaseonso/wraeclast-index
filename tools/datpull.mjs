@@ -197,8 +197,11 @@ async function official(name){
   const f = join(OFFICIAL, name.replace(/\//g, '__'));
   return JSON.parse(await cached(f, REPOE + name));
 }
+// the game's markup read as the words it shows; a range written high to low ("(60-40)% reduced", as RePoE words a
+// negated range) turned the way round the game prints it
 const clean = s => typeof s === 'string'
-  ? s.replace(/\[([^\]|]+)\|([^\]]+)\]/g, '$2').replace(/\[([^\]]+)\]/g, '$1').replace(/\r/g, '').trim() : s;
+  ? s.replace(/\[([^\]|]+)\|([^\]]+)\]/g, '$2').replace(/\[([^\]]+)\]/g, '$1').replace(/\r/g, '')
+    .replace(/\((\d+(?:\.\d+)?)-(\d+(?:\.\d+)?)\)/g, (m, a, b) => +a > +b ? '(' + b + '-' + a + ')' : m).trim() : s;
 // a name a player can meet: words, not a placeholder ("[DNT] ...", "ANY MONSTER", "NULL")
 const real = s => typeof s === 'string' && /[A-Za-z]{2}/.test(s) && !/\[DNT|\(DNT|^\s*(?:Invisible|NULL|DNT)\b/i.test(s) && s !== s.toUpperCase();
 // the order the stat description files are asked in: the map's own wording before the general one
