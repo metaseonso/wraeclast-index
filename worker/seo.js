@@ -11,6 +11,8 @@
    redirects to the plain base). A name used by two kinds goes to the first of unique, gem, passive,
    keyword, currency, base, atlas; the others add their kind ("fulmination-passive"). Same name, same kind: "-2". */
 
+import { KINDS } from '../assets/kinds.js';
+
 const SITE = 'https://wraeclastindex.fyi';
 const AGE = 3600;                 // pages and files: an hour (currency refreshes hourly, listings daily)
 const MARKET_TTL = 300e3;         // the market copy in memory: 5 minutes, like /data/market.json
@@ -34,16 +36,10 @@ const TERMS = [
    kind needs where its rows are not all the same thing. A kind that can be held, dropped and traded is a
    Product; a kind that is a name with a meaning behind it is a DefinedTerm, and its list is the set it belongs
    to. The Atlas is both: a waystone is an item, a node on the atlas tree is not.
-   The type is declared here and nowhere else — itemPage asks the table rather than testing a kind of its own. */
-const KIND = {
-  u: {one: 'Unique', word: 'unique', list: 'uniques', rank: 0, is: 'Product'},
-  g: {one: 'Gem', word: 'gem', list: 'gems', rank: 1, is: 'Product'},
-  p: {one: 'Passive', word: 'passive', list: 'passives', rank: 2, is: 'DefinedTerm'},
-  w: {one: 'Keyword', word: 'keyword', list: 'keywords', rank: 3, is: 'DefinedTerm'},
-  c: {one: 'Currency', word: 'currency', list: 'currency', rank: 4, is: 'Product'},   // the market's own come last: it changes
-  b: {one: 'Base', word: 'base', list: 'bases', rank: 5, is: 'Product'},
-  a: {one: 'Atlas', word: 'atlas', list: 'atlas', rank: 6, is: 'Product', unless: {at: 'at', is: 'tree', then: 'DefinedTerm'}},
-};
+   Declared once, in assets/kinds.js (`crawl` on each kind the crawler publishes): this reads that table and
+   keeps no list of its own, so a kind the site cards and the crawler's pages never disagree. */
+const KIND = Object.fromEntries(KINDS.filter(d => d.crawl && typeof d.crawl === 'object')
+  .map(d => [d.k, {one: d.one, ...d.crawl}]));
 // what one entry is, off the table: its kind's type, or the other one where the kind's own test answers
 const typeOf = e => { const u = KIND[e.k].unless; return u && e.it[u.at] === u.is ? u.then : KIND[e.k].is; };
 // a kind whose rows can be terms: its list page stands for the set they are in

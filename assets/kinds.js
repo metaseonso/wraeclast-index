@@ -18,7 +18,11 @@
               from its letter, so a new kind lands with a colour, a key entry and a count and no one edits it
      place    the tab the gold button opens, if it has one      sec    its section on the drill-down page
      search   a chip over the home page's search                item   an item: it can be traded
-     index    its rows live in data/index.json                    crawl  the crawler publishes a page for it
+     index    its rows live in data/index.json
+     crawl    the crawler publishes a page for it (worker/seo.js): `word` the word its address takes where two
+              kinds share a name, `list` the list page it sits in, `rank` the order it claims a shared name in,
+              and `is` what it is in schema.org's words, with `unless` the one test where its rows are not all
+              the same thing (an atlas node is a term, a waystone is a product)
      own      a module that draws its card instead of us
      fields   the fields its card draws, in order (FIELDS)
      acts     the buttons under it (ACTS)
@@ -430,7 +434,7 @@ const KWUSE = ['kwu', 'kwg', 'kwp', 'kwb', 'kwe', 'kwa', 'kwm', 'kwc', 'kww'];
 
 export const KINDS = [
   {k: 'g', one: 'Gem', tone: 'c-gem', many: 'Gems', place: 'Gems', sec: 'gems', link: 'explore#gems=@n', mark: 't',
-   index: true, search: true, item: true, crawl: true,
+   index: true, search: true, item: true, crawl: {word: 'gem', list: 'gems', rank: 1, is: 'Product'},
    sprite: 'gems', px: {as: 'c', at: 'li'},
    builds: [{at: 'w', key: 'skills'}, {key: 'allskills'}],
    fields: [...HEAD, 'gemreq', 'lineage', 'usetime', 'cost', 'spirit', ...BODY, ...FOOT],
@@ -438,7 +442,7 @@ export const KINDS = [
    rel: ['granted', 'named', 'namedby', 'cat']},
 
   {k: 'u', one: 'Unique', tone: 'c-unique', many: 'Uniques', place: 'Uniques', sec: 'uniques', link: 'explore#uniques=@n', mark: 'ls',
-   index: true, search: true, item: true, crawl: true,
+   index: true, search: true, item: true, crawl: {word: 'unique', list: 'uniques', rank: 0, is: 'Product'},
    sprite: 'uniques', make: {base: 'sub1'},
    builds: [{key: 'items'}],
    fields: [...HEAD, 'reqs', 'corrupt', 'limit', 'group', 'props', 'implicit', ...BODY, ...FOOT],
@@ -446,7 +450,7 @@ export const KINDS = [
    rel: ['base', 'variants', 'grants', 'named', 'namedby', 'cat']},
 
   {k: 'p', one: 'Passive', tone: 'c-keystone', many: 'Passives', place: 'Passive tree', sec: 'tree', link: 'explore#tree=@n', mark: 'ls',
-   index: true, search: true, crawl: true,
+   index: true, search: true, crawl: {word: 'passive', list: 'passives', rank: 2, is: 'DefinedTerm'},
    kw: 'name',
    builds: [{at: 's', starts: 'Keystone', key: 'keypassives'}, {at: 'asc', key: 'keypassives'}, {at: 'rec', key: 'anointed'}],
    fields: [...HEAD, 'asc', 'region', 'ontree', ...BODY, ...FOOT],
@@ -465,7 +469,7 @@ export const KINDS = [
    rel: ['incluster', 'clusterof', ...KWUSE, 'cat']},
 
   {k: 'b', one: 'Base', tone: 'muted', many: 'Bases', place: 'Craft', link: 'craft', mark: 'ls',
-   index: true, search: true, item: true, crawl: true,
+   index: true, search: true, item: true, crawl: {word: 'base', list: 'bases', rank: 5, is: 'Product'},
    make: {base: 'name', ni: 'lines'},
    fields: [...HEAD, 'reqs', 'props', 'implicit', 'weights', ...SAYS, 'canroll', 'cancorrupt', ...REST, ...FOOT],
    acts: ['trade', 'pool', 'bench', 'pin', 'craft'],
@@ -479,20 +483,20 @@ export const KINDS = [
    rel: ['inclass', 'cat']},
 
   {k: 'a', one: 'Atlas', tone: 'int', many: 'Atlas', place: 'Atlas', link: './#/atlas?s=@at&q=@n',
-   index: true, search: true, item: true, crawl: true,
+   index: true, search: true, item: true, crawl: {word: 'atlas', list: 'atlas', rank: 6, is: 'Product', unless: {at: 'at', is: 'tree', then: 'DefinedTerm'}},
    px: {as: 'c'}, notitem: {at: 'at', is: 'tree'},
    fields: [...HEAD, 'nodety', 'ontree', 'warn', 'implicit', ...BODY, ...FOOT],
    acts: ['trade', 'pin', 'open'],
    rel: ['section', 'named', 'namedby']},
 
   {k: 'c', one: 'Currency', tone: 'c-currency', many: 'Currency', place: 'Currency', link: './#/currency?c=@id',
-   index: true, search: true, item: true, crawl: true,
+   index: true, search: true, item: true, crawl: {word: 'currency', list: 'currency', rank: 4, is: 'Product'},
    px: {as: 'c'}, make: {nx: 'yes'}, gone: {at: 'nx'},
    fields: [...HEAD, 'droplv', ...SAYS, 'perslot', 'ladder', 'adds', ...REST, ...FOOT],
    acts: ['trade', 'pool', 'bench', 'pin', 'open'],
    rel: ['named', 'namedby', 'job', 'cat']},
 
-  {k: 'w', one: 'Keyword', tone: 'accent', many: 'Keywords', sec: 'keywords', index: true, search: true, crawl: true,
+  {k: 'w', one: 'Keyword', tone: 'accent', many: 'Keywords', sec: 'keywords', index: true, search: true, crawl: {word: 'keyword', list: 'keywords', rank: 3, is: 'DefinedTerm'},
    kw: 'id', rank: -25, words: {n: 'own', f: 'alt', mark: 'game'},
    fields: [...HEAD, 'uses', ...BODY, ...FOOT],
    acts: ['full', 'pin'],
