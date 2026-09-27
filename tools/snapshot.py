@@ -26,8 +26,9 @@ change nothing changes nothing.
 
 Where they are kept: GitHub release assets on the private data repo (WI_DATA_REPO, default
 metaseonso/wraeclast-data), one release per build, tag snapshot-<build>. Outside this repo's history, and free.
-The upload and download go through the gh CLI: signed in as the owner, or GH_TOKEN set to a token that can write
-that repo's contents (the DATA_REPO_TOKEN secret in .github/workflows/snapshots.yml). While a build is current, a
+The upload and download go through the gh CLI: signed in as the owner, or GH_TOKEN set to the data repo's own
+token in its workflow (.github/workflows/wraeclast-index.yml there, kept here at tools/data-repo/, which checks
+this repo out and runs this twice a day). While a build is current, a
 new upload replaces its files (the index is rebuilt more often than the game patches); once the index moves to a
 new build, the old release is never touched again.
 """

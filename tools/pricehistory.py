@@ -23,15 +23,16 @@ Where it goes, in the data repo (WI_DATA_REPO, default metaseonso/wraeclast-data
                                             as missing the next time it runs. A missing day is never filled:
                                             a copy taken later that same UTC day replaces its missing line,
                                             a later day never does.
-Both in one commit, through GitHub's API (no checkout of a repo that holds the whole exchange archive). The token
-is DATA_REPO_TOKEN: a fine-grained token for the data repo only, Contents read and write.
+Both in one commit, through GitHub's API (no checkout of a repo that holds the whole exchange archive). It runs
+inside the data repo, whose own token writes there: GH_TOKEN (or GITHUB_TOKEN), else gh signed in as the owner.
 
-    python tools/pricehistory.py               take today's copy and keep it (DATA_REPO_TOKEN, or gh signed in)
+    python tools/pricehistory.py               take today's copy and keep it
     python tools/pricehistory.py --out DIR     take it and write it to DIR only; nothing is sent
     python tools/pricehistory.py --days        the kept and missing days, from the data repo
 
-Runs once a day in .github/workflows/pricehistory.yml. A copy that cannot be taken is a fault
-(tools/lastgood.py): the day is written as missing, the run says why, a data-fault issue goes up, and the run
+Runs once a day in the data repo's .github/workflows/wraeclast-index.yml, which checks this repo out to run it
+(the file is kept here at tools/data-repo/). A copy that cannot be taken is a fault (tools/lastgood.py): the day
+is written as missing, the run says why, a data-fault issue goes up (in the data repo: GH_REPO), and the run
 exits non-zero.
 """
 import argparse
@@ -66,7 +67,7 @@ SOURCES = {'cx': "the in-game Currency Exchange (GGG's public hourly feed)",
 README = """# Daily price copy
 
 Every price Wraeclast Index showed, once a day, kept by `tools/pricehistory.py` in wraeclast-index
-(`.github/workflows/pricehistory.yml`).
+(`.github/workflows/wraeclast-index.yml` here).
 
 | Path | What |
 |---|---|
@@ -169,14 +170,15 @@ def pack(day):
 
 # ---------------------------------------------------------------- the data repo
 def token():
-    t = (os.environ.get('DATA_REPO_TOKEN') or '').strip()
-    if t:
-        return t
+    for name in ('GH_TOKEN', 'GITHUB_TOKEN'):
+        t = (os.environ.get(name) or '').strip()
+        if t:
+            return t
     if shutil.which('gh'):
         r = subprocess.run(['gh', 'auth', 'token'], capture_output=True, text=True)
         if r.returncode == 0 and r.stdout.strip():
             return r.stdout.strip()
-    raise SystemExit('no way to write %s: set DATA_REPO_TOKEN, or sign gh in' % REPO)
+    raise SystemExit("no way to write %s: run it in that repo's workflow, or sign gh in" % REPO)
 
 
 def api(method, path, body=None, tok=None):

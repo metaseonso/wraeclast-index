@@ -1,0 +1,73 @@
+# Goes in metaseonso/wraeclast-data at .github/workflows/wraeclast-index.yml (kept in wraeclast-index at
+# tools/data-repo/, where it is written and reviewed).
+# Two jobs that keep what Wraeclast Index would otherwise lose, both writing to this repo with its own GITHUB_TOKEN,
+# so no token from anywhere else is needed. The tools live in the public wraeclast-index repo: each job checks it
+# out into wi/ and runs them from there.
+#   prices    once a day, 21:37 UTC: a copy of every price the live site shows (wi/tools/pricehistory.py), one
+#             commit through GitHub's API: prices/daily/YYYY-MM/YYYY-MM-DD.json.gz (about 25 KB) and a line in
+#             prices/days.jsonl. A day that fails is written as missing and never filled. 21:37 keeps well clear
+#             of midnight, so a late start by GitHub's timer still lands on the same day.
+#   snapshot  twice a day: every card of wraeclast-index's main, frozen under its client build
+#             (wi/tools/snapshot.py), kept as the release snapshot-<build> (about 460 KB). An upload that would
+#             change nothing sends nothing, so most runs end in seconds.
+# About 90 short runs a month, beside the archive's 120. A job that fails ends red; a failed price copy also
+# raises one data-fault issue in this repo (tools/lastgood.py in wraeclast-index).
+name: Wraeclast Index
+
+on:
+  schedule:
+    - cron: '37 21 * * *'      # prices and snapshot
+    - cron: '37 9 * * *'       # snapshot only
+  workflow_dispatch:
+    inputs:
+      prices:
+        description: "Also take today's price copy"
+        type: boolean
+        default: true
+
+permissions:
+  contents: write     # the daily file, days.jsonl and the snapshot releases
+  issues: write       # the data-fault issue a failed copy raises
+
+concurrency:
+  group: wraeclast-index
+  cancel-in-progress: false
+
+jobs:
+  prices:
+    if: github.event.schedule == '37 21 * * *' || (github.event_name == 'workflow_dispatch' && inputs.prices)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          repository: metaseonso/wraeclast-index
+          path: wi
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Copy today's prices and keep them
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          WI_DATA_REPO: ${{ github.repository }}
+        run: python wi/tools/pricehistory.py
+
+  snapshot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          repository: metaseonso/wraeclast-index
+          path: wi
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: The index's build is in the patch registry (a warning only; the snapshot is taken either way)
+        run: python wi/tools/patches.py --check || echo "::warning::data/patches.json does not list the index's build yet"
+      - name: Freeze the index and keep it as a release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          WI_DATA_REPO: ${{ github.repository }}
+        run: python wi/tools/snapshot.py --upload

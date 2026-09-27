@@ -186,8 +186,8 @@ In this order (each step reads what the one before wrote):
 9. After a game patch: `python tools/patches.py --notes`
    (adds the index's new client build to `data/patches.json`, and the new patch notes threads with their hour;
    the checks fail while the index carries a build the registry does not list)
-10. Commit and push to `main`. The site republishes in about a minute, and `.github/workflows/snapshots.yml` freezes
-   the new index under its build on the data repo
+10. Commit and push to `main`. The site republishes in about a minute, and the data repo's own workflow freezes
+   the new index under its build within twelve hours (see Patches, snapshots and price history)
 
 ## Patches, snapshots and price history
 
@@ -198,9 +198,9 @@ data repo `metaseonso/wraeclast-data`, and nothing here is estimated or filled i
 | What | Where | Size | By |
 |---|---|---|---|
 | The patch registry | `data/patches.json` (this repo) | 67 KB | `tools/patches.py` |
-| A snapshot per client build: every card's fields that can move between patches, one file per kind | the release `snapshot-<build>` on the data repo | about 460 KB a build | `tools/snapshot.py`, `.github/workflows/snapshots.yml` on every push that changes the index |
+| A snapshot per client build: every card's fields that can move between patches, one file per kind | the release `snapshot-<build>` on the data repo | about 460 KB a build | `tools/snapshot.py`, twice a day from the data repo's workflow |
 | What changed between two builds | `data/changes/<build>.json` (this repo, served) | depends on the patch | `tools/diff.py` |
-| Every price the site shows, once a day | `prices/daily/YYYY-MM/YYYY-MM-DD.json.gz` on the data repo, and one line a day in `prices/days.jsonl` | about 25 KB a day, about 10 MB a year | `tools/pricehistory.py`, `.github/workflows/pricehistory.yml` at 21:37 UTC |
+| Every price the site shows, once a day | `prices/daily/YYYY-MM/YYYY-MM-DD.json.gz` on the data repo, and one line a day in `prices/days.jsonl` | about 25 KB a day, about 10 MB a year | `tools/pricehistory.py`, from the data repo's workflow at 21:37 UTC |
 
 - **`python tools/patches.py`** adds the index's client build (`data/index.json` `v`) when it is new, with no
   network. `--notes` reads the official patch notes forum (forum 2212) until a page brings nothing new (`--all`
@@ -228,9 +228,12 @@ data repo `metaseonso/wraeclast-data`, and nothing here is estimated or filled i
   data-fault issue and ends the run red. `--out DIR` takes it without sending, `--days` lists the kept and
   missing days.
 
-**Once, by the owner:** the secret `DATA_REPO_TOKEN` in this repo (Settings, Secrets and variables, Actions): a
-fine-grained token for `metaseonso/wraeclast-data` only, with Contents read and write. Both workflows stop with
-a red run until it is there. The first snapshot, 0.5.5 at build 4.5.5.2, is taken with
-`python tools/snapshot.py --upload` from a checkout where `gh` is signed in as the owner.
+**Where the jobs run:** in the data repo, so they write there with its own token and nothing needs a secret.
+`tools/data-repo/.github/workflows/wraeclast-index.yml` is that workflow, kept here and copied to
+`.github/workflows/wraeclast-index.yml` in `metaseonso/wraeclast-data`. It checks this repo out and runs
+`tools/pricehistory.py` once a day and `tools/snapshot.py --upload` twice a day; a failed price copy raises its
+data-fault issue in the data repo. This repo's checks run `tools/patches.py --check` and `tools/diff.py --check`,
+which write nothing. Once, by hand, where `gh` is signed in as the owner: `python tools/snapshot.py --upload`
+keeps the first snapshot, 0.5.5 at build 4.5.5.2, before the workflow's first run.
 
 Path of Exile is a trademark of Grinding Gear Games. This is a fan project and is not affiliated with them.
