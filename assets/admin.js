@@ -452,7 +452,8 @@ function loadPanel(){
   const L = obj(obj(S.data).load), per = obj(L.perHour);
   const sum = k => arr(per[k]).reduce((a, b) => a + fin(b), 0);
   $('#load').innerHTML = '<h4 class="dv-h4">Trade site searches per hour</h4><div id="ld-trade"></div>' +
-    '<p class="note">' + num(sum('trade_search')) + ' searches, ' + num(sum('trade_fetch')) + ' fetches. Told to slow down ' +
+    '<p class="note">' + num(sum('trade_search')) + ' searches, ' + num(sum('trade_fetch')) + ' fetches, ' +
+      num(sum('trade_exchange')) + ' exchange checks. Told to slow down ' +
       num(sum('trade_limited')) + ' times, ' + num(sum('trade_error')) + ' errors.</p>' +
     '<h4 class="dv-h4">Site views per hour</h4><div id="ld-site"></div>' +
     '<p class="note">' + num(sum('site_view')) + ' page views in ' + num(sum('site_batch')) + ' batches.</p>';
@@ -735,6 +736,9 @@ function planBox(){
     upgrade: 'Close to the free limit: upgrade to Workers Paid ($5/month).'}[p.verdict] || 'Free plan.';
   const link = (href, text) => href ? '<a href="' + esc(href) + '" target="_blank" rel="noopener">' + text + '</a>' : text;
   return '<p class="dv-verdict v-' + esc(p.verdict || 'fine') + '">' + verdict + '</p>' +
+    (t.rowsRead === null || t.rowsRead === undefined
+      ? '<p class="note">Database rows read today: not known (no Cloudflare stats key, or Cloudflare did not answer).</p>'
+      : meter('Database rows read today', t.rowsRead, f.d1Reads, 'Cloudflare\'s own count, a few minutes behind')) +
     meter('Database writes today (about)', t.writes, f.d1Writes, 'Page tracking ' + num(t.trackingWrites) + ' · trade prices ' + num(t.priceWrites)) +
     meter('Worker requests today (about)', t.requests, f.requests, num(t.views) + ' page views, ' + num(t.batches) + ' tracking batches') +
     '<p class="note">Free plan, per day: ' + num(f.requests) + ' requests · ' + num(fin(f.d1Reads) / 1e6) + ' million database reads · ' +
@@ -745,12 +749,13 @@ function planBox(){
 /* the data jobs: fine, late or stopped, worked out by the site (worker/health.js). A row with a note is a
    section still showing an older copy because its source failed: the note says which copy and why, in the
    words the builder wrote when it kept it (data/faults.json, tools/lastgood.py). */
-const STATE = {ok: ['fine', 'good'], waiting: ['waiting', 'ok'], unknown: ['unknown', 'ok'], late: ['late', 'ok'], stopped: ['stopped', 'poor']};
+const STATE = {ok: ['fine', 'good'], waiting: ['waiting', 'ok'], unknown: ['unknown', 'ok'], failing: ['failing', 'ok'],
+  late: ['late', 'ok'], stopped: ['stopped', 'poor']};
 const FROM = {backup: 'backup site', none: '—', stale: 'stale since'};   // where a file came from, when it has no time at all
 // a file still coming from the backup site is dated by its own hour, not by when it arrived: the age is real,
 // so it says where it came from under it (worker/health.js)
 const BACKUP = '<span class="dv-sub">from the backup site</span>';
-const TOP = {late: ' v-late', stopped: ' v-stopped'};   // how the line at the top of the page reads
+const TOP = {failing: ' v-late', late: ' v-late', stopped: ' v-stopped'};   // how the line at the top of the page reads
 function jobsBox(){
   const list = arr(obj(obj(S.data).jobs).jobs).map(obj);
   if(!list.length) return NONE;

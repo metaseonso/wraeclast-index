@@ -5,14 +5,15 @@
      late      it has missed a run
      stopped   it has missed several, or nothing has ever come in
      unknown   nothing says how old it is: no file has come in and the backup's copy gives no time either
+     failing   a kind of price whose checks mostly failed in the price job's last run (a count, not an age)
    Used by the owner's dashboard (worker/dash.js, one line at the top) and by:
      GET /api/health   the same as JSON, no sign-in: times only, nothing about anyone. Kept for a minute.
-   Until the data jobs move off GitHub, the hourly files still come from the backup site, which does not say
-   when its copy arrived. The age then comes from the file itself: every job writes the hour of its data at
+   The hourly jobs send their files in (worker/files.js). A file none has sent in comes from the backup site,
+   which does not say when its copy arrived. The age then comes from the file itself: every job writes the hour of its data at
    the top of what it sends (worker/files.js ownTime), and that hour is never newer than the moment the file
    arrived, so a feed that froze goes late and then stopped like any other job. Which time is used: the arrival
    time whenever a job has sent the file in, the file's own hour only while the backup is the one answering.
-   Once the move is done the arrival time is always there and the fallback never runs. The prices on the
+   Once every file has been sent in the arrival time is always there and the fallback never runs. The prices on the
    pages are stamped the same way (worker/prices.js), so a stale feed shows its real age there too.
    Watched the same way: a section still showing an older copy because its source failed (data/faults.json,
    written by tools/lastgood.py). The job came in; what it brought did not, so it reads late on the first day
@@ -42,7 +43,14 @@ export const JOBS = [
   ['price', 'boss', 'Boss entry prices', 24, 6, 26, '2026-09-01'],
 ];
 const KIND = {uniq: 'uniques', base: 'bases', roll: 'rolls', farm: 'farms', boss: 'bosses'};   // what each kind of price is called in /api/health
-const RANK = {ok: 0, waiting: 1, unknown: 2, late: 3, stopped: 4};
+const RANK = {ok: 0, waiting: 1, unknown: 2, failing: 3, late: 4, stopped: 5};
+/* A kind of price whose checks mostly fail is not on time, whatever its newest price says: the price job sends
+   an account of each run (tools/pricepull.py, kept by worker/prices.js ingest in meta pull:run), and a kind with
+   more than FAILING of its checks failed in a run from the last RUN_AGE reads failing, with the count. In
+   /api/health it reads late, so what that answers stays one of the words it has always used. */
+const FAILING = 0.25;
+const RUN_AGE = 2 * 3600e3;
+const NEWEST_SQL = 'INSERT INTO meta (k, v) VALUES (?, ?) ON CONFLICT(k) DO UPDATE SET v = CASE WHEN excluded.v > v THEN excluded.v ELSE v END';
 const json = (status, body, extra = {}) => new Response(JSON.stringify(body), {status, headers: {
   'Content-Type': 'application/json; charset=utf-8', 'X-Robots-Tag': 'noindex', ...extra}});
 
@@ -85,10 +93,29 @@ export async function health(env, origin){
   await Promise.all(JOBS.filter(j => j[0] === 'file').map(async ([, name]) => {
     at.file[name] = await fileWhen(env, origin, name);   // when it came in, and which source answered
   }));
+  // the newest check of each kind, as ingest keeps it (meta at:<kind>), and the price job's last run
+  let run = null;
   try {
-    const r = await env.DB.prepare("SELECT substr(key, 1, instr(key, ':') - 1) AS kind, MAX(at) AS at FROM trade_prices GROUP BY kind").all();
-    for(const x of r.results || []) at.price[x.kind] = {at: Date.parse(x.at) / 1000, from: 'jobs'};
+    const [newest, pulled] = await env.DB.batch([env.DB.prepare("SELECT k, v FROM meta WHERE k >= 'at:' AND k < 'at;'"),
+      env.DB.prepare("SELECT v FROM meta WHERE k = 'pull:run'")]);
+    for(const x of newest.results || []) at.price[x.k.slice(3)] = {at: Date.parse(x.v) / 1000, from: 'jobs'};
+    try { run = JSON.parse(((pulled.results || [])[0] || {}).v || 'null'); } catch {}
   } catch {}   // no table yet
+  // a kind no price has come in for since ingest began keeping these: the whole table, read once, and kept
+  if(JOBS.some(j => j[0] === 'price' && !at.price[j[1]])){
+    try {
+      const r = await env.DB.prepare("SELECT substr(key, 1, instr(key, ':') - 1) AS kind, MAX(at) AS at FROM trade_prices GROUP BY kind").all();
+      const keep = [];
+      for(const x of r.results || []){
+        if(!x.kind || !x.at) continue;
+        if(!at.price[x.kind]) at.price[x.kind] = {at: Date.parse(x.at) / 1000, from: 'jobs'};
+        keep.push(env.DB.prepare(NEWEST_SQL).bind('at:' + x.kind, x.at));
+      }
+      if(keep.length) await env.DB.batch(keep);
+    } catch {}   // no table yet
+  }
+  const lastRun = run && run.at && now - Date.parse(run.at) < RUN_AGE ? run : null;
+  const reason = lastRun && Object.entries(lastRun.why || {}).sort((a, b) => b[1] - a[1])[0];
   const jobs = JOBS.map(([where, name, what, every, late, stopped, since]) => {
     const got = at[where][name] || {at: null, from: 'none'};
     const t = got.at ? got.at * 1000 : null;
@@ -98,13 +125,21 @@ export async function health(env, origin){
     const young = Date.parse(since || '') + (stopped + every) * 3600000 > now;
     const state = minutes !== null ? (minutes >= stopped * 60 ? 'stopped' : minutes >= late * 60 ? 'late' : 'ok')
       : got.from === 'backup' ? 'unknown' : young ? 'waiting' : 'stopped';
-    return {where, name, what, every, state, from: got.from, at: t ? new Date(t).toISOString() : null, minutes};
+    const job = {where, name, what, every, state, from: got.from, at: t ? new Date(t).toISOString() : null, minutes};
+    // most of this kind's checks failed in the last run: said with the count, whatever the newest price says
+    const ran = where === 'price' && lastRun && lastRun.kinds && lastRun.kinds[name];
+    if(ran && ran.tried && ran.failed / ran.tried > FAILING){
+      Object.assign(job, {tried: ran.tried, failed: ran.failed,
+        note: what + ': ' + ran.failed + ' of ' + ran.tried + ' checks failed this hour' + (reason && reason[1] ? ', most of them ' + reason[0] : '') + '.'});
+      if(RANK[state] < RANK.failing) job.state = 'failing';
+    }
+    return job;
   });
   jobs.push(...await stale(env, origin, now));
   const age = j => j.minutes === null ? Infinity : j.minutes;   // nothing at all is the oldest there is
   const worst = jobs.reduce((a, b) => RANK[b.state] > RANK[a.state] ||
     (RANK[b.state] === RANK[a.state] && age(b) > age(a)) ? b : a);
-  const line = worst.note ? worst.note                          // a stale section says it in its own words
+  const line = worst.note ? worst.note                          // a stale section or failing checks say it in their own words
     : worst.state === 'ok' ? 'Every data job is on time.'
     : worst.state === 'unknown' ? worst.what + ': the file does not say when it was made.'
     : worst.state === 'waiting' ? worst.what + ': waiting for its first run.'
@@ -123,10 +158,12 @@ export async function serveHealth(request, env, url, ctx){
   const hit = await caches.default.match(key);
   if(hit) return hit;
   const h = await health(env, url.origin);
-  const one = j => ({what: j.what, at: j.at, minutes: j.minutes, everyHours: j.every, from: j.from, state: j.state});
+  const word = s => (s === 'failing' ? 'late' : s);   // the words this has always answered with
+  const one = j => ({what: j.what, at: j.at, minutes: j.minutes, everyHours: j.every, from: j.from, state: word(j.state),
+    ...(j.where === 'price' && j.note ? {note: j.note} : {})});
   const pick = (where, name) => Object.fromEntries(h.jobs.filter(j => j.where === where).map(j => [name(j), one(j)]));
   const res = json(200, {
-    state: h.state, ok: h.ok, checked: h.at, note: h.line,
+    state: word(h.state), ok: h.ok, checked: h.at, note: h.line,
     data: pick('file', j => j.name),
     prices: pick('price', j => KIND[j.name] || j.name),
     // sections serving an older copy because their source failed; {} when nothing is stale

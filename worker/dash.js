@@ -19,7 +19,7 @@
    no key works. It reads only: never a write, never a sign-in. */
 import { PAGES } from '../assets/kinds.js';   // every page that is counted, from the one table the site reads
 import { sameSite, allowed } from './community.js';
-import { cloudflare } from './cfstats.js';
+import { cloudflare, d1Today } from './cfstats.js';
 import { health } from './health.js';
 
 export const ROUTES = Object.keys(PAGES);
@@ -27,7 +27,7 @@ const ROUTE = new Set(ROUTES), DEVICE = new Set(['phone', 'tablet', 'desktop']),
 const SHOWN = new Set([-1, 0, 1]);   // an answer taken down, as it was sent, or checked by us (migration 0010)
 export const MAX = {views: 50, clicks: 200, heat: 200};
 const NOTES = 100;   // notes from players per page, here and in /api/admin/suggestions
-const LOAD_KINDS = ['trade_search', 'trade_fetch', 'trade_limited', 'trade_error', 'site_view', 'site_batch', 'd1_writes'];
+const LOAD_KINDS = ['trade_search', 'trade_fetch', 'trade_exchange', 'trade_limited', 'trade_error', 'site_view', 'site_batch', 'd1_writes'];
 /* Cloudflare Workers Free plan, per day (storage in total) */
 export const FREE = {requests: 100000, d1Reads: 5000000, d1Writes: 100000, d1StorageGB: 5};
 const CF = 'https://dash.cloudflare.com/80fa25161d1d4403df3b849853368410';
@@ -279,12 +279,15 @@ export async function stats(env, url){
   const status = Object.fromEntries(['new', 'read', 'done'].map(s => [s, 0]));
   for(const r of sgCount) if(r.status in status) status[r.status] = r.n;
 
-  // the free plan: our own rough count for today (exact numbers are on Cloudflare's dashboard)
+  // the free plan: our own rough count for today (exact numbers are on Cloudflare's dashboard), and the rows the
+  // database read today by Cloudflare's own count: the limit that ran out first (25 Sep), so the meter reads it too
   const trackingWrites = todayLoad.d1_writes;
   const priceWrites = todayLoad.trade_search * 2;   // each trade search the price job runs saves about one price row (row + key index)
   const writes = trackingWrites + priceWrites;
   const requests = todayLoad.site_batch + todayLoad.site_view;   // tracking batches, plus about one worker call per page view
-  const pct = Math.max(writes / FREE.d1Writes, requests / FREE.requests) * 100;
+  const d1 = await d1Today(env).catch(() => null);
+  const rowsRead = d1 ? d1.rowsRead : null;
+  const pct = Math.max(writes / FREE.d1Writes, requests / FREE.requests, (rowsRead || 0) / FREE.d1Reads) * 100;
 
   return {
     days, since, today,
@@ -300,7 +303,8 @@ export async function stats(env, url){
     suggestions: {count: status, list: sg.map(note)},
     load: {hours, perHour, today: todayLoad, tradeLimitPerHour: 100},
     searches: ts.map(r => ({...searchName(r.state), n: r.n, last: r.last})),
-    plan: {free: FREE, today: {views: todayLoad.site_view, batches: todayLoad.site_batch, requests, trackingWrites, priceWrites, writes},
+    plan: {free: FREE, today: {views: todayLoad.site_view, batches: todayLoad.site_batch, requests, trackingWrites, priceWrites, writes,
+      rowsRead, rowsWritten: d1 ? d1.rowsWritten : null},
       pct: Math.round(pct * 10) / 10, verdict: pct >= 80 ? 'upgrade' : pct >= 50 ? 'watch' : 'fine', links: LINKS},
     jobs: await health(env, url.origin),
   };

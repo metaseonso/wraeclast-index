@@ -312,6 +312,24 @@ export async function cloudflare(env, url){
   return out;
 }
 
+/* The database's own count for today (UTC): rows read and written, from Cloudflare's numbers, for the plan
+   meter on the dashboard (worker/dash.js). Rows read is the limit that ran out on 25 Sep (5 million a day), and
+   only Cloudflare counts it, so it is asked here rather than guessed. Kept 5 minutes; null with no stats key
+   or when Cloudflare does not answer. */
+export async function d1Today(env){
+  if(!env.CF_ANALYTICS_TOKEN) return null;
+  const ck = new Request('https://cache.local/cf-d1-today');
+  const hit = await caches.default.match(ck);
+  if(hit) return hit.json();
+  const d = sinceDate(1);
+  let rows = [];
+  try { rows = (await ask(env, 'ad', ['d1'], {a: ACC, d})).d1 || []; } catch { return null; }
+  const s = (rows.find(r => r.dimensions.date === d) || {}).sum || {};
+  const out = {date: d, rowsRead: s.rowsRead || 0, rowsWritten: s.rowsWritten || 0, reads: s.readQueries || 0, writes: s.writeQueries || 0};
+  await caches.default.put(ck, new Response(JSON.stringify(out), {headers: {'Cache-Control': 'max-age=300'}}));
+  return out;
+}
+
 /* for tools/dev/cfcheck.mjs: every block on its own, so a run says which ones the free plan answers */
 export function checks(days = 7){
   const t = sinceTime(Math.min(days, 7) * 24), d = sinceDate(days);
