@@ -5,7 +5,8 @@
      node tools/build.mjs --plain      copied only, nothing made smaller
 
    1. Copy. Every file .assetsignore lets through, read the way wrangler reads it from the repo root (plus _headers,
-      which Cloudflare reads from the folder it serves), so dist/ serves exactly the paths the repo root served.
+      which Cloudflare reads from the folder it serves), so dist/ serves exactly the paths the repo root served,
+      less the files below data/ that nothing on the site asks for (a drill-down data copy the page no longer names).
    2. Smaller. The .js and .css files, and the inline <script>/<style> of the pages, through esbuild: one file at a
       time, no bundling, every import path and export name kept, whitespace and comments gone. sw.js keeps its
       '__WI_BUILD__' exactly (worker/index.js writes the deploy's id over it) or ships as it is. A file esbuild throws
@@ -89,6 +90,37 @@ async function served(){
   }
   await walk('');
   return files.sort();
+}
+
+/* ---------- data files the site never asks for ----------
+   Every top-level data/*.json ships, read by a page or not: the index is open for anyone building on it. Below
+   data/, a file ships only when a page, a module, the worker or sw.js asks for it:
+     - a file named by its content (name.<hash>.json: the drill-down page's data, tools/sync.py) by its exact path,
+       so a copy the page stopped naming stays in the repo at most and never ships
+     - any other file by its name, or by its folder when the code builds the name ('data/craft/' + id + '.json')
+   tools/dev/budget.mjs fails on a data file nothing reads at all, site or tool. */
+const PUBLIC = [
+  [/^data\/[^/]+\.json$/, 'the index, open for builders: every top-level data file ships, read by a page or not'],
+];
+const HASHED = /\.[0-9a-f]{8,}\.json$/;
+async function siteText(files){
+  const want = f => /^[^/]+\.html$/.test(f) || /^assets\/.+\.m?js$/.test(f) || f === 'sw.js';
+  const parts = await Promise.all(files.filter(want).map(f => readFile(join(ROOT, f), 'utf8')));
+  for(const d of await readdir(join(ROOT, 'worker'), {withFileTypes: true}).catch(() => []))
+    if(d.isFile() && d.name.endsWith('.js')) parts.push(await readFile(join(ROOT, 'worker', d.name), 'utf8'));
+  return parts.join('\n');
+}
+async function asked(files){
+  const text = await siteText(files), left = [];
+  const keep = files.filter(f => {
+    if(!f.startsWith('data/') || PUBLIC.some(([re]) => re.test(f))) return true;
+    const name = f.slice(f.lastIndexOf('/') + 1), dir = f.slice(0, f.lastIndexOf('/') + 1);
+    const ok = HASHED.test(f) ? text.includes(f) : text.includes(name) || text.includes("'" + dir + "'") || text.includes('"' + dir + '"');
+    if(!ok) left.push(f);
+    return ok;
+  });
+  for(const f of left) console.log('build: left out ' + f + ' (nothing on the site asks for it)');
+  return keep;
 }
 
 /* ---------- 1. copy ---------- */
@@ -222,6 +254,8 @@ const t0 = Date.now();
 let files;
 try {
   files = await served();
+  try { files = await asked(files); }
+  catch(e){ warn('could not tell which data files the site asks for (' + (e && e.message || e) + '): every one ships'); }
   await copyAll(files);
   console.log('build: copied ' + files.length + ' files into ' + OUT);
 } catch(e){
