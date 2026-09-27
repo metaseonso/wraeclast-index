@@ -1,0 +1,177 @@
+{
+ "ids": [
+  "files",
+  "schema"
+ ],
+ "source": "game files, patch 0.5.5",
+ "patch": "0.5.5",
+ "cdn": "4.5.5.3",
+ "reader": "pathofexile-dat 15.2.0",
+ "schema": {
+  "commit": "36ab7bee1b4eacc197e401383ff76d6e57de0b46",
+  "version": 7,
+  "built": "2026-09-15",
+  "url": "https://github.com/poe-tool-dev/dat-schema"
+ },
+ "files": {
+  "atlas_corruption": {
+   "patch": "0.5.5",
+   "tables": [
+    "EndgameCorruptionMods",
+    "EndgameCleansedMods",
+    "Mods",
+    "Stats"
+   ],
+   "rows": 26,
+   "bytes": 3966
+  },
+  "azmeri_spirits": {
+   "patch": "0.5.5",
+   "tables": [
+    "TormentSpirits",
+    "MonsterVarieties",
+    "Mods",
+    "Stats"
+   ],
+   "rows": 22,
+   "bytes": 11637
+  },
+  "game_constants": {
+   "patch": "0.5.5",
+   "tables": [
+    "GameConstants"
+   ],
+   "rows": 121,
+   "bytes": 6668
+  },
+  "gold": {
+   "patch": "0.5.5",
+   "tables": [
+    "GoldRespecPrices",
+    "SkillGemGoldPricePerLevel",
+    "SkillGemGoldPricePerQuality",
+    "UniqueGoldPrices",
+    "GoldInherentSkillPricesPerLevel",
+    "SkillGems",
+    "BaseItemTypes",
+    "Words"
+   ],
+   "rows": 1344,
+   "bytes": 81141
+  },
+  "map_content": {
+   "patch": "0.5.5",
+   "tables": [
+    "EndgameMapContent",
+    "EndgameMapContentWeightings",
+    "EndgameMapBiomes",
+    "Stats"
+   ],
+   "rows": 69,
+   "bytes": 11668
+  },
+  "monster_modifiers": {
+   "patch": "0.5.5",
+   "tables": [
+    "ArchnemesisMods",
+    "Mods",
+    "Stats"
+   ],
+   "rows": 196,
+   "bytes": 11599
+  },
+  "monster_resistances": {
+   "patch": "0.5.5",
+   "tables": [
+    "MonsterResistances"
+   ],
+   "rows": 21,
+   "bytes": 2923
+  },
+  "monsters": {
+   "patch": "0.5.5",
+   "tables": [
+    "MonsterVarieties",
+    "MonsterTypes",
+    "MonsterResistances"
+   ],
+   "rows": 1207,
+   "bytes": 376054
+  },
+  "quest_rewards": {
+   "patch": "0.5.5",
+   "tables": [
+    "QuestRewards",
+    "QuestRewardOffers",
+    "Quest",
+    "BaseItemTypes",
+    "Rarity"
+   ],
+   "rows": 128,
+   "bytes": 18775
+  },
+  "resistance_penalty": {
+   "patch": "0.5.5",
+   "tables": [
+    "ResistancePenaltyPerAreaLevel"
+   ],
+   "rows": 100,
+   "bytes": 2833
+  },
+  "ritual_altars": {
+   "patch": "0.5.5",
+   "tables": [
+    "RitualRuneTypes"
+   ],
+   "rows": 10,
+   "bytes": 1393
+  },
+  "ritual_rites": {
+   "patch": "0.5.5",
+   "tables": [
+    "RitualAtlasLineMods",
+    "Mods",
+    "Stats"
+   ],
+   "rows": 67,
+   "bytes": 6177
+  },
+  "sanctum": {
+   "patch": "0.5.5",
+   "tables": [
+    "SanctumFloors",
+    "SanctumRooms",
+    "SanctumPersistentEffects",
+    "SanctumPersistentEffectCategories",
+    "SanctumRewardObjects",
+    "ClientStrings",
+    "WorldAreas",
+    "BaseItemTypes",
+    "Stats"
+   ],
+   "rows": 117,
+   "bytes": 22475
+  },
+  "strongboxes": {
+   "patch": "0.5.5",
+   "tables": [
+    "Strongboxes",
+    "Chests",
+    "Mods",
+    "Stats"
+   ],
+   "rows": 50,
+   "bytes": 19158
+  },
+  "ultimatum_modifiers": {
+   "patch": "0.5.5",
+   "tables": [
+    "UltimatumModifiers",
+    "Mods",
+    "Stats"
+   ],
+   "rows": 122,
+   "bytes": 31053
+  }
+ }
+}
