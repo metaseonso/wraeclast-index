@@ -18,7 +18,7 @@
                          game leaves open (GET: the lean and who weighed in): worker/community.js
      /api/t, /api/admin/* page views and clicks, and the owner's dashboard (admin.html): worker/dash.js */
 import * as seo from './seo.js';
-import { servePrices, ingest, state, serveMarket, serveBossPrices, rollLeagues } from './prices.js';
+import { servePrices, ingest, state, serveMarket, serveBossPrices, rollLeagues, buildMarket } from './prices.js';
 import { fileText, putFile } from './files.js';
 import { tradeSearches, suggest } from './community.js';
 import { track, admin } from './dash.js';
@@ -38,7 +38,7 @@ export default {
     if(url.pathname === '/api/health') return serveHealth(request, env, url, ctx);
     if(url.pathname === '/api/t') return track(request, env, url);
     if(url.pathname.startsWith('/api/admin/')) return admin(request, env, url);
-    if(url.pathname === '/api/prices/ingest') return ingest(request, env, url);
+    if(url.pathname === '/api/prices/ingest') return ingest(request, env, url, ctx);
     if(url.pathname === '/api/prices/state') return state(request, env, url);
     if(url.pathname === '/api/data/put') return dataPut(request, env, url, ctx);
     if(url.pathname === '/data/rollprices.json') return servePrices(request, env, ctx, 'roll');
@@ -51,11 +51,15 @@ export default {
 
 /* An hourly data file coming in (worker/files.js). When it is the Currency Exchange prices, the day's prices
    are also put into the league they belong to, once a day, so a currency's line survives the league
-   (worker/prices.js rollLeagues). It runs after the answer has gone back: the job never waits for it. */
+   (worker/prices.js rollLeagues). A file the price file is made of builds it again (worker/prices.js
+   buildMarket). Both run after the answer has gone back: the job never waits for them. */
+const MARKET_INPUTS = new Set(['exchange.json', 'market.json', 'leagues.json']);
 async function dataPut(request, env, url, ctx){
   const res = await putFile(request, env, url, ctx);
-  if(res.status === 200 && url.searchParams.get('name') === 'exchange.json')
-    ctx.waitUntil(rollLeagues(env, url.origin, ctx).catch(() => null));
+  const name = url.searchParams.get('name');
+  if(res.status === 200 && MARKET_INPUTS.has(name))
+    ctx.waitUntil((name === 'exchange.json' ? rollLeagues(env, url.origin, ctx).catch(() => null) : Promise.resolve())
+      .then(() => buildMarket(env, url.origin, ctx)).catch(() => null));
   return res;
 }
 

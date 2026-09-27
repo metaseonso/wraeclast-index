@@ -44,11 +44,9 @@
    /data/rollprices.json, /data/farmprices.json   the slider and farm prices
    /data/bossprices.json   what every item on the Bosses tab costs, from all three places at once */
 
-import { published, publishedRow, fromServer } from './files.js';
+import { published, publishedRow, fromServer, fromGitHub, fileWhen } from './files.js';
 import { lateAfter } from './health.js';
 
-const ISSUER = 'https://token.actions.githubusercontent.com';
-const REPO = 'metaseonso/wraeclast-index';
 const WORKFLOW = /^metaseonso\/wraeclast-index\/\.github\/workflows\/prices\.yml@refs\/heads\/main$/;
 const DAYS = 45;
 const KEEP = 4;      // leagues kept in price_leagues: this one and the three before it
@@ -86,26 +84,18 @@ function mergeDays(was, add){
   return days.filter(d => last - dayNo(d) < SPAN).map(d => [d, by.get(d)]);
 }
 
-/* ---------- GitHub's signed token ---------- */
-const unb64 = s => Uint8Array.from(atob(s.replace(/-/g, '+').replace(/_/g, '/') + '==='.slice((s.length + 3) % 4)), c => c.charCodeAt(0));
-async function fromGitHub(request, url){
-  const m = (request.headers.get('Authorization') || '').match(/^Bearer ([\w-]+)\.([\w-]+)\.([\w-]+)$/);
-  if(!m) return null;
-  let head, claims;
-  try { head = JSON.parse(new TextDecoder().decode(unb64(m[1]))); claims = JSON.parse(new TextDecoder().decode(unb64(m[2]))); } catch { return null; }
-  if(head.alg !== 'RS256') return null;
-  const keys = await (await fetch(ISSUER + '/.well-known/jwks', {cf: {cacheTtl: 3600, cacheEverything: true}})).json();
-  const jwk = (keys.keys || []).find(k => k.kid === head.kid);
-  if(!jwk) return null;
-  const key = await crypto.subtle.importKey('jwk', {kty: jwk.kty, n: jwk.n, e: jwk.e, alg: 'RS256', ext: true},
-    {name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256'}, false, ['verify']);
-  const ok = await crypto.subtle.verify('RSASSA-PKCS1-v1_5', key, unb64(m[3]), new TextEncoder().encode(m[1] + '.' + m[2]));
-  const now = Date.now() / 1000;
-  if(!ok || claims.iss !== ISSUER || claims.aud !== url.origin || !(claims.exp > now) || (claims.nbf && claims.nbf > now + 60)) return null;
-  if(claims.repository !== REPO || claims.ref !== 'refs/heads/main' || !WORKFLOW.test(claims.workflow_ref || '')) return null;
-  return claims;
+/* ---------- GitHub's signed token (worker/files.js fromGitHub), from the price workflow only ---------- */
+const signed = async (request, env, url) => (await fromServer(request, env)) || !!(await fromGitHub(request, url, WORKFLOW));
+
+/* ---------- one kind's rows ---------- */
+/* The rows of some kinds of price in one league. Asked by key range ("uniq:" up to "uniq;") rather than LIKE,
+   so the database walks the key's own index (or the league one, migration 0011) and reads that kind's rows
+   only: with LIKE it read the whole table on every build (worker/migrations/0011). */
+async function kindRows(env, cols, league, kinds){
+  const res = await env.DB.batch(kinds.map(k => env.DB.prepare(
+    'SELECT ' + cols + ' FROM trade_prices WHERE league = ? AND key >= ? AND key < ?').bind(league, k + ':', k + ';')));
+  return res.flatMap(r => (r && r.results) || []);
 }
-const signed = async (request, env, url) => (await fromServer(request, env)) || !!(await fromGitHub(request, url));
 
 /* ---------- GET /api/prices/state: when each price was last checked, so the job does the oldest first ---------- */
 export async function state(request, env, url){
@@ -118,7 +108,44 @@ export async function state(request, env, url){
 /* ---------- POST /api/prices/ingest ---------- */
 // uniq carries "<name> | <base>" where a unique comes on more than one; a base item is one name and no pipe
 const KEY = /^(roll:[a-z]+\.[a-z0-9_]+@-?\d+(\.\d+)?|(farm|boss):[a-z0-9-]{1,80}|uniq:[^\n|][^\n]{0,119}|base:[^\n|]{1,120}|cur:[^\s|]{1,60}\|[^\n|]{1,80})$/;
-export async function ingest(request, env, url){
+/* What the price job says about its own run (tools/pricepull.py), so a check that fails is never silent: how
+   many it tried, how many came back, how many failed and why, per kind of key. Sent with every batch, counted
+   from the start of the run, and kept as the latest run (meta pull:run) for the job watch (worker/health.js).
+   failedKeys: the keys that failed since the last batch. Each one's run of failed runs is kept (meta
+   pull:streak) and sent back, so the job can say when the same thing has failed 3 runs running. */
+const WHY = /^[\w .:'-]{1,40}$/;
+const count = v => Math.max(0, Math.min(1e5, Math.floor(+v || 0)));
+function runOf(x){
+  if(!x || typeof x !== 'object' || Array.isArray(x)) return null;
+  const why = {}, kinds = {};
+  for(const [k, v] of Object.entries(x.why || {}).slice(0, 12)) if(WHY.test(k)) why[k] = count(v);
+  for(const [k, v] of Object.entries(x.kinds || {}).slice(0, 12))
+    if(/^[a-z]{2,10}$/.test(k) && v && typeof v === 'object')
+      kinds[k] = {tried: count(v.tried), ok: count(v.ok), failed: count(v.failed), empty: count(v.empty)};
+  return {id: String(x.id || '').slice(0, 40), at: new Date().toISOString(), final: x.final === true,
+    tried: count(x.tried), ok: count(x.ok), failed: count(x.failed), empty: count(x.empty),
+    limited: count(x.limited), skipped: count(x.skipped), why, kinds};
+}
+const STREAKS = 300;   // failed keys remembered at most: the longest runs of failures are the ones kept
+async function streaks(env, run, failed, fine){
+  let was = {};
+  try { was = JSON.parse((await meta(env, 'pull:streak')) || '{}') || {}; } catch {}
+  const out = {};
+  for(const k of fine) delete was[k];   // came back this run: its count starts again
+  for(const k of failed){
+    const r = Array.isArray(was[k]) ? was[k] : [0, ''];
+    was[k] = r[1] === run ? r : [r[0] + 1, run];   // once per run, however many batches name it
+    out[k] = was[k][0];
+  }
+  const keep = Object.entries(was).sort((a, b) => b[1][0] - a[1][0]).slice(0, STREAKS);
+  return {out, stmt: env.DB.prepare('INSERT INTO meta (k, v) VALUES (?, ?) ON CONFLICT(k) DO UPDATE SET v = excluded.v')
+    .bind('pull:streak', JSON.stringify(Object.fromEntries(keep)))};
+}
+
+const META_SQL = 'INSERT INTO meta (k, v) VALUES (?, ?) ON CONFLICT(k) DO UPDATE SET v = excluded.v';
+// the newest check of each kind (meta at:<kind>), so the job watch reads a few rows instead of the whole table
+const NEWEST_SQL = 'INSERT INTO meta (k, v) VALUES (?, ?) ON CONFLICT(k) DO UPDATE SET v = CASE WHEN excluded.v > v THEN excluded.v ELSE v END';
+export async function ingest(request, env, url, ctx){
   if(request.method !== 'POST') return json(405, {error: 'POST only.'});
   if(!(await signed(request, env, url))) return json(401, {error: 'Not signed in.'});
   let body;
@@ -129,7 +156,7 @@ export async function ingest(request, env, url){
       p: r.p.slice(0, 10).filter(x => Array.isArray(x) && isFinite(+x[0]) && +x[0] > 0 && typeof x[1] === 'string').map(x => [+x[0], x[1].slice(0, 30)])}));
   const now = new Date().toISOString(), day = now.slice(0, 10);
   // what each currency is worth in divines (the Currency Exchange), for listings priced in any of them
-  const worth = await exchangeWorth(env, url.origin);
+  const worth = await exchangeWorth(env, url.origin, ctx);
   const valueOf = r => {
     // the middle of the 5 cheapest: what you actually pay, without one bait listing or a few silly asks deciding it
     return round(median(r.p.map(([a, c]) => worth[c] ? a * worth[c] : null).filter(x => x !== null).sort((x, y) => x - y).slice(0, 5)));
@@ -161,29 +188,67 @@ export async function ingest(request, env, url){
       ON CONFLICT(key, league) DO UPDATE SET s = excluded.s, at = excluded.at`)
       .bind(r.key, league, JSON.stringify(line), now));
   }
+  const saved = stmts.length;
+  if(saved){
+    // the built market file is out of date from here (meta mkt), and so is each kind's newest check
+    stmts.push(env.DB.prepare(META_SQL).bind('mkt', String(Date.now())));
+    for(const kind of new Set(rows.map(r => r.key.slice(0, r.key.indexOf(':')))))
+      stmts.push(env.DB.prepare(NEWEST_SQL).bind('at:' + kind, now));
+  }
+  // the run's own account of itself, and which keys keep failing
+  const run = runOf(body.run);
+  let streak = {};
+  if(run){
+    const failed = (Array.isArray(body.failedKeys) ? body.failedKeys : []).slice(0, 100)
+      .map(x => Array.isArray(x) ? x[0] : x).filter(k => typeof k === 'string' && KEY.test(k));
+    const s = await streaks(env, run.id, failed, rows.map(r => r.key));
+    streak = s.out;
+    stmts.push(env.DB.prepare(META_SQL).bind('pull:run', JSON.stringify(run)), s.stmt);
+  }
   if(stmts.length) await env.DB.batch(stmts);
   for(const [k, n] of Object.entries(body.load || {}))
     if(/^trade_(search|fetch|exchange|limited|error)$/.test(k) && +n > 0) await tally(env, k, Math.min(1000, Math.floor(+n)));
-  return json(200, {ok: true, saved: stmts.length});
+  if(saved && league && ctx){
+    // a price for a league that is not the newest one kept: the order of the leagues has moved on
+    ctx.waitUntil((async () => {
+      if((await leagueOrder(env)).order[0] !== league) await leagueOrder(env, true);
+      await buildMarket(env, url.origin, ctx);
+    })().catch(() => null));
+  }
+  return json(200, {ok: true, saved, streak});
 }
 
 /* ---------- keeping each league's line ---------- */
 /* The leagues price_leagues holds, newest first, by when each one was last written to: a league that has
    finished stopped being written to, this one is being written to now. Our own rows say it, so a league is
-   never ordered by a name or a date from anywhere else. */
-async function leagueOrder(env){
+   never ordered by a name or a date from anywhere else.
+   Working it out reads every row of the table, so the answer is kept (meta lorder, with when it was worked
+   out) and read from there: the day's roll works it out again, and so does a price for any league that is not
+   the newest (ingest). fresh: work it out now. Returns {order, at}. */
+async function leagueOrder(env, fresh){
+  if(!fresh){
+    try {
+      const kept = JSON.parse((await meta(env, 'lorder')) || 'null');
+      if(kept && Array.isArray(kept.order)) return kept;
+    } catch {}
+  }
   let rows = {results: []};
   try { rows = await env.DB.prepare('SELECT league, MAX(at) AS at FROM price_leagues GROUP BY league').all(); } catch {}   // no table yet
-  return (rows.results || []).filter(r => r.league).sort((a, b) => (a.at < b.at ? 1 : a.at > b.at ? -1 : 0)).map(r => r.league);
+  const out = {order: (rows.results || []).filter(r => r.league).sort((a, b) => (a.at < b.at ? 1 : a.at > b.at ? -1 : 0)).map(r => r.league),
+    at: new Date().toISOString()};
+  try { await setMeta(env, 'lorder', JSON.stringify(out)); } catch {}
+  return out;
 }
 /* Which day of its own league a day is, from the league start dates (data/leagues.json, tools/leagues.py), so
    the lines on a chart line up by day of league and not by date. A league that list does not name gets 0: its
    line starts at the left of its own league, which is what it is, rather than being shifted by a guess. */
-async function leagueStarts(env, origin, ctx){
-  const f = (await published(env, origin, 'leagues.json', ctx)) || (await asset(env, origin, 'leagues.json')) || {};
+/* Also gives the time of the copy it read (its arrival, or the backup's own hour), which a build keeps. */
+async function leagueStarts(env, origin, ctx, fresh){
+  const row = await publishedRow(env, origin, 'leagues.json', ctx, fresh);
+  const f = (row && row.data) || (await asset(env, origin, 'leagues.json')) || {};
   const out = new Map();
   for(const l of f.leagues || []) if(l && l.name && /^\d{4}-\d{2}-\d{2}$/.test(l.start || '')) out.set(l.name, dayNo(l.start));
-  return out;
+  return [out, (row && (row.at || row.own)) || 0];
 }
 
 /* Once a day: put the Currency Exchange's own day-by-day prices (exchange.json, tools/exchange.py) into this
@@ -210,18 +275,20 @@ export async function rollLeagues(env, origin, ctx){
   await setMeta(env, 'cxroll', mark);
   // the leagues before the last KEEP: dropped, once this league is the one being written to (so a roll that
   // ran against a file from the wrong league can never throw a league away)
-  const order = await leagueOrder(env);
+  const {order} = await leagueOrder(env, true);
   let dropped = 0;
   if(order[0] === cx.league && order.length > KEEP){
     const go = order.slice(KEEP);
     await env.DB.prepare('DELETE FROM price_leagues WHERE league IN (' + go.map(() => '?').join(',') + ')').bind(...go).run();
     dropped = go.length;
+    await leagueOrder(env, true);
   }
+  await setMeta(env, 'mkt', Date.now());   // the built market file is out of date from here
   return {ok: true, rolled: stmts.length, dropped};
 }
 
-async function exchangeWorth(env, origin){
-  const x = (await published(env, origin, 'exchange.json')) || {};
+async function exchangeWorth(env, origin, ctx){
+  const x = (await published(env, origin, 'exchange.json', ctx)) || {};
   const worth = {divine: 1};
   for(const it of Object.values(x.items || {})) if(it.tid && it.v) worth[it.tid] = it.v;
   worth.divine = 1;
@@ -304,7 +371,8 @@ function thinNote(days, mine, back){
    own, it is marked as theirs so the card can say so, and it goes the moment our own line for that league
    exists. */
 async function ninjaPast(env, origin, ctx){
-  const f = (await published(env, origin, 'pastprices.json', ctx)) || (await asset(env, origin, 'pastprices.json'));
+  // it ships with the site and no job sends it in, so the site's own copy is read, not the backup site's
+  const f = (await asset(env, origin, 'pastprices.json')) || (await published(env, origin, 'pastprices.json', ctx));
   const out = new Map();
   for(const l of (f && f.leagues) || []){
     if(!l || !l.name) continue;
@@ -317,9 +385,25 @@ async function ninjaPast(env, origin, ctx){
   }
   return out;
 }
-async function addLeagueLines(env, origin, ctx, league, items, own){
-  const order = await leagueOrder(env);
-  const starts = await leagueStarts(env, origin, ctx);
+/* The past leagues' own rows, [[key, league, s], ...]. Reading them is most of a build's database reads
+   once there are past leagues, and they only change when the day's roll runs or the leagues move on, so they
+   are kept as a built row of their own (built:<deploy>:lines), named by which leagues they are and when the
+   league order was last worked out (worker/prices.js leagueOrder). Throws with no table. */
+async function pastRows(env, leagues, lo){
+  if(!leagues.length) return [];
+  const base = builtName(env, 'lines'), stamp = JSON.stringify([leagues, lo.at]);
+  try {
+    const got = unpack((await readBuilt(env, base).all()).results || [], base);
+    if(got && got.head.key === stamp) return JSON.parse(got.body);
+  } catch {}
+  const rows = await env.DB.prepare('SELECT key, league, s FROM price_leagues WHERE league IN (' + leagues.map(() => '?').join(',') + ')')
+    .bind(...leagues).all();
+  const list = (rows.results || []).map(r => [r.key, r.league, r.s]);
+  try { await env.DB.batch(keepBuilt(env, base, {v: BUILT_V, key: stamp}, JSON.stringify(list))); } catch {}
+  return list;
+}
+async function addLeagueLines(env, origin, ctx, league, items, own, starts){
+  const lo = await leagueOrder(env), order = lo.order;
   // the leagues to draw behind this one: ours first, then the ones only poe.ninja has, newest start first
   const ninja = await ninjaPast(env, origin, ctx);
   const seen = new Set([league, ...order]);
@@ -330,12 +414,11 @@ async function addLeagueLines(env, origin, ctx, league, items, own){
   const here = startOf(league);
   const by = new Map();
   if(back.length){
-    let rows = {results: []};
-    try {
-      rows = await env.DB.prepare('SELECT key, league, s FROM price_leagues WHERE league IN (' + back.map(() => '?').join(',') + ')')
-        .bind(...back).all();
-    } catch { return; }   // no table yet: cards carry this league only, as before
-    for(const r of rows.results || []){
+    let rows = [];
+    try { rows = await pastRows(env, back.filter(l => order.includes(l)), lo); }
+    catch { return; }   // no table yet: cards carry this league only, as before
+    for(const [key, lg, s] of rows){
+      const r = {key, league: lg, s};
       const line = dense(r.s, startOf(r.league));
       if(!line) continue;
       const list = by.get(r.key) || [];
@@ -402,11 +485,139 @@ export async function serveMarket(request, env, ctx){
   if(part === 'facts') return serveFacts(url, env, ctx);
   const hit = await caches.default.match(marketKey(url.origin, part));
   if(hit) return hit;
-  const catRow = await publishedRow(env, url.origin, 'market.json', ctx), cat = (catRow && catRow.data) || {items: {}};
-  const cxRow = await publishedRow(env, url.origin, 'exchange.json', ctx), cx = (cxRow && cxRow.data) || {items: {}};
+  const group = groupOf(part);
+  let got = null;
+  try { got = await builtPart(env, url.origin, part, group); } catch {}   // no table, or a row that does not read: built below
+  const bodies = got && got.body !== null ? {[part]: got.body} : await buildGroup(env, url.origin, ctx, group, got && got.now);
+  let res = null;
+  for(const [p, body] of Object.entries(bodies)){   // each part cached on its own, for 5 minutes in this data centre
+    const r = new Response(body, {headers: {...JSON_TYPE, 'Cache-Control': SHORT}});
+    if(p === part) res = r.clone();
+    ctx.waitUntil(caches.default.put(marketKey(url.origin, p), r));
+  }
+  return res;
+}
+
+/* ---------- built once, when what it is made of changes ----------
+   A build reads every unique and base price of the league (about 800 rows) and the past leagues' lines. It
+   used to run on every data centre's cache miss, every 5 minutes, and with the whole trade_prices and
+   price_leagues tables read each time (about 3,600 rows a miss) that took the database past the free plan's
+   5 million reads on 25 Sep. Now each group of parts is built when something it is made of changes (a price
+   run sends prices in, a data file arrives, the day's Currency Exchange roll: buildMarket) and kept in the
+   files table under names of its own (built:<deploy>:market:<part>), so a miss reads about five rows: when
+   each input last changed, and the part itself.
+   A built part's first line says what it was built from: the time of each file it read, the time the trade
+   prices last changed (meta mkt) and when its "late" flag turns true (lateAt). It is served only while
+   nothing it was built from has moved on since and never past lateAt, so a stale price is never passed off as
+   a new one and a late file still says so. Anything else (no built row, a newer input, another deploy, no
+   table) builds it the way it always was, and keeps it. A part over 1.2 MB goes in numbered rows (#2, #3, ...),
+   each well under D1's 2 MB a row. */
+const BUILT_V = 1;          // the shape of a built row: a new number reads every older row as missing
+const CHUNK = 1.2e6;        // bytes in one built row at most
+// the files each group is made from: a built group is out of date once one of these has moved on
+const INPUTS = {full: ['market.json', 'exchange.json', 'leagues.json'], now: ['market.json', 'exchange.json'],
+  past: ['market.json', 'exchange.json', 'leagues.json']};
+const groupOf = part => !part ? 'full' : GROUP[part][0] === 'now' ? 'now' : 'past';
+const deployOf = env => String((env.CF_VERSION_METADATA && env.CF_VERSION_METADATA.id) || 'local').slice(0, 8);
+const builtName = (env, what) => 'built:' + deployOf(env) + ':' + what;   // never a name /api/data/put takes
+const partName = (env, part) => builtName(env, 'market:' + (part || 'full'));
+const readBuilt = (env, base) => env.DB.prepare('SELECT name, body FROM files WHERE name >= ? AND name < ?').bind(base, base + '$');
+const INPUT_SQL = "SELECT name, at FROM files WHERE name IN ('market.json', 'exchange.json', 'leagues.json')";
+const MKT_SQL = "SELECT v FROM meta WHERE k = 'mkt'";
+const FILE_SQL = 'INSERT INTO files (name, body, at) VALUES (?, ?, ?) ON CONFLICT(name) DO UPDATE SET body = excluded.body, at = excluded.at';
+const enc = new TextEncoder(), dec = new TextDecoder();
+
+/* When each thing a build is made from last changed: {f: {file: unix seconds}, d: {file: true when the
+   database has it}, t: meta mkt}. A file no job has sent in is timed by the backup's own hour (worker/files.js
+   fileWhen). res: the answers to INPUT_SQL and MKT_SQL, when they were asked in a batch already. */
+async function inputsOf(env, origin, res, names){
+  if(!res) res = await env.DB.batch([env.DB.prepare(INPUT_SQL), env.DB.prepare(MKT_SQL)]);
+  const f = {}, d = {};
+  for(const r of res[0].results || []){ f[r.name] = r.at; d[r.name] = true; }
+  await Promise.all(names.filter(n => !d[n]).map(async n => { f[n] = (await fileWhen(env, origin, n)).at || 0; }));
+  const m = (res[1].results || [])[0];
+  return {f, d, t: m ? +m.v || 0 : 0};
+}
+/* a built thing's rows back into {head, body}; null when it is not all there */
+function unpack(rows, base){
+  const first = rows.find(r => r.name === base);
+  const cut = first && typeof first.body === 'string' ? first.body.indexOf('\n') : -1;
+  if(cut < 0) return null;
+  let head = null;
+  try { head = JSON.parse(first.body.slice(0, cut)); } catch { return null; }
+  const rest = rows.filter(r => r !== first).map(r => [+r.name.slice(base.length + 1), r.body]).sort((a, b) => a[0] - b[0]);
+  if(!head || rest.length !== (head.n || 1) - 1 || rest.some((x, i) => x[0] !== i + 2 || typeof x[1] !== 'string')) return null;
+  return {head, body: first.body.slice(cut + 1) + rest.map(x => x[1]).join('')};
+}
+/* the statements that keep one built thing: its head (one line of JSON) on the first row, the text cut on a
+   character boundary into rows of at most CHUNK bytes, and any numbered rows the last one had dropped */
+function keepBuilt(env, base, head, text){
+  const parts = [];
+  if(text.length * 3 <= CHUNK) parts.push(text);   // under the limit however it is written
+  else {
+    const bytes = enc.encode(text);
+    let i = 0;
+    do {
+      let j = Math.min(bytes.length, i + CHUNK);
+      while(j < bytes.length && (bytes[j] & 0xC0) === 0x80) j--;   // never cut a character in two
+      parts.push(dec.decode(bytes.subarray(i, j)));
+      i = j;
+    } while(i < bytes.length);
+  }
+  const at = Math.floor(Date.now() / 1000);
+  return [
+    env.DB.prepare('DELETE FROM files WHERE name > ? AND name < ?').bind(base, base + '$'),
+    env.DB.prepare(FILE_SQL).bind(base, JSON.stringify({...head, n: parts.length}) + '\n' + parts[0], at),
+    ...parts.slice(1).map((p, k) => env.DB.prepare(FILE_SQL).bind(base + '#' + (k + 2), p, at)),
+  ];
+}
+/* a built part still stands: nothing it was made from has moved on, and its "late" has not come due */
+function fits(head, now, group){
+  if(!head || head.v !== BUILT_V || !head.f || (head.lateAt && Date.now() >= head.lateAt)) return false;
+  if((head.t || 0) < now.t) return false;
+  return INPUTS[group].every(n => (head.f[n] || 0) >= (now.f[n] || 0));
+}
+/* the built part and what it has to be newer than, in one batch: {now, body}, body null when it does not stand */
+async function builtPart(env, origin, part, group){
+  const base = partName(env, part);
+  const res = await env.DB.batch([env.DB.prepare(INPUT_SQL), env.DB.prepare(MKT_SQL), readBuilt(env, base)]);
+  const now = await inputsOf(env, origin, res, INPUTS[group]);
+  const got = unpack(res[2].results || [], base);
+  return {now, body: got && fits(got.head, now, group) ? got.body : null};
+}
+/* Build one group the way it always was, keep it, and give back its parts: {part: text}. now: its inputs,
+   read before anything else, so a price that lands while this runs leaves the build older than it and the
+   next miss builds again. Rows another deploy built are dropped here: their shape may not be this one's. */
+async function buildGroup(env, origin, ctx, group, now, memo){
+  now = now || await inputsOf(env, origin, null, INPUTS[group]);
+  const made = await makeMarket(env, origin, ctx, group, now, memo);
+  const mine = builtName(env, '');
+  const stmts = [env.DB.prepare("DELETE FROM files WHERE name >= 'built:' AND name < 'built;' AND NOT (name >= ? AND name < ?)")
+    .bind(mine, mine.slice(0, -1) + ';')];
+  for(const [p, text] of Object.entries(made.bodies)) stmts.push(...keepBuilt(env, partName(env, p), made.head, text));
+  const keep = env.DB.batch(stmts).catch(() => null);   // not kept: served all the same, and built again on the next miss
+  if(ctx && ctx.waitUntil) ctx.waitUntil(keep); else await keep;
+  return made.bodies;
+}
+/* After prices or a data file come in (ingest; worker/index.js dataPut): the two groups every page asks for,
+   built now so no page waits on a build. The whole file in one (crawler pages, and pages from before the parts
+   were split) is built on its first miss. */
+export async function buildMarket(env, origin, ctx){
+  const now = await inputsOf(env, origin, null, INPUTS.full), memo = {};   // the trade rows read once for both
+  for(const group of ['now', 'past']) await buildGroup(env, origin, ctx, group, now, memo);
+}
+
+/* One group's parts, built from the files, the trade rows and the past leagues: {bodies: {part: text}, head}.
+   memo: an object shared by the builds of one change, so the trade rows are read once for all of them. */
+async function makeMarket(env, origin, ctx, group, inputs, memo){
+  const fresh = name => (inputs.d[name] ? inputs.f[name] : undefined);   // never built from a copy older than the database's
+  const catRow = await publishedRow(env, origin, 'market.json', ctx, fresh('market.json')), cat = (catRow && catRow.data) || {items: {}};
+  const cxRow = await publishedRow(env, origin, 'exchange.json', ctx, fresh('exchange.json')), cx = (cxRow && cxRow.data) || {items: {}};
+  const stamp = row => (row && (row.at || row.own)) || 0;
+  const head = {v: BUILT_V, t: inputs.t, f: {'market.json': stamp(catRow), 'exchange.json': stamp(cxRow)}, lateAt: null, at: Date.now()};
   const league = cat.league || '';
-  const rows = await env.DB.prepare(
-    "SELECT key, v, total, at, h FROM trade_prices WHERE league = ? AND (key LIKE 'uniq:%' OR key LIKE 'base:%')").bind(league).all();
+  const rows = memo && memo.league === league ? memo.rows : await kindRows(env, 'key, v, total, at, h', league, ['uniq', 'base']);
+  if(memo){ memo.league = league; memo.rows = rows; }
   const rate = cx.league === league ? cx.rate : null;
   const items = {};
   for(const [k, it] of Object.entries(cat.items || {})){
@@ -419,13 +630,19 @@ export async function serveMarket(request, env, ctx){
   // each kind of trade check is aged on its own and the older of the two stands, so a kind that has stopped
   // cannot hide behind one that is still running. Both are late after the same six hours (worker/health.js).
   let uniqAt = null, baseAt = null;
-  for(const r of rows.results || []){
+  for(const r of rows){
     if(r.key.startsWith('base:')){ if(!baseAt || r.at > baseAt) baseAt = r.at; }
     else if(!uniqAt || r.at > uniqAt) uniqAt = r.at;
   }
   const tradeAt = older(uniqAt, baseAt);
   const updated = older(currencyAt, tradeAt);
   const late = stale(currencyAt, 'file', 'exchange.json') || (!!tradeAt && stale(tradeAt, 'price', 'uniq'));
+  // the moment "late" turns true on its own, with nothing new coming in: a built part is not served past it
+  if(!late && group !== 'past'){
+    const due = [Date.parse(currencyAt) + lateAfter('file', 'exchange.json') * 3600e3,
+      tradeAt ? Date.parse(tradeAt) + lateAfter('price', 'uniq') * 3600e3 : Infinity].filter(x => isFinite(x));
+    head.lateAt = due.length ? Math.min(...due) : null;
+  }
   const own = new Map();   // which price_leagues row each item is, and where this league's own line starts
   const days = new Map();  // each item's own days as they came ("2026-09-05"): hist writes h from these
   // currency: what it traded for on the Currency Exchange over the last 24 hours
@@ -447,23 +664,26 @@ export async function serveMarket(request, env, ctx){
      was asked for white, which is not the item its own name stands for everywhere else, so the row says so
      (as) and the card prints that word beside the price. Nothing is drawn where the last check found nobody
      selling: fields() leaves v out and the card has no price, rather than yesterday's. */
-  for(const r of rows.results || []){
+  for(const r of rows){
     const base = r.key.startsWith('base:'), k = (base ? 'b:' : 'u:') + r.key.slice(5);
     items[k] = {...fields(r), src: 'trade', ...(base ? {as: 'white'} : {})};
     if(items[k].h) days.set(k, parse(r.h));
     const pts = points(r.h);
     own.set(k, {k: r.key, f: pts.length ? pts[0][0] : null, n: pts.length, g: gapsOf(pts)});
   }
-  const group = GROUP[part] || [''];
   // the past leagues' lines. Left out of now and live, so the first cards never wait for them.
-  if(!group.includes('now')) await addLeagueLines(env, url.origin, ctx, league, items, own);
+  if(group !== 'now'){
+    const [starts, leaguesAt] = await leagueStarts(env, origin, ctx, fresh('leagues.json'));
+    head.f['leagues.json'] = leaguesAt;
+    await addLeagueLines(env, origin, ctx, league, items, own, starts);
+  }
   const top = {league, updated, late, times: {currency: currencyAt, trade: tradeAt, catalogue: came(catRow)},
     primary: 'divine', rates: rate ? {exalted: rate} : {},
     source: 'Currency Exchange and trade site listings', builds: cat.builds,
     markets: cx.league === league ? (cx.markets || []).slice(0, 40) : []};
   const bodies = {};
-  if(!part) bodies[''] = {...top, items};
-  else {   // each part cached on its own (a few minutes apart at most: the history moves once a day)
+  if(group === 'full') bodies[''] = {...top, items};
+  else {
     const now = {}, past = {};
     for(const [k, it] of Object.entries(items)){
       const a = {}, b = {};
@@ -471,9 +691,9 @@ export async function serveMarket(request, env, ctx){
       now[k] = a;
       if(Object.keys(b).length) past[k] = b;
     }
-    if(group.includes('now')){
+    if(group === 'now'){
       const facts = await factsOf(cat);
-      ctx.waitUntil(keepFacts(url.origin, facts));
+      if(ctx && ctx.waitUntil) ctx.waitUntil(keepFacts(origin, facts));
       bodies.now = {...top, part: 'now', items: now};
       bodies.live = {...top, part: 'live', facts: facts.v, ...liveItems(now, cat, currencyAt)};
     } else {
@@ -481,13 +701,8 @@ export async function serveMarket(request, env, ctx){
       bodies.hist = {league, updated, part: 'hist', ...histItems(past, days)};
     }
   }
-  let res = null;
-  for(const [p, body] of Object.entries(bodies)){
-    const r = new Response(JSON.stringify(body), {headers: {...JSON_TYPE, 'Cache-Control': SHORT}});
-    if(p === part) res = r.clone();
-    ctx.waitUntil(caches.default.put(marketKey(url.origin, p), r));
-  }
-  return res;
+  for(const p of Object.keys(bodies)) bodies[p] = JSON.stringify(bodies[p]);
+  return {bodies, head};
 }
 
 /* ---------- the compact parts: live, hist and facts ----------
@@ -593,11 +808,10 @@ export async function servePrices(request, env, ctx, kind){
   const hit = await caches.default.match(key);
   if(hit) return hit;
   const cat = (await published(env, url.origin, 'market.json', ctx)) || {};
-  const rows = await env.DB.prepare('SELECT key, v, total, at FROM trade_prices WHERE key LIKE ? AND league = ?')
-    .bind(kind + ':%', cat.league || '').all();
+  const rows = await kindRows(env, 'key, v, total, at', cat.league || '', [kind]);
   const out = {updated: null, league: cat.league || null, every: 'day'};   // one of these comes round in a day
   if(kind === 'roll') out.mods = {}; else out.items = {};
-  for(const r of rows.results || []){
+  for(const r of rows){
     const name = r.key.slice(kind.length + 1), price = r.v === undefined ? null : r.v;
     if(!out.updated || r.at > out.updated) out.updated = r.at;
     if(kind === 'roll'){
@@ -645,11 +859,10 @@ export async function serveBossPrices(request, env, ctx){
   const catRow = await publishedRow(env, url.origin, 'market.json', ctx), cat = (catRow && catRow.data) || {};
   const cxRow = await publishedRow(env, url.origin, 'exchange.json', ctx), cx = (cxRow && cxRow.data) || {};
   const league = cat.league || '';
-  const rows = await env.DB.prepare(
-    "SELECT key, v, total, at, h FROM trade_prices WHERE league = ? AND (key LIKE 'uniq:%' OR key LIKE 'boss:%')").bind(league).all();
+  const rows = await kindRows(env, 'key, v, total, at, h', league, ['uniq', 'boss']);
   const uniques = new Map(), entries = new Map();
   let tradeAt = null;
-  for(const r of rows.results || []){
+  for(const r of rows){
     if(!tradeAt || r.at > tradeAt) tradeAt = r.at;
     if(r.key.startsWith('boss:')){ entries.set(r.key.slice(5), r); continue; }
     const id = r.key.slice(5), bar = id.indexOf(' | ');   // "<name>" or "<name> | <base>"
