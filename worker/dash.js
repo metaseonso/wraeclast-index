@@ -1,6 +1,11 @@
 /* The owner's dashboard (admin.html): page views, clicks and click spots, counted per day.
-   assets/track.js sends them in small batches. Nothing about the person is kept: no address, no cookie,
-   no typed text. The country is Cloudflare's two letters.
+   assets/track.js sends them once, as the page is hidden. Nothing about the person is kept: no address, no
+   cookie, no typed text. The country is Cloudflare's two letters.
+   Since 28 Sep the counts go to Workers Analytics Engine (dataset wi_track, binding TRACK: worker/cfstats.js
+   says what each field holds), not the database: a batch wrote 15 to 25 database rows, and at about 2,100 visits
+   a day that alone would have spent D1's 100,000 writes, after which every query fails, prices too. The database
+   keeps what was counted before the switch, and the dashboard adds the two together. With no TRACK binding (a
+   local run) a batch goes to the database the old way.
      POST /api/t                     a batch from assets/track.js
      POST /api/admin/login           {password}: checked against the DASH_HASH secret; sets a 12-hour cookie
      POST /api/admin/logout
@@ -19,7 +24,7 @@
    no key works. It reads only: never a write, never a sign-in. */
 import { PAGES } from '../assets/kinds.js';   // every page that is counted, from the one table the site reads
 import { sameSite, allowed } from './community.js';
-import { cloudflare, d1Today } from './cfstats.js';
+import { cloudflare, quotaToday, aeSQL, TRACK_SET } from './cfstats.js';
 import { health } from './health.js';
 
 /* ---------- the crawler pages, and where their visits come from ----------
@@ -45,10 +50,11 @@ export const ROUTES = Object.keys(PAGES);
 const ROUTE = new Set([...ROUTES, ...Object.keys(CRAWL_PAGES)]), DEVICE = new Set(['phone', 'tablet', 'desktop']), STATUS = new Set(['new', 'read', 'done']);
 const SHOWN = new Set([-1, 0, 1]);   // an answer taken down, as it was sent, or checked by us (migration 0010)
 export const MAX = {views: 50, clicks: 200, heat: 200};
+const POINTS = 250;   // Analytics Engine points one request may write
 const NOTES = 100;   // notes from players per page, here and in /api/admin/suggestions
 const LOAD_KINDS = ['trade_search', 'trade_fetch', 'trade_exchange', 'trade_limited', 'trade_error', 'site_view', 'site_batch', 'd1_writes'];
 /* Cloudflare Workers Free plan, per day (storage in total) */
-export const FREE = {requests: 100000, d1Reads: 5000000, d1Writes: 100000, d1StorageGB: 5};
+export const FREE = {requests: 100000, d1Reads: 5000000, d1Writes: 100000, d1StorageGB: 5, trackPoints: 100000};
 const CF = 'https://dash.cloudflare.com/80fa25161d1d4403df3b849853368410';
 const LINKS = {
   traffic: CF + '/wraeclastindex.fyi/analytics/traffic',
@@ -90,11 +96,13 @@ export function cleanBatch(b){
   if(!Array.isArray(v) || !Array.isArray(c) || !Array.isArray(h)) return null;
   if(v.length > MAX.views || c.length > MAX.clicks || h.length > MAX.heat) return null;
   const ok = x => Array.isArray(x) && ROUTE.has(x[0]);
+  // a page sends once as it is hidden, so one label can gather more than the 50 a batch once held
   return {
+    w: int(b.w ?? 1, 1, 100) || 1,   // how many visits this batch stands for (assets/track.js SHARE)
     views: v.filter(x => ok(x) && DEVICE.has(x[2])).map(x => ({route: x[0], source: source(x[1]), device: x[2]})),
-    clicks: c.filter(ok).map(x => ({route: x[0], label: label(x[1]), n: int(x[2] ?? 1, 1, 50) || 1})).filter(x => x.label),
+    clicks: c.filter(ok).map(x => ({route: x[0], label: label(x[1]), n: int(x[2] ?? 1, 1, 500) || 1})).filter(x => x.label),
     heat: h.filter(x => ok(x) && DEVICE.has(x[1]) && int(x[2], 0, 49) !== null && int(x[3], 0, 299) !== null)
-      .map(x => ({route: x[0], device: x[1], xb: int(x[2], 0, 49), yb: int(x[3], 0, 299), n: int(x[4] ?? 1, 1, 50) || 1})),
+      .map(x => ({route: x[0], device: x[1], xb: int(x[2], 0, 49), yb: int(x[3], 0, 299), n: int(x[4] ?? 1, 1, 500) || 1})),
   };
 }
 const group = (list, key) => {
@@ -102,6 +110,20 @@ const group = (list, key) => {
   for(const x of list){ const k = key(x), g = m.get(k); if(g) g.n += x.n ?? 1; else m.set(k, {...x, n: x.n ?? 1}); }
   return [...m.values()];
 };
+
+/* How often one address may send a batch in an hour, counted in this worker's memory only: never written
+   anywhere, gone with the worker, and held as a salted 32-bit hash, not the address. It used to be a database row
+   per batch (worker/community.js allowed): two writes a batch for a limit a page reaches only by misbehaving. */
+const SEEN = new Map(), SALT = crypto.getRandomValues(new Uint32Array(1))[0];
+let SEEN_HOUR = '';
+function fnv(s){ let h = (0x811c9dc5 ^ SALT) >>> 0; for(let i = 0; i < s.length; i++){ h ^= s.charCodeAt(i); h = Math.imul(h, 0x01000193); } return h >>> 0; }
+function batchOK(request, max){
+  const hour = hourOf();
+  if(hour !== SEEN_HOUR || SEEN.size > 20000){ SEEN.clear(); SEEN_HOUR = hour; }
+  const k = fnv(request.headers.get('CF-Connecting-IP') || ''), n = (SEEN.get(k) || 0) + 1;
+  SEEN.set(k, n);
+  return n <= max;
+}
 
 export async function track(request, env, url){
   if(request.method !== 'POST') return json(405, {error: 'POST only.'});
@@ -112,12 +134,16 @@ export async function track(request, env, url){
   const b = cleanBatch(body);
   if(!b) return json(400, {error: 'Bad batch.'});
   if(!b.views.length && !b.clicks.length && !b.heat.length) return json(200, {ok: true, saved: 0});
-  if(!(await allowed(env, request, 'track', 120))) return json(429, {error: 'Slow down.'});
+  if(!batchOK(request, 120)) return json(429, {error: 'Slow down.'});
   const cc = request.cf && request.cf.country, country = /^[A-Z]{2}$/.test(cc || '') ? cc : 'XX';
   const day = dayOf(), hour = hourOf();
   const views = group(b.views, x => x.route + '|' + x.source + '|' + x.device);
   const clicks = group(b.clicks, x => x.route + '|' + x.label);
   const heat = group(b.heat, x => [x.route, x.device, x.xb, x.yb].join('|'));
+  if(b.w > 1) for(const x of [...views, ...clicks, ...heat]) x.n *= b.w;
+  if(env.TRACK) return json(200, {ok: true, saved: toAE(env, day, hour, country, views, clicks, heat)});
+  // no Analytics Engine (a local run): the database, as before 28 Sep
+  if(!(await allowed(env, request, 'track', 120))) return json(429, {error: 'Slow down.'});
   const stmts = [
     ...views.map(x => env.DB.prepare(`INSERT INTO views (day, route, source, device, country, n) VALUES (?, ?, ?, ?, ?, ?)
       ON CONFLICT(day, route, source, device, country) DO UPDATE SET n = n + excluded.n`).bind(day, x.route, x.source, x.device, country, x.n)),
@@ -135,6 +161,50 @@ export async function track(request, env, url){
   stmts.push(...load.map(([k, n]) => env.DB.prepare(LOAD_SQL).bind(hour, k, n)));
   await env.DB.batch(stmts);
   return json(200, {ok: true, saved: views.length + clicks.length + heat.length});
+}
+/* one data point per count (worker/cfstats.js says what each field holds); the batch's first point carries the
+   batch mark (double4), so the dashboard's "tracking batches" still adds up. Never throws: a point Analytics Engine
+   will not take is a count lost, never a page's error. */
+function toAE(env, day, hour, country, views, clicks, heat){
+  const pts = [
+    ...views.map(x => ['v', x.route, x.source, x.device, x.n, 0, 0]),
+    ...clicks.map(x => ['c', x.route, x.label, '', x.n, 0, 0]),
+    ...heat.map(x => ['h', x.route, x.device, '', x.n, x.xb, x.yb]),
+  ].slice(0, POINTS);
+  let saved = 0;
+  pts.forEach(([kind, route, a, b, n, xb, yb], i) => {
+    try {
+      env.TRACK.writeDataPoint({indexes: [kind], blobs: [day, hour, route, a, b, country], doubles: [n, xb, yb, i === 0 ? 1 : 0]});
+      saved++;
+    } catch {}
+  });
+  return saved;
+}
+
+/* The counts in Analytics Engine, in the shapes the database's rows have, so stats and the heatmap add them to what
+   the database holds from before the switch: {views, clicks, load, heat}, or {error} when it did not answer. */
+const q = s => "'" + String(s).replace(/[^\w:.-]/g, '') + "'";   // every value here is a day, an hour, a page or a device
+const AE_SINCE = "timestamp > NOW() - INTERVAL '32' DAY";
+async function aeCounts(env, since, since48){
+  if(!env.CF_ANALYTICS_TOKEN) return {error: 'no stats key', views: [], clicks: [], load: []};
+  try {
+    const n = 'SUM(_sample_interval * double1)';
+    const [v, c, l] = await Promise.all([
+      aeSQL(env, `SELECT blob1 AS day, blob3 AS route, blob4 AS source, blob5 AS device, blob6 AS country, ${n} AS n FROM ${TRACK_SET}
+        WHERE ${AE_SINCE} AND index1 = 'v' AND blob1 >= ${q(since)} GROUP BY day, route, source, device, country`),
+      aeSQL(env, `SELECT blob3 AS route, blob4 AS label, ${n} AS n FROM ${TRACK_SET}
+        WHERE ${AE_SINCE} AND index1 = 'c' AND blob1 >= ${q(since)} GROUP BY route, label`),
+      aeSQL(env, `SELECT blob2 AS hour, index1 AS kind, ${n} AS n, SUM(_sample_interval * double4) AS b FROM ${TRACK_SET}
+        WHERE ${AE_SINCE} AND blob2 >= ${q(since48)} GROUP BY hour, kind`),
+    ]);
+    const num = x => Math.round(+x || 0);
+    const load = [];
+    for(const r of l){
+      if(r.kind === 'v') load.push({hour: r.hour, kind: 'site_view', n: num(r.n)});
+      if(num(r.b)) load.push({hour: r.hour, kind: 'site_batch', n: num(r.b)});
+    }
+    return {views: v.map(r => ({...r, n: num(r.n)})), clicks: c.map(r => ({...r, n: num(r.n)})), load};
+  } catch(e){ return {error: String((e && e.message) || e).slice(0, 200), views: [], clicks: [], load: []}; }
 }
 
 /* ---------- sign-in ---------- */
@@ -257,6 +327,7 @@ function searchName(state){
 export async function stats(env, url){
   const days = rangeOf(url), since = sinceOf(days), today = dayOf(), now = Date.now();
   const since48 = hourOf(now - 47 * 3600e3);
+  const ae = aeCounts(env, since, since48);
   const [v, c, sg, sgCount, ld, ts] = (await env.DB.batch([
     env.DB.prepare('SELECT day, route, source, device, country, n FROM views WHERE day >= ?').bind(since),
     env.DB.prepare('SELECT route, label, SUM(n) AS n FROM clicks WHERE day >= ? GROUP BY route, label').bind(since),
@@ -265,6 +336,9 @@ export async function stats(env, url){
     env.DB.prepare('SELECT hour, kind, n FROM load WHERE hour >= ?').bind(since48),
     env.DB.prepare('SELECT state, n, last FROM trade_searches WHERE last >= ? ORDER BY n DESC, last DESC LIMIT 10').bind(since),
   ])).map(r => (r && r.results) || []);
+  // the counts since the switch (Analytics Engine), added to the database's
+  const got = await ae;
+  v.push(...got.views); c.push(...got.clicks); ld.push(...got.load);
 
   // views: one pass over the range, every table from it
   const perDay = new Map(), routes = new Map(), sources = new Map(), kinds = new Map(), countries = new Map(), devices = new Map();
@@ -298,15 +372,18 @@ export async function stats(env, url){
   const status = Object.fromEntries(['new', 'read', 'done'].map(s => [s, 0]));
   for(const r of sgCount) if(r.status in status) status[r.status] = r.n;
 
-  // the free plan: our own rough count for today (exact numbers are on Cloudflare's dashboard), and the rows the
-  // database read today by Cloudflare's own count: the limit that ran out first (25 Sep), so the meter reads it too
-  const trackingWrites = todayLoad.d1_writes;
+  // the free plan: Cloudflare's own count for today where it answers (worker/cfstats.js quotaToday, a few minutes
+  // behind), else our own rough one. Rows read ran out first (25 Sep), so the meter reads it too
+  const trackingWrites = todayLoad.d1_writes;   // page tracking in the database: none since the switch
   const priceWrites = todayLoad.trade_search * 2;   // each trade search the price job runs saves about one price row (row + key index)
-  const writes = trackingWrites + priceWrites;
-  const requests = todayLoad.site_batch + todayLoad.site_view;   // tracking batches, plus about one worker call per page view
-  const d1 = await d1Today(env).catch(() => null);
-  const rowsRead = d1 ? d1.rowsRead : null;
-  const pct = Math.max(writes / FREE.d1Writes, requests / FREE.requests, (rowsRead || 0) / FREE.d1Reads) * 100;
+  const cf = await quotaToday(env).catch(() => null);
+  const rowsRead = cf ? cf.rowsRead : null, rowsWritten = cf ? cf.rowsWritten : null;
+  const writes = rowsWritten !== null ? rowsWritten : trackingWrites + priceWrites;
+  // tracking batches, plus about one worker call per page view, when Cloudflare does not say
+  const requests = cf && cf.requests !== null ? cf.requests : todayLoad.site_batch + todayLoad.site_view;
+  const points = cf ? cf.points : null;
+  const pct = Math.max(writes / FREE.d1Writes, requests / FREE.requests, (rowsRead || 0) / FREE.d1Reads,
+    (points || 0) / FREE.trackPoints) * 100;
 
   return {
     days, since, today,
@@ -324,7 +401,9 @@ export async function stats(env, url){
     load: {hours, perHour, today: todayLoad, tradeLimitPerHour: 100},
     searches: ts.map(r => ({...searchName(r.state), n: r.n, last: r.last})),
     plan: {free: FREE, today: {views: todayLoad.site_view, batches: todayLoad.site_batch, requests, trackingWrites, priceWrites, writes,
-      rowsRead, rowsWritten: d1 ? d1.rowsWritten : null},
+      rowsRead, rowsWritten, trackPoints: points},
+      // where the page counts since 28 Sep come from, and why they are missing when they are
+      counts: got.error ? 'database only: Analytics Engine did not answer (' + got.error + ')' : 'database and Analytics Engine',
       pct: Math.round(pct * 10) / 10, verdict: pct >= 80 ? 'upgrade' : pct >= 50 ? 'watch' : 'fine', links: LINKS},
     jobs: await health(env, url.origin),
   };
@@ -335,9 +414,18 @@ async function heatmap(env, url){
   const route = url.searchParams.get('route'), device = url.searchParams.get('device') || 'desktop';
   if(!ROUTE.has(route) || !DEVICE.has(device)) return json(400, {error: 'No such page or device.'});
   const days = rangeOf(url);
+  const since = sinceOf(days);
+  const ae = env.CF_ANALYTICS_TOKEN ? aeSQL(env, `SELECT double2 AS xb, double3 AS yb, SUM(_sample_interval * double1) AS n FROM ${TRACK_SET}
+    WHERE ${AE_SINCE} AND index1 = 'h' AND blob3 = ${q(route)} AND blob4 = ${q(device)} AND blob1 >= ${q(since)} GROUP BY xb, yb`).catch(() => []) : [];
   const rows = await env.DB.prepare('SELECT xb, yb, SUM(n) AS n FROM heat WHERE route = ? AND day >= ? AND device = ? GROUP BY xb, yb')
-    .bind(route, sinceOf(days), device).all();
-  const cells = (rows.results || []).map(r => [r.xb, r.yb, r.n]);
+    .bind(route, since, device).all();
+  // the database's cells (before the switch) and Analytics Engine's (after it), added together
+  const sum = new Map();
+  for(const r of [...(rows.results || []), ...await ae]){
+    const k = Math.round(+r.xb) + ',' + Math.round(+r.yb);
+    sum.set(k, (sum.get(k) || 0) + Math.round(+r.n || 0));
+  }
+  const cells = [...sum].map(([k, n]) => [...k.split(',').map(Number), n]).filter(c => c[2] > 0);
   return json(200, {route, device, days, cells, total: cells.reduce((a, x) => a + x[2], 0), max: cells.reduce((a, x) => Math.max(a, x[2]), 0)});
 }
 

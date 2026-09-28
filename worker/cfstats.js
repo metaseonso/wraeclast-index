@@ -330,6 +330,59 @@ export async function d1Today(env){
   return out;
 }
 
+/* ---------- Workers Analytics Engine: the page counts ----------
+   assets/track.js sends a page's views, clicks and click spots once, as the page is hidden; worker/dash.js writes
+   them to the Analytics Engine dataset wi_track (wrangler.jsonc, binding TRACK) instead of the database, so page
+   tracking costs D1 nothing and a busy day can never take the price file's writes with it. The dashboard reads
+   them back through Cloudflare's SQL API with the same read-only stats key (CF_ANALYTICS_TOKEN: Account Analytics
+   read is the permission the SQL API asks for). One data point per count:
+     index1   v a view, c a click, h a click spot
+     blob1    the day (UTC, "2026-09-28")    blob2  the hour ("2026-09-28T14")    blob3  the page (route)
+     blob4    v: how it arrived; c: what was clicked; h: phone, tablet or desktop
+     blob5    v: phone, tablet or desktop    blob6  the country, Cloudflare's two letters ("XX" when unknown)
+     double1  the count    double2, double3  h: across (0-49) and down (0-299)    double4  1 on a batch's first point
+   Every sum is weighted by _sample_interval, Analytics Engine's own sampling, so a sampled day still adds up.
+   Throws with no stats key, or when Cloudflare does not answer: the dashboard then shows the database's counts
+   alone (everything from before the switch) and says so. */
+export const TRACK_SET = 'wi_track';
+export async function aeSQL(env, sql){
+  if(!env.CF_ANALYTICS_TOKEN) throw new Error('No stats key yet.');
+  const r = await fetch('https://api.cloudflare.com/client/v4/accounts/' + ACC + '/analytics_engine/sql', {method: 'POST',
+    headers: {'Authorization': 'Bearer ' + env.CF_ANALYTICS_TOKEN, 'Content-Type': 'text/plain'}, body: sql});
+  const text = await r.text();
+  if(!r.ok) throw new Error('Analytics Engine answered ' + r.status + ': ' + text.slice(0, 160));
+  let j = null;
+  try { j = JSON.parse(text); } catch { throw new Error('Analytics Engine answered something that is not JSON.'); }
+  return Array.isArray(j && j.data) ? j.data : [];
+}
+
+/* Today's use of each free daily limit (UTC), by Cloudflare's own count: worker requests (every worker on the
+   account: the limit is the account's), database rows read and written, and the page-count points written.
+   {day, checked, requests, rowsRead, rowsWritten, points}, each null when Cloudflare did not say. Kept 5 minutes
+   in the data centre; null with no stats key. Read by /api/health (its quota block, worker/health.js) and the
+   dashboard's plan meter (worker/dash.js). */
+const QUOTA_Q = 'query($a:String!,$t:Time!,$d:Date!){viewer{accounts(filter:{accountTag:$a}){' +
+  'w: workersInvocationsAdaptive(limit:200, filter:{datetime_geq:$t}){sum{requests} dimensions{scriptName}}\n' +
+  'd: d1AnalyticsAdaptiveGroups(limit:5, filter:{date_geq:$d}){sum{rowsRead rowsWritten} dimensions{date}}}}}';
+export async function quotaToday(env){
+  if(!env.CF_ANALYTICS_TOKEN) return null;
+  const ck = new Request('https://cache.local/cf-quota-today');
+  const hit = await caches.default.match(ck);
+  if(hit) return hit.json();
+  const day = new Date().toISOString().slice(0, 10);
+  const [g, pts] = await Promise.all([
+    gql(env, QUOTA_Q, {a: ACC, t: day + 'T00:00:00Z', d: day}).then(d => (d.viewer.accounts || [])[0] || {}).catch(() => null),
+    aeSQL(env, 'SELECT SUM(_sample_interval) AS n FROM ' + TRACK_SET + " WHERE timestamp > NOW() - INTERVAL '1' DAY AND blob1 = '" + day + "'")
+      .then(rows => Math.round(+((rows[0] || {}).n) || 0)).catch(() => null),
+  ]);
+  const d1 = g && (g.d || []).find(r => r.dimensions.date === day);
+  const out = {day, checked: new Date().toISOString(),
+    requests: g && Array.isArray(g.w) ? g.w.reduce((a, r) => a + ((r.sum && r.sum.requests) || 0), 0) : null,
+    rowsRead: g ? (d1 ? d1.sum.rowsRead || 0 : 0) : null, rowsWritten: g ? (d1 ? d1.sum.rowsWritten || 0 : 0) : null, points: pts};
+  await caches.default.put(ck, new Response(JSON.stringify(out), {headers: {'Cache-Control': 'max-age=300'}}));
+  return out;
+}
+
 /* for tools/dev/cfcheck.mjs: every block on its own, so a run says which ones the free plan answers */
 export function checks(days = 7){
   const t = sinceTime(Math.min(days, 7) * 24), d = sinceDate(days);

@@ -1,11 +1,18 @@
 /* Page views and clicks for the owner's dashboard (worker/dash.js, admin.html).
-   Counted on our own database only: no cookies, no address, nothing anyone types.
+   Counted by the site's own worker only (Cloudflare's Analytics Engine): no cookies, no address, nothing anyone types.
    What is sent: the page, how the visit arrived (the other site's name, or "direct"), phone/tablet/desktop,
    what was clicked (a tab, a button's words, "card:gem", the host of a link out) and where on the page.
+   Sent once, as the page is hidden (sendBeacon): one worker call a visit, where a send every 30 seconds made
+   several. Coming back to the page and leaving again sends what was added since; a batch that fills (CAP) goes
+   early. CAP keeps a batch within the 250 points the worker may write in one request.
    Nothing is sent when the browser asks not to be tracked (Do Not Track or Global Privacy Control). */
 import {ROUTES, SECTIONS, KIND} from './kinds.js';   // the pages and the kinds, from the one table the site reads
 const URL_T = 'api/t';
-const CAP = {v: 50, c: 200, h: 200};
+const CAP = {v: 20, c: 100, h: 120};
+/* The share of visits that send their counts, each count standing for 1 / SHARE visits (the worker multiplies it
+   back). 1: every visit. Lowered only when the free plan's daily worker requests run short (the site watch opens
+   an issue at half of them): the dashboard's numbers stay whole, only rougher. */
+const SHARE = 1;
 const SEP = '\u0001';
 
 function off(){
@@ -88,7 +95,7 @@ const Q = {v: [], c: new Map(), h: new Map()};
 const pending = () => Q.v.length || Q.c.size || Q.h.size;
 function send(){
   if(!pending()) return;
-  const body = JSON.stringify({v: Q.v, c: [...Q.c].map(([k, n]) => [...k.split(SEP), n]),
+  const body = JSON.stringify({w: Math.round(1 / SHARE), v: Q.v, c: [...Q.c].map(([k, n]) => [...k.split(SEP), n]),
     h: [...Q.h].map(([k, n]) => { const p = k.split(SEP); return [p[0], p[1], +p[2], +p[3], n]; })});
   Q.v = []; Q.c.clear(); Q.h.clear();
   let sent = false;
@@ -97,8 +104,8 @@ function send(){
 }
 const full = () => Q.v.length >= CAP.v || Q.c.size >= CAP.c || Q.h.size >= CAP.h;
 function bump(map, key){
-  map.set(key, (map.get(key) || 0) + 1);
-  if(map.get(key) >= 50 || full()) send();
+  map.set(key, Math.min(500, (map.get(key) || 0) + 1));   // the worker takes up to 500 of one thing a batch
+  if(full()) send();
 }
 
 let last = null;
@@ -131,11 +138,11 @@ function click(e){
 export function mountTrack(){
   if(window.__wiTrack || off()) return;
   window.__wiTrack = true;
+  if(Math.random() >= SHARE) return;   // not one of the visits that count this time
   view(arrival());
   addEventListener('hashchange', () => view('site'));
   addEventListener('popstate', () => setTimeout(() => view('site'), 0));
   document.addEventListener('click', click, true);   // before the page acts on it: the page and layout as they were clicked
   addEventListener('visibilitychange', () => { if(document.visibilityState === 'hidden') send(); });
   addEventListener('pagehide', send);
-  setInterval(() => { if(pending()) send(); }, 30000);
 }
