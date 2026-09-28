@@ -4,6 +4,9 @@ For [issue #116](https://github.com/metaseonso/wraeclast-index/issues/116). A de
 use Cloudflare's prices as checked on 27 Sep 2026 (see `design/traffic.md` for the table and the sources).
 Anything not read off the code, the spec or a measurement is marked **Estimate**.
 
+Updated for main at `c123ad2` (28 Sep 2026): the `changes` tool now has its data format (`tools/diff.py`), the
+file count uses `dist/` and its budget check, and prices come from the built parts (`design/traffic.md`).
+
 ## What it is
 
 An MCP server lets an AI assistant (Claude, ChatGPT, Cursor and others) search WI, read cards, prices and price
@@ -58,7 +61,7 @@ with an `outputSchema`.
 | `card` | `name` or `url` | The card as WI shows it: kind, requirements, the game's own lines, tags, price summary, URL | **median 650 chars, p90 905, max 1,984** (Measured: the visible text of 722 of the 7,214 crawler pages). Cap 4 kB | The index files, or per-card files (below) |
 | `price` | `name` | Value in divine (and exalted), **source** ("in-game Currency Exchange, last 24 h" / "trade site: middle of the 5 cheapest online listings, white base"), **checked at**, **age in hours**, `late` when a job has missed its run, listing count | ~300 bytes | `market.json?part=live` (**worker path**) |
 | `history` | `name`, `days?` (default 30, ≤365), `league?` | Daily points, cut to ≤60 points, plus past leagues' lines (marked when the value is poe.ninja's, as the card does) | 0.6-1.5 kB | `market.json?part=hist` (**worker path**), `leagues.json` |
-| `changes` | `patch?`, `name?` | What changed in a game patch: for one card, or a list for the patch (paged, 25 a page) | ≤3 kB a page | **Does not exist yet**: a `data/changes/<patch>.json` written by the game-data job, the difference between the index before and after the patch (`tools/gamepull.py` already knows the patch number, `data/gamedata.json`) |
+| `changes` | `patch?`, `name?` | What changed in a game patch: for one card, or a list for the patch (paged, 25 a page) | ≤3 kB a page `data/changes/<build>.json`, written by `tools/diff.py` from two snapshots (`tools/snapshot.py`, kept on the data repo); `data/patches.json` ties a build to its patch. The format is on main; no file is committed yet |
 | `compare` | `names` (2-4) | The cards side by side: the fields they share, prices with source and age | 2-5 kB | The index files + `live` |
 
 Also `resources`: `llms.txt` and the terms from robots.txt, so a client can show where the data comes from and
@@ -73,8 +76,10 @@ way" in #116 needs. The only difference is where the files come from.
 `data/index.json` takes **161 ms CPU** (Measured, the crawler pages' model). That is fine once per isolate on the
 paid plan, and over the free plan's 10 ms every time. So `tools/build.mjs` writes one small JSON per card
 (`data/mcp/<slug>.json`, ~1-2 kB, Estimate) and a compact search file, and the hosted tools read only the file
-they need. 7,214 files plus the 7,223 crawler pages (`design/traffic.md` fix 5) plus today's 163 is ~14,600,
-within the free plan's 20,000 files per version.
+they need. 7,214 files plus the 7,223 crawler pages (`design/traffic.md` fix 5) plus today's 167 in `dist/` is
+~14,600: within the free plan's 20,000 files per version and under `tools/dev/budget.mjs`'s fail line (18,000),
+but over its warn line (10,000). `tools/build.mjs` leaves out any file below `data/` that no page, module or
+worker file names, so the worker code must name the folder (`'data/mcp/'`) or the files never ship.
 
 ## Local package: how it reads WI
 
@@ -109,7 +114,7 @@ Setup, for the README:
 |---|---|
 | Worker requests | **~1,200** (Estimate): 1,000 POSTs, plus `server/discover` / `tools/list` for new clients, plus 2-4 handshake requests per session from pre-2026-07-28 clients (assumed 10 calls a session) |
 | CPU | ~2 ms a call from small files and in-memory copies = **~2,400 CPU-ms** (Estimate) |
-| D1 | **0**. Nothing is written per call (no tracking, no D1 counter), and prices come from the Cache API copies `market.json` already keeps |
+| D1 | **0** per call. Nothing is written (no tracking, no D1 counter), and prices come from the Cache API copies `market.json` already keeps; a miss there reads ~5-8 rows, once per data centre every 5 min |
 | Free plan | 1.2% of the 100,000 a day, shared with the site |
 | Paid, inside the included 10 M requests / 30 M CPU-ms | **$0** |
 | Paid, past the included amounts | requests 1,200 x $0.30/M = $0.00036; CPU 2,400 x $0.02/M = $0.00005; Workers Logs 1,200 x $0.60/M = $0.00072 (none at 10% log sampling) |
@@ -213,8 +218,8 @@ The reasoning, in cost:
 
 Order of work:
 
-1. `mcp/core.js`, the six tools over a `load()` function. `changes` needs its data file first: build that in
-   the game-data job, or ship five tools and add `changes` when the file exists.
+1. `mcp/core.js`, the six tools over a `load()` function. `changes` needs a committed `data/changes/<build>.json`
+   (`tools/diff.py`); ship five tools and add `changes` when the first file lands.
 2. The local package (stdio), published to npm, set up in the README.
 3. `tools/build.mjs` writes the per-card files and the search file.
 4. The paid plan, the zone rate-limit rule, the WAF kill-switch rule (`design/traffic.md`).
