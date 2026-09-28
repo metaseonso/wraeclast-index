@@ -519,6 +519,13 @@ def wipe(path):
     shutil.rmtree(path, onexc=writable) if sys.version_info >= (3, 12) else shutil.rmtree(path, onerror=writable)
 
 
+def over(src, dst):
+    """shutil.copy2 onto a file git left read-only (tools/cache/treeexport.git's packs, on Windows)."""
+    if os.path.exists(dst) and not os.access(dst, os.W_OK):
+        os.chmod(dst, 0o600)
+    return shutil.copy2(src, dst)
+
+
 def copy_tree():
     if TREE.exists():
         wipe(TREE)
@@ -760,7 +767,7 @@ def main():
     CACHE.mkdir(parents=True, exist_ok=True)
     fresh = TREE / 'tools' / 'cache'
     if fresh.exists():
-        shutil.copytree(fresh, CACHE, dirs_exist_ok=True, ignore=shutil.ignore_patterns('stamps.json'))
+        shutil.copytree(fresh, CACHE, dirs_exist_ok=True, ignore=shutil.ignore_patterns('stamps.json'), copy_function=over)
     lastgood.save(STAMPS, json.dumps(stamps, indent=1, sort_keys=True))
     say('pipeline: %d ran, %d skipped, %d file%s into data/ in one step%s' % (
         len(ran), len(skipped), len(final), '' if len(final) == 1 else 's',
