@@ -365,7 +365,7 @@ def build(index):
                    '(by: cards; mods: modifiers with no card, counted by where they roll) and the keyword card of '
                    'the same name (kw). Written by tools/buffs.py; design/buffs.md.',
            'labels': {'src': SRC},
-           'ids': ['id', 'key', 'kw'],
+           'ids': ['id', 'key', 'kw', 'img'],   # img: the icon's address, never shown as words
            'rows': rows}
     rep = {'why': why, 'idle': idle, 'mute': mute, 'icons': icons, 'names': len(names)}
     return out, rep
