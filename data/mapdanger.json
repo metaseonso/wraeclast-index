@@ -1,0 +1,6257 @@
+{
+ "source": "game files, patch 0.5.5 (the mod table, read by RePoE); tiers from data/atlas.json",
+ "table": "Mods, Stats, BaseItemTypes, EndgameCorruptionMods",
+ "note": "One row per modifier a player can meet on a waystone, a tablet or a corrupted or cleansed atlas node. pool is where it rolls; r its steps (w the waystone tiers, ls its lines, b the bonus lines it adds); tags what it does to you, from its stats (why: the line that says it); re the search fragment that lights it alone (also: what else it lights); avoid, per pool and tag, the search text for waystones or tablets without it. Written by tools/mapdanger.py; design/map-danger.md.",
+ "tags": [
+  {
+   "t": "no regen",
+   "why": "the player does not regenerate (the game's old \"no regeneration\" map stats; none rolls in 0.5.5)"
+  },
+  {
+   "t": "no leech",
+   "why": "monsters cannot be leeched from (same: in the table, not on a waystone in 0.5.5)"
+  },
+  {
+   "t": "less recovery",
+   "why": "less Recovery Rate of Life and Energy Shield; ground that drains mana"
+  },
+  {
+   "t": "less flask effect",
+   "why": "flasks do less, or are cancelled"
+  },
+  {
+   "t": "fewer flask charges",
+   "why": "players gain fewer flask charges, or monsters take them"
+  },
+  {
+   "t": "less resistance",
+   "why": "lower maximum resistances; Elemental Weakness, which the game's help says \"lowers Elemental Resistances\""
+  },
+  {
+   "t": "penetration",
+   "why": "monster damage penetrates your resistances"
+  },
+  {
+   "t": "reflect-like",
+   "why": "damage or curses come back to you"
+  },
+  {
+   "t": "curse",
+   "why": "players are cursed"
+  },
+  {
+   "t": "curses weaker",
+   "why": "your curses do less to monsters"
+  },
+  {
+   "t": "cannot",
+   "why": "something the player does is switched off: no regeneration, no leech, no damage for a while"
+  },
+  {
+   "t": "more damage taken",
+   "why": "Marked for Death: the game's help says \"you take 50% increased damage\""
+  },
+  {
+   "t": "slower cooldowns",
+   "why": "less Cooldown Recovery Rate"
+  },
+  {
+   "t": "slows you",
+   "why": "Temporal Chains and Grasping Vines \"slow\", in the game's help; less movement and skill speed"
+  },
+  {
+   "t": "breaks armour",
+   "why": "monsters Break your Armour"
+  },
+  {
+   "t": "extra element",
+   "why": "monsters deal part of their damage again as an element"
+  },
+  {
+   "t": "ailment on hit",
+   "why": "monster hits bleed, poison, or apply elemental ailments more"
+  },
+  {
+   "t": "damage bursts",
+   "why": "monsters let off bursts of damage"
+  },
+  {
+   "t": "teleports",
+   "why": "monsters teleport"
+  },
+  {
+   "t": "ground effect",
+   "why": "patches of burning, chilled, shocked or siphoning ground"
+  },
+  {
+   "t": "on death",
+   "why": "something happens when a monster dies"
+  },
+  {
+   "t": "cannot be damaged",
+   "why": "monsters cannot be damaged for a while"
+  },
+  {
+   "t": "more damage",
+   "why": "monsters deal more damage"
+  },
+  {
+   "t": "more crits",
+   "why": "monsters crit more, and harder"
+  },
+  {
+   "t": "more accuracy",
+   "why": "monsters hit you more often"
+  },
+  {
+   "t": "stuns you",
+   "why": "monsters build up stun on you faster"
+  },
+  {
+   "t": "faster",
+   "why": "monsters act faster (Soul Eater: \"1% increased Skill Speed\" a soul, in the game's help)"
+  },
+  {
+   "t": "more area",
+   "why": "bigger monster area, more projectiles"
+  },
+  {
+   "t": "stronger pack",
+   "why": "the pack is stronger together"
+  },
+  {
+   "t": "more rare modifiers",
+   "why": "rare or unique monsters, or the map itself, carry more modifiers"
+  },
+  {
+   "t": "boss only",
+   "why": "it touches the map boss, or the map only because of its boss"
+  },
+  {
+   "t": "resists crits",
+   "why": "monsters take less extra damage from critical hits"
+  },
+  {
+   "t": "resists ailments",
+   "why": "monsters are harder to inflict ailments on"
+  },
+  {
+   "t": "resists fire",
+   "why": "monster fire resistance"
+  },
+  {
+   "t": "resists cold",
+   "why": "monster cold resistance"
+  },
+  {
+   "t": "resists lightning",
+   "why": "monster lightning resistance"
+  },
+  {
+   "t": "resists chaos",
+   "why": "monster chaos resistance"
+  },
+  {
+   "t": "harder to kill",
+   "why": "more life, energy shield, armour or evasion; more Effectiveness, which the game's help says gives \"more Toughness\"; a higher monster level"
+  },
+  {
+   "t": "delirious",
+   "why": "players are Delirious: the game's help says monsters \"deal more damage and have additional Toughness\""
+  }
+ ],
+ "limits": {
+  "len": [
+   50,
+   250
+  ],
+  "label": "Subject to change",
+  "why": "poe2ref.com/regex says 50 today; poe2.re builds to 250; GGG has not written a number"
+ },
+ "avoid": {
+  "waystone": {
+   "less recovery": "\"!f l|ana\"",
+   "fewer flask charges": "\"!arg\"",
+   "less resistance": "\"!m p|akn\"",
+   "penetration": "\"!etr\"",
+   "curse": "\"!dic\"",
+   "curses weaker": "\"!ct o\"",
+   "cannot": "\"!ini\"",
+   "more damage taken": "\"!a r\"",
+   "slower cooldowns": "\"!coo\"",
+   "slows you": "\"!h t|asp\"",
+   "breaks armour": "\"!alt\"",
+   "extra element": "\"!f d\"",
+   "ailment on hit": "\"!lic|n h\"",
+   "ground effect": "\"!atc\"",
+   "more damage": "\"!d monster d\"",
+   "more crits": "\"!d c\"",
+   "more accuracy": "\"!acc\"",
+   "stuns you": "\"!bui\"",
+   "faster": "\"!att|a e\"",
+   "more area": "\"!a o|ile\"",
+   "more rare modifiers": "\"!l mod|e mod\"",
+   "resists crits": "\"!a d\"",
+   "resists ailments": "\"!esh\"",
+   "resists fire": "\"!r el\"",
+   "resists cold": "\"!r el\"",
+   "resists lightning": "\"!r el\"",
+   "harder to kill": "\"!esh|r l|clo|a m|ure|asi\"",
+   "delirious": "\"!del\""
+  },
+  "tablet": {
+   "more rare modifiers": "\"!and|es h|e mod\"",
+   "boss only": "\"!p b|l shrines|l essences|l strongboxe|l azmeri spirits\"",
+   "harder to kill": "\"!cti\"",
+   "delirious": "\"!aye\""
+  }
+ },
+ "counts": {
+  "tiers joined from data/atlas.json": 113,
+  "tiers worked out here": 0,
+  "atlas node modifiers with weight 0, left out": 2
+ },
+ "ids": [
+  "mods",
+  "hid"
+ ],
+ "rows": [
+  {
+   "n": "Destructive",
+   "k": "p",
+   "pool": "waystone",
+   "s": "Waystone prefix",
+   "r": [
+    {
+     "w": [
+      1,
+      5
+     ],
+     "ls": [
+      "Monsters have (80-120)% increased Critical Hit Chance",
+      "Monsters have +(11-15)% Critical Damage Bonus"
+     ],
+     "b": [
+      "15% more Waystones found in Area",
+      "9% more Pack size"
+     ]
+    },
+    {
+     "w": [
+      6,
+      10
+     ],
+     "ls": [
+      "Monsters have (140-180)% increased Critical Hit Chance",
+      "Monsters have +(16-20)% Critical Damage Bonus"
+     ],
+     "b": [
+      "15% more Waystones found in Area",
+      "9% more Pack size"
+     ]
+    },
+    {
+     "w": [
+      11,
+      15
+     ],
+     "ls": [
+      "Monsters have (200-240)% increased Critical Hit Chance",
+      "Monsters have +(21-25)% Critical Damage Bonus"
+     ],
+     "b": [
+      "15% more Waystones found in Area",
+      "9% more Pack size"
+     ]
+    },
+    {
+     "w": [
+      16,
+      16
+     ],
+     "ls": [
+      "Monsters have (260-300)% increased Critical Hit Chance",
+      "Monsters have +(26-30)% Critical Damage Bonus"
+     ],
+     "b": [
+      "15% more Waystones found in Area",
+      "9% more Pack size"
+     ]
+    }
+   ],
+   "mods": [
+    "MapMonsterCritIncrease1",
+    "MapMonsterCritIncrease2",
+    "MapMonsterCritIncrease3",
+    "MapMonsterCritIncrease4"
+   ],
+   "tags": [
+    "more crits"
+   ],
+   "why": {
+    "more crits": "Monsters have (80-120)% increased Critical Hit Chance"
+   },
+   "q": "more crits",
+   "src": "Source: the game files",
+   "re": "d c"
+  },
+  {
+   "n": "Fleeting",
+   "k": "p",
+   "pool": "waystone",
+   "s": "Waystone prefix",
+   "r": [
+    {
+     "w": [
+      11,
+      15
+     ],
+     "ls": [
+      "Monsters have (10-15)% increased Attack, Cast and Movement Speed"
+     ],
+     "b": [
+      "25% more Waystones found in Area",
+      "9% more Pack size"
+     ]
+    },
+    {
+     "w": [
+      16,
+      16
+     ],
+     "ls": [
+      "Monsters have (10-15)% increased Attack, Cast and Movement Speed"
+     ],
+     "b": [
+      "25% more Waystones found in Area",
+      "9% more Pack size"
+     ]
+    }
+   ],
+   "mods": [
+    "MapMonsterSpeedIncrease3",
+    "MapMonsterSpeedIncrease4"
+   ],
+   "tags": [
+    "faster"
+   ],
+   "why": {
+    "faster": "Monsters have (10-15)% increased Attack, Cast and Movement Speed"
+   },
+   "q": "faster",
+   "src": "Source: the game files",
+   "re": "att"
+  },
+  {
+   "n": "Frostbitten",
+   "k": "p",
+   "pool": "waystone",
+   "s": "Waystone prefix",
+   "r": [
+    {
+     "w": [
+      1,
+      5
+     ],
+     "ls": [
+      "Monsters deal (5-9)% of Damage as Extra Cold"
+     ],
+     "b": [
+      "15% more Waystones found in Area",
+      "14% more Rarity of Items found in this Area"
+     ]
+    },
+    {
+     "w": [
+      6,
+      10
+     ],
+     "ls": [
+      "Monsters deal (10-14)% of Damage as Extra Cold"
+     ],
+     "b": [
+      "15% more Waystones found in Area",
+      "14% more Rarity of Items found in this Area"
+     ]
+    },
+    {
+     "w": [
+      11,
+      15
+     ],
+     "ls": [
+      "Monsters deal (15-19)% of Damage as Extra Cold"
+     ],
+     "b": [
+      "15% more Waystones found in Area",
+      "14% more Rarity of Items found in this Area"
+     ]
+    },
+    {
+     "w": [
+      16,
+      16
+     ],
+     "ls": [
+      "Monsters deal (20-24)% of Damage as Extra Cold"
+     ],
+     "b": [
+      "15% more Waystones found in Area",
+      "14% more Rarity of Items found in this Area"
+     ]
+    }
+   ],
+   "mods": [
+    "MapMonsterDamageAsCold1",
+    "MapMonsterDamageAsCold2",
+    "MapMonsterDamageAsCold3",
+    "MapMonsterDamageAsCold4"
+   ],
+   "tags": [
+    "extra element"
+   ],
+   "why": {
+    "extra element": "Monsters deal (5-9)% of Damage as Extra Cold"
+   },
+   "q": "extra element",
+   "src": "Source: the game files",
+   "re": "col"
+  },
+  {
+   "n": "Impacting",
+   "k": "p",
+   "pool": "waystone",
+   "s": "Waystone prefix",
+   "r": [
+    {
+     "w": [
+      1,
+      5
+     ],
+     "ls": [
+      "Monsters have (50-60)% increased Stun Buildup"
+     ],
+     "b": [
+      "15% more Waystones found in Area",
+      "Monsters have 13% more Effectiveness"
+     ]
+    },
+    {
+     "w": [
+      6,
+      10
+     ],
+     "ls": [
+      "Monsters have (70-80)% increased Stun Buildup"
+     ],
+     "b": [
+      "15% more Waystones found in Area",
+      "Monsters have 13% more Effectiveness"
+     ]
+    },
+    {
+     "w": [
+      11,
+      15
+     ],
+     "ls": [
+      "Monsters have (90-100)% increased Stun Buildup"
+     ],
+     "b": [
+      "15% more Waystones found in Area",
+      "Monsters have 13% more Effectiveness"
+     ]
+    },
+    {
+     "w": [
+      16,
+      16
+     ],
+     "ls": [
+      "Monsters have (100-110)% increased Stun Buildup"
+     ],
+     "b": [
+      "15% more Waystones found in Area",
+      "Monsters have 13% more Effectiveness"
+     ]
+    }
+   ],
+   "mods": [
+    "MapMonsterStunBuildup1",
+    "MapMonsterStunBuildup2",
+    "MapMonsterStunBuildup3",
+    "MapMonsterStunBuildup4"
+   ],
+   "tags": [
+    "stuns you"
+   ],
+   "why": {
+    "stuns you": "Monsters have (50-60)% increased Stun Buildup"
+   },
+   "q": "stuns you",
+   "src": "Source: the game files",
+   "re": "bui"
+  },
+  {
+   "n": "Infernal",
+   "k": "p",
+   "pool": "waystone",
+   "s": "Waystone prefix",
+   "r": [
+    {
+     "w": [
+      1,
+      5
+     ],
+     "ls": [
+      "Monsters deal (5-9)% of Damage as Extra Fire"
+     ],
+     "b": [
+      "15% more Waystones found in Area",
+      "Monsters have 16% more Effectiveness"
+     ]
+    },
+    {
+     "w": [
+      6,
+      10
+     ],
+     "ls": [
+      "Monsters deal (10-14)% of Damage as Extra Fire"
+     ],
+     "b": [
+      "15% more Waystones found in Area",
+      "Monsters have 16% more Effectiveness"
+     ]
+    },
+    {
+     "w": [
+      11,
+      15
+     ],
+     "ls": [
+      "Monsters deal (15-19)% of Damage as Extra Fire"
+     ],
+     "b": [
+      "15% more Waystones found in Area",
+      "Monsters have 16% more Effectiveness"
+     ]
+    },
+    {
+     "w": [
+      16,
+      16
+     ],
+     "ls": [
+      "Monsters deal (20-24)% of Damage as Extra Fire"
+     ],
+     "b": [
+      "15% more Waystones found in Area",
+      "Monsters have 16% more Effectiveness"
+     ]
+    }
+   ],
+   "mods": [
+    "MapMonsterDamageAsFire1",
+    "MapMonsterDamageAsFire2",
+    "MapMonsterDamageAsFire3",
+    "MapMonsterDamageAsFire4"
+   ],
+   "tags": [
+    "extra element"
+   ],
+   "why": {
+    "extra element": "Monsters deal (5-9)% of Damage as Extra Fire"
+   },
+   "q": "extra element",
+   "src": "Source: the game files",
+   "re": "a f"
+  },
+  {
+   "n": "Painful",
+   "k": "p",
+   "pool": "waystone",
+   "s": "Waystone prefix",
+   "r": [
+    {
+     "w": [
+      1,
+      5
+     ],
+     "ls": [
+      "(5-9)% increased Monster Damage"
+     ],
+     "b": [
+      "20% more Waystones found in Area",
+      "25% more Magic and Rare Monsters",
+      "Rare Monsters have 25% more chance of Monster Modifiers"
+     ]
+    },
+    {
+     "w": [
+      6,
+      10
+     ],
+     "ls": [
+      "(10-14)% increased Monster Damage"
+     ],
+     "b": [
+      "20% more Waystones found in Area",
+      "25% more Magic and Rare Monsters",
+      "Rare Monsters have 25% more chance of Monster Modifiers"
+     ]
+    },
+    {
+     "w": [
+      11,
+      15
+     ],
+     "ls": [
+      "(15-19)% increased Monster Damage"
+     ],
+     "b": [
+      "20% more Waystones found in Area",
+      "25% more Magic and Rare Monsters",
+      "Rare Monsters have 25% more chance of Monster Modifiers"
+     ]
+    },
+    {
+     "w": [
+      16,
+      16
+     ],
+     "ls": [
+      "(20-24)% increased Monster Damage"
+     ],
+     "b": [
+      "20% more Waystones found in Area",
+      "25% more Magic and Rare Monsters",
+      "Rare Monsters have 25% more chance of Monster Modifiers"
+     ]
+    }
+   ],
+   "mods": [
+    "MapMonsterDamageIncrease1",
+    "MapMonsterDamageIncrease2",
+    "MapMonsterDamageIncrease3",
+    "MapMonsterDamageIncrease4"
+   ],
+   "tags": [
+    "more damage"
+   ],
+   "why": {
+    "more damage": "(5-9)% increased Monster Damage"
+   },
+   "q": "more damage",
+   "src": "Source: the game files",
+   "re": "d monster d"
+  },
+  {
+   "n": "Penetrating",
+   "k": "p",
+   "pool": "waystone",
+   "s": "Waystone prefix",
+   "r": [
+    {
+     "w": [
+      1,
+      5
+     ],
+     "ls": [
+      "Monster Damage Penetrates (6-8)% Elemental Resistances"
+     ],
+     "b": [
+      "20% more Waystones found in Area",
+      "16% more Rarity of Items found in this Area"
+     ]
+    },
+    {
+     "w": [
+      6,
+      10
+     ],
+     "ls": [
+      "Monster Damage Penetrates (9-11)% Elemental Resistances"
+     ],
+     "b": [
+      "20% more Waystones found in Area",
+      "16% more Rarity of Items found in this Area"
+     ]
+    },
+    {
+     "w": [
+      11,
+      15
+     ],
+     "ls": [
+      "Monster Damage Penetrates (12-14)% Elemental Resistances"
+     ],
+     "b": [
+      "20% more Waystones found in Area",
+      "16% more Rarity of Items found in this Area"
+     ]
+    },
+    {
+     "w": [
+      16,
+      16
+     ],
+     "ls": [
+      "Monster Damage Penetrates (14-16)% Elemental Resistances"
+     ],
+     "b": [
+      "20% more Waystones found in Area",
+      "16% more Rarity of Items found in this Area"
+     ]
+    }
+   ],
+   "mods": [
+    "MapMonstersElementalPenetration1",
+    "MapMonstersElementalPenetration2",
+    "MapMonstersElementalPenetration3",
+    "MapMonstersElementalPenetration4"
+   ],
+   "tags": [
+    "penetration"
+   ],
+   "why": {
+    "penetration": "Monster Damage Penetrates (6-8)% Elemental Resistances"
+   },
+   "q": "penetration",
+   "src": "Source: the game files",
+   "re": "etr"
+  },
+  {
+   "n": "Precise",
+   "k": "p",
+   "pool": "waystone",
+   "s": "Waystone prefix",
+   "r": [
+    {
+     "w": [
+      1,
+      5
+     ],
+     "ls": [
+      "Monsters have (10-20)% increased Accuracy Rating"
+     ],
+     "b": [
+      "10% more Waystones found in Area",
+      "7% more Pack size"
+     ]
+    },
+    {
+     "w": [
+      6,
+      10
+     ],
+     "ls": [
+      "Monsters have (20-30)% increased Accuracy Rating"
+     ],
+     "b": [
+      "10% more Waystones found in Area",
+      "7% more Pack size"
+     ]
+    },
+    {
+     "w": [
+      11,
+      15
+     ],
+     "ls": [
+      "Monsters have (30-40)% increased Accuracy Rating"
+     ],
+     "b": [
+      "10% more Waystones found in Area",
+      "7% more Pack size"
+     ]
+    },
+    {
+     "w": [
+      16,
+      16
+     ],
+     "ls": [
+      "Monsters have (40-50)% increased Accuracy Rating"
+     ],
+     "b": [
+      "10% more Waystones found in Area",
+      "7% more Pack size"
+     ]
+    }
+   ],
+   "mods": [
+    "MapMonsterAccuracy1",
+    "MapMonsterAccuracy2",
+    "MapMonsterAccuracy3",
+    "MapMonsterAccuracy4"
+   ],
+   "tags": [
+    "more accuracy"
+   ],
+   "why": {
+    "more accuracy": "Monsters have (10-20)% increased Accuracy Rating"
+   },
+   "q": "more accuracy",
+   "src": "Source: the game files",
+   "re": "acc"
+  },
+  {
+   "n": "Profane",
+   "k": "p",
+   "pool": "waystone",
+   "s": "Waystone prefix",
+   "r": [
+    {
+     "w": [
+      1,
+      5
+     ],
+     "ls": [
+      "Monsters deal (5-9)% of Damage as Extra Chaos"
+     ],
+     "b": [
+      "15% more Waystones found in Area",
+      "15% more Rarity of Items found in this Area"
+     ]
+    },
+    {
+     "w": [
+      6,
+      10
+     ],
+     "ls": [
+      "Monsters deal (10-14)% of Damage as Extra Chaos"
+     ],
+     "b": [
+      "15% more Waystones found in Area",
+      "15% more Rarity of Items found in this Area"
+     ]
+    },
+    {
+     "w": [
+      11,
+      15
+     ],
+     "ls": [
+      "Monsters deal (15-19)% of Damage as Extra Chaos"
+     ],
+     "b": [
+      "15% more Waystones found in Area",
+      "15% more Rarity of Items found in this Area"
+     ]
+    },
+    {
+     "w": [
+      16,
+      16
+     ],
+     "ls": [
+      "Monsters deal (20-24)% of Damage as Extra Chaos"
+     ],
+     "b": [
+      "15% more Waystones found in Area",
+      "15% more Rarity of Items found in this Area"
+     ]
+    }
+   ],
+   "mods": [
+    "MapMonsterDamageAsChaos1",
+    "MapMonsterDamageAsChaos2",
+    "MapMonsterDamageAsChaos3",
+    "MapMonsterDamageAsChaos4"
+   ],
+   "tags": [
+    "extra element"
+   ],
+   "why": {
+    "extra element": "Monsters deal (5-9)% of Damage as Extra Chaos"
+   },
+   "q": "extra element",
+   "src": "Source: the game files",
+   "re": "aos"
+  },
+  {
+   "n": "Puncturing",
+   "k": "p",
+   "pool": "waystone",
+   "s": "Waystone prefix",
+   "r": [
+    {
+     "w": [
+      1,
+      5
+     ],
+     "ls": [
+      "Monsters have (5-10)% chance to inflict Bleeding on Hit"
+     ],
+     "b": [
+      "10% more Waystones found in Area",
+      "Monsters have 13% more Effectiveness"
+     ]
+    },
+    {
+     "w": [
+      6,
+      10
+     ],
+     "ls": [
+      "Monsters have (10-15)% chance to inflict Bleeding on Hit"
+     ],
+     "b": [
+      "10% more Waystones found in Area",
+      "Monsters have 13% more Effectiveness"
+     ]
+    },
+    {
+     "w": [
+      11,
+      15
+     ],
+     "ls": [
+      "Monsters have (15-20)% chance to inflict Bleeding on Hit"
+     ],
+     "b": [
+      "10% more Waystones found in Area",
+      "Monsters have 13% more Effectiveness"
+     ]
+    },
+    {
+     "w": [
+      16,
+      16
+     ],
+     "ls": [
+      "Monsters have (20-25)% chance to inflict Bleeding on Hit"
+     ],
+     "b": [
+      "10% more Waystones found in Area",
+      "Monsters have 13% more Effectiveness"
+     ]
+    }
+   ],
+   "mods": [
+    "MapMonsterBleeding1",
+    "MapMonsterBleeding2",
+    "MapMonsterBleeding3",
+    "MapMonsterBleeding4"
+   ],
+   "tags": [
+    "ailment on hit"
+   ],
+   "why": {
+    "ailment on hit": "Monsters have (5-10)% chance to inflict Bleeding on Hit"
+   },
+   "q": "ailment on hit",
+   "src": "Source: the game files",
+   "re": "din"
+  },
+  {
+   "n": "Shattering",
+   "k": "p",
+   "pool": "waystone",
+   "s": "Waystone prefix",
+   "r": [
+    {
+     "w": [
+      1,
+      5
+     ],
+     "ls": [
+      "Monsters Break Armour equal to (15-20)% of Physical Damage dealt"
+     ],
+     "b": [
+      "10% more Waystones found in Area",
+      "19% more Magic and Rare Monsters",
+      "Rare Monsters have 19% more chance of Monster Modifiers"
+     ]
+    },
+    {
+     "w": [
+      6,
+      10
+     ],
+     "ls": [
+      "Monsters Break Armour equal to (20-25)% of Physical Damage dealt"
+     ],
+     "b": [
+      "10% more Waystones found in Area",
+      "19% more Magic and Rare Monsters",
+      "Rare Monsters have 19% more chance of Monster Modifiers"
+     ]
+    },
+    {
+     "w": [
+      11,
+      15
+     ],
+     "ls": [
+      "Monsters Break Armour equal to (25-30)% of Physical Damage dealt"
+     ],
+     "b": [
+      "10% more Waystones found in Area",
+      "19% more Magic and Rare Monsters",
+      "Rare Monsters have 19% more chance of Monster Modifiers"
+     ]
+    },
+    {
+     "w": [
+      16,
+      16
+     ],
+     "ls": [
+      "Monsters Break Armour equal to (30-45)% of Physical Damage dealt"
+     ],
+     "b": [
+      "10% more Waystones found in Area",
+      "19% more Magic and Rare Monsters",
+      "Rare Monsters have 19% more chance of Monster Modifiers"
+     ]
+    }
+   ],
+   "mods": [
+    "MapMonsterArmourBreak1",
+    "MapMonsterArmourBreak2",
+    "MapMonsterArmourBreak3",
+    "MapMonsterArmourBreak4"
+   ],
+   "tags": [
+    "breaks armour"
+   ],
+   "why": {
+    "breaks armour": "Monsters Break Armour equal to (15-20)% of Physical Damage dealt"
+   },
+   "q": "breaks armour",
+   "src": "Source: the game files",
+   "re": "alt"
+  },
+  {
+   "n": "Splitting",
+   "k": "p",
+   "pool": "waystone",
+   "s": "Waystone prefix",
+   "r": [
+    {
+     "w": null,
+     "ls": [
+      "Monsters fire 2 additional Projectiles"
+     ],
+     "b": [
+      "25% more Waystones found in Area",
+      "9% more Pack size"
+     ]
+    },
+    {
+     "w": null,
+     "ls": [
+      "Monsters fire 3 additional Projectiles"
+     ],
+     "b": [
+      "25% more Waystones found in Area",
+      "9% more Pack size"
+     ]
+    }
+   ],
+   "mods": [
+    "MapMonsterAdditionalProjectiles1",
+    "MapMonsterAdditionalProjectiles2",
+    "MapMonsterAdditionalProjectiles3"
+   ],
+   "tags": [
+    "more area"
+   ],
+   "why": {
+    "more area": "Monsters fire 2 additional Projectiles"
+   },
+   "nt": "Rolls on no waystone tier",
+   "q": "more area",
+   "src": "Source: the game files",
+   "re": "ile"
+  },
+  {
+   "n": "Thunderous",
+   "k": "p",
+   "pool": "waystone",
+   "s": "Waystone prefix",
+   "r": [
+    {
+     "w": [
+      1,
+      5
+     ],
+     "ls": [
+      "Monsters deal (5-9)% of Damage as Extra Lightning"
+     ],
+     "b": [
+      "15% more Waystones found in Area",
+      "8% more Pack size"
+     ]
+    },
+    {
+     "w": [
+      6,
+      10
+     ],
+     "ls": [
+      "Monsters deal (10-14)% of Damage as Extra Lightning"
+     ],
+     "b": [
+      "15% more Waystones found in Area",
+      "8% more Pack size"
+     ]
+    },
+    {
+     "w": [
+      11,
+      15
+     ],
+     "ls": [
+      "Monsters deal (15-19)% of Damage as Extra Lightning"
+     ],
+     "b": [
+      "15% more Waystones found in Area",
+      "8% more Pack size"
+     ]
+    },
+    {
+     "w": [
+      16,
+      16
+     ],
+     "ls": [
+      "Monsters deal (20-24)% of Damage as Extra Lightning"
+     ],
+     "b": [
+      "15% more Waystones found in Area",
+      "8% more Pack size"
+     ]
+    }
+   ],
+   "mods": [
+    "MapMonsterDamageAsLightning1",
+    "MapMonsterDamageAsLightning2",
+    "MapMonsterDamageAsLightning3",
+    "MapMonsterDamageAsLightning4"
+   ],
+   "tags": [
+    "extra element"
+   ],
+   "why": {
+    "extra element": "Monsters deal (5-9)% of Damage as Extra Lightning"
+   },
+   "q": "extra element",
+   "src": "Source: the game files",
+   "re": "a l"
+  },
+  {
+   "n": "Tough",
+   "k": "p",
+   "pool": "waystone",
+   "s": "Waystone prefix",
+   "r": [
+    {
+     "w": [
+      1,
+      5
+     ],
+     "ls": [
+      "(10-14)% more Monster Life"
+     ],
+     "b": [
+      "15% more Waystones found in Area",
+      "23% more Magic and Rare Monsters",
+      "Rare Monsters have 23% more chance of Monster Modifiers"
+     ]
+    },
+    {
+     "w": [
+      6,
+      10
+     ],
+     "ls": [
+      "(15-19)% more Monster Life"
+     ],
+     "b": [
+      "15% more Waystones found in Area",
+      "23% more Magic and Rare Monsters",
+      "Rare Monsters have 23% more chance of Monster Modifiers"
+     ]
+    },
+    {
+     "w": [
+      11,
+      15
+     ],
+     "ls": [
+      "(20-25)% more Monster Life"
+     ],
+     "b": [
+      "15% more Waystones found in Area",
+      "23% more Magic and Rare Monsters",
+      "Rare Monsters have 23% more chance of Monster Modifiers"
+     ]
+    },
+    {
+     "w": [
+      16,
+      16
+     ],
+     "ls": [
+      "(26-30)% more Monster Life"
+     ],
+     "b": [
+      "15% more Waystones found in Area",
+      "23% more Magic and Rare Monsters",
+      "Rare Monsters have 23% more chance of Monster Modifiers"
+     ]
+    }
+   ],
+   "mods": [
+    "MapMonsterLifeIncrease1",
+    "MapMonsterLifeIncrease2",
+    "MapMonsterLifeIncrease3",
+    "MapMonsterLifeIncrease4"
+   ],
+   "tags": [
+    "harder to kill"
+   ],
+   "why": {
+    "harder to kill": "(10-14)% more Monster Life"
+   },
+   "q": "harder to kill",
+   "src": "Source: the game files",
+   "re": "r l"
+  },
+  {
+   "n": "Venomous",
+   "k": "p",
+   "pool": "waystone",
+   "s": "Waystone prefix",
+   "r": [
+    {
+     "w": [
+      1,
+      5
+     ],
+     "ls": [
+      "Monsters have (13-19)% chance to Poison on Hit"
+     ],
+     "b": [
+      "10% more Waystones found in Area",
+      "7% more Pack size"
+     ]
+    },
+    {
+     "w": [
+      6,
+      10
+     ],
+     "ls": [
+      "Monsters have (20-26)% chance to Poison on Hit"
+     ],
+     "b": [
+      "10% more Waystones found in Area",
+      "7% more Pack size"
+     ]
+    },
+    {
+     "w": [
+      11,
+      15
+     ],
+     "ls": [
+      "Monsters have (27-33)% chance to Poison on Hit"
+     ],
+     "b": [
+      "10% more Waystones found in Area",
+      "7% more Pack size"
+     ]
+    },
+    {
+     "w": [
+      16,
+      16
+     ],
+     "ls": [
+      "Monsters have (34-40)% chance to Poison on Hit"
+     ],
+     "b": [
+      "10% more Waystones found in Area",
+      "7% more Pack size"
+     ]
+    }
+   ],
+   "mods": [
+    "MapMonsterPoisoning1",
+    "MapMonsterPoisoning2",
+    "MapMonsterPoisoning3",
+    "MapMonsterPoisoning4"
+   ],
+   "tags": [
+    "ailment on hit"
+   ],
+   "why": {
+    "ailment on hit": "Monsters have (13-19)% chance to Poison on Hit"
+   },
+   "q": "ailment on hit",
+   "src": "Source: the game files",
+   "re": "iso"
+  },
+  {
+   "n": "Flaming",
+   "k": "s",
+   "pool": "waystone",
+   "s": "Waystone suffix",
+   "r": [
+    {
+     "w": [
+      6,
+      10
+     ],
+     "ls": [
+      "Area has patches of Ignited Ground"
+     ],
+     "b": [
+      "15% more Waystones found in Area",
+      "Monsters have 15% more Effectiveness"
+     ]
+    },
+    {
+     "w": [
+      11,
+      15
+     ],
+     "ls": [
+      "Area has patches of Ignited Ground"
+     ],
+     "b": [
+      "15% more Waystones found in Area",
+      "Monsters have 15% more Effectiveness"
+     ]
+    },
+    {
+     "w": [
+      16,
+      16
+     ],
+     "ls": [
+      "Area has patches of Ignited Ground"
+     ],
+     "b": [
+      "15% more Waystones found in Area",
+      "Monsters have 15% more Effectiveness"
+     ]
+    }
+   ],
+   "mods": [
+    "MapSpreadBurningGround2",
+    "MapSpreadBurningGround3",
+    "MapSpreadBurningGround4"
+   ],
+   "tags": [
+    "ground effect"
+   ],
+   "why": {
+    "ground effect": "Area has patches of Ignited Ground"
+   },
+   "q": "ground effect",
+   "src": "Source: the game files",
+   "re": "gni",
+   "also": [
+    "of Flames"
+   ]
+  },
+  {
+   "n": "Shocking",
+   "k": "s",
+   "pool": "waystone",
+   "s": "Waystone suffix",
+   "r": [
+    {
+     "w": [
+      6,
+      10
+     ],
+     "ls": [
+      "Area has patches of Shocked Ground"
+     ],
+     "b": [
+      "15% more Waystones found in Area",
+      "7% more Pack size"
+     ]
+    },
+    {
+     "w": [
+      11,
+      15
+     ],
+     "ls": [
+      "Area has patches of Shocked Ground"
+     ],
+     "b": [
+      "15% more Waystones found in Area",
+      "7% more Pack size"
+     ]
+    },
+    {
+     "w": [
+      16,
+      16
+     ],
+     "ls": [
+      "Area has patches of Shocked Ground"
+     ],
+     "b": [
+      "15% more Waystones found in Area",
+      "7% more Pack size"
+     ]
+    }
+   ],
+   "mods": [
+    "MapSpreadShockedGround2",
+    "MapSpreadShockedGround3",
+    "MapSpreadShockedGround4"
+   ],
+   "tags": [
+    "ground effect"
+   ],
+   "why": {
+    "ground effect": "Area has patches of Shocked Ground"
+   },
+   "q": "ground effect",
+   "src": "Source: the game files",
+   "re": "cke",
+   "also": [
+    "of Shocking"
+   ]
+  },
+  {
+   "n": "Sleet",
+   "k": "s",
+   "pool": "waystone",
+   "s": "Waystone suffix",
+   "r": [
+    {
+     "w": [
+      6,
+      10
+     ],
+     "ls": [
+      "Area has patches of Chilled Ground"
+     ],
+     "b": [
+      "15% more Waystones found in Area",
+      "12% more Rarity of Items found in this Area"
+     ]
+    },
+    {
+     "w": [
+      11,
+      15
+     ],
+     "ls": [
+      "Area has patches of Chilled Ground"
+     ],
+     "b": [
+      "15% more Waystones found in Area",
+      "12% more Rarity of Items found in this Area"
+     ]
+    },
+    {
+     "w": [
+      16,
+      16
+     ],
+     "ls": [
+      "Area has patches of Chilled Ground"
+     ],
+     "b": [
+      "15% more Waystones found in Area",
+      "12% more Rarity of Items found in this Area"
+     ]
+    }
+   ],
+   "mods": [
+    "MapSpreadChilledGround2",
+    "MapSpreadChilledGround3",
+    "MapSpreadChilledGround4"
+   ],
+   "tags": [
+    "ground effect"
+   ],
+   "why": {
+    "ground effect": "Area has patches of Chilled Ground"
+   },
+   "q": "ground effect",
+   "src": "Source: the game files",
+   "re": "chi",
+   "also": [
+    "of Sleet"
+   ]
+  },
+  {
+   "n": "of Buffering",
+   "k": "s",
+   "pool": "waystone",
+   "s": "Waystone suffix",
+   "r": [
+    {
+     "w": [
+      1,
+      16
+     ],
+     "ls": [
+      "Monsters gain (12-25)% of maximum Life as Extra maximum Energy Shield"
+     ],
+     "b": [
+      "15% more Waystones found in Area",
+      "13% more Rarity of Items found in this Area"
+     ]
+    }
+   ],
+   "mods": [
+    "MapMonsterEnergyShield1"
+   ],
+   "tags": [
+    "harder to kill"
+   ],
+   "why": {
+    "harder to kill": "Monsters gain (12-25)% of maximum Life as Extra maximum Energy Shield"
+   },
+   "q": "harder to kill",
+   "src": "Source: the game files",
+   "re": "a m"
+  },
+  {
+   "n": "of Drought",
+   "k": "s",
+   "pool": "waystone",
+   "s": "Waystone suffix",
+   "r": [
+    {
+     "w": [
+      1,
+      5
+     ],
+     "ls": [
+      "Players gain (20-24)% reduced Flask Charges"
+     ],
+     "b": [
+      "15% more Waystones found in Area",
+      "7% more Pack size"
+     ]
+    },
+    {
+     "w": [
+      6,
+      10
+     ],
+     "ls": [
+      "Players gain (25-29)% reduced Flask Charges"
+     ],
+     "b": [
+      "15% more Waystones found in Area",
+      "7% more Pack size"
+     ]
+    },
+    {
+     "w": [
+      11,
+      15
+     ],
+     "ls": [
+      "Players gain (30-35)% reduced Flask Charges"
+     ],
+     "b": [
+      "15% more Waystones found in Area",
+      "7% more Pack size"
+     ]
+    },
+    {
+     "w": [
+      16,
+      16
+     ],
+     "ls": [
+      "Players gain (30-35)% reduced Flask Charges"
+     ],
+     "b": [
+      "15% more Waystones found in Area",
+      "7% more Pack size"
+     ]
+    }
+   ],
+   "mods": [
+    "MapPlayerFlaskChargeGain1",
+    "MapPlayerFlaskChargeGain2",
+    "MapPlayerFlaskChargeGain3",
+    "MapPlayerFlaskChargeGain4"
+   ],
+   "tags": [
+    "fewer flask charges"
+   ],
+   "why": {
+    "fewer flask charges": "Players gain (20-24)% reduced Flask Charges"
+   },
+   "q": "fewer flask charges",
+   "src": "Source: the game files",
+   "re": "arg"
+  },
+  {
+   "n": "of Enduring",
+   "k": "s",
+   "pool": "waystone",
+   "s": "Waystone suffix",
+   "r": [
+    {
+     "w": [
+      1,
+      16
+     ],
+     "ls": [
+      "Monsters are Armoured"
+     ],
+     "b": [
+      "15% more Waystones found in Area",
+      "18% more Magic and Rare Monsters",
+      "Rare Monsters have 18% more chance of Monster Modifiers"
+     ]
+    }
+   ],
+   "mods": [
+    "MapMonsterArmoured1"
+   ],
+   "tags": [
+    "harder to kill"
+   ],
+   "why": {
+    "harder to kill": "Monsters are Armoured"
+   },
+   "q": "harder to kill",
+   "src": "Source: the game files",
+   "re": "ure"
+  },
+  {
+   "n": "of Enfeebling",
+   "k": "s",
+   "pool": "waystone",
+   "s": "Waystone suffix",
+   "r": [
+    {
+     "w": [
+      1,
+      16
+     ],
+     "ls": [
+      "Players are periodically Cursed with Enfeeble"
+     ],
+     "b": [
+      "20% more Waystones found in Area",
+      "Monsters have 16% more Effectiveness"
+     ]
+    }
+   ],
+   "mods": [
+    "MapPlayerEnfeeble1"
+   ],
+   "tags": [
+    "curse"
+   ],
+   "why": {
+    "curse": "Players are periodically Cursed with Enfeeble"
+   },
+   "q": "curse",
+   "src": "Source: the game files",
+   "re": "ebl"
+  },
+  {
+   "n": "of Erosion",
+   "k": "s",
+   "pool": "waystone",
+   "s": "Waystone suffix",
+   "r": [
+    {
+     "w": [
+      1,
+      16
+     ],
+     "ls": [
+      "Players are periodically Cursed with Elemental Weakness"
+     ],
+     "b": [
+      "20% more Waystones found in Area",
+      "13% more Rarity of Items found in this Area"
+     ]
+    }
+   ],
+   "mods": [
+    "MapPlayerElementalWeakness1"
+   ],
+   "tags": [
+    "less resistance",
+    "curse"
+   ],
+   "why": {
+    "less resistance": "Players are periodically Cursed with Elemental Weakness",
+    "curse": "Players are periodically Cursed with Elemental Weakness"
+   },
+   "q": "less resistance curse",
+   "src": "Source: the game files",
+   "re": "akn"
+  },
+  {
+   "n": "of Evasion",
+   "k": "s",
+   "pool": "waystone",
+   "s": "Waystone suffix",
+   "r": [
+    {
+     "w": [
+      1,
+      16
+     ],
+     "ls": [
+      "Monsters are Evasive"
+     ],
+     "b": [
+      "15% more Waystones found in Area",
+      "6% more Pack size"
+     ]
+    }
+   ],
+   "mods": [
+    "MapMonsterEvasive1"
+   ],
+   "tags": [
+    "harder to kill"
+   ],
+   "why": {
+    "harder to kill": "Monsters are Evasive"
+   },
+   "q": "harder to kill",
+   "src": "Source: the game files",
+   "re": "asi"
+  },
+  {
+   "n": "of Exposure",
+   "k": "s",
+   "pool": "waystone",
+   "s": "Waystone suffix",
+   "r": [
+    {
+     "w": [
+      1,
+      5
+     ],
+     "ls": [
+      "-(3-4)% maximum Player Resistances"
+     ],
+     "b": [
+      "25% more Waystones found in Area",
+      "10% more Pack size"
+     ]
+    },
+    {
+     "w": [
+      6,
+      10
+     ],
+     "ls": [
+      "-(4-6)% maximum Player Resistances"
+     ],
+     "b": [
+      "25% more Waystones found in Area",
+      "10% more Pack size"
+     ]
+    },
+    {
+     "w": [
+      11,
+      15
+     ],
+     "ls": [
+      "-(6-8)% maximum Player Resistances"
+     ],
+     "b": [
+      "25% more Waystones found in Area",
+      "10% more Pack size"
+     ]
+    },
+    {
+     "w": [
+      16,
+      16
+     ],
+     "ls": [
+      "-(8-10)% maximum Player Resistances"
+     ],
+     "b": [
+      "25% more Waystones found in Area",
+      "10% more Pack size"
+     ]
+    }
+   ],
+   "mods": [
+    "MapPlayerMaximumResists1",
+    "MapPlayerMaximumResists2",
+    "MapPlayerMaximumResists3",
+    "MapPlayerMaximumResists4"
+   ],
+   "tags": [
+    "less resistance"
+   ],
+   "why": {
+    "less resistance": "-(3-4)% maximum Player Resistances"
+   },
+   "q": "less resistance",
+   "src": "Source: the game files",
+   "re": "m p"
+  },
+  {
+   "n": "of Fatigue",
+   "k": "s",
+   "pool": "waystone",
+   "s": "Waystone suffix",
+   "r": [
+    {
+     "w": [
+      1,
+      5
+     ],
+     "ls": [
+      "Players have (15-20)% less Cooldown Recovery Rate"
+     ],
+     "b": [
+      "15% more Waystones found in Area",
+      "12% more Rarity of Items found in this Area"
+     ]
+    },
+    {
+     "w": [
+      6,
+      10
+     ],
+     "ls": [
+      "Players have (20-25)% less Cooldown Recovery Rate"
+     ],
+     "b": [
+      "15% more Waystones found in Area",
+      "12% more Rarity of Items found in this Area"
+     ]
+    },
+    {
+     "w": [
+      11,
+      15
+     ],
+     "ls": [
+      "Players have (25-30)% less Cooldown Recovery Rate"
+     ],
+     "b": [
+      "15% more Waystones found in Area",
+      "12% more Rarity of Items found in this Area"
+     ]
+    },
+    {
+     "w": [
+      16,
+      16
+     ],
+     "ls": [
+      "Players have (25-30)% less Cooldown Recovery Rate"
+     ],
+     "b": [
+      "15% more Waystones found in Area",
+      "12% more Rarity of Items found in this Area"
+     ]
+    }
+   ],
+   "mods": [
+    "MapPlayerCooldownRecovery1",
+    "MapPlayerCooldownRecovery2",
+    "MapPlayerCooldownRecovery3",
+    "MapPlayerCooldownRecovery4"
+   ],
+   "tags": [
+    "slower cooldowns"
+   ],
+   "why": {
+    "slower cooldowns": "Players have (15-20)% less Cooldown Recovery Rate"
+   },
+   "q": "slower cooldowns",
+   "src": "Source: the game files",
+   "re": "coo"
+  },
+  {
+   "n": "of Flames",
+   "k": "s",
+   "pool": "waystone",
+   "s": "Waystone suffix",
+   "r": [
+    {
+     "w": [
+      1,
+      5
+     ],
+     "ls": [
+      "Area has patches of Ignited Ground"
+     ],
+     "b": [
+      "15% more Waystones found in Area",
+      "Monsters have 15% more Effectiveness"
+     ]
+    }
+   ],
+   "mods": [
+    "MapSpreadBurningGround1"
+   ],
+   "tags": [
+    "ground effect"
+   ],
+   "why": {
+    "ground effect": "Area has patches of Ignited Ground"
+   },
+   "q": "ground effect",
+   "src": "Source: the game files",
+   "re": "gni",
+   "also": [
+    "Flaming"
+   ]
+  },
+  {
+   "n": "of Giants",
+   "k": "s",
+   "pool": "waystone",
+   "s": "Waystone suffix",
+   "r": [
+    {
+     "w": null,
+     "ls": [
+      "Monsters have 50% increased Area of Effect"
+     ],
+     "b": [
+      "20% more Waystones found in Area"
+     ]
+    }
+   ],
+   "mods": [
+    "MapMonsterIncreasedAreaOfEffect1"
+   ],
+   "tags": [
+    "more area"
+   ],
+   "why": {
+    "more area": "Monsters have 50% increased Area of Effect"
+   },
+   "nt": "Rolls on no waystone tier",
+   "q": "more area",
+   "src": "Source: the game files",
+   "re": "a o"
+  },
+  {
+   "n": "of Hexwarding",
+   "k": "s",
+   "pool": "waystone",
+   "s": "Waystone suffix",
+   "r": [
+    {
+     "w": [
+      1,
+      5
+     ],
+     "ls": [
+      "(20-30)% less effect of Curses on Monsters"
+     ],
+     "b": [
+      "10% more Waystones found in Area",
+      "10% more Rarity of Items found in this Area"
+     ]
+    },
+    {
+     "w": [
+      6,
+      10
+     ],
+     "ls": [
+      "(30-40)% less effect of Curses on Monsters"
+     ],
+     "b": [
+      "10% more Waystones found in Area",
+      "10% more Rarity of Items found in this Area"
+     ]
+    },
+    {
+     "w": [
+      11,
+      15
+     ],
+     "ls": [
+      "(40-50)% less effect of Curses on Monsters"
+     ],
+     "b": [
+      "10% more Waystones found in Area",
+      "10% more Rarity of Items found in this Area"
+     ]
+    },
+    {
+     "w": [
+      16,
+      16
+     ],
+     "ls": [
+      "(40-50)% less effect of Curses on Monsters"
+     ],
+     "b": [
+      "10% more Waystones found in Area",
+      "10% more Rarity of Items found in this Area"
+     ]
+    }
+   ],
+   "mods": [
+    "MapMonstersCurseEffectOnSelf1",
+    "MapMonstersCurseEffectOnSelf2",
+    "MapMonstersCurseEffectOnSelf3",
+    "MapMonstersCurseEffectOnSelf4"
+   ],
+   "tags": [
+    "curses weaker"
+   ],
+   "why": {
+    "curses weaker": "(20-30)% less effect of Curses on Monsters"
+   },
+   "q": "curses weaker",
+   "src": "Source: the game files",
+   "re": "ct o"
+  },
+  {
+   "n": "of Nemeses",
+   "k": "s",
+   "pool": "waystone",
+   "s": "Waystone suffix",
+   "r": [
+    {
+     "w": null,
+     "ls": [
+      "Rare Monsters have 1 additional Modifier"
+     ],
+     "b": [
+      "10% increased Waystones found in Area",
+      "25% increased number of Rare Monsters"
+     ]
+    }
+   ],
+   "mods": [
+    "MapRareMonstersAdditionalModifier1"
+   ],
+   "tags": [
+    "more rare modifiers"
+   ],
+   "why": {
+    "more rare modifiers": "Rare Monsters have 1 additional Modifier"
+   },
+   "nt": "Rolls on no waystone tier",
+   "q": "more rare modifiers",
+   "src": "Source: the game files",
+   "re": "nal m",
+   "also": [
+    "Concentrated Liquid Fear"
+   ]
+  },
+  {
+   "n": "of Obstruction",
+   "k": "s",
+   "pool": "waystone",
+   "s": "Waystone suffix",
+   "r": [
+    {
+     "w": [
+      1,
+      5
+     ],
+     "ls": [
+      "Monsters take (15-19)% reduced Extra Damage from Critical Hits"
+     ],
+     "b": [
+      "10% more Waystones found in Area",
+      "18% more Magic and Rare Monsters",
+      "Rare Monsters have 18% more chance of Monster Modifiers"
+     ]
+    },
+    {
+     "w": [
+      6,
+      10
+     ],
+     "ls": [
+      "Monsters take (20-25)% reduced Extra Damage from Critical Hits"
+     ],
+     "b": [
+      "10% more Waystones found in Area",
+      "18% more Magic and Rare Monsters",
+      "Rare Monsters have 18% more chance of Monster Modifiers"
+     ]
+    },
+    {
+     "w": [
+      11,
+      15
+     ],
+     "ls": [
+      "Monsters take (26-30)% reduced Extra Damage from Critical Hits"
+     ],
+     "b": [
+      "10% more Waystones found in Area",
+      "18% more Magic and Rare Monsters",
+      "Rare Monsters have 18% more chance of Monster Modifiers"
+     ]
+    },
+    {
+     "w": [
+      16,
+      16
+     ],
+     "ls": [
+      "Monsters take (26-30)% reduced Extra Damage from Critical Hits"
+     ],
+     "b": [
+      "10% more Waystones found in Area",
+      "18% more Magic and Rare Monsters",
+      "Rare Monsters have 18% more chance of Monster Modifiers"
+     ]
+    }
+   ],
+   "mods": [
+    "MapMonstersBaseSelfCriticalMultiplier1",
+    "MapMonstersBaseSelfCriticalMultiplier2",
+    "MapMonstersBaseSelfCriticalMultiplier3",
+    "MapMonstersBaseSelfCriticalMultiplier4"
+   ],
+   "tags": [
+    "resists crits"
+   ],
+   "why": {
+    "resists crits": "Monsters take (15-19)% reduced Extra Damage from Critical Hits"
+   },
+   "q": "resists crits",
+   "src": "Source: the game files",
+   "re": "a d"
+  },
+  {
+   "n": "of Overpowering",
+   "k": "s",
+   "pool": "waystone",
+   "s": "Waystone suffix",
+   "r": [
+    {
+     "w": [
+      1,
+      5
+     ],
+     "ls": [
+      "Monster have (60-79)% increased Elemental Ailment Application"
+     ],
+     "b": [
+      "15% more Waystones found in Area",
+      "11% more Rarity of Items found in this Area"
+     ]
+    },
+    {
+     "w": [
+      6,
+      10
+     ],
+     "ls": [
+      "Monster have (80-99)% increased Elemental Ailment Application"
+     ],
+     "b": [
+      "15% more Waystones found in Area",
+      "11% more Rarity of Items found in this Area"
+     ]
+    },
+    {
+     "w": [
+      11,
+      15
+     ],
+     "ls": [
+      "Monster have (100-119)% increased Elemental Ailment Application"
+     ],
+     "b": [
+      "15% more Waystones found in Area",
+      "11% more Rarity of Items found in this Area"
+     ]
+    },
+    {
+     "w": [
+      16,
+      16
+     ],
+     "ls": [
+      "Monster have (120-130)% increased Elemental Ailment Application"
+     ],
+     "b": [
+      "15% more Waystones found in Area",
+      "11% more Rarity of Items found in this Area"
+     ]
+    }
+   ],
+   "mods": [
+    "MapMonsterElementAilmentChance1",
+    "MapMonsterElementAilmentChance2",
+    "MapMonsterElementAilmentChance3",
+    "MapMonsterElementAilmentChance4"
+   ],
+   "tags": [
+    "ailment on hit"
+   ],
+   "why": {
+    "ailment on hit": "Monster have (60-79)% increased Elemental Ailment Application"
+   },
+   "q": "ailment on hit",
+   "src": "Source: the game files",
+   "re": "app"
+  },
+  {
+   "n": "of Shocking",
+   "k": "s",
+   "pool": "waystone",
+   "s": "Waystone suffix",
+   "r": [
+    {
+     "w": [
+      1,
+      5
+     ],
+     "ls": [
+      "Area has patches of Shocked Ground"
+     ],
+     "b": [
+      "15% more Waystones found in Area",
+      "7% more Pack size"
+     ]
+    }
+   ],
+   "mods": [
+    "MapSpreadShockedGround1"
+   ],
+   "tags": [
+    "ground effect"
+   ],
+   "why": {
+    "ground effect": "Area has patches of Shocked Ground"
+   },
+   "q": "ground effect",
+   "src": "Source: the game files",
+   "re": "cke",
+   "also": [
+    "Shocking"
+   ]
+  },
+  {
+   "n": "of Sleet",
+   "k": "s",
+   "pool": "waystone",
+   "s": "Waystone suffix",
+   "r": [
+    {
+     "w": [
+      1,
+      5
+     ],
+     "ls": [
+      "Area has patches of Chilled Ground"
+     ],
+     "b": [
+      "15% more Waystones found in Area",
+      "12% more Rarity of Items found in this Area"
+     ]
+    }
+   ],
+   "mods": [
+    "MapSpreadChilledGround1"
+   ],
+   "tags": [
+    "ground effect"
+   ],
+   "why": {
+    "ground effect": "Area has patches of Chilled Ground"
+   },
+   "q": "ground effect",
+   "src": "Source: the game files",
+   "re": "chi",
+   "also": [
+    "Sleet"
+   ]
+  },
+  {
+   "n": "of Slowing",
+   "k": "s",
+   "pool": "waystone",
+   "s": "Waystone suffix",
+   "r": [
+    {
+     "w": [
+      1,
+      16
+     ],
+     "ls": [
+      "Players are periodically Cursed with Temporal Chains"
+     ],
+     "b": [
+      "20% more Waystones found in Area",
+      "8% more Pack size"
+     ]
+    }
+   ],
+   "mods": [
+    "MapPlayerTemporalChains1"
+   ],
+   "tags": [
+    "curse",
+    "slows you"
+   ],
+   "why": {
+    "curse": "Players are periodically Cursed with Temporal Chains",
+    "slows you": "Players are periodically Cursed with Temporal Chains"
+   },
+   "q": "curse slows you",
+   "src": "Source: the game files",
+   "re": "emp"
+  },
+  {
+   "n": "of Smothering",
+   "k": "s",
+   "pool": "waystone",
+   "s": "Waystone suffix",
+   "r": [
+    {
+     "w": [
+      1,
+      5
+     ],
+     "ls": [
+      "Players have (20-29)% less Recovery Rate of Life and Energy Shield"
+     ],
+     "b": [
+      "20% more Waystones found in Area",
+      "15% more Rarity of Items found in this Area"
+     ]
+    },
+    {
+     "w": [
+      6,
+      10
+     ],
+     "ls": [
+      "Players have (30-35)% less Recovery Rate of Life and Energy Shield"
+     ],
+     "b": [
+      "20% more Waystones found in Area",
+      "15% more Rarity of Items found in this Area"
+     ]
+    },
+    {
+     "w": [
+      11,
+      15
+     ],
+     "ls": [
+      "Players have (36-40)% less Recovery Rate of Life and Energy Shield"
+     ],
+     "b": [
+      "20% more Waystones found in Area",
+      "15% more Rarity of Items found in this Area"
+     ]
+    },
+    {
+     "w": [
+      16,
+      16
+     ],
+     "ls": [
+      "Players have (36-40)% less Recovery Rate of Life and Energy Shield"
+     ],
+     "b": [
+      "20% more Waystones found in Area",
+      "15% more Rarity of Items found in this Area"
+     ]
+    }
+   ],
+   "mods": [
+    "MapPlayerRecoveryRate1",
+    "MapPlayerRecoveryRate2",
+    "MapPlayerRecoveryRate3",
+    "MapPlayerRecoveryRate4"
+   ],
+   "tags": [
+    "less recovery"
+   ],
+   "why": {
+    "less recovery": "Players have (20-29)% less Recovery Rate of Life and Energy Shield"
+   },
+   "q": "less recovery",
+   "src": "Source: the game files",
+   "re": "f l"
+  },
+  {
+   "n": "of the Prism",
+   "k": "s",
+   "pool": "waystone",
+   "s": "Waystone suffix",
+   "r": [
+    {
+     "w": [
+      1,
+      5
+     ],
+     "ls": [
+      "+(20-24)% Monster Elemental Resistances"
+     ],
+     "b": [
+      "10% more Waystones found in Area",
+      "14% more Rarity of Items found in this Area"
+     ]
+    },
+    {
+     "w": [
+      6,
+      10
+     ],
+     "ls": [
+      "+(25-29)% Monster Elemental Resistances"
+     ],
+     "b": [
+      "10% more Waystones found in Area",
+      "14% more Rarity of Items found in this Area"
+     ]
+    },
+    {
+     "w": [
+      11,
+      15
+     ],
+     "ls": [
+      "+(30-34)% Monster Elemental Resistances"
+     ],
+     "b": [
+      "10% more Waystones found in Area",
+      "14% more Rarity of Items found in this Area"
+     ]
+    },
+    {
+     "w": [
+      16,
+      16
+     ],
+     "ls": [
+      "+(35-40)% Monster Elemental Resistances"
+     ],
+     "b": [
+      "10% more Waystones found in Area",
+      "14% more Rarity of Items found in this Area"
+     ]
+    }
+   ],
+   "mods": [
+    "MapMonsterElementalResistances1",
+    "MapMonsterElementalResistances2",
+    "MapMonsterElementalResistances3",
+    "MapMonsterElementalResistances4"
+   ],
+   "tags": [
+    "resists fire",
+    "resists cold",
+    "resists lightning"
+   ],
+   "why": {
+    "resists fire": "+(20-24)% Monster Elemental Resistances",
+    "resists cold": "+(20-24)% Monster Elemental Resistances",
+    "resists lightning": "+(20-24)% Monster Elemental Resistances"
+   },
+   "q": "resists fire resists cold resists lightning",
+   "src": "Source: the game files",
+   "re": "r el"
+  },
+  {
+   "n": "of the Unwavering",
+   "k": "s",
+   "pool": "waystone",
+   "s": "Waystone suffix",
+   "r": [
+    {
+     "w": [
+      1,
+      5
+     ],
+     "ls": [
+      "Monsters have (30-39)% increased Stun Threshold",
+      "Monsters have (30-39)% increased Ailment Threshold"
+     ],
+     "b": [
+      "10% more Waystones found in Area",
+      "Monsters have 13% more Effectiveness"
+     ]
+    },
+    {
+     "w": [
+      6,
+      10
+     ],
+     "ls": [
+      "Monsters have (40-49)% increased Stun Threshold",
+      "Monsters have (50-59)% increased Ailment Threshold"
+     ],
+     "b": [
+      "10% more Waystones found in Area",
+      "Monsters have 13% more Effectiveness"
+     ]
+    },
+    {
+     "w": [
+      11,
+      15
+     ],
+     "ls": [
+      "Monsters have (60-69)% increased Stun Threshold",
+      "Monsters have (70-79)% increased Ailment Threshold"
+     ],
+     "b": [
+      "10% more Waystones found in Area",
+      "Monsters have 13% more Effectiveness"
+     ]
+    },
+    {
+     "w": [
+      16,
+      16
+     ],
+     "ls": [
+      "Monsters have (70-79)% increased Stun Threshold",
+      "Monsters have (70-79)% increased Ailment Threshold"
+     ],
+     "b": [
+      "10% more Waystones found in Area",
+      "Monsters have 13% more Effectiveness"
+     ]
+    }
+   ],
+   "mods": [
+    "MapMonsterStunAilmentThreshold1",
+    "MapMonsterStunAilmentThreshold2",
+    "MapMonsterStunAilmentThreshold3",
+    "MapMonsterStunAilmentThreshold4"
+   ],
+   "tags": [
+    "resists ailments",
+    "harder to kill"
+   ],
+   "why": {
+    "resists ailments": "Monsters have (30-39)% increased Ailment Threshold",
+    "harder to kill": "Monsters have (30-39)% increased Stun Threshold"
+   },
+   "q": "resists ailments harder to kill",
+   "src": "Source: the game files",
+   "re": "esh"
+  },
+  {
+   "n": "Abyssal",
+   "k": "p",
+   "pool": "waystone",
+   "s": "Desecrated waystone prefix",
+   "r": [
+    {
+     "w": null,
+     "ls": [
+      "Area contains (14-18) additional Abysses",
+      "Area is overrun by the Abyssal",
+      "3 additional Rare Monsters are spawned from Abysses"
+     ],
+     "b": [
+      "25% more Waystones found in Area",
+      "10% more Pack size"
+     ]
+    }
+   ],
+   "mods": [
+    "MapAbyssalOverrun"
+   ],
+   "src": "Source: the game files",
+   "re": "a i"
+  },
+  {
+   "n": "Abyssal",
+   "k": "p",
+   "pool": "waystone",
+   "s": "Desecrated waystone prefix",
+   "r": [
+    {
+     "w": null,
+     "ls": [
+      "Area contains (2-3) additional Abysses"
+     ],
+     "b": [
+      "20% more Waystones found in Area",
+      "25% more Rarity of Items found in this Area"
+     ]
+    }
+   ],
+   "mods": [
+    "MapAbyssalAdditionalPits"
+   ],
+   "src": "Source: the game files",
+   "re": "l ab",
+   "also": [
+    "Abyssal"
+   ]
+  },
+  {
+   "n": "Abyssal",
+   "k": "p",
+   "pool": "waystone",
+   "s": "Desecrated waystone prefix",
+   "r": [
+    {
+     "w": null,
+     "ls": [
+      "Abysses spawn (50-100)% increased Monsters"
+     ],
+     "b": [
+      "20% more Waystones found in Area",
+      "12% more Pack size"
+     ]
+    }
+   ],
+   "mods": [
+    "MapAbyssalIncreasedAbyssMonsters"
+   ],
+   "src": "Source: the game files",
+   "re": "es s"
+  },
+  {
+   "n": "Abyssal",
+   "k": "p",
+   "pool": "waystone",
+   "s": "Desecrated waystone prefix",
+   "r": [
+    {
+     "w": null,
+     "ls": [
+      "Abyssal Monsters grant (50-100)% increased Experience"
+     ],
+     "b": [
+      "20% more Waystones found in Area",
+      "16% more Pack size"
+     ]
+    }
+   ],
+   "mods": [
+    "MapAbyssalAbyssMonsterExperience"
+   ],
+   "src": "Source: the game files",
+   "re": "exp"
+  },
+  {
+   "n": "Abyssal",
+   "k": "p",
+   "pool": "waystone",
+   "s": "Desecrated waystone prefix",
+   "r": [
+    {
+     "w": null,
+     "ls": [
+      "Abysses lead to an Abyssal Depths"
+     ],
+     "b": [
+      "20% more Waystones found in Area",
+      "25% more Rarity of Items found in this Area"
+     ]
+    }
+   ],
+   "mods": [
+    "MapAbyssCracksAlwaysLeadToDepths"
+   ],
+   "src": "Source: the game files",
+   "re": "dep"
+  },
+  {
+   "n": "Abyssal",
+   "k": "p",
+   "pool": "waystone",
+   "s": "Desecrated waystone prefix",
+   "r": [
+    {
+     "w": null,
+     "ls": [
+      "Abysses lead to an Abyssal Boss"
+     ],
+     "b": [
+      "10% more Waystones found in Area",
+      "25% more Rarity of Items found in this Area"
+     ]
+    }
+   ],
+   "mods": [
+    "MapAbyssAlwaysContainsBoss"
+   ],
+   "src": "Source: the game files",
+   "re": "bos"
+  },
+  {
+   "n": "Abyssal",
+   "k": "p",
+   "pool": "waystone",
+   "s": "Desecrated waystone prefix",
+   "r": [
+    {
+     "w": null,
+     "ls": [
+      "Abyss Cracks have (40-60)% chance to spawn all Monsters as at least Magic",
+      "Abyss Pits have (50-80)% chance to spawn all Monsters as at least Magic"
+     ],
+     "b": [
+      "25% more Waystones found in Area",
+      "40% increased number of Magic Monsters"
+     ]
+    }
+   ],
+   "mods": [
+    "MapAbyssCracksAllMagicMonsterChance"
+   ],
+   "src": "Source: the game files",
+   "re": "cks"
+  },
+  {
+   "n": "Abyssal",
+   "k": "p",
+   "pool": "waystone",
+   "s": "Desecrated waystone prefix",
+   "r": [
+    {
+     "w": null,
+     "ls": [
+      "Abyssal Monsters have increased Difficulty and Reward for each closed Pit"
+     ],
+     "b": [
+      "20% more Waystones found in Area",
+      "12% more Pack size"
+     ]
+    }
+   ],
+   "mods": [
+    "MapAbyssDifficultyRewardIncreasePerPit"
+   ],
+   "tags": [
+    "harder to kill"
+   ],
+   "why": {
+    "harder to kill": "Abyssal Monsters have increased Difficulty and Reward for each closed Pit"
+   },
+   "q": "harder to kill",
+   "src": "Source: the game files",
+   "re": "clo"
+  },
+  {
+   "n": "Abyssal",
+   "k": "p",
+   "pool": "waystone",
+   "s": "Desecrated waystone prefix",
+   "r": [
+    {
+     "w": null,
+     "ls": [
+      "Area contains an additional Incubator Queen"
+     ],
+     "b": [
+      "25% more Waystones found in Area",
+      "12% more Pack size"
+     ]
+    }
+   ],
+   "mods": [
+    "MapAbyssContainsHarvester"
+   ],
+   "src": "Source: the game files",
+   "re": "ato"
+  },
+  {
+   "n": "of Siphoning",
+   "k": "s",
+   "pool": "waystone",
+   "s": "Desecrated waystone suffix",
+   "r": [
+    {
+     "w": null,
+     "ls": [
+      "Area has patches of Mana Siphoning Ground"
+     ],
+     "b": [
+      "35% more Waystones found in Area",
+      "18% more Pack size"
+     ]
+    }
+   ],
+   "mods": [
+    "MapAbyssModManaSiphonGround"
+   ],
+   "tags": [
+    "less recovery",
+    "ground effect"
+   ],
+   "hid": [
+    "map_ground_mana_siphoning_mana_degeneration_per_minute"
+   ],
+   "q": "less recovery ground effect",
+   "src": "Source: the game files",
+   "re": "ana"
+  },
+  {
+   "n": "Abyssal",
+   "k": "p",
+   "pool": "waystone",
+   "s": "Desecrated waystone prefix",
+   "r": [
+    {
+     "w": null,
+     "ls": [
+      "Natural Rare Monsters in Area have 1 extra Abyssal Modifier"
+     ],
+     "b": [
+      "25% more Waystones found in Area",
+      "30% increased number of Rare Monsters"
+     ]
+    }
+   ],
+   "mods": [
+    "MapAbyssRareMonstersAbyssalModifier"
+   ],
+   "tags": [
+    "more rare modifiers"
+   ],
+   "why": {
+    "more rare modifiers": "Natural Rare Monsters in Area have 1 extra Abyssal Modifier"
+   },
+   "q": "more rare modifiers",
+   "src": "Source: the game files",
+   "re": "a ab"
+  },
+  {
+   "n": "of Consumption",
+   "k": "s",
+   "pool": "waystone",
+   "s": "Desecrated waystone suffix",
+   "r": [
+    {
+     "w": null,
+     "ls": [
+      "Natural Rare Monsters in Area Eat the Souls of slain Monsters in their Presence",
+      "Players steal the Eaten Souls of Slain Rare Monsters in Area"
+     ],
+     "b": [
+      "25% more Waystones found in Area",
+      "18% more Pack size"
+     ]
+    }
+   ],
+   "mods": [
+    "MapAbyssRareMonstersSoulEater"
+   ],
+   "tags": [
+    "faster"
+   ],
+   "why": {
+    "faster": "Natural Rare Monsters in Area Eat the Souls of slain Monsters in their Presence"
+   },
+   "q": "faster",
+   "src": "Source: the game files",
+   "re": "a e"
+  },
+  {
+   "n": "Abyssal",
+   "k": "p",
+   "pool": "waystone",
+   "s": "Desecrated waystone prefix",
+   "r": [
+    {
+     "w": null,
+     "ls": [
+      "Abyss Pits in Area always have Rewards"
+     ],
+     "b": [
+      "25% more Waystones found in Area",
+      "40% increased number of Magic Monsters",
+      "30% increased number of Rare Monsters"
+     ]
+    }
+   ],
+   "mods": [
+    "MapAbyssGuaranteeRewards"
+   ],
+   "src": "Source: the game files",
+   "re": "alw"
+  },
+  {
+   "n": "of Grasping",
+   "k": "s",
+   "pool": "waystone",
+   "s": "Desecrated waystone suffix",
+   "r": [
+    {
+     "w": null,
+     "ls": [
+      "Monsters inflict 1 Grasping Vine on Hit"
+     ],
+     "b": [
+      "22% more Pack size",
+      "30% more Waystones found in Area"
+     ]
+    }
+   ],
+   "mods": [
+    "MapAbyssVines"
+   ],
+   "tags": [
+    "slows you",
+    "ailment on hit"
+   ],
+   "why": {
+    "slows you": "Monsters inflict 1 Grasping Vine on Hit",
+    "ailment on hit": "Monsters inflict 1 Grasping Vine on Hit"
+   },
+   "q": "slows you ailment on hit",
+   "src": "Source: the game files",
+   "re": "asp"
+  },
+  {
+   "n": "of Deceleration",
+   "k": "s",
+   "pool": "waystone",
+   "s": "Desecrated waystone suffix",
+   "r": [
+    {
+     "w": null,
+     "ls": [
+      "Players have 3% less Movement and Skill Speed for each time they've used a Skill Recently"
+     ],
+     "b": [
+      "45% more Rarity of Items found in this Area",
+      "25% more Waystones found in Area"
+     ]
+    }
+   ],
+   "mods": [
+    "MapAbyssActionSpeed"
+   ],
+   "tags": [
+    "slows you"
+   ],
+   "why": {
+    "slows you": "Players have 3% less Movement and Skill Speed for each time they've used a Skill Recently"
+   },
+   "q": "slows you",
+   "src": "Source: the game files",
+   "re": "'ve"
+  },
+  {
+   "n": "of Cycling",
+   "k": "s",
+   "pool": "waystone",
+   "s": "Desecrated waystone suffix",
+   "r": [
+    {
+     "w": null,
+     "ls": [
+      "Players and their Minions deal no damage for 3 out of every 10 seconds"
+     ],
+     "b": [
+      "50% increased number of Rare Monsters",
+      "40% more Waystones found in Area"
+     ]
+    }
+   ],
+   "mods": [
+    "MapAbyssDamageRotation"
+   ],
+   "tags": [
+    "cannot"
+   ],
+   "why": {
+    "cannot": "Players and their Minions deal no damage for 3 out of every 10 seconds"
+   },
+   "q": "cannot",
+   "src": "Source: the game files",
+   "re": "ini"
+  },
+  {
+   "n": "of Retribution",
+   "k": "s",
+   "pool": "waystone",
+   "s": "Desecrated waystone suffix",
+   "r": [
+    {
+     "w": null,
+     "ls": [
+      "Players are Marked for Death for 10 seconds after killing a Rare or Unique monster"
+     ],
+     "b": [
+      "10% more Pack size",
+      "40% more Rarity of Items found in this Area",
+      "25% more Waystones found in Area"
+     ]
+    }
+   ],
+   "mods": [
+    "MapAbyssMarkedForDeath"
+   ],
+   "tags": [
+    "more damage taken"
+   ],
+   "why": {
+    "more damage taken": "Players are Marked for Death for 10 seconds after killing a Rare or Unique monster"
+   },
+   "q": "more damage taken",
+   "src": "Source: the game files",
+   "re": "a r"
+  },
+  {
+   "n": "Diluted Liquid Ire",
+   "pool": "waystone",
+   "s": "Instilled Liquid Emotion",
+   "r": [
+    {
+     "w": null,
+     "ls": [
+      "Players in Area are 7% Delirious"
+     ],
+     "b": [
+      "20% increased number of Magic Monsters"
+     ]
+    }
+   ],
+   "mods": [
+    "InstilledMapDelirium1"
+   ],
+   "tags": [
+    "delirious"
+   ],
+   "why": {
+    "delirious": "Players in Area are 7% Delirious"
+   },
+   "q": "delirious",
+   "src": "Source: the game files",
+   "re": "del",
+   "also": [
+    "Concentrated Liquid Fear",
+    "Concentrated Liquid Isolation",
+    "Concentrated Liquid Suffering",
+    "Diluted Liquid Greed",
+    "Diluted Liquid Guilt",
+    "Liquid Despair",
+    "Liquid Disgust",
+    "Liquid Envy",
+    "Liquid Paranoia"
+   ]
+  },
+  {
+   "n": "Diluted Liquid Guilt",
+   "pool": "waystone",
+   "s": "Instilled Liquid Emotion",
+   "r": [
+    {
+     "w": null,
+     "ls": [
+      "Players in Area are 9% Delirious"
+     ],
+     "b": [
+      "8% increased Pack size"
+     ]
+    }
+   ],
+   "mods": [
+    "InstilledMapDelirium2"
+   ],
+   "tags": [
+    "delirious"
+   ],
+   "why": {
+    "delirious": "Players in Area are 9% Delirious"
+   },
+   "q": "delirious",
+   "src": "Source: the game files",
+   "re": "del",
+   "also": [
+    "Concentrated Liquid Fear",
+    "Concentrated Liquid Isolation",
+    "Concentrated Liquid Suffering",
+    "Diluted Liquid Greed",
+    "Diluted Liquid Ire",
+    "Liquid Despair",
+    "Liquid Disgust",
+    "Liquid Envy",
+    "Liquid Paranoia"
+   ]
+  },
+  {
+   "n": "Diluted Liquid Greed",
+   "pool": "waystone",
+   "s": "Instilled Liquid Emotion",
+   "r": [
+    {
+     "w": null,
+     "ls": [
+      "Players in Area are 10% Delirious"
+     ],
+     "b": [
+      "8% increased Rarity of Items found in this Area"
+     ]
+    }
+   ],
+   "mods": [
+    "InstilledMapDelirium3"
+   ],
+   "tags": [
+    "delirious"
+   ],
+   "why": {
+    "delirious": "Players in Area are 10% Delirious"
+   },
+   "q": "delirious",
+   "src": "Source: the game files",
+   "re": "del",
+   "also": [
+    "Concentrated Liquid Fear",
+    "Concentrated Liquid Isolation",
+    "Concentrated Liquid Suffering",
+    "Diluted Liquid Guilt",
+    "Diluted Liquid Ire",
+    "Liquid Despair",
+    "Liquid Disgust",
+    "Liquid Envy",
+    "Liquid Paranoia"
+   ]
+  },
+  {
+   "n": "Liquid Paranoia",
+   "pool": "waystone",
+   "s": "Instilled Liquid Emotion",
+   "r": [
+    {
+     "w": null,
+     "ls": [
+      "Players in Area are 12% Delirious"
+     ],
+     "b": [
+      "15% increased number of Rare Monsters"
+     ]
+    }
+   ],
+   "mods": [
+    "InstilledMapDelirium4"
+   ],
+   "tags": [
+    "delirious"
+   ],
+   "why": {
+    "delirious": "Players in Area are 12% Delirious"
+   },
+   "q": "delirious",
+   "src": "Source: the game files",
+   "re": "del",
+   "also": [
+    "Concentrated Liquid Fear",
+    "Concentrated Liquid Isolation",
+    "Concentrated Liquid Suffering",
+    "Diluted Liquid Greed",
+    "Diluted Liquid Guilt",
+    "Diluted Liquid Ire",
+    "Liquid Despair",
+    "Liquid Disgust",
+    "Liquid Envy"
+   ]
+  },
+  {
+   "n": "Liquid Envy",
+   "pool": "waystone",
+   "s": "Instilled Liquid Emotion",
+   "r": [
+    {
+     "w": null,
+     "ls": [
+      "Players in Area are 15% Delirious"
+     ],
+     "b": [
+      "30% increased Waystones found in Area"
+     ]
+    }
+   ],
+   "mods": [
+    "InstilledMapDelirium5"
+   ],
+   "tags": [
+    "delirious"
+   ],
+   "why": {
+    "delirious": "Players in Area are 15% Delirious"
+   },
+   "q": "delirious",
+   "src": "Source: the game files",
+   "re": "del",
+   "also": [
+    "Concentrated Liquid Fear",
+    "Concentrated Liquid Isolation",
+    "Concentrated Liquid Suffering",
+    "Diluted Liquid Greed",
+    "Diluted Liquid Guilt",
+    "Diluted Liquid Ire",
+    "Liquid Despair",
+    "Liquid Disgust",
+    "Liquid Paranoia"
+   ]
+  },
+  {
+   "n": "Liquid Disgust",
+   "pool": "waystone",
+   "s": "Instilled Liquid Emotion",
+   "r": [
+    {
+     "w": null,
+     "ls": [
+      "Players in Area are 18% Delirious",
+      "30% increased Tablets found in Area"
+     ],
+     "b": []
+    }
+   ],
+   "mods": [
+    "InstilledMapDelirium6"
+   ],
+   "tags": [
+    "delirious"
+   ],
+   "why": {
+    "delirious": "Players in Area are 18% Delirious"
+   },
+   "q": "delirious",
+   "src": "Source: the game files",
+   "re": "ets"
+  },
+  {
+   "n": "Liquid Despair",
+   "pool": "waystone",
+   "s": "Instilled Liquid Emotion",
+   "r": [
+    {
+     "w": null,
+     "ls": [
+      "Players in Area are 20% Delirious",
+      "30% increased Stack size of Simulacrum Splinters found in Area"
+     ],
+     "b": []
+    }
+   ],
+   "mods": [
+    "InstilledMapDelirium7"
+   ],
+   "tags": [
+    "delirious"
+   ],
+   "why": {
+    "delirious": "Players in Area are 20% Delirious"
+   },
+   "q": "delirious",
+   "src": "Source: the game files",
+   "re": "acr"
+  },
+  {
+   "n": "Concentrated Liquid Fear",
+   "pool": "waystone",
+   "s": "Instilled Liquid Emotion",
+   "r": [
+    {
+     "w": null,
+     "ls": [
+      "Players in Area are 22% Delirious",
+      "Rare Monsters have a 25% Surpassing chance to have an additional Modifier"
+     ],
+     "b": []
+    }
+   ],
+   "mods": [
+    "InstilledMapDelirium8"
+   ],
+   "tags": [
+    "more rare modifiers",
+    "delirious"
+   ],
+   "why": {
+    "more rare modifiers": "Rare Monsters have a 25% Surpassing chance to have an additional Modifier",
+    "delirious": "Players in Area are 22% Delirious"
+   },
+   "q": "more rare modifiers delirious",
+   "src": "Source: the game files",
+   "re": "ass"
+  },
+  {
+   "n": "Concentrated Liquid Suffering",
+   "pool": "waystone",
+   "s": "Instilled Liquid Emotion",
+   "r": [
+    {
+     "w": null,
+     "ls": [
+      "Players in Area are 25% Delirious",
+      "Unique Monsters have 1 additional Rare Modifier"
+     ],
+     "b": []
+    }
+   ],
+   "mods": [
+    "InstilledMapDelirium9"
+   ],
+   "tags": [
+    "more rare modifiers",
+    "delirious"
+   ],
+   "why": {
+    "more rare modifiers": "Unique Monsters have 1 additional Rare Modifier",
+    "delirious": "Players in Area are 25% Delirious"
+   },
+   "q": "more rare modifiers delirious",
+   "src": "Source: the game files",
+   "re": "e mod"
+  },
+  {
+   "n": "Concentrated Liquid Isolation",
+   "pool": "waystone",
+   "s": "Instilled Liquid Emotion",
+   "r": [
+    {
+     "w": null,
+     "ls": [
+      "Players in Area are 50% Delirious"
+     ],
+     "b": []
+    }
+   ],
+   "mods": [
+    "InstilledMapDelirium10"
+   ],
+   "tags": [
+    "delirious"
+   ],
+   "why": {
+    "delirious": "Players in Area are 50% Delirious"
+   },
+   "q": "delirious",
+   "src": "Source: the game files",
+   "re": "del",
+   "also": [
+    "Concentrated Liquid Fear",
+    "Concentrated Liquid Suffering",
+    "Diluted Liquid Greed",
+    "Diluted Liquid Guilt",
+    "Diluted Liquid Ire",
+    "Liquid Despair",
+    "Liquid Disgust",
+    "Liquid Envy",
+    "Liquid Paranoia"
+   ]
+  },
+  {
+   "n": "Breach Tablet",
+   "pool": "tablet",
+   "s": "Tablet implicit",
+   "r": [
+    {
+     "w": null,
+     "ls": [
+      "Adds an Otherworldy Breach to a Map",
+      "10 uses remaining"
+     ],
+     "b": []
+    }
+   ],
+   "mods": [
+    "TowerAddBreachToMapsImplicit"
+   ],
+   "src": "Source: the game files",
+   "re": "erw"
+  },
+  {
+   "n": "Delirium Tablet",
+   "pool": "tablet",
+   "s": "Tablet implicit",
+   "r": [
+    {
+     "w": null,
+     "ls": [
+      "Adds a Mirror of Delirium to a Map",
+      "10 uses remaining"
+     ],
+     "b": []
+    }
+   ],
+   "mods": [
+    "TowerAddDeliriumToMapsImplicit"
+   ],
+   "src": "Source: the game files",
+   "re": "f d"
+  },
+  {
+   "n": "Ritual Tablet",
+   "pool": "tablet",
+   "s": "Tablet implicit",
+   "r": [
+    {
+     "w": null,
+     "ls": [
+      "Adds Ritual Altars to a Map",
+      "10 uses remaining"
+     ],
+     "b": []
+    }
+   ],
+   "mods": [
+    "TowerAddRitualToMapsImplicit"
+   ],
+   "src": "Source: the game files",
+   "re": "ds r"
+  },
+  {
+   "n": "Expedition Tablet",
+   "pool": "tablet",
+   "s": "Tablet implicit",
+   "r": [
+    {
+     "w": null,
+     "ls": [
+      "Adds a Kalguuran Expedition to a Map",
+      "10 uses remaining"
+     ],
+     "b": []
+    }
+   ],
+   "mods": [
+    "TowerAddExpeditionToMapsImplicit"
+   ],
+   "src": "Source: the game files",
+   "re": "a k"
+  },
+  {
+   "n": "Abyss Tablet",
+   "pool": "tablet",
+   "s": "Tablet implicit",
+   "r": [
+    {
+     "w": null,
+     "ls": [
+      "Adds Abysses to a Map",
+      "10 uses remaining"
+     ],
+     "b": []
+    }
+   ],
+   "mods": [
+    "TowerAddAbyssToMapsImplicit"
+   ],
+   "src": "Source: the game files",
+   "re": "s ab"
+  },
+  {
+   "n": "Temple Tablet",
+   "pool": "tablet",
+   "s": "Tablet implicit",
+   "r": [
+    {
+     "w": null,
+     "ls": [
+      "Adds Vaal Beacons to a Map",
+      "10 uses remaining"
+     ],
+     "b": []
+    }
+   ],
+   "mods": [
+    "TowerAddIncursionToMapsImplicit"
+   ],
+   "src": "Source: the game files",
+   "re": "s v"
+  },
+  {
+   "n": "Irradiated Tablet",
+   "pool": "tablet",
+   "s": "Tablet implicit",
+   "r": [
+    {
+     "w": null,
+     "ls": [
+      "Adds Irradiated to a Map",
+      "10 uses remaining"
+     ],
+     "b": []
+    }
+   ],
+   "mods": [
+    "TowerAddIrradiatedToMapsImplicit"
+   ],
+   "src": "Source: the game files",
+   "re": "ted to"
+  },
+  {
+   "n": "Overseer Tablet",
+   "pool": "tablet",
+   "s": "Tablet implicit",
+   "r": [
+    {
+     "w": null,
+     "ls": [
+      "Empowers the Map Boss of a Map",
+      "10 uses remaining"
+     ],
+     "b": []
+    }
+   ],
+   "mods": [
+    "TowerAddMapBossesToMapsImplicit"
+   ],
+   "tags": [
+    "boss only"
+   ],
+   "why": {
+    "boss only": "Empowers the Map Boss of a Map"
+   },
+   "q": "boss only",
+   "src": "Source: the game files",
+   "re": "f a"
+  },
+  {
+   "n": "Challenger's",
+   "k": "p",
+   "pool": "tablet",
+   "s": "Tablet prefix",
+   "r": [
+    {
+     "w": null,
+     "ls": [
+      "Monsters have (10-15)% increased Effectiveness"
+     ],
+     "b": []
+    }
+   ],
+   "mods": [
+    "TowerMonsterEffectiveness1"
+   ],
+   "tags": [
+    "harder to kill"
+   ],
+   "why": {
+    "harder to kill": "Monsters have (10-15)% increased Effectiveness"
+   },
+   "q": "harder to kill",
+   "src": "Source: the game files",
+   "re": "cti",
+   "also": [
+    "of Escalation",
+    "of the Hand"
+   ]
+  },
+  {
+   "n": "Collector's",
+   "k": "p",
+   "pool": "tablet",
+   "s": "Tablet prefix",
+   "r": [
+    {
+     "w": null,
+     "ls": [
+      "(8-12)% increased Rarity of Items found in Map"
+     ],
+     "b": []
+    }
+   ],
+   "mods": [
+    "TowerDroppedItemRarityIncrease1"
+   ],
+   "src": "Source: the game files",
+   "re": "ms f"
+  },
+  {
+   "n": "Breeding",
+   "k": "p",
+   "pool": "tablet",
+   "s": "Tablet prefix",
+   "r": [
+    {
+     "w": null,
+     "ls": [
+      "(5-7)% increased Pack Size in Map"
+     ],
+     "b": []
+    }
+   ],
+   "mods": [
+    "TowerPackSizeIncrease1"
+   ],
+   "src": "Source: the game files",
+   "re": "ze i"
+  },
+  {
+   "n": "Teeming",
+   "k": "p",
+   "pool": "tablet",
+   "s": "Tablet prefix",
+   "r": [
+    {
+     "w": null,
+     "ls": [
+      "Map has (30-40)% increased Magic Monsters"
+     ],
+     "b": []
+    }
+   ],
+   "mods": [
+    "TowerMagicPackIncrease1"
+   ],
+   "src": "Source: the game files",
+   "re": "d ma"
+  },
+  {
+   "n": "Brimming",
+   "k": "p",
+   "pool": "tablet",
+   "s": "Tablet prefix",
+   "r": [
+    {
+     "w": null,
+     "ls": [
+      "Map has (25-35)% increased number of Rare Monsters"
+     ],
+     "b": []
+    }
+   ],
+   "mods": [
+    "TowerRarePackIncrease1"
+   ],
+   "src": "Source: the game files",
+   "re": "r of ra"
+  },
+  {
+   "n": "Abounding",
+   "k": "p",
+   "pool": "tablet",
+   "s": "Tablet prefix",
+   "r": [
+    {
+     "w": null,
+     "ls": [
+      "Map has (15-20)% increased Monster Rarity"
+     ],
+     "b": []
+    }
+   ],
+   "mods": [
+    "TowerMonsterRarityIncrease1"
+   ],
+   "src": "Source: the game files",
+   "re": "d monster r"
+  },
+  {
+   "n": "Bountiful",
+   "k": "p",
+   "pool": "tablet",
+   "s": "Tablet prefix",
+   "r": [
+    {
+     "w": null,
+     "ls": [
+      "(25-35)% increased Gold found in Map"
+     ],
+     "b": []
+    }
+   ],
+   "mods": [
+    "TowerDroppedGoldIncrease1"
+   ],
+   "src": "Source: the game files",
+   "re": "d g"
+  },
+  {
+   "n": "Elevated",
+   "k": "p",
+   "pool": "tablet",
+   "s": "Tablet prefix",
+   "r": [
+    {
+     "w": null,
+     "ls": [
+      "(12-18)% increased Experience gain in Map"
+     ],
+     "b": []
+    }
+   ],
+   "mods": [
+    "TowerExperienceGainIncrease1"
+   ],
+   "src": "Source: the game files",
+   "re": "e g"
+  },
+  {
+   "n": "Treasurer's",
+   "k": "p",
+   "pool": "tablet",
+   "s": "Tablet prefix",
+   "r": [
+    {
+     "w": null,
+     "ls": [
+      "Map contains (2-3) additional Rare Chests"
+     ],
+     "b": []
+    }
+   ],
+   "mods": [
+    "TowerRareChestCount1"
+   ],
+   "src": "Source: the game files",
+   "re": "e c"
+  },
+  {
+   "n": "of the Cartographer",
+   "k": "s",
+   "pool": "tablet",
+   "s": "Tablet suffix",
+   "r": [
+    {
+     "w": null,
+     "ls": [
+      "(30-40)% increased Quantity of Waystones found in Map"
+     ],
+     "b": []
+    }
+   ],
+   "mods": [
+    "TowerMapDroppedMapsIncrease"
+   ],
+   "src": "Source: the game files",
+   "re": "es f"
+  },
+  {
+   "n": "of Shrines",
+   "k": "s",
+   "pool": "tablet",
+   "s": "Tablet suffix",
+   "r": [
+    {
+     "w": null,
+     "ls": [
+      "Map has (70-100)% increased chance to contain Shrines"
+     ],
+     "b": []
+    }
+   ],
+   "mods": [
+    "TowerAdditionalShrineChance"
+   ],
+   "src": "Source: the game files",
+   "re": "n sh"
+  },
+  {
+   "n": "of the Devoted",
+   "k": "s",
+   "pool": "tablet",
+   "s": "Tablet suffix",
+   "r": [
+    {
+     "w": null,
+     "ls": [
+      "Map contains an additional Shrine"
+     ],
+     "b": []
+    }
+   ],
+   "mods": [
+    "TowerAdditionalShrine1"
+   ],
+   "src": "Source: the game files",
+   "re": "n additional sh"
+  },
+  {
+   "n": "of Strongboxes",
+   "k": "s",
+   "pool": "tablet",
+   "s": "Tablet suffix",
+   "r": [
+    {
+     "w": null,
+     "ls": [
+      "Map has (70-100)% increased chance to contain Strongboxes"
+     ],
+     "b": []
+    }
+   ],
+   "mods": [
+    "TowerAdditionalStrongboxChance"
+   ],
+   "src": "Source: the game files",
+   "re": "in st"
+  },
+  {
+   "n": "of the Antiquarian",
+   "k": "s",
+   "pool": "tablet",
+   "s": "Tablet suffix",
+   "r": [
+    {
+     "w": null,
+     "ls": [
+      "Map contains an additional Strongbox"
+     ],
+     "b": []
+    }
+   ],
+   "mods": [
+    "TowerAdditionalStrongbox1"
+   ],
+   "src": "Source: the game files",
+   "re": "n additional st"
+  },
+  {
+   "n": "of the Essence",
+   "k": "s",
+   "pool": "tablet",
+   "s": "Tablet suffix",
+   "r": [
+    {
+     "w": null,
+     "ls": [
+      "Map has (70-100)% increased chance to contain Essences"
+     ],
+     "b": []
+    }
+   ],
+   "mods": [
+    "TowerAdditionalEssenceChance"
+   ],
+   "src": "Source: the game files",
+   "re": "in e"
+  },
+  {
+   "n": "Crystallised",
+   "k": "p",
+   "pool": "tablet",
+   "s": "Tablet prefix",
+   "r": [
+    {
+     "w": null,
+     "ls": [
+      "Map contains an additional Essence"
+     ],
+     "b": []
+    }
+   ],
+   "mods": [
+    "TowerAdditionalEssence1"
+   ],
+   "src": "Source: the game files",
+   "re": "n additional e"
+  },
+  {
+   "n": "of Spirits",
+   "k": "s",
+   "pool": "tablet",
+   "s": "Tablet suffix",
+   "r": [
+    {
+     "w": null,
+     "ls": [
+      "Map has (70-100)% increased chance to contain Azmeri Spirits"
+     ],
+     "b": []
+    }
+   ],
+   "mods": [
+    "TowerAdditionalSpiritChance"
+   ],
+   "src": "Source: the game files",
+   "re": "n az"
+  },
+  {
+   "n": "Azmeri's",
+   "k": "p",
+   "pool": "tablet",
+   "s": "Tablet prefix",
+   "r": [
+    {
+     "w": null,
+     "ls": [
+      "Map contains 1 additional Azmeri Spirit"
+     ],
+     "b": []
+    }
+   ],
+   "mods": [
+    "TowerAdditionalAzmeriWisp1"
+   ],
+   "src": "Source: the game files",
+   "re": "l az",
+   "also": [
+    "of Wisps"
+   ]
+  },
+  {
+   "n": "of the Exile",
+   "k": "s",
+   "pool": "tablet",
+   "s": "Tablet suffix",
+   "r": [
+    {
+     "w": null,
+     "ls": [
+      "Map has (70-100)% increased chance to contain Rogue Exiles"
+     ],
+     "b": []
+    }
+   ],
+   "mods": [
+    "TowerAdditionalExileChance"
+   ],
+   "src": "Source: the game files",
+   "re": "les"
+  },
+  {
+   "n": "Exiled",
+   "k": "p",
+   "pool": "tablet",
+   "s": "Tablet prefix",
+   "r": [
+    {
+     "w": null,
+     "ls": [
+      "Map is inhabited by 1 additional Rogue Exile"
+     ],
+     "b": []
+    }
+   ],
+   "mods": [
+    "TowerAdditionalExile1"
+   ],
+   "src": "Source: the game files",
+   "re": "bit"
+  },
+  {
+   "n": "Summoner's",
+   "k": "p",
+   "pool": "tablet",
+   "s": "Tablet prefix",
+   "r": [
+    {
+     "w": null,
+     "ls": [
+      "Map contains an additional Summoning Circle"
+     ],
+     "b": []
+    }
+   ],
+   "mods": [
+    "TowerAdditionalStoneCircle"
+   ],
+   "src": "Source: the game files",
+   "re": "l su"
+  },
+  {
+   "n": "of the Summoning",
+   "k": "s",
+   "pool": "tablet",
+   "s": "Tablet suffix",
+   "r": [
+    {
+     "w": null,
+     "ls": [
+      "Map has (70-100)% increased chance to contain a Summoning Circle"
+     ],
+     "b": []
+    }
+   ],
+   "mods": [
+    "TowerStoneCircleChance"
+   ],
+   "src": "Source: the game files",
+   "re": "a s"
+  },
+  {
+   "n": "of Undertaking",
+   "k": "s",
+   "pool": "tablet",
+   "s": "Tablet suffix",
+   "r": [
+    {
+     "w": null,
+     "ls": [
+      "Map has (1-2) additional random Modifiers"
+     ],
+     "b": []
+    }
+   ],
+   "mods": [
+    "TowerMapAdditionalModifier"
+   ],
+   "tags": [
+    "more rare modifiers"
+   ],
+   "why": {
+    "more rare modifiers": "Map has (1-2) additional random Modifiers"
+   },
+   "q": "more rare modifiers",
+   "src": "Source: the game files",
+   "re": "and"
+  },
+  {
+   "n": "of Contest",
+   "k": "s",
+   "pool": "tablet",
+   "s": "Tablet suffix",
+   "r": [
+    {
+     "w": null,
+     "ls": [
+      "Unique Monsters have 1 additional Rare Modifier"
+     ],
+     "b": []
+    }
+   ],
+   "mods": [
+    "TowerMapAdditionalUniqueMonsterModifier"
+   ],
+   "tags": [
+    "more rare modifiers"
+   ],
+   "why": {
+    "more rare modifiers": "Unique Monsters have 1 additional Rare Modifier"
+   },
+   "q": "more rare modifiers",
+   "src": "Source: the game files",
+   "re": "e mod"
+  },
+  {
+   "n": "of the Flow",
+   "k": "s",
+   "pool": "tablet",
+   "s": "Tablet suffix",
+   "r": [
+    {
+     "w": null,
+     "ls": [
+      "(30-60)% increased Quantity of Hiveblood found in Map"
+     ],
+     "b": []
+    }
+   ],
+   "mods": [
+    "TowerBreachHivebloodQuantity"
+   ],
+   "on": [
+    "Breach Tablet"
+   ],
+   "src": "Source: the game files",
+   "re": "blo"
+  },
+  {
+   "n": "of the Form",
+   "k": "s",
+   "pool": "tablet",
+   "s": "Tablet suffix",
+   "r": [
+    {
+     "w": null,
+     "ls": [
+      "(30-60)% increased Quantity of Wombgifts found in Map"
+     ],
+     "b": []
+    }
+   ],
+   "mods": [
+    "TowerBreachWombgiftQuantity"
+   ],
+   "on": [
+    "Breach Tablet"
+   ],
+   "src": "Source: the game files",
+   "re": "f wo"
+  },
+  {
+   "n": "of the Flesh",
+   "k": "s",
+   "pool": "tablet",
+   "s": "Tablet suffix",
+   "r": [
+    {
+     "w": null,
+     "ls": [
+      "Wombgifts have (10-30)% chance to drop one Level higher in Map"
+     ],
+     "b": []
+    }
+   ],
+   "mods": [
+    "TowerBreachWombgiftLevelChance"
+   ],
+   "on": [
+    "Breach Tablet"
+   ],
+   "src": "Source: the game files",
+   "re": "ghe"
+  },
+  {
+   "n": "of the Commander",
+   "k": "s",
+   "pool": "tablet",
+   "s": "Tablet suffix",
+   "r": [
+    {
+     "w": null,
+     "ls": [
+      "Unstable Breaches in Map have (20-50)% increased chance to contain Vruun, Marshal of Xesht"
+     ],
+     "b": []
+    }
+   ],
+   "mods": [
+    "TowerBreachBossChance"
+   ],
+   "on": [
+    "Breach Tablet"
+   ],
+   "src": "Source: the game files",
+   "re": "esh"
+  },
+  {
+   "n": "of the Invasion",
+   "k": "s",
+   "pool": "tablet",
+   "s": "Tablet suffix",
+   "r": [
+    {
+     "w": null,
+     "ls": [
+      "Unstable Breaches in Map spawn (1-2) additional Rare Monsters when Stabilised"
+     ],
+     "b": []
+    }
+   ],
+   "mods": [
+    "TowerBreachAdditionalRares"
+   ],
+   "on": [
+    "Breach Tablet"
+   ],
+   "src": "Source: the game files",
+   "re": "bil",
+   "also": [
+    "Wraeclast Besieged"
+   ]
+  },
+  {
+   "n": "of the Hand",
+   "k": "s",
+   "pool": "tablet",
+   "s": "Tablet suffix",
+   "r": [
+    {
+     "w": null,
+     "ls": [
+      "(5-20)% increased Effectiveness of Rare Breach Monsters in Map"
+     ],
+     "b": []
+    }
+   ],
+   "mods": [
+    "TowerBreachRareMonsterPotency"
+   ],
+   "on": [
+    "Breach Tablet"
+   ],
+   "tags": [
+    "harder to kill"
+   ],
+   "why": {
+    "harder to kill": "(5-20)% increased Effectiveness of Rare Breach Monsters in Map"
+   },
+   "q": "harder to kill",
+   "src": "Source: the game files",
+   "re": "h m"
+  },
+  {
+   "n": "of the Horde",
+   "k": "s",
+   "pool": "tablet",
+   "s": "Tablet suffix",
+   "r": [
+    {
+     "w": null,
+     "ls": [
+      "Breaches in Map have (5-15)% increased Pack Size"
+     ],
+     "b": []
+    }
+   ],
+   "mods": [
+    "TowerBreachMonsterQuantity"
+   ],
+   "on": [
+    "Breach Tablet"
+   ],
+   "src": "Source: the game files",
+   "re": "hes in map h",
+   "also": [
+    "Wraeclast Besieged",
+    "of the Commander"
+   ]
+  },
+  {
+   "n": "of the Demolition",
+   "k": "s",
+   "pool": "tablet",
+   "s": "Tablet suffix",
+   "r": [
+    {
+     "w": null,
+     "ls": [
+      "(5-10)% increased Expedition Explosive Area of Effect in Map"
+     ],
+     "b": []
+    }
+   ],
+   "mods": [
+    "TowerExpeditionExplosionRadius"
+   ],
+   "on": [
+    "Expedition Tablet"
+   ],
+   "src": "Source: the game files",
+   "re": "a o"
+  },
+  {
+   "n": "of Knowledge",
+   "k": "s",
+   "pool": "tablet",
+   "s": "Tablet suffix",
+   "r": [
+    {
+     "w": null,
+     "ls": [
+      "(15-25)% increased Quantity of Expedition Logbooks dropped by Runic Monsters in Map"
+     ],
+     "b": []
+    }
+   ],
+   "mods": [
+    "TowerExpeditionLogbookIncrease"
+   ],
+   "on": [
+    "Expedition Tablet"
+   ],
+   "src": "Source: the game files",
+   "re": "boo"
+  },
+  {
+   "n": "of Runes",
+   "k": "s",
+   "pool": "tablet",
+   "s": "Tablet suffix",
+   "r": [
+    {
+     "w": null,
+     "ls": [
+      "Map contains (15-25)% increased number of Runic Monster Markers"
+     ],
+     "b": []
+    }
+   ],
+   "mods": [
+    "TowerExpeditionRunicMonsters"
+   ],
+   "on": [
+    "Expedition Tablet"
+   ],
+   "src": "Source: the game files",
+   "re": "ark"
+  },
+  {
+   "n": "of Verisium",
+   "k": "s",
+   "pool": "tablet",
+   "s": "Tablet suffix",
+   "r": [
+    {
+     "w": null,
+     "ls": [
+      "Monsters from Verisium Remnants drop (15-25)% increased Verisium"
+     ],
+     "b": []
+    }
+   ],
+   "mods": [
+    "TowerExpeditionIncreasedVerisium"
+   ],
+   "on": [
+    "Expedition Tablet"
+   ],
+   "src": "Source: the game files",
+   "re": "d ve"
+  },
+  {
+   "n": "of Ancient Evil",
+   "k": "s",
+   "pool": "tablet",
+   "s": "Tablet suffix",
+   "r": [
+    {
+     "w": null,
+     "ls": [
+      "The first (1-2) unearthed Runic Monsters will be Rare Monsters in Map"
+     ],
+     "b": []
+    }
+   ],
+   "mods": [
+    "TowerExpeditionUnearthedRares"
+   ],
+   "on": [
+    "Expedition Tablet"
+   ],
+   "src": "Source: the game files",
+   "re": "art"
+  },
+  {
+   "n": "of Sentinels",
+   "k": "s",
+   "pool": "tablet",
+   "s": "Tablet suffix",
+   "r": [
+    {
+     "w": null,
+     "ls": [
+      "Expeditions contain (1-2) Additional Verisium Sentries in Map"
+     ],
+     "b": []
+    }
+   ],
+   "mods": [
+    "TowerExpeditionAdditionalSentinels"
+   ],
+   "on": [
+    "Expedition Tablet"
+   ],
+   "src": "Source: the game files",
+   "re": "ent"
+  },
+  {
+   "n": "of Power",
+   "k": "s",
+   "pool": "tablet",
+   "s": "Tablet suffix",
+   "r": [
+    {
+     "w": null,
+     "ls": [
+      "(15-25)% increased Expedition Monster Rarity in Map"
+     ],
+     "b": []
+    }
+   ],
+   "mods": [
+    "TowerExpeditionIncreasedMonsterRarity"
+   ],
+   "on": [
+    "Expedition Tablet"
+   ],
+   "src": "Source: the game files",
+   "re": "ty i"
+  },
+  {
+   "n": "of Preservation",
+   "k": "s",
+   "pool": "tablet",
+   "s": "Tablet suffix",
+   "r": [
+    {
+     "w": null,
+     "ls": [
+      "Expeditions contain (1-2) Additional Bosses encased in ice in Map"
+     ],
+     "b": []
+    }
+   ],
+   "mods": [
+    "TowerExpeditionFrozenBosses"
+   ],
+   "on": [
+    "Expedition Tablet"
+   ],
+   "src": "Source: the game files",
+   "re": "cas"
+  },
+  {
+   "n": "of Treasure",
+   "k": "s",
+   "pool": "tablet",
+   "s": "Tablet suffix",
+   "r": [
+    {
+     "w": null,
+     "ls": [
+      "Expeditions contain (1-2) buried Strongboxes in Map"
+     ],
+     "b": []
+    }
+   ],
+   "mods": [
+    "TowerExpeditionBuriedStrongboxes"
+   ],
+   "on": [
+    "Expedition Tablet"
+   ],
+   "src": "Source: the game files",
+   "re": "bur"
+  },
+  {
+   "n": "of the Past",
+   "k": "s",
+   "pool": "tablet",
+   "s": "Tablet suffix",
+   "r": [
+    {
+     "w": null,
+     "ls": [
+      "Expeditions contain (1-2) Vaal Relics in Map"
+     ],
+     "b": []
+    }
+   ],
+   "mods": [
+    "TowerExpeditionVaalRemnants"
+   ],
+   "on": [
+    "Expedition Tablet"
+   ],
+   "src": "Source: the game files",
+   "re": "ics"
+  },
+  {
+   "n": "of Remnants",
+   "k": "s",
+   "pool": "tablet",
+   "s": "Tablet suffix",
+   "r": [
+    {
+     "w": null,
+     "ls": [
+      "Expeditions have +(30-40)% Surpassing chance to contain an additional Verisium Remnant"
+     ],
+     "b": []
+    }
+   ],
+   "mods": [
+    "TowerExpeditionChanceForVerisiumRemnant"
+   ],
+   "on": [
+    "Expedition Tablet"
+   ],
+   "src": "Source: the game files",
+   "re": "tain an"
+  },
+  {
+   "n": "of Twins",
+   "k": "s",
+   "pool": "tablet",
+   "s": "Tablet suffix",
+   "r": [
+    {
+     "w": null,
+     "ls": [
+      "Expeditions have +(30-40)% Surpassing chance to Duplicate Runic Monsters in Map"
+     ],
+     "b": []
+    }
+   ],
+   "mods": [
+    "TowerExpeditionChanceForTwinnedElites"
+   ],
+   "on": [
+    "Expedition Tablet"
+   ],
+   "src": "Source: the game files",
+   "re": "e ru"
+  },
+  {
+   "n": "of Ancient Fiends",
+   "k": "s",
+   "pool": "tablet",
+   "s": "Tablet suffix",
+   "r": [
+    {
+     "w": null,
+     "ls": [
+      "Verisium Remnants have +(25-35)% chance to add an additional Runic Modifier in Map"
+     ],
+     "b": []
+    }
+   ],
+   "mods": [
+    "TowerExpedition2RunicModPassoverChance"
+   ],
+   "on": [
+    "Expedition Tablet"
+   ],
+   "src": "Source: the game files",
+   "re": "d an"
+  },
+  {
+   "n": "of the Simulacrum",
+   "k": "s",
+   "pool": "tablet",
+   "s": "Tablet suffix",
+   "r": [
+    {
+     "w": null,
+     "ls": [
+      "(15-30)% increased Stack size of Simulacrum Splinters found in Map"
+     ],
+     "b": []
+    }
+   ],
+   "mods": [
+    "TowerDeliriumMonsterSplinterIncrease"
+   ],
+   "on": [
+    "Delirium Tablet"
+   ],
+   "src": "Source: the game files",
+   "re": "cru"
+  },
+  {
+   "n": "of Eternity",
+   "k": "s",
+   "pool": "tablet",
+   "s": "Tablet suffix",
+   "r": [
+    {
+     "w": null,
+     "ls": [
+      "Delirium Fog in Map lasts (6-12) additional seconds before dissipating"
+     ],
+     "b": []
+    }
+   ],
+   "mods": [
+    "TowerDeliriumFogDissipationDelayNew"
+   ],
+   "on": [
+    "Delirium Tablet"
+   ],
+   "src": "Source: the game files",
+   "re": "ast"
+  },
+  {
+   "n": "of the Unending",
+   "k": "s",
+   "pool": "tablet",
+   "s": "Tablet suffix",
+   "r": [
+    {
+     "w": null,
+     "ls": [
+      "Delirium Fog in Map dissipates (20-30)% slower"
+     ],
+     "b": []
+    }
+   ],
+   "mods": [
+    "TowerDeliriumFogPersistence"
+   ],
+   "on": [
+    "Delirium Tablet"
+   ],
+   "src": "Source: the game files",
+   "re": "p d"
+  },
+  {
+   "n": "of Madness",
+   "k": "s",
+   "pool": "tablet",
+   "s": "Tablet suffix",
+   "r": [
+    {
+     "w": null,
+     "ls": [
+      "Delirium Fog in Map applies (15-30)% increased Deliriousness to Players"
+     ],
+     "b": []
+    }
+   ],
+   "mods": [
+    "TowerDeliriumDifficultyIncrease"
+   ],
+   "on": [
+    "Delirium Tablet"
+   ],
+   "tags": [
+    "delirious"
+   ],
+   "why": {
+    "delirious": "Delirium Fog in Map applies (15-30)% increased Deliriousness to Players"
+   },
+   "q": "delirious",
+   "src": "Source: the game files",
+   "re": "aye",
+   "also": [
+    "Clear Skies"
+   ]
+  },
+  {
+   "n": "of Persecution",
+   "k": "s",
+   "pool": "tablet",
+   "s": "Tablet suffix",
+   "r": [
+    {
+     "w": null,
+     "ls": [
+      "Delirium Monsters in Map have (15-30)% increased Pack Size"
+     ],
+     "b": []
+    }
+   ],
+   "mods": [
+    "TowerDeliriumPackSizeIncrease"
+   ],
+   "on": [
+    "Delirium Tablet"
+   ],
+   "src": "Source: the game files",
+   "re": "m mon"
+  },
+  {
+   "n": "of Mirrors",
+   "k": "s",
+   "pool": "tablet",
+   "s": "Tablet suffix",
+   "r": [
+    {
+     "w": null,
+     "ls": [
+      "Delirium Fog in Map spawns (15-30)% increased Fracturing Mirrors"
+     ],
+     "b": []
+    }
+   ],
+   "mods": [
+    "TowerDeliriumDoodadsIncrease"
+   ],
+   "on": [
+    "Delirium Tablet"
+   ],
+   "src": "Source: the game files",
+   "re": "act"
+  },
+  {
+   "n": "of Freeze Time",
+   "k": "s",
+   "pool": "tablet",
+   "s": "Tablet suffix",
+   "r": [
+    {
+     "w": null,
+     "ls": [
+      "Slaying Rare Monsters in Map pauses the Delirium Mirror Timer for (3-5) seconds"
+     ],
+     "b": []
+    }
+   ],
+   "mods": [
+    "TowerDeliriumRareMonsterPause"
+   ],
+   "on": [
+    "Delirium Tablet"
+   ],
+   "src": "Source: the game files",
+   "re": "aus"
+  },
+  {
+   "n": "of Phobia",
+   "k": "s",
+   "pool": "tablet",
+   "s": "Tablet suffix",
+   "r": [
+    {
+     "w": null,
+     "ls": [
+      "Delirium Encounters in Map are (15-30)% more likely to spawn Unique Bosses"
+     ],
+     "b": []
+    }
+   ],
+   "mods": [
+    "TowerDeliriumBossChance"
+   ],
+   "on": [
+    "Delirium Tablet"
+   ],
+   "src": "Source: the game files",
+   "re": "cou"
+  },
+  {
+   "n": "of Shattering",
+   "k": "s",
+   "pool": "tablet",
+   "s": "Tablet suffix",
+   "r": [
+    {
+     "w": null,
+     "ls": [
+      "Delirium Fog in Map spawns (12-26)% increased Mirror Shards"
+     ],
+     "b": []
+    }
+   ],
+   "mods": [
+    "TowerDeliriumAdditionalShardsChance"
+   ],
+   "on": [
+    "Delirium Tablet"
+   ],
+   "src": "Source: the game files",
+   "re": "har"
+  },
+  {
+   "n": "of Sacrifice",
+   "k": "s",
+   "pool": "tablet",
+   "s": "Tablet suffix",
+   "r": [
+    {
+     "w": null,
+     "ls": [
+      "Monsters Sacrificed at Ritual Altars in Map grant (18-30)% increased Tribute"
+     ],
+     "b": []
+    }
+   ],
+   "mods": [
+    "TowerRitualTributeIncrease"
+   ],
+   "on": [
+    "Ritual Tablet"
+   ],
+   "src": "Source: the game files",
+   "re": "cri"
+  },
+  {
+   "n": "of the Dogma",
+   "k": "s",
+   "pool": "tablet",
+   "s": "Tablet suffix",
+   "r": [
+    {
+     "w": null,
+     "ls": [
+      "Rerolling Favours at Ritual Altars in Map costs (20-30)% reduced Tribute"
+     ],
+     "b": []
+    }
+   ],
+   "mods": [
+    "TowerRitualRerollCostIncrease"
+   ],
+   "on": [
+    "Ritual Tablet"
+   ],
+   "src": "Source: the game files",
+   "re": "ling favours a"
+  },
+  {
+   "n": "of Devotion",
+   "k": "s",
+   "pool": "tablet",
+   "s": "Tablet suffix",
+   "r": [
+    {
+     "w": null,
+     "ls": [
+      "Deferring Favours at Ritual Altars in Map costs (20-30)% reduced Tribute"
+     ],
+     "b": []
+    }
+   ],
+   "mods": [
+    "TowerRitualDeferCostIncrease"
+   ],
+   "on": [
+    "Ritual Tablet"
+   ],
+   "src": "Source: the game files",
+   "re": "rri"
+  },
+  {
+   "n": "of the Appeal",
+   "k": "s",
+   "pool": "tablet",
+   "s": "Tablet suffix",
+   "r": [
+    {
+     "w": null,
+     "ls": [
+      "Favours Deferred at Ritual Altars in Map reappear (25-40)% sooner"
+     ],
+     "b": []
+    }
+   ],
+   "mods": [
+    "TowerRitualDeferSpeed"
+   ],
+   "on": [
+    "Ritual Tablet"
+   ],
+   "src": "Source: the game files",
+   "re": "eap"
+  },
+  {
+   "n": "of Prayers",
+   "k": "s",
+   "pool": "tablet",
+   "s": "Tablet suffix",
+   "r": [
+    {
+     "w": null,
+     "ls": [
+      "Ritual Altars in Map allow rerolling Favours (1-3) additional times"
+     ],
+     "b": []
+    }
+   ],
+   "mods": [
+    "TowerRitualAdditionalReroll"
+   ],
+   "on": [
+    "Ritual Tablet"
+   ],
+   "src": "Source: the game files",
+   "re": "llo"
+  },
+  {
+   "n": "of the Occult",
+   "k": "s",
+   "pool": "tablet",
+   "s": "Tablet suffix",
+   "r": [
+    {
+     "w": null,
+     "ls": [
+      "Favours Rerolled at Ritual Altars in Map have (3-6)% chance to cost no Tribute"
+     ],
+     "b": []
+    }
+   ],
+   "mods": [
+    "TowerRitualChanceForNoCost"
+   ],
+   "on": [
+    "Ritual Tablet"
+   ],
+   "src": "Source: the game files",
+   "re": "t n"
+  },
+  {
+   "n": "of the Foundling",
+   "k": "s",
+   "pool": "tablet",
+   "s": "Tablet suffix",
+   "r": [
+    {
+     "w": null,
+     "ls": [
+      "Revived Monsters from Ritual Altars in Map have (35-70)% increased chance to be Magic"
+     ],
+     "b": []
+    }
+   ],
+   "mods": [
+    "TowerRitualRareMonsters"
+   ],
+   "on": [
+    "Ritual Tablet"
+   ],
+   "src": "Source: the game files",
+   "re": "be m"
+  },
+  {
+   "n": "of the Cult",
+   "k": "s",
+   "pool": "tablet",
+   "s": "Tablet suffix",
+   "r": [
+    {
+     "w": null,
+     "ls": [
+      "Revived Monsters from Ritual Altars in Map have (25-40)% increased chance to be Rare"
+     ],
+     "b": []
+    }
+   ],
+   "mods": [
+    "TowerRitualMagicMonsters"
+   ],
+   "on": [
+    "Ritual Tablet"
+   ],
+   "src": "Source: the game files",
+   "re": "o be r"
+  },
+  {
+   "n": "of Omens",
+   "k": "s",
+   "pool": "tablet",
+   "s": "Tablet suffix",
+   "r": [
+    {
+     "w": null,
+     "ls": [
+      "Ritual Favours in Map have (35-70)% increased chance to be Omens"
+     ],
+     "b": []
+    }
+   ],
+   "mods": [
+    "TowerRitualOmenChance"
+   ],
+   "on": [
+    "Ritual Tablet"
+   ],
+   "src": "Source: the game files",
+   "re": "ens"
+  },
+  {
+   "n": "of Compartments",
+   "k": "s",
+   "pool": "tablet",
+   "s": "Tablet suffix",
+   "r": [
+    {
+     "w": null,
+     "ls": [
+      "Map contains (1-2) additional Strongboxes"
+     ],
+     "b": []
+    }
+   ],
+   "mods": [
+    "TowerMapBossAdditionalStrongbox"
+   ],
+   "on": [
+    "Overseer Tablet"
+   ],
+   "tags": [
+    "boss only"
+   ],
+   "why": {
+    "boss only": "Map contains (1-2) additional Strongboxes"
+   },
+   "q": "boss only",
+   "src": "Source: the game files",
+   "re": "l strongboxe"
+  },
+  {
+   "n": "of Worship",
+   "k": "s",
+   "pool": "tablet",
+   "s": "Tablet suffix",
+   "r": [
+    {
+     "w": null,
+     "ls": [
+      "Map contains (1-2) additional Shrines"
+     ],
+     "b": []
+    }
+   ],
+   "mods": [
+    "TowerMapBossAdditionalShrine"
+   ],
+   "on": [
+    "Overseer Tablet"
+   ],
+   "tags": [
+    "boss only"
+   ],
+   "why": {
+    "boss only": "Map contains (1-2) additional Shrines"
+   },
+   "q": "boss only",
+   "src": "Source: the game files",
+   "re": "l shrines"
+  },
+  {
+   "n": "of Crystals",
+   "k": "s",
+   "pool": "tablet",
+   "s": "Tablet suffix",
+   "r": [
+    {
+     "w": null,
+     "ls": [
+      "Map contains (1-2) additional Essences"
+     ],
+     "b": []
+    }
+   ],
+   "mods": [
+    "TowerMapBossAdditionalEssence"
+   ],
+   "on": [
+    "Overseer Tablet"
+   ],
+   "tags": [
+    "boss only"
+   ],
+   "why": {
+    "boss only": "Map contains (1-2) additional Essences"
+   },
+   "q": "boss only",
+   "src": "Source: the game files",
+   "re": "l essences"
+  },
+  {
+   "n": "of Wisps",
+   "k": "s",
+   "pool": "tablet",
+   "s": "Tablet suffix",
+   "r": [
+    {
+     "w": null,
+     "ls": [
+      "Map contains (1-2) additional Azmeri Spirits"
+     ],
+     "b": []
+    }
+   ],
+   "mods": [
+    "TowerMapBossAdditionalSpirit"
+   ],
+   "on": [
+    "Overseer Tablet"
+   ],
+   "tags": [
+    "boss only"
+   ],
+   "why": {
+    "boss only": "Map contains (1-2) additional Azmeri Spirits"
+   },
+   "q": "boss only",
+   "src": "Source: the game files",
+   "re": "l azmeri spirits"
+  },
+  {
+   "n": "of Pathways",
+   "k": "s",
+   "pool": "tablet",
+   "s": "Tablet suffix",
+   "r": [
+    {
+     "w": null,
+     "ls": [
+      "(18-30)% increased Quantity of Waystones dropped by Map Bosses"
+     ],
+     "b": []
+    }
+   ],
+   "mods": [
+    "TowerMapBossWaystoneChance"
+   ],
+   "on": [
+    "Overseer Tablet"
+   ],
+   "tags": [
+    "boss only"
+   ],
+   "why": {
+    "boss only": "(18-30)% increased Quantity of Waystones dropped by Map Bosses"
+   },
+   "q": "boss only",
+   "src": "Source: the game files",
+   "re": "es d"
+  },
+  {
+   "n": "of Conquering",
+   "k": "s",
+   "pool": "tablet",
+   "s": "Tablet suffix",
+   "r": [
+    {
+     "w": null,
+     "ls": [
+      "Map Bosses grant (40-80)% increased Experience"
+     ],
+     "b": []
+    }
+   ],
+   "mods": [
+    "TowerMapBossExperience"
+   ],
+   "on": [
+    "Overseer Tablet"
+   ],
+   "tags": [
+    "boss only"
+   ],
+   "why": {
+    "boss only": "Map Bosses grant (40-80)% increased Experience"
+   },
+   "q": "boss only",
+   "src": "Source: the game files",
+   "re": "s g"
+  },
+  {
+   "n": "of Treasure",
+   "k": "s",
+   "pool": "tablet",
+   "s": "Tablet suffix",
+   "r": [
+    {
+     "w": null,
+     "ls": [
+      "(35-60)% increased Rarity of Items dropped by Map Bosses"
+     ],
+     "b": []
+    }
+   ],
+   "mods": [
+    "TowerMapBossRarity"
+   ],
+   "on": [
+    "Overseer Tablet"
+   ],
+   "tags": [
+    "boss only"
+   ],
+   "why": {
+    "boss only": "(35-60)% increased Rarity of Items dropped by Map Bosses"
+   },
+   "q": "boss only",
+   "src": "Source: the game files",
+   "re": "rity of items d"
+  },
+  {
+   "n": "of Hoards",
+   "k": "s",
+   "pool": "tablet",
+   "s": "Tablet suffix",
+   "r": [
+    {
+     "w": null,
+     "ls": [
+      "(13-20)% increased Quantity of Items dropped by Map Bosses"
+     ],
+     "b": []
+    }
+   ],
+   "mods": [
+    "TowerMapBossQuantity"
+   ],
+   "on": [
+    "Overseer Tablet"
+   ],
+   "tags": [
+    "boss only"
+   ],
+   "why": {
+    "boss only": "(13-20)% increased Quantity of Items dropped by Map Bosses"
+   },
+   "q": "boss only",
+   "src": "Source: the game files",
+   "re": "tity of i"
+  },
+  {
+   "n": "of the Horde",
+   "k": "s",
+   "pool": "tablet",
+   "s": "Tablet suffix",
+   "r": [
+    {
+     "w": null,
+     "ls": [
+      "Abysses in Map spawn (20-30)% increased Monsters"
+     ],
+     "b": []
+    }
+   ],
+   "mods": [
+    "TowerAbyssMonsterIncrease"
+   ],
+   "on": [
+    "Abyss Tablet"
+   ],
+   "src": "Source: the game files",
+   "re": "sed monsters"
+  },
+  {
+   "n": "of Champions",
+   "k": "s",
+   "pool": "tablet",
+   "s": "Tablet suffix",
+   "r": [
+    {
+     "w": null,
+     "ls": [
+      "(2-3) additional Rare Monsters are spawned from Abysses in Map"
+     ],
+     "b": []
+    }
+   ],
+   "mods": [
+    "TowerAbyssRareMonsterIncrease"
+   ],
+   "on": [
+    "Abyss Tablet"
+   ],
+   "src": "Source: the game files",
+   "re": "e s"
+  },
+  {
+   "n": "of Escalation",
+   "k": "s",
+   "pool": "tablet",
+   "s": "Tablet suffix",
+   "r": [
+    {
+     "w": null,
+     "ls": [
+      "Abyssal Monsters have (8-12)% increased Effectiveness for each closed Pit, up to 100%"
+     ],
+     "b": []
+    }
+   ],
+   "mods": [
+    "TowerAbyssEffectivenessPerChasm"
+   ],
+   "on": [
+    "Abyss Tablet"
+   ],
+   "tags": [
+    "harder to kill"
+   ],
+   "why": {
+    "harder to kill": "Abyssal Monsters have (8-12)% increased Effectiveness for each closed Pit, up to 100%"
+   },
+   "q": "harder to kill",
+   "src": "Source: the game files",
+   "re": "clo"
+  },
+  {
+   "n": "of the Depths",
+   "k": "s",
+   "pool": "tablet",
+   "s": "Tablet suffix",
+   "r": [
+    {
+     "w": null,
+     "ls": [
+      "Abysses in Map have (10-20)% increased chance to lead to an Abyssal Depths"
+     ],
+     "b": []
+    }
+   ],
+   "mods": [
+    "TowerAbyssDepthsChance"
+   ],
+   "on": [
+    "Abyss Tablet"
+   ],
+   "src": "Source: the game files",
+   "re": "dep"
+  },
+  {
+   "n": "of Hollows",
+   "k": "s",
+   "pool": "tablet",
+   "s": "Tablet suffix",
+   "r": [
+    {
+     "w": null,
+     "ls": [
+      "Map contains an additional Abyss"
+     ],
+     "b": []
+    }
+   ],
+   "mods": [
+    "TowerAbyssAdditionalChance"
+   ],
+   "on": [
+    "Abyss Tablet"
+   ],
+   "src": "Source: the game files",
+   "re": "n additional a"
+  },
+  {
+   "n": "of Treasures",
+   "k": "s",
+   "pool": "tablet",
+   "s": "Tablet suffix",
+   "r": [
+    {
+     "w": null,
+     "ls": [
+      "Abyss Pits in Map are twice as likely to have Rewards"
+     ],
+     "b": []
+    }
+   ],
+   "mods": [
+    "TowerAbyssIncreasedRewards"
+   ],
+   "on": [
+    "Abyss Tablet"
+   ],
+   "src": "Source: the game files",
+   "re": "ewa"
+  },
+  {
+   "n": "of Schisms",
+   "k": "s",
+   "pool": "tablet",
+   "s": "Tablet suffix",
+   "r": [
+    {
+     "w": null,
+     "ls": [
+      "Map has (20-40)% chance to contain four additional Abysses"
+     ],
+     "b": []
+    }
+   ],
+   "mods": [
+    "TowerAbyss4AdditionalChance"
+   ],
+   "on": [
+    "Abyss Tablet"
+   ],
+   "src": "Source: the game files",
+   "re": "n f"
+  },
+  {
+   "n": "of Dark Power",
+   "k": "s",
+   "pool": "tablet",
+   "s": "Tablet suffix",
+   "r": [
+    {
+     "w": null,
+     "ls": [
+      "(20-30)% increased chance for Abyssal monsters in Map to have Abyssal Modifiers"
+     ],
+     "b": []
+    }
+   ],
+   "mods": [
+    "TowerAbyssExtraModifiers"
+   ],
+   "on": [
+    "Abyss Tablet"
+   ],
+   "src": "Source: the game files",
+   "re": "r ab"
+  },
+  {
+   "n": "of Ossification",
+   "k": "s",
+   "pool": "tablet",
+   "s": "Tablet suffix",
+   "r": [
+    {
+     "w": null,
+     "ls": [
+      "(20-30)% increased chance for Desecrated Currency from Abysses in Map"
+     ],
+     "b": []
+    }
+   ],
+   "mods": [
+    "TowerAbyssExtraTickets"
+   ],
+   "on": [
+    "Abyss Tablet"
+   ],
+   "src": "Source: the game files",
+   "re": "cra"
+  },
+  {
+   "n": "",
+   "k": "s",
+   "pool": "tablet",
+   "s": "Tablet suffix",
+   "r": [
+    {
+     "w": null,
+     "ls": [
+      "(10-30)% increased Pack Size for Monsters around Vaal Beacons in Map"
+     ],
+     "b": []
+    }
+   ],
+   "mods": [
+    "TowerIncursionPackSize"
+   ],
+   "on": [
+    "Temple Tablet"
+   ],
+   "src": "Source: the game files",
+   "re": "or m"
+  },
+  {
+   "n": "",
+   "k": "s",
+   "pool": "tablet",
+   "s": "Tablet suffix",
+   "r": [
+    {
+     "w": null,
+     "ls": [
+      "1 extra pack of Monsters around Vaal Beacons in Map"
+     ],
+     "b": []
+    }
+   ],
+   "mods": [
+    "TowerIncursionExtraPacks"
+   ],
+   "on": [
+    "Temple Tablet"
+   ],
+   "src": "Source: the game files",
+   "re": "k o"
+  },
+  {
+   "n": "",
+   "k": "s",
+   "pool": "tablet",
+   "s": "Tablet suffix",
+   "r": [
+    {
+     "w": null,
+     "ls": [
+      "(30-60)% chance for an extra packs of Monsters around Vaal Beacons in Map"
+     ],
+     "b": []
+    }
+   ],
+   "mods": [
+    "TowerIncursionExtraPacksChance"
+   ],
+   "on": [
+    "Temple Tablet"
+   ],
+   "src": "Source: the game files",
+   "re": "cks"
+  },
+  {
+   "n": "",
+   "k": "s",
+   "pool": "tablet",
+   "s": "Tablet suffix",
+   "r": [
+    {
+     "w": null,
+     "ls": [
+      "(25-50)% increased chance Vaal Beacons summon additional Monsters in Map"
+     ],
+     "b": []
+    }
+   ],
+   "mods": [
+    "TowerIncursionSecondaryEncounters"
+   ],
+   "on": [
+    "Temple Tablet"
+   ],
+   "src": "Source: the game files",
+   "re": "ns s"
+  },
+  {
+   "n": "",
+   "k": "s",
+   "pool": "tablet",
+   "s": "Tablet suffix",
+   "r": [
+    {
+     "w": null,
+     "ls": [
+      "(5-10)% chance to gain an additional Crystal from Vaal Beacons in Map"
+     ],
+     "b": []
+    }
+   ],
+   "mods": [
+    "TowerIncursionTokenChance"
+   ],
+   "on": [
+    "Temple Tablet"
+   ],
+   "src": "Source: the game files",
+   "re": "cry"
+  },
+  {
+   "n": "",
+   "k": "s",
+   "pool": "tablet",
+   "s": "Tablet suffix",
+   "r": [
+    {
+     "w": null,
+     "ls": [
+      "(10-25)% chance to add a Vaal Beacon Unique Monster to the Map"
+     ],
+     "b": []
+    }
+   ],
+   "mods": [
+    "TowerIncursionBossChance"
+   ],
+   "on": [
+    "Temple Tablet"
+   ],
+   "src": "Source: the game files",
+   "re": "a v"
+  },
+  {
+   "n": "",
+   "k": "s",
+   "pool": "tablet",
+   "s": "Tablet suffix",
+   "r": [
+    {
+     "w": null,
+     "ls": [
+      "(30-60)% increased chance Vaal Beacon Chests are Rare in Map"
+     ],
+     "b": []
+    }
+   ],
+   "mods": [
+    "TowerIncursionRareChestChance"
+   ],
+   "on": [
+    "Temple Tablet"
+   ],
+   "src": "Source: the game files",
+   "re": "n c"
+  },
+  {
+   "n": "Wraeclast Besieged",
+   "pool": "tablet",
+   "s": "Unique tablet",
+   "r": [
+    {
+     "w": null,
+     "ls": [
+      "Breach Hives in Map have (2-5) additional waves of Hiveborn Monsters",
+      "Breaches in Map have (1-10)% increased Pack Size",
+      "or Breaches in Map have (1-20)% reduced Pack Size",
+      "Unstable Breaches in Map take 120 additional seconds to collapse after timer is filled",
+      "Unstable Breaches in Map spawn (2-5) additional Rare Monsters when Stabilised"
+     ],
+     "b": []
+    }
+   ],
+   "mods": [
+    "UniqueBreachHiveAdditionalWaves",
+    "UniqueTowerBreachDensityIncrease",
+    "UniqueBreachMinimumRadius",
+    "UniqueBreachUnstableAdditionalRares"
+   ],
+   "src": "Source: the game files",
+   "re": "bor"
+  },
+  {
+   "n": "Clear Skies",
+   "pool": "tablet",
+   "s": "Unique tablet",
+   "r": [
+    {
+     "w": null,
+     "ls": [
+      "Delirium Fog in your Maps never dissipates",
+      "Delirium Fog in Map applies (1-10)% increased Deliriousness to Players",
+      "or Delirium Fog in Map applies (1-10)% reduced Deliriousness to Players"
+     ],
+     "b": []
+    }
+   ],
+   "mods": [
+    "UniqueDeliriumEndlessFog",
+    "UniqueDeliriumDifficultyIncrease"
+   ],
+   "tags": [
+    "delirious"
+   ],
+   "why": {
+    "delirious": "Delirium Fog in your Maps never dissipates"
+   },
+   "q": "delirious",
+   "src": "Source: the game files",
+   "re": "nev"
+  },
+  {
+   "n": "Freedom of Faith",
+   "pool": "tablet",
+   "s": "Unique tablet",
+   "r": [
+    {
+     "w": null,
+     "ls": [
+      "Favours at Ritual Altars in Area costs (10-15)% increased Tribute",
+      "Can Reroll Favours at Ritual Altars in your Maps twice as many times"
+     ],
+     "b": []
+    }
+   ],
+   "mods": [
+    "UniqueRitualTributeCostIncrease",
+    "UniqueRitualUnlimitedRerolls"
+   ],
+   "src": "Source: the game files",
+   "re": "a c"
+  },
+  {
+   "n": "The Grand Project",
+   "pool": "tablet",
+   "s": "Unique tablet",
+   "r": [
+    {
+     "w": null,
+     "ls": [
+      "Can only be applied to Precursor Tower Maps",
+      "Completing the Tower makes all nearby Maps accessible"
+     ],
+     "b": []
+    }
+   ],
+   "mods": [
+    "UniqueMapsAccessedWithoutConnection"
+   ],
+   "src": "Source: the game files",
+   "re": "ecu"
+  },
+  {
+   "n": "Visions of Paradise",
+   "pool": "tablet",
+   "s": "Unique tablet",
+   "r": [
+    {
+     "w": null,
+     "ls": [
+      "If Map was not previously Irradiated, completing Map adds Irradiation instead"
+     ],
+     "b": []
+    }
+   ],
+   "mods": [
+    "UniqueMapsAddIrridiationWhenCompleting"
+   ],
+   "src": "Source: the game files",
+   "re": "not"
+  },
+  {
+   "n": "Season of the Hunt",
+   "pool": "tablet",
+   "s": "Unique tablet",
+   "r": [
+    {
+     "w": null,
+     "ls": [
+      "Map Bosses are Hunted by Azmeri Spirits"
+     ],
+     "b": []
+    }
+   ],
+   "mods": [
+    "UniqueMapBossPossession"
+   ],
+   "tags": [
+    "boss only"
+   ],
+   "why": {
+    "boss only": "Map Bosses are Hunted by Azmeri Spirits"
+   },
+   "q": "boss only",
+   "src": "Source: the game files",
+   "re": "e h"
+  },
+  {
+   "n": "Cruel Hegemony",
+   "pool": "tablet",
+   "s": "Unique tablet",
+   "r": [
+    {
+     "w": null,
+     "ls": [
+      "Map Bosses have 1 additional Modifier"
+     ],
+     "b": []
+    }
+   ],
+   "mods": [
+    "UniqueMapBossAdditionalModifier"
+   ],
+   "tags": [
+    "more rare modifiers",
+    "boss only"
+   ],
+   "why": {
+    "more rare modifiers": "Map Bosses have 1 additional Modifier",
+    "boss only": "Map Bosses have 1 additional Modifier"
+   },
+   "q": "more rare modifiers boss only",
+   "src": "Source: the game files",
+   "re": "es h"
+  },
+  {
+   "n": "Unforeseen Consequences",
+   "pool": "tablet",
+   "s": "Unique tablet",
+   "r": [
+    {
+     "w": null,
+     "ls": [
+      "Map contains (14-18) additional Abysses",
+      "Map is overrun by the Abyssal"
+     ],
+     "b": []
+    }
+   ],
+   "mods": [
+    "UniqueMapAbyssOverrun"
+   ],
+   "src": "Source: the game files",
+   "re": "n b"
+  },
+  {
+   "n": "Forgotten By Time",
+   "pool": "tablet",
+   "s": "Unique tablet",
+   "r": [
+    {
+     "w": null,
+     "ls": [
+      "Expedition Monsters in your Maps spawn with half of their Life missing",
+      "Runic Monsters in your Maps are Duplicated"
+     ],
+     "b": []
+    }
+   ],
+   "mods": [
+    "UniqueExpeditionExplosionRemovesLife",
+    "UniqueExpeditionTwinnedElites"
+   ],
+   "src": "Source: the game files",
+   "re": "alf"
+  },
+  {
+   "n": "Corrupted atlas node",
+   "pool": "atlas",
+   "s": "Corrupted atlas node modifier",
+   "r": [
+    {
+     "w": null,
+     "ls": [
+      "Coalesced Corruption in your Maps have (30-70)% increased Merging Radius"
+     ],
+     "b": []
+    }
+   ],
+   "mods": [
+    "EndgameCorruptionMergingRadius"
+   ],
+   "wt": 80,
+   "src": "Source: the game files"
+  },
+  {
+   "n": "Corrupted atlas node",
+   "pool": "atlas",
+   "s": "Corrupted atlas node modifier",
+   "r": [
+    {
+     "w": null,
+     "ls": [
+      "Slaying Enemies has a (20-60)% increased chance to spawn Coalesced Corruption"
+     ],
+     "b": []
+    }
+   ],
+   "mods": [
+    "EndgameCorruptionPortalChance"
+   ],
+   "wt": 80,
+   "src": "Source: the game files"
+  },
+  {
+   "n": "Corrupted atlas node",
+   "pool": "atlas",
+   "s": "Corrupted atlas node modifier",
+   "r": [
+    {
+     "w": null,
+     "ls": [
+      "Monsters in your Maps deal (20-30)% more Damage",
+      "Monsters in your Maps have (20-30)% less Life"
+     ],
+     "b": []
+    }
+   ],
+   "mods": [
+    "EndgameCorruptionDeadly"
+   ],
+   "wt": 20,
+   "tags": [
+    "more damage"
+   ],
+   "why": {
+    "more damage": "Monsters in your Maps deal (20-30)% more Damage"
+   },
+   "q": "more damage",
+   "src": "Source: the game files"
+  },
+  {
+   "n": "Corrupted atlas node",
+   "pool": "atlas",
+   "s": "Corrupted atlas node modifier",
+   "r": [
+    {
+     "w": null,
+     "ls": [
+      "Monsters in your Maps deal (20-30)% less Damage",
+      "Monsters in your Maps have (40-60)% more Life"
+     ],
+     "b": []
+    }
+   ],
+   "mods": [
+    "EndgameCorruptionVital"
+   ],
+   "wt": 20,
+   "tags": [
+    "harder to kill"
+   ],
+   "why": {
+    "harder to kill": "Monsters in your Maps have (40-60)% more Life"
+   },
+   "q": "harder to kill",
+   "src": "Source: the game files"
+  },
+  {
+   "n": "Corrupted atlas node",
+   "pool": "atlas",
+   "s": "Corrupted atlas node modifier",
+   "r": [
+    {
+     "w": null,
+     "ls": [
+      "(100-150)% increased Experience gain",
+      "(40-60)% reduced Quantity of Items found in this Area"
+     ],
+     "b": []
+    }
+   ],
+   "mods": [
+    "EndgameCorruptionExperienceQuantity"
+   ],
+   "wt": 25,
+   "src": "Source: the game files"
+  },
+  {
+   "n": "Corrupted atlas node",
+   "pool": "atlas",
+   "s": "Corrupted atlas node modifier",
+   "r": [
+    {
+     "w": null,
+     "ls": [
+      "(100-150)% increased Experience gain",
+      "(40-60)% reduced Rarity of Items found in this Area"
+     ],
+     "b": []
+    }
+   ],
+   "mods": [
+    "EndgameCorruptionRarityExperience"
+   ],
+   "src": "Source: the game files"
+  },
+  {
+   "n": "Corrupted atlas node",
+   "pool": "atlas",
+   "s": "Corrupted atlas node modifier",
+   "r": [
+    {
+     "w": null,
+     "ls": [
+      "Area contains an additional Shrine",
+      "Shrines grant a random additional Shrine Effect"
+     ],
+     "b": []
+    }
+   ],
+   "mods": [
+    "EndgameCorruptionShrineEnhanced"
+   ],
+   "wt": 20,
+   "src": "Source: the game files"
+  },
+  {
+   "n": "Corrupted atlas node",
+   "pool": "atlas",
+   "s": "Corrupted atlas node modifier",
+   "r": [
+    {
+     "w": null,
+     "ls": [
+      "Area contains an additional Strongbox",
+      "Strongboxes in Area are at least Rare",
+      "Strongboxes in Area are Corrupted"
+     ],
+     "b": []
+    }
+   ],
+   "mods": [
+    "EndgameCorruptionStrongboxEnhanced"
+   ],
+   "wt": 20,
+   "src": "Source: the game files"
+  },
+  {
+   "n": "Corrupted atlas node",
+   "pool": "atlas",
+   "s": "Corrupted atlas node modifier",
+   "r": [
+    {
+     "w": null,
+     "ls": [
+      "Area contains an additional Essence",
+      "Imprisoned Monsters in your Maps have (13-17)% chance to have 2 additional Essences"
+     ],
+     "b": []
+    }
+   ],
+   "mods": [
+    "EndgameCorruptionEssenceEnhanced"
+   ],
+   "src": "Source: the game files"
+  },
+  {
+   "n": "Corrupted atlas node",
+   "pool": "atlas",
+   "s": "Corrupted atlas node modifier",
+   "r": [
+    {
+     "w": null,
+     "ls": [
+      "Area contains Obelisks of Corruption"
+     ],
+     "b": []
+    }
+   ],
+   "mods": [
+    "EndgameCorruptionObelisks"
+   ],
+   "wt": 40,
+   "src": "Source: the game files"
+  },
+  {
+   "n": "Corrupted atlas node",
+   "pool": "atlas",
+   "s": "Corrupted atlas node modifier",
+   "r": [
+    {
+     "w": null,
+     "ls": [
+      "Amalgamations of Corruption become more difficult and rewarding each time Corruption Coalesces"
+     ],
+     "b": []
+    }
+   ],
+   "mods": [
+    "EndgameCorruptionRarityTankinessPerPortalMerge"
+   ],
+   "wt": 20,
+   "tags": [
+    "harder to kill"
+   ],
+   "why": {
+    "harder to kill": "Amalgamations of Corruption become more difficult and rewarding each time Corruption Coalesces"
+   },
+   "q": "harder to kill",
+   "src": "Source: the game files"
+  },
+  {
+   "n": "Corrupted atlas node",
+   "pool": "atlas",
+   "s": "Corrupted atlas node modifier",
+   "r": [
+    {
+     "w": null,
+     "ls": [
+      "Amalgamations of Corruption always spawn with stronger varieties"
+     ],
+     "b": []
+    }
+   ],
+   "mods": [
+    "EndgameCorruptionMonstersAlwaysElite"
+   ],
+   "wt": 30,
+   "src": "Source: the game files"
+  },
+  {
+   "n": "Corrupted atlas node",
+   "pool": "atlas",
+   "s": "Corrupted atlas node modifier",
+   "r": [
+    {
+     "w": null,
+     "ls": [
+      "+1 to Monster Level of Area",
+      "+1 to Monster Level of Area"
+     ],
+     "b": []
+    }
+   ],
+   "mods": [
+    "EndgameCorruptionMapLevel"
+   ],
+   "tags": [
+    "harder to kill"
+   ],
+   "why": {
+    "harder to kill": "+1 to Monster Level of Area"
+   },
+   "q": "harder to kill",
+   "src": "Source: the game files"
+  },
+  {
+   "n": "Cleansed atlas node",
+   "pool": "atlas",
+   "s": "Cleansed atlas node modifier",
+   "r": [
+    {
+     "w": null,
+     "ls": [
+      "Area contains (20-30) additional packs of Cleansed Monsters"
+     ],
+     "b": []
+    }
+   ],
+   "mods": [
+    "EndgameCleansedBasic"
+   ],
+   "wt": 150,
+   "sub": true,
+   "src": "Source: the game files"
+  },
+  {
+   "n": "Cleansed atlas node",
+   "pool": "atlas",
+   "s": "Cleansed atlas node modifier",
+   "r": [
+    {
+     "w": null,
+     "ls": [
+      "Area contains (20-30) additional packs of Cleansed Monsters",
+      "Area contains Obelisks of Cleansing"
+     ],
+     "b": []
+    }
+   ],
+   "mods": [
+    "EndgameCleansedObelisks"
+   ],
+   "wt": 40,
+   "sub": true,
+   "src": "Source: the game files"
+  },
+  {
+   "n": "Cleansed atlas node",
+   "pool": "atlas",
+   "s": "Cleansed atlas node modifier",
+   "r": [
+    {
+     "w": null,
+     "ls": [
+      "Area contains (20-30) additional packs of Cleansed Monsters",
+      "Waystones have (20-30)% more effect of Prefix Modifiers",
+      "Waystones have (20-30)% less effect of Suffix Modifiers"
+     ],
+     "b": []
+    }
+   ],
+   "mods": [
+    "EndgameCleansedAffixEffect"
+   ],
+   "wt": 70,
+   "sub": true,
+   "src": "Source: the game files"
+  },
+  {
+   "n": "Cleansed atlas node",
+   "pool": "atlas",
+   "s": "Cleansed atlas node modifier",
+   "r": [
+    {
+     "w": null,
+     "ls": [
+      "Area contains (20-30) additional packs of Cleansed Monsters",
+      "Area contains The Immured Fury"
+     ],
+     "b": []
+    }
+   ],
+   "mods": [
+    "EndgameCleansedAvatarOfWealth"
+   ],
+   "wt": 20,
+   "sub": true,
+   "src": "Source: the game files"
+  },
+  {
+   "n": "Cleansed atlas node",
+   "pool": "atlas",
+   "s": "Cleansed atlas node modifier",
+   "r": [
+    {
+     "w": null,
+     "ls": [
+      "Area contains (20-30) additional packs of Cleansed Monsters",
+      "(100-150)% increased Gold found in this Area"
+     ],
+     "b": []
+    }
+   ],
+   "mods": [
+    "EndgameCleansedGoldFind"
+   ],
+   "wt": 90,
+   "sub": true,
+   "src": "Source: the game files"
+  },
+  {
+   "n": "Cleansed atlas node",
+   "pool": "atlas",
+   "s": "Cleansed atlas node modifier",
+   "r": [
+    {
+     "w": null,
+     "ls": [
+      "Area contains (20-30) additional packs of Cleansed Monsters",
+      "Players in area have Mounting Greed"
+     ],
+     "b": []
+    }
+   ],
+   "mods": [
+    "EndgameCleansedStackingRarity"
+   ],
+   "wt": 40,
+   "sub": true,
+   "src": "Source: the game files"
+  },
+  {
+   "n": "Cleansed atlas node",
+   "pool": "atlas",
+   "s": "Cleansed atlas node modifier",
+   "r": [
+    {
+     "w": null,
+     "ls": [
+      "Area contains (20-30) additional packs of Cleansed Monsters",
+      "Area contains 1 additional Azmeri Spirit"
+     ],
+     "b": []
+    }
+   ],
+   "mods": [
+    "EndgameCleansedEnhancedAzmeriSpirits"
+   ],
+   "wt": 40,
+   "sub": true,
+   "src": "Source: the game files"
+  },
+  {
+   "n": "Cleansed atlas node",
+   "pool": "atlas",
+   "s": "Cleansed atlas node modifier",
+   "r": [
+    {
+     "w": null,
+     "ls": [
+      "Area contains (20-30) additional packs of Cleansed Monsters",
+      "(150-200)% increased Rarity of Items found in this Area",
+      "(40-60)% reduced Quantity of Items found in this Area"
+     ],
+     "b": []
+    }
+   ],
+   "mods": [
+    "EndgameCleansedRarityQuantity"
+   ],
+   "wt": 50,
+   "sub": true,
+   "src": "Source: the game files"
+  },
+  {
+   "n": "Cleansed atlas node",
+   "pool": "atlas",
+   "s": "Cleansed atlas node modifier",
+   "r": [
+    {
+     "w": null,
+     "ls": [
+      "Area contains (20-30) additional packs of Cleansed Monsters",
+      "-(60-80)% increased Experience gain",
+      "(80-120)% increased Rarity of Items found in this Area"
+     ],
+     "b": []
+    }
+   ],
+   "mods": [
+    "EndgameCleansedRarityExperience"
+   ],
+   "sub": true,
+   "src": "Source: the game files"
+  },
+  {
+   "n": "Cleansed atlas node",
+   "pool": "atlas",
+   "s": "Cleansed atlas node modifier",
+   "r": [
+    {
+     "w": null,
+     "ls": [
+      "Area contains (20-30) additional packs of Cleansed Monsters",
+      "+1 to Monster Level of Area",
+      "+1 to Monster Level of Area"
+     ],
+     "b": []
+    }
+   ],
+   "mods": [
+    "EndgameCleansedMapLevel"
+   ],
+   "sub": true,
+   "tags": [
+    "harder to kill"
+   ],
+   "why": {
+    "harder to kill": "+1 to Monster Level of Area"
+   },
+   "q": "harder to kill",
+   "src": "Source: the game files"
+  }
+ ]
+}

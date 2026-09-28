@@ -28,6 +28,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from gamepull import build as export_build, official, state  # noqa: E402
+from sync import plain_lines  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent
 SOON = 'Coming Soon'   # a gem slot the game reserves for later: no name, nothing to show
@@ -172,6 +173,114 @@ def gem(key, g, skills, tags):
     if kw:
         out['kw'] = kw
     return out
+
+
+# ---- what a gem card says on top of its own lines (tools/gamelib.py gemfacts puts them on the gem cards) ----
+
+# Quality. A stat set's quality line is the game's own wording with the stat left open, and the number the export
+# stores is the stat's raw value per 1% quality, times 1000 (explore.html qRender, checked there against poe2db). So
+# at the 20% a gem can be given without corrupting it the raw value is stored / 50, and the card reads the range the
+# game's own tooltip prints: "(0-40)% more chance to Shock". A number in the line that quality does not move is the
+# gem's own at level 20, the top of what an uncut gem cuts to. A handler is the game's own name for how a raw value
+# is shown (stat_value_handlers): the ones a quality line uses today, and a new one stops the build.
+QMAX = 20
+SHOWN_AS = {
+    '': (1, None), 'negate': (-1, None),
+    'divide_by_ten_1dp_if_required': (0.1, 1), 'divide_by_one_hundred_2dp_if_required': (0.01, 2),
+    'divide_by_one_hundred_0dp': (0.01, 0), 'milliseconds_to_seconds': (0.001, 2),
+    'milliseconds_to_seconds_1dp': (0.001, 1), 'milliseconds_to_seconds_2dp_if_required': (0.001, 2),
+    'per_minute_to_per_second_2dp_if_required': (1 / 60, 2),
+}
+SLOT = re.compile(r'\{([^}/]+)(?:/([^}]*))?\}')
+
+
+def number(v, places):
+    """A number as the game prints it: no trailing zeros, at most the handler's places."""
+    v = round(v, places if places is not None else 2)
+    return ('%.*f' % (places if places is not None else 2, v)).rstrip('0').rstrip('.') if v != int(v) else str(int(v))
+
+
+def at_top(v):
+    """A per-level value at level 20 (or the last level there is); a constant as it is."""
+    if isinstance(v, list):
+        v = v[QMAX - 1] if len(v) >= QMAX else (v[-1] if v else None)
+    return v
+
+
+def granted_sets(g, skills):
+    """Every stat set of every skill a gem grants, as stat_set() reads one. The drill-down's gem file keeps the
+    first skill's sets only; a gem's quality can sit on another one (Blink's is on its second skill, Pounce's on
+    its mark)."""
+    return [x for sk in g.get('grants_skills') or [] for x in (stat_set(s) for s in (skills.get(sk) or {}).get('stat_sets') or [])
+            if x]
+
+
+def quality_lines(sets):
+    """What 0 to 20% quality adds to a gem, one line each in plain words, the game's order, from its stat sets
+    (granted_sets()). Returns (lines, left): left counts the quality stats the game prints no line for (a stat set
+    that repeats another set's stat, with the wording kept on that one; or none at all)."""
+    lines, left, seen = [], 0, set()
+    worded = {tuple(sorted(q['s'].items())) for s in sets for q in s.get('q') or [] if q.get('t')}
+    for s in sets:
+        for q in s.get('q') or []:
+            if not q.get('t'):
+                left += tuple(sorted((q.get('s') or {}).items())) not in worded
+                continue
+
+            def fill(m):
+                sid, how = m.group(1), m.group(2) or ''
+                if how not in SHOWN_AS:
+                    sys.exit('gems: a quality line shows a number in a way this file does not know: %r' % how)
+                scale, places = SHOWN_AS[how]
+                if sid in q['s']:
+                    lo, hi = sorted((0, q['s'][sid] * QMAX / 1000 * scale))
+                    return '(%s-%s)' % (number(lo, places), number(hi, places)) if lo != hi else number(hi, places)
+                own = at_top((s.get('cs') or {}).get(sid))
+                if own is None:
+                    raise LookupError(sid)
+                return number(own * scale, places)
+            try:
+                text = SLOT.sub(fill, q['t'])
+            except LookupError:
+                left += 1
+                continue
+            for x in plain_lines(text):
+                if x not in seen:
+                    seen.add(x)
+                    lines.append(x)
+    return lines, left
+
+
+# Where a gem comes from. The game makes a gem out of an uncut one: the export's own items "Uncut Skill Gem (Level
+# N)", "Uncut Support Gem (Level N)" and "Uncut Spirit Gem (Level N)", and each gem's crafting level is the lowest
+# uncut level that offers it. An uncut gem cuts to its own level, so the lowest level a gem can be cut at is the
+# first uncut level of its sort at or over its crafting level (the spirit ones start at 4). Which sort: the spirit
+# one "Creates a Persistent Skill Gem" (its own text), and the game's own table (SkillGems) puts every persistent gem
+# there except the minions, which come from the skill one. Checked on poe2db ("From: Uncut Skill Gem Tier N").
+UNCUT = re.compile(r'^Uncut (Skill|Support|Spirit) Gem \(Level (\d+)\)$')
+UNCUT_CLASSES = ('UncutSkillGemStackable', 'UncutSupportGemStackable', 'UncutReservationGemStackable')
+
+
+def uncut_ladder():
+    """Each sort of uncut gem in the game: {'Skill': [(level, name), ...], ...}, lowest first."""
+    out = {}
+    for b in official('base_items.min.json').values():
+        m = UNCUT.match(b.get('name') or '')
+        if m and b.get('item_class') in UNCUT_CLASSES and b.get('release_state') == 'released':
+            out.setdefault(m.group(1), set()).add((int(m.group(2)), b['name']))
+    return {k: sorted(v) for k, v in out.items()}
+
+
+def uncut_from(g, ladder):
+    """The name of the uncut gem that makes this one, at the lowest level that offers it: "Uncut Skill Gem (Level
+    3)". None for a gem no uncut gem makes (a lineage support, a skill an item or an ascendancy grants)."""
+    cl = g.get('cl') or 0
+    if not cl:
+        return None
+    tags = set(g.get('tg') or [])
+    sort = 'Support' if g.get('t') == 'support' else 'Spirit' if 'persistent' in tags and 'minion' not in tags else 'Skill'
+    step = next((x for x in ladder.get(sort) or [] if x[0] >= cl), None)
+    return step[1] if step else None
 
 
 READS = ('skill_gems.min.json', 'skills.min.json', 'gem_tags.min.json')

@@ -179,7 +179,10 @@ def with_topbar(html):
     return html[:m.start()] + topbar(sub) + html[m.end():]
 
 
-RAW = re.compile(r'(?<![\w\[./-])[a-z][a-z0-9]*(?:_[a-z0-9%+]+){2,}(?:\s*=\s*-?\d+)?|\{[^}\s]{1,80}\}')
+# Raw game code: a stat id (with its value), a {0} placeholder, or a stat's short form with its value stuck on
+# ("Critical Damage Bonus vs full life enemies@100%", the stat tables' shorthand that reached cards before #133)
+RAW = re.compile(r'(?<![\w\[./-])[a-z][a-z0-9]*(?:_[a-z0-9%+]+){2,}(?:\s*=\s*-?\d+)?|\{[^}\s]{1,80}\}'
+                 r'|[^\s@]@[+-]?\d+(?:\.\d+)?%')
 
 
 def block(html, bid):

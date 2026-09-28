@@ -45,6 +45,7 @@ MARKS = [                   # tools/dev/guard.mjs MARKS
     ('{0} placeholder', re.compile(r'\{\d*(?::[^}]{0,12})?\}')),
     ('%1$s template', re.compile(r'%\d+\$[sd]')),
     ('DNT marker', re.compile(r'\bDNT[-\w]*')),
+    ('@value stat text', re.compile(r'[^\s@"]@[+-]?\d+(?:\.\d+)?%')),
 ]
 
 

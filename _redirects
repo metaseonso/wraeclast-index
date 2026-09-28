@@ -1,0 +1,4 @@
+# A card that merged into another: its old address opens the card it became (the same node, the same words).
+# "Minion Life | 3" differed only by a "+0% to Chaos Resistance" line, which GGG's own tree does not have (#133).
+/item/minion-life-3 /item/minion-life 301
+/md/item/minion-life-3.md /md/item/minion-life.md 301
