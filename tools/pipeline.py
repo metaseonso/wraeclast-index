@@ -363,6 +363,11 @@ def last_copy(path, root=ROOT):
 
 
 CARD_FILES = ('data/index.json', 'data/index-core.json', 'data/index-rest.json', 'data/bosses.json', 'data/schema.json')
+# One numbered piece of the cut (tools/shards.py): data/cards/<kind>/NN.<hash>.json, data/seo/item/NN.<hash>.json.
+# Which cards land in piece NN moves whenever the number of pieces does (a card more, a card less), so a piece is
+# never held to the old piece of the same number: the cut as a whole is held to the index (shards.stale()), and
+# the index to the committed one. A piece's own ids still hold.
+CUT_PIECE = re.compile(r'^data/(?:cards|seo)/[\w-]+/\d+\.[0-9a-f]{6,}\.json$')
 
 
 def links(index):
@@ -416,8 +421,8 @@ def check_files(stage, changed, root, against, schema=True, later=()):
             new = json.loads(p.read_text(encoding='utf-8'))
         except ValueError as e:
             return path, 'it does not read as JSON: %s' % str(e)[:100], {}
-        old = None if path in later else against(path)
-        if old is None:                       # new, or rewritten later: its own ids still hold here
+        old = None if path in later or CUT_PIECE.match(path) else against(path)
+        if old is None:                       # new, rewritten later, or a piece of the cut: its own ids still hold
             why = lastgood.own_ids(new)
             if why:
                 return path, why, {}
