@@ -926,6 +926,35 @@ function poolFill(host, it, f){
   }).catch(() => {});
 }
 
+/* ---------- what it does to you ----------
+   A table of rows, each a name and the tags for what it does to you (data/monstermods.json; the map modifiers
+   use the same words). The row is found by the card's own name, the lookup made once per table. A tag in the
+   row's `est` was read off the name alone and says Estimate beside it; a tag in its `why` shows the game's own
+   line on hover. The row's own source closes the block. */
+const BYNAME = new WeakMap();
+function rowByName(t, n){
+  if(!BYNAME.has(t)) BYNAME.set(t, new Map((t.rows || []).map(r => [r.n, r])));
+  return BYNAME.get(t).get(n);
+}
+function dangerHTML(it, t, f){
+  const r = rowByName(t, it[f.at]);
+  if(!r || !(r.tags || []).length) return '';
+  const est = new Set(r.est || []), why = r.why || {};
+  return '<p class="card-facts">' + esc(f.label || '') + '</p><p class="card-tags">' + r.tags.map(g =>
+    '<span' + (why[g] ? ' title="' + esc(why[g]) + '"' : '') + '>' + esc(g) + '</span>' +
+    (est.has(g) ? ' <span class="card-pxa" title="Read off its name: the game gives it no words">Estimate</span>' : ''))
+    .join(' · ') + '</p>' + (r.src ? '<p class="card-src">' + esc(r.src) + '</p>' : '');
+}
+function dangerFill(host, it, f){
+  if(!host) return;
+  tableOf(f.file).then(t => {
+    const html = t && dangerHTML(it, t, f);
+    if(!html || !host.isConnected) return;
+    host.innerHTML = html;
+    host.hidden = false;
+  });
+}
+
 /* ---------- how often it rolls, where the game rolls unseen ----------
    data/odds.json (tools/odds.py): one pool per weight table in the game's own files, each outcome with its weight
    and 1 in how many. The card's name is matched to an outcome's name exactly. One line per pool it is in, a
@@ -1354,6 +1383,8 @@ export const TYPE = {
         '<li data-mk="' + f.at + ':' + i + '">' + lineHTML(it, f.at, i, x, false) + '</li>').join('') + '</ul>' : '');
   }},
   adds:   {raw: 1, fill: addsFill, v: (it, f, o, name) => o.full && it[f.at]
+    ? '<div class="card-addsbox" data-fill="' + esc(name) + '" hidden></div>' : ''},
+  danger: {raw: 1, fill: dangerFill, v: (it, f, o, name) => o.full && it[f.at]
     ? '<div class="card-addsbox" data-fill="' + esc(name) + '" hidden></div>' : ''},
   odds:   {raw: 1, fill: oddsFill, v: (it, f, o, name) => o.full && it[f.at]
     ? '<div class="card-addsbox" data-fill="' + esc(name) + '" hidden></div>' : ''},

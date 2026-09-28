@@ -35,7 +35,7 @@ const SHOW = 3;            // problems printed per kind
    string, so it takes either. A renderer that reads no field of the row is not here. */
 const TYPE_JSON = {
   text: ['string'], enum: ['string'], quote: ['string'], source: ['string'], note: ['string'],
-  adds: ['string'], pool: ['string'], odds: ['string'], drop: ['string'],
+  adds: ['string'], pool: ['string'], danger: ['string'], odds: ['string'], drop: ['string'],
   number: ['number'], duration: ['number'],
   flag: ['number', 'boolean', 'string'],
   rich: ['array', 'string'],

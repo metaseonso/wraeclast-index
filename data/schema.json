@@ -2322,6 +2322,7 @@
      "by": [
       "row",
       "name",
+      "mondanger",
       "weight"
      ],
      "need": 1,
@@ -4416,6 +4417,7 @@
     "cancorrupt",
     "canroll",
     "drop",
+    "mondanger",
     "name",
     "row",
     "weight"
