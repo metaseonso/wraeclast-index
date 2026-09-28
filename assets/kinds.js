@@ -283,9 +283,12 @@ export const FIELDS = {
   /* What it does to you, in one list of words shared by every file that tags a danger (tools/monstermods.py,
      and the map modifiers that use the same words), so one word means one thing wherever it is read. The row is
      found by the card's own name in the field's table. A tag read off the name alone, because the game gives the
-     thing no words, says Estimate beside it; a tag with the game's own line behind it shows that line on hover. */
+     thing no words, says Estimate beside it; a tag with the game's own line behind it shows that line on hover.
+     tools/mapdanger.py stops when its words and tools/monstermods.py's part, in word or in order. */
   mondanger: {type: 'danger', at: 'n', slot: 'body', file: 'data/monstermods.json',
     label: 'On a rare monster, what it does to you'},
+  mapdanger: {type: 'danger', at: 'n', slot: 'body', file: 'data/mapdanger.json',
+    label: 'On your maps, what it does to you'},
   /* the real weight a thing rolls at where the game rolls for it unseen — a Forbidden Rite, a strongbox, an
      Azmeri spirit — and its share of each pool it is in (tools/odds.py, off the game's own tables). The outcome's
      name is matched to the card's name exactly, so "2 Divine Orbs" is not the Divine Orb card. A pool whose
@@ -504,7 +507,7 @@ export const KINDS = [
    index: true, search: true, item: true, crawl: {word: 'unique', list: 'uniques', rank: 0, is: 'Product'},
    sprite: 'uniques', make: {base: 'sub1'},
    builds: [{key: 'items'}],
-   fields: [...HEAD, 'reqs', 'corrupt', 'limit', 'group', 'props', 'implicit', ...SAYS, 'weight', ...REST, 'drop', ...FOOT],
+   fields: [...HEAD, 'reqs', 'corrupt', 'limit', 'group', 'props', 'implicit', ...SAYS, 'mapdanger', 'weight', ...REST, 'drop', ...FOOT],
    acts: ['trade', 'pool', 'full', 'pin', 'open'],
    rel: ['base', 'variants', 'grants', 'dropsfrom', 'named', 'namedby', 'cat']},
 
@@ -544,7 +547,7 @@ export const KINDS = [
   {k: 'a', one: 'Atlas', tone: 'int', many: 'Atlas', place: 'Atlas', link: './#/atlas?s=@at&q=@n',
    index: true, search: true, item: true, crawl: {word: 'atlas', list: 'atlas', rank: 6, is: 'Product', unless: {at: 'at', is: 'tree', then: 'DefinedTerm'}},
    px: {as: 'c'}, notitem: {at: 'at', is: 'tree'},
-   fields: [...HEAD, 'nodety', 'ontree', 'warn', 'implicit', ...BODY, ...FOOT],
+   fields: [...HEAD, 'nodety', 'ontree', 'warn', 'implicit', ...SAYS, 'mapdanger', ...REST, ...FOOT],
    acts: ['trade', 'pin', 'open'],
    rel: ['section', 'named', 'namedby']},
 
