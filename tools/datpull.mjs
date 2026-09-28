@@ -463,6 +463,97 @@ const FILES = [
      'over the monster and what it does.',
    rows: ({T, R}) => T.ArchnemesisMods.rows.map(a => { const m = R.mod(a.Mod);
      return real(clean(a.Name)) ? drop({name: clean(a.Name), text: m.text, hidden: m.hidden}) : null; }).filter(Boolean)},
+
+  /* ---- achievements, the atlas's maps, Runes of Aldur (#91, #92, #113): read on by tools/achievements.py,
+     tools/atlascontent.py and tools/runes.py. `keywords` are the game's own [Keyword|words] markup keys, kept
+     before clean() drops them: they name the keyword card a line points at. */
+  {file: 'achievements', tables: ['Achievements', 'AchievementItems', 'MonsterVarieties', 'MonsterDeathAchievements',
+     'CurrencyItems', 'AchievementOmenTypes', 'Expedition2CraftingAchievements', 'BaseItemTypes'], ids: ['id', 'keywords'],
+   note: 'Every achievement and challenge: its name, what it asks in the game’s words, its set (a number; ' +
+     'the achievement sets file names them), count (how many times, where it asks more than once), need (how many of ' +
+     'its steps count, where not all do), and its steps. kill names the ' +
+     'monsters a step or the whole achievement counts, use the items it counts using (CurrencyItems) or crafting with ' +
+     '(Expedition2CraftingAchievements), own the omen a step asks for (AchievementOmenTypes). only says Softcore or Hardcore.',
+   rows: ({T, R}) => {
+     const keys = s => [...String(s || '').matchAll(/\[([^\]|]+)(?:\|[^\]]+)?\]/g)].map(m => m[1]);
+     const many = v => v == null ? [] : Array.isArray(v) ? v : [v];
+     const on = new Map();                 // achievement item row -> {kill, use, own}
+     const at = (i, k, v) => { if(!v) return; if(!on.has(i)) on.set(i, {}); const o = on.get(i);
+       (o[k] = o[k] || []).includes(v) || o[k].push(v); };
+     T.MonsterVarieties.rows.forEach(m => many(m.KillSpecificMonsterCount_AchievementItems).forEach(i => at(i, 'kill', real(m.Name) ? clean(m.Name) : null)));
+     T.MonsterDeathAchievements.rows.forEach(d => many(d.AchievementItemsKeys).forEach(i =>
+       many(d.MonsterVarietiesKeys).forEach(m => at(i, 'kill', R.name('MonsterVarieties', m)))));
+     T.CurrencyItems.rows.forEach(c => many(c.Usage_AchievementItems).forEach(i => at(i, 'use', R.name('BaseItemTypes', c.BaseItemType))));
+     T.Expedition2CraftingAchievements.rows.forEach(c => at(c.AchievementItem, 'use', R.name('BaseItemTypes', c.BaseItemType)));
+     T.AchievementOmenTypes.rows.forEach(c => at(c.Achievement, 'own', R.name('BaseItemTypes', c.BaseItemType)));
+     return T.Achievements.rows.map((a, ai) => {
+       const items = T.AchievementItems.rows.map((it, i) => [it, i]).filter(([it]) => it.AchievementsKey === ai);
+       const whole = items.filter(([it]) => !real(it.Name)).map(([, i]) => on.get(i) || {});
+       const steps = items.filter(([it]) => real(it.Name)).map(([it, i]) => drop({name: clean(it.Name),
+         count: it.CompletionsRequired > 1 ? it.CompletionsRequired : null, ...(on.get(i) || {})}));
+       const all = k => [...new Set(whole.flatMap(o => o[k] || []))];
+       const times = Math.max(0, ...items.filter(([it]) => !real(it.Name)).map(([it]) => it.CompletionsRequired || 0));
+       return real(a.Description) ? drop({name: clean(a.Description), id: a.Id, text: clean(a.Objective).replace(/ {2,}/g, ' '),
+         set: a.SetId, count: times > 1 ? times : null, need: a.MinCompletedItems || null, only: a.SoftcoreOnly ? 'Softcore' : a.HardcoreOnly ? 'Hardcore' : null,
+         kill: all('kill'), use: all('use'), steps, keywords: [...new Set(keys(a.Objective))]}) : null;
+     }).filter(Boolean);
+   }},
+  {file: 'achievement_sets', tables: ['AchievementSetsDisplay', 'AchievementSetRewards'], ids: [],
+   note: 'The achievement sets: set is the number achievements.json carries, title and text the game’s heading for it, ' +
+     'and the rewards a set gives after so many of its achievements, in the game’s words.',
+   rows: ({T}) => {
+     const sets = [...new Set([...T.AchievementSetsDisplay.rows.map(s => s.Id), ...T.AchievementSetRewards.rows.map(r => r.SetId)])];
+     return sets.sort((a, b) => a - b).map(n => { const d = T.AchievementSetsDisplay.rows.find(s => s.Id === n) || {};
+       return drop({set: n, title: clean(d.Title), text: clean(d.Description), rewards: T.AchievementSetRewards.rows
+         .filter(r => r.SetId === n).map(r => ({after: r.AchievementsRequired, text: clean(r.Message)}))}); });
+   }},
+  {file: 'endgame_maps', tables: ['EndgameMaps', 'EndgameMapLocations', 'EndgameMapBiomes', 'EndgameMapContent',
+     'EndgameMapContentSet', 'WorldAreas', 'MonsterVarieties', 'ClientStrings2', 'Mods', 'Stats'], ids: ['id', 'hidden', 'set'],
+   note: 'Every Atlas map: its area level, biomes (every EndgameMapLocations row for it, in order; nearBiomes from the ' +
+     'AdjacentBiomes column), its bosses, what the area always carries (text in the game’s words; hidden, the stats it ' +
+     'never shows), its fixed content, its flavour and its unique map texts. set names the EndgameMapContentSet it ' +
+     'draws from and setContent what that set lists; setFlag is a column dat-schema does not name (true on DisallowAll ' +
+     'and MovingPlatform); not verified.',
+   rows: ({T, R}) => T.EndgameMaps.rows.map((m, mi) => {
+     const w = T.WorldAreas.rows[m.WorldArea] || {};
+     const locs = T.EndgameMapLocations.rows.filter(l => l.Map === mi);
+     const biomes = k => [...new Set(locs.flatMap(l => l[k] || []))].map(b => R.name('EndgameMapBiomes', b)).filter(Boolean);
+     const mods = (w.AreaMods || []).map(R.mod), set = T.EndgameMapContentSet.rows[m.MapContentSet];
+     // an objective's lines start with the game's own bullet, <<endgame_objective_bullet_point>>: the bullet is dropped
+     const said = i => { const r = T.ClientStrings2.rows[i]; return r ? clean(String(r.Text || '').replace(/<<[^>]*>>\s*/g, '')) || null : null; };
+     return real(w.Name) ? drop({name: clean(w.Name), id: w.Id, level: w.AreaLevel, unique: w.IsUniqueMapArea,
+       biomes: biomes('Biomes'), nearBiomes: biomes('AdjacentBiomes'),
+       boss: [...new Set((w.Bosses_MonsterVarietiesKeys || []).map(b => R.name('MonsterVarieties', b)).filter(Boolean))],
+       text: mods.flatMap(x => x.text), hidden: joinHidden(...mods.map(x => x.hidden)),
+       content: (m.MapContent || []).map(c => R.name('EndgameMapContent', c)).filter(Boolean),
+       set: set && set.Id, setContent: set && (set.Content || []).map(c => R.name('EndgameMapContent', c)).filter(Boolean),
+       setFlag: set && set.Unknown2, flavour: clean(m.FlavourText), objective: said(m.ObjectiveDescription),
+       special: drop({text: clean(m.SpecialMapText), flavour: clean(m.SpecialMapFlavourText), help: clean(m.SpecialMapHelpText)})}) : null;
+   }).filter(Boolean)},
+  {file: 'rune_recipes', tables: ['Expedition2Recipes', 'Expedition2Runes', 'ExpeditionCategory',
+     'BaseItemTypes', 'ClientStrings'], ids: ['id'],
+   note: 'Runes of Aldur: every rune combination and what it makes. runes are the runes in order (the game files name a ' +
+     'rune by one word; the game’s own lines call it "<word> Rune"); reward is the item, or the game’s words where the ' +
+     'reward is not one item; count how many; gemLevel the level of a gem it makes; level the area levels it can be made ' +
+     'in; tab the Tome tab it sits under; highlights the rows of the highlights file (by position) that can put it on offer; ' +
+     'blocked the game’s words where it is shut until a quest.',
+   rows: ({T, R}) => T.Expedition2Recipes.rows.map(r => drop({id: r.Id,
+     runes: (r.Runes || []).map(i => (T.Expedition2Runes.rows[i] || {}).Id).filter(Boolean),
+     reward: R.name('BaseItemTypes', r.Reward) || clean(r.Description) || null, count: r.RewardCount,
+     gemLevel: r.RewardGemLevel || null, level: [r.MinLevelReq, r.MaxLevelReq], tab: R.name('ExpeditionCategory', r.Category),
+     highlights: r.RuneWeights, blocked: R.name('ClientStrings', r.DisabledText)})).filter(r => r.reward && r.runes)},
+  {file: 'rune_highlights', tables: ['Expedition2RunesWeights', 'Expedition2Runes'], ids: [],
+   note: 'Runes of Aldur: which rune the game highlights, per recipe length (runes) and area-level band (level), and in ' +
+     'which slot of the recipe it sits (slot, from 1). The recipes file points at these rows by position.',
+   rows: ({T}) => T.Expedition2RunesWeights.rows.map(w => drop({runes: w.RecipeRuneCount, slot: w.HighlightedRuneSlot,
+     rune: (T.Expedition2Runes.rows[w.HighlightedRune] || {}).Id, level: [w.MinAreaLevel, w.MaxAreaLevel]}))},
+  {file: 'verisium_crafts', tables: ['Expedition2VerisiumCrafts', 'BaseItemTypes', 'Words'], ids: [],
+   note: 'Runes of Aldur: the Verisium Anvil. from is the base (and unique, where the craft takes one) it takes, to the ' +
+     'base it makes, cost what it costs. The files fill unique with the word Void where the craft takes a plain base.',
+   rows: ({T, R}) => T.Expedition2VerisiumCrafts.rows.map(v => drop({from: R.name('BaseItemTypes', v.OriginalBaseType),
+     unique: R.name('Words', v.UniqueName), to: R.name('BaseItemTypes', v.NewBaseType),
+     cost: (v.CraftingItem || []).map((c, i) => ({item: R.name('BaseItemTypes', c), count: (v.CraftingItemCount || [])[i]}))
+       .filter(c => c.item)})).filter(v => v.from && v.to)},
 ];
 
 /* ---------- run ---------- */
