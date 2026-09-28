@@ -76,6 +76,7 @@ POE2DB = 'https://poe2db.tw/us/'
 COE = 'https://www.craftofexile.com/'
 NINJA = 'https://poe.ninja/poe2/'
 FEED = 'https://web.poecdn.com/ (the Currency Exchange feed)'
+TABLES = 'https://github.com/metaseonso/wraeclast-data (the game\'s own tables, tools/gamepull.py dat())'
 
 """The stages, in the order the data needs them: a stage reads what the ones above it wrote. Per stage:
 
@@ -124,8 +125,10 @@ STAGES = [
                  'data/explore/*.json', 'data/interactions.json'],
          count={'data/index.json': 'items'}, minutes=45),
     dict(name='gamelib', run=['tools/gamelib.py'], cadence='patch', source='game files',
-         reads=[REPOE, 'explore.html', 'data/explore/*.json', 'data/index.json', 'data/craft.json', 'data/craft/*.json'],
-         writes=['data/index.json', 'data/index-core.json', 'data/index-rest.json', 'data/gamestats.json'],
+         reads=[REPOE, TABLES, 'explore.html', 'data/explore/*.json', 'data/index.json', 'data/craft.json',
+                'data/craft/*.json', 'data/trade.json', 'data/market.json', 'data/info.json'],
+         writes=['data/index.json', 'data/index-core.json', 'data/index-rest.json', 'data/gamestats.json',
+                 'data/jewels.json'],
          count={'data/index.json': 'items'}),
     dict(name='treecards', run=['tools/treecards.py'], cadence='patch', source='game files',
          reads=[REPOE, 'data/index.json', 'data/explore/*.json'],
