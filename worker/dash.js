@@ -114,12 +114,13 @@ const group = (list, key) => {
 /* How often one address may send a batch in an hour, counted in this worker's memory only: never written
    anywhere, gone with the worker, and held as a salted 32-bit hash, not the address. It used to be a database row
    per batch (worker/community.js allowed): two writes a batch for a limit a page reaches only by misbehaving. */
-const SEEN = new Map(), SALT = crypto.getRandomValues(new Uint32Array(1))[0];
-let SEEN_HOUR = '';
+const SEEN = new Map();
+let SEEN_HOUR = '', SALT = 0;
 function fnv(s){ let h = (0x811c9dc5 ^ SALT) >>> 0; for(let i = 0; i < s.length; i++){ h ^= s.charCodeAt(i); h = Math.imul(h, 0x01000193); } return h >>> 0; }
 function batchOK(request, max){
   const hour = hourOf();
-  if(hour !== SEEN_HOUR || SEEN.size > 20000){ SEEN.clear(); SEEN_HOUR = hour; }
+  // a new salt every hour (random values are only allowed inside a request, never when the worker loads)
+  if(hour !== SEEN_HOUR || SEEN.size > 20000){ SEEN.clear(); SEEN_HOUR = hour; SALT = crypto.getRandomValues(new Uint32Array(1))[0]; }
   const k = fnv(request.headers.get('CF-Connecting-IP') || ''), n = (SEEN.get(k) || 0) + 1;
   SEEN.set(k, n);
   return n <= max;
