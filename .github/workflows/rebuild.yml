@@ -1,0 +1,95 @@
+# Every 6 hours: build the site again, so the prices on the crawler pages (item pages, lists, llms files, the
+# Markdown copies: files since 28 Sep 2026, made by tools/build.mjs with worker/seo.js) are never more than 6 hours
+# old. The live price file (/data/market.json) is the worker's and is always current; this is for the files.
+#
+# How: Cloudflare builds main on every push. This pushes one small commit to main that changes one line of
+# .github/rebuild-stamp (the time of the run) and nothing else: the file never ships (.assetsignore leaves .github
+# out), so the build differs from the last one only in the prices it read. At most 4 such commits a day, about 120 a
+# month, titled "Scheduled rebuild: fresh prices on the crawler pages". A push by this workflow's own token starts no
+# other workflow (GitHub's rule), so the checks and the GitHub Pages backup do not run for it.
+# Skipped when main already has a commit from the last 5 hours: that push built the site already.
+#
+# Then it tells search engines which pages changed (IndexNow: Bing, Yandex, Seznam, Naver and others share it).
+# It waits for the new deploy (its /crawl.json has a new "built"), compares each page's hash with the one before, and
+# sends the changed addresses in one request. The key is the file at the root of the site named <key>.txt.
+name: Rebuild prices
+
+on:
+  schedule:
+    - cron: '41 */6 * * *'
+  workflow_dispatch:
+    inputs:
+      force:
+        description: 'Build even if main changed in the last 5 hours'
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+concurrency:
+  group: rebuild
+  cancel-in-progress: false
+
+jobs:
+  rebuild:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: Did main build in the last 5 hours
+        id: due
+        run: |
+          last=$(git log -1 --format=%ct)
+          age=$(( $(date +%s) - last ))
+          echo "main's last commit: $(( age / 60 )) minutes ago"
+          if [ "$age" -lt 18000 ] && [ "${{ inputs.force }}" != "true" ]; then echo "due=no" >> "$GITHUB_OUTPUT"; echo "Built from that push already: nothing to do."
+          else echo "due=yes" >> "$GITHUB_OUTPUT"; fi
+      - name: The pages as they are now
+        if: steps.due.outputs.due == 'yes'
+        run: curl -fsS --max-time 60 -A 'wraeclast-index rebuild' https://wraeclastindex.fyi/crawl.json -o before.json || echo '{"pages":{}}' > before.json
+      - name: Push the stamp to main
+        if: steps.due.outputs.due == 'yes'
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          date -u +%Y-%m-%dT%H:%MZ > .github/rebuild-stamp
+          git add .github/rebuild-stamp
+          git commit -m 'Scheduled rebuild: fresh prices on the crawler pages'
+          for i in 1 2 3; do
+            git push origin HEAD:main && exit 0
+            git pull --rebase origin main
+          done
+          exit 1
+      - name: Wait for the new deploy
+        if: steps.due.outputs.due == 'yes'
+        id: live
+        run: |
+          was=$(node -e "try{console.log(require('./before.json').built||'')}catch{console.log('')}")
+          for i in $(seq 1 40); do
+            sleep 30
+            curl -fsS --max-time 60 -A 'wraeclast-index rebuild' "https://wraeclastindex.fyi/crawl.json?t=$(date +%s)" -o after.json || continue
+            now=$(node -e "try{console.log(require('./after.json').built||'')}catch{console.log('')}")
+            if [ -n "$now" ] && [ "$now" != "$was" ]; then echo "live: built $now"; echo "ok=yes" >> "$GITHUB_OUTPUT"; exit 0; fi
+          done
+          echo "::warning::The new deploy did not show within 20 minutes: no IndexNow ping this time."
+      - name: Tell search engines what changed (IndexNow)
+        if: steps.live.outputs.ok == 'yes'
+        run: |
+          key=$(ls | grep -E '^[0-9a-f]{32}\.txt$' | head -n 1 | sed 's/\.txt$//')
+          if [ -z "$key" ]; then echo "::warning::No IndexNow key file at the root."; exit 0; fi
+          node -e "
+            const a = require('./before.json').pages || {}, b = require('./after.json').pages || {};
+            const urls = Object.keys(b).filter(p => a[p] !== b[p] && (p.startsWith('/item/') || /^\/[a-z]+$/.test(p)))
+              .map(p => 'https://wraeclastindex.fyi' + p).slice(0, 10000);
+            require('fs').writeFileSync('ping.json', JSON.stringify({host: 'wraeclastindex.fyi', key: '$key',
+              keyLocation: 'https://wraeclastindex.fyi/$key.txt', urlList: urls}));
+            console.log(urls.length + ' pages changed');
+          "
+          if [ "$(node -e "console.log(require('./ping.json').urlList.length)")" = "0" ]; then exit 0; fi
+          code=$(curl -sS -o /dev/null -w '%{http_code}' --max-time 60 -X POST https://api.indexnow.org/indexnow \
+            -H 'Content-Type: application/json; charset=utf-8' --data @ping.json)
+          echo "IndexNow: HTTP $code"
+          case "$code" in 200|202) ;; *) echo "::warning::IndexNow answered $code" ;; esac
