@@ -243,6 +243,37 @@ address; an essence that is not on the shelf has no link).
 **The owner decides**: the set (it leaves out runes, soul cores and liquid emotions, which also change items), and the
 week (the last 168 hours, not Monday to Sunday: the board is always a full week).
 
+## #106 Rising fast: `data/market/rising.json`
+
+7.1 kB (1.9 kB gzipped). `tools/market_rising.py`. Every currency that moved in the last 24 hours read: `{name, moved
+(volume, price or both), z, peak, started, last, hours, volume [the hour, 7-day hourly mean, times], price [the hour,
+7-day mean, %]}`, highest z first.
+
+**The rule.** Each hour, each currency against its own previous 168 hours (a plain z-score). Volume: the hour's
+divines traded against the mean and standard deviation of every hour of the 7 days (an hour it did not trade is 0).
+Price: the hour's price against the hours it traded, on a log scale. It moved when z is 4 or more, and its volume is 2x
+the mean or its price 15% above it, with 2 divines or more traded in the hour and 24 or more hours traded in the 7
+days. The strip: every currency that moved in 2 or more of the last 24 hours. `started` is the first hour of that run
+(an hour's gap allowed). It says moved, never will move.
+
+Why z 4 and not 3: an hourly market has heavy tails. At z 3 and half a divine, 205 of 656 currencies "moved" in one
+day; at z 4, 2 divines and 2 hours, 32 did.
+
+**Today** (to 27 Sep 00:00 UTC): 32. Uncut Spirit Gem (Level 19), both, z 16.2: 1.7 div an hour against a 7-day mean of
+0.272, and 3.4x its volume, from 26 Sep 20:00 UTC.
+
+**In the frame.** A strip on the home page and the Currency tab, "Rising fast": name (a door to its card), what moved,
+the numbers and the hour it started, `Volume 3.4x its 7-day average · since 20:00 UTC`. The worker serves the same file
+as RSS (`/market/rising.xml`: one item per currency, the line as its title, `started` as its date); that route is not
+built here.
+
+The file is rebuilt with the rest, once a day; the strip is only as fresh as the archive (every 6 hours). An hourly
+strip would run `flags()` in the hourly Publish job on `tools/exchange.py`'s state, which keeps 24 hours and would need
+to keep 7 days.
+
+**The owner decides**: z 4, 2x volume, 15% price, 2 divines, 24 hours of history, 2 hours in the last 24, and how
+often it runs.
+
 ## When new hours arrive
 
 The archive job in `wraeclast-data` (`.github/workflows/archive.yml`) adds the new hours every 6 hours (at :23 past 0,
