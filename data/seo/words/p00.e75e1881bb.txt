@@ -1749,7 +1749,7 @@ Oracle ascendancy
 Hits against you have 12% reduced Critical Damage Bonuscritical-damage-bonus-on-youcritical-damage-bonus-on-youCritical Damage Bonus on You### Critical Damage vs Full Life
 Small passive · https://wraeclastindex.fyi/item/critical-damage-vs-full-life
 Ranger region
-Critical Damage Bonus vs full life enemies@40%critical-damage-vs-full-lifecritical-damage-vs-full-lifeCritical Damage vs Full Life### Critical Damage when consuming a Power Charge
+40% increased Critical Damage Bonus against Enemies that are on Full Lifecritical-damage-vs-full-lifecritical-damage-vs-full-lifeCritical Damage vs Full Life### Critical Damage when consuming a Power Charge
 Small passive · https://wraeclastindex.fyi/item/critical-damage-when-consuming-a-power-charge
 Shadow region
 20% increased Critical Damage Bonus if you've consumed a Power Charge Recentlycritical-damage-when-consuming-a-power-chargecritical-damage-when-consuming-a-power-chargeCritical Damage when consuming a Power Charge### Critical Exploit

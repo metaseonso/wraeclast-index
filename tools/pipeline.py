@@ -118,7 +118,8 @@ STAGES = [
     dict(name='sync', run=['tools/sync.py', '@artifact'], cadence='patch', source='game files, or the artifact',
          needs='the Wraeclast Index artifact, which lives only on the owner\'s machine (--artifact PATH)',
          without=['--from-game'],   # no artifact: the blocks tools/fromgame.py ADOPTED, from the game files
-         reads=['@artifact', REPOE, NINJA, TRADE, 'data/uniques.json', 'data/market.json', 'data/reqs.json',
+         reads=['@artifact', REPOE, NINJA, TRADE, 'https://github.com/grindinggear/poe2-skilltree-export', 'data/patches.json',
+                'data/uniques.json', 'data/market.json', 'data/reqs.json',
                 'data/trade.json', 'data/craft.json', 'data/atlas.json', 'data/info.json'],
          writes=['data/index.json', 'data/index-core.json', 'data/index-rest.json', 'explore.html',
                  'data/explore/*.json', 'data/interactions.json'],

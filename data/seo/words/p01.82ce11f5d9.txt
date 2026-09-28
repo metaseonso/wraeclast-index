@@ -1164,8 +1164,7 @@ Small passive · Infernalist · https://wraeclastindex.fyi/item/minion-life-2
 Minions have 12% increased maximum Lifeminion-life-2minion-lifeMinion Life | 2Minion Life### Minion Life
 Small passive · https://wraeclastindex.fyi/item/minion-life-3
 Templar region
-Minions have 10% increased maximum Life
-Minions have +0% to Chaos Resistanceminion-life-3minion-lifeMinion Life | 3Minion Life### Minion Life and Chaos Resistance
+Minions have 10% increased maximum Lifeminion-life-3minion-lifeMinion Life | 3Minion Life### Minion Life and Chaos Resistance
 Small passive · https://wraeclastindex.fyi/item/minion-life-and-chaos-resistance
 Minions have 8% increased maximum Life
 Minions have +7% to Chaos Resistanceminion-life-and-chaos-resistanceminion-life-and-chaos-resistanceMinion Life and Chaos Resistance### Minion Life and Minion Revive Speed
@@ -1513,10 +1512,12 @@ Duelist region
 +8% to Chaos Resistancepath-of-the-renegadepath-of-the-renegadearmour_and_evasion45Path of the Renegade### Path of the Sorceress
 Small passive · Pathfinder · https://wraeclastindex.fyi/item/path-of-the-sorceress
 Pathfinder ascendancy
-Can Allocate Passive Skills from the Sorceress's starting pointpath-of-the-sorceresspath-of-the-sorceressPath of the Sorceress### Path of the Warrior
+Can Allocate Passive Skills from the Sorceress's starting point
+Grants 4 Passive Skill Pointspath-of-the-sorceresspath-of-the-sorceressPath of the Sorceress### Path of the Warrior
 Small passive · Pathfinder · https://wraeclastindex.fyi/item/path-of-the-warrior
 Pathfinder ascendancy
-Can Allocate Passive Skills from the Warrior's starting pointpath-of-the-warriorpath-of-the-warriorPath of the Warrior### Patient Barrier
+Can Allocate Passive Skills from the Warrior's starting point
+Grants 4 Passive Skill Pointspath-of-the-warriorpath-of-the-warriorPath of the Warrior### Patient Barrier
 Notable · https://wraeclastindex.fyi/item/patient-barrier
 Witch region
 50% increased maximum Energy Shield
@@ -1734,7 +1735,7 @@ Reveal Weaknesses against Rare and Unique enemies
 50% more damage against enemies with an Open Weaknesspredatory-instinctpredatory-instinctAscendancyHuntress1Notable3Predatory Instinct### Preemptive Strike
 Notable · https://wraeclastindex.fyi/item/preemptive-strike
 Ranger region
-Critical Damage Bonus vs full life enemies@100%preemptive-strikepreemptive-strikecriticals39Preemptive StrikeDiluted Liquid GuiltLiquid DisgustDiluted Liquid Greed### Presence Area
+100% increased Critical Damage Bonus against Enemies that are on Full Lifepreemptive-strikepreemptive-strikecriticals39Preemptive StrikeDiluted Liquid GuiltLiquid DisgustDiluted Liquid Greed### Presence Area
 Small passive · Tactician · https://wraeclastindex.fyi/item/presence-area
 20% increased Presence Area of Effectpresence-areapresence-areaPresence Area### Presence Area
 Small passive · https://wraeclastindex.fyi/item/presence-area-2
@@ -2369,8 +2370,8 @@ Gain additional Stun Threshold equal to 20% of maximum Energy Shield
 20% increased Stun Threshold while on Full Lifeself-mortificationself-mortificationstun_threshold_from_energy_shield11Self MortificationDiluted Liquid IreLiquid EnvyLiquid Envy### Self Sacrificing
 Notable · https://wraeclastindex.fyi/item/self-sacrificing
 Templar region
-40% increased Reservation Efficiency of Minion Skills
--20% increased Spirit Reservation Efficiencyself-sacrificingself-sacrificingoracle_self_sacrificing5_Self Sacrificing### Sentinels
+20% reduced Spirit Reservation Efficiency of Skills
+40% increased Reservation Efficiency of Minion Skillsself-sacrificingself-sacrificingoracle_self_sacrificing5_Self Sacrificing### Sentinels
 Small passive · https://wraeclastindex.fyi/item/sentinels
 Templar region
 Minions deal 10% increased Damage
@@ -3232,9 +3233,9 @@ Fully Broken Armour you inflict also increases Fire Damage Taken from Hits
 15% increased effect of Fully Broken Armourthe-molten-ones-giftthe-molten-ones-giftarmour_break16_The Molten One's GiftDiluted Liquid GuiltConcentrated Liquid SufferingDiluted Liquid Greed### The Mórrigan's Guidance
 Notable · Spirit Walker · https://wraeclastindex.fyi/item/the-morrigans-guidance
 Spirit Walker ascendancy
-More Shock Magnitude per leap@20%
 Gain a Vivid Wisp when Vivid Stampede ends
-More damage per leap@20%the-morrigans-guidancethe-morrigans-guidanceAscendancyHuntress2Notable2The Mórrigan's Guidance### The Natural Order
+Stags deal 20% more damage per leap
+Stags have 20% more Shock Magnitude per leapthe-morrigans-guidancethe-morrigans-guidanceAscendancyHuntress2Notable2The Mórrigan's Guidance### The Natural Order
 Notable · Spirit Walker · https://wraeclastindex.fyi/item/the-natural-order
 Spirit Walker ascendancy
 Tame Beast can capture Unique Beasts

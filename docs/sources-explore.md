@@ -17,7 +17,7 @@ field by field (`--show N`, `--field F` for the differences). The numbers below 
 **Adopting it.** `tools/fromgame.py` `ADOPTED` names the blocks `--from-game` rebuilds by default: the ones
 whose every difference is explained below. All five are adopted.
 
-Letters in the tables: **R** = RePoE export file and field, **D** = decoded game table and column,
+Letters in the tables: **R** = RePoE export file and field, **D** = decoded game table and column, **G** = GGG's own passive tree export,
 **ours** = made by the site, not a game value.
 
 ## Gems: `gems.*.json` and `gemtext.*.json` (`tools/gems.py`, adopted)
@@ -154,10 +154,10 @@ Ironclad Vestments (no source gives their lines).
 
 | Field | Source |
 |---|---|
-| `meta.src` | the export's build string (`gamepull.build`) |
+| `meta.src` | the export's build string (`gamepull.build`), and the patch of GGG's tree export when its lines were used |
 | `h`, `id`, `n` | R `passive_skill_trees/Default` passive `hash`, `id`, `name` |
 | `s` | R passive `stats`, plus the stats past the fourth the export drops: D `PassiveSkills` `Stats` / `Stat5Value`..`Stat7Value` (`Stats` for the ids), only where the export's own stats match the table |
-| `t` | the game's wording of `s`: R `stat_descriptions` then `passive_skill_stat_descriptions` (a stat both describe takes the passive file's entry), every entry in the files' order, the first wording whose conditions the values meet, with its index handlers. `[Id|words]` markup kept. Then `Grants Skill: <name>` (D `ClientStrings` `ItemDisplayGrantedSkillNoScaling`) with the skill's name from R `skill_gems` |
+| `t` | the game's wording of `s`: R `stat_descriptions` then `passive_skill_stat_descriptions` (a stat both describe takes the passive file's entry), every entry in the files' order, the first wording whose conditions the values meet, with its index handlers. `[Id|words]` markup kept. Then `Grants Skill: <name>` (D `ClientStrings` `ItemDisplayGrantedSkillNoScaling`) with the skill's name from R `skill_gems`. Where G, GGG's own passive tree export (`grindinggear/poe2-skilltree-export` at the commit `data/patches.json` ties to the patch, `tools/treeexport.py official_lines`), gives the node other words, G's lines instead (#133); only when G's newest patch is the export's |
 | `k` | R passive flags; `anoint` = D `PassiveSkills` `IsAnointmentOnly` and on the anointing list |
 | `kw` | every `[Id]` its lines mark |
 | `a` | R `ascendancies` name |

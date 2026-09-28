@@ -28,8 +28,9 @@ sits in "id" only, so the tree view can light the node, and is never drawn.
 
 data/treechanges/index.json lists the steps with their counts, and the check against RePoE: nodes one tree
 has and the other does not, names that differ, and lines the site shows (the drill-down's tree block) that
-differ from GGG's wording. A mismatch is reported, never fixed here; which one is right is a question for
-the owner.
+differ from GGG's wording. A mismatch is reported, never fixed here: tools/tree.py puts GGG's lines on the
+drill-down's passives where the two differ (official_lines below, #133), so after the sync stage the lines check
+reads 0, and a number above 0 means the drill-down was built without the export (or from another patch).
 
 The export is read with git, into tools/cache/treeexport.git (not in git), fetched again each run and read
 offline when the fetch fails. A stage of tools/pipeline.py (treechanges, patch cadence, after treelines: it
@@ -159,6 +160,25 @@ def shown(node, **more):
         out['ls'] = node['ls']
     out.update(more)
     return out
+
+
+def official_lines():
+    """(patch, {node number: lines}) for the newest patch data/patches.json ties to the export: the lines
+    tools/tree.py puts on the drill-down's passives where RePoE's differ (#133, official data first). The display
+    tags are read away and the keyword brackets kept, because the drill-down marks its keyword links from them;
+    a line the game marks [DNT] is dropped, and so is a node with no name or a [DNT] one."""
+    fetch()
+    vs = versions()
+    if not vs:
+        raise lastgood.Stale('data/patches.json ties no patch to a tree export commit')
+    patch_, sha, _ = vs[-1]
+    out = {}
+    for key, v in (tree_at(sha).get('nodes') or {}).items():
+        name = (v.get('name') or '').strip()
+        if key.isdigit() and name and not DNT.search(name):
+            out[int(key)] = [x for s in v.get('stats') or [] if s.strip() and not DNT.search(s)
+                             for x in [untag(s)] if x.strip()]
+    return patch_, out
 
 
 def names(numbers, tree):
