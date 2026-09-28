@@ -186,6 +186,14 @@ DATA_REPO = 'repos/metaseonso/wraeclast-data/contents/game'
 _dat_ver = None
 
 
+def _said(e):
+    """What gh itself said when it failed (GitHub's own answer), so a refusal names its reason."""
+    err = getattr(e, 'stderr', None)
+    if isinstance(err, bytes):
+        err = err.decode('utf-8', 'replace')
+    return (' — gh: ' + ' '.join(err.split())[:300]) if err else ''
+
+
 def _gh_env():
     """The data repo is private. On the owner's machine the signed-in gh reads it; in Actions the site repo's own
     token cannot, so the Game patch workflow hands in a read-only token for that one repo as WI_DATA_TOKEN (the
@@ -205,7 +213,7 @@ def dat_version():
                                  check=True, timeout=120, env=_gh_env()).stdout.split()
         except Exception as e:
             got = []
-            print('  could not list %s: %s' % (DATA_REPO, e), file=sys.stderr)
+            print('  could not list %s: %s%s' % (DATA_REPO, e, _said(e)), file=sys.stderr)
         have = sorted((v for v in got if re.fullmatch(r'\d+\.\d+\.\d+', v)), key=lambda v: [int(x) for x in v.split('.')])
         if want in have or (not have and want):
             _dat_ver = want
@@ -231,7 +239,7 @@ def dat(table):
                                   capture_output=True, check=True, timeout=300, env=_gh_env()).stdout
             json.loads(body)   # a broken download fails here, before it is kept
         except Exception as e:
-            raise SystemExit('cannot read the game table %s for %s (gh api): %s' % (table, ver, e))
+            raise SystemExit('cannot read the game table %s for %s (gh api): %s%s' % (table, ver, e, _said(e)))
         f.parent.mkdir(parents=True, exist_ok=True)
         f.write_bytes(body)
     return json.loads(f.read_bytes())
