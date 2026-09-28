@@ -7,8 +7,9 @@ source, and says what has none.
 
 **Sources, best first.** The game files, read through the RePoE fork's PoE2 export
 (`https://repoe-fork.github.io/poe2/`, pulled by `tools/gamepull.py` into `tools/cache/official/`). Where the
-export lacks a value, the game's own tables decoded for 0.5.5 (`metaseonso/wraeclast-data`, `game/0.5.5/out/raw/`,
-issue #83). Then poe2db. Anything else is named where it is used.
+export lacks a value, the game's own tables, read out of the game's bundles on GGG's patch CDN by
+`tools/datpull.mjs --raw` through `tools/gamepull.py` `dat()` (issue #83; the same rows the private data repo's
+`game/0.5.5/out/raw/` held, checked table for table). Then poe2db. Anything else is named where it is used.
 
 **Proving it.** `python tools/dev/explorecmp.py` builds every block and holds it up against the committed file,
 field by field (`--show N`, `--field F` for the differences). The numbers below are from patch 0.5.5
@@ -17,7 +18,7 @@ field by field (`--show N`, `--field F` for the differences). The numbers below 
 **Adopting it.** `tools/fromgame.py` `ADOPTED` names the blocks `--from-game` rebuilds by default: the ones
 whose every difference is explained below. All five are adopted.
 
-Letters in the tables: **R** = RePoE export file and field, **D** = decoded game table and column,
+Letters in the tables: **R** = RePoE export file and field, **D** = decoded game table and column, **G** = GGG's own passive tree export,
 **ours** = made by the site, not a game value.
 
 ## Gems: `gems.*.json` and `gemtext.*.json` (`tools/gems.py`, adopted)
@@ -154,10 +155,10 @@ Ironclad Vestments (no source gives their lines).
 
 | Field | Source |
 |---|---|
-| `meta.src` | the export's build string (`gamepull.build`) |
+| `meta.src` | the export's build string (`gamepull.build`), and the patch of GGG's tree export when its lines were used |
 | `h`, `id`, `n` | R `passive_skill_trees/Default` passive `hash`, `id`, `name` |
 | `s` | R passive `stats`, plus the stats past the fourth the export drops: D `PassiveSkills` `Stats` / `Stat5Value`..`Stat7Value` (`Stats` for the ids), only where the export's own stats match the table |
-| `t` | the game's wording of `s`: R `stat_descriptions` then `passive_skill_stat_descriptions` (a stat both describe takes the passive file's entry), every entry in the files' order, the first wording whose conditions the values meet, with its index handlers. `[Id|words]` markup kept. Then `Grants Skill: <name>` (D `ClientStrings` `ItemDisplayGrantedSkillNoScaling`) with the skill's name from R `skill_gems` |
+| `t` | the game's wording of `s`: R `stat_descriptions` then `passive_skill_stat_descriptions` (a stat both describe takes the passive file's entry), every entry in the files' order, the first wording whose conditions the values meet, with its index handlers. `[Id|words]` markup kept. Then `Grants Skill: <name>` (D `ClientStrings` `ItemDisplayGrantedSkillNoScaling`) with the skill's name from R `skill_gems`. Where G, GGG's own passive tree export (`grindinggear/poe2-skilltree-export` at the commit `data/patches.json` ties to the patch, `tools/treeexport.py official_lines`), gives the node other words, G's lines instead (#133); only when G's newest patch is the export's |
 | `k` | R passive flags; `anoint` = D `PassiveSkills` `IsAnointmentOnly` and on the anointing list |
 | `kw` | every `[Id]` its lines mark |
 | `a` | R `ascendancies` name |

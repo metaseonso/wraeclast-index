@@ -190,7 +190,16 @@ class Cards:
             if it['k'] == 'u':
                 for line in it.get('ls') or []:
                     self.unique_lines[shape(line)].add('u:' + it['id'])
-        self.keyword = {it['n']: it['id'] for it in index['items'] if it['k'] == 'w'}
+        # the keyword card a buff's name already opens: its own name, else one of its other words (f) that no
+        # other keyword card claims. "Fire" is a word of Fire Damage's card, so the Fire debuff is that card and
+        # not a second door on every "Fire" in the index (assets/marks.js reads a keyword's f words as its own)
+        kws = [it for it in index['items'] if it['k'] == 'w']
+        alt = defaultdict(set)
+        for it in kws:
+            for w in it.get('f') or []:
+                alt[w].add(it['id'])
+        self.keyword = {w: next(iter(ids)) for w, ids in alt.items() if len(ids) == 1}
+        self.keyword.update({it['n']: it['id'] for it in kws})
 
     def card(self, key):
         return {'n': self.name[key], 'k': key[0], 'key': key} if key in self.name else None
@@ -365,7 +374,7 @@ def build(index):
                    '(by: cards; mods: modifiers with no card, counted by where they roll) and the keyword card of '
                    'the same name (kw). Written by tools/buffs.py; design/buffs.md.',
            'labels': {'src': SRC},
-           'ids': ['id', 'key', 'kw'],
+           'ids': ['id', 'key', 'kw', 'img'],   # img: the icon's address, never shown as words
            'rows': rows}
     rep = {'why': why, 'idle': idle, 'mute': mute, 'icons': icons, 'names': len(names)}
     return out, rep
@@ -379,11 +388,11 @@ def cards_into(index, rows):
     through data/grants.json (tools/grants.py); one named like its own gem ("Herald of Ice") is that gem's."""
     index['items'] = [it for it in index['items'] if it['k'] != 'd']
     taken = {it['n'] for it in index['items'] if it['k'] != 'w'}
-    lend = {r['n']: r for r in rows if r.get('kw')}
+    lend = {r['kw']: r for r in rows if r.get('kw')}   # by the keyword card's id: a buff may be one of its words
     for it in index['items']:
         if it['k'] != 'w':
             continue
-        r = lend.get(it['n'])
+        r = lend.get(it['id'])
         if r:
             it['img'] = r['img']
         elif (it.get('img') or '').startswith('r:Art/2DArt/'):   # a buff that lent it one is gone

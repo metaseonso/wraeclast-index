@@ -14,7 +14,7 @@
      links   every deep link the code emits lands on a real row in the data
      pages   every public page answers 200 (the crawler's pages as the files tools/build.mjs made, an unknown
              path the 404 page); the sitemaps and the llms files did not shrink; robots.txt says the terms
-     rawcode no stat ids, [Word|Word] markup or {0} placeholders where a player can read them
+     rawcode no stat ids, [Word|Word] markup, {0} placeholders or "...@100%" stat text where a player can read them
      voice   every word a player reads is the game's, not an assistant's (tools/dev/voice.mjs)
      mods    the Craft tab's tables against the export's own list of which modifiers roll on which base
              (tools/dev/modsbybase.py; passes where the export's copies are not here)
@@ -70,6 +70,8 @@ const MARKS = [
   ['{0} placeholder', /\{\d*(?::[^}]{0,12})?\}/],
   ['%1$s template', /%\d+\$[sd]/],
   ['DNT marker', /\bDNT[-\w]*/],
+  // a stat's short form with its value stuck on: "Critical Damage Bonus vs full life enemies@100%" (#133)
+  ['@value stat text', /[^\s@"]@[+-]?\d+(?:\.\d+)?%/],
 ];
 const mark = s => { for(const [n, re] of MARKS) if(re.test(s)) return n; return null; };
 
@@ -411,7 +413,7 @@ async function checkRaw(index, files, pages, want){
   const found = new Map();
   const jsonFiles = [['data/index.json', index]];
   for(const [key, path] of Object.entries(files)) jsonFiles.push([path.replace(/\.[0-9a-f]{6,}\.json$/, '.*.json'), await getJSON('/' + path)]);
-  for(const name of ['kwuse.json', 'info.json', 'reqs.json', 'atlas.json', 'craft.json', 'essences.json', 'uniques.json',
+  for(const name of ['kwuse.json', 'treelines.json', 'info.json', 'reqs.json', 'atlas.json', 'craft.json', 'essences.json', 'uniques.json',
     'trade.json', 'bosses.json', 'bossqueries.json'])
     jsonFiles.push(['data/' + name, await getJSON('/data/' + name)]);
   for(const [name, j] of jsonFiles) walk(name, '', j, found);

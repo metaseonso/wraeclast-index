@@ -1,7 +1,7 @@
 """Publish the libraries the official export holds and the site does not ship yet.
 
 tools/gamepull.py counts the gap; this closes the part of it that is nothing but "the game has more than we
-carry". Five jobs, all from the export (tools/cache/official, gamepull.official):
+carry". The jobs, all from the export (tools/cache/official, gamepull.official) unless they say otherwise:
 
   keywords   The drill-down artifact carries 451 keywords. The game's own help text has far more, and every
              one of them is a thing a player meets: map and area mechanics, monster modifiers, shrines,
@@ -15,9 +15,18 @@ carry". Five jobs, all from the export (tools/cache/official, gamepull.official)
              nowhere, so nothing could be opened on it and no card could point at it.
   notables   The 33 ascendancy notables whose whole effect is a skill. The tree gives them no stat line, so
              the drill-down has no row for them and the site had no card — but "Grants Skill: <name>" is
-             the line, the same line a base item or a unique shows for the same thing.
+             the line, the same line a base item or a unique shows for the same thing. And the one notable
+             that is also a jewel socket (the Lich's Crystalline Phylactery), which has lines of its own.
   gems       Counted only. The export has 1,191 gem entries and we card 1,072; every one of the 119 is a
              name no player ever sees (see gems()). Nothing to add, and the count says so each run.
+  gem cards  What quality adds to each gem and the uncut gem it is cut from, on the gem's own card (gemfacts;
+             tools/gems.py reads both). poe2db shows them on every gem page; now the card does too.
+  listed     What the official trade site lists and nothing cards: its currency and map items the live catalogue
+             does not carry (the Trial Coins, the Inscribed Ultimatum), in the item's own words or the line the
+             game prints for what an item of that class is for (ClientStrings, the game's own table), and the one
+             base only uniques use (the Timeless Jewel). What stays out says why (listed_cards).
+  jewels     data/jewels.json: every jewel base, the craft table its modifiers are in, the uniques on it, and the
+             timeless jewel factions with their conquerors. The Jewel kind reads it (design/gems-gaps.md).
   numbers    data/gamestats.json: what one monster of each level is worth in life, damage and defences, and
              what each class starts with. The only official answer to "how much do I need at level N".
              Written for the site to use later; no page reads it yet.
@@ -35,6 +44,7 @@ import json
 import re
 import sys
 import urllib.parse
+from collections import Counter
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -63,7 +73,8 @@ OPEN = re.compile(r'<[^<>{}]*>\{')     # a tag and the words it wraps, which may
 # What counts as game code on a card, the same marks tools/dev/guard.mjs looks for on a rendered page.
 SHOWN = [re.compile(r'(?:^|[^A-Za-z0-9_])[a-z][a-z0-9]*(?:_[a-z0-9+%]+)+(?![A-Za-z0-9_])'),   # a stat id
          re.compile(r'\[[^\]|]{1,60}\|[^\]]{1,60}\]'), re.compile(r'\[[A-Z][A-Za-z]{2,}\]'),  # keyword markup
-         re.compile(r'\{\d*(?::[^}]{0,12})?\}'), re.compile(r'%\d+\$[sd]'), re.compile(r'\bDNT[-\w]*')]
+         re.compile(r'\{\d*(?::[^}]{0,12})?\}'), re.compile(r'%\d+\$[sd]'), re.compile(r'\bDNT[-\w]*'),
+         re.compile(r'[^\s@"]@[+-]?\d+(?:\.\d+)?%')]   # a stat's short form with its value stuck on (#133)
 
 
 def real(s):
@@ -155,22 +166,45 @@ def pick(index):
             seen[it['n'].lower()] = seen.get(it['n'].lower(), 0) + 1
     for v in rest.values():
         seen[v['term'].lower()] = seen.get(v['term'].lower(), 0) + 1
-    # a keyword card already shipped keeps its card when the export adds another term of the same name: its id
-    # is its address, its pins and its links (Power Rune: Expedition2PowerRune shipped, then the export added a
-    # tooltip-only PowerRune with the same name). Only where it is the one shipped term of that name.
+    # Two entries of one name that the game words the same are one keyword (a monster modifier's two tiers);
+    # where one entry is keyed by the name itself it is the keyword and the others are a monster modifier's
+    # copy (Enraged); where one wording opens the other, the shared part is true of all of them and is the card.
+    # Anything else stays out: nothing in the data says which one a player means.
+    # First of all, a keyword card already shipped keeps its card when the export adds another term of the same
+    # name: its id is its address, its pins and its links (Power Rune: Expedition2PowerRune shipped, then the
+    # export added a tooltip-only PowerRune with the same name). Only where it is the one shipped term of that name.
     had = shipped_ids('w')
-    keeps = {}
+    same = {}
     for k, v in rest.items():
-        keeps.setdefault(v['term'].lower(), []).append(k)
+        same.setdefault(v['term'].lower(), []).append(k)
     new = {}
     for k, v in rest.items():
-        t = v['term'].lower()
-        mine = [x for x in keeps[t] if x in had]
-        clash = [it['id'] for it in index['items'] if it['k'] == 'w' and it['n'].lower() == t]
-        if seen[t] > 1 and not (k in had and mine == [k] and not clash):
-            why[k] = 'the name is on another card'
-        else:
+        term = v['term'].lower()
+        ks = same[term]
+        if seen[term] == 1:
             new[k] = v
+            continue
+        if seen[term] > len(ks):
+            why[k] = 'the name is on another card'
+            continue
+        text = {x: rest[x]['definition'].strip() for x in ks}
+        own = [x for x in ks if x.lower() == re.sub(r'[^a-z]', '', term)]
+        short = min(ks, key=lambda x: (len(text[x]), x))
+        mine = [x for x in ks if x in had]
+        if len(mine) == 1:
+            pick_one = mine[0]
+        elif len(set(text.values())) == 1:
+            pick_one = sorted(ks)[0]
+        elif len(own) == 1:
+            pick_one = own[0]
+        elif all(text[x].startswith(text[short]) for x in ks):
+            pick_one = short
+        else:
+            pick_one = None
+        if k == pick_one:
+            new[k] = v
+        else:
+            why[k] = 'the name is on another card' if pick_one else 'one name, several meanings'
     return new, kwx, why
 
 
@@ -385,6 +419,19 @@ def notables(index, write=True):
         else:
             cards.append({'k': 'p', 'id': nid, 'n': name, 's': 'Notable · ' + who,
                           'ls': ['Grants Skill: ' + gem[gid]], 'asc': who, 'img': node_image(node)})
+    # A notable that is also a jewel socket (the Lich's Crystalline Phylactery): the drill-down files it with the
+    # sockets, so tools/sync.py made no card, but it has lines of its own like any notable.
+    notable = {n.get('id'): n for n in official(TREE)['passives'].values() if n.get('is_notable')}
+    for p in drilldown('trdata')['passives']:
+        node = notable.get(p['id'])
+        if not node or p['id'] in have or p.get('k') != 'jewel socket' or not p.get('t'):
+            continue
+        name = (p.get('n') or '').strip()
+        if not real(name) or not p.get('a'):
+            why[p['id']] = 'a name players never see' if not real(name) else 'no ascendancy we know'
+            continue
+        cards.append({'k': 'p', 'id': p['id'], 'n': name, 's': 'Notable · ' + p['a'], 'asc': p['a'],
+                      'ls': [plain(y) for x in p['t'] for y in x.split('\n') if y.strip()], 'img': node_image(node)})
     cards.sort(key=lambda c: (c['asc'], c['n']))
 
     # the same standard tools/sync.py holds its own cards to
@@ -446,6 +493,217 @@ def gone(index):
         if CUT.match(it['n']):
             sys.exit('a name players never see is a card: %r' % it['n'])
     return sorted(names)
+
+
+# ---------------------------------------------------------------- what a gem card says on top of its lines
+
+QUALITY_HEAD = 'Additional Effects From Quality:'   # the game's own divider above these lines (ClientStrings)
+
+
+def gemfacts(index, write=True):
+    """Two things on every gem card that poe2db shows and the card did not: what quality adds, and the uncut gem it
+    is cut from (tools/gems.py says how each is read from the export).
+
+      gq  the game's own divider, then one line per quality stat: the game's wording with the range its tooltip
+          prints at 0 to 20% quality, "(0-40)% more chance to Shock". The card draws it under the gem's own text.
+      uc  the uncut gem that makes it, by the game's own name for it: "Uncut Skill Gem (Level 1)". An uncut gem
+          cuts to its own level, so the level in the name is also the lowest level this gem can be cut at. A
+          support gem has no level; its uncut gem's level is the tier it offers.
+
+    A gem's history is not written here: it is read where it is kept, by the card's own key (design/gems-gaps.md).
+    Every card is set again each run, so a gem whose quality the game takes away loses the lines here too."""
+    import gems as gemfile
+    ladder = gemfile.uncut_ladder()
+    export = {k.rsplit('/', 1)[-1]: v for k, v in official('skill_gems.min.json').items()}
+    skills = official('skills.min.json')
+    by_id = {g['id']: g for g in drilldown('gemdata')['gems']}
+    n = {'cards': 0, 'quality': 0, 'uncut': 0, 'left': 0}
+    for it in index['items']:
+        if it['k'] != 'g':
+            continue
+        n['cards'] += 1
+        g = by_id.get(it['id']) or {}
+        q, lost = gemfile.quality_lines(gemfile.granted_sets(export.get(it['id']) or {}, skills))
+        n['left'] += lost
+        cut = gemfile.uncut_from(g, ladder)
+        for x in q + [cut or '']:
+            if x and (any(m.search(x) for m in SHOWN) or RAW.search(x) or DNT.search(x)):
+                sys.exit('game code on the gem card %r: %r' % (it['n'], x))
+        n['quality'] += bool(q)
+        n['uncut'] += bool(cut)
+        if not write:
+            continue
+        it.pop('gq', None)
+        it.pop('uc', None)
+        if q:
+            it['gq'] = [QUALITY_HEAD] + q
+        if cut:
+            it['uc'] = cut
+    return n
+
+
+# ---------------------------------------------------------------- the jewels
+
+JEWELS = ROOT / 'data' / 'jewels.json'
+
+
+def jewels(index):
+    """data/jewels.json: every jewel in the game, for the Jewel kind (proposed in design/gems-gaps.md).
+
+    One row per jewel base on the official trade site's list: its drop level, its picture, the craft table its
+    modifiers are read from (data/craft/<id>.json, never copied here) with how many prefixes, suffixes and
+    corruptions its own pool holds, and the uniques that sit on it. Then the timeless jewels: one row per
+    faction, its conquerors in the game's order, the seed range its jewel rolls, and the unique that is that
+    jewel where the game has one. Which unique is which faction is read the way tools/treecards.py reads it:
+    the unique's own first line is the faction's line with the seed range filled in."""
+    trade = json.loads((ROOT / 'data' / 'trade.json').read_text(encoding='utf-8'))
+    listed = (trade.get('bases') or {}).get('Jewels') or []
+    craft = json.loads(CRAFT.read_text(encoding='utf-8')) if CRAFT.exists() else {'classes': []}
+    craft_of = {b[0]: c['id'] for c in craft.get('classes') or [] for b in c['b']}
+    base_card = {it['n']: it for it in index['items'] if it['k'] == 'b'}
+    on = {}
+    for it in index['items']:
+        if it['k'] == 'u' and ' · ' in (it.get('s') or ''):
+            on.setdefault(it['s'].split(' · ')[0], []).append(it['n'])
+
+    bases = []
+    for name in listed:
+        b = base_card.get(name) or {}
+        row = {'n': name, 'dl': int(re.search(r'level (\d+)', b.get('s') or 'level 0').group(1)) or None}
+        if b.get('img'):
+            row['img'] = b['img']
+        cid = craft_of.get(name)
+        if cid and (CRAFTDIR / (cid + '.json')).exists():
+            d = json.loads((CRAFTDIR / (cid + '.json')).read_text(encoding='utf-8'))
+            pool = next((d['pools'][x['p']] for x in d.get('bases') or [] if x['n'] == name), None)
+            fam, mods = d.get('fam') or [], d.get('mods') or []
+            side = Counter(fam[mods[i][1]][0] for i in (pool or {}).get('m') or [] if mods[i][1] < len(fam))
+            row['pool'] = {'file': 'data/craft/%s.json' % cid, 'p': side.get('p', 0), 's': side.get('s', 0),
+                           'c': len((pool or {}).get('c') or [])}
+        if on.get(name):
+            row['u'] = sorted(set(on[name]))
+        bases.append(row)
+
+    rows = drilldown('jwdata')
+    uniques = [it for it in index['items'] if it['k'] == 'u']
+    factions = []
+    for ver, seed in sorted(((int(v), s) for v, s in (rows.get('seeds') or {}).items())):
+        mine = [r for r in rows.get('rows') or [] if r['ver'] == ver]
+        live = [r for r in mine if not (r.get('rev') and r['rev'][1] == 0)]   # a conqueror only on older items
+        said = []
+        for r in live:
+            if r['conqueror'] not in said:
+                said.append(r['conqueror'])
+        pre, post = live[0]['text'].split('{1}', 1)
+        line = re.compile('^' + re.escape(pre) + r'.{0,40}' + re.escape(post) + '$')
+        item = [it['n'] for it in uniques if any(line.match(x) for x in it.get('ls') or [])]
+        row = {'faction': live[0]['faction'], 'conquerors': said, 'seed': seed['seed']}
+        old = sorted({r['conqueror'] for r in mine} - set(said))
+        if old:
+            row['older'] = old   # the game still words them, on jewels from before they were replaced
+        if item:
+            row['u'] = item
+        factions.append(row)
+    out = {'note': 'Every jewel in the game: bases (the official trade site\'s list), the craft table each one\'s '
+                   'modifiers are read from and how many of each side its pool holds (p prefixes, s suffixes, c '
+                   'corruptions), the uniques on it, and the timeless jewel factions with their conquerors, seed '
+                   'range and the unique that is that jewel. Written by tools/gamelib.py.',
+           'patch': patch(), 'src': 'the official game files (RePoE export: base_items, mods, stat_descriptions) and '
+                                    'the official trade site\'s item list',
+           'bases': bases, 'timeless': factions}
+    for x in json.dumps(out, ensure_ascii=False).split('"'):
+        if DNT.search(x):
+            sys.exit('a game marker in data/jewels.json: %r' % x)
+    return out
+
+
+# ---------------------------------------------------------------- what the trade site lists and nothing cards
+
+# The line the game prints under an item's name for what it is used for, by the item's class: ClientStrings
+# "ItemFunction<class>" in the game's own tables (tools/gamepull.py dat()). Only read for an item the export gives
+# no text for.
+NO_LONGER = 'no longer usable'
+
+
+def listed_cards(index, write=True):
+    """Cards for what the official trade site lists and nothing here cards: its currency and map items that the
+    live catalogue does not list (tools/morecards.py cards the ones on the Currency Exchange), and a base only
+    uniques use (the Timeless Jewel: the export marks it unique_only, so tools/morecards.py passes it by).
+
+    The words are the game's: the item's own description (data/info.json, tools/gameinfo.py), else the line the
+    game prints for what an item of that class is for. An item whose own text says it is no longer usable, or
+    with no text anywhere in the game files, gets no card, and says why."""
+    from gamepull import dat
+    from sync import game_art
+    trade = json.loads((ROOT / 'data' / 'trade.json').read_text(encoding='utf-8'))
+    market = json.loads((ROOT / 'data' / 'market.json').read_text(encoding='utf-8')).get('items') or {}
+    info = json.loads((ROOT / 'data' / 'info.json').read_text(encoding='utf-8'))
+    have = ({it['n'] for it in index['items'] if it['k'] in ('c', 'a', 'b')}
+            | {v['n'] for v in market.values() if v.get('n')})
+    base = official('base_items.min.json')
+    klass = official('item_classes.min.json')
+    by_name = {}
+    for path, v in base.items():
+        if v.get('release_state') in ('released', 'unique_only') and v.get('name'):
+            by_name.setdefault(v['name'], []).append(v)
+    said = {}
+    for r in dat('ClientStrings'):
+        if r['Id'].startswith('ItemFunction'):
+            said[r['Id'][len('ItemFunction'):]] = r['Text']
+
+    cards, why = [], {}
+    money = [x for g in ('Currency', 'Maps') for x in (trade.get('bases') or {}).get(g, [])]
+    for name in sorted(set(money) - have):
+        vs = by_name.get(name) or []
+        text = (info.get(name) or {}).get('t') or ''
+        cls = (info.get(name) or {}).get('cls') or (vs[0]['item_class'] if vs else '')
+        if not text:
+            for v in vs:
+                if said.get(v['item_class']):
+                    text, cls = plain(untag(said[v['item_class']])), v['item_class']
+                    break
+        if not text:
+            why[name] = 'no text anywhere in the game files'
+            continue
+        if NO_LONGER in text:
+            why[name] = 'the game\'s own text says it is no longer usable'
+            continue
+        sub = (klass.get(cls) or {}).get('name') or 'Currency'
+        it = {'k': 'c', 'id': name, 'n': name, 's': 'Currency' if sub in (name, 'Stackable Currency') else sub, 't': text}
+        if (info.get(name) or {}).get('dl'):
+            it['dl'] = info[name]['dl']
+        art = (info.get(name) or {}).get('a')
+        dds = art + '.dds' if art else next(((v.get('visual_identity') or {}).get('dds_file') for v in vs
+                                             if (v.get('visual_identity') or {}).get('dds_file')), None)
+        img = game_art(dds)
+        if img and shows(img):
+            it['img'] = img
+        cards.append(it)
+
+    kept = []
+    for name in sorted(set((trade.get('bases') or {}).get('Jewels') or []) - have):
+        v = next((v for v in by_name.get(name) or [] if v.get('item_class') == 'Jewel'), None)
+        if not v:
+            why[name] = 'not in the export'
+            continue
+        it = {'k': 'b', 'id': name, 'n': name, 's': 'Jewel · drops from level %d' % (v.get('drop_level') or 1)}
+        img = game_art((v.get('visual_identity') or {}).get('dds_file'))
+        if img and shows(img):
+            it['img'] = img
+        kept.append(it)
+
+    for it in cards + kept:
+        for f in SHOWN_FIELDS:
+            for x in (it.get(f) if isinstance(it.get(f), list) else [it.get(f)]):
+                if x and (any(m.search(x) for m in SHOWN) or RAW.search(x) or DNT.search(x)):
+                    sys.exit('game code in %s %r: %r' % (f, it['n'], x))
+    if write and cards:
+        at = max(i for i, it in enumerate(index['items']) if it['k'] == 'c') + 1
+        index['items'][at:at] = cards
+    if write and kept:
+        at = max(i for i, it in enumerate(index['items']) if it['k'] == 'b') + 1
+        index['items'][at:at] = kept
+    return {'cards': cards, 'bases': kept, 'why': why}
 
 
 # ---------------------------------------------------------------- monster and class numbers
@@ -545,6 +803,24 @@ def main():
     if nwhy:
         print('         left out: ' + ', '.join('%d %s' % (n, r) for r, n in sorted(nwhy.items(), key=lambda x: -x[1])))
 
+    lc = listed_cards(index, write=not args.report)
+    lwhy = {}
+    for name, reason in lc['why'].items():
+        lwhy.setdefault(reason, []).append(name)
+    print('listed   the trade site lists %d currency items and %d bases no card had: %d currency cards (%s), %d base (%s)'
+          % (len(lc['cards']) + len(lc['why']), len(lc['bases']), len(lc['cards']),
+             ', '.join(c['n'] for c in lc['cards']), len(lc['bases']), ', '.join(c['n'] for c in lc['bases'])))
+    for reason, names in sorted(lwhy.items()):
+        print('         left out, %s: %s' % (reason, ', '.join(names)))
+
+    fc = gemfacts(index, write=not args.report)
+    print('gems     %d gem cards: %d say what quality adds, %d the uncut gem that makes them; %d quality stats the game '
+          'prints no line for' % (fc['cards'], fc['quality'], fc['uncut'], fc['left']))
+    jw = jewels(index)
+    print('jewels   %d bases, %d uniques on them, %d timeless factions (%d with a jewel in the game), %d conquerors'
+          % (len(jw['bases']), sum(len(b.get('u') or []) for b in jw['bases']), len(jw['timeless']),
+             sum(1 for f in jw['timeless'] if f.get('u')), sum(len(f['conquerors']) for f in jw['timeless'])))
+
     stats = gamestats()
     print('numbers %d monster levels, %d classes in the game (the export lists %d)'
           % (len(stats['monsters']['rows']), len(stats['classes']), len(official('characters.min.json'))))
@@ -554,9 +830,10 @@ def main():
         return
     INDEX.write_text(json.dumps(index, ensure_ascii=False, separators=(',', ':')), encoding='utf-8')
     STATS.write_text(json.dumps(stats, ensure_ascii=False, separators=(',', ':')), encoding='utf-8', newline='\n')
+    JEWELS.write_text(json.dumps(jw, ensure_ascii=False, separators=(',', ':')), encoding='utf-8', newline='\n')
     import appdata   # the index in two parts for the home page
     appdata.write(index)
-    print('\n-> data/index.json, data/gamestats.json')
+    print('\n-> data/index.json, data/gamestats.json, data/jewels.json')
 
 
 if __name__ == '__main__':

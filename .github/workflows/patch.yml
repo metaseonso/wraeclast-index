@@ -3,10 +3,9 @@
 #
 # What runs here: every stage that reads the game files (RePoE's export), the official trade site's lists, poe2db,
 # Craft of Exile, poe.ninja and the files already in the repo — gamepull through map, then guides.
-# Sync builds the index from the Wraeclast Index artifact, which lives only on the owner's machine, so here it runs
-# tools/sync.py --from-game: the drill-down's data rebuilt from the game files. The index and its two parts are
-# held to the committed copy once, as they stand after the last stage that adds cards to them (tools/pipeline.py).
-# With the artifact, on the owner's machine:
+# What does not: sync, which builds the index from the Wraeclast Index artifact. The artifact lives only on the
+# owner's machine, so here the sync stage says so and is skipped, and every stage after it builds on the index
+# already committed. For the full rebuild, on the owner's machine:
 #     python tools/pipeline.py patch --artifact path/to/artifact.html
 #
 # A stage that fails stops the run: nothing is committed, the log says which stage and why, and the stage's
@@ -42,7 +41,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
-          python-version: '3.13'   # the version the pipeline is built and dry-run on (tools use 3.13-only calls)
+          python-version: '3.12'
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
@@ -52,23 +51,11 @@ jobs:
           path: tools/cache
           key: tools-cache-${{ github.run_id }}
           restore-keys: tools-cache-
-      - name: The data token can read the game tables
-        # asks GitHub who the DATA_REPO_READ token belongs to and whether it can see the data repo; the token is never printed
-        env:
-          GH_TOKEN: ${{ secrets.DATA_REPO_READ }}
-        run: |
-          if [ -z "$GH_TOKEN" ]; then echo "::error::The DATA_REPO_READ secret is empty or missing."; exit 1; fi
-          who=$(gh api user --jq .login 2>&1) || { echo "::error::GitHub does not accept the DATA_REPO_READ token: $who"; exit 1; }
-          echo "The token belongs to: $who"
-          if gh api repos/metaseonso/wraeclast-data --jq .full_name >/dev/null 2>&1; then echo "It can see metaseonso/wraeclast-data."
-          else echo "::error::The token belongs to $who but cannot see metaseonso/wraeclast-data: its repository access or its Contents permission is missing."; exit 1; fi
-          if gh api repos/metaseonso/wraeclast-data/contents/game --jq '.[].name' >/dev/null 2>&1; then echo "It can read the game tables."
-          else echo "::error::The token can see the repo but cannot read its contents: set Contents to Read-only."; exit 1; fi
+      - name: The game's bundle reader (pathofexile-dat, optional in package.json; tools/datpull.mjs, gamepull dat())
+        run: npm ci
       - name: Every patch stage, built aside in build/ and swapped into data/ only if all of them hold up
         env:
           GH_TOKEN: ${{ github.token }}
-          # the private data repo's decoded game tables (tools/gamepull.py dat()): a read-only token for that repo alone
-          WI_DATA_TOKEN: ${{ secrets.DATA_REPO_READ }}
         run: python tools/pipeline.py patch
       - name: The guard, without the browser halves
         run: node tools/dev/guard.mjs --no-phone
@@ -112,6 +99,6 @@ jobs:
 
           $stages
 
-          The sync stage ran from the game files (tools/sync.py --from-game), without the Wraeclast Index artifact, and every later stage ran over the index it built. Merging is what ships."
+          The sync stage needs the Wraeclast Index artifact, which is only on the owner's machine: this index is the committed one with every later stage run over it. Merging is what ships."
           gh pr create --base main --head "$branch" --title "Game data for patch $patch" --body "$body" \
             || echo "::warning::The branch $branch is pushed, but the pull request could not be opened. Open it by hand, or allow Actions to create pull requests in the repository settings."

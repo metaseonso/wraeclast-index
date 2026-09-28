@@ -161,6 +161,15 @@
      ],
      "drawn": 1
     },
+    "uc": {
+     "json": [
+      "string"
+     ],
+     "by": [
+      "cutfrom"
+     ],
+     "drawn": 1
+    },
     "ct": {
      "json": [
       "number"
@@ -205,6 +214,16 @@
      ],
      "by": [
       "text"
+     ],
+     "drawn": 1
+    },
+    "gq": {
+     "json": [
+      "array",
+      "string"
+     ],
+     "by": [
+      "quality"
      ],
      "drawn": 1
     },
@@ -350,7 +369,8 @@
      ],
      "by": [
       "row",
-      "name"
+      "name",
+      "drop"
      ],
      "need": 1,
      "drawn": 1
@@ -3593,6 +3613,24 @@
       "row"
      ],
      "drawn": 1
+    },
+    "checked": {
+     "json": [
+      "array"
+     ],
+     "by": [
+      "row"
+     ],
+     "drawn": 1
+    },
+    "nodrops": {
+     "json": [
+      "object"
+     ],
+     "by": [
+      "row"
+     ],
+     "drawn": 1
     }
    }
   }
@@ -3727,6 +3765,21 @@
    "drawn": [],
    "by": [
     "declaration"
+   ]
+  },
+  "checked": {
+   "json": [
+    "array"
+   ],
+   "kinds": [
+    "x"
+   ],
+   "need": [],
+   "drawn": [
+    "x"
+   ],
+   "by": [
+    "row"
    ]
   },
   "cor": {
@@ -3952,6 +4005,22 @@
    ],
    "by": [
     "frommods"
+   ]
+  },
+  "gq": {
+   "json": [
+    "array",
+    "string"
+   ],
+   "kinds": [
+    "g"
+   ],
+   "need": [],
+   "drawn": [
+    "g"
+   ],
+   "by": [
+    "quality"
    ]
   },
   "ic": {
@@ -4344,6 +4413,7 @@
     "adds",
     "cancorrupt",
     "canroll",
+    "drop",
     "name",
     "row"
    ]
@@ -4382,6 +4452,21 @@
    ],
    "by": [
     "implicit"
+   ]
+  },
+  "nodrops": {
+   "json": [
+    "object"
+   ],
+   "kinds": [
+    "x"
+   ],
+   "need": [],
+   "drawn": [
+    "x"
+   ],
+   "by": [
+    "row"
    ]
   },
   "nt": {
@@ -4906,6 +4991,21 @@
    ],
    "by": [
     "nodety"
+   ]
+  },
+  "uc": {
+   "json": [
+    "string"
+   ],
+   "kinds": [
+    "g"
+   ],
+   "need": [],
+   "drawn": [
+    "g"
+   ],
+   "by": [
+    "cutfrom"
    ]
   },
   "up": {

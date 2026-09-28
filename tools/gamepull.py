@@ -30,8 +30,8 @@ import email.utils
 import gzip
 import hashlib
 import json
-import os
 import re
+import shutil
 import subprocess
 import sys
 import time
@@ -66,6 +66,7 @@ PULL = [
     'flavour.min.json',             # every flavour text, by art id (tools/uniqueitems.py)
     'default_monster_stats.min.json',   # one monster of each level  } data/gamestats.json,
     'characters.min.json',              # what each class starts with } tools/gamelib.py
+    'world_areas.min.json',         # every area: level, waypoint, connections, bosses (tools/areas.py, tools/bosses.py)
     'passive_skill_trees/Default.min.json',
     'passive_skill_trees/Atlas.min.json',
     'stat_translations/stat_descriptions.min.json',
@@ -182,66 +183,53 @@ def official(name):
 
 # ---------------------------------------------------------------- the game's own tables
 
-DATA_REPO = 'repos/metaseonso/wraeclast-data/contents/game'
-_dat_ver = None
+_dat_dir = None
 
 
-def _said(e):
-    """What gh itself said when it failed (GitHub's own answer), so a refusal names its reason."""
-    err = getattr(e, 'stderr', None)
-    if isinstance(err, bytes):
-        err = err.decode('utf-8', 'replace')
-    return (' — gh: ' + ' '.join(err.split())[:300]) if err else ''
-
-
-def _gh_env():
-    """The data repo is private. On the owner's machine the signed-in gh reads it; in Actions the site repo's own
-    token cannot, so the Game patch workflow hands in a read-only token for that one repo as WI_DATA_TOKEN (the
-    DATA_REPO_READ secret). It is used for these reads only: the run's own token still opens its tickets."""
-    tok = os.environ.get('WI_DATA_TOKEN')
-    return dict(os.environ, GH_TOKEN=tok) if tok else None
-
-
-def dat_version():
-    """The patch folder of the decoded tables to read: this patch's, else the newest the data repo has (said on
-    stderr, so a table a patch behind is never read in silence)."""
-    global _dat_ver
-    if _dat_ver is None:
-        want = patch(build(refresh=False) or build())
+def dat_dir():
+    """tools/cache/dat-<CDN folder>/ (not in git): the live patch folder on GGG's CDN, asked once a run, so every
+    table a run reads is from the same client and a hotfix reads them all again. The CDN out of reach: the newest
+    folder already read, said on stderr, so a table a hotfix behind is never read in silence."""
+    global _dat_dir
+    if _dat_dir is None:
+        cache = ROOT / 'tools' / 'cache'
+        node = shutil.which('node')
+        live = ''
         try:
-            got = subprocess.run(['gh', 'api', DATA_REPO, '--jq', '.[].name'], capture_output=True, text=True,
-                                 check=True, timeout=120, env=_gh_env()).stdout.split()
+            live = subprocess.run([node, str(ROOT / 'tools' / 'datpull.mjs'), '--find-patch'], cwd=str(ROOT),
+                                  capture_output=True, text=True, check=True, timeout=300).stdout.strip()
         except Exception as e:
-            got = []
-            print('  could not list %s: %s%s' % (DATA_REPO, e, _said(e)), file=sys.stderr)
-        have = sorted((v for v in got if re.fullmatch(r'\d+\.\d+\.\d+', v)), key=lambda v: [int(x) for x in v.split('.')])
-        if want in have or (not have and want):
-            _dat_ver = want
-        elif have:
-            _dat_ver = have[-1]
-            print('  the decoded game tables have no %s folder yet: reading %s' % (want or 'patch', _dat_ver),
+            print('  could not ask GGG\'s CDN for the live patch folder: %s' % (getattr(e, 'stderr', '') or e),
                   file=sys.stderr)
-        else:
-            raise SystemExit('no patch known and no decoded game tables listed (%s)' % DATA_REPO)
-    return _dat_ver
+        if not re.fullmatch(r'\d+(?:\.\d+)+', live):
+            have = sorted((p.name[4:] for p in cache.glob('dat-*') if re.fullmatch(r'dat-\d+(?:\.\d+)+', p.name)),
+                          key=lambda v: [int(x) for x in v.split('.')])
+            if not have:
+                raise SystemExit('cannot read the game tables: no live patch folder and none read before')
+            live = have[-1]
+            print('  reading the game tables of %s, the newest read before' % live, file=sys.stderr)
+        _dat_dir = cache / ('dat-' + live)
+    return _dat_dir
 
 
 def dat(table):
-    """One of the game's own tables, decoded (metaseonso/wraeclast-data, game/<patch>/out/raw/<table>.json): for
-    what the export leaves out. Read with the GitHub CLI once, kept in tools/cache/dat-<patch>/, so a new patch
-    reads a new folder."""
-    ver = dat_version()
-    f = ROOT / 'tools' / 'cache' / ('dat-' + ver) / (table + '.json')
+    """One of the game's own tables, decoded, for what the export leaves out: a list of rows keyed by
+    poe-tool-dev dat-schema's column names, a foreign key as the row number it points at, an enum by its name,
+    _i the row's own number.
+
+    Read straight out of the game's bundles on GGG's patch CDN by tools/datpull.mjs --raw, the same reader that
+    writes data/game/: no token, no private copy of the tables. Kept in dat_dir(), so a second read is a file."""
+    d = dat_dir()
+    f = d / (table + '.json')
     if not f.exists():
-        try:
-            body = subprocess.run(['gh', 'api', '-H', 'Accept: application/vnd.github.raw',
-                                   '%s/%s/out/raw/%s.json' % (DATA_REPO, ver, table)],
-                                  capture_output=True, check=True, timeout=300, env=_gh_env()).stdout
-            json.loads(body)   # a broken download fails here, before it is kept
-        except Exception as e:
-            raise SystemExit('cannot read the game table %s for %s (gh api): %s%s' % (table, ver, e, _said(e)))
-        f.parent.mkdir(parents=True, exist_ok=True)
-        f.write_bytes(body)
+        node = shutil.which('node')
+        if not node:
+            raise SystemExit('cannot read the game table %s: there is no Node here to run tools/datpull.mjs' % table)
+        r = subprocess.run([node, str(ROOT / 'tools' / 'datpull.mjs'), '--raw', table, '--patch', d.name[4:],
+                            '--out', str(d)], cwd=str(ROOT), stdout=sys.stderr, timeout=1800)
+        if r.returncode or not f.exists():
+            raise SystemExit('cannot read the game table %s from %s (tools/datpull.mjs --raw stopped with %d)'
+                             % (table, d.name[4:], r.returncode))
     return json.loads(f.read_bytes())
 
 
@@ -309,7 +297,7 @@ def site(name):
 
 def real(names):
     """Names a player could ever see: no [DNT] marker, no {0} the game fills in."""
-    return {n for n in names if n and not DNT.search(n) and not TEMPLATE.search(n)}
+    return {n.strip() for n in names if n and not DNT.search(n) and not TEMPLATE.search(n)}   # a card's name is trimmed
 
 
 def sample(missing, n=3):
@@ -348,7 +336,8 @@ def rows():
     out.append(('small passives', small, p, False))
 
     kw = real(v.get('term') for v in official('keywords.min.json').values() if (v.get('definition') or '').strip())
-    out.append(('keywords', kw, ours.get('w', set()), True))
+    # a keystone is its own keyword: its card stands for both (tools/sync.py, index "kwx")
+    out.append(('keywords', kw, ours.get('w', set()) | set((index.get('kwx') or {}).values()), True))
 
     trade = (site('trade.json') or {}).get('bases') or {}
     if trade:
@@ -363,20 +352,64 @@ def rows():
 
     atlas = real(v.get('name') for v in official('passive_skill_trees/Atlas.min.json')['passives'].values())
     out.append(('atlas tree', atlas, ours.get('a', set()), False))
+
+    # areas are not a card kind yet: data/areas.json holds what the Area card will draw (tools/areas.py)
+    places = real(v.get('name') for v in official('world_areas.min.json').values() if v.get('name') != 'NULL')
+    out.append(('areas', places, {a['n'] for a in (site('areas.json') or {}).get('areas') or []}, True))
     return out
+
+
+def reasons(kind, missing):
+    """Why each name the game has and no card carries is left out: {name: reason}. A name with no reason here is
+    a gap nobody has looked at, and the report says so."""
+    why = {}
+    if kind == 'gems':
+        for n in missing:
+            if n == 'Coming Soon':
+                why[n] = 'a slot the game holds open for a gem that is not in it yet'
+            elif n == 'Removed Skill':
+                why[n] = 'the stand-in the game shows where a skill was taken out'
+    elif kind in ('notables', 'small passives'):
+        nodes = {}
+        for v in official('passive_skill_trees/Default.min.json')['passives'].values():
+            if (v.get('name') or '').strip() in missing:
+                nodes.setdefault(v['name'].strip(), []).append(v)
+        for n, vs in nodes.items():
+            if all(v.get('is_icon_only') for v in vs):
+                why[n] = 'an icon-only node (a mastery or a blank plate): no effect to show'
+            elif all(v.get('is_ascendancy_starting_node') for v in vs):
+                why[n] = 'where an ascendancy starts on its wheel: no effect to show'
+            elif all(v.get('is_multiple_choice') for v in vs):
+                why[n] = 'a choice notable: no effect of its own, and each option it offers is a card'
+            elif all(v.get('skill_points') for v in vs):
+                why[n] = 'grants passive points: the tree gives it no line of text'
+            elif all(not v.get('stats') and not v.get('ascendancy') for v in vs):
+                why[n] = 'a class\'s starting plate on the tree: no effect to show'
+            elif all(not v.get('stats') and not v.get('granted_skill') for v in vs):
+                why[n] = 'an ascendancy notable with no stat line and no skill: no lines, no card'
+    elif kind == 'keywords':
+        from gamelib import pick   # the rule the keyword cards are made by (tools/gamelib.py)
+        _, _, left = pick(site('index.json') or {'items': []})
+        export = official('keywords.min.json')
+        for k, r in left.items():
+            n = (export[k].get('term') or '').strip()
+            if n in missing and r != 'already ours':
+                why[n] = {'a placeholder': 'the game\'s own placeholder, "This test case is designed to be overwitten"'}.get(r, r)
+    elif kind == 'currency':
+        info = site('info.json') or {}
+        for n in missing:
+            t = (info.get(n) or {}).get('t') or ''
+            if 'no longer usable' in t:
+                why[n] = 'the game\'s own text says it is no longer usable'
+            elif not t:
+                why[n] = 'no text anywhere in the game files for it (poe2db shows none either)'
+    return why
 
 
 def notes():
     """The few things a row of numbers does not say."""
     said = []
-    tree = official('passive_skill_trees/Default.min.json')['passives'].values()
-    index = site('index.json') or {'items': []}
-    have = {it['n'] for it in index['items'] if it['k'] == 'p'}
-    lost = [v for v in tree if v.get('is_notable') and real([v.get('name')]) and v['name'] not in have]
-    if lost:
-        grant = sum(1 for v in lost if v.get('granted_skill'))
-        said.append('%d of the missing notables are ascendancy notables with no stat lines; %d of those grant a '
-                    'skill instead. No lines, no card.' % (len(lost), grant))
+    index = site('index.json') or {'items': []}   # the missing notables have their reasons above (reasons())
 
     info = site('info.json') or {}
     if info:
@@ -398,10 +431,22 @@ def notes():
                 'the trade site\'s list.' % (len(grants), len(grants & carded), len(grants & shown),
                                              len(grants - carded)))
 
+    areas = site('areas.json')
+    if areas:
+        c = areas.get('counts') or {}
+        said.append('%d areas in the game files are %d places in data/areas.json (%d more merged into a place of the '
+                    'same name); %d are hidden on purpose (%s). No card kind draws them yet (design/areas.md).'
+                    % (c.get('game', 0), c.get('carded', 0), c.get('merged', 0), sum((c.get('hidden') or {}).values()),
+                       ', '.join('%d %s' % (n, w) for w, n in (c.get('hidden') or {}).items())))
+
     jewels = sorted((ROOT / 'data' / 'explore').glob('jewels.*.json'))
     if jewels:
         n = len(json.loads(jewels[0].read_text(encoding='utf-8')).get('rows') or [])
-        said.append('The drill-down page lists %d jewels; there is no jewel card kind at all.' % n)
+        jw = site('jewels.json') or {}
+        said.append('The drill-down page lists %d timeless jewel lines. data/jewels.json (tools/gamelib.py) holds the '
+                    'Jewel kind\'s data: %d jewel bases, %d timeless factions and %d conquerors; the card kind itself '
+                    'is proposed in design/gems-gaps.md.' % (n, len(jw.get('bases') or []), len(jw.get('timeless') or []),
+                                                            sum(len(f.get('conquerors') or []) for f in jw.get('timeless') or [])))
 
     everything = listing()
     if everything:   # this file names every export file it pulls, so it does not count as a reader
@@ -444,10 +489,20 @@ def report(pulls=None):
                                                        f"{len({(i['k'], i['n']) for i in index['items']}):,}"))
     lines += ['', '  Counts are names, not cards: one name can be several cards.', '',
               '  kind             game  carded     gap  missing, a sample']
+    why = []
     for kind, game, ours, whole in rows():
         missing, extra = game - ours, ours - game
         tail = sample(missing) or ('+%d we card that the export has no name for' % len(extra) if whole and extra else '-')
         lines.append(('  %-14s %6d  %6d  %6d  %s' % (kind, len(game), len(game & ours), len(missing), tail)).rstrip())
+        said = reasons(kind, missing)
+        count = {}
+        for n in sorted(missing):
+            count.setdefault(said.get(n, 'NO REASON YET'), []).append(n)
+        for r, names in sorted(count.items(), key=lambda x: (x[0] == 'NO REASON YET', -len(x[1]), x[0])):
+            why.append('%s, %d: %s (%s)' % (kind, len(names), r, sample(names, 4)))
+    lines += ['', '  Why each gap stays (every name the game has and no card carries has one reason):', '']
+    for w in why:
+        lines += wrap(w)
     lines += ['',
               '  game: the export, minus the names players never see ([DNT] markers, names the game fills in).',
               '  Bases and currency count the official trade site\'s lists instead (data/trade.json): the export',
