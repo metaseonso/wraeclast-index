@@ -223,6 +223,26 @@ a switch, UTC with the hours named. The line `Trades most ...` is the fact slot'
 **The owner decides**: the 7 skipped days, 8 weeks and 4 hours a cell, the 3-hour window, and whether the map shows UTC
 or the reader's own time (the file is UTC; shifting is the page's).
 
+## #105 Crafting demand: `data/market/crafting.json`
+
+12.2 kB (3.9 kB gzipped). `tools/market_crafting.py`. Every crafting currency: `[name, group, divines this week,
+divines last week, % change, amount this week, on the bench]`.
+
+**The rule.** The crafting currencies are the site's own lists, not a new grouping: every orb on the Craft tab's shelf
+with its greater and perfect forms, every omen, bone and catalyst there (`data/craft.json`), and every essence
+(`data/essences.json`). Exalted, Divine and Chaos Orbs are left out: they are what the rest is paid in. This week: the
+last 168 hours read; last week: the 168 before.
+
+**Today** (20 Sep 01:00 to 27 Sep 00:00 UTC): 171 currencies. Omen of Light 10.9M divines (+21%), Omen of Whittling
+10.8M (+15%), Preserved Cranium 6.2M (+20%), Orb of Annulment 4.2M (-5%).
+
+**In the frame.** A board on the Currency tab, "Crafting this week": the rows in the file's order, each name a door to
+its card, and where `on the bench` is true a link to the Craft tab with that currency on the shelf (the bench's own
+address; an essence that is not on the shelf has no link).
+
+**The owner decides**: the set (it leaves out runes, soul cores and liquid emotions, which also change items), and the
+week (the last 168 hours, not Monday to Sunday: the board is always a full week).
+
 ## When new hours arrive
 
 The archive job in `wraeclast-data` (`.github/workflows/archive.yml`) adds the new hours every 6 hours (at :23 past 0,
