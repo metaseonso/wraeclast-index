@@ -3,25 +3,33 @@
      node tools/build.mjs              dist/ from the repo (wrangler.jsonc "build" runs this before every deploy)
      node tools/build.mjs --out <dir>  somewhere else
      node tools/build.mjs --plain      copied only, nothing made smaller
+     WI_PRICES_FROM=<origin|off>       where step 3 reads the live prices (https://wraeclastindex.fyi), or not at all
 
    1. Copy. Every file .assetsignore lets through, read the way wrangler reads it from the repo root (plus _headers,
       which Cloudflare reads from the folder it serves), so dist/ serves exactly the paths the repo root served,
       less the files below data/ that nothing on the site asks for (a drill-down data copy the page no longer names).
    2. Smaller. The .js and .css files, and the inline <script>/<style> of the pages, through esbuild: one file at a
       time, no bundling, every import path and export name kept, whitespace and comments gone. sw.js keeps its
-      '__WI_BUILD__' exactly (step 5 writes over it) or ships as it is. A file esbuild throws on ships as it is.
-   3. sw-files.json: every path the site serves with a short hash of its bytes, and the files the home page needs
+      '__WI_BUILD__' exactly (step 6 writes over it) or ships as it is. A file esbuild throws on ships as it is.
+   3. The last good prices: data/market-last.json, today's prices as the live site answers them at build time
+      (market.json?part=live: every price with the time it was checked), and data/facts/<v>.json, the catalogue's
+      words that go with them. A page whose live prices fail or take over 4 seconds reads these instead and says
+      when they are from and that live prices are paused (assets/app.js), so a site out of worker requests, or with
+      its database down, still shows every price with its real age. The live answer is taken only when it reads as a
+      price file, is no older than the copy the site already ships, and has not lost half its prices; otherwise
+      that shipped copy is kept, loudly. Nothing at all to read: no file, and the page says prices are not loaded.
+   4. sw-files.json: every path the site serves with a short hash of its bytes, and the files the home page needs
       before its first paint (read off index.html and what its modules import). sw.js keeps only those at install,
       takes every unchanged file over from the last deploy's copy, and checks what it keeps against the hashes.
-      The crawler's files (4) are not in it: the service worker never keeps them.
-   4. The crawler's files, made by worker/seo.js crawl() out of dist/'s own data and the prices of this moment
+      The crawler's files (5) are not in it: the service worker never keeps them.
+   5. The crawler's files, made by worker/seo.js crawl() out of dist/'s own data and the prices of this moment
       (the live https://wraeclastindex.fyi/data/market.json; the copy in data/ when that does not answer, said
       loudly): every item page (item/<slug>.html) and its Markdown copy (md/item/<slug>.md), the lists
       (gems.html, ...), 404.html, the sitemaps, llms.txt, llms-full.txt and llms/<list>.txt; an old address as a
       line of _redirects; and crawl.json, a short hash of each page's own words, so the scheduled rebuild can tell
       search engines which pages changed (.github/workflows/rebuild.yml). Written after 2, never minified: a page
       is the bytes worker/seo.js made.
-   5. sw.js stamped: its '__WI_BUILD__' becomes a hash of every path sw-files.json lists and the bytes behind it, so
+   6. sw.js stamped: its '__WI_BUILD__' becomes a hash of every path sw-files.json lists and the bytes behind it, so
       a deploy that changes any of those files is a new service worker with its own copy, and /sw.js is a plain
       static file: no page load ever calls the worker for it (the worker stamped it on every load until 28 Sep). A
       sw.js the stamp cannot be written into ships unstamped, and an unstamped sw.js switches itself off (sw.js OFF).
@@ -171,7 +179,7 @@ async function copyAll(files){
 /* ---------- 2. smaller ---------- */
 const JS = {loader: 'js', minify: true, target: 'es2020', legalComments: 'none'};
 const CSS = {loader: 'css', minify: true, target: ['chrome90', 'edge90', 'firefox88', 'safari14'], legalComments: 'none'};
-// step 5 stamps sw.js by its exact text '__WI_BUILD__' (single quotes): esbuild writes strings in double
+// step 6 stamps sw.js by its exact text '__WI_BUILD__' (single quotes): esbuild writes strings in double
 // quotes, so the one literal is put back, and a sw.js where that is not exactly one literal ships as it is
 const STAMP = "'__WI_BUILD__'";
 function stampKept(src, out){
@@ -233,7 +241,57 @@ async function inline(esbuild, html, f){
   return parts.join('');
 }
 
-/* ---------- 3. sw-files.json ---------- */
+/* ---------- 3. the last good prices ---------- */
+const PRICES = (process.env.WI_PRICES_FROM || 'https://wraeclastindex.fyi').replace(/\/$/, '');
+const UA = 'wraeclast-index-build/1.0 (contact: https://wraeclastindex.fyi/)';
+async function getText(url){
+  const r = await fetch(url, {headers: {'User-Agent': UA}, signal: AbortSignal.timeout(20000)});
+  if(!r.ok) throw new Error(url + ' answered ' + r.status);
+  return r.text();
+}
+// a live price part, or null: the shape assets/app.js reads, with its age and enough prices to be the market
+const count = m => Object.keys(m.items).length;
+function priceFile(text){
+  let m = null;
+  try { m = JSON.parse(text); } catch { return null; }
+  return m && m.part === 'live' && typeof m.league === 'string' && Date.parse(m.updated) > 0 && m.items && typeof m.items === 'object' &&
+    Object.keys(m.items).length >= 50 ? m : null;
+}
+async function lastPrices(){
+  if(PRICES === 'off'){ warn('WI_PRICES_FROM=off: no data/market-last.json in this build'); return []; }
+  let live = null, kept = null, why = '';
+  try { live = priceFile(await getText(PRICES + '/data/market.json?part=live')); if(!live) why = 'the answer was not a price file'; }
+  catch(e){ why = String(e && e.message || e); }
+  try { kept = priceFile(await getText(PRICES + '/data/market-last.json')); } catch {}
+  let pick = live, from = 'live';
+  if(live && kept && Date.parse(live.updated) < Date.parse(kept.updated)) { why = 'live prices are older than the shipped copy'; pick = null; }
+  if(live && kept && count(live) < count(kept) / 2) { why = 'live prices hold ' + count(live) + ' of the ' + count(kept) + ' the shipped copy holds'; pick = null; }
+  if(!pick && kept){ pick = kept; from = 'kept'; }
+  if(!pick){
+    warn('NO data/market-last.json: live prices did not pass (' + why + ') and the site ships no copy. A page whose live prices fail says prices are not loaded');
+    return [];
+  }
+  if(from === 'kept') warn('live prices did not pass (' + why + '): data/market-last.json keeps the shipped copy, prices from ' + pick.updated);
+  const out = [];
+  await mkdir(join(OUT, 'data', 'facts'), {recursive: true});
+  await writeFile(join(OUT, 'data', 'market-last.json'), JSON.stringify({...pick, last: {built: new Date().toISOString(), from}}));
+  out.push('data/market-last.json');
+  // the catalogue's words for those prices, by the name the price file gives them (the shipped file, else the worker)
+  const v = /^[0-9a-f]{12}$/.test(pick.facts || '') ? pick.facts : null;
+  if(v){
+    let facts = null;
+    for(const u of [PRICES + '/data/facts/' + v + '.json', PRICES + '/data/market.json?part=facts&v=' + v]){
+      try { const t = await getText(u), f = JSON.parse(t); if(f && f.v === v && f.items){ facts = t; break; } } catch {}
+    }
+    if(facts){ await writeFile(join(OUT, 'data', 'facts', v + '.json'), facts); out.push('data/facts/' + v + '.json'); }
+    else warn('no data/facts/' + v + '.json: the price file names catalogue words the live site no longer has');
+  }
+  console.log('build: market-last.json  ' + count(pick) + ' prices from ' + pick.updated + ' (' + (from === 'live' ? 'the live site' : 'the shipped copy') + ')' +
+    (out.length > 1 ? ', with its facts' : ''));
+  return out;
+}
+
+/* ---------- 4. sw-files.json ---------- */
 const hash = buf => createHash('sha256').update(buf).digest('hex').slice(0, 16);
 // the paths a file answers on: index.html is "/", explore.html is also "/explore" (Cloudflare's html handling)
 function paths(f){
@@ -280,7 +338,7 @@ async function manifest(files, have){
   console.log('build: sw-files.json  ' + Object.keys(have).length + ' paths, ' + shell.length + ' in the home shell, ' + (body.length / 1024).toFixed(1) + ' KB');
 }
 
-/* ---------- 4. the crawler's files ---------- */
+/* ---------- 5. the crawler's files ---------- */
 const LIVE_MARKET = 'https://wraeclastindex.fyi/data/market.json';
 const MAX_REDIRECTS = 2000;   // Cloudflare's line for static rules in _redirects (/workers/static-assets/redirects/)
 const TYPE = {json: 'application/json', txt: 'text/plain', md: 'text/markdown', html: 'text/html', xml: 'application/xml'};
@@ -347,7 +405,7 @@ async function countOut(dir = OUT){
   return {n, bytes};
 }
 
-/* ---------- 5. sw.js stamped ----------
+/* ---------- 6. sw.js stamped ----------
    BUILD is "v-" and the first 16 hex of the SHA-256 of every served path and its bytes' hash, in path order: the
    same files give the same stamp, any changed, added or removed file a new one. */
 async function stampSW(have){
@@ -379,6 +437,8 @@ if(!PLAIN){
     try { await copyAll(files); } catch(e2){ console.error('build: the copy failed: ' + (e2 && e2.stack || e2)); process.exit(1); }
   }
 }
+try { files = [...files, ...await lastPrices()].sort(); }
+catch(e){ warn('NO data/market-last.json (' + (e && e.message || e) + '): a page whose live prices fail says prices are not loaded'); }
 // the crawler's files: without them every item page is a not-found, so a build that cannot make them does not ship
 try { await crawlFiles(); }
 catch(e){

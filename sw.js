@@ -15,8 +15,13 @@
    - After a deploy, the next page load still opens instantly from the copy it has while the new deploy downloads in
      the background; the load after that is the new deploy.
    - Never from the copy: /api/*, the owner's dashboard, the crawler pages, and the live files the worker answers
-     (market.json, rollprices.json, farmprices.json, bossprices.json): those follow their own cache rules (a few
-     minutes). data/leagues.json is a file of the deploy like any other: today's prices carry the league dates.
+     (rollprices.json, farmprices.json, bossprices.json): those follow their own cache rules (a few minutes).
+     data/leagues.json is a file of the deploy like any other: today's prices carry the league dates.
+   - market.json (every part): the network first, always. Each good answer is kept in wi-last, which outlives
+     deploys, and it is what the page gets when the network fails, answers with an error (the worker out of its
+     day's requests answers 429) or has not answered in 3 seconds; it comes marked X-WI-Last, so the page says the
+     prices are from then and that live prices are paused, and every price in it keeps the time it was checked. A
+     copy the worker itself marked late (X-WI-Last) is never kept over a live one.
    What a deploy downloads (sw-files.json, written by tools/build.mjs: every path the deploy serves with a hash of its
    bytes, and the home page's first-paint files):
    - On install: every file in the last copy whose bytes still hash to this deploy's entry is taken over from it, so
@@ -33,6 +38,8 @@ const BUILD = '__WI_BUILD__';
 const OFF = BUILD.startsWith('__');
 const COPY = 'wi-' + BUILD;
 const META = 'wi-meta';   // which deploy each open page was loaded with
+const LAST = 'wi-last';   // the last good answer of each price part, for when the network fails
+const PRICE_WAIT = 3000;  // ms before the last good answer stands in for a slow network
 const LIST_FILE = 'sw-files.json';
 const PAGES = {'/': './', '/index.html': './', '/explore': 'explore', '/privacy': 'privacy'};
 const PAGE_KEYS = ['./', 'explore', 'privacy'];
@@ -54,7 +61,7 @@ const SHELL = ['./', 'explore', 'privacy',
   'assets/brand/haze.webp', 'assets/brand/favicon-64.png', 'assets/brand/favicon-32.png', 'assets/brand/ninja.png',
   'data/manifest.json', 'data/bosses.json', 'data/changelog.json', 'data/support.json'];
 const OWN = /^\/(assets|data|sprites)\//;
-const PASS = /^\/(api\/|admin|assets\/admin\.js|sw\.js|data\/(market|rollprices|farmprices|bossprices)\.json)/;
+const PASS = /^\/(api\/|admin|assets\/admin\.js|sw\.js|data\/(rollprices|farmprices|bossprices)\.json)/;
 const NAMED = /^\/(data\/explore|data\/search|data\/cards|assets\/fonts)\//;   // named by their content, or never changed: the browser's copy is fine
 const pathOf = u => new URL(u, location).pathname;
 
@@ -138,7 +145,7 @@ async function keep(kept, url, files){
 
 self.addEventListener('activate', e => {
   e.waitUntil((async () => {
-    for(const k of await caches.keys()) if(k.startsWith('wi-') && (OFF || (k !== COPY && k !== META))) await caches.delete(k);
+    for(const k of await caches.keys()) if(k.startsWith('wi-') && (OFF || (k !== COPY && k !== META && k !== LAST))) await caches.delete(k);
     if(OFF) return self.registration.unregister();
     await self.clients.claim();
   })());
@@ -149,7 +156,9 @@ self.addEventListener('fetch', e => {
   const req = e.request;
   if(req.method !== 'GET') return;
   const url = new URL(req.url);
-  if(url.origin !== location.origin || PASS.test(url.pathname)) return;
+  if(url.origin !== location.origin) return;
+  if(url.pathname === '/data/market.json') return e.respondWith(prices(e));
+  if(PASS.test(url.pathname)) return;
   if(req.mode === 'navigate'){
     const key = PAGES[url.pathname];
     if(key) e.respondWith(page(e, key));
@@ -186,6 +195,36 @@ async function file(e, path){
     e.waitUntil(files().then(f => keepIf(kept, e.request, mine, wanted(f, path))).catch(() => {}));
   }
   return res;
+}
+
+/* today's prices: the network first; its good answer kept, and the kept one when the network fails or is slow */
+async function prices(e){
+  const req = e.request;
+  const net = fetch(req).then(res => {
+    if(res.ok && res.status === 200 && !res.headers.get('X-WI-Last')){
+      const keep = res.clone();
+      e.waitUntil(caches.open(LAST).then(c => c.put(req, keep)).catch(() => {}));
+    }
+    return res;
+  });
+  const kept = async () => {
+    try {
+      const hit = await (await caches.open(LAST)).match(req);
+      if(!hit) return null;
+      const head = new Headers(hit.headers);
+      head.set('X-WI-Last', 'kept');
+      return new Response(hit.body, {status: 200, headers: head});
+    } catch { return null; }
+  };
+  try {
+    const first = await Promise.race([net.then(res => ({res})), new Promise(r => setTimeout(r, PRICE_WAIT, null))]);
+    if(first && first.res.ok) return first.res;
+    const hit = await kept();
+    if(hit) return hit;
+    return first ? first.res : await net;   // nothing kept: the network's own answer, however long it takes
+  } catch {
+    return (await kept()) || Response.error();
+  }
 }
 
 /* the pages this deploy opened: {client id: [deploy, time]}, kept in META so a restarted worker still knows them */

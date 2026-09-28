@@ -31,6 +31,10 @@
 /data/seo/*
   ! Cache-Control
   Cache-Control: public, max-age=31536000, immutable
+# the catalogue's words for today's prices, named by their content (tools/build.mjs, worker/prices.js)
+/data/facts/*
+  ! Cache-Control
+  Cache-Control: public, max-age=31536000, immutable
 /data/manifest.json
   ! Cache-Control
   Cache-Control: public, max-age=0, must-revalidate

@@ -76,8 +76,12 @@ function stuck(what){
                                   index.html asks for it before its styles; the drill-down page hands in the
                                   ?part=now it has already read (window.WI_MARKET), so no page asks twice
      data/manifest.json           the index's id and patch, and every file of the cut. Never kept long
-     data/market.json?part=facts  what the catalogue says about each currency: its name, picture and what it does.
-                                  Named by its content, so the browser keeps it for a year
+     data/market-last.json        the prices as they were when the deploy was built (tools/build.mjs), every one
+                                  with the time it was checked: read only when the live prices fail or take over 4
+                                  seconds, and the stamp then says when they are from and that live prices are paused
+     data/facts/<v>.json          what the catalogue says about each currency: its name, picture and what it does.
+                                  Named by its content, so the browser keeps it for a year; the deploy ships the one
+                                  that was live when it was built, and a newer one comes from the worker
      data/cards/meta.<h>.json     what every card is drawn with and no card carries: sprite sheets, image servers,
                                   the orb ladders, keyword names, the table the line marks point into
      data/search/<k>.<h>.json     every kind's search rows: read by the search worker (assets/searchworker.js),
@@ -103,8 +107,30 @@ async function getJSON(url, opt, early){
   return r.json();
 }
 const EARLY = window.WI_FIRST || {};   // index.html asks for today's prices before its styles
-const NOW = getJSON('data/market.json?part=live', undefined, EARLY.now || window.WI_MARKET)
-  .then(m => (D.market = live(m)), () => null);
+/* Today's prices: live from the worker, or the last good copy. The live answer is taken unless it fails or is not
+   in within LIVE_WAIT; then the copy the deploy shipped (data/market-last.json). A copy kept by the service worker
+   or the worker when the live build failed (X-WI-Last) is the last good copy too. Either way every price keeps the
+   time it was checked, and the file is marked paused, so the stamp says when the prices are from and never passes
+   them off as live. */
+const LIVE_WAIT = 4000;
+async function livePrices(){
+  let r = await (EARLY.now || window.WI_MARKET);
+  if(r && typeof r.json !== 'function') return r;   // the drill-down page's own copy, already read
+  if(!r) r = await fetch('data/market.json?part=live');   // the copy handed in never came: ask
+  if(!r.ok) throw new Error('live prices ' + r.status);
+  const m = await r.json();
+  if(!m || !m.items) throw new Error('live prices empty');
+  if(r.headers.get('X-WI-Last')) m.paused = true;
+  return m;
+}
+async function lastPrices(){
+  const m = await getJSON('data/market-last.json');
+  if(!m || !m.items) throw new Error('no last prices');
+  m.paused = true;
+  return m;
+}
+const NOW = Promise.race([livePrices(), new Promise((_, no) => setTimeout(() => no(new Error('live prices slow')), LIVE_WAIT))])
+  .catch(() => lastPrices()).then(m => (D.market = live(m)), () => null);
 const MAN = getJSON('data/manifest.json', {cache: 'no-cache'}, EARLY.man);
 let go, seek, all;
 const GO = new Promise(r => { go = r; });      // the meta, the bosses, the catalogue's words
@@ -115,8 +141,8 @@ export function need(){ go(); all(); return ready; }
 const META = GO.then(() => MAN).then(m => getJSON(m.meta.file));
 const BOSS = GO.then(() => getJSON('data/bosses.json', {priority: 'low'}).catch(() => null));
 // the catalogue's words, when today's prices came without them (the drill-down page's copy has them already)
-const FACTS = GO.then(() => NOW).then(m => m && m.part === 'live'
-  ? getJSON('data/market.json?part=facts&v=' + encodeURIComponent(m.facts || '')).then(f => facts(m, f)) : null).catch(() => null);
+const FACTS = GO.then(() => NOW).then(m => m && m.part === 'live' && /^[0-9a-f]{12}$/.test(m.facts || '')
+  ? getJSON('data/facts/' + m.facts + '.json').then(f => facts(m, f)) : null).catch(() => null);
 // the league dates: the league clock and the charts' colours read the one copy (assets/league.js). They ride in
 // today's prices (worker/prices.js); a price file without them (the drill-down page's ?part=now from before, the
 // backup site) falls back to the copy that shipped with the site
@@ -2623,10 +2649,18 @@ for(const r in SHUT) document.querySelectorAll('nav a[href$="#/' + r + '"]').for
 
 const IS_APP = !!document.getElementById('view-home');
 /* the price stamp in the top bar, on the app and the drill-down page alike: the real age of the data behind the
-   prices (worker/prices.js), and a word when a job has missed a run */
+   prices (worker/prices.js), and a word when a job has missed a run. The last good copy (NOW) says the day and
+   hour it is from, and that live prices are paused. */
 const STAMP = document.getElementById('stamp');
+const stampTime = iso => { const d = new Date(iso); return d.getUTCDate() + ' ' + MON[d.getUTCMonth()] + ' ' +
+  String(d.getUTCHours()).padStart(2, '0') + ':' + String(d.getUTCMinutes()).padStart(2, '0') + ' UTC'; };
 if(STAMP) NOW.then(M => {
   STAMP.classList.remove('wait');
+  if(M && M.updated && M.paused){
+    STAMP.title = 'Prices: ' + M.league + ' · from ' + stampTime(M.updated) + ' · live prices paused';
+    STAMP.innerHTML = 'Prices from ' + esc(stampTime(M.updated)) + ' · <span class="err">live prices paused</span>';
+    return;
+  }
   // the league and its dot are the part a tight row drops (assets/cards.css .stamp-lg)
   if(M && M.updated) STAMP.title = 'Prices: ' + M.league + ' · ' + ago(M.updated);
   if(M && M.updated) STAMP.innerHTML = 'Prices: <b class="stamp-lg">' + esc(M.league) + '</b><span class="stamp-lg"> · </span>' + ago(M.updated) +

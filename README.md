@@ -111,7 +111,9 @@ card without it snapping shut. See [`tools/dev/README.md`](tools/dev/README.md).
   twice to check a deploy in a browser that has visited before). A new deploy downloads only what changed: every file
   whose bytes match `dist/sw-files.json` is taken over from the last copy, the home page's first-paint files are fetched
   if they changed, and everything else is kept the first time a page asks for it. Never kept: `/api/*`, `/admin`, the
-  crawler pages and the live price files (market, leagues, roll and farm prices).
+  crawler pages and the live price files (roll, farm and boss prices). Today's prices (`market.json`) go to the network
+  first, and the last good answer is kept for when the network fails; a page with neither reads
+  `data/market-last.json`, the prices as they were when the deploy was built, and says live prices are paused.
 - **Nothing to run by hand:** `tools/sync.py` and `tools/kwuse.py` write the index parts and the drill-down files; after
   editing `data/index.json` by hand, run `python tools/appdata.py` (or `python tools/nodelinks.py`, which finds the
   references in the lines again and then writes the parts). To switch the service worker off everywhere, make

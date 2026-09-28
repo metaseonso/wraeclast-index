@@ -489,15 +489,50 @@ export async function serveMarket(request, env, ctx){
   const hit = await caches.default.match(marketKey(url.origin, part));
   if(hit) return hit;
   const group = groupOf(part);
-  let got = null;
-  try { got = await builtPart(env, url.origin, part, group); } catch {}   // no table, or a row that does not read: built below
-  const bodies = got && got.body !== null ? {[part]: got.body} : await buildGroup(env, url.origin, ctx, group, got && got.now);
+  let bodies;
+  try {
+    let got = null;
+    try { got = await builtPart(env, url.origin, part, group); } catch {}   // no table, or a row that does not read: built below
+    bodies = got && got.body !== null ? {[part]: got.body} : await buildGroup(env, url.origin, ctx, group, got && got.now);
+  } catch(e){   // the database is failing (or out of its day's reads), or the build broke: the last good copy
+    return lastGood(ctx, 'market:' + (part || 'full'), marketKey(url.origin, part), e);
+  }
   let res = null;
   for(const [p, body] of Object.entries(bodies)){   // each part cached on its own, for 5 minutes in this data centre
     const r = new Response(body, {headers: {...JSON_TYPE, 'Cache-Control': SHORT}});
     if(p === part) res = r.clone();
     ctx.waitUntil(caches.default.put(marketKey(url.origin, p), r));
+    ctx.waitUntil(keepLast('market:' + (p || 'full'), body));
   }
+  return res;
+}
+
+/* ---------- the last good copy ----------
+   Every price file this worker builds is also kept for 24 hours in the data centre (keepLast). When a build throws
+   (the database failing, or past its free day's reads or writes, after which every query fails until midnight UTC)
+   the last copy is served instead of an error: the same prices with the same times, so each one still says how old
+   it is, "late" set on the file's top line where it has one, and X-WI-Last naming when the copy was kept. The page
+   reads that header and says live prices are paused (assets/app.js). The answer is kept for a minute, so a failing
+   database is asked once a minute per data centre, not once a page. Nothing kept (a data centre that never built
+   it, or a day gone by): 503, and the page falls back to the copy the deploy shipped (data/market-last.json,
+   tools/build.mjs). The failure itself is logged loudly every time (Workers observability). */
+const LAST_AGE = 86400;
+const lastKey = name => new Request('https://last.local/prices/' + encodeURIComponent(name));
+function keepLast(name, body){
+  return caches.default.put(lastKey(name), new Response(body, {headers: {...JSON_TYPE,
+    'Cache-Control': 'public, max-age=' + LAST_AGE, 'X-Kept': new Date().toISOString()}})).catch(() => {});
+}
+async function lastGood(ctx, name, key, err){
+  console.error('prices: ' + name + ' could not be built, serving the last good copy: ' + ((err && err.stack) || err));
+  const kept = await caches.default.match(lastKey(name)).catch(() => null);
+  if(!kept) return new Response(JSON.stringify({error: 'Prices are paused.'}), {status: 503,
+    headers: {...JSON_TYPE, 'Cache-Control': 'no-store', 'Retry-After': '60'}});
+  let body = await kept.text();
+  const at = body.indexOf('"late":false');   // the file's own flag sits in its first few fields, never in an item
+  if(at >= 0 && at < 4000) body = body.slice(0, at) + '"late":true' + body.slice(at + 12);
+  const res = new Response(body, {headers: {...JSON_TYPE, 'Cache-Control': 'public, max-age=60',
+    'X-WI-Last': kept.headers.get('X-Kept') || 'yes'}});
+  ctx.waitUntil(caches.default.put(key, res.clone()).catch(() => {}));
   return res;
 }
 
@@ -743,6 +778,11 @@ async function factsOf(cat){
 }
 const keepFacts = (origin, facts) => caches.default.put(marketKey(origin, 'facts'),
   new Response(facts.body, {headers: {...JSON_TYPE, 'Cache-Control': SHORT, 'X-Facts': facts.v}}));
+/* /data/facts/<v>.json: the facts by name, as a file. The deploy ships the one that was live when it was built
+   (tools/build.mjs), served straight from the edge; a newer one misses the static files and lands here. */
+export function serveFactsFile(request, env, ctx, v){
+  return serveFacts(new URL(new URL(request.url).origin + '/data/market.json?part=facts&v=' + v), env, ctx);
+}
 async function serveFacts(url, env, ctx){
   let facts = null;
   const hit = await caches.default.match(marketKey(url.origin, 'facts'));
@@ -811,6 +851,10 @@ export async function servePrices(request, env, ctx, kind){
   const url = new URL(request.url), key = new Request(url.origin + url.pathname);
   const hit = await caches.default.match(key);
   if(hit) return hit;
+  try { return await makePrices(url, key, env, ctx, kind); }
+  catch(e){ return lastGood(ctx, kind, key, e); }
+}
+async function makePrices(url, key, env, ctx, kind){
   const cat = (await published(env, url.origin, 'market.json', ctx)) || {};
   const rows = await kindRows(env, 'key, v, total, at', cat.league || '', [kind]);
   const out = {updated: null, league: cat.league || null, every: 'day'};   // one of these comes round in a day
@@ -826,8 +870,10 @@ export async function servePrices(request, env, ctx, kind){
     } else out.items[name] = {at: r.at, price, total: r.total};
   }
   if(out.mods) for(const m of Object.values(out.mods)) m.pts.sort((a, b) => a[0] - b[0]);
-  const res = new Response(JSON.stringify(out), {headers: {'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'public, max-age=60'}});
+  const body = JSON.stringify(out);
+  const res = new Response(body, {headers: {'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'public, max-age=60'}});
   ctx.waitUntil(caches.default.put(key, res.clone()));
+  ctx.waitUntil(keepLast(kind, body));
   return res;
 }
 
@@ -859,6 +905,10 @@ export async function serveBossPrices(request, env, ctx){
   const url = new URL(request.url), ck = new Request(url.origin + '/data/bossprices.json');
   const hit = await caches.default.match(ck);
   if(hit) return hit;
+  try { return await makeBossPrices(url, ck, env, ctx); }
+  catch(e){ return lastGood(ctx, 'boss', ck, e); }
+}
+async function makeBossPrices(url, ck, env, ctx){
   const [bosses, queries] = await Promise.all([asset(env, url.origin, 'bosses.json'), asset(env, url.origin, 'bossqueries.json')]);
   const catRow = await publishedRow(env, url.origin, 'market.json', ctx), cat = (catRow && catRow.data) || {};
   const cxRow = await publishedRow(env, url.origin, 'exchange.json', ctx), cx = (cxRow && cxRow.data) || {};
@@ -915,8 +965,10 @@ export async function serveBossPrices(request, env, ctx){
     late: stale(currencyAt, 'file', 'exchange.json') || (!!tradeAt && stale(tradeAt, 'price', 'uniq')),
     times: {currency: currencyAt, trade: tradeAt},
     primary: 'divine', source: 'Currency Exchange and trade site listings', items};
-  const res = new Response(JSON.stringify(out), {headers: {'Content-Type': 'application/json; charset=utf-8',
+  const body = JSON.stringify(out);
+  const res = new Response(body, {headers: {'Content-Type': 'application/json; charset=utf-8',
     'Cache-Control': 'public, max-age=300, stale-while-revalidate=600'}});
   ctx.waitUntil(caches.default.put(ck, res.clone()));
+  ctx.waitUntil(keepLast('boss', body));
   return res;
 }
