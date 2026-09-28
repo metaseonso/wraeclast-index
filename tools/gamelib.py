@@ -39,8 +39,8 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from gamepull import official, patch, state  # noqa: E402
-from sync import (BLANK_NODE, CUT, DNT, DNT_GEMS, KWREF, RAW, SHOWN_FIELDS,  # noqa: E402
-                  data_files, plain, shows, whole)
+from sync import (BLANK_NODE, CUT, DNT, DNT_GEMS, KWREF, RAW, SHOWN_FIELDS, published_ids,  # noqa: E402
+                  unique_ids, data_files, plain, shows, whole)
 
 ROOT = Path(__file__).resolve().parent.parent
 INDEX = ROOT / 'data' / 'index.json'
@@ -178,11 +178,7 @@ def sources():
         if sig not in seen:
             seen.add(sig)
             uniq.append(u)
-    names = {}
-    for u in uniq:
-        names[u['n']] = names.get(u['n'], 0) + 1
-    for u in uniq:   # a unique's card id is its name, or "name | base" where variants share the name
-        uid = u['n'] if names[u['n']] == 1 else u['n'] + ' | ' + (u.get('b') or '')
+    for u, uid in zip(uniq, unique_ids(uniq, published_ids('u'))):   # the ids the index gave them (tools/sync.py)
         out['u:' + uid] = json.dumps(u, ensure_ascii=False)
     for k, v in drilldown('kwdata').items():
         out['w:' + k] = v.get('d') or ''

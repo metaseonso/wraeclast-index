@@ -502,6 +502,64 @@ def card_image(it, src, base=None):
 KWREF = re.compile(r'\[([A-Za-z][A-Za-z0-9_]*)(?:\|([^\]]*))?\]')
 
 
+FORGED = re.compile(r'^(Runeforged|Runemastered) ')
+
+
+def published_ids(kind):
+    """The ids of one kind of card the index already ships (data/index.json as it is before this run writes it)."""
+    try:
+        index = json.loads((ROOT / 'data' / 'index.json').read_text(encoding='utf-8'))
+    except (OSError, ValueError):
+        return set()
+    return {it['id'] for it in index.get('items') or [] if it.get('k') == kind}
+
+
+def shipped_ids(kind):
+    """The ids of one kind of card in the last commit's data/index.json: what the site ships, even after a stage of
+    this run rewrote the file (tools/pipeline.py runs in build/tree/, where git still reads the worktree's commit).
+    Empty, and said so, where git cannot answer."""
+    import subprocess
+    try:
+        r = subprocess.run(['git', 'show', 'HEAD:data/index.json'], cwd=str(ROOT), capture_output=True, timeout=60)
+        index = json.loads(r.stdout.decode('utf-8')) if r.returncode == 0 else None
+    except (OSError, ValueError, subprocess.SubprocessError):
+        index = None
+    if not index:
+        print('  (no committed data/index.json to read: the ids it ships are not held here)', file=sys.stderr)
+        return set()
+    return {it['id'] for it in index.get('items') or [] if it.get('k') == kind}
+
+
+def unique_ids(uniq, kept=()):
+    """Each unique row's card id, in order. A card's id is its address (/item/<slug>), its pins, its links and its
+    Connections, so once shipped it never changes. kept: the unique ids the index already ships.
+
+    A new card's id: the unique's name, or "name | base" where several rows share the name (the forged bases:
+    "Twisted Empyrean | Runemastered Aberrant Sledge"). A shipped card keeps its id when that rule would move it:
+      a unique with one card, keyed by its name, that gains a forged base: the plain-base row keeps the name
+      ("Ab Aeterno"), and only the new forged row takes "name | base"
+      a unique whose rows were keyed "name | base" and is down to one row keeps "name | base" on that row"""
+    names = {}
+    for u in uniq:
+        names[u['n']] = names.get(u['n'], 0) + 1
+    ids, bare = [], set()
+    for u in uniq:
+        n, full = u['n'], u['n'] + ' | ' + (u.get('b') or '')
+        if names[n] == 1:
+            uid = full if n not in kept and full in kept else n
+        elif full in kept or n not in kept or n in bare:
+            uid = full
+        else:
+            # the name alone is a shipped id: it stays on the one row that is not a forged base, where there is one
+            plain = [x for x in uniq if x['n'] == n and not FORGED.match(x.get('b') or '')
+                     and x['n'] + ' | ' + (x.get('b') or '') not in kept]
+            uid = n if plain and plain[0] is u else full
+        if uid == n:
+            bare.add(n)
+        ids.append(uid)
+    return ids
+
+
 def build_index(html):
     gems = block(html, 'gemdata')
     uq = block(html, 'uqdata')
@@ -556,12 +614,9 @@ def build_index(html):
         if sig not in seen_u:
             seen_u.add(sig)
             uniq.append(u)
-    names, ubase = {}, {}
-    for u in uniq:
-        names[u['n']] = names.get(u['n'], 0) + 1
-    for u in uniq:
+    ubase = {}
+    for u, uid in zip(uniq, unique_ids(uniq, published_ids('u') | shipped_ids('u'))):
         text = u.get('ex') or u.get('im') or []
-        uid = u['n'] if names[u['n']] == 1 else u['n'] + ' | ' + (u.get('b') or '')   # variants share a name
         ubase[uid] = u.get('b')
         it = {'k': 'u', 'id': uid, 'n': u['n'], 's': ' · '.join(x for x in (u.get('b'), plain(u.get('c', ''))) if x),
               'ic': u.get('ic'), 'q': u.get('g', ''),

@@ -48,7 +48,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from phrases import Matcher  # noqa: E402
-from sync import KWREF, RAW, block  # noqa: E402
+from sync import KWREF, RAW, block, unique_ids  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / 'data' / 'kwuse.json'
@@ -280,9 +280,7 @@ def main():
         else:
             seen[sig] = [u]
             uniq.append(u)
-    names = Counter(u['n'] for u in uniq)
-    for u in uniq:
-        uid = u['n'] if names[u['n']] == 1 else u['n'] + ' | ' + (u.get('b') or '')
+    for u, uid in zip(uniq, unique_ids(uniq, {it['id'] for it in index['items'] if it['k'] == 'u'})):
         if 'u:' + uid not in cards:
             missing.append('unique ' + uid)
             continue
