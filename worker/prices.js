@@ -551,7 +551,7 @@ async function lastGood(ctx, name, key, err){
    a new one and a late file still says so. Anything else (no built row, a newer input, another deploy, no
    table) builds it the way it always was, and keeps it. A part over 1.2 MB goes in numbered rows (#2, #3, ...),
    each well under D1's 2 MB a row. */
-const BUILT_V = 2;          // the shape of a built row: a new number reads every older row as missing (2: league dates in now)
+const BUILT_V = 3;          // the shape of a built row: a new number reads every older row as missing (2: league dates in now, 3: only the fields the page reads)
 const CHUNK = 1.2e6;        // bytes in one built row at most
 // the files each group is made from: a built group is out of date once one of these has moved on
 const INPUTS = {full: ['market.json', 'exchange.json', 'leagues.json'], now: ['market.json', 'exchange.json', 'leagues.json'],
@@ -720,7 +720,9 @@ async function makeMarket(env, origin, ctx, group, inputs, memo){
     primary: 'divine', rates: rate ? {exalted: rate} : {},
     source: 'Currency Exchange and trade site listings', builds: cat.builds,
     markets: cx.league === league ? (cx.markets || []).slice(0, 40) : [],
-    leagues: {updated: leagueFile.updated || null, source: leagueFile.source || null, leagues: Array.isArray(leagueFile.leagues) ? leagueFile.leagues : []}};
+    // only what the league clock and the charts' colours read: the name, the version, the first day and the colour
+    leagues: {updated: leagueFile.updated || null, leagues: (Array.isArray(leagueFile.leagues) ? leagueFile.leagues : [])
+      .filter(l => l && l.name).map(l => ({name: l.name, v: l.v, start: l.start, ...(l.colour ? {colour: l.colour} : {})}))}};
   const bodies = {};
   if(group === 'full') bodies[''] = {...top, items};
   else {
