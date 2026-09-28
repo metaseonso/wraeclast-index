@@ -1,0 +1,137 @@
+# Site watch: is the live site up, are its prices fresh, and how much of the free plan's day is spent?
+# Every 30 minutes, and at the end of every Trade prices run (prices.yml calls it). It reads, from the live site:
+#   home          / answers 200 and is the site
+#   an item page  /item/divine-orb answers 200 and names the item (the crawler pages, worker/seo.js)
+#   prices        /data/market.json?part=live: a price file, not the worker's last good copy, and not late
+#   fallback      /data/market-last.json: the deploy ships the last good prices a page falls back to
+#   health        /api/health: every data job on time, and its quota block (worker/health.js): worker requests,
+#                 database rows read and written, and page-count points, each against its free daily limit
+# Anything wrong, or any daily limit past half, opens ONE issue labelled `quota` (the label is made here if the
+# repo does not have it), or updates the one already open: its body always says what the last run found, and a
+# comment is added only when that changes, so the issue is not a stream of notes. The run goes red on a failure
+# or a limit past 80%. When all is well it does nothing at all: no issue, no comment, no edit.
+# GitHub's own token only (issues: write); nothing else is stored anywhere.
+name: Site watch
+on:
+  schedule:
+    - cron: '11,41 * * * *'
+  workflow_dispatch:
+  workflow_call:
+permissions:
+  contents: read
+  issues: write
+jobs:
+  watch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check the live site and the free plan's day
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          SITE: https://wraeclastindex.fyi
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          python3 - <<'EOF'
+          import json, os, subprocess, sys, time, urllib.request
+          from datetime import datetime, timezone
+
+          SITE, RUN = os.environ['SITE'].rstrip('/'), os.environ['RUN_URL']
+          LABEL, TITLE, MARK = 'quota', 'Site watch: the live site or the free plan needs a look', '<!-- site-watch -->'
+          found = []   # (level, key, line): level fault | alarm | watch
+
+          def get(path, tries=3):
+              last = None
+              for i in range(tries):
+                  try:
+                      req = urllib.request.Request(SITE + path, headers={'User-Agent': 'wraeclast-index-watch/1.0 (GitHub Actions)'})
+                      with urllib.request.urlopen(req, timeout=30) as r:
+                          return r.status, dict(r.headers), r.read().decode('utf-8', 'replace')
+                  except urllib.error.HTTPError as e:
+                      last = (e.code, dict(e.headers or {}), e.read().decode('utf-8', 'replace'))
+                  except Exception as e:
+                      last = (0, {}, str(e))
+                  time.sleep(5 * (i + 1))
+              return last
+
+          def hours(iso):
+              try: return (datetime.now(timezone.utc) - datetime.fromisoformat(iso.replace('Z', '+00:00'))).total_seconds() / 3600
+              except Exception: return None
+
+          # home
+          s, h, body = get('/')
+          if s != 200 or 'Wraeclast Index' not in body: found.append(('fault', 'home', f'Home page: answered {s or "nothing"}.'))
+          # one item page
+          s, h, body = get('/item/divine-orb')
+          if s != 200 or 'Divine Orb' not in body: found.append(('fault', 'item', f'Item page /item/divine-orb: answered {s or "nothing"}.'))
+          # today's prices
+          s, h, body = get('/data/market.json?part=live')
+          m = None
+          try: m = json.loads(body) if s == 200 else None
+          except Exception: pass
+          if not m or not isinstance(m.get('items'), dict) or len(m['items']) < 50:
+              found.append(('fault', 'prices', f'Live prices: answered {s or "nothing"}, not a price file. Pages are on the last good prices.'))
+          else:
+              age = hours(m.get('updated') or '')
+              said = f'{age:.1f} h old' if age is not None else 'no age'
+              if any(k.lower() == 'x-wi-last' for k in h): found.append(('fault', 'prices-last', f'Live prices: the worker is serving its last good copy ({said}); a price build is failing.'))
+              elif m.get('late'): found.append(('fault', 'prices-late', f'Live prices: late ({said}).'))
+          # the deploy's fallback prices
+          s, h, body = get('/data/market-last.json')
+          try: last = json.loads(body) if s == 200 else None
+          except Exception: last = None
+          if not last or not isinstance(last.get('items'), dict):
+              found.append(('fault', 'fallback', f'Fallback prices /data/market-last.json: answered {s or "nothing"}. A page whose live prices fail has nothing to fall back to.'))
+          # health and the free plan's day
+          s, h, body = get('/api/health')
+          hl = None
+          try: hl = json.loads(body) if s == 200 else None
+          except Exception: pass
+          if not hl:
+              found.append(('fault', 'health', f'/api/health: answered {s or "nothing"}.'))
+          else:
+              if not hl.get('ok'): found.append(('fault', 'jobs', 'Data jobs: ' + str(hl.get('note') or hl.get('state'))))
+              q = hl.get('quota') or {}
+              if q.get('state') == 'unknown' or not q:
+                  found.append(('fault', 'quota-unknown', 'Free plan: today\'s use is not known (' + str(q.get('note') or 'no quota block') + ').'))
+              for key in ('workerRequests', 'd1RowsRead', 'd1RowsWritten', 'trackPoints'):
+                  x = q.get(key) or {}
+                  p = x.get('pct')
+                  if p is None: continue
+                  line = f"{x.get('what', key)}: {x.get('used'):,} of {x.get('limit'):,} today ({p}%)."
+                  if p >= 80: found.append(('alarm', key + '-80', line))
+                  elif p >= 50: found.append(('watch', key + '-50', line))
+
+          if not found:
+              print('All well: nothing to say.')
+              sys.exit(0)
+
+          for level, key, line in found: print(f'{level.upper():6} {line}')
+          worst = 'fault' if any(f[0] == 'fault' for f in found) else 'alarm' if any(f[0] == 'alarm' for f in found) else 'watch'
+          keys = ' '.join(sorted(k for _, k, _ in found))
+          now = datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M UTC')
+          lines = '\n'.join(f'- **{lv}** {ln}' for lv, _, ln in found)
+          body = (f'{MARK}\n<!-- keys: {keys} -->\nLast run: {now} ([run]({RUN})).\n\n{lines}\n\n'
+                  'Limits reset at 00:00 UTC. Past 100% of worker requests the worker answers 429 and pages use the last good prices; '
+                  'past either database limit every query fails until midnight and the worker serves its last good copy. '
+                  'To stretch worker requests: lower SHARE in assets/track.js (the page counts are weighted back up). '
+                  'This issue is updated by every watch run while something is wrong, and left alone when all is well: close it once it is sorted.')
+
+          def gh(*args, inp=None):
+              r = subprocess.run(['gh', *args], input=inp, capture_output=True, text=True)
+              if r.returncode: print('gh ' + args[0] + ' ' + args[1] + ': ' + r.stderr.strip())
+              return r
+          have = gh('label', 'list', '--search', LABEL, '--json', 'name')
+          if have.returncode == 0 and LABEL not in [x['name'] for x in json.loads(have.stdout or '[]')]:
+              gh('label', 'create', LABEL, '--color', 'D93F0B', '--description', 'The live site, or a free daily limit past half (Site watch)')
+          open_ = gh('issue', 'list', '--label', LABEL, '--state', 'open', '--json', 'number,body', '--limit', '20')
+          mine = [i for i in json.loads(open_.stdout or '[]') if MARK in (i.get('body') or '')] if open_.returncode == 0 else []
+          if not mine:
+              gh('issue', 'create', '--title', TITLE, '--label', LABEL, '--body-file', '-', inp=body)
+          else:
+              n, was = mine[0]['number'], mine[0].get('body') or ''
+              gh('issue', 'edit', str(n), '--body-file', '-', inp=body)
+              if f'<!-- keys: {keys} -->' not in was:
+                  gh('issue', 'comment', str(n), '--body-file', '-', inp=f'Changed at {now}:\n\n{lines}')
+          if worst in ('fault', 'alarm'): sys.exit(1)
+          EOF

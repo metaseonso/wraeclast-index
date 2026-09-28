@@ -42,3 +42,9 @@ jobs:
           if [ "$left" -gt 0 ]; then sleep "$left"; fi
           gh workflow run pages.yml --ref main || echo "::warning::could not start Publish site"
           gh workflow run prices.yml --ref main || echo "::warning::could not start the next price run"
+  # then the site watch (.github/workflows/watch.yml): the live site, the price age, health and the free plan's day,
+  # into one issue when something is wrong; quiet when all is well
+  watch:
+    needs: pull
+    if: always()
+    uses: ./.github/workflows/watch.yml

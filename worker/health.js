@@ -17,8 +17,14 @@
    pages are stamped the same way (worker/prices.js), so a stale feed shows its real age there too.
    Watched the same way: a section still showing an older copy because its source failed (data/faults.json,
    written by tools/lastgood.py). The job came in; what it brought did not, so it reads late on the first day
-   and stopped after that, with the reason in the owner's own words. */
+   and stopped after that, with the reason in the owner's own words.
+   And the free plan's day (quota in /api/health): how much of each daily limit is spent so far, by Cloudflare's
+   own count (worker/cfstats.js quotaToday, kept 5 minutes): worker requests (100,000: past it the worker's paths
+   answer 429 until 00:00 UTC), database rows read (5 million) and written (100,000: past either, every query fails
+   until midnight) and page-count points (100,000). fine under half, watch from half, alarm from 80%; unknown when
+   Cloudflare did not say. The site watch (.github/workflows/watch.yml) reads it every 30 minutes. */
 import { fileWhen, published } from './files.js';
+import { quotaToday } from './cfstats.js';
 
 const CACHE = 60;   // seconds a data centre keeps its answer
 
@@ -151,6 +157,28 @@ export async function health(env, origin){
     at: new Date(now).toISOString(), line, jobs};
 }
 
+/* ---------- the free plan's day ---------- */
+export const DAILY = [['workerRequests', 'requests', 'Worker requests', 100000], ['d1RowsRead', 'rowsRead', 'Database rows read', 5000000],
+  ['d1RowsWritten', 'rowsWritten', 'Database rows written', 100000], ['trackPoints', 'points', 'Page-count points', 100000]];
+export async function quota(env){
+  const q = await quotaToday(env).catch(() => null);
+  if(!q) return {state: 'unknown', note: 'No stats key, or Cloudflare did not answer.'};
+  const out = {day: q.day, checked: q.checked, state: 'fine', pct: 0};
+  let worst = null, blind = [];
+  for(const [key, field, what, limit] of DAILY){
+    const used = q[field] === null || q[field] === undefined ? null : +q[field];
+    const pct = used === null ? null : Math.round(used / limit * 1000) / 10;
+    out[key] = {what, used, limit, pct};
+    if(pct === null) blind.push(what);
+    else if(!worst || pct > worst.pct) worst = out[key];
+  }
+  out.pct = worst ? worst.pct : 0;
+  out.state = worst && worst.pct >= 80 ? 'alarm' : worst && worst.pct >= 50 ? 'watch' : blind.length === DAILY.length ? 'unknown' : 'fine';
+  out.note = (worst ? worst.what + ' at ' + worst.pct + '% of the day\'s ' + worst.limit.toLocaleString('en-US') + '.' : '') +
+    (blind.length ? (worst ? ' ' : '') + 'Not known: ' + blind.join(', ').toLowerCase() + '.' : '');
+  return out;
+}
+
 /* ---------- GET /api/health ---------- */
 export async function serveHealth(request, env, url, ctx){
   if(request.method !== 'GET') return json(405, {error: 'GET only.'}, {'Cache-Control': 'no-store'});
@@ -168,6 +196,8 @@ export async function serveHealth(request, env, url, ctx){
     prices: pick('price', j => KIND[j.name] || j.name),
     // sections serving an older copy because their source failed; {} when nothing is stale
     stale: Object.fromEntries(h.jobs.filter(j => j.where === 'data').map(j => [j.name, {...one(j), since: j.at, note: j.note}])),
+    // how much of each free daily limit is spent so far (UTC day): counts only
+    quota: await quota(env),
   }, {'Cache-Control': 'public, max-age=' + CACHE, 'Access-Control-Allow-Origin': '*'});
   ctx.waitUntil(caches.default.put(key, res.clone()));
   return res;
