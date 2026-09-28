@@ -22,8 +22,27 @@ import { sameSite, allowed } from './community.js';
 import { cloudflare, d1Today } from './cfstats.js';
 import { health } from './health.js';
 
+/* ---------- the crawler pages, and where their visits come from ----------
+   The item and list pages (worker/seo.js, built as files) send one view each through assets/landing.js, as
+   "item" or "list". An arrival is grouped by where it came from: an AI answer (the hosts below, or a link tagged
+   utm_source=chatgpt.com) or a search engine (kindOf's search list), and /api/admin/stats gives the crawler
+   pages' own count of each as "landings". */
+export const CRAWL_PAGES = {item: 'Item pages', list: 'List pages'};
+export const AI_HOSTS = ['chatgpt.com', 'perplexity.ai', 'claude.ai', 'copilot.microsoft.com', 'gemini.google.com'];
+export function arrivalGroup(src){
+  const s = src.startsWith('utm:') ? src.slice(4) : src;
+  if(AI_HOSTS.some(h => s === h || s.endsWith('.' + h))) return 'AI';
+  const k = kindOf(src);
+  return k === 'ai' ? 'AI' : k === 'search' ? 'Search' : k === 'social' ? 'Social' : k === 'direct' ? 'Direct' : k === 'site' ? 'Site' : 'Other';
+}
+function landings(rows){
+  const out = {AI: 0, Search: 0, Social: 0, Direct: 0, Other: 0};
+  for(const r of rows) if(CRAWL_PAGES[r.route] && r.source !== 'site') out[arrivalGroup(r.source)] = (out[arrivalGroup(r.source)] || 0) + r.n;
+  return out;
+}
+
 export const ROUTES = Object.keys(PAGES);
-const ROUTE = new Set(ROUTES), DEVICE = new Set(['phone', 'tablet', 'desktop']), STATUS = new Set(['new', 'read', 'done']);
+const ROUTE = new Set([...ROUTES, ...Object.keys(CRAWL_PAGES)]), DEVICE = new Set(['phone', 'tablet', 'desktop']), STATUS = new Set(['new', 'read', 'done']);
 const SHOWN = new Set([-1, 0, 1]);   // an answer taken down, as it was sent, or checked by us (migration 0010)
 export const MAX = {views: 50, clicks: 200, heat: 200};
 const NOTES = 100;   // notes from players per page, here and in /api/admin/suggestions
@@ -296,6 +315,7 @@ export async function stats(env, url){
     routes: top(routes, ROUTES.length + 5, 'route'),
     sources: top(sources, 20, 'source').map(x => ({...x, kind: kindOf(x.source)})),
     kinds: top(kinds, 10, 'kind'),
+    landings: landings(v),
     countries: top(countries, 20, 'country'),
     devices: top(devices, 3, 'device'),
     clicks: {total: clicks, all: top(all, 50, 'label'),
