@@ -84,9 +84,86 @@
    "Devotion to the King",
    "a node with no name"
   ],
-  "lines_differ": 0,
+  "lines_differ": 9,
   "lines_order_only": 0,
   "lines_skill_only": 0,
-  "lines_sample": []
+  "lines_sample": [
+   {
+    "n": "Weapon Master",
+    "site": [],
+    "ggg": [
+     "100 Passive Skill Points become Weapon Set Skill Points"
+    ]
+   },
+   {
+    "n": "Passive Point",
+    "site": [],
+    "ggg": [
+     "Grants 1 Passive Skill Point"
+    ]
+   },
+   {
+    "n": "Passive Points",
+    "site": [],
+    "ggg": [
+     "Grants 1 Passive Skill Point"
+    ]
+   },
+   {
+    "n": "Path of the Sorceress",
+    "site": [
+     "Can Allocate Passive Skills from the Sorceress's starting point"
+    ],
+    "ggg": [
+     "Can Allocate Passive Skills from the Sorceress's starting point",
+     "Grants 4 Passive Skill Points"
+    ]
+   },
+   {
+    "n": "Minion Life",
+    "site": [
+     "Minions have 10% increased maximum Life",
+     "Minions have +0% to Chaos Resistance"
+    ],
+    "ggg": [
+     "Minions have 10% increased maximum Life"
+    ]
+   },
+   {
+    "n": "Passive Points",
+    "site": [],
+    "ggg": [
+     "Grants 1 Passive Skill Point"
+    ]
+   },
+   {
+    "n": "Self Sacrificing",
+    "site": [
+     "-20% increased Spirit Reservation Efficiency",
+     "40% increased Reservation Efficiency of Minion Skills"
+    ],
+    "ggg": [
+     "20% reduced Spirit Reservation Efficiency of Skills",
+     "40% increased Reservation Efficiency of Minion Skills"
+    ]
+   },
+   {
+    "n": "Passive Point",
+    "site": [],
+    "ggg": [
+     "Grants 1 Passive Skill Point"
+    ]
+   },
+   {
+    "n": "Path of the Warrior",
+    "site": [
+     "Can Allocate Passive Skills from the Warrior's starting point"
+    ],
+    "ggg": [
+     "Can Allocate Passive Skills from the Warrior's starting point",
+     "Grants 4 Passive Skill Points"
+    ]
+   }
+  ]
  }
 }
