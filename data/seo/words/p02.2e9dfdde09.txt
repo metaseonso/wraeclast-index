@@ -1,4 +1,8 @@
-### Totem Area of Effect
+### Total Incineration
+Notable · https://wraeclastindex.fyi/item/total-incineration
+Templar region
+10% increased Ignite Duration on Enemies
+25% increased Damage with Hits against Ignited Enemiestotal-incinerationtotal-incinerationfire28_Total IncinerationDiluted Liquid GuiltConcentrated Liquid IsolationConcentrated Liquid Suffering### Totem Area of Effect
 Small passive · https://wraeclastindex.fyi/item/totem-area-of-effect
 Templar region
 10% increased Area of Effect for Skills used by Totemstotem-area-of-effecttotem-area-of-effectTotem Area of Effect### Totem Attack Speed

@@ -1213,7 +1213,8 @@ Armour: 218 · Energy Shield: 63tideseer-mantletideseer-mantleTideseer Mantl
 Jewel · drops from level 20 · https://wraeclastindex.fyi/item/time-lost-diamondtime-lost-diamondtime-lost-diamondTime-Lost Diamond### Time-Lost Emerald
 Jewel · drops from level 20 · https://wraeclastindex.fyi/item/time-lost-emeraldtime-lost-emeraldtime-lost-emeraldTime-Lost Emerald### Time-Lost Ruby
 Jewel · drops from level 20 · https://wraeclastindex.fyi/item/time-lost-rubytime-lost-rubytime-lost-rubyTime-Lost Ruby### Time-Lost Sapphire
-Jewel · drops from level 20 · https://wraeclastindex.fyi/item/time-lost-sapphiretime-lost-sapphiretime-lost-sapphireTime-Lost Sapphire### Titan Mitts
+Jewel · drops from level 20 · https://wraeclastindex.fyi/item/time-lost-sapphiretime-lost-sapphiretime-lost-sapphireTime-Lost Sapphire### Timeless Jewel
+Jewel · drops from level 20 · https://wraeclastindex.fyi/item/timeless-jeweltimeless-jeweltimeless-jewelTimeless Jewel### Titan Mitts
 Gloves · drops from level 52 · https://wraeclastindex.fyi/item/titan-mitts
 Requires: level 52, 64 Str
 Armour: 132titan-mittstitan-mittsTitan Mitts### Tonal Focus

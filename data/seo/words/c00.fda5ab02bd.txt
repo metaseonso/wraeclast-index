@@ -1,4 +1,6 @@
-### Ancient Rune of Animosity
+### Albino Rhoa Feather
+Currency · https://wraeclastindex.fyi/item/albino-rhoa-feather
+A discarded Avian feather with an unknown purposealbino-rhoa-featheralbino-rhoa-featherAlbino Rhoa Feather### Ancient Rune of Animosity
 Runes · https://wraeclastindex.fyi/item/ancient-rune-of-animosity
 Drops from area level 12
 Talisman: Gain 2 Druidic Prowess when you Heavy Stun a Rare or Unique Enemyancient-rune-of-animosityancient-rune-of-animosityAncient Rune of Animosity### Charging Rune
@@ -7,13 +9,17 @@ Drops from area level 31
 Armour: 12% increased Runic Ward Regeneration Ratecharging-runecharging-runeCharging Rune### Corrupted Verisium
 Currency · https://wraeclastindex.fyi/item/corrupted-verisium
 Drops from area level 65
-Can be used at the Verisium Anvil to transform Equipment.corrupted-verisiumcorrupted-verisiumCorrupted Verisium### Essence of Battle
+Can be used at the Verisium Anvil to transform Equipment.corrupted-verisiumcorrupted-verisiumCorrupted Verisium### Djinn Barya
+Trial Coins · https://wraeclastindex.fyi/item/djinn-barya
+Right click this item to view details of the Trials in progress. Take this item to the Relic Altar in the Trial of the Sekhemas to enter.djinn-baryadjinn-baryaDjinn Barya### Essence of Battle
 Essences · https://wraeclastindex.fyi/item/essence-of-battle
 Drops from area level 40
 Upgrades a Magic item to a Rare item, adding a guaranteed modifieressence-of-battleessence-of-battleEssence of Battle### Founders Verisium
 Currency · https://wraeclastindex.fyi/item/founders-verisium
 Drops from area level 65
-Can be used at the Verisium Anvil to transform Equipment.founders-verisiumfounders-verisiumFounders Verisium### Legacy of A Worthy Foe
+Can be used at the Verisium Anvil to transform Equipment.founders-verisiumfounders-verisiumFounders Verisium### Inscribed Ultimatum
+Currency · https://wraeclastindex.fyi/item/inscribed-ultimatum
+Take this item to The Temple of Chaos to participate in a Trial of Chaos.inscribed-ultimatuminscribed-ultimatumInscribed Ultimatum### Legacy of A Worthy Foe
 Runes · https://wraeclastindex.fyi/item/legacy-of-a-worthy-foe
 Drops from area level 65
 Shield: Off-hand Hits inflict Runefather's Challengelegacy-of-a-worthy-foelegacy-of-a-worthy-foeLegacy of A Worthy Foe### Legacy of Adonia's Ego
@@ -238,12 +244,23 @@ While this item is active in your inventory your next Exalted Orb will add a Mod
 Omens · https://wraeclastindex.fyi/item/omen-of-sinistral-alchemy
 While this item is active in your inventory your next Orb of Alchemy will result in the maximum number of prefix modifiersomen-of-sinistral-alchemyomen-of-sinistral-alchemyOmen of Sinistral Alchemy### Omen of Sinistral Coronation
 Omens · https://wraeclastindex.fyi/item/omen-of-sinistral-coronation
-While this item is active in your inventory your next Regal Orb will add only prefix modifiersomen-of-sinistral-coronationomen-of-sinistral-coronationOmen of Sinistral Coronation### Starlit Ore
+While this item is active in your inventory your next Regal Orb will add only prefix modifiersomen-of-sinistral-coronationomen-of-sinistral-coronationOmen of Sinistral Coronation### Rogue's Marker
+Currency · https://wraeclastindex.fyi/item/rogues-marker
+Drops from area level 48
+Creates a portal to the Rogue Harbour from a Town or Hideout · Used as Currency for services in the Rogue Harbourrogues-markerrogues-markerRogue's Marker### Starlit Ore
 Currency · https://wraeclastindex.fyi/item/starlit-ore
 Can be used at the Verisium Anvil to forge a new Unique item.starlit-orestarlit-oreStarlit Ore### Stone Rune
 Runes · https://wraeclastindex.fyi/item/stone-rune-currency
 Drops from area level 41
-Armour: +75 to Stun Threshold — Martial Weapon: Causes 30% increased Stun Buildup — Wand or Staff: Gain additional Stun Threshold equal to 12% of maximum Energy Shieldstone-rune-currencystone-runeStone Rune### Thaumaturgic Flux (Level 10)
+Armour: +75 to Stun Threshold — Martial Weapon: Causes 30% increased Stun Buildup — Wand or Staff: Gain additional Stun Threshold equal to 12% of maximum Energy Shieldstone-rune-currencystone-runeStone Rune### Test of Cunning Barya
+Trial Coins · https://wraeclastindex.fyi/item/test-of-cunning-barya
+Right click this item to view details of the Trials in progress. Take this item to the Relic Altar in the Trial of the Sekhemas to enter.test-of-cunning-baryatest-of-cunning-baryaTest of Cunning Barya### Test of Strength Barya
+Trial Coins · https://wraeclastindex.fyi/item/test-of-strength-barya
+Right click this item to view details of the Trials in progress. Take this item to the Relic Altar in the Trial of the Sekhemas to enter.test-of-strength-baryatest-of-strength-baryaTest of Strength Barya### Test of Time Barya
+Trial Coins · https://wraeclastindex.fyi/item/test-of-time-barya
+Right click this item to view details of the Trials in progress. Take this item to the Relic Altar in the Trial of the Sekhemas to enter.test-of-time-baryatest-of-time-baryaTest of Time Barya### Test of Will Barya
+Trial Coins · https://wraeclastindex.fyi/item/test-of-will-barya
+Right click this item to view details of the Trials in progress. Take this item to the Relic Altar in the Trial of the Sekhemas to enter.test-of-will-baryatest-of-will-baryaTest of Will Barya### Thaumaturgic Flux (Level 10)
 Currency · https://wraeclastindex.fyi/item/thaumaturgic-flux-level-10
 Drops from area level 37
 Upgrades a Kalguuran Skill Gem to level 10thaumaturgic-flux-level-10thaumaturgic-flux-level-10Thaumaturgic Flux (Level 10)### Thaumaturgic Flux (Level 11)

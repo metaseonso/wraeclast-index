@@ -142,3 +142,68 @@ Nothing of either is copied here. Once both are on main:
 1. The pill reads the game's item name, "From Uncut Skill Gem (Level 1)". poe2db calls the same thing "Tier 1".
    Keep the game's name, or add the word Tier?
 2. A roll-up for #137 (`data/changes/index.json`), or one file per kind as #138 offers (`@k`)?
+
+---
+
+# Closing the gap report
+
+For #79. `tools/dev/gaps.txt` (written by `python tools/gamepull.py`) now names a reason for every gap that stays,
+one line per reason with a sample of the names, and a name with no reason prints as `NO REASON YET`.
+
+| kind | gap before (22 Sep) | gap now | what closed it |
+|---|--:|--:|---|
+| gems | 2 | 2 | stays: "Coming Soon" and "Removed Skill" are the game's own placeholders |
+| notables | 7 | 6 | Crystalline Phylactery is a card (a notable that is also a jewel socket; `tools/gamelib.py` notables). Inherited Strength was never missing: the tree spells it with a space on the end, and the report now trims names as the cards do. Stays: 5 choice notables with no effect of their own (each option is a card), and Weapon Master, which has no stat line and no skill |
+| small passives | 119 | 110 | 5 Pathfinder concoctions are cards (`tools/treecards.py`, as options with "Grants Skill"); 4 names were spelled with a space on the end and were cards all along. Stays: 68 icon-only nodes (masteries, blank plates), 34 ascendancy starting nodes, 6 class starting plates, 2 "Passive Point(s)" nodes: none has a line of text in the game files |
+| keywords | 69 | 1 | 33 are keystones, whose card stands for the keyword too (the report counts them now); 3 are new cards (Enraged, Shroud Walker, Siphons Mana and Deals Lightning Damage: one name the game uses twice, settled by the rule in `pick()`). Stays: Test, the game's own placeholder |
+| bases | 1 | 0 | the Timeless Jewel is a base card (the export marks it unique_only) |
+| currency | 16 | 8 | 8 cards in the game's words: Albino Rhoa Feather and Rogue's Marker (their own descriptions), the five Barya and the Inscribed Ultimatum (the line the game prints for their item class, ClientStrings `ItemFunctionItemisedSanctum` and `ItemFunctionUltimatumKey`). Stays: 7 whose own text is "This item is no longer usable", and Omen of Recombination, which has no text in the game files (poe2db shows none either) |
+
+The keyword and small passive counts in the old report were against an older index; 69 keywords were
+already 37 on main's own index before this change.
+
+Sources: the official game files (the RePoE export; the game's own ClientStrings table through
+`tools/gamepull.py dat()`), the official trade site's lists (which items exist today). poe2db only as the check on
+the Omen of Recombination.
+
+## The Jewel kind
+
+`data/jewels.json` (`tools/gamelib.py`, the gamelib stage) holds its data:
+
+- **bases**: the 9 jewel bases on the official trade site's list, each with its drop level, picture, the craft table
+  its modifiers are read from (`data/craft/jewel.json`, named, never copied) and how many prefix, suffix and
+  corruption rows its own pool holds, and the uniques that sit on it (14 over the 9).
+- **timeless**: the 7 factions, each with its conquerors in the game's order (23; the 5 the game still words only
+  for jewels from before they were replaced are under `older`), the seed range its jewel rolls, and the unique
+  that is that jewel where the game has one (Heroic Tragedy for the Kalguur, Undying Hate for the Abyssals).
+
+The "28 jewels" in the old report were the drill-down's 28 timeless jewel lines (one per conqueror wording), not
+28 jewels.
+
+### In frame terms
+
+Procedure (b), step 4, asks first: does anything in the index already answer to this name? For a jewel, yes, and
+three times over:
+
+- each jewel base is a **Base** card (`b`), and its card already draws what it can roll and what a corruption can
+  add off `data/craft/jewel.json` (`canroll`, `cancorrupt`), and its uniques under Connections (`uniques`);
+- **Jewels** is an **Item class** card (`i`), with every base under Connections (`inclass`);
+- each unique jewel is a **Unique** card (`u`); the two timeless ones already carry their conquerors ("Conquerors:
+  Vorana, Medved or Olroth", `tools/treecards.py`) and their seed range is in their own first line.
+
+So a Jewel kind whose rows are jewel bases would be a second card for things that have one, which the frame says
+is not a kind. What was missing was a card for the Timeless Jewel base, now there, and one table that holds a
+jewel whole, now `data/jewels.json`.
+
+If the 1.0 front end wants jewels as a place of their own (a Jewels tab, like Bosses), the declaration that reads
+this file without new rows in the index is:
+
+```js
+{k: 'j', one: 'Jewel', many: 'Jewels', place: 'Jewels', rows: 'data/jewels.json', at: 'bases',
+ fields: [...HEAD, 'droplv', 'canroll', 'cancorrupt', ...REST, ...FOOT],
+ rel: ['uniques', 'klassof']}
+```
+
+and it needs one thing the frame has for Bosses only today: a kind whose rows live in a file of their own
+(`data/schema.json` "rows"). That is procedure (b), step 4 plus a `ROW` entry, and it is the owner's call for 1.0.
+The factions are not a kind: five of the seven have no item in the game, and the two that do are the unique cards.
