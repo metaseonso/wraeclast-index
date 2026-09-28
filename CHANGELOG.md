@@ -37,6 +37,20 @@ The owner, 27 September 2026, on the framework plan: "A" — start now, in order
   22 more), both now as the game files have them; 8 keyword counts are made from the rows. `gemtext` is
   byte-identical. Where each field comes from: `docs/sources-explore.md`. Uniques, the tree and jewels are next.
 - `tools/sync.py` deletes the previous drill-down data file when it writes a new one.
+- **The artifact is retired.** Uniques (`tools/uniqueitems.py`), the passive tree (`tools/tree.py`) and timeless
+  jewels (`tools/jewels.py`) join gems and keywords: all five drill-down files come from the game files, and a
+  new patch needs no artifact. Every difference from the artifact is in `docs/sources-explore.md`. Tree lines
+  follow the game's own order (Path of Building agrees on all 675 that moved); "Grants Skill" is on all 54 nodes
+  that grant one (8 before); 12 nodes regain the stats the export drops (the game's PassiveSkills table);
+  Mhacha's Gift reads "up to 3"; four nodes that showed "…@100%" read the game's sentence. Uniques show their
+  own properties (base plus the item's own mods; the artifact's came from market listings with quality and
+  runes), forged rows show their own implicits, crossbows show their reload time (the WeaponTypes table), the
+  two Grand Spectrums no longer show the Ruby's line, 15 uniques are new, and Winter's Bite and the two Grand
+  Spectrums are kept from the last good copy with the reason written in the file. `gamepull` pulls the three
+  export files the builders read and refreshes a file after a new client build.
+- **Anoint costs are live or absent.** The Anoint column adds up the three emotions' Currency Exchange prices,
+  with their age; the artifact's saved cost (`ac`, a price with no source or date) is gone from the tree file,
+  the search cards and the crawler pages, and an anoint with a missing emotion price shows none.
 - **Every patch is kept.** `data/patches.json` lists 260 patches, hotfixes and restarts since 0.1: the UTC hour
   from GGG's patch-notes forum, the league (poe2db), the thread and the passive-tree export tag; `tools/patches.py`
   keeps it, and the checks fail when the index carries a client build it does not list. The live index is on
