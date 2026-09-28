@@ -880,6 +880,22 @@ function addsFill(host, it, f){
   });
 }
 
+/* ---------- where a unique drops ----------
+   One line and its labels, out of data/dropsfrom.json (tools/bosses.py), filled in once the table lands. The
+   file names the tooltip a label carries ("Subject to change"), so no label's words are written down here.
+   A name the table does not hold draws nothing. */
+function dropFill(host, it, f){
+  if(!host) return;
+  tableOf(f.file).then(t => {
+    const e = t && t.uniques && t.uniques[it[f.at]];
+    if(!e || !e.line || !host.isConnected) return;
+    const tips = t.labels || {};
+    host.innerHTML = '<p class="card-src">' + esc(e.line) + '</p>' + (e.labels || []).map(l =>
+      '<span class="pill"' + (tips[l] ? ' title="' + esc(tips[l]) + '"' : '') + '>' + esc(l) + '</span>').join(' ');
+    host.hidden = false;
+  });
+}
+
 /* ---------- what a base item can already have ----------
    Its own item class's table says which modifiers its pool rolls and which ones a corruption adds instead
    (data/craft/<class>.json, tools/craft.py — the same table the Craft tab works from, and assets/basepool.js
@@ -1292,6 +1308,8 @@ export const TYPE = {
   adds:   {raw: 1, fill: addsFill, v: (it, f, o, name) => o.full && it[f.at]
     ? '<div class="card-addsbox" data-fill="' + esc(name) + '" hidden></div>' : ''},
   odds:   {raw: 1, fill: oddsFill, v: (it, f, o, name) => o.full && it[f.at]
+    ? '<div class="card-addsbox" data-fill="' + esc(name) + '" hidden></div>' : ''},
+  drop:   {raw: 1, fill: dropFill, v: (it, f, o, name) => o.full && it[f.at]
     ? '<div class="card-addsbox" data-fill="' + esc(name) + '" hidden></div>' : ''},
   pool:   {raw: 1, fill: poolFill, v: (it, f, o, name) => o.full && it[f.at] && fileOf(f, it)
     ? '<div class="card-addsbox" data-fill="' + esc(name) + '" hidden></div>' : ''},
@@ -2087,7 +2105,8 @@ function kwChips(it){
    them is needed. */
 /* The files some of the lists are worked out from, each fetched the first time a card asks for one and kept
    for the rest of the visit. A card that needs none of them never asks for any. */
-const REL_FILES = {kwuse: 'data/kwuse.json', grants: 'data/grants.json', clusters: 'data/clusters.json'};
+const REL_FILES = {kwuse: 'data/kwuse.json', grants: 'data/grants.json', clusters: 'data/clusters.json',
+  dropsfrom: 'data/dropsfrom.json'};
 const HAVE = {};            // what is in
 const JOB = {};             // what is on its way
 let DRILL = null;           // the keywords the drill-down page can filter by, once its file is in
