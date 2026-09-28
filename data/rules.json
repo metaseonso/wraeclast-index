@@ -1,0 +1,517 @@
+{
+ "source": "game files, patch 0.5.5",
+ "table": "GameConstants, ResistancePenaltyPerAreaLevel, AfflictionConstants, RitualConstants",
+ "note": "The game’s own constants a player meets, one line each, with the card it lands on (card, kind) and the constants it was read off (from). said: the card already gives every number in the line. check: poe2db agrees with every number (a check, not a source). levels: the resistance penalty’s steps, [area level, penalty].",
+ "change": {
+  "label": "Subject to change",
+  "tip": "Depends on GGG. May change without notice."
+ },
+ "ids": [
+  "from"
+ ],
+ "rows": [
+  {
+   "card": "Culling Strike",
+   "kind": "Keyword",
+   "table": "GameConstants",
+   "text": "Culling Strike kills a Normal enemy at 35% Life or below, Magic at 20%, Rare at 10% and Unique at 5%.",
+   "from": {
+    "CullingStrikeNormalThreshold": 35,
+    "CullingStrikeMagicThreshold": 20,
+    "CullingStrikeRareThreshold": 10,
+    "CullingStrikeUniqueThreshold": 5
+   },
+   "src": "Source: GameConstants, game files 0.5.5",
+   "said": true,
+   "check": "poe2db"
+  },
+  {
+   "card": "Item Rarity",
+   "kind": "Keyword",
+   "table": "GameConstants",
+   "text": "Each player in the party after the first adds 20% Quantity of Items dropped and 30% to Unique Items dropped. Rarity of Items gains 0% from the party.",
+   "from": {
+    "PartyQuantityBonusPerAdditionalPlayer": 0.2,
+    "PartyUniqueBonusPerAdditionalPlayer": 0.3,
+    "PartyRarityBonusPerAdditionalPlayer": 0.0
+   },
+   "src": "Source: GameConstants, game files 0.5.5",
+   "check": "poe2db"
+  },
+  {
+   "card": "Item Rarity",
+   "kind": "Keyword",
+   "table": "GameConstants",
+   "text": "A vendor pays 11% of an item’s gold price for it.",
+   "from": {
+    "SellPriceMultiplier": 0.11
+   },
+   "src": "Source: GameConstants, game files 0.5.5",
+   "check": "poe2db"
+  },
+  {
+   "card": "Item Rarity",
+   "kind": "Keyword",
+   "table": "GameConstants",
+   "text": "A vendor’s price for a Magic item is multiplied by 1 identified and 1.5 unidentified; for a Rare item, by 2 identified and 6 unidentified.",
+   "from": {
+    "IdentifiedMagicMultiplier": 1.0,
+    "UnidentifiedMagicMultiplier": 1.5,
+    "IdentifiedRareMultiplier": 2.0,
+    "UnidentifiedRareMultiplier": 6.0
+   },
+   "src": "Source: GameConstants, game files 0.5.5",
+   "check": "poe2db"
+  },
+  {
+   "card": "Resistances and the maximum",
+   "kind": "Mechanics",
+   "table": "ResistancePenaltyPerAreaLevel",
+   "text": "Elemental Resistances are lowered by 10% from area level 16, 20% from area level 33, 30% from area level 45, 40% from area level 54, 50% from area level 60, 60% from area level 65.",
+   "levels": [
+    [
+     16,
+     -10
+    ],
+    [
+     33,
+     -20
+    ],
+    [
+     45,
+     -30
+    ],
+    [
+     54,
+     -40
+    ],
+    [
+     60,
+     -50
+    ],
+    [
+     65,
+     -60
+    ]
+   ],
+   "src": "Source: ResistancePenaltyPerAreaLevel, game files 0.5.5"
+  },
+  {
+   "card": "Resistances",
+   "kind": "Keyword",
+   "table": "ResistancePenaltyPerAreaLevel",
+   "text": "Elemental Resistances are lowered by 10% from area level 16, 20% from area level 33, 30% from area level 45, 40% from area level 54, 50% from area level 60, 60% from area level 65.",
+   "levels": [
+    [
+     16,
+     -10
+    ],
+    [
+     33,
+     -20
+    ],
+    [
+     45,
+     -30
+    ],
+    [
+     54,
+     -40
+    ],
+    [
+     60,
+     -50
+    ],
+    [
+     65,
+     -60
+    ]
+   ],
+   "src": "Source: ResistancePenaltyPerAreaLevel, game files 0.5.5"
+  },
+  {
+   "card": "Waystones",
+   "kind": "Keyword",
+   "table": "GameConstants",
+   "text": "Maps start at area level 65.",
+   "from": {
+    "EndgameStartLevel": 65
+   },
+   "src": "Source: GameConstants, game files 0.5.5",
+   "check": "poe2db"
+  },
+  {
+   "card": "Evasion",
+   "kind": "Keyword",
+   "table": "GameConstants",
+   "text": "Chance to Evade is at most 95%.",
+   "from": {
+    "DefaultMaxEvadeChancePercent": 95
+   },
+   "src": "Source: GameConstants, game files 0.5.5",
+   "check": "poe2db"
+  },
+  {
+   "card": "Deflect",
+   "kind": "Keyword",
+   "table": "GameConstants",
+   "text": "A Deflected Hit deals 40% less damage.",
+   "from": {
+    "BasePercentDamageDeflected": 40
+   },
+   "src": "Source: GameConstants, game files 0.5.5",
+   "said": true,
+   "check": "poe2db"
+  },
+  {
+   "card": "Energy Shield Recharge",
+   "kind": "Keyword",
+   "table": "GameConstants",
+   "text": "Energy Shield starts to Recharge 4 seconds after it was last lost.",
+   "from": {
+    "BaseShieldRegenCooldownTimeMs": 4000
+   },
+   "src": "Source: GameConstants, game files 0.5.5",
+   "said": true,
+   "check": "poe2db"
+  },
+  {
+   "card": "Elemental Ailment Threshold",
+   "kind": "Keyword",
+   "table": "GameConstants",
+   "text": "A player’s Ailment Threshold is 50% of their Maximum Life.",
+   "from": {
+    "PlayerAilmentThresholdLifeFactor": 0.5
+   },
+   "src": "Source: GameConstants, game files 0.5.5",
+   "check": "poe2db"
+  },
+  {
+   "card": "Low Life",
+   "kind": "Keyword",
+   "table": "GameConstants",
+   "text": "Low Life is 35% of Maximum Life or less.",
+   "from": {
+    "DefaultLowStatusThresholdPercent": 35
+   },
+   "src": "Source: GameConstants, game files 0.5.5",
+   "said": true,
+   "check": "poe2db"
+  },
+  {
+   "card": "Low Mana",
+   "kind": "Keyword",
+   "table": "GameConstants",
+   "text": "Low Mana is 35% of Maximum Mana or less.",
+   "from": {
+    "DefaultLowStatusThresholdPercent": 35
+   },
+   "src": "Source: GameConstants, game files 0.5.5",
+   "said": true,
+   "check": "poe2db"
+  },
+  {
+   "card": "Low Energy Shield",
+   "kind": "Keyword",
+   "table": "GameConstants",
+   "text": "Low Energy Shield is 35% of Maximum Energy Shield or less.",
+   "from": {
+    "DefaultLowStatusThresholdPercent": 35
+   },
+   "src": "Source: GameConstants, game files 0.5.5",
+   "said": true,
+   "check": "poe2db"
+  },
+  {
+   "card": "Surrounded",
+   "kind": "Keyword",
+   "table": "GameConstants",
+   "text": "Surrounded takes 5 enemies by default.",
+   "from": {
+    "BaseRequiredEnemiesToBeConsideredSurrounded": 5
+   },
+   "src": "Source: GameConstants, game files 0.5.5",
+   "said": true,
+   "check": "poe2db"
+  },
+  {
+   "card": "Life Leech",
+   "kind": "Keyword",
+   "table": "GameConstants",
+   "text": "Leech counts at most 40,000 damage from one Hit.",
+   "from": {
+    "EffectiveMaxDamageForLeech": 40000
+   },
+   "src": "Source: GameConstants, game files 0.5.5",
+   "said": true,
+   "check": "poe2db"
+  },
+  {
+   "card": "Light Stun",
+   "kind": "Keyword",
+   "table": "GameConstants",
+   "text": "A chance to Light Stun below 15% is treated as 0%.",
+   "from": {
+    "LightStunMinimumChance": 15
+   },
+   "src": "Source: GameConstants, game files 0.5.5",
+   "said": true,
+   "check": "poe2db"
+  },
+  {
+   "card": "Bleeding",
+   "kind": "Keyword",
+   "table": "GameConstants",
+   "text": "Bleeding deals 15% of the Hit’s Physical damage per second for 5 seconds.",
+   "from": {
+    "BleedingHitDamagePercentPerMinute": 900,
+    "BaseBleedingDuration": 5
+   },
+   "src": "Source: GameConstants, game files 0.5.5",
+   "said": true,
+   "check": "poe2db"
+  },
+  {
+   "card": "Bloodstained",
+   "kind": "Keyword",
+   "table": "GameConstants",
+   "text": "Bloodstained follows 6 seconds of Bleeding; it builds up 2 times as fast while the target moves or the Bleeding is Aggravated.",
+   "from": {
+    "BaseBloodstainedAfterBleedingDuration": 6.0,
+    "BloodstainedMultiplierWhenMovingOrBleedingAggravated": 2
+   },
+   "src": "Source: GameConstants, game files 0.5.5",
+   "check": "poe2db"
+  },
+  {
+   "card": "Ignite",
+   "kind": "Keyword",
+   "table": "GameConstants",
+   "text": "Ignite deals 20% of the Hit’s Fire damage per second for 4 seconds.",
+   "from": {
+    "IgniteHitDamagePercentPerMinute": 1200,
+    "BaseIgniteDuration": 4
+   },
+   "src": "Source: GameConstants, game files 0.5.5",
+   "said": true,
+   "check": "poe2db"
+  },
+  {
+   "card": "Flammability",
+   "kind": "Keyword",
+   "table": "GameConstants",
+   "text": "Flammability lasts 8 seconds on non-players and 4 seconds on players.",
+   "from": {
+    "BaseFlammabilityDuration": 8,
+    "BaseFlammabilityDurationPlayer": 4
+   },
+   "src": "Source: GameConstants, game files 0.5.5",
+   "check": "poe2db"
+  },
+  {
+   "card": "Poison",
+   "kind": "Keyword",
+   "table": "GameConstants",
+   "text": "Poison deals 20% of the Hit’s Physical and Chaos damage per second for 2 seconds.",
+   "from": {
+    "PoisonHitDamagePercentPerMinute": 1200,
+    "BasePoisonDuration": 2
+   },
+   "src": "Source: GameConstants, game files 0.5.5",
+   "said": true,
+   "check": "poe2db"
+  },
+  {
+   "card": "Chill",
+   "kind": "Keyword",
+   "table": "GameConstants",
+   "text": "Chill Slows by at most 50%, and lasts 8 seconds on non-players and 2 seconds on players.",
+   "from": {
+    "ChillMaxEffect": 50,
+    "BaseChillDuration": 8,
+    "BaseChillDurationPlayer": 2
+   },
+   "src": "Source: GameConstants, game files 0.5.5",
+   "said": true,
+   "check": "poe2db"
+  },
+  {
+   "card": "Freeze",
+   "kind": "Keyword",
+   "table": "GameConstants",
+   "text": "Freeze lasts 4 seconds on non-players and 2 seconds on players.",
+   "from": {
+    "FreezeDuration": 4.0,
+    "FreezeDurationPlayer": 2.0
+   },
+   "src": "Source: GameConstants, game files 0.5.5",
+   "check": "poe2db"
+  },
+  {
+   "card": "Shock",
+   "kind": "Keyword",
+   "table": "GameConstants",
+   "text": "Shocked targets take 20% increased damage. Shock lasts 8 seconds on non-players and 4 seconds on players.",
+   "from": {
+    "BaseShockMagnitude": 20,
+    "BaseShockDuration": 8,
+    "BaseShockDurationPlayer": 4
+   },
+   "src": "Source: GameConstants, game files 0.5.5",
+   "said": true,
+   "check": "poe2db"
+  },
+  {
+   "card": "Electrocution",
+   "kind": "Keyword",
+   "table": "GameConstants",
+   "text": "Electrocution lasts 5 seconds on non-players and 2 seconds on players.",
+   "from": {
+    "ElectrocuteDuration": 5000,
+    "ElectrocuteDurationPlayer": 2000
+   },
+   "src": "Source: GameConstants, game files 0.5.5",
+   "check": "poe2db"
+  },
+  {
+   "card": "Pinned",
+   "kind": "Keyword",
+   "table": "GameConstants",
+   "text": "Pinned lasts 3 seconds on non-players and 2 seconds on players.",
+   "from": {
+    "PinDuration": 3.0,
+    "PinDurationPlayer": 2.0
+   },
+   "src": "Source: GameConstants, game files 0.5.5",
+   "check": "poe2db"
+  },
+  {
+   "card": "Impale",
+   "kind": "Keyword",
+   "table": "GameConstants",
+   "text": "Impale stores 30% of the Hit’s Physical damage; a target holds at most 60 Impales.",
+   "from": {
+    "ImpalePercentage": 0.3,
+    "ImpaleMaximumStacks": 60
+   },
+   "src": "Source: GameConstants, game files 0.5.5",
+   "said": true,
+   "check": "poe2db"
+  },
+  {
+   "card": "Jagged Ground",
+   "kind": "Keyword",
+   "table": "GameConstants",
+   "text": "Jagged Ground Slows movement by 20%.",
+   "from": {
+    "JaggedGroundMagnitude": -20
+   },
+   "src": "Source: GameConstants, game files 0.5.5",
+   "said": true,
+   "check": "poe2db"
+  },
+  {
+   "card": "Unholy Might",
+   "kind": "Keyword",
+   "table": "GameConstants",
+   "text": "Unholy Might grants 30% of damage as extra Chaos Damage.",
+   "from": {
+    "UnholyMightBaseMagnitude": 30
+   },
+   "src": "Source: GameConstants, game files 0.5.5",
+   "said": true,
+   "check": "poe2db"
+  },
+  {
+   "card": "Rage",
+   "kind": "Keyword",
+   "table": "GameConstants",
+   "text": "Maximum Rage is 30 by default. Rage is lost at 5 per second, starting 4 seconds after Rage was last gained.",
+   "from": {
+    "BaseMaximumRage": 30,
+    "BaseRageLossPerMinute": 300,
+    "BaseRageLossDelayMs": 4000
+   },
+   "src": "Source: GameConstants, game files 0.5.5",
+   "check": "poe2db"
+  },
+  {
+   "card": "Elemental Infusions",
+   "kind": "Keyword",
+   "table": "GameConstants",
+   "text": "Up to 3 of each Infusion by default, each lasting 20 seconds. A Remnant stays on the ground for 12 seconds.",
+   "from": {
+    "BaseMaximumInfusionCount": 3,
+    "BaseInfusionDurationMs": 20000,
+    "InfusionRemnantBaseDuration": 12000
+   },
+   "src": "Source: GameConstants, game files 0.5.5",
+   "check": "poe2db"
+  },
+  {
+   "card": "Divinity",
+   "kind": "Keyword",
+   "table": "GameConstants",
+   "text": "Divinity Regenerates 25% per second.",
+   "from": {
+    "DivinityInherentRegenPercentPerMinute": 1500
+   },
+   "src": "Source: GameConstants, game files 0.5.5",
+   "said": true,
+   "check": "poe2db"
+  },
+  {
+   "card": "Hideout",
+   "kind": "Keyword",
+   "table": "GameConstants",
+   "text": "A Hideout holds up to 750 decorations.",
+   "from": {
+    "MaxHideoutDoodads": 750
+   },
+   "src": "Source: GameConstants, game files 0.5.5",
+   "check": "poe2db"
+  },
+  {
+   "card": "Delirium",
+   "kind": "Keyword",
+   "table": "AfflictionConstants",
+   "text": "A Simulacrum has 7 waves.",
+   "from": {
+    "SimulacrumWaves": 7
+   },
+   "src": "Source: AfflictionConstants, game files 0.5.5"
+  },
+  {
+   "card": "Delirious Players",
+   "kind": "Keyword",
+   "table": "AfflictionConstants",
+   "text": "Deliriousness rises by 1% for each Rare Monster killed, 3% for each Unique Monster and 10% when the Map is completed.",
+   "from": {
+    "DeliriousnessPerRarePercent": 1,
+    "DeliriousnessPerUniquePercent": 3,
+    "DeliriousnessOnMapCompletePercent": 10
+   },
+   "src": "Source: AfflictionConstants, game files 0.5.5"
+  },
+  {
+   "card": "Ritual",
+   "kind": "Keyword",
+   "table": "RitualConstants",
+   "text": "A monster the Ritual revives gives 40% less Experience and drops 40% less Quantity of Items. Each revive after the first: 20% less Experience and 20% less Quantity of Items again.",
+   "from": {
+    "MonsterFirstReviveLessXP": 40,
+    "MonsterFirstReviveLessIIQ": 40,
+    "MonsterRepeatReviveLessXP": 20,
+    "MonsterRepeatReviveLessIIQ": 20
+   },
+   "src": "Source: RitualConstants, game files 0.5.5",
+   "check": "poe2db"
+  }
+ ],
+ "checked": {
+  "by": "poe2db",
+  "url": "https://poe2db.tw/us/GameConstants",
+  "on": "2026-09-28",
+  "agree": 33
+ }
+}

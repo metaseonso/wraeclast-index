@@ -463,6 +463,57 @@ const FILES = [
      'over the monster and what it does.',
    rows: ({T, R}) => T.ArchnemesisMods.rows.map(a => { const m = R.mod(a.Mod);
      return real(clean(a.Name)) ? drop({name: clean(a.Name), text: m.text, hidden: m.hidden}) : null; }).filter(Boolean)},
+  // #82 trials (tools/trials.py): the Trial of Chaos's rooms, lengths and area, the kind of each of its modifiers, and
+  // what the Trial of the Sekhemas' own files add to sanctum.json (a floor's area level and act, a pledge's cost, the
+  // kinds of room). Each row keys on the same id as its row in ultimatum_modifiers.json or sanctum.json.
+  {file: 'ultimatum_trials', tables: ['UltimatumEncounterTypes', 'UltimatumTrialLength', 'WorldAreas'], ids: ['id'],
+   note: 'Trial of Chaos: the rooms a trial can be (kind Room, the objective as the game words it), how many trials an ' +
+     'Inscribed Ultimatum holds from which area level up (kind Length), and the campaign area it is in (kind Area).',
+   rows: ({T}) => [
+     ...T.WorldAreas.rows.filter(a => clean(a.Name) === 'The Trial of Chaos').map(a => ({kind: 'Area', name: clean(a.Name), level: a.AreaLevel, act: a.Act})),
+     ...T.UltimatumEncounterTypes.rows.map(e => real(e.Name) ? drop({kind: 'Room', name: clean(e.Name), id: e.Id}) : null).filter(Boolean),
+     ...T.UltimatumTrialLength.rows.map(l => ({kind: 'Length', level: l.MinAreaLevel, trials: l.Length})),
+   ]},
+  {file: 'ultimatum_types', tables: ['UltimatumModifiers', 'UltimatumModifierTypes'], ids: ['id', 'types'],
+   note: 'The game’s own sort of each Trial of Chaos modifier (a buff or debuff, a hazard in the room, a wager), by its id; ' +
+     'id is the same modifier’s id in the Trial of Chaos modifiers file.',
+   rows: ({T}) => T.UltimatumModifiers.rows.map(u => real(u.Name) ? {id: u.Id,
+     types: (u.Types || []).map(t => (T.UltimatumModifierTypes.rows[t] || {}).Id).filter(Boolean)} : null).filter(Boolean)},
+  {file: 'sanctum_more', tables: ['SanctumFloors', 'SanctumRooms', 'SanctumRoomTypes', 'SanctumPersistentEffects', 'WorldAreas'],
+   ids: ['id'],
+   note: 'Trial of the Sekhemas, beside sanctum.json and keyed on its ids: a floor’s area level and act (kind Floor), a ' +
+     'pledge’s cost (kind Pledge), and the kinds of room (kind Room; names: what each floor calls it).',
+   rows: ({T}) => [
+     ...T.SanctumFloors.rows.map(f => drop({kind: 'Floor', id: f.Id,
+       areaLevel: (T.WorldAreas.rows[f.Area] || {}).AreaLevel, act: (T.WorldAreas.rows[f.Area] || {}).Act})),
+     // a pledge words what it gives and what it costs apart; which of the row's values a {0} in the cost stands
+     // for is not known, so a cost that has one is left out rather than guessed (its stat stays under hidden)
+     ...T.SanctumPersistentEffects.rows.map(s => real(s.Name) && s.BoonDesc && s.CurseDesc ?
+       drop({kind: 'Pledge', id: s.Id, cost: fill(clean(s.CurseDesc), [])}) : null).filter(Boolean),
+     // a kind of room: the name each floor gives it (a column dat-schema does not name, one per floor in floor order),
+     // what the map says it holds, and how many rooms of it the floors carry; a kind no room uses is left out
+     ...T.SanctumRoomTypes.rows.map((t, i) => { const names = (t.Unknown9 || []).map(clean).filter(real);
+       const rooms = T.SanctumRooms.rows.filter(r => r.RoomType === i).length;
+       return names.length && rooms ? drop({kind: 'Room', name: names[0], id: t.Id, names: new Set(names).size > 1 ? names : null,
+         text: clean(t.Description), rooms}) : null; }).filter(Boolean),
+   ]},
+  // #111 rules and gold (tools/rules.py, tools/gold.py): Delirium's and Ritual's constants, the Currency Exchange
+  {file: 'affliction_constants', tables: ['AfflictionConstants'], ids: ['id'],
+   note: 'Delirium’s own constants, named by id only, as GameConstants is. tools/rules.py words the ones a player meets.',
+   rows: ({T}) => T.AfflictionConstants.rows.map(g => ({id: g.Id, value: g.Value}))},
+  {file: 'ritual_constants', tables: ['RitualConstants'], ids: ['id'],
+   note: 'Ritual’s own constants, named by id only, as GameConstants is. tools/rules.py words the ones a player meets.',
+   rows: ({T}) => T.RitualConstants.rows.map(g => ({id: g.Id, value: g.Value}))},
+  {file: 'currency_exchange', tables: ['CurrencyExchange', 'CurrencyExchangeCategories', 'BaseItemTypes'], ids: [],
+   note: 'Everything the Currency Exchange trades: the item, the tab it sits under, and the gold fee to buy one. ' +
+     'standard and league say where it is traded.',
+   rows: ({T, R}) => T.CurrencyExchange.rows.map(c => drop({item: R.name('BaseItemTypes', c.Item),
+     category: R.name('CurrencyExchangeCategories', c.Category), fee: c.GoldPurchaseFee,
+     standard: c.EnabledInStandardLeague, league: c.EnabledInChallengeLeague})).filter(c => c.item)},
+  {file: 'gold_bases', later: true, tables: ['GoldBaseTypePrices', 'BaseItemTypes'], ids: [],
+   note: 'A gold value for each base type. What a vendor does with it (the sell and buy multipliers in GameConstants) is ' +
+     'not verified.',
+   rows: ({T, R}) => T.GoldBaseTypePrices.rows.map(g => ({item: R.name('BaseItemTypes', g.BaseItemType), gold: g.Cost})).filter(g => g.item)},
 
   /* ---- achievements, the atlas's maps, Runes of Aldur (#91, #92, #113): read on by tools/achievements.py,
      tools/atlascontent.py and tools/runes.py. `keywords` are the game's own [Keyword|words] markup keys, kept

@@ -38,6 +38,14 @@
    "rows": 80,
    "bytes": 19379
   },
+  "affliction_constants": {
+   "patch": "0.5.5",
+   "tables": [
+    "AfflictionConstants"
+   ],
+   "rows": 18,
+   "bytes": 1079
+  },
   "atlas_corruption": {
    "patch": "0.5.5",
    "tables": [
@@ -59,6 +67,16 @@
    ],
    "rows": 22,
    "bytes": 11637
+  },
+  "currency_exchange": {
+   "patch": "0.5.5",
+   "tables": [
+    "CurrencyExchange",
+    "CurrencyExchangeCategories",
+    "BaseItemTypes"
+   ],
+   "rows": 687,
+   "bytes": 65073
   },
   "endgame_maps": {
    "patch": "0.5.5",
@@ -167,6 +185,14 @@
    "rows": 10,
    "bytes": 1393
   },
+  "ritual_constants": {
+   "patch": "0.5.5",
+   "tables": [
+    "RitualConstants"
+   ],
+   "rows": 11,
+   "bytes": 754
+  },
   "ritual_rites": {
    "patch": "0.5.5",
    "tables": [
@@ -214,6 +240,18 @@
    "rows": 117,
    "bytes": 22475
   },
+  "sanctum_more": {
+   "patch": "0.5.5",
+   "tables": [
+    "SanctumFloors",
+    "SanctumRooms",
+    "SanctumRoomTypes",
+    "SanctumPersistentEffects",
+    "WorldAreas"
+   ],
+   "rows": 29,
+   "bytes": 3156
+  },
   "strongboxes": {
    "patch": "0.5.5",
    "tables": [
@@ -234,6 +272,25 @@
    ],
    "rows": 122,
    "bytes": 31053
+  },
+  "ultimatum_trials": {
+   "patch": "0.5.5",
+   "tables": [
+    "UltimatumEncounterTypes",
+    "UltimatumTrialLength",
+    "WorldAreas"
+   ],
+   "rows": 11,
+   "bytes": 931
+  },
+  "ultimatum_types": {
+   "patch": "0.5.5",
+   "tables": [
+    "UltimatumModifiers",
+    "UltimatumModifierTypes"
+   ],
+   "rows": 122,
+   "bytes": 7762
   },
   "verisium_crafts": {
    "patch": "0.5.5",

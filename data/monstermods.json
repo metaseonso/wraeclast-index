@@ -1,0 +1,1640 @@
+{
+ "source": "game files, patch 0.5.5; help text from RePoE",
+ "table": "ArchnemesisMods, Mods, Stats",
+ "note": "One entry per rare monster modifier name (steps: how many rows of the game files carry it). t is the game's help text for it, ls its stat lines as the game words them (alt: another step worded differently), tags what it does to you (q: the same, as search words), est the tags read off the name alone because the game gives it no words. Written by tools/monstermods.py; design/monster-mods.md.",
+ "ids": [
+  "kw",
+  "kwx"
+ ],
+ "rows": [
+  {
+   "n": "Extra Fire Damage",
+   "id": "Extra Fire Damage",
+   "s": "Rare monster modifier",
+   "steps": 2,
+   "t": "Monster Gains 40% of damage as extra Fire damage.",
+   "kwx": "MonsterDamageGainedAsFire1",
+   "kw": [
+    "Fire",
+    "Gain"
+   ],
+   "ls": [
+    "Gain 40% of Damage as Extra Fire Damage"
+   ],
+   "tags": [
+    "extra element"
+   ],
+   "q": "extra element",
+   "src": "Source: the game files, and the game's help text read by RePoE"
+  },
+  {
+   "n": "Extra Cold Damage",
+   "id": "Extra Cold Damage",
+   "s": "Rare monster modifier",
+   "steps": 2,
+   "t": "Monster Gains 40% of damage as extra Cold damage.",
+   "kwx": "MonsterDamageGainedAsCold1",
+   "kw": [
+    "Cold",
+    "Gain"
+   ],
+   "ls": [
+    "Gain 40% of Damage as Extra Cold Damage"
+   ],
+   "tags": [
+    "extra element"
+   ],
+   "q": "extra element",
+   "src": "Source: the game files, and the game's help text read by RePoE"
+  },
+  {
+   "n": "Extra Lightning Damage",
+   "id": "Extra Lightning Damage",
+   "s": "Rare monster modifier",
+   "steps": 2,
+   "t": "Monster Gains 40% of damage as extra Lightning damage.",
+   "kwx": "MonsterDamageGainedAsLightning1",
+   "kw": [
+    "Gain",
+    "Lightning"
+   ],
+   "ls": [
+    "Gain 40% of Damage as Extra Lightning Damage"
+   ],
+   "tags": [
+    "extra element"
+   ],
+   "q": "extra element",
+   "src": "Source: the game files, and the game's help text read by RePoE"
+  },
+  {
+   "n": "Hasted",
+   "id": "Hasted",
+   "s": "Rare monster modifier",
+   "steps": 2,
+   "t": "Monster has 30% increased Attack, Cast and Movement speed.",
+   "kwx": "MonsterIncreasedSpeed1",
+   "kw": [
+    "Attack"
+   ],
+   "ls": [
+    "30% increased Attack and Cast Speed",
+    "30% increased Movement Speed"
+   ],
+   "tags": [
+    "faster"
+   ],
+   "q": "faster",
+   "src": "Source: the game files, and the game's help text read by RePoE"
+  },
+  {
+   "n": "Extra Crits",
+   "id": "Extra Crits",
+   "s": "Rare monster modifier",
+   "steps": 2,
+   "t": "Monster has 300% increased chance to Critically Hit.",
+   "kwx": "MonsterCriticalStrikeChance1",
+   "kw": [
+    "Critical"
+   ],
+   "ls": [
+    "300% increased Critical Hit Chance"
+   ],
+   "tags": [
+    "more crits"
+   ],
+   "q": "more crits",
+   "src": "Source: the game files, and the game's help text read by RePoE"
+  },
+  {
+   "n": "Stuns",
+   "id": "Stuns",
+   "s": "Rare monster modifier",
+   "steps": 2,
+   "t": "Monster has 100% increased Stun buildup.",
+   "kwx": "MonsterStunDamageIncrease1",
+   "kw": [
+    "Stun"
+   ],
+   "ls": [
+    "100% increased Stun Buildup"
+   ],
+   "tags": [
+    "stuns you"
+   ],
+   "q": "stuns you",
+   "src": "Source: the game files, and the game's help text read by RePoE"
+  },
+  {
+   "n": "Armoured",
+   "id": "Armoured",
+   "s": "Rare monster modifier",
+   "steps": 2,
+   "t": "Monster gains extra Armour based off of their Strength.",
+   "kwx": "MonsterExtraArmour1",
+   "kw": [
+    "Armour",
+    "Strength"
+   ],
+   "tags": [
+    "harder to kill"
+   ],
+   "q": "harder to kill",
+   "src": "Source: the game files, and the game's help text read by RePoE"
+  },
+  {
+   "n": "Evasive",
+   "id": "Evasive",
+   "s": "Rare monster modifier",
+   "steps": 2,
+   "t": "Monster gains extra Evasion based off of their Dexterity.",
+   "kwx": "MonsterExtraEvasion1",
+   "kw": [
+    "Dexterity",
+    "Evasion"
+   ],
+   "tags": [
+    "harder to kill"
+   ],
+   "q": "harder to kill",
+   "src": "Source: the game files, and the game's help text read by RePoE"
+  },
+  {
+   "n": "Extra Energy Shield",
+   "id": "Extra Energy Shield",
+   "s": "Rare monster modifier",
+   "steps": 2,
+   "t": "Monster gains 25% of Maximum life as added Energy Shield.",
+   "kwx": "MonsterExtraEnergyShield1",
+   "kw": [
+    "EnergyShield"
+   ],
+   "tags": [
+    "harder to kill"
+   ],
+   "q": "harder to kill",
+   "src": "Source: the game files, and the game's help text read by RePoE"
+  },
+  {
+   "n": "Always Poisons",
+   "id": "Always Poisons",
+   "s": "Rare monster modifier",
+   "steps": 2,
+   "ls": [
+    "Poison on Hit"
+   ],
+   "tags": [
+    "ailment on hit"
+   ],
+   "q": "ailment on hit",
+   "src": "Source: the game files"
+  },
+  {
+   "n": "Always Bleeds",
+   "id": "Always Bleeds",
+   "s": "Rare monster modifier",
+   "steps": 2,
+   "ls": [
+    "Inflict Bleeding on Hit"
+   ],
+   "tags": [
+    "ailment on hit"
+   ],
+   "q": "ailment on hit",
+   "src": "Source: the game files"
+  },
+  {
+   "n": "Periodically unleashes Fire",
+   "id": "Periodically unleashes Fire",
+   "s": "Rare monster modifier",
+   "steps": 2,
+   "tags": [
+    "damage bursts"
+   ],
+   "q": "damage bursts",
+   "est": [
+    "damage bursts"
+   ],
+   "src": "Source: the game files"
+  },
+  {
+   "n": "Burning Ground on Death",
+   "id": "Burning Ground on Death",
+   "s": "Rare monster modifier",
+   "steps": 2,
+   "tags": [
+    "ground effect",
+    "on death"
+   ],
+   "q": "ground effect on death",
+   "est": [
+    "ground effect",
+    "on death"
+   ],
+   "src": "Source: the game files"
+  },
+  {
+   "n": "Periodically unleashes Ice",
+   "id": "Periodically unleashes Ice",
+   "s": "Rare monster modifier",
+   "steps": 2,
+   "tags": [
+    "damage bursts"
+   ],
+   "q": "damage bursts",
+   "est": [
+    "damage bursts"
+   ],
+   "src": "Source: the game files"
+  },
+  {
+   "n": "Chilled Ground on Death",
+   "id": "Chilled Ground on Death",
+   "s": "Rare monster modifier",
+   "steps": 1,
+   "tags": [
+    "ground effect",
+    "on death"
+   ],
+   "q": "ground effect on death",
+   "est": [
+    "ground effect",
+    "on death"
+   ],
+   "src": "Source: the game files"
+  },
+  {
+   "n": "Periodically unleashes Lightning",
+   "id": "Periodically unleashes Lightning",
+   "s": "Rare monster modifier",
+   "steps": 2,
+   "tags": [
+    "damage bursts"
+   ],
+   "q": "damage bursts",
+   "est": [
+    "damage bursts"
+   ],
+   "src": "Source: the game files"
+  },
+  {
+   "n": "Shocked Ground on Death",
+   "id": "Shocked Ground on Death",
+   "s": "Rare monster modifier",
+   "steps": 1,
+   "tags": [
+    "ground effect",
+    "on death"
+   ],
+   "q": "ground effect on death",
+   "est": [
+    "ground effect",
+    "on death"
+   ],
+   "src": "Source: the game files"
+  },
+  {
+   "n": "Increased Stun Threshold",
+   "id": "Increased Stun Threshold",
+   "s": "Rare monster modifier",
+   "steps": 2,
+   "t": "Monster cannot be Stunned.",
+   "kwx": "MonsterImmuneToStun1",
+   "kw": [
+    "Stun"
+   ],
+   "ls": [
+    "Cannot be Stunned"
+   ],
+   "tags": [
+    "harder to kill"
+   ],
+   "q": "harder to kill",
+   "src": "Source: the game files, and the game's help text read by RePoE"
+  },
+  {
+   "n": "Stun Resistant",
+   "id": "Stun Resistant",
+   "s": "Rare monster modifier",
+   "steps": 2,
+   "t": "Monster has 250% increased Stun Threshold.",
+   "kwx": "MonsterStunResilience1",
+   "kw": [
+    "EnemyStunThreshold"
+   ],
+   "ls": [
+    "250% increased Stun Threshold"
+   ],
+   "tags": [
+    "harder to kill"
+   ],
+   "q": "harder to kill",
+   "src": "Source: the game files, and the game's help text read by RePoE"
+  },
+  {
+   "n": "Fire Resistant",
+   "id": "Fire Resistant",
+   "s": "Rare monster modifier",
+   "steps": 2,
+   "t": "Monster has +50% to Fire Resistance and +10% to Maximum Fire Resistance.",
+   "kwx": "MonsterFireResistance1",
+   "kw": [
+    "MaximumResistances",
+    "Resistances"
+   ],
+   "ls": [
+    "+50% to Fire Resistance",
+    "+10% to Maximum Fire Resistance"
+   ],
+   "tags": [
+    "resists fire"
+   ],
+   "q": "resists fire",
+   "src": "Source: the game files, and the game's help text read by RePoE"
+  },
+  {
+   "n": "Cold Resistant",
+   "id": "Cold Resistant",
+   "s": "Rare monster modifier",
+   "steps": 2,
+   "t": "Monster has +50% to Cold Resistance and +10% to Maximum Cold Resistance.",
+   "kwx": "MonsterColdResistance1",
+   "kw": [
+    "MaximumResistances",
+    "Resistances"
+   ],
+   "ls": [
+    "+50% to Cold Resistance",
+    "+10% to Maximum Cold Resistance"
+   ],
+   "tags": [
+    "resists cold"
+   ],
+   "q": "resists cold",
+   "src": "Source: the game files, and the game's help text read by RePoE"
+  },
+  {
+   "n": "Lightning Resistant",
+   "id": "Lightning Resistant",
+   "s": "Rare monster modifier",
+   "steps": 2,
+   "t": "Monster has +50% to Lightning Resistance and +10% to Maximum Lightning Resistance.",
+   "kwx": "MonsterLightningResistance1",
+   "kw": [
+    "MaximumResistances",
+    "Resistances"
+   ],
+   "ls": [
+    "+50% to Lightning Resistance",
+    "+10% to Maximum Lightning Resistance"
+   ],
+   "tags": [
+    "resists lightning"
+   ],
+   "q": "resists lightning",
+   "src": "Source: the game files, and the game's help text read by RePoE"
+  },
+  {
+   "n": "Breaks Armour",
+   "id": "Breaks Armour",
+   "s": "Rare monster modifier",
+   "steps": 2,
+   "t": "Monster Breaks Armour equal to 1000% of Physical Damage dealt.",
+   "kwx": "MonsterArmourPenetration1",
+   "kw": [
+    "ArmourBreak",
+    "Physical"
+   ],
+   "ls": [
+    "Break Armour equal to 1000% of Physical Damage dealt"
+   ],
+   "tags": [
+    "breaks armour"
+   ],
+   "q": "breaks armour",
+   "src": "Source: the game files, and the game's help text read by RePoE"
+  },
+  {
+   "n": "Accurate",
+   "id": "Accurate",
+   "s": "Rare monster modifier",
+   "steps": 2,
+   "t": "Monster has 200% increased Accuracy Rating.",
+   "kwx": "MonsterIncreasedAccuracy1",
+   "kw": [
+    "Accuracy"
+   ],
+   "ls": [
+    "200% increased Accuracy Rating"
+   ],
+   "tags": [
+    "more accuracy"
+   ],
+   "q": "more accuracy",
+   "src": "Source: the game files, and the game's help text read by RePoE"
+  },
+  {
+   "n": "Extra Chaos Damage",
+   "id": "Extra Chaos Damage",
+   "s": "Rare monster modifier",
+   "steps": 2,
+   "t": "Monster Gains 40% of damage as extra Chaos damage.",
+   "kwx": "MonsterDamageGainedAsChaos1",
+   "kw": [
+    "Chaos",
+    "Gain"
+   ],
+   "ls": [
+    "Gain 40% of Damage as Extra Chaos Damage"
+   ],
+   "tags": [
+    "extra element"
+   ],
+   "q": "extra element",
+   "src": "Source: the game files, and the game's help text read by RePoE"
+  },
+  {
+   "n": "Regenerates Life",
+   "id": "Regenerates Life",
+   "s": "Rare monster modifier",
+   "steps": 2,
+   "t": "Monster Regenerates 2% of Maximum Life per second.",
+   "kwx": "MonsterLifeRegenerationRatePercentage1",
+   "ls": [
+    "Regenerate 2% of maximum Life per second"
+   ],
+   "tags": [
+    "harder to kill"
+   ],
+   "q": "harder to kill",
+   "src": "Source: the game files, and the game's help text read by RePoE"
+  },
+  {
+   "n": "Additional Projectiles",
+   "id": "Additional Projectiles",
+   "s": "Rare monster modifier",
+   "steps": 2,
+   "t": "Monster fires 4 additional Projectiles.",
+   "kwx": "MonsterAdditionalProjectiles1",
+   "kw": [
+    "Projectile"
+   ],
+   "ls": [
+    "Skills fire 4 additional Projectiles"
+   ],
+   "tags": [
+    "more area"
+   ],
+   "q": "more area",
+   "src": "Source: the game files, and the game's help text read by RePoE"
+  },
+  {
+   "n": "Increased Area of Effect",
+   "id": "Increased Area of Effect",
+   "s": "Rare monster modifier",
+   "steps": 2,
+   "t": "Monster has 100% Increased Area of Effect.",
+   "kwx": "MonsterAreaOfEffect1",
+   "ls": [
+    "100% more Area of Effect"
+   ],
+   "tags": [
+    "more area"
+   ],
+   "q": "more area",
+   "src": "Source: the game files, and the game's help text read by RePoE"
+  },
+  {
+   "n": "All Damage Ignites",
+   "id": "All Damage Ignites",
+   "s": "Rare monster modifier",
+   "steps": 2,
+   "ls": [
+    "All Damage from Hits Contributes to Flammability and Ignite Magnitudes",
+    "Hits always Ignite"
+   ],
+   "tags": [
+    "ailment on hit"
+   ],
+   "q": "ailment on hit",
+   "src": "Source: the game files"
+  },
+  {
+   "n": "All Damage Chills",
+   "id": "All Damage Chills",
+   "s": "Rare monster modifier",
+   "steps": 2,
+   "ls": [
+    "All Damage from Hits Contributes to Chill Magnitude",
+    "Chills from your Hits always reduce Action Speed by at least 10%"
+   ],
+   "tags": [
+    "slows you",
+    "ailment on hit"
+   ],
+   "q": "slows you ailment on hit",
+   "src": "Source: the game files"
+  },
+  {
+   "n": "All Damage Shocks",
+   "id": "All Damage Shocks",
+   "s": "Rare monster modifier",
+   "steps": 2,
+   "ls": [
+    "All Damage from Hits Contributes to Shock Chance",
+    "Hits always Shock"
+   ],
+   "tags": [
+    "ailment on hit"
+   ],
+   "q": "ailment on hit",
+   "src": "Source: the game files"
+  },
+  {
+   "n": "Trail of Fire",
+   "id": "Trail of Fire",
+   "s": "Rare monster modifier",
+   "steps": 2,
+   "tags": [
+    "ground effect"
+   ],
+   "q": "ground effect",
+   "est": [
+    "ground effect"
+   ],
+   "src": "Source: the game files"
+  },
+  {
+   "n": "Trail of Ice",
+   "id": "Trail of Ice",
+   "s": "Rare monster modifier",
+   "steps": 2,
+   "tags": [
+    "ground effect"
+   ],
+   "q": "ground effect",
+   "est": [
+    "ground effect"
+   ],
+   "src": "Source: the game files"
+  },
+  {
+   "n": "Trail of Lightning",
+   "id": "Trail of Lightning",
+   "s": "Rare monster modifier",
+   "steps": 2,
+   "t": "Monster leaves a trail of Shocked Ground as they move.",
+   "kwx": "MonsterShockedGroundTrail1",
+   "kw": [
+    "ShockedGround"
+   ],
+   "tags": [
+    "ground effect"
+   ],
+   "q": "ground effect",
+   "src": "Source: the game files, and the game's help text read by RePoE"
+  },
+  {
+   "n": "Slow Resistant",
+   "id": "Slow Resistant",
+   "s": "Rare monster modifier",
+   "steps": 2,
+   "t": "Monster has 50% reduced Slowing Potency of Debuffs on them.",
+   "kwx": "MonsterImmuneToSlow1",
+   "kw": [
+    "Debuff",
+    "Slow"
+   ],
+   "ls": [
+    "50% less Slowing Potency of Debuffs on me"
+   ],
+   "tags": [
+    "harder to kill"
+   ],
+   "q": "harder to kill",
+   "src": "Source: the game files, and the game's help text read by RePoE"
+  },
+  {
+   "n": "Crit Resistant",
+   "id": "Crit Resistant",
+   "s": "Rare monster modifier",
+   "steps": 2,
+   "t": "Hits against this Monster have 80% reduced Critical Damage Bonus.",
+   "kwx": "MonsterModReducedCritMulti1",
+   "kw": [
+    "CriticalDamageBonus",
+    "Hit"
+   ],
+   "ls": [
+    "Hits against you have 80% reduced Critical Damage Bonus"
+   ],
+   "tags": [
+    "harder to kill"
+   ],
+   "q": "harder to kill",
+   "src": "Source: the game files, and the game's help text read by RePoE"
+  },
+  {
+   "n": "Chaos Resistant",
+   "id": "Chaos Resistant",
+   "s": "Rare monster modifier",
+   "steps": 2,
+   "t": "Monster has +50% to Chaos Resistance.",
+   "kwx": "MonsterChaosResistance1",
+   "kw": [
+    "Resistances"
+   ],
+   "ls": [
+    "+50% to Chaos Resistance"
+   ],
+   "tags": [
+    "resists chaos"
+   ],
+   "q": "resists chaos",
+   "src": "Source: the game files, and the game's help text read by RePoE"
+  },
+  {
+   "n": "Periodic Fire Explosions",
+   "id": "Periodic Fire Explosions",
+   "s": "Rare monster modifier",
+   "steps": 2,
+   "tags": [
+    "damage bursts"
+   ],
+   "q": "damage bursts",
+   "est": [
+    "damage bursts"
+   ],
+   "src": "Source: the game files"
+  },
+  {
+   "n": "Periodic Cold Explosions",
+   "id": "Periodic Cold Explosions",
+   "s": "Rare monster modifier",
+   "steps": 2,
+   "tags": [
+    "damage bursts"
+   ],
+   "q": "damage bursts",
+   "est": [
+    "damage bursts"
+   ],
+   "src": "Source: the game files"
+  },
+  {
+   "n": "Periodic Lightning Explosions",
+   "id": "Periodic Lightning Explosions",
+   "s": "Rare monster modifier",
+   "steps": 2,
+   "tags": [
+    "damage bursts"
+   ],
+   "q": "damage bursts",
+   "est": [
+    "damage bursts"
+   ],
+   "src": "Source: the game files"
+  },
+  {
+   "n": "Fire Explosion on Death",
+   "id": "Fire Explosion on Death",
+   "s": "Rare monster modifier",
+   "steps": 1,
+   "tags": [
+    "damage bursts",
+    "on death"
+   ],
+   "q": "damage bursts on death",
+   "est": [
+    "damage bursts",
+    "on death"
+   ],
+   "src": "Source: the game files"
+  },
+  {
+   "n": "Cold Explosion on Death",
+   "id": "Cold Explosion on Death",
+   "s": "Rare monster modifier",
+   "steps": 1,
+   "tags": [
+    "damage bursts",
+    "on death"
+   ],
+   "q": "damage bursts on death",
+   "est": [
+    "damage bursts",
+    "on death"
+   ],
+   "src": "Source: the game files"
+  },
+  {
+   "n": "Lightning Explosion on Death",
+   "id": "Lightning Explosion on Death",
+   "s": "Rare monster modifier",
+   "steps": 1,
+   "tags": [
+    "damage bursts",
+    "on death"
+   ],
+   "q": "damage bursts on death",
+   "est": [
+    "damage bursts",
+    "on death"
+   ],
+   "src": "Source: the game files"
+  },
+  {
+   "n": "Powerful Minions",
+   "id": "Powerful Minions",
+   "s": "Rare monster modifier",
+   "steps": 2,
+   "t": "Monster's Pack Minions have 25% increased Damage and 50% increased Life.",
+   "kwx": "MonsterStrongerMinions1",
+   "kw": [
+    "MonsterMinion",
+    "Pack"
+   ],
+   "tags": [
+    "stronger pack",
+    "harder to kill"
+   ],
+   "q": "stronger pack harder to kill",
+   "src": "Source: the game files, and the game's help text read by RePoE"
+  },
+  {
+   "n": "Empowered",
+   "id": "Empowered",
+   "s": "Rare monster modifier",
+   "steps": 1,
+   "t": "Monster has 25% increased Damage and 50% increased Life",
+   "kwx": "MonsterMinionStrongerMinions1",
+   "ls": [
+    "25% increased Damage",
+    "50% increased maximum Life"
+   ],
+   "tags": [
+    "harder to kill"
+   ],
+   "q": "harder to kill",
+   "src": "Source: the game files, and the game's help text read by RePoE"
+  },
+  {
+   "n": "Extra Physical Damage Aura",
+   "id": "Extra Physical Damage Aura",
+   "s": "Rare monster modifier",
+   "steps": 2,
+   "t": "Monster creates an Aura that grants 40% increased Physical Damage to Allies within 5 metres.",
+   "kwx": "MonsterPhysicalDamageAura1",
+   "kw": [
+    "Allies",
+    "Aura",
+    "Physical"
+   ],
+   "ls": [
+    "40% increased Global Physical Damage"
+   ],
+   "tags": [
+    "stronger pack"
+   ],
+   "q": "stronger pack",
+   "src": "Source: the game files, and the game's help text read by RePoE"
+  },
+  {
+   "n": "Haste Aura",
+   "id": "Haste Aura",
+   "s": "Rare monster modifier",
+   "steps": 3,
+   "t": "Monster creates an Aura that grants 20% increased Attack and Cast speed and 10% increased Movement speed to Allies within 5 metres.",
+   "kwx": "MonsterIncreasedSpeedAura1",
+   "kw": [
+    "Allies",
+    "Attack",
+    "Aura"
+   ],
+   "ls": [
+    "25% increased Attack and Cast Speed",
+    "25% increased Movement Speed"
+   ],
+   "alt": [
+    [
+     "20% increased Attack and Cast Speed",
+     "10% increased Movement Speed"
+    ]
+   ],
+   "tags": [
+    "faster",
+    "stronger pack"
+   ],
+   "q": "faster stronger pack",
+   "src": "Source: the game files, and the game's help text read by RePoE"
+  },
+  {
+   "n": "Energy Shield Aura",
+   "id": "Energy Shield Aura",
+   "s": "Rare monster modifier",
+   "steps": 3,
+   "t": "Monster creates an Aura that grants 20% of Maximum life as added Energy Shield to Allies within 5 metres.",
+   "kwx": "MonsterEnergyShieldAura1",
+   "kw": [
+    "Allies",
+    "Aura",
+    "EnergyShield"
+   ],
+   "tags": [
+    "stronger pack",
+    "harder to kill"
+   ],
+   "q": "stronger pack harder to kill",
+   "src": "Source: the game files, and the game's help text read by RePoE"
+  },
+  {
+   "n": "Elemental Resistance Aura",
+   "id": "Elemental Resistance Aura",
+   "s": "Rare monster modifier",
+   "steps": 2,
+   "t": "Monster creates an Aura that grants +35% to all Elemental Resistances to Allies within 5 metres.",
+   "kwx": "MonsterResistanceAura1",
+   "kw": [
+    "Allies",
+    "Aura",
+    "ElementalDamage",
+    "Resistances"
+   ],
+   "ls": [
+    "+35% to all Elemental Resistances"
+   ],
+   "tags": [
+    "stronger pack",
+    "resists fire",
+    "resists cold",
+    "resists lightning"
+   ],
+   "q": "stronger pack resists fire resists cold resists lightning",
+   "src": "Source: the game files, and the game's help text read by RePoE"
+  },
+  {
+   "n": "Temporal Bubble",
+   "id": "Temporal Bubble",
+   "s": "Rare monster modifier",
+   "steps": 3,
+   "t": "Monster creates an Aura that Debuffs Enemies within 3.2 metres; Slowing by 25%, making effects expire 40% slower and reducing Cooldown Recovery Rate by 60%.",
+   "kwx": "MonsterTemporalAura1",
+   "kw": [
+    "Aura",
+    "CooldownRecovery",
+    "Debuff",
+    "Slow"
+   ],
+   "ls": [
+    "25% reduced Action Speed",
+    "Debuffs on you expire 40% slower",
+    "60% reduced Cooldown Recovery Rate"
+   ],
+   "alt": [
+    [
+     "12% reduced Action Speed",
+     "Debuffs on you expire 40% slower",
+     "20% reduced Cooldown Recovery Rate"
+    ]
+   ],
+   "tags": [
+    "slows you"
+   ],
+   "q": "slows you",
+   "src": "Source: the game files, and the game's help text read by RePoE"
+  },
+  {
+   "n": "Hinder Aura",
+   "id": "Hinder Aura",
+   "s": "Rare monster modifier",
+   "steps": 2,
+   "t": "Monster creates an Aura that Hinders enemies within 3.6 metres.",
+   "kwx": "MonsterHinderAura1",
+   "kw": [
+    "Aura",
+    "Hinder"
+   ],
+   "tags": [
+    "slows you"
+   ],
+   "q": "slows you",
+   "src": "Source: the game files, and the game's help text read by RePoE"
+  },
+  {
+   "n": "Prevents Recovery Above 50%",
+   "id": "Prevents Recovery Above 50%",
+   "s": "Rare monster modifier",
+   "steps": 2,
+   "t": "Monster creates an Aura that Debuffs enemies within 4.2 metres, causing their Life and Energy Shield to not be able to recover past 50%.",
+   "kwx": "MonsterPreventRecoveryAura1",
+   "kw": [
+    "Aura",
+    "Debuff",
+    "EnergyShield"
+   ],
+   "ls": [
+    "Cannot Recover Life or Energy Shield to above 50%"
+   ],
+   "tags": [
+    "less recovery"
+   ],
+   "q": "less recovery",
+   "src": "Source: the game files, and the game's help text read by RePoE"
+  },
+  {
+   "n": "Periodic Invulnerability Aura",
+   "id": "Periodic Invulnerability Aura",
+   "s": "Rare monster modifier",
+   "steps": 2,
+   "t": "Monster releases a nova that makes Allies invulnerable for 5 seconds while the monster is alive within 5 metres every 12 seconds.",
+   "kwx": "MonsterImmuneAura1",
+   "kw": [
+    "Allies"
+   ],
+   "tags": [
+    "cannot be damaged",
+    "stronger pack"
+   ],
+   "q": "cannot be damaged stronger pack",
+   "src": "Source: the game files, and the game's help text read by RePoE"
+  },
+  {
+   "n": "Empowered Periodic Invulnerability Aura",
+   "id": "Empowered Periodic Invulnerability Aura",
+   "s": "Rare monster modifier",
+   "steps": 2,
+   "t": "Monster releases a nova that makes Allies invulnerable for 5 seconds while the monster is alive within 5 metres every 12 seconds.",
+   "kwx": "MonsterImmuneAura2",
+   "kw": [
+    "Allies"
+   ],
+   "tags": [
+    "cannot be damaged",
+    "stronger pack"
+   ],
+   "q": "cannot be damaged stronger pack",
+   "src": "Source: the game files, and the game's help text read by RePoE"
+  },
+  {
+   "n": "Increased Life",
+   "id": "Increased Life",
+   "s": "Rare monster modifier",
+   "steps": 1,
+   "t": "Monster has 50% increased Life.",
+   "kwx": "MonsterImmuneAuraMinion2",
+   "ls": [
+    "50% increased maximum Life"
+   ],
+   "tags": [
+    "harder to kill"
+   ],
+   "q": "harder to kill",
+   "src": "Source: the game files, and the game's help text read by RePoE"
+  },
+  {
+   "n": "Siphons Mana and Deals Lightning Damage",
+   "id": "Siphons Mana and Deals Lightning Damage",
+   "s": "Rare monster modifier",
+   "steps": 4,
+   "t": "Monster creates a circular effect that drains Mana and deals Lightning Damage over time to enemies near the edge of the circle. Additionally, Monster will periodically create separate circles that drain Mana and deal Lightning Damage over time to enemies standing in them.",
+   "kwx": "MonsterManaSiphonAura2",
+   "kw": [
+    "Lightning"
+   ],
+   "tags": [
+    "less recovery",
+    "ground effect"
+   ],
+   "q": "less recovery ground effect",
+   "src": "Source: the game files, and the game's help text read by RePoE"
+  },
+  {
+   "n": "Heals Allies and Suppresses Foe Recovery",
+   "id": "Heals Allies and Suppresses Foe Recovery",
+   "s": "Rare monster modifier",
+   "steps": 2,
+   "t": "Monster releases a nova that reduces Enemy Life and Energy Shield Recovery Rate by 60% and causes Allies to Regenerate 5.5% of Maximum Life per second for 4 seconds within 5 metres every 8 seconds.",
+   "kwx": "MonsterHealingNova1",
+   "kw": [
+    "Allies",
+    "EnergyShield"
+   ],
+   "tags": [
+    "less recovery",
+    "stronger pack",
+    "harder to kill"
+   ],
+   "q": "less recovery stronger pack harder to kill",
+   "src": "Source: the game files, and the game's help text read by RePoE"
+  },
+  {
+   "n": "Siphons Flask Charges",
+   "id": "Siphons Flask Charges",
+   "s": "Rare monster modifier",
+   "steps": 2,
+   "t": "Monster creates an Aura that removes 3 Flask and Charm charges from enemies every 3 seconds within 3.6 metres.",
+   "kwx": "MonsterFlaskRemovalAura1",
+   "kw": [
+    "Aura",
+    "Charm",
+    "Flask"
+   ],
+   "ls": [
+    "Flasks gain -0.05 charges per Second"
+   ],
+   "tags": [
+    "fewer flask charges"
+   ],
+   "q": "fewer flask charges",
+   "src": "Source: the game files, and the game's help text read by RePoE"
+  },
+  {
+   "n": "Reviving Minions",
+   "id": "Reviving Minions",
+   "s": "Rare monster modifier",
+   "steps": 2,
+   "t": "Monster periodically revives Pack Minions.",
+   "kwx": "MonsterRevivesMinions1",
+   "kw": [
+    "MonsterMinion",
+    "Pack"
+   ],
+   "tags": [
+    "stronger pack"
+   ],
+   "q": "stronger pack",
+   "src": "Source: the game files, and the game's help text read by RePoE"
+  },
+  {
+   "n": "Empowered Reviving Minions",
+   "id": "Empowered Reviving Minions",
+   "s": "Rare monster modifier",
+   "steps": 2,
+   "t": "Monster periodically revives Pack Minions with increased Life and Damage.",
+   "kwx": "MonsterRevivesMinions2",
+   "kw": [
+    "MonsterMinion",
+    "Pack"
+   ],
+   "tags": [
+    "stronger pack",
+    "harder to kill"
+   ],
+   "q": "stronger pack harder to kill",
+   "src": "Source: the game files, and the game's help text read by RePoE"
+  },
+  {
+   "n": "Damage Taken From Minions First",
+   "id": "Damage Taken From Minions First",
+   "s": "Rare monster modifier",
+   "steps": 2,
+   "t": "50% of damage taken from Monster is taken from Monster's Pack Minions instead",
+   "kwx": "MonsterMinionsTakeLifeInstead1",
+   "kw": [
+    "MonsterMinion",
+    "Pack"
+   ],
+   "tags": [
+    "cannot be damaged",
+    "stronger pack"
+   ],
+   "q": "cannot be damaged stronger pack",
+   "src": "Source: the game files, and the game's help text read by RePoE"
+  },
+  {
+   "n": "Shroud Walker",
+   "id": "Shroud Walker",
+   "s": "Rare monster modifier",
+   "steps": 4,
+   "t": "Monster periodically teleports to an enemy they can see, creating a Smoke Cloud where they leave and where they teleport to.",
+   "kwx": "MonsterShroudWalker2",
+   "kw": [
+    "SmokeCloud"
+   ],
+   "tags": [
+    "teleports"
+   ],
+   "q": "teleports",
+   "src": "Source: the game files, and the game's help text read by RePoE"
+  },
+  {
+   "n": "Periodically Enrages",
+   "id": "Periodically Enrages",
+   "s": "Rare monster modifier",
+   "steps": 2,
+   "t": "Monster periodically Enrages; gaining 30% increased Damage, 25% increased Skill and Movement Speed and 33% less damage taken for 5 seconds every 10 seconds.",
+   "kwx": "MonsterPeriodicEnrage1",
+   "kw": [
+    "SkillSpeed"
+   ],
+   "tags": [
+    "faster",
+    "harder to kill"
+   ],
+   "q": "faster harder to kill",
+   "src": "Source: the game files, and the game's help text read by RePoE"
+  },
+  {
+   "n": "Enraged",
+   "id": "Enraged",
+   "s": "Rare monster modifier",
+   "steps": 3,
+   "t": "Monster is Enraged; gaining 30% increased Damage, 25% increased Skill and Movement Speed and 33% less damage taken.",
+   "kwx": "MonsterPeriodicEnrage2",
+   "kw": [
+    "SkillSpeed"
+   ],
+   "tags": [
+    "faster",
+    "harder to kill"
+   ],
+   "q": "faster harder to kill",
+   "src": "Source: the game files, and the game's help text read by RePoE"
+  },
+  {
+   "n": "Explodes Nearby Corpses",
+   "id": "Explodes Nearby Corpses",
+   "s": "Rare monster modifier",
+   "steps": 2,
+   "tags": [
+    "damage bursts"
+   ],
+   "q": "damage bursts",
+   "est": [
+    "damage bursts"
+   ],
+   "src": "Source: the game files"
+  },
+  {
+   "n": "Lightning Mirage When Hit",
+   "id": "Lightning Mirage When Hit",
+   "s": "Rare monster modifier",
+   "steps": 2,
+   "t": "Monster creates a Mirage when Hit that moves towards enemies and explodes when it gets close enough, dealing Lightning Damage.",
+   "kwx": "MonsterLightningMirage1",
+   "kw": [
+    "Hit",
+    "Lightning"
+   ],
+   "tags": [
+    "reflect-like",
+    "damage bursts"
+   ],
+   "q": "reflect-like damage bursts",
+   "src": "Source: the game files, and the game's help text read by RePoE"
+  },
+  {
+   "n": "Lightning Mirages When Hit",
+   "id": "Lightning Mirages When Hit",
+   "s": "Rare monster modifier",
+   "steps": 2,
+   "t": "Monster creates Mirages when Hit that move towards enemies and explode when they get close enough, dealing Lightning Damage.",
+   "kwx": "MonsterLightningMirage2",
+   "kw": [
+    "Hit",
+    "Lightning"
+   ],
+   "tags": [
+    "reflect-like",
+    "damage bursts"
+   ],
+   "q": "reflect-like damage bursts",
+   "src": "Source: the game files, and the game's help text read by RePoE"
+  },
+  {
+   "n": "Magma Barrier",
+   "id": "Magma Barrier",
+   "s": "Rare monster modifier",
+   "steps": 2,
+   "t": "Monster creates a 90% damage absorption barrier that explodes after taking a certain amount of damage, dealing Fire Damage.",
+   "kwx": "MonsterMagmaBarrier1",
+   "kw": [
+    "Fire"
+   ],
+   "tags": [
+    "reflect-like",
+    "damage bursts",
+    "cannot be damaged"
+   ],
+   "q": "reflect-like damage bursts cannot be damaged",
+   "src": "Source: the game files, and the game's help text read by RePoE"
+  },
+  {
+   "n": "Conjures Ice Prisons",
+   "id": "Conjures Ice Prisons",
+   "s": "Rare monster modifier",
+   "steps": 2,
+   "t": "Monster creates circular walls of Ice around enemies.",
+   "kwx": "MonsterGlacialPrison1",
+   "kw": [
+    "IceCrystals"
+   ],
+   "tags": [
+    "ground effect"
+   ],
+   "q": "ground effect",
+   "src": "Source: the game files, and the game's help text read by RePoE"
+  },
+  {
+   "n": "Conjures Flamewalls",
+   "id": "Conjures Flamewalls",
+   "s": "Rare monster modifier",
+   "steps": 2,
+   "t": "Monster creates circular walls of Fire that deal damage to enemies standing in them.",
+   "kwx": "MonsterFlamewaller1",
+   "kw": [
+    "Fire"
+   ],
+   "tags": [
+    "ground effect"
+   ],
+   "q": "ground effect",
+   "src": "Source: the game files, and the game's help text read by RePoE"
+  },
+  {
+   "n": "Conjures Lightning Storms",
+   "id": "Conjures Lightning Storms",
+   "s": "Rare monster modifier",
+   "steps": 2,
+   "tags": [
+    "ground effect"
+   ],
+   "q": "ground effect",
+   "est": [
+    "ground effect"
+   ],
+   "src": "Source: the game files"
+  },
+  {
+   "n": "Volatile Crystals",
+   "id": "Volatile Crystals",
+   "s": "Rare monster modifier",
+   "steps": 2,
+   "t": "Monster creates Volatile Crystals when Hit, which explode upon the Monster's death, dealing Chaos damage.",
+   "kwx": "MonsterLivingCrystals1",
+   "kw": [
+    "Chaos",
+    "Hit"
+   ],
+   "tags": [
+    "reflect-like",
+    "damage bursts",
+    "on death"
+   ],
+   "q": "reflect-like damage bursts on death",
+   "src": "Source: the game files, and the game's help text read by RePoE"
+  },
+  {
+   "n": "Volatile Plants",
+   "id": "Volatile Plants",
+   "s": "Rare monster modifier",
+   "steps": 2,
+   "t": "Monster periodically creates Volatile Plants, releasing orbs that move towards enemies; exploding when they get close enough; dealing Chaos Damage.",
+   "kwx": "MonsterVolatilePlants1",
+   "kw": [
+    "Chaos"
+   ],
+   "tags": [
+    "damage bursts"
+   ],
+   "q": "damage bursts",
+   "src": "Source: the game files, and the game's help text read by RePoE"
+  },
+  {
+   "n": "Empowering Volatile Plants",
+   "id": "Empowering Volatile Plants",
+   "s": "Rare monster modifier",
+   "steps": 2,
+   "t": "Monster periodically creates Powerful Volatile Plants, releasing orbs that move towards enemies; exploding when they get close enough; dealing Chaos Damage.",
+   "kwx": "MonsterVolatilePlants2",
+   "kw": [
+    "Chaos"
+   ],
+   "tags": [
+    "damage bursts"
+   ],
+   "q": "damage bursts",
+   "src": "Source: the game files, and the game's help text read by RePoE"
+  },
+  {
+   "n": "Volatile Crag",
+   "id": "Volatile Crag",
+   "s": "Rare monster modifier",
+   "steps": 2,
+   "t": "Monster periodically creates Volatile Crag that moves towards enemies; exploding when they get close enough; dealing Fire Damage.",
+   "kwx": "MonsterVolatileRocks1",
+   "kw": [
+    "Fire"
+   ],
+   "tags": [
+    "damage bursts"
+   ],
+   "q": "damage bursts",
+   "src": "Source: the game files, and the game's help text read by RePoE"
+  },
+  {
+   "n": "Empowering Volatile Crag",
+   "id": "Empowering Volatile Crag",
+   "s": "Rare monster modifier",
+   "steps": 2,
+   "t": "Monster periodically creates Powerful Volatile Crag that moves towards enemies; exploding when they get close enough; dealing Fire Damage.",
+   "kwx": "MonsterVolatileRocks2",
+   "kw": [
+    "Fire"
+   ],
+   "tags": [
+    "damage bursts"
+   ],
+   "q": "damage bursts",
+   "src": "Source: the game files, and the game's help text read by RePoE"
+  },
+  {
+   "n": "Proximal Tangibility",
+   "id": "Proximal Tangibility",
+   "s": "Rare monster modifier",
+   "steps": 2,
+   "t": "Monster cannot be damaged by enemies any further than 3 metres from them.",
+   "kwx": "MonsterProximalTangibility1",
+   "tags": [
+    "cannot be damaged"
+   ],
+   "q": "cannot be damaged",
+   "src": "Source: the game files, and the game's help text read by RePoE"
+  },
+  {
+   "n": "Bombardier",
+   "id": "Bombardier",
+   "s": "Rare monster modifier",
+   "steps": 1,
+   "t": "Monster periodically unleashes barrages of Fire projectiles.",
+   "kwx": "MonsterBombardier1",
+   "kw": [
+    "Fire"
+   ],
+   "tags": [
+    "damage bursts"
+   ],
+   "q": "damage bursts",
+   "src": "Source: the game files, and the game's help text read by RePoE"
+  },
+  {
+   "n": "Soul Eater",
+   "id": "Soul Eater",
+   "s": "Rare monster modifier",
+   "steps": 2,
+   "tags": [
+    "on death"
+   ],
+   "q": "on death",
+   "src": "Source: the game files"
+  },
+  {
+   "n": "Conjures Elemental Hazards",
+   "id": "Conjures Elemental Hazards",
+   "s": "Rare monster modifier",
+   "steps": 2,
+   "tags": [
+    "ground effect"
+   ],
+   "q": "ground effect",
+   "est": [
+    "ground effect"
+   ],
+   "src": "Source: the game files"
+  },
+  {
+   "n": "Volatile Souls",
+   "id": "Volatile Souls",
+   "s": "Rare monster modifier",
+   "steps": 2,
+   "tags": [
+    "damage bursts"
+   ],
+   "q": "damage bursts",
+   "est": [
+    "damage bursts"
+   ],
+   "src": "Source: the game files"
+  },
+  {
+   "n": "Soul Siphoner",
+   "id": "Soul Siphoner",
+   "s": "Rare monster modifier",
+   "steps": 2,
+   "src": "Source: the game files"
+  },
+  {
+   "n": "Kurgal's Last Gasp",
+   "id": "Kurgal's Last Gasp",
+   "s": "Rare monster modifier",
+   "steps": 2,
+   "tags": [
+    "on death"
+   ],
+   "q": "on death",
+   "est": [
+    "on death"
+   ],
+   "src": "Source: the game files"
+  },
+  {
+   "n": "Undying Will",
+   "id": "Undying Will",
+   "s": "Rare monster modifier",
+   "steps": 2,
+   "tags": [
+    "cannot be damaged",
+    "harder to kill"
+   ],
+   "q": "cannot be damaged harder to kill",
+   "est": [
+    "cannot be damaged",
+    "harder to kill"
+   ],
+   "src": "Source: the game files"
+  },
+  {
+   "n": "Lithomantic Runes",
+   "id": "Lithomantic Runes",
+   "s": "Rare monster modifier",
+   "steps": 2,
+   "tags": [
+    "ground effect"
+   ],
+   "q": "ground effect",
+   "est": [
+    "ground effect"
+   ],
+   "src": "Source: the game files"
+  },
+  {
+   "n": "Meteoric Demise",
+   "id": "Meteoric Demise",
+   "s": "Rare monster modifier",
+   "steps": 2,
+   "tags": [
+    "damage bursts",
+    "on death"
+   ],
+   "q": "damage bursts on death",
+   "est": [
+    "damage bursts",
+    "on death"
+   ],
+   "src": "Source: the game files"
+  },
+  {
+   "n": "Kulemak's Desecration",
+   "id": "Kulemak's Desecration",
+   "s": "Rare monster modifier",
+   "steps": 2,
+   "tags": [
+    "ground effect"
+   ],
+   "q": "ground effect",
+   "est": [
+    "ground effect"
+   ],
+   "src": "Source: the game files"
+  },
+  {
+   "n": "Ulaman's Legion",
+   "id": "Ulaman's Legion",
+   "s": "Rare monster modifier",
+   "steps": 2,
+   "tags": [
+    "stronger pack"
+   ],
+   "q": "stronger pack",
+   "est": [
+    "stronger pack"
+   ],
+   "src": "Source: the game files"
+  },
+  {
+   "n": "Amanamu's Void",
+   "id": "Amanamu's Void",
+   "s": "Rare monster modifier",
+   "steps": 2,
+   "src": "Source: the game files"
+  },
+  {
+   "n": "Lifestealer Aura",
+   "id": "Lifestealer Aura",
+   "s": "Rare monster modifier",
+   "steps": 1,
+   "tags": [
+    "stronger pack"
+   ],
+   "q": "stronger pack",
+   "est": [
+    "stronger pack"
+   ],
+   "src": "Source: the game files"
+  },
+  {
+   "n": "Unstable Revenants",
+   "id": "Unstable Revenants",
+   "s": "Rare monster modifier",
+   "steps": 1,
+   "tags": [
+    "on death"
+   ],
+   "q": "on death",
+   "est": [
+    "on death"
+   ],
+   "src": "Source: the game files"
+  },
+  {
+   "n": "Bubonic Trail",
+   "id": "Bubonic Trail",
+   "s": "Rare monster modifier",
+   "steps": 2,
+   "tags": [
+    "ground effect"
+   ],
+   "q": "ground effect",
+   "est": [
+    "ground effect"
+   ],
+   "src": "Source: the game files"
+  },
+  {
+   "n": "Crystalline Barrier",
+   "id": "Crystalline Barrier",
+   "s": "Rare monster modifier",
+   "steps": 2,
+   "tags": [
+    "reflect-like"
+   ],
+   "q": "reflect-like",
+   "est": [
+    "reflect-like"
+   ],
+   "src": "Source: the game files"
+  },
+  {
+   "n": "Soulflame Geysers",
+   "id": "Soulflame Geysers",
+   "s": "Rare monster modifier",
+   "steps": 2,
+   "tags": [
+    "damage bursts",
+    "ground effect"
+   ],
+   "q": "damage bursts ground effect",
+   "est": [
+    "damage bursts",
+    "ground effect"
+   ],
+   "src": "Source: the game files"
+  },
+  {
+   "n": "Shade Walker",
+   "id": "Shade Walker",
+   "s": "Rare monster modifier",
+   "steps": 2,
+   "tags": [
+    "teleports"
+   ],
+   "q": "teleports",
+   "est": [
+    "teleports"
+   ],
+   "src": "Source: the game files"
+  },
+  {
+   "n": "Eruption of Souls",
+   "id": "Eruption of Souls",
+   "s": "Rare monster modifier",
+   "steps": 2,
+   "tags": [
+    "damage bursts",
+    "on death"
+   ],
+   "q": "damage bursts on death",
+   "est": [
+    "damage bursts",
+    "on death"
+   ],
+   "src": "Source: the game files"
+  },
+  {
+   "n": "Corrupted",
+   "id": "Corrupted",
+   "s": "Rare monster modifier",
+   "steps": 6,
+   "t": "Corrupted Monsters have an additional Corrupted Modifier. These modifiers may increase the difficulty and reward of the Monster, or may make it easier to defeat.",
+   "kwx": "CorruptedMonster",
+   "kw": [
+    "MonsterModifiers"
+   ],
+   "tags": [
+    "on death"
+   ],
+   "q": "on death",
+   "src": "Source: the game files, and the game's help text read by RePoE"
+  }
+ ]
+}
