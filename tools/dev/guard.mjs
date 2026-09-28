@@ -18,6 +18,8 @@
      voice   every word a player reads is the game's, not an assistant's (tools/dev/voice.mjs)
      mods    the Craft tab's tables against the export's own list of which modifiers roll on which base
              (tools/dev/modsbybase.py; passes where the export's copies are not here)
+     market  data/market/ carries its source, flag and rule and no internal id, and a sample of its sums worked
+             out again from the exchange archive's raw hours where the archive is here (tools/dev/marketcheck.mjs)
      frame   every card and the map keep to the frame: slots, caps, counts, one rule for every kind
              (tools/dev/frame.mjs), and every row the data ships holds to its kind's declaration
              (tools/dev/schema.mjs, data/schema.json)
@@ -46,6 +48,8 @@ import { checkTable, checkMap, checkOneTable, checkCards as drawCards } from './
 import { checkSchema } from './schema.mjs';
 // the voice: the copy a player reads, held to the game's register and not an assistant's
 import { checkVoice } from './voice.mjs';
+// data/market/: the files, and a sample of the sums against the raw exchange hours
+import { checkMarket } from './marketcheck.mjs';
 // the budget: what the free plan lets dist/ be, and no data file nothing reads
 import { checkBudget, budgetLine, fresh } from './budget.mjs';
 
@@ -800,6 +804,8 @@ try {
     ? voice.bad.length + ' broken: ' + clip(voice.bad.slice(0, 2).join(' | '), 220)
     : voice.said + ' · the game does the talking');
   checkMods();
+  try { const m = await checkMarket(); say('market', !m.bad.length, m.bad.length ? m.bad.length + ' broken: ' + clip(m.bad.slice(0, 2).join(' | '), 200) : m.said); }
+  catch(e){ say('market', false, 'could not run: ' + clip(e && e.message || e, 160)); }
   try { const b = await checkBudget({offline}); say('budget', !b.bad.length, budgetLine(b)); }
   catch(e){ say('budget', false, 'could not run: ' + clip(e && e.message || e, 160)); }
   if(!noPhone){

@@ -78,6 +78,7 @@ NINJA = 'https://poe.ninja/poe2/'
 FEED = 'https://web.poecdn.com/ (the Currency Exchange feed)'
 CDN = 'https://patch-poe2.poecdn.com/'
 DATSCHEMA = 'https://github.com/poe-tool-dev/dat-schema'
+CXARCHIVE = 'wraeclast-data/cx (the Currency Exchange feed, archived every hour; private, WI_CX)'
 
 """The stages, in the order the data needs them: a stage reads what the ones above it wrote. Per stage:
 
@@ -235,6 +236,10 @@ STAGES = [
          count={'data/quests.json': 'quests'}),
     dict(name='guides', run=['tools/guides.py'], cadence='daily', source='the community guides',
          reads=['the guide pages tools/guides.py lists'], writes=['data/guides.json']),
+    dict(name='markethistory', run=['tools/market_history.py'], cadence='daily', source='Exchange',
+         reads=[CXARCHIVE, 'data/leagues.json', 'data/market.json', 'data/patches.json', 'data/craft.json',
+                'data/essences.json', 'data/leaguemech.json'],
+         writes=['data/market/*.json', 'data/market/*/*.json'], count={'data/market/index.json': 'leagues'}),
     dict(name='market', run=['tools/market.py'], cadence='hourly', source='poe.ninja',
          reads=[NINJA, REPOE, 'data/info.json'], writes=['data/market.json'], count={'data/market.json': 'items'}),
     dict(name='exchange', run=['tools/exchange.py'], cadence='hourly', source='Exchange',

@@ -11,7 +11,8 @@ worktree (the static files plus `worker/seo.js`, same process, no wrangler) and 
   `data/interactions.json` — a site left plain fails) · **links** every deep link the code emits
   lands on a real row · **pages** every public page 200, sitemap and llms.txt did not shrink · **rawcode**
   no stat ids, `[Word|Word]` markup or `{0}` placeholders where a player reads them · **voice** every word a
-  player reads is the game's, not an assistant's (`voice.mjs`) · **frame** every card
+  player reads is the game's, not an assistant's (`voice.mjs`) · **market** `data/market/` and a sample of its sums
+  from the raw exchange hours (`marketcheck.mjs`, below) · **frame** every card
   and the map keep to the frame · **dash** the owner's dashboard opens and all eight tabs fill · **phone**
   375x812 with touch: a card and a boss card stay open through a tap, a drag and a selection, the Bosses
   table fits, no sideways scroll, no console errors · **budget** dist/ against the free plan (`budget.mjs`,
@@ -94,6 +95,15 @@ it passes and says so. Under a second. It is the guard's **mods** check.
 to `admin.html` in headless Chrome, three times over — those numbers, an answer with nothing in it, and reads
 that fail — clicks all eight tabs each time, and fails if any block is left empty or draws nothing. A block
 saying "No data." or that it failed is fine; a blank one is not.
+
+`marketcheck.mjs`: `data/market/` (`tools/market_history.py`, `design/market-products.md`), two ways. Every file
+carries its source, the Subject to change flag and its rule, has the bytes `data/market/index.json` says, and carries
+no internal id and no private league. Then, where the Currency Exchange archive is on the machine (`WI_CX`, else
+`wraeclast-data/cx` beside the repo or any folder above it), it reads a sample of league days from the raw hours
+exactly as GGG sent them, works out every hour's rates and five currencies' daily prices again in its own code, and
+compares them with the card files' league-day curves and `inflation.json` (a gap over 0.6% fails). About 2 seconds;
+without the archive the sums are skipped and the line says so. `node tools/dev/marketcheck.mjs` (`--files` for the
+first part only). It is the guard's `market` check too.
 
 `simcheck.mjs`: the crafting bench's maths, against the committed data (`docs/craft-sim.md`). It rolls
 250,000 modifiers on each of three kinds of item — two whose weights are measured, one whose are not — and
