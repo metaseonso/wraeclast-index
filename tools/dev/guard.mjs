@@ -16,6 +16,8 @@
              path the 404 page); the sitemaps and the llms files did not shrink; robots.txt says the terms
      rawcode no stat ids, [Word|Word] markup, {0} placeholders or "...@100%" stat text where a player can read them
      voice   every word a player reads is the game's, not an assistant's (tools/dev/voice.mjs)
+     mods    the Craft tab's tables against the export's own list of which modifiers roll on which base
+             (tools/dev/modsbybase.py; passes where the export's copies are not here)
      market  data/market/ carries its source, flag and rule and no internal id, and a sample of its sums worked
              out again from the exchange archive's raw hours where the archive is here (tools/dev/marketcheck.mjs)
      frame   every card and the map keep to the frame: slots, caps, counts, one rule for every kind
@@ -33,7 +35,7 @@
    anywhere but the baseline and dist/, and the baseline only with --bless. */
 import { createServer } from 'node:http';
 import { readFile, writeFile, mkdtemp, rm } from 'node:fs/promises';
-import { spawn } from 'node:child_process';
+import { spawn, spawnSync } from 'node:child_process';
 import { tmpdir } from 'node:os';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -230,6 +232,19 @@ function checkCards(now, want, ix){
 /* ---------- 2. deep links ----------
    Every form the code emits, found in assets/app.js (hrefOf, craftHref, the Connections rows),
    assets/keys.js (the Go to ... shortcuts) and worker/seo.js (appHref, /item/<slug>). */
+/* The Craft tab's tables against the export's own list of which modifiers roll on which base
+   (tools/dev/modsbybase.py). It reads the copies tools/gamepull.py keeps and fetches nothing, so on a checkout
+   without them it passes and says so. Under a second. */
+function checkMods(){
+  for(const py of [process.env.PYTHON, 'python3', 'python'].filter(Boolean)){
+    const r = spawnSync(py, [join(ROOT, 'tools', 'dev', 'modsbybase.py'), '--quiet'], {encoding: 'utf8', timeout: 120000});
+    if(r.error && r.error.code === 'ENOENT') continue;
+    const out = (r.stdout || '').trim().split('\n').pop() || clip(r.stderr || r.error || 'no answer', 160);
+    return say('mods', r.status === 0, out.replace(/^(ok|FAIL)\s+modsbybase\s+/, ''));
+  }
+  say('mods', true, 'skipped: no python here');
+}
+
 async function checkLinks(index, market){
   const miss = [], forms = new Set();
   const src = {
@@ -788,6 +803,7 @@ try {
   say('voice', !voice.bad.length, voice.bad.length
     ? voice.bad.length + ' broken: ' + clip(voice.bad.slice(0, 2).join(' | '), 220)
     : voice.said + ' · the game does the talking');
+  checkMods();
   try { const m = await checkMarket(); say('market', !m.bad.length, m.bad.length ? m.bad.length + ' broken: ' + clip(m.bad.slice(0, 2).join(' | '), 200) : m.said); }
   catch(e){ say('market', false, 'could not run: ' + clip(e && e.message || e, 160)); }
   try { const b = await checkBudget({offline}); say('budget', !b.bad.length, budgetLine(b)); }

@@ -4,14 +4,17 @@ The cards draw whatever their index entry carries (assets/kinds.js). Four things
 never joined onto the entry, so no card could draw them:
 
   qt  the game's own flavour line, for uniques and keystones — data/explore/uniques.*.json and
-      data/explore/tree.*.json already show it on the drill-down page, one panel at a time
+      data/explore/tree.*.json already show it on the drill-down page, one panel at a time. Where neither has
+      one, the game's flavour file (flavour.min.json, by art id, through tools/gamepull.py): a unique by its one
+      piece of art (uniques.min.json), and a base item, gem or Atlas item by its own (base_items.min.json) —
+      never art a unique lends a base, whose words are the unique's
   lim "Limited to 1", for the uniques the game limits
   t   what an Atlas key or item is for — data/atlas.json carries the sentence, data/info.json a few more
   cw  how many mods can roll on a base item and whether their weights are measured (data/craft)
   ix  the official text for a name the market prices but no card covers, where the market file itself has
       none: it goes in the rest, so the popup can fill in a priced card that would otherwise say nothing
 
-Reads only files this repo already ships. Writes data/index.json, then the two parts the app loads
+Reads files this repo already ships, and for the flavour lines they lack, the game's own flavour file. Writes data/index.json, then the two parts the app loads
 (tools/appdata.py). Run it after tools/sync.py, tools/atlas.py or tools/craft.py have written theirs:
 
     python tools/carddata.py
@@ -19,6 +22,7 @@ Reads only files this repo already ships. Writes data/index.json, then the two p
 import glob
 import json
 import re
+from collections import Counter
 from pathlib import Path
 
 import appdata
@@ -77,7 +81,48 @@ def flavour(index):
         if it['k'] == 'p' and it['n'] in fl:
             it['qt'] = plain(fl[it['n']])
             k += 1
-    return 'uniques %d flavour, %d limited {DOT} passives %d flavour'.replace('{DOT}', DOT) % (n, lim, k)
+    more = game_flavour(index)
+    return ('uniques %d flavour, %d limited {DOT} passives %d flavour {DOT} %s'.replace('{DOT}', DOT)
+            % (n, lim, k, more))
+
+
+FLAVOUR_KINDS = ('u', 'b', 'g', 'a', 'c')   # the cards an item's own art stands behind
+
+
+def game_flavour(index):
+    """qt from the game's flavour file, for a card the drill-down's files give none. The file is keyed by art id:
+    a unique's is its one piece of art (a unique with several, each with its own words, is left alone), anything
+    else's is its base item's. Art a unique lends a base ("FourUniqueBodyStrInt14" on Ancient Mail) carries the
+    unique's words, so it is never a base's."""
+    try:
+        from gamepull import official
+        fl = {k.rstrip('_'): v for k, v in official('flavour.min.json').items()}
+        uniq, bases = official('uniques.min.json'), official('base_items.min.json')
+    except (Exception, SystemExit) as e:   # the export out of reach: the cards keep what the files above gave
+        return 'the game\'s flavour file: not read (%s)' % e
+    def art(vid):
+        vid = (vid or '').rstrip('_')
+        return fl.get(vid) or fl.get(re.sub(r'_+[a-z]$', '', vid).rstrip('_'))
+    by_unique, by_base = {}, {}
+    for u in uniq.values():
+        if not u.get('is_alternate_art'):
+            by_unique.setdefault(u['name'], set()).add(art((u.get('visual_identity') or {}).get('id')))
+    for b in bases.values():
+        vid = (b.get('visual_identity') or {}).get('id') or ''
+        if b.get('name') and b.get('release_state') == 'released' and 'Unique' not in vid:
+            by_base.setdefault(b['name'], set()).add(art(vid))
+    got = Counter()
+    for it in index['items']:
+        if it['k'] not in FLAVOUR_KINDS or it.get('qt'):
+            continue
+        said = (by_unique if it['k'] == 'u' else by_base).get(it['n']) or set()
+        said.discard(None)
+        said.discard('')
+        if len(said) == 1:
+            it['qt'] = plain(said.pop().replace('\r\n', '\n'))
+            got[it['k']] += 1
+    return 'the game\'s flavour file %d more (%s)' % (sum(got.values()),
+                                                     ', '.join('%d %s' % (n, k) for k, n in sorted(got.items())))
 
 
 def atlas_text(index):

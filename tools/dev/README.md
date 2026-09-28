@@ -82,6 +82,14 @@ file that came back under a new hash is replaced, not gone. Markdown to stdout, 
 on every pull request that touches `data/` and keeps it as one comment there, rewritten on each push; a flag
 turns that job red. About 10 seconds, no network.
 
+`modsbybase.py`: the Craft tab's tables against the export's own list of which modifiers roll on which base
+(`mods_by_base.min.json`). Per base in `data/craft/`, its rolling modifiers against the export's prefix and suffix
+lists and its corruption modifiers against the corrupted list, levels included; a base whose implicit adds spawn
+tags (Grasping Mail's "Can roll Ring Modifiers") is left out and counted, since the export's list does not see
+them. `python tools/dev/modsbybase.py` prints every mismatch and exits 1 on any; `--quiet` is one line. It reads
+the copies `tools/gamepull.py` keeps and fetches nothing (`--pull` to fetch them), so on a checkout without them
+it passes and says so. Under a second. It is the guard's **mods** check.
+
 `dash-fixture/`: what the live site answered on 21 Sep 2026 for the dashboard's four reads, saved as it came
 (the notes list is empty in it: that is the answer the paging bug gave). The **dash** check serves these
 to `admin.html` in headless Chrome, three times over — those numbers, an answer with nothing in it, and reads
