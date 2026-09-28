@@ -370,6 +370,7 @@
      "by": [
       "row",
       "name",
+      "weight",
       "drop"
      ],
      "need": 1,
@@ -2320,7 +2321,8 @@
      ],
      "by": [
       "row",
-      "name"
+      "name",
+      "weight"
      ],
      "need": 1,
      "drawn": 1
@@ -4415,7 +4417,8 @@
     "canroll",
     "drop",
     "name",
-    "row"
+    "row",
+    "weight"
    ]
   },
   "name": {

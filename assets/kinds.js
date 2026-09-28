@@ -280,6 +280,11 @@ export const FIELDS = {
   drop:     {type: 'drop', at: 'n', slot: 'body', file: 'data/dropsfrom.json'},
   canroll:  {type: 'pool', at: 'n', slot: 'body', file: 'data/craft/@cr.json', of: 'm', label: 'Modifiers it can roll'},
   cancorrupt: {type: 'pool', at: 'n', slot: 'body', file: 'data/craft/@cr.json', of: 'c', label: 'A corruption can add'},
+  /* the real weight a thing rolls at where the game rolls for it unseen — a Forbidden Rite, a strongbox, an
+     Azmeri spirit — and its share of each pool it is in (tools/odds.py, off the game's own tables). The outcome's
+     name is matched to the card's name exactly, so "2 Divine Orbs" is not the Divine Orb card. A pool whose
+     shape is ours and not the table's says so beside it. Never multiplied by a price (design/hidden-odds.md). */
+  weight:   {type: 'odds', at: 'n', slot: 'body', file: 'data/odds.json', label: 'How often it rolls'},
   quote:    {type: 'quote', at: 'qt', slot: 'body', every: 1},   // the game's own flavour line
   options:  {type: 'options', at: 'o', slot: 'body', every: 1},
   flow:     {type: 'flow', at: 'fl', slot: 'body', every: 1},
@@ -485,7 +490,7 @@ export const KINDS = [
    index: true, search: true, item: true, crawl: {word: 'unique', list: 'uniques', rank: 0, is: 'Product'},
    sprite: 'uniques', make: {base: 'sub1'},
    builds: [{key: 'items'}],
-   fields: [...HEAD, 'reqs', 'corrupt', 'limit', 'group', 'props', 'implicit', ...BODY, 'drop', ...FOOT],
+   fields: [...HEAD, 'reqs', 'corrupt', 'limit', 'group', 'props', 'implicit', ...SAYS, 'weight', ...REST, 'drop', ...FOOT],
    acts: ['trade', 'pool', 'full', 'pin', 'open'],
    rel: ['base', 'variants', 'grants', 'dropsfrom', 'named', 'namedby', 'cat']},
 
@@ -538,7 +543,7 @@ export const KINDS = [
 
   {k: 'w', one: 'Keyword', tone: 'accent', many: 'Keywords', sec: 'keywords', index: true, search: true, crawl: {word: 'keyword', list: 'keywords', rank: 3, is: 'DefinedTerm'},
    kw: 'id', rank: -25, words: {n: 'own', f: 'alt', mark: 'game'},
-   fields: [...HEAD, 'stacks', 'uses', ...BODY, ...FOOT],
+   fields: [...HEAD, 'stacks', 'uses', ...SAYS, 'weight', ...REST, ...FOOT],
    acts: ['full', 'pin'],
    rel: [...KWUSE, 'granted', 'named', 'namedby']},
 
