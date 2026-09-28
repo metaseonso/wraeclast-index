@@ -3,9 +3,10 @@
 #
 # What runs here: every stage that reads the game files (RePoE's export), the official trade site's lists, poe2db,
 # Craft of Exile, poe.ninja and the files already in the repo — gamepull through map, then guides.
-# What does not: sync, which builds the index from the Wraeclast Index artifact. The artifact lives only on the
-# owner's machine, so here the sync stage says so and is skipped, and every stage after it builds on the index
-# already committed. For the full rebuild, on the owner's machine:
+# Sync builds the index from the Wraeclast Index artifact, which lives only on the owner's machine, so here it runs
+# tools/sync.py --from-game: the drill-down's data rebuilt from the game files. The index and its two parts are
+# held to the committed copy once, as they stand after the last stage that adds cards to them (tools/pipeline.py).
+# With the artifact, on the owner's machine:
 #     python tools/pipeline.py patch --artifact path/to/artifact.html
 #
 # A stage that fails stops the run: nothing is committed, the log says which stage and why, and the stage's
@@ -111,6 +112,6 @@ jobs:
 
           $stages
 
-          The sync stage needs the Wraeclast Index artifact, which is only on the owner's machine: this index is the committed one with every later stage run over it. Merging is what ships."
+          The sync stage ran from the game files (tools/sync.py --from-game), without the Wraeclast Index artifact, and every later stage ran over the index it built. Merging is what ships."
           gh pr create --base main --head "$branch" --title "Game data for patch $patch" --body "$body" \
             || echo "::warning::The branch $branch is pushed, but the pull request could not be opened. Open it by hand, or allow Actions to create pull requests in the repository settings."

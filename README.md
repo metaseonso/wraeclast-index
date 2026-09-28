@@ -187,19 +187,25 @@ python tools/pipeline.py patch --dry                                  build and 
    day or the hour its cadence goes by. A stage that reads a file a stage above it rewrote this run always runs.
 3. What a stage changed is copied to `build/<stage>/` with its log, and checked: every JSON file still reads,
    every file it wrote holds up against the copy in `data/` under the last good rule (counts and shape, below),
-   and the index, its two parts and the bosses hold to their declarations (`data/schema.json`).
+   and the index, its two parts and the bosses hold to their declarations (`data/schema.json`). A file a later
+   stage of the same run writes too is checked once, at the end, as it stands after the last stage that writes
+   it: `sync` builds `data/index.json` and its two parts, then `gamelib`, `treecards`, `clusters` and the rest
+   add some 2,200 cards to it, so its count only means something on the final copy. The stage is told so in
+   `WI_CHECKED_LATER`, and `tools/sync.py` then keeps its floor and declarations check but leaves the
+   comparison with the committed index to that final check. Run on its own, `sync` still holds its index to
+   the committed one.
 4. Only when every stage passed does it all go into `data/` at once: each file written beside its place, then
    all of them moved over. A stage that fails stops the run, nothing goes in, and the fault is recorded and
    ticketed as it is for any builder.
 
-**What runs only here.** `sync` builds the index from the Wraeclast Index artifact, which is only on the owner's
-machine: without `--artifact` it is skipped with a line that says so, and every stage after it builds on the
-index already committed (`explore.html` works as the artifact too; it holds the same data). Everything else
+**Sync without the artifact.** `sync` builds the index from the Wraeclast Index artifact, which is only on the
+owner's machine (`--artifact`; `explore.html` works too, it holds the same data). Without it, `sync` runs
+`tools/sync.py --from-game`: the drill-down's data rebuilt from the game files (`tools/fromgame.py`). Everything
 runs anywhere.
 
 **Game patch** (`.github/workflows/patch.yml`, started by hand from the Actions tab) runs `python tools/pipeline.py
 patch` on GitHub, then the guard, then pushes a branch `data/<patch>` and opens a pull request. It never pushes to
-`main`: merging the pull request is what ships. Its `sync` is always skipped, for the reason above. One setting,
+`main`: merging the pull request is what ships. Its `sync` runs from the game files, as above. One setting,
 once, for the pull request: Settings > Actions > General > "Allow GitHub Actions to create and approve pull
 requests".
 
