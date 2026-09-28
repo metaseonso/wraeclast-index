@@ -220,6 +220,7 @@ export const FIELDS = {
   gemreq:   {type: 'gemreq', at: 'w', slot: 'pill'},         // gem level -> character level and attributes
   reqs:     {type: 'reqs', at: 'rq', slot: 'pill'},
   lineage:  {type: 'flag', at: 'li', slot: 'pill', is: 'Lineage', tone: 'lin'},
+  cutfrom:  {type: 'text', at: 'uc', slot: 'pill', pre: 'From '},   // the uncut gem that makes it (tools/gamelib.py gemfacts)
   corrupt:  {type: 'flag', at: 'cor', slot: 'pill', is: 'Corrupted', tone: 'warn'},
   limit:    {type: 'number', at: 'lim', slot: 'pill', pre: 'Limited to '},
   group:    {type: 'text', at: 'q', slot: 'pill'},
@@ -229,6 +230,7 @@ export const FIELDS = {
   asc:      {type: 'text', at: 'asc', slot: 'pill', post: ' ascendancy'},
   region:   {type: 'text', at: 'reg', slot: 'pill', post: ' region'},
   droplv:   {type: 'number', at: 'dl', slot: 'pill', pre: 'Drops from area level '},
+  stacks:   {type: 'number', at: 'max', slot: 'pill', pre: 'Up to ', post: ' stack', many: ' stacks', from: 2},
   /* A cluster's two numbers: the points it costs to take the whole of it, and how many of its nodes are
      also in another cluster (tools/clusters.py). Both are numbers with a word after them, so neither is a
      renderer of its own. */
@@ -242,9 +244,13 @@ export const FIELDS = {
   implicit: {type: 'number', at: 'ni', slot: 'fact', post: ' implicit', many: ' implicits'},
   uses:     {type: 'uses', at: 'use', slot: 'fact'},
   weights:  {type: 'weights', at: 'cw', slot: 'fact'},       // how often a mod rolls here (tools/carddata.py)
+  frommods: {type: 'lines', at: 'fm', slot: 'fact'},        // the modifiers with no card that give a buff (tools/buffs.py)
 
   lines:    {type: 'rich', at: 'ls', slot: 'body', every: 1},   // the effect lines: mods, stats, what it adds
   text:     {type: 'rich', at: 't', slot: 'body', every: 1},    // what it does, in the game's own words
+  /* what 0 to 20% quality adds to a gem: the game's own divider line, then its lines with the range its tooltip
+     prints (tools/gems.py quality_lines). Drawn as the game's lines are, under the gem's own text. */
+  quality:  {type: 'rich', at: 'gq', slot: 'body'},
   /* ...and the same words where the game wrote them as a table rather than a sentence: one row per slot.
      The card carries one or the other and never both, because the line is split where the card is made.
      `beside` is the slot names, drawn as the left-hand column. They are headings and take no marked words:
@@ -267,8 +273,35 @@ export const FIELDS = {
   /* what an item can already have, off its own item class's table: the modifiers its pool rolls, and the
      ones a corruption can add instead. `of` picks which list of the pool it reads. The table is a file per
      item class, so the field's own "file" carries the class the entry names (tools/craft.py). */
+  /* Where a unique drops: one line ("Drops from The Arbiter of Ash", "Drops anywhere, from area level 50",
+     "Source not known") and its labels, out of a table of its own keyed by the name (tools/bosses.py writes
+     data/dropsfrom.json). Drop pools are held on GGG's servers, so every line names its sources; the file's
+     own `labels` gives the one that carries a tooltip. design/boss-drops.md. */
+  drop:     {type: 'drop', at: 'n', slot: 'body', file: 'data/dropsfrom.json'},
   canroll:  {type: 'pool', at: 'n', slot: 'body', file: 'data/craft/@cr.json', of: 'm', label: 'Modifiers it can roll'},
   cancorrupt: {type: 'pool', at: 'n', slot: 'body', file: 'data/craft/@cr.json', of: 'c', label: 'A corruption can add'},
+  /* What it does to you, in one list of words shared by every file that tags a danger (tools/monstermods.py,
+     and the map modifiers that use the same words), so one word means one thing wherever it is read. The row is
+     found by the card's own name in the field's table. A tag read off the name alone, because the game gives the
+     thing no words, says Estimate beside it; a tag with the game's own line behind it shows that line on hover.
+     tools/mapdanger.py stops when its words and tools/monstermods.py's part, in word or in order. */
+  mondanger: {type: 'danger', at: 'n', slot: 'body', file: 'data/monstermods.json',
+    label: 'On a rare monster, what it does to you'},
+  mapdanger: {type: 'danger', at: 'n', slot: 'body', file: 'data/mapdanger.json',
+    label: 'On your maps, what it does to you'},
+  /* the real weight a thing rolls at where the game rolls for it unseen — a Forbidden Rite, a strongbox, an
+     Azmeri spirit — and its share of each pool it is in (tools/odds.py, off the game's own tables). The outcome's
+     name is matched to the card's name exactly, so "2 Divine Orbs" is not the Divine Orb card. A pool whose
+     shape is ours and not the table's says so beside it. Never multiplied by a price (design/hidden-odds.md). */
+  weight:   {type: 'odds', at: 'n', slot: 'body', file: 'data/odds.json', label: 'How often it rolls'},
+  /* A league mechanic, on the game's own keyword card for it (tools/mechanics_league.py, data/leaguemech.json,
+     found by the card's own key). `share`: its own currency's share of what the Currency Exchange traded this
+     league, with the move over 7 days and the league's days as a line. Measured from GGG's feed hour by hour,
+     never modelled. `mechlines`: what it holds that has no card — the waystone modifiers that add it, the
+     campaign bosses a rite calls up. A keyword that is no mechanic finds nothing and draws nothing. */
+  share:    {type: 'share', slot: 'body', file: 'data/leaguemech.json', label: 'Of what the Currency Exchange traded'},
+  mechlines: {type: 'mechlines', slot: 'body', file: 'data/leaguemech.json', of: ['waystone', 'campaign'],
+    say: {waystone: 'Waystone modifiers that add it', campaign: 'What its rites call up in the campaign'}},
   quote:    {type: 'quote', at: 'qt', slot: 'body', every: 1},   // the game's own flavour line
   options:  {type: 'options', at: 'o', slot: 'body', every: 1},
   flow:     {type: 'flow', at: 'fl', slot: 'body', every: 1},
@@ -434,7 +467,8 @@ export const REL = {
   klass:    {label: 'Shares its class with', of: 'b', edge: 'klass', map: 'klass', filter: 'craft'},
   klassof:  {label: 'Item class', of: 'i', edge: 'klassof', map: 'klass'},
   inclass:  {label: 'Bases of this class', of: 'b', edge: 'inclass', map: 'klass', filter: 'craft'},
-  grants:   {label: 'Grants', of: 'g', edge: 'grants', needs: 'grants'},
+  // what a card grants: a skill's gem, and the buffs and debuffs it gives (tools/grants.py, tools/buffs.py)
+  grants:   {label: 'Grants', edge: 'grants', needs: 'grants'},
   granted:  {label: 'Granted by', edge: 'granted', needs: 'grants'},
   section:  {label: 'Listed with', of: 'a', edge: 'section', map: 'place', filter: 'atlas'},
   cat:      {label: 'Listed with', edge: 'cat', map: 'cat'},
@@ -444,6 +478,10 @@ export const REL = {
   /* The two ends of one edge: the nodes a cluster holds, and the cluster or clusters a node sits in. A node
      the same number of steps from two notables is in both, so the second one answers with two rows and each
      of them says it is shared (data/clusters.json, tools/clusters.py). */
+  /* The two ends of one edge out of data/dropsfrom.json: the bosses and encounters a unique drops from, and
+     the uniques a boss drops. A place with no card of its own (the Simulacrum, an Abyss) is a plain row. */
+  dropsfrom: {label: 'Drops from', of: 'x', edge: 'dropsfrom', needs: 'dropsfrom'},
+  drops:    {label: 'Drops', of: 'u', edge: 'drops', needs: 'dropsfrom'},
   incluster: {label: 'Nodes in this cluster', of: 'p', edge: 'incluster', needs: 'clusters'},
   clusterof: {label: 'Cluster it sits in', of: 't', edge: 'clusterof', needs: 'clusters'},
 };
@@ -461,17 +499,17 @@ export const KINDS = [
    index: true, search: true, item: true, crawl: {word: 'gem', list: 'gems', rank: 1, is: 'Product'},
    sprite: 'gems', px: {as: 'c', at: 'li'},
    builds: [{at: 'w', key: 'skills'}, {key: 'allskills'}],
-   fields: [...HEAD, 'gemreq', 'lineage', 'usetime', 'cost', 'spirit', ...BODY, ...FOOT],
+   fields: [...HEAD, 'gemreq', 'lineage', 'cutfrom', 'usetime', 'cost', 'spirit', ...SAYS, 'quality', ...REST, ...FOOT],
    acts: ['trade', 'pool', 'full', 'pin', 'open'],
-   rel: ['granted', 'named', 'namedby', 'cat']},
+   rel: ['granted', 'grants', 'named', 'namedby', 'cat']},
 
   {k: 'u', one: 'Unique', tone: 'c-unique', many: 'Uniques', place: 'Uniques', sec: 'uniques', link: 'explore#uniques=@n', mark: 'ls',
    index: true, search: true, item: true, crawl: {word: 'unique', list: 'uniques', rank: 0, is: 'Product'},
    sprite: 'uniques', make: {base: 'sub1'},
    builds: [{key: 'items'}],
-   fields: [...HEAD, 'reqs', 'corrupt', 'limit', 'group', 'props', 'implicit', ...BODY, ...FOOT],
+   fields: [...HEAD, 'reqs', 'corrupt', 'limit', 'group', 'props', 'implicit', ...SAYS, 'mapdanger', 'weight', ...REST, 'drop', ...FOOT],
    acts: ['trade', 'pool', 'full', 'pin', 'open'],
-   rel: ['base', 'variants', 'grants', 'named', 'namedby', 'cat']},
+   rel: ['base', 'variants', 'grants', 'dropsfrom', 'named', 'namedby', 'cat']},
 
   {k: 'p', one: 'Passive', tone: 'c-keystone', many: 'Passives', place: 'Passive tree', sec: 'tree', link: 'explore#tree=@n', mark: 'ls',
    index: true, search: true, crawl: {word: 'passive', list: 'passives', rank: 2, is: 'DefinedTerm'},
@@ -509,7 +547,7 @@ export const KINDS = [
   {k: 'a', one: 'Atlas', tone: 'int', many: 'Atlas', place: 'Atlas', link: './#/atlas?s=@at&q=@n',
    index: true, search: true, item: true, crawl: {word: 'atlas', list: 'atlas', rank: 6, is: 'Product', unless: {at: 'at', is: 'tree', then: 'DefinedTerm'}},
    px: {as: 'c'}, notitem: {at: 'at', is: 'tree'},
-   fields: [...HEAD, 'nodety', 'ontree', 'warn', 'implicit', ...BODY, ...FOOT],
+   fields: [...HEAD, 'nodety', 'ontree', 'warn', 'implicit', ...SAYS, 'mapdanger', ...REST, ...FOOT],
    acts: ['trade', 'pin', 'open'],
    rel: ['section', 'named', 'namedby']},
 
@@ -522,13 +560,31 @@ export const KINDS = [
 
   {k: 'w', one: 'Keyword', tone: 'accent', many: 'Keywords', sec: 'keywords', index: true, search: true, crawl: {word: 'keyword', list: 'keywords', rank: 3, is: 'DefinedTerm'},
    kw: 'id', rank: -25, words: {n: 'own', f: 'alt', mark: 'game'},
-   fields: [...HEAD, 'uses', ...BODY, ...FOOT],
+   fields: [...HEAD, 'stacks', 'uses', ...SAYS, 'mondanger', 'share', 'weight', 'mechlines', ...REST, ...FOOT],
    acts: ['full', 'pin'],
-   rel: [...KWUSE, 'named', 'namedby']},
+   rel: [...KWUSE, 'granted', 'named', 'namedby']},
+
+  /* An ascendancy: its class, the flavour text the game shows for it, its notables by name (each line a door to
+     the notable's card, and the notable "Named by" it, tools/nodelinks.py) and where its eight points come from
+     (tools/ascendancies.py; which trial gives which set is in data/ascendancies.json). */
+  {k: 'y', one: 'Ascendancy', many: 'Ascendancies', index: true, search: true, mark: 'ls',
+   fields: [...HEAD, ...BODY, ...FOOT],
+   acts: ['pin'],
+   rel: ['named', 'cat']},
+
+  /* A buff or debuff a player can see on their bar: its name, the game's icon for it, what it does in the game's
+     words, and what gives it (tools/buffs.py, data/buffs.json). One whose name a keyword card already carries is
+     that keyword card, with the buff's icon; so these are the rest. Its name is a door wherever a line says it,
+     the way a keyword's is, and what gives it is the same edge a skill's gem has (data/grants.json). */
+  {k: 'd', one: 'Buff', many: 'Buffs', index: true, search: true, rank: -5,
+   words: {n: 'own', mark: 'game'},
+   fields: [...HEAD, 'stacks', 'frommods', ...BODY, ...FOOT],
+   acts: ['pin'],
+   rel: ['granted', 'namedby', 'cat']},
 
   {k: 'h', one: 'Mechanics', tone: 'blood', many: 'Mechanics', index: true, search: true, mark: 'ls',
    words: {f: 'own', mark: 'ours', only: 'gate'},
-   fields: [...HEAD, ...BODY, ...FOOT],
+   fields: [...HEAD, ...SAYS, 'share', 'mechlines', ...REST, ...FOOT],
    acts: ['pin'],
    rel: ['namedby', 'cat']},
 
@@ -546,7 +602,7 @@ export const KINDS = [
    search: true,
    fields: [...HEAD, ...BODY, ...FOOT],
    acts: ['pin', 'open'],
-   rel: ['namedby', 'cat']},
+   rel: ['drops', 'namedby', 'cat']},
 
   /* The bench: one card, holding an item and the currency and omens picked for it before anything runs. It
      has no rows in the index — you reach it from a base, from the currency it crafts with, or from the Craft

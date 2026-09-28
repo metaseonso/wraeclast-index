@@ -14,6 +14,10 @@ Three kinds of card grant a skill, and each is read from the place the game says
              Where the skill list has no such name, the name is matched against the gem cards instead, and
              that edge is marked as coming from the item's wording rather than from the files.
 
+The same edges carry the buffs and debuffs a card gives (data/buffs.json "by", tools/buffs.py: the stats,
+skills and modifiers the game files tie to each buff): a passive or a unique "Grants" Tailwind, and the Tailwind
+card is "Granted by" them. The buff's card is its own (kind d), or the keyword card of the same name.
+
 Nothing is ever guessed. Where a name could mean two cards (Herald of Ash is two gem entries, Decompose is
 two), no edge is written at all; the pair is listed under "amb" instead, so the page can say the game does
 not settle it and a later run can pick it up if the files ever do.
@@ -28,8 +32,8 @@ What is written (ids, never names — the card layer already has the names, the 
   "amb"   [[node key, the name the line used, [the node keys it could mean]], ...]
   "src"   source letter -> the words a page can print for it
 
-Run it after tools/sync.py and tools/gamelib.py (it resolves against the cards those two write) and before
-tools/kwuse.py. It writes one file and touches nothing else, so re-running it is free.
+Run it after tools/sync.py, tools/gamelib.py and tools/buffs.py (it resolves against the cards those write) and
+before tools/kwuse.py. It writes one file and touches nothing else, so re-running it is free.
 
 Usage:
   python tools/grants.py            write data/grants.json
@@ -49,6 +53,7 @@ from gamelib import TREE, dated  # noqa: E402
 ROOT = Path(__file__).resolve().parent.parent
 INDEX = ROOT / 'data' / 'index.json'
 OUT = ROOT / 'data' / 'grants.json'
+BUFFS = ROOT / 'data' / 'buffs.json'
 
 # Where an edge came from. Both are official today; a page prints these words, so they stay plain.
 SRC = {'f': 'the official game files', 'w': "the item's own wording"}
@@ -67,6 +72,7 @@ class Cards:
         self.gem = {it['id'] for it in index['items'] if it['k'] == 'g'}
         self.base = {it['n'] for it in index['items'] if it['k'] == 'b'}
         self.passive = {it['id'] for it in index['items'] if it['k'] == 'p'}
+        self.keys = {it['k'] + ':' + it['id'] for it in index['items']}
         self.gem_by_name = defaultdict(list)
         for it in index['items']:
             if it['k'] == 'g':
@@ -152,6 +158,22 @@ def from_uniques(index, cards):
     return out, amb
 
 
+def from_buffs(cards):
+    """What gives a buff (data/buffs.json "by"): an edge from each card to the buff's own card, or to the keyword
+    card of the same name."""
+    try:
+        rows = json.loads(BUFFS.read_text(encoding='utf-8'))['rows']
+    except (OSError, ValueError, KeyError):
+        return []
+    out = []
+    for r in rows:
+        to = next((k for k in ('d:' + r['id'], 'w:' + (r.get('kw') or '')) if k in cards.keys), None)
+        for c in r.get('by') or [] if to else []:
+            if c['key'] in cards.keys:
+                out.append((c['key'], to, 'f'))
+    return out
+
+
 # ---------------------------------------------------------------- build
 
 def build(index):
@@ -159,9 +181,10 @@ def build(index):
     b, blost = from_bases(cards)
     p, plost = from_passives(cards)
     u, amb = from_uniques(index, cards)
+    f = from_buffs(cards)
 
     by, of = defaultdict(dict), defaultdict(dict)
-    for node, gem, src in b + p + u:
+    for node, gem, src in b + p + u + f:
         by[node].setdefault(gem, src)     # one edge per pair, however many variants say it
         of[gem].setdefault(node, src)
     out = {'v': 1, 'patch': patch(), 'dated': dated('base_items.min.json'), 'src': SRC,
@@ -169,16 +192,17 @@ def build(index):
            'of': {g: [[n, s] for n, s in sorted(v.items())] for g, v in sorted(of.items())}}
     if amb:
         out['amb'] = sorted(amb)
-    rep = {'bases': b, 'passives': p, 'uniques': u, 'amb': amb, 'lost': blost + plost,
+    rep = {'bases': b, 'passives': p, 'uniques': u, 'buffs': f, 'amb': amb, 'lost': blost + plost,
            'by': out['by'], 'of': out['of']}
     return out, rep
 
 
 def report(out, rep):
     per = lambda rows: (len(rows), len({r[0] for r in rows}))
-    print('grants  %d edges from %d cards, to %d skills' %
+    print('grants  %d edges from %d cards, to %d skills and buffs' %
           (sum(len(v) for v in out['by'].values()), len(out['by']), len(out['of'])))
-    for what, rows in (('bases', rep['bases']), ('passives', rep['passives']), ('uniques', rep['uniques'])):
+    for what, rows in (('bases', rep['bases']), ('passives', rep['passives']), ('uniques', rep['uniques']),
+                       ('buffs', rep['buffs'])):
         print('        %-9s %4d lines -> %3d cards' % (what, *per(rows)))
     w = sum(1 for r in rep['uniques'] if r[2] == 'w')
     print('        uniques: %d of %d through the skill list, %d by the name on the line, %d not settled'

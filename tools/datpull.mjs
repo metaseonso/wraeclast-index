@@ -497,6 +497,23 @@ const FILES = [
        return names.length && rooms ? drop({kind: 'Room', name: names[0], id: t.Id, names: new Set(names).size > 1 ? names : null,
          text: clean(t.Description), rooms}) : null; }).filter(Boolean),
    ]},
+  // #111 rules and gold (tools/rules.py, tools/gold.py): Delirium's and Ritual's constants, the Currency Exchange
+  {file: 'affliction_constants', tables: ['AfflictionConstants'], ids: ['id'],
+   note: 'Delirium’s own constants, named by id only, as GameConstants is. tools/rules.py words the ones a player meets.',
+   rows: ({T}) => T.AfflictionConstants.rows.map(g => ({id: g.Id, value: g.Value}))},
+  {file: 'ritual_constants', tables: ['RitualConstants'], ids: ['id'],
+   note: 'Ritual’s own constants, named by id only, as GameConstants is. tools/rules.py words the ones a player meets.',
+   rows: ({T}) => T.RitualConstants.rows.map(g => ({id: g.Id, value: g.Value}))},
+  {file: 'currency_exchange', tables: ['CurrencyExchange', 'CurrencyExchangeCategories', 'BaseItemTypes'], ids: [],
+   note: 'Everything the Currency Exchange trades: the item, the tab it sits under, and the gold fee to buy one. ' +
+     'standard and league say where it is traded.',
+   rows: ({T, R}) => T.CurrencyExchange.rows.map(c => drop({item: R.name('BaseItemTypes', c.Item),
+     category: R.name('CurrencyExchangeCategories', c.Category), fee: c.GoldPurchaseFee,
+     standard: c.EnabledInStandardLeague, league: c.EnabledInChallengeLeague})).filter(c => c.item)},
+  {file: 'gold_bases', later: true, tables: ['GoldBaseTypePrices', 'BaseItemTypes'], ids: [],
+   note: 'A gold value for each base type. What a vendor does with it (the sell and buy multipliers in GameConstants) is ' +
+     'not verified.',
+   rows: ({T, R}) => T.GoldBaseTypePrices.rows.map(g => ({item: R.name('BaseItemTypes', g.BaseItemType), gold: g.Cost})).filter(g => g.item)},
 ];
 
 /* ---------- run ---------- */

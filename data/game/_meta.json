@@ -14,6 +14,14 @@
   "url": "https://github.com/poe-tool-dev/dat-schema"
  },
  "files": {
+  "affliction_constants": {
+   "patch": "0.5.5",
+   "tables": [
+    "AfflictionConstants"
+   ],
+   "rows": 18,
+   "bytes": 1079
+  },
   "atlas_corruption": {
    "patch": "0.5.5",
    "tables": [
@@ -35,6 +43,16 @@
    ],
    "rows": 22,
    "bytes": 11637
+  },
+  "currency_exchange": {
+   "patch": "0.5.5",
+   "tables": [
+    "CurrencyExchange",
+    "CurrencyExchangeCategories",
+    "BaseItemTypes"
+   ],
+   "rows": 687,
+   "bytes": 65073
   },
   "game_constants": {
    "patch": "0.5.5",
@@ -125,6 +143,14 @@
    ],
    "rows": 10,
    "bytes": 1393
+  },
+  "ritual_constants": {
+   "patch": "0.5.5",
+   "tables": [
+    "RitualConstants"
+   ],
+   "rows": 11,
+   "bytes": 754
   },
   "ritual_rites": {
    "patch": "0.5.5",
