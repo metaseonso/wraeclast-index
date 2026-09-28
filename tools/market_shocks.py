@@ -46,7 +46,7 @@ def build(ctx):
         pn = ml.load(notes)
         for key, lines in (pn.get('on') or {}).items():
             if key.startswith('c:'):
-                named[key[2:]] = {pn['patches'][pn['lines'][i][0]]['title'] for i in lines}
+                named[key[2:]] = {pn['patches'][pn['lines'][i][0]]['id'] for i in lines}   # the patch's id, as in data/patches.json
     rows, left = [], 0
     ps = sorted((p for p in ctx.patches if p.get('posted')), key=lambda p: p['posted'])
     left += sum(1 for p in ctx.patches if not p.get('posted'))
@@ -81,8 +81,9 @@ def build(ctx):
                      'near': sum(1 for q in hours if q != H and abs(q - H) < W),
                      'listed': len(moves), 'up': up, 'down': down})
         for m in moves:
-            if title in named.get(m[0], ()) or (p['kind'] == 'patch' and abs(m[2] or 0) >= CARD_MOVE):
-                per_card.setdefault(m[0], []).append([title, p['posted'], m[2], m[3], title in named.get(m[0], ())])
+            said = p['id'] in named.get(m[0], ())
+            if said or (p['kind'] == 'patch' and abs(m[2] or 0) >= CARD_MOVE):
+                per_card.setdefault(m[0], []).append([title, p['posted'], m[2], m[3], said])
     for n, v in per_card.items():
         ctx.card(n, 'shocks', v[-12:])
     files = {}
