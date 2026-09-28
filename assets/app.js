@@ -953,6 +953,54 @@ function oddsFill(host, it, f){
   });
 }
 
+/* ---------- a league mechanic, on its own keyword card ----------
+   data/leaguemech.json (tools/mechanics_league.py): the entry whose `card` is this card's own key. The share is
+   the mechanic's own currency over everything the Currency Exchange traded in the newest league the file reads,
+   in basis points; the move is the last 7 league days against the 7 before them, each day weighed by what was
+   traded that day, so a quiet day moves it less than a busy one. Measured, never modelled: no Estimate. */
+const mechOf = (t, it) => t && (t.mechanics || []).find(e => e.card === it.k + ':' + it.id);
+function shareHTML(it, t, f){
+  const e = mechOf(t, it), p = t && t.popularity, lg = p && (p.leagues || [])[0];
+  const row = e && p ? (p.rows || []).indexOf(e.key) : -1;
+  if(row < 0 || !lg || !lg.total[row]) return '';
+  const bp = lg.total[row] / 100, days = lg.days || [];
+  const of = (a, b) => {   // the share over league days a..b, each day by what it traded
+    let v = 0, w = 0;
+    for(const d of days.slice(a, b)){ v += d[1] * d[2 + row]; w += d[1]; }
+    return w ? v / w / 100 : null;
+  };
+  const n = days.length, now = n >= 14 ? of(n - 7, n) : null, was = now !== null ? of(n - 14, n - 7) : null;
+  const move = now !== null && was !== null ? now - was : null;
+  const pct = x => x < 0.1 ? 'under 0.1%' : x.toFixed(1) + '%';
+  const r = move !== null ? Math.round(move * 10) / 10 : null;
+  return '<p class="card-facts">' + esc(f.label || '') + ', ' + esc(lg.league) + ': <b>' + pct(bp) + '</b>' +
+    (r !== null ? ' <span class="chg ' + (r > 0 ? 'up' : r < 0 ? 'down' : 'flat') +
+      '" title="The last 7 league days against the 7 before">' + (r > 0 ? '▲' : r < 0 ? '▼' : '•') + ' ' +
+      Math.abs(r).toFixed(1) + ' points</span>' : '') +
+    spark(days.map(d => d[2 + row] / 100), r || 0) + '</p>' +
+    '<p class="card-src" title="' + esc(p.method || '') + '">Source: ' + esc(p.source || '') + '</p>';
+}
+function mechlinesHTML(it, t, f){
+  const e = mechOf(t, it);
+  if(!e) return '';
+  let out = '';
+  for(const k of f.of || []){
+    const rows = (e[k] || []).map(x => x.area ? esc(x.area) + ': ' + esc(x.boss) : esc(x.n) + ': ' + esc([].concat(x.ls || []).join(' · ')));
+    if(rows.length) out += '<p class="card-facts">' + esc((f.say || {})[k] || '') + ' · ' + rows.length + '</p>' +
+      '<ul class="card-ls">' + rows.map(x => '<li>' + x + '</li>').join('') + '</ul>';
+  }
+  return out;
+}
+const mechFill = draw => (host, it, f) => {
+  if(!host) return;
+  tableOf(f.file).then(t => {
+    const html = t && draw(it, t, f);
+    if(!html || !host.isConnected) return;
+    host.innerHTML = html;
+    host.hidden = false;
+  });
+};
+
 /* ---------- a switch on the card ----------
    Something outside the item changes what the item is while it is worn. The switch sits on the card the
    player is already reading, off until it is pressed, and what it does is the granting card's own lines —
@@ -1308,6 +1356,10 @@ export const TYPE = {
   adds:   {raw: 1, fill: addsFill, v: (it, f, o, name) => o.full && it[f.at]
     ? '<div class="card-addsbox" data-fill="' + esc(name) + '" hidden></div>' : ''},
   odds:   {raw: 1, fill: oddsFill, v: (it, f, o, name) => o.full && it[f.at]
+    ? '<div class="card-addsbox" data-fill="' + esc(name) + '" hidden></div>' : ''},
+  share:  {raw: 1, fill: mechFill(shareHTML), v: (it, f, o, name) => o.full && it.id
+    ? '<div class="card-addsbox" data-fill="' + esc(name) + '" hidden></div>' : ''},
+  mechlines: {raw: 1, fill: mechFill(mechlinesHTML), v: (it, f, o, name) => o.full && it.id
     ? '<div class="card-addsbox" data-fill="' + esc(name) + '" hidden></div>' : ''},
   drop:   {raw: 1, fill: dropFill, v: (it, f, o, name) => o.full && it[f.at]
     ? '<div class="card-addsbox" data-fill="' + esc(name) + '" hidden></div>' : ''},
