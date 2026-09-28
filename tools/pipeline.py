@@ -157,6 +157,11 @@ STAGES = [
          writes=['data/index.json', 'data/index-core.json', 'data/index-rest.json'], count={'data/index.json': 'items'}),
     dict(name='essences', run=['tools/essences.py'], cadence='patch', source='files',
          reads=['data/craft.json', 'data/craft/*.json', 'data/index.json'], writes=['data/essences.json']),
+    # what each Atlas map can hold, and what corrupting it adds (#92). data/areas.json as for achievements
+    dict(name='atlascontent', run=['tools/atlascontent.py'], cadence='patch', source='game files',
+         reads=['data/game/endgame_maps.json', 'data/game/map_content.json', 'data/game/atlas_corruption.json',
+                'data/index.json', 'data/bosses.json', 'data/areas.json'],
+         writes=['data/atlascontent.json'], count={'data/atlascontent.json': 'maps'}),
     dict(name='kwuse', run=['tools/kwuse.py'], cadence='patch', source='files',
          reads=['explore.html', 'data/explore/*.json', 'data/index.json', 'data/atlas.json', 'data/info.json',
                 'data/market.json', 'data/craft.json', 'data/craft/*.json'],
