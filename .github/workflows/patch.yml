@@ -54,6 +54,8 @@ jobs:
       - name: Every patch stage, built aside in build/ and swapped into data/ only if all of them hold up
         env:
           GH_TOKEN: ${{ github.token }}
+          # the private data repo's decoded game tables (tools/gamepull.py dat()): a read-only token for that repo alone
+          WI_DATA_TOKEN: ${{ secrets.DATA_REPO_READ }}
         run: python tools/pipeline.py patch
       - name: The guard, without the browser halves
         run: node tools/dev/guard.mjs --no-phone

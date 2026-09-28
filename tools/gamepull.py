@@ -185,6 +185,14 @@ DATA_REPO = 'repos/metaseonso/wraeclast-data/contents/game'
 _dat_ver = None
 
 
+def _gh_env():
+    """The data repo is private. On the owner's machine the signed-in gh reads it; in Actions the site repo's own
+    token cannot, so the Game patch workflow hands in a read-only token for that one repo as WI_DATA_TOKEN (the
+    DATA_REPO_READ secret). It is used for these reads only: the run's own token still opens its tickets."""
+    tok = os.environ.get('WI_DATA_TOKEN')
+    return dict(os.environ, GH_TOKEN=tok) if tok else None
+
+
 def dat_version():
     """The patch folder of the decoded tables to read: this patch's, else the newest the data repo has (said on
     stderr, so a table a patch behind is never read in silence)."""
@@ -193,7 +201,7 @@ def dat_version():
         want = patch(build(refresh=False) or build())
         try:
             got = subprocess.run(['gh', 'api', DATA_REPO, '--jq', '.[].name'], capture_output=True, text=True,
-                                 check=True, timeout=120).stdout.split()
+                                 check=True, timeout=120, env=_gh_env()).stdout.split()
         except Exception as e:
             got = []
             print('  could not list %s: %s' % (DATA_REPO, e), file=sys.stderr)
@@ -219,7 +227,7 @@ def dat(table):
         try:
             body = subprocess.run(['gh', 'api', '-H', 'Accept: application/vnd.github.raw',
                                    '%s/%s/out/raw/%s.json' % (DATA_REPO, ver, table)],
-                                  capture_output=True, check=True, timeout=300).stdout
+                                  capture_output=True, check=True, timeout=300, env=_gh_env()).stdout
             json.loads(body)   # a broken download fails here, before it is kept
         except Exception as e:
             raise SystemExit('cannot read the game table %s for %s (gh api): %s' % (table, ver, e))
