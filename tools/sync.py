@@ -777,8 +777,20 @@ DATA_JS = ('<script id="wi-data">/* the page\'s data (tools/sync.py): the tab in
            'if(navigator.deviceMemory<=4||navigator.hardwareConcurrency<=4||matchMedia("(prefers-reduced-motion: reduce)").matches||(navigator.connection&&navigator.connection.saveData))document.documentElement.classList.add("lite");\n'   # a weak machine: html.lite, as in index.html
            '(function(){var F=__FILES__,W=__FIRST__;var D=window.WI_DATA={files:F},q=Promise.resolve(),got={};'
            'document.documentElement.classList.add("wi-wait");'
-           'function load(b,n){return fetch(F[b]).then(function(r){if(!r.ok)throw Error(F[b]+" "+r.status);return r.json()})'
+           # a file this page names answers the not-found page (or any page): the site may have a newer page that no
+           # longer names it (a data deploy under a page from the service worker's copy, sw.js). moved() asks for the
+           # page past the copy; when it names other files, the older copies drop their pages (fresh, as
+           # assets/app.js) and the page reloads, once per file (wi.moved). Same page: a real fault, said as before
+           'function load(b,n){return fetch(F[b]).then(function(r){'
+           'if(r.status==404||r.status==410||(r.headers.get("content-type")||"").indexOf("text/html")>=0)return moved(F[b]).then(function(){throw Error(F[b]+" "+r.status)});'
+           'if(!r.ok)throw Error(F[b]+" "+r.status);return r.json()})'
            '.catch(function(e){if(n)throw e;return load(b,1)})}'
+           'var mv;function moved(f){return mv||(mv=fetch("explore?at="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){var s;'
+           'if(!t||t.indexOf(f)>=0)return;try{s=JSON.parse(sessionStorage.getItem("wi.moved")||"[]");if(s.indexOf(f)>=0||s.length>=4)return;s.push(f);sessionStorage.setItem("wi.moved",JSON.stringify(s))}catch(e){return}'
+           'return fresh().then(function(){location.reload();return new Promise(function(){})})}).catch(function(){}))}'
+           'function fresh(){if(!window.caches)return Promise.resolve();return Promise.all([fetch("sw-files.json?at="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""},function(){return""}),caches.keys()]).then(function(x){'
+           'return Promise.all(x[1].filter(function(k){return k.indexOf("wi-v-")==0}).map(function(k){return caches.open(k).then(function(c){return c.match("sw-files.json").then(function(m){return m?m.text():""}).then(function(t){'
+           'if(x[0]&&t===x[0])return;return Promise.all(["./","explore","privacy"].map(function(u){return c.delete(new URL(u,document.baseURI).href)}))})})}))}).catch(function(){})}'
            'function get(b){return got[b]||(got[b]=load(b,0).then(function(o){return D[b]=o}))}'
            'D.get=get;D.tab=(/^#(gems|uniques|tree)/.exec(location.hash)||[0,"gems"])[1];'
            '(W[D.tab]||[]).forEach(function(b){if(F[b])get(b).catch(function(){})});'   # the tab in the address, from <head>

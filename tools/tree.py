@@ -15,8 +15,8 @@ Source: the RePoE fork's PoE2 export (https://repoe-fork.github.io/poe2/), throu
   ascendancies.min.json                  an ascendancy's name, and the angle of its class's part of the
                                          wheel (tree_region_angle)
   characters.min.json                    each class's name and starting attributes
-Where the export falls short, the game's own tables, decoded for 0.5.5 (metaseonso/wraeclast-data,
-game/<patch>/out/raw/, through tools/gamepull.py dat(), kept in tools/cache/dat-<patch>/, not in git):
+Where the export falls short, the game's own tables, read out of the game's bundles on GGG's patch CDN
+(tools/gamepull.py dat(), which runs tools/datpull.mjs --raw; kept in tools/cache/dat-<CDN folder>/, not in git):
   BlightCraftingRecipes    the three emotions of each anointing recipe (BlightCraftingItems) and its result
   BlightCraftingResults    the passive a result anoints (PassiveSkill)
   BlightCraftingItems      each emotion's base item (BaseItemType)

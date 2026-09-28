@@ -63,7 +63,9 @@ function take(k, row){
 const url = f => new URL(f, S.base).href;
 async function getJSON(f){
   const r = await fetch(url(f));
-  if(r.status === 404) throw Object.assign(new Error(f + ' 404'), {gone: true});
+  // not there any more (the not-found page, with its 404, or any page where the file was asked for): 'gone'
+  if(r.status === 404 || r.status === 410 || /text\/html/i.test(r.headers.get('Content-Type') || ''))
+    throw Object.assign(new Error(f + ' ' + r.status), {gone: true});
   if(!r.ok) throw new Error(f + ' ' + r.status);
   return r.json();
 }

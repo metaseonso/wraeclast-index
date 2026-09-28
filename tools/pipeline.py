@@ -76,17 +76,21 @@ POE2DB = 'https://poe2db.tw/us/'
 COE = 'https://www.craftofexile.com/'
 NINJA = 'https://poe.ninja/poe2/'
 FEED = 'https://web.poecdn.com/ (the Currency Exchange feed)'
+CDN = 'https://patch-poe2.poecdn.com/'
+DATSCHEMA = 'https://github.com/poe-tool-dev/dat-schema'
 
 """The stages, in the order the data needs them: a stage reads what the ones above it wrote. Per stage:
 
   name     what it is called here (--only, --from)
-  run      the tool and its arguments; '@artifact' is the artifact's path, given with --artifact
+  run      the tool and its arguments; '@artifact' is the artifact's path, given with --artifact. A .py tool
+           runs with this Python, a .mjs tool with Node
   cadence  patch (after a game patch), daily, hourly, or hand (run on purpose, never by a cadence)
-  source   where its facts come from: game files (RePoE's export of them), poe2db, Craft of Exile, trade (the
+  source   where its facts come from: game files (RePoE's export of them, or the game's own bundles), poe2db, Craft of Exile, trade (the
            official trade site's lists), Exchange (the in-game Currency Exchange feed), poe.ninja, the artifact,
            files (only what is already on disk), or a named outside page
   reads    files it reads (globs welcome) and the addresses it fetches
-  writes   files it writes; count names the part of a file its rows are in, for the last good count
+  writes   files it writes; count names the part of a file its rows are in, for the last good count (a glob
+           names every file it matches; the first key that matches a file is the one)
   needs    something only the owner's machine has: the stage is skipped with a line saying so without it
   without  what to run instead when it is not given (sync: --from-game, the drill-down from the game files)
   last     a file it reads on purpose from the last good copy, though a later stage writes it
@@ -98,6 +102,9 @@ STAGES = [
          writes=['data/gamedata.json', 'tools/dev/gaps.txt'], count={'data/gamedata.json': 'patch'}),
     dict(name='gameinfo', run=['tools/gameinfo.py'], cadence='patch', source='game files',
          reads=[REPOE], writes=['data/reqs.json', 'data/info.json'], count={'data/reqs.json': 'bases'}),
+    dict(name='datpull', run=['tools/datpull.mjs'], cadence='patch', source='game files',
+         reads=[CDN, DATSCHEMA, REPOE], writes=['data/game/*.json'],
+         count={'data/game/_meta.json': 'files', 'data/game/*.json': 'rows'}),
     dict(name='tradedata', run=['tools/tradedata.py'], cadence='patch', source='trade',
          reads=[TRADE, REPOE], writes=['data/trade.json']),
     dict(name='rollprices', run=['tools/rollprices.py'], cadence='patch', source='files',
@@ -213,6 +220,11 @@ def matches(path, globs):
     return any(fnmatch.fnmatch(path, g) for g in globs)
 
 
+def count_of(stage, path):
+    """The part of a file its rows are in, from the stage's count: the first key that matches the file."""
+    return next((at for g, at in (stage or {}).get('count', {}).items() if fnmatch.fnmatch(path, g)), None)
+
+
 def digest(b):
     return hashlib.sha1(b).hexdigest()
 
@@ -258,7 +270,10 @@ def stamp(stage, root, artifact):
     such a file runs it anyway (see main)."""
     h = hashlib.sha1()
     tool = Path(stage['run'][0]).stem
-    for t in sorted(imports(tool)):
+    js = stage['run'][0].endswith('.mjs')        # a Node tool: the file itself (its reads name what else it needs)
+    if js:
+        h.update(digest((root / stage['run'][0]).read_bytes()).encode())
+    for t in [] if js else sorted(imports(tool)):
         h.update(t.encode() + digest((root / 'tools' / (t + '.py')).read_bytes()).encode())
     h.update(json.dumps(args_of(stage, artifact)).encode())
     for r in stage['reads']:
@@ -391,7 +406,6 @@ def check_files(stage, changed, root, against, schema=True, later=()):
     """What a stage wrote, held to the rules: (file, why) for the first file that does not hold up, else None.
     against(path) gives the last good copy of a file (data/ as it is, or the committed one). later: files a
     later stage of the run writes too, whose count and shape are checked once, on the final state."""
-    count = stage.get('count', {}) if stage else {}
     for path in sorted(changed):
         if not path.endswith('.json') or path == RECORD:
             continue
@@ -403,10 +417,13 @@ def check_files(stage, changed, root, against, schema=True, later=()):
         except ValueError as e:
             return path, 'it does not read as JSON: %s' % str(e)[:100], {}
         old = None if path in later else against(path)
-        if old is None:
+        if old is None:                       # new, or rewritten later: its own ids still hold here
+            why = lastgood.own_ids(new)
+            if why:
+                return path, why, {}
             continue
         name = path[len('data/'):] if path.startswith('data/') else path
-        bad = lastgood.look(new, old, count.get(path), file=name)
+        bad = lastgood.look(new, old, count_of(stage, path), file=name)
         if bad:
             return path, bad['why'], bad
         if path == 'data/index.json':
@@ -447,8 +464,13 @@ def rewritten_later(stage, chosen):
 
 
 def run_stage(stage, artifact, log, later=()):
-    cmd = [sys.executable, str(TREE / stage['run'][0])] + args_of(stage, artifact)
+    runner = node() if stage['run'][0].endswith('.mjs') else sys.executable
     started = time.time()
+    if not runner:
+        Path(log).write_text('there is no Node here to run %s with\n' % stage['run'][0], encoding='utf-8')
+        say('  | there is no Node here to run %s with' % stage['run'][0])
+        return 127, 0
+    cmd = [runner, str(TREE / stage['run'][0])] + args_of(stage, artifact)
     with open(log, 'w', encoding='utf-8') as out:
         out.write('$ %s\n' % ' '.join(cmd))
         p = subprocess.Popen(cmd, cwd=str(TREE), env=env_for_stage(later), stdout=subprocess.PIPE,
@@ -530,10 +552,9 @@ def check_only():
             return None
     files = sorted({rel(Path(f).relative_to(ROOT)) for s in STAGES for w in s['writes'] if w.endswith('.json')
                     for f in glob.glob(str(ROOT / w))})
-    counted = {p: s for s in STAGES for p in s.get('count', {})}
     n = 0
     for path in files:
-        one = check_files(counted.get(path), [path], ROOT, committed, schema=False)
+        one = check_files(next((s for s in STAGES if count_of(s, path)), None), [path], ROOT, committed, schema=False)
         n += 1
         if one:
             bad.append('%s: %s' % one[:2])
@@ -677,7 +698,7 @@ def main():
                         faults_since(t0))
         held = {p for p in changed if matches(p, list(later))}
         for p in held:
-            deferred[p] = stage.get('count', {}).get(p, deferred.get(p))
+            deferred[p] = count_of(stage, p) or deferred.get(p)
         why = check_files(stage, changed, TREE, last_copy, later=held)
         if why:
             return fail(stage, '%s: %s' % why[:2], [], why[2])

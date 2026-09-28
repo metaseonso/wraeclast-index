@@ -23,6 +23,14 @@ reads or writes fails every query; files are free and unlimited.
 - **Alarms before limits.** `/api/health` reports today's worker requests and D1 rows read and written;
   `watch.yml` (at :11 and :41, and after each price run) checks home, an item page, the price age and health, and
   opens or updates one `quota` issue at 50% and 80% of any daily limit or on any failure. Quiet when all is well.
+- **No empty cards after a data update.** On 28 Sep a returning visitor's first load after the 0.5.5 data deploy
+  came from the service worker's older copy, asked for card files the new deploy had replaced, and drew cards with
+  no lines that would not open; the reload meant to catch it read the manifest through that same copy, saw nothing
+  new and never fired. Now the build carries the previous generation of the files a page reads (`data/cards`,
+  `data/search`, `data/explore`, listed as `prev` in `sw-files.json`, fetched from the live deploy and checked by
+  hash; guard check 9 allows exactly one generation), and `moved()` asks for the manifest past the copy, clears the
+  older copies' pages and reloads once per new index (at most 4 a tab). The explore page does the same. A local
+  swap: 28–30 of 30 cards empty before, 30 whole after, on the first load.
 - The price files the worker serves send `Access-Control-Allow-Origin: *`. `/privacy` says what is kept now:
   anonymous data points in Cloudflare Workers Analytics Engine with no identifier, kept three months.
 
