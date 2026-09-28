@@ -481,7 +481,8 @@ const LATER = ['h', 'lh', 'pairs'];   // the fields ?part=past carries and ?part
 const GROUP = {now: ['now', 'live'], live: ['now', 'live'], past: ['past', 'hist'], hist: ['past', 'hist']};
 const PARTS = {now: 1, past: 1, live: 1, hist: 1, facts: 1};
 const marketKey = (origin, part) => new Request(origin + '/data/market.json?from=trade' + (part ? '&part=' + part : ''));
-const JSON_TYPE = {'Content-Type': 'application/json; charset=utf-8'};
+// every price file the worker answers is open data like the rest of /data/* (_headers): any site may read it
+const JSON_TYPE = {'Content-Type': 'application/json; charset=utf-8', 'Access-Control-Allow-Origin': '*'};
 const SHORT = 'public, max-age=300, stale-while-revalidate=600';
 export async function serveMarket(request, env, ctx){
   const url = new URL(request.url), asked = url.searchParams.get('part'), part = PARTS[asked] ? asked : '';
@@ -531,7 +532,7 @@ async function lastGood(ctx, name, key, err){
   const at = body.indexOf('"late":false');   // the file's own flag sits in its first few fields, never in an item
   if(at >= 0 && at < 4000) body = body.slice(0, at) + '"late":true' + body.slice(at + 12);
   const res = new Response(body, {headers: {...JSON_TYPE, 'Cache-Control': 'public, max-age=60',
-    'X-WI-Last': kept.headers.get('X-Kept') || 'yes'}});
+    'X-WI-Last': kept.headers.get('X-Kept') || 'yes', 'Access-Control-Expose-Headers': 'X-WI-Last'}});
   ctx.waitUntil(caches.default.put(key, res.clone()).catch(() => {}));
   return res;
 }
@@ -778,11 +779,6 @@ async function factsOf(cat){
 }
 const keepFacts = (origin, facts) => caches.default.put(marketKey(origin, 'facts'),
   new Response(facts.body, {headers: {...JSON_TYPE, 'Cache-Control': SHORT, 'X-Facts': facts.v}}));
-/* /data/facts/<v>.json: the facts by name, as a file. The deploy ships the one that was live when it was built
-   (tools/build.mjs), served straight from the edge; a newer one misses the static files and lands here. */
-export function serveFactsFile(request, env, ctx, v){
-  return serveFacts(new URL(new URL(request.url).origin + '/data/market.json?part=facts&v=' + v), env, ctx);
-}
 async function serveFacts(url, env, ctx){
   let facts = null;
   const hit = await caches.default.match(marketKey(url.origin, 'facts'));
@@ -871,7 +867,7 @@ async function makePrices(url, key, env, ctx, kind){
   }
   if(out.mods) for(const m of Object.values(out.mods)) m.pts.sort((a, b) => a[0] - b[0]);
   const body = JSON.stringify(out);
-  const res = new Response(body, {headers: {'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'public, max-age=60'}});
+  const res = new Response(body, {headers: {...JSON_TYPE, 'Cache-Control': 'public, max-age=60'}});
   ctx.waitUntil(caches.default.put(key, res.clone()));
   ctx.waitUntil(keepLast(kind, body));
   return res;
@@ -966,7 +962,7 @@ async function makeBossPrices(url, ck, env, ctx){
     times: {currency: currencyAt, trade: tradeAt},
     primary: 'divine', source: 'Currency Exchange and trade site listings', items};
   const body = JSON.stringify(out);
-  const res = new Response(body, {headers: {'Content-Type': 'application/json; charset=utf-8',
+  const res = new Response(body, {headers: {...JSON_TYPE,
     'Cache-Control': 'public, max-age=300, stale-while-revalidate=600'}});
   ctx.waitUntil(caches.default.put(ck, res.clone()));
   ctx.waitUntil(keepLast('boss', body));

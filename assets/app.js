@@ -81,7 +81,8 @@ function stuck(what){
                                   seconds, and the stamp then says when they are from and that live prices are paused
      data/facts/<v>.json          what the catalogue says about each currency: its name, picture and what it does.
                                   Named by its content, so the browser keeps it for a year; the deploy ships the one
-                                  that was live when it was built, and a newer one comes from the worker
+                                  that was live when it was built, and a newer one (a 404 here) comes from the worker
+                                  as data/market.json?part=facts&v=<v>
      data/cards/meta.<h>.json     what every card is drawn with and no card carries: sprite sheets, image servers,
                                   the orb ladders, keyword names, the table the line marks point into
      data/search/<k>.<h>.json     every kind's search rows: read by the search worker (assets/searchworker.js),
@@ -142,7 +143,8 @@ const META = GO.then(() => MAN).then(m => getJSON(m.meta.file));
 const BOSS = GO.then(() => getJSON('data/bosses.json', {priority: 'low'}).catch(() => null));
 // the catalogue's words, when today's prices came without them (the drill-down page's copy has them already)
 const FACTS = GO.then(() => NOW).then(m => m && m.part === 'live' && /^[0-9a-f]{12}$/.test(m.facts || '')
-  ? getJSON('data/facts/' + m.facts + '.json').then(f => facts(m, f)) : null).catch(() => null);
+  ? getJSON('data/facts/' + m.facts + '.json').catch(() => getJSON('data/market.json?part=facts&v=' + m.facts)).then(f => facts(m, f))
+  : null).catch(() => null);
 // the league dates: the league clock and the charts' colours read the one copy (assets/league.js). They ride in
 // today's prices (worker/prices.js); a price file without them (the drill-down page's ?part=now from before, the
 // backup site) falls back to the copy that shipped with the site

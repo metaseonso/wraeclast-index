@@ -4,8 +4,6 @@
      /data/market.json   every price, from real trade listings only (worker/prices.js serveMarket; ?part=now|past|live|hist|facts),
                          with the league dates (leagues.json, sent in by the data server) riding in now and live.
                          A build that throws serves the last good copy, marked late (worker/prices.js lastGood)
-     /data/facts/<v>.json the catalogue's words for today's prices, by name: the deploy ships the one live when it
-                         was built (tools/build.mjs), so only a newer one reaches the worker, on a missed static file
      /api/pob?url=...    the build code behind a pobb.in, poe.ninja, maxroll, mobalytics, poe2db or pastebin link
                          (browsers cannot fetch those sites themselves)
      /search?q=...       the app's search, as a redirect (worker/seo.js). The crawler pages themselves (/item/*,
@@ -21,7 +19,7 @@
                          game leaves open (GET: the lean and who weighed in): worker/community.js
      /api/t, /api/admin/* page views and clicks, and the owner's dashboard (admin.html): worker/dash.js */
 import * as seo from './seo.js';
-import { servePrices, ingest, state, serveMarket, serveBossPrices, rollLeagues, buildMarket, serveFactsFile } from './prices.js';
+import { servePrices, ingest, state, serveMarket, serveBossPrices, rollLeagues, buildMarket } from './prices.js';
 import { putFile } from './files.js';
 import { tradeSearches, suggest } from './community.js';
 import { track, admin } from './dash.js';
@@ -33,8 +31,6 @@ export default {
   async fetch(request, env, ctx){
     const url = new URL(request.url);
     if(url.pathname === '/data/market.json') return serveMarket(request, env, ctx);
-    const facts = url.pathname.match(/^\/data\/facts\/([0-9a-f]{12})\.json$/);
-    if(facts) return serveFactsFile(request, env, ctx, facts[1]);
     if(url.pathname === '/api/pob') return pob(url);
     if(url.pathname === '/api/trade/searches') return tradeSearches(request, env, ctx, url);
     if(url.pathname === '/api/suggest') return suggest(request, env, url, ctx);
