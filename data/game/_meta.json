@@ -152,6 +152,18 @@
    "rows": 117,
    "bytes": 22475
   },
+  "sanctum_more": {
+   "patch": "0.5.5",
+   "tables": [
+    "SanctumFloors",
+    "SanctumRooms",
+    "SanctumRoomTypes",
+    "SanctumPersistentEffects",
+    "WorldAreas"
+   ],
+   "rows": 29,
+   "bytes": 3156
+  },
   "strongboxes": {
    "patch": "0.5.5",
    "tables": [
@@ -172,6 +184,25 @@
    ],
    "rows": 122,
    "bytes": 31053
+  },
+  "ultimatum_trials": {
+   "patch": "0.5.5",
+   "tables": [
+    "UltimatumEncounterTypes",
+    "UltimatumTrialLength",
+    "WorldAreas"
+   ],
+   "rows": 11,
+   "bytes": 931
+  },
+  "ultimatum_types": {
+   "patch": "0.5.5",
+   "tables": [
+    "UltimatumModifiers",
+    "UltimatumModifierTypes"
+   ],
+   "rows": 122,
+   "bytes": 7762
   }
  }
 }
