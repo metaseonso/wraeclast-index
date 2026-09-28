@@ -66,8 +66,10 @@ export async function checkFiles(){
     if(/Metadata\//.test(text)) bad.push(rel + ': carries an internal id (Metadata/...)');
     if(/\(PL\d+\)/.test(text)) bad.push(rel + ': names a private league');
   }
-  if(index.cards && index.cards.files !== cards) bad.push('index.json counts ' + index.cards.files + ' card files, ' + cards + ' are here');
-  return {bad, index, said: files.length + ' files, ' + (bytes / 1000).toFixed(0) + ' kB, ' + cards + ' cards'};
+  // the card files are never committed (.gitignore): only where the tool has just built them are they counted
+  if(cards && index.cards && index.cards.files !== cards) bad.push('index.json counts ' + index.cards.files + ' card files, ' + cards + ' are here');
+  return {bad, index, said: files.length + ' files, ' + (bytes / 1000).toFixed(0) + ' kB, ' +
+    (cards ? cards + ' cards' : 'no cards here (built by the daily Market job, never committed)')};
 }
 
 /* one hour, valued: the rates, then each sample currency's exalted paid and amount bought */

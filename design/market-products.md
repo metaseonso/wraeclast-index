@@ -105,6 +105,41 @@ stock:  {type: 'market', of: 'stock', slot: 'fact', file: 'data/market/liquidity
 **The owner decides**: the four numbers (20 hours, 50 divines; 6 hours, 1 divine), and whether the ratio range is
 shown at all.
 
+## #100 League-day curves and the league-start playbook
+
+`tools/market_leaguedays.py`. Two outputs.
+
+**Each currency card's curves** (card part `days`, in `data/market/card/<did>.json`): its price by league day in every
+league the archive holds, `[[league, [day 1, day 2, ...]], ...]`, null where it did not trade. And `sameDay`: its
+price on the league's last full day, and the last three leagues' on that same league day. 688 card files, 3.3 MB in all
+(about 1 MB gzipped), the largest 8.9 kB; `days` is about 4.3 kB of a busy currency's file.
+
+> Orb of Annulment, day 22: 0.718 div. Rise of the Abyssal on day 22: 0.326, Fate of the Vaal 0.102, Runes of Aldur
+> 0.594.
+
+**The playbook** (`data/market/playbook.json`, 4.6 kB): week 1 (league days 1-7) of the last three leagues and of this
+one so far. The 15 currencies that traded for the most divines in week 1 (Divine and Chaos Orbs left out: they are what
+the rest is paid in), each with its week-1 price, its price on league days 14, 28 and 56 as a % of that, and the first
+day after week 1 when it was half the week-1 price or less. Measured history only, no forecast.
+
+> Runes of Aldur, week 1: Rakiata's Flow 103 div (111% of that on day 14, 149% on day 28); Omen of Abyssal Echoes 1.25
+> div (47% by day 14, half by day 13). Rise of the Abyssal: Perfect Jeweller's Orb 0.621 div, 9% by day 28.
+
+**In the frame.**
+
+- The card's chart is already settled in the frame: "Past leagues draw beside it, each in its own colour and its own
+  dash." What changes is the axis: league day, not date. One field, step 2, a new type reading the card's own file:
+  `leaguedays: {type: 'leaguedays', slot: 'body', file: 'data/market/card/@did.json', label: 'By league day'}`. The
+  currency cards carry `did` on the Currency tab (`data/market.json`); index currency cards (`c`, 96 of them) do not yet,
+  so `tools/carddata.py` adds it, or the field reads the name by the same rule.
+- The same-day line is a fact: `Day 22: 0.718 div · last leagues on day 22: 0.326, 0.102, 0.594`, one field of the same
+  type (`of: 'sameDay'`).
+- The playbook is a block on the Currency tab ("League start"), not a card: one table per league, newest first, the
+  week-1 price in the `money` type's own format.
+
+**The owner decides**: three leagues, the top 15, ranked by divines traded (the other reading of "worth most" is the
+dearest unit price: a list of Mirrors), and days 14, 28 and 56.
+
 ## When new hours arrive
 
 The archive job in `wraeclast-data` (`.github/workflows/archive.yml`) adds the new hours every 6 hours (at :23 past 0,
