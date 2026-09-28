@@ -297,6 +297,33 @@ across leagues.
 **The owner decides**: the unit (each league's own divines: the divine itself is 498 exalted in the league and 299 in
 Hardcore, so no unit is the same in both), and the 48 hours that make a past league still open.
 
+## #107 The weekly digest: `data/market/digest/<year>-W<week>.json`
+
+About 4-5 kB a week. `tools/market_digest.py`. One file per complete week of the league (Monday 00:00 to Sunday 23:00
+UTC), composed from the products above: the index and exalted per divine (#101), the 5 biggest moves each way (the
+middle of the week's hourly prices against the week before's, 20 divines or more traded in each week), the patch
+shocks posted in the week (#102), the 8 currencies that rose fast with the highest z (#106), the 5 crafting currencies
+with the most divines (#105), and the mechanics' shares (#104, `data/leaguemech.json`, once #148 is in; `null` until
+then). The first week of a league has no week before it in the league, so it sets nothing against one.
+
+`lines` are plain templated lines, numbers first, each with `cards`, the names it links. Nothing is written beyond
+them. 2026-W38 (14-20 Sep):
+
+> Index 639 on league day 17 (+122.4 on the week). 1 Divine Orb: 467 Exalted Orbs (+37.8%).
+> Up most: Omen of the Hunt +616%, Refined Adaptive Catalyst +554%, Essence of Delirium +461%, ...
+> Down most: Expedition Logbook -81%, Fox Idol -76%, Brutus' Brain -71%, ...
+> 0.5.5c Patch Notes: Tacati's Ire +544% in 24 hours.
+> Rising fast: Ancient Rune of Dueling (both, from Tue 20:00 UTC), ...
+> Crafting: Omen of Whittling 9,650,000 div (+108%), Omen of Light 9,300,000 div (+60%), ...
+
+**In the frame.** A page per week, not a card (`/digest/2026-W38`, crawlable), drawn from the file: the lines, every
+name a door to its card, every number in the `money` type's format where it is a price, the source and the flag at the
+foot. The worker serves the list of weeks as RSS. Neither is built here. A digest appears on Monday once the daily job
+(above) has read Sunday 23:00.
+
+**The owner decides**: what goes in and how many of each (5 moves, 3 patch lines, 8 risers, 5 crafting), the 20 divine
+floor, and the line templates.
+
 ## When new hours arrive
 
 The archive job in `wraeclast-data` (`.github/workflows/archive.yml`) adds the new hours every 6 hours (at :23 past 0,
