@@ -274,6 +274,29 @@ to keep 7 days.
 **The owner decides**: z 4, 2x volume, 15% price, 2 divines, 24 hours of history, 2 hours in the last 24, and how
 often it runs.
 
+## #108 League, Hardcore and past league: `data/market/gap.json`
+
+44.3 kB (15.6 kB gzipped). `tools/market_gap.py`. Every currency the league traded in the last 24 hours (`every`):
+`[name, league (div), hours of 24, Hardcore (div), hours, %, past league (div), hours, %]`, and the 40 biggest gaps
+between the league and its Hardcore (`items`). One file rather than a part of each card: all of it changes every day,
+and a card finds its row by name.
+
+**The rule.** Each league's last 24 hours read, each in its own orbs. The past league is the one before this one while
+it still trades (its last hour within 48 hours of this league's): Runes of Aldur today. A market is shown only where it
+traded in those 24 hours. Private leagues are never read.
+
+**Today.** 1 Divine Orb: 498 Exalted Orbs in Forbidden Rites, 299 in HC Forbidden Rites, 564 in Runes of Aldur. Orb of
+Annulment: 0.716 div, Hardcore 0.857 (+20%), Runes of Aldur 0.464 (-35%). Over the 184 currencies both leagues traded in
+12 or more hours, Hardcore's middle gap is +48%; over 291, Runes of Aldur's is +19%.
+
+**In the frame.** A fact on the currency card, one field of the same `market` type as #99 (`of: 'gap'`, file
+`data/market/gap.json`): `Hardcore 0.857 div (+20%) · Runes of Aldur 0.464 div (-35%)`, each part drawn only where its
+market traded, the league names the file's own. A price is always its own league's, so the fact never adds or averages
+across leagues.
+
+**The owner decides**: the unit (each league's own divines: the divine itself is 498 exalted in the league and 299 in
+Hardcore, so no unit is the same in both), and the 48 hours that make a past league still open.
+
 ## When new hours arrive
 
 The archive job in `wraeclast-data` (`.github/workflows/archive.yml`) adds the new hours every 6 hours (at :23 past 0,
