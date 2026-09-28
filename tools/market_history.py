@@ -29,6 +29,7 @@ import sys
 import cxlib
 import marketlib as ml
 import market_crafting
+import market_gap
 import market_inflation
 import market_leaguedays
 import market_liquidity
@@ -40,7 +41,7 @@ import sitedata
 INDEX = 'data/market/index.json'
 CARDS = 'data/market/card/'
 PRODUCTS = [market_liquidity, market_leaguedays, market_inflation, market_shocks, market_sell, market_crafting,
-            market_rising]   # in build order: each ticket's product adds itself here
+            market_rising, market_gap]   # in build order: each ticket's product adds itself here
 
 
 class Ctx:
