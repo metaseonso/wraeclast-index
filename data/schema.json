@@ -161,6 +161,15 @@
      ],
      "drawn": 1
     },
+    "uc": {
+     "json": [
+      "string"
+     ],
+     "by": [
+      "cutfrom"
+     ],
+     "drawn": 1
+    },
     "ct": {
      "json": [
       "number"
@@ -205,6 +214,16 @@
      ],
      "by": [
       "text"
+     ],
+     "drawn": 1
+    },
+    "gq": {
+     "json": [
+      "array",
+      "string"
+     ],
+     "by": [
+      "quality"
      ],
      "drawn": 1
     },
@@ -3406,6 +3425,22 @@
     "flow"
    ]
   },
+  "gq": {
+   "json": [
+    "array",
+    "string"
+   ],
+   "kinds": [
+    "g"
+   ],
+   "need": [],
+   "drawn": [
+    "g"
+   ],
+   "by": [
+    "quality"
+   ]
+  },
   "ic": {
    "json": [
     "array"
@@ -4277,6 +4312,21 @@
    ],
    "by": [
     "nodety"
+   ]
+  },
+  "uc": {
+   "json": [
+    "string"
+   ],
+   "kinds": [
+    "g"
+   ],
+   "need": [],
+   "drawn": [
+    "g"
+   ],
+   "by": [
+    "cutfrom"
    ]
   },
   "up": {

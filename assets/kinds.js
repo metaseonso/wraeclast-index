@@ -220,6 +220,7 @@ export const FIELDS = {
   gemreq:   {type: 'gemreq', at: 'w', slot: 'pill'},         // gem level -> character level and attributes
   reqs:     {type: 'reqs', at: 'rq', slot: 'pill'},
   lineage:  {type: 'flag', at: 'li', slot: 'pill', is: 'Lineage', tone: 'lin'},
+  cutfrom:  {type: 'text', at: 'uc', slot: 'pill', pre: 'From '},   // the uncut gem that makes it (tools/gamelib.py gemfacts)
   corrupt:  {type: 'flag', at: 'cor', slot: 'pill', is: 'Corrupted', tone: 'warn'},
   limit:    {type: 'number', at: 'lim', slot: 'pill', pre: 'Limited to '},
   group:    {type: 'text', at: 'q', slot: 'pill'},
@@ -245,6 +246,9 @@ export const FIELDS = {
 
   lines:    {type: 'rich', at: 'ls', slot: 'body', every: 1},   // the effect lines: mods, stats, what it adds
   text:     {type: 'rich', at: 't', slot: 'body', every: 1},    // what it does, in the game's own words
+  /* what 0 to 20% quality adds to a gem: the game's own divider line, then its lines with the range its tooltip
+     prints (tools/gems.py quality_lines). Drawn as the game's lines are, under the gem's own text. */
+  quality:  {type: 'rich', at: 'gq', slot: 'body'},
   /* ...and the same words where the game wrote them as a table rather than a sentence: one row per slot.
      The card carries one or the other and never both, because the line is split where the card is made.
      `beside` is the slot names, drawn as the left-hand column. They are headings and take no marked words:
@@ -461,7 +465,7 @@ export const KINDS = [
    index: true, search: true, item: true, crawl: {word: 'gem', list: 'gems', rank: 1, is: 'Product'},
    sprite: 'gems', px: {as: 'c', at: 'li'},
    builds: [{at: 'w', key: 'skills'}, {key: 'allskills'}],
-   fields: [...HEAD, 'gemreq', 'lineage', 'usetime', 'cost', 'spirit', ...BODY, ...FOOT],
+   fields: [...HEAD, 'gemreq', 'lineage', 'cutfrom', 'usetime', 'cost', 'spirit', ...SAYS, 'quality', ...REST, ...FOOT],
    acts: ['trade', 'pool', 'full', 'pin', 'open'],
    rel: ['granted', 'named', 'namedby', 'cat']},
 
