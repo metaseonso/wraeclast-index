@@ -15,8 +15,7 @@ field by field (`--show N`, `--field F` for the differences). The numbers below 
 (export build 4.5.5.2, the same build the committed files were made from).
 
 **Adopting it.** `tools/fromgame.py` `ADOPTED` names the blocks `--from-game` rebuilds by default: the ones
-whose every difference is explained below. The others are built only when named
-(`python tools/sync.py --from-game gems,tree,uniques`), and the committed copy stands until they are adopted.
+whose every difference is explained below. All five are adopted.
 
 Letters in the tables: **R** = RePoE export file and field, **D** = decoded game table and column,
 **ours** = made by the site, not a game value.
@@ -85,10 +84,69 @@ The file is `{meta, gem_tags, gems, sprites, dropped}`. `gemtext` is each stat s
 counts disagree with its own passive rows (Way of the Mountain marks Surpassing, Sustained, Hit, Power,
 Immobilised and Attack; the artifact did not count it). The counts made from the rows are kept.
 
-## Uniques: `uniques.*.json`
+## Uniques: `uniques.*.json` (`tools/uniqueitems.py`, adopted)
 
-Not adopted yet: the committed copy stands. A builder (`tools/uniqueitems.py`) is registered in `tools/fromgame.py`
-`BUILDERS`; `python tools/dev/explorecmp.py uniques` measures it once the file is there. What it reads: R `uniques`, `base_items`, `mods`, `flavour`, `stat_translations`; the sprite cell `ic` and `sprites` are ours and carry over.
+`{meta, items, sprites}`. The game files do not say which base a unique is made on or which mods it carries (the
+game server holds that), so the list of uniques, each one's base and its lines come from poe2db
+(`data/uniques.json`, `tools/uniques.py`), checked against the official trade site's own item list
+(`data/trade.json`, `tools/tradedata.py`); everything around them comes from the game files.
+
+| Field | Source |
+|---|---|
+| rows | poe2db's name and base, then each Runeforged and Runemastered base D `Expedition2VerisiumCrafts` forges it onto that the trade site lists today, then every name in R `uniques` (the collection tab) no source gives a base. A unique poe2db has no base for takes the one base the trade site lists for it |
+| `n`, `b` | as above |
+| `c` | R `item_classes` `category` of the base's class (a buckler is `Buckler`, as the game and the site's base cards name it) |
+| `g` | ours: the drill-down's group, by item class; `Unlisted` with `nolist` when D `UniqueStashLayout` hides the unique (both `ShowIfEmpty` flags off) or no base is known |
+| `ex`, `im` | poe2db's lines in the game's wording: the R `mods` text that reads the same (numbers aside) gives the words and keyword markup, poe2db the numbers (`tools/sync.py` `officialize`, the same rule). A line no mod reads like takes the wording of R `stat_descriptions` / `tablet_stat_descriptions` when one reads the same ("Map also counts as a [Biome\|Water] Map"). A forged row: the unique's own lines, and the forged base's own implicits (R `base_items` `implicits` → R `mods` text) instead of the old base's |
+| `pr` | the base's properties (R `base_items`, D `ArmourTypes` Runic Ward, D `ItemSpirit` Spirit, D `WeaponTypes` reload time) with the unique's own local mods applied, lowest and highest roll, no quality, nothing socketed. Rounded the way Path of Building rounds (`round`) |
+| `lv` | poe2db's requirement; a forged row: the forged base's level (R `base_items` `requirements`) or the unique's, whichever is higher |
+| `fl` | R `flavour` by the art id of the unique's place in the collection tab; one the tab does not hold: its poe2db page, kept only when R `flavour` holds the same words |
+| `lim` | D `UniqueJewelLimits` |
+| `cor` | poe2db's list: drops corrupted |
+| `kw` | every `[Id]` its lines mark, plus the committed row's keywords beyond its own lines (what the lines stand for: From Nothing's keystones, Mageblood's Legacies, the pools Loreweave and Flesh Crucible roll from) |
+| `ic`, `sprites` | ours: the cell in `sprites/uniques.webp`, carried by name and base |
+| `meta.kept` | the committed rows no source here gives: kept whole (last good wins), each with why |
+
+**Match on 0.5.5** (734 rows; 692 match the committed 712 by name, base and last line): `b`, `c`, `cor`, `g`,
+`ic`, `lim`, `n`, `nolist`, `sprites` 100%. The rest, the game's version kept:
+
+- Rows: 18 committed rows are under another key, none gone. 15 had no base and now have one (poe2db or the
+  trade site: Ab Aeterno, Blessed Bonds, Forbidden Gaze, Guiding Palm (three identical rows, now one), Infernoclasp,
+  Merit of Service, Palm of the Dreamer, Solus Ipse, Split Personality, The Deepest Tower, The Fallen Formation,
+  The Road Warrior, The Wailing Wall, Thunderstep, Wylund's Stake). Grand Spectrum Emerald and Sapphire had the
+  Ruby's line since `officialize` fell back by name (fixed: by name only for a row with no base or a forged one);
+  their lines are the game's mods `UniqueMaximumSpiritPerStackableJewel1` and
+  `UniqueAllResistancePerStackableJewel1`, which the artifact had on them before, each matching its gem's flavour
+  text (the game files do not join the two). Cruel Hegemony's last line gains its markup. New: 15 uniques the
+  committed file never had (Apron of Emiran, Arvil's Wheel, Bronzebeard, Cloak of Defiance, Cornathaum, Elevore,
+  Erian's Cobble, Leer Cast, Morior Invictus, Powertread, Redblade Banner, Sine Aequo, The Black Doubt, The Coming
+  Calamity, The Hollow Mask) and 9 forged rows, all on the trade site. Winter's Bite and the two Grand Spectrums
+  are in `meta.kept`: on the trade site, in no other source here.
+- Several bases of one name: Mjölner forges onto three Runemastered Torment Clubs, Eyes of the Runefather onto
+  three Runemastered Venerable Defender shields and a buckler, each with implicits of its own. One row each, the one
+  the committed row was (its item class, the keywords of its implicits).
+- `pr` 51.7% (334): the artifact's numbers came from market listings, with quality and socketed runes (the
+  13-16 Fire and 1-30 Lightning on dozens of weapons are runes). These are the item's own: base and local mods.
+  Checked on 12 rows against poe2db: the same, but for 1 on a fraction (poe2db rounds down, Path of Building
+  rounds: 83 × 2.5 = 207.5 reads 208 here) and Frostbreath's crit (poe2db's box shows the base's 5% without its
+  own +5%). Reload Time now shows on every crossbow from the game's
+  `WeaponTypes` (Rampart Raptor's 30% reduced Reload Speed makes it 1.21 s, not the artifact's 0.77-0.85); none
+  for the Trarthan Cannon, which cannot load.
+- `im` 93.2% (47): 42 forged rows show their base's own implicits (Runemastered Runic Fork: "(30-50)% chance for
+  Spell Skills to fire 2 additional Projectiles"), and drop the old base's (a Runeforged Tense Crossbow has no
+  Bolt Speed implicit in the game files); 5 lines gain the game's markup (Marohi Erqi, Fury of the King, three
+  tablets).
+- `kw` 91.2% (60): follows the lines above: the rune keywords go with the runes, the forged implicits' come in.
+- `lv` 96.2% (23, 3 new): all forged rows, now the forged base's own level (Runemastered Runic Fork 65, not 84).
+  Bluetongue, Redbeak and Tabula Rasa (Runeforged) are level 1: poe2db and the base both say so.
+- `fl` 99.7% (2): Blackheart has the game's flavour for its art ("If evil must always exist..."; poe2db the same);
+  Cursecarver keeps the game's line break.
+- `ex` 99.9% (1): Undying Hate's "Desecration makes this item unstable" gains its markup.
+- `meta`: `kept` is new; row order: the builder sorts by group, class, name, base (the page sorts on its own).
+
+On the trade site but in no row, here or in the committed file: Demigod's Virtue, Forgotten By Time, Hand of
+Wisdom and Action, Seeing Stars, The Dancing Dervish, The Remembered Tales, The Surrender, Voll's Protector on
+Ironclad Vestments (no source gives their lines).
 
 ## Passive tree: `tree.*.json` (`tools/tree.py`, adopted)
 
@@ -162,10 +220,15 @@ Currency Exchange prices up itself, with their age, and shows — while one has 
 | Field | What it is | Where it comes from now |
 |---|---|---|
 | gem `ic`, `sprites` | the site's sprite sheet of the game's icons | carried from the committed copy by id; nothing rebuilds the sheet |
+| unique `ic`, `sprites` | the same, for the uniques | carried by name and base |
+| the tree's `reg`, `regions` | the part of the wheel a node sits in | ours, from the node positions |
+| unique → base | the game server holds it | poe2db, checked against the trade site's list |
 | gem names with `{0}` | three gems the game names with a slot it fills in | `gems.FILLED`, the artifact's words |
 
 ## A new patch
 
-1. `python tools/gamepull.py` (the export, every file the builders read)
+1. `python tools/gamepull.py` (the export, every file the builders read; a file outside its list is refreshed by
+   the first tool that reads it after the build moves). The decoded game tables are read from the data repo's
+   folder for the new patch (`gamepull.dat`), and from its newest folder, said on stderr, until that one exists.
 2. `python tools/dev/explorecmp.py` — read what moved. After a patch the differences are the patch.
 3. `python tools/sync.py --from-game`, then the rest of README "Update the game data" from step 3 on.

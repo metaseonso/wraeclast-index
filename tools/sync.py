@@ -253,7 +253,9 @@ def official_for(u, o, by_name):
     b = re.sub(r'^(Runeforged|Runemastered) ', '', u.get('b') or '')
     if u['n'] + ' | ' + b in o:
         return o[u['n'] + ' | ' + b], False
-    c = by_name.get(u['n'])
+    # by name alone only for a row with no base or a forged one (forged from a base of another name): a unique
+    # made on several plain bases (the three Grand Spectrums) has lines of its own on each
+    c = by_name.get(u['n']) if not u.get('b') or b != u['b'] else None
     return (c[0], False) if c and len(c) == 1 else (None, False)
 
 
@@ -280,6 +282,8 @@ def officialize(uq):
                 lines.append(transfer(old[hit], ol))
         ni = off.get('ni', 0)
         im, ex = lines[:ni], lines[ni:]
+        if not exact and u.get('b') and u['b'] != re.sub(r'^(Runeforged|Runemastered) ', '', u['b']):
+            im = u.get('im') or []   # a forged base has implicits of its own (tools/uniqueitems.py): the unique's lines only
         if im != (u.get('im') or []) or ex != (u.get('ex') or []):
             changed += 1
         u['im'], u['ex'] = im, ex
