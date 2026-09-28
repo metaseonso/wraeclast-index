@@ -2534,6 +2534,251 @@
     }
    }
   },
+  "y": {
+   "one": "Ascendancy",
+   "many": "Ascendancies",
+   "rows": "index.json",
+   "fields": {
+    "k": {
+     "json": [
+      "string"
+     ],
+     "by": [
+      "row"
+     ],
+     "need": 1
+    },
+    "id": {
+     "json": [
+      "string"
+     ],
+     "by": [
+      "row"
+     ],
+     "need": 1
+    },
+    "n": {
+     "json": [
+      "string"
+     ],
+     "by": [
+      "row",
+      "name"
+     ],
+     "need": 1,
+     "drawn": 1
+    },
+    "s": {
+     "json": [
+      "string"
+     ],
+     "by": [
+      "row",
+      "sub"
+     ],
+     "need": 1,
+     "drawn": 1
+    },
+    "img": {
+     "json": [
+      "string"
+     ],
+     "by": [
+      "row",
+      "art"
+     ]
+    },
+    "ic": {
+     "json": [
+      "array"
+     ],
+     "by": [
+      "row",
+      "art"
+     ]
+    },
+    "lx": {
+     "json": [
+      "array"
+     ],
+     "by": [
+      "row"
+     ]
+    },
+    "q": {
+     "json": [
+      "string"
+     ],
+     "by": [
+      "row"
+     ]
+    },
+    "lo": {
+     "json": [
+      "number"
+     ],
+     "by": [
+      "row"
+     ]
+    },
+    "f": {
+     "json": [
+      "array"
+     ],
+     "by": [
+      "row"
+     ]
+    },
+    "fg": {
+     "json": [
+      "string"
+     ],
+     "by": [
+      "row"
+     ]
+    },
+    "ac": {
+     "json": [
+      "number"
+     ],
+     "by": [
+      "row",
+      "anoint"
+     ]
+    },
+    "ls": {
+     "json": [
+      "array",
+      "string"
+     ],
+     "by": [
+      "lines"
+     ],
+     "drawn": 1
+    },
+    "t": {
+     "json": [
+      "array",
+      "string"
+     ],
+     "by": [
+      "text"
+     ],
+     "drawn": 1
+    },
+    "qt": {
+     "json": [
+      "string"
+     ],
+     "by": [
+      "quote"
+     ],
+     "drawn": 1
+    },
+    "o": {
+     "json": [
+      "array"
+     ],
+     "by": [
+      "options"
+     ],
+     "drawn": 1
+    },
+    "fl": {
+     "json": [
+      "array"
+     ],
+     "by": [
+      "flow"
+     ],
+     "drawn": 1
+    },
+    "src": {
+     "json": [
+      "string"
+     ],
+     "by": [
+      "source"
+     ],
+     "drawn": 1
+    },
+    "tags": {
+     "json": [
+      "array"
+     ],
+     "by": [
+      "tags"
+     ],
+     "drawn": 1
+    },
+    "rec": {
+     "json": [
+      "array"
+     ],
+     "by": [
+      "anoint"
+     ],
+     "drawn": 1
+    },
+    "kw": {
+     "json": [
+      "array"
+     ],
+     "by": [
+      "keywords"
+     ],
+     "ids": 1
+    },
+    "base": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "cr": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "at": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "job": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    }
+   }
+  },
   "d": {
    "one": "Buff",
    "many": "Buffs",
@@ -3369,7 +3614,8 @@
     "q",
     "t",
     "u",
-    "w"
+    "w",
+    "y"
    ],
    "need": [],
    "drawn": [],
@@ -3445,7 +3691,8 @@
     "q",
     "t",
     "u",
-    "w"
+    "w",
+    "y"
    ],
    "need": [],
    "drawn": [],
@@ -3473,7 +3720,8 @@
     "q",
     "t",
     "u",
-    "w"
+    "w",
+    "y"
    ],
    "need": [],
    "drawn": [],
@@ -3533,7 +3781,8 @@
     "q",
     "t",
     "u",
-    "w"
+    "w",
+    "y"
    ],
    "need": [],
    "drawn": [],
@@ -3617,7 +3866,8 @@
     "q",
     "t",
     "u",
-    "w"
+    "w",
+    "y"
    ],
    "need": [],
    "drawn": [],
@@ -3641,7 +3891,8 @@
     "q",
     "t",
     "u",
-    "w"
+    "w",
+    "y"
    ],
    "need": [],
    "drawn": [],
@@ -3665,7 +3916,8 @@
     "q",
     "t",
     "u",
-    "w"
+    "w",
+    "y"
    ],
    "need": [],
    "drawn": [
@@ -3680,7 +3932,8 @@
     "q",
     "t",
     "u",
-    "w"
+    "w",
+    "y"
    ],
    "by": [
     "flow"
@@ -3717,7 +3970,8 @@
     "q",
     "t",
     "u",
-    "w"
+    "w",
+    "y"
    ],
    "need": [],
    "drawn": [],
@@ -3742,7 +3996,8 @@
     "q",
     "t",
     "u",
-    "w"
+    "w",
+    "y"
    ],
    "need": [
     "a",
@@ -3756,7 +4011,8 @@
     "q",
     "t",
     "u",
-    "w"
+    "w",
+    "y"
    ],
    "drawn": [],
    "by": [
@@ -3779,7 +4035,8 @@
     "q",
     "t",
     "u",
-    "w"
+    "w",
+    "y"
    ],
    "need": [],
    "drawn": [],
@@ -3808,7 +4065,8 @@
     "q",
     "t",
     "u",
-    "w"
+    "w",
+    "y"
    ],
    "need": [],
    "drawn": [],
@@ -3832,7 +4090,8 @@
     "q",
     "t",
     "u",
-    "w"
+    "w",
+    "y"
    ],
    "need": [
     "a",
@@ -3846,7 +4105,8 @@
     "q",
     "t",
     "u",
-    "w"
+    "w",
+    "y"
    ],
    "drawn": [],
    "by": [
@@ -3869,7 +4129,8 @@
     "q",
     "t",
     "u",
-    "w"
+    "w",
+    "y"
    ],
    "need": [],
    "drawn": [
@@ -3884,7 +4145,8 @@
     "q",
     "t",
     "u",
-    "w"
+    "w",
+    "y"
    ],
    "by": [
     "keywords"
@@ -3938,7 +4200,8 @@
     "q",
     "t",
     "u",
-    "w"
+    "w",
+    "y"
    ],
    "need": [],
    "drawn": [],
@@ -3963,7 +4226,8 @@
     "q",
     "t",
     "u",
-    "w"
+    "w",
+    "y"
    ],
    "need": [],
    "drawn": [
@@ -3978,7 +4242,8 @@
     "q",
     "t",
     "u",
-    "w"
+    "w",
+    "y"
    ],
    "by": [
     "lines"
@@ -4000,7 +4265,8 @@
     "q",
     "t",
     "u",
-    "w"
+    "w",
+    "y"
    ],
    "need": [],
    "drawn": [],
@@ -4041,7 +4307,8 @@
     "q",
     "t",
     "u",
-    "w"
+    "w",
+    "y"
    ],
    "need": [
     "a",
@@ -4055,7 +4322,8 @@
     "q",
     "t",
     "u",
-    "w"
+    "w",
+    "y"
    ],
    "drawn": [
     "a",
@@ -4069,7 +4337,8 @@
     "q",
     "t",
     "u",
-    "w"
+    "w",
+    "y"
    ],
    "by": [
     "adds",
@@ -4163,7 +4432,8 @@
     "q",
     "t",
     "u",
-    "w"
+    "w",
+    "y"
    ],
    "need": [],
    "drawn": [
@@ -4178,7 +4448,8 @@
     "q",
     "t",
     "u",
-    "w"
+    "w",
+    "y"
    ],
    "by": [
     "options"
@@ -4281,7 +4552,8 @@
     "q",
     "t",
     "u",
-    "w"
+    "w",
+    "y"
    ],
    "need": [],
    "drawn": [
@@ -4308,7 +4580,8 @@
     "q",
     "t",
     "u",
-    "w"
+    "w",
+    "y"
    ],
    "need": [],
    "drawn": [
@@ -4323,7 +4596,8 @@
     "q",
     "t",
     "u",
-    "w"
+    "w",
+    "y"
    ],
    "by": [
     "quote"
@@ -4360,7 +4634,8 @@
     "q",
     "t",
     "u",
-    "w"
+    "w",
+    "y"
    ],
    "need": [],
    "drawn": [
@@ -4375,7 +4650,8 @@
     "q",
     "t",
     "u",
-    "w"
+    "w",
+    "y"
    ],
    "by": [
     "anoint"
@@ -4431,7 +4707,8 @@
     "q",
     "t",
     "u",
-    "w"
+    "w",
+    "y"
    ],
    "need": [
     "a",
@@ -4445,7 +4722,8 @@
     "q",
     "t",
     "u",
-    "w"
+    "w",
+    "y"
    ],
    "drawn": [
     "a",
@@ -4459,7 +4737,8 @@
     "q",
     "t",
     "u",
-    "w"
+    "w",
+    "y"
    ],
    "by": [
     "row",
@@ -4512,7 +4791,8 @@
     "q",
     "t",
     "u",
-    "w"
+    "w",
+    "y"
    ],
    "need": [],
    "drawn": [
@@ -4527,7 +4807,8 @@
     "q",
     "t",
     "u",
-    "w"
+    "w",
+    "y"
    ],
    "by": [
     "source"
@@ -4550,7 +4831,8 @@
     "q",
     "t",
     "u",
-    "w"
+    "w",
+    "y"
    ],
    "need": [],
    "drawn": [
@@ -4565,7 +4847,8 @@
     "q",
     "t",
     "u",
-    "w"
+    "w",
+    "y"
    ],
    "by": [
     "text"
@@ -4587,7 +4870,8 @@
     "q",
     "t",
     "u",
-    "w"
+    "w",
+    "y"
    ],
    "need": [],
    "drawn": [
@@ -4602,7 +4886,8 @@
     "q",
     "t",
     "u",
-    "w"
+    "w",
+    "y"
    ],
    "by": [
     "tags"

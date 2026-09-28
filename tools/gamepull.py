@@ -272,8 +272,32 @@ def patch(b=None):
 
 
 def listing():
-    """Every file at the top of the export, from the listing page (used to spot what we never read)."""
-    return sorted(set(re.findall(r'>([a-z_]+\.min\.json)<', home())))
+    """Every file at the top of the export, from the listing page (used to spot what we never read). The list is
+    kept with the pull, so --report, which fetches nothing, still has the one the last pull saw."""
+    got = sorted(set(re.findall(r'>([a-z_]+\.min\.json)<', home())))
+    if got:
+        state()['listing'] = got
+    return got or state().get('listing') or []
+
+
+# The export files no tool reads, and why not: each one is a line in the gap report instead of a silent gap
+# (#90). A file that gets a reader drops out of the report by itself; one that turns up with no reader and no
+# line here is listed on its own, so it is looked at.
+UNREAD = {
+    'active_skill_types.min.json': 'the names of the skill types; skills.min.json already names every skill\'s '
+                                   'types, and the gem cards draw the game\'s own tag names (gem_tags) instead',
+    'audio.min.json': 'the sound each thing plays; the site plays none',
+    'cost_types.min.json': 'what each skill cost is paid in and how the game writes it; skills.min.json already '
+                           'names the resource on every cost the gem cards show',
+    'stat_value_handlers.min.json': 'how a stat description turns a number before it is shown (negate, per minute '
+                                    'to per second); the few the tree uses are applied in tools/tree.py (Wording), '
+                                    'and every other line comes already worded in the export',
+    'stats_by_file.min.json': 'which description file words each stat; the tools read the two files the items and '
+                              'the tree are worded from, in the game\'s order, and never need to look one up',
+    'tag_details.min.json': 'the display names of the spawn tags; no card shows a spawn tag',
+    'tags.min.json': 'the spawn tags items and modifiers roll by; tools/craft.py reads them straight off each base '
+                     'and modifier, and they are never shown',
+}
 
 
 # ---------------------------------------------------------------- the gap report
@@ -381,11 +405,18 @@ def notes():
 
     everything = listing()
     if everything:   # this file names every export file it pulls, so it does not count as a reader
-        src = '\n'.join(f.read_text(encoding='utf-8', errors='replace') for f in sorted(ROOT.glob('tools/*.py'))
-                        if f.name != Path(__file__).name)
-        unread = [n for n in everything if n not in src and n.replace('.min', '') not in src]
-        if unread:
-            said.append('No tool here reads these export files at all: ' + ', '.join(unread) + '.')
+        tools = sorted(ROOT.glob('tools/*.py')) + sorted(ROOT.glob('tools/dev/*.py'))
+        src = '\n'.join(f.read_text(encoding='utf-8', errors='replace') for f in tools if f.name != Path(__file__).name)
+        # a whole file name, so tags.min.json is not read because gem_tags.min.json is
+        named = lambda n: re.search(r'(?<![\w-])' + re.escape(n), src)
+        unread = [n for n in everything if not named(n) and not named(n.replace('.min', ''))]
+        why = [n for n in unread if n in UNREAD]
+        if why:
+            said.append('%d of the %d export files no tool reads, each for a reason:' % (len(why), len(everything)))
+            said += ['%s: %s.' % (n, UNREAD[n]) for n in why]
+        lost = [n for n in unread if n not in UNREAD]
+        if lost:
+            said.append('No tool here reads these export files at all, and nothing says why: ' + ', '.join(lost) + '.')
     return said
 
 
