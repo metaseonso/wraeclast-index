@@ -1,0 +1,1790 @@
+### Overabundance III
+Support gem · Dexterity · https://wraeclastindex.fyi/item/overabundance-iii
+No requirements
+Supports Skills which have a Limit, doubling that Limit, but Cursing yourself on Supported Skill use. Only applies to restrictions that use the word "Limit". Cannot support Persistent Skills.
+Tags: Support, Curseoverabundance-iiioverabundance-iiiSupportGemOverabundanceThreeOverabundance III### Overcharge
+Support gem · Dexterity · https://wraeclastindex.fyi/item/overcharge
+No requirements
+Supports any skill that Hits enemies, making its Shocks more effective but reflecting them back to you as well.
+Tags: Support, LightningoverchargeoverchargeSupportGemOverchargeOvercharge### Overextend
+Support gem · Dexterity · https://wraeclastindex.fyi/item/overextend
+No requirements
+Supports Attack Skills you use yourself. Supported Skills deal more Damage with Critical Hits, but Critically Hitting an Enemy with them will Daze you for a short time.
+Tags: Support, AttackoverextendoverextendSupportGemOverextendOverextend### Overreach
+Support gem · Dexterity · https://wraeclastindex.fyi/item/overreach
+No requirements
+Supports Attack Skills which deal Damage in an Area. Supported Skills have significantly increased Area of Effect, but are less Accurate against nearby targets.
+Tags: Support, Attack, AoEoverreachoverreachSupportGemReachOverreach### Overwhelming Presence
+Skill gem · Strength · https://wraeclastindex.fyi/item/overwhelming-presence
+Requires at gem level 20: level 90, 157 Str
+1 s use time · 30 Spirit
+While active, emits an Aura that makes enemies in your Presence easier to Stun and inflict Elemental Ailments upon.
+Tags: Buff, Persistent, Auraoverwhelming-presenceoverwhelming-presenceSkillGemOverwhelmingPresenceOverwhelming Presence### Pain Offering
+Skill gem · Intelligence · https://wraeclastindex.fyi/item/pain-offering
+Requires at gem level 20: level 90, 157 Int
+0.6 s use time · 110 Mana at gem level 20
+Skewer a Skeleton on a bone spike to send nearby Minions into a frenzy as long as the spike remains, making their skills faster and harder hitting. The bone spike is itself a Minion. If it dies, the effect ends immediately.
+Tags: Minion, Buff, AoE, Durationpain-offeringpain-offeringSkillGemPainOfferingPain Offering### Paquate's Pact
+Lineage support gem · Strength · https://wraeclastindex.fyi/item/paquates-pact
+No requirements
+Supports Warcries, Triggering Twisted Pact to inflict Corrupted Blood on enemies in their area of effect., at the cost of your Life.
+Tags: Support, Lineage, Warcry, Trigger, Physical, Durationpaquates-pactpaquates-pactSupportGemCorruptingCryThreePaquate's Pact### Parry
+Skill gem · https://wraeclastindex.fyi/item/parry
+Requires at gem level 20: level 90
+1 s use time
+Ready your Buckler to parry the next Hit you would take, Blocking the Hit and retaliating with a quick sweep that leaves enemies off balance, causing them to take massively increased Attack damage for a short duration. Parrying causes you to accumulate Heavy Stun buildup. You cannot Evade a Hit you could parry, but Evasion instead grants an equal chance to avoid this Heavy Stun buildup.
+Tags: Attack, Melee, Physical, Duration, ChannellingparryparrySkillGemParryParry### Payload
+Support gem · Dexterity · https://wraeclastindex.fyi/item/payload
+No requirements
+Supports Skills which fire Grenades, giving fired Grenades a chance to activate again, but lengthening their cooldowns.
+Tags: Support, GrenadepayloadpayloadSupportGemPayloadPayload### Perfect Strike
+Skill gem · Strength · https://wraeclastindex.fyi/item/perfect-strike
+Requires at gem level 20: level 90, 157 Str
+1 s use time · 2515 Mana per minute at gem level 20
+Channel to charge up your weapon with Fire. Releasing with Perfect Timing will create a damaging wave of intense Fire.
+Tags: Attack, AoE, Melee, Strike, Fire, Channellingperfect-strikeperfect-strikeSkillGemPerfectStrikePerfect Strike### Perfected Endurance
+Support gem · Dexterity · https://wraeclastindex.fyi/item/perfected-endurance
+No requirements
+Supports skills which have a benefit for Perfect Timing. Supported Skills grant at least one Endurance Charge when Hitting an enemy with Perfect Timing.
+Tags: Support, Channellingperfected-enduranceperfected-enduranceSupportGemPerfectedEndurancePerfected Endurance### Perfection
+Support gem · Dexterity · https://wraeclastindex.fyi/item/perfection
+No requirements
+Supports skills which have a benefit for Perfectly Timing their use. On successfully executing Perfect Timing with Supported Skills, gain Perfection, which is a powerful damage buff. However, failing to execute any Perfect Timing (even with skills not supported by Perfection) will remove all Perfection on you.
+Tags: SupportperfectionperfectionSupportGemPerfectionPerfection### Permafrost Bolts
+Skill gem · https://wraeclastindex.fyi/item/permafrost-bolts
+Requires at gem level 20: level 90, 86 Str, 86 Dex
+0.8 s use time · 44 Mana at gem level 20
+Load your Crossbow with icy bolts that fragment in flight, damaging enemies on hit and in a small cone behind their final target. The icy coating on the bolts makes them extremely potent at Freezing enemies. These fragments can Merge.
+Tags: Attack, AoE, Ammunition, Projectile, Cold, Mergingpermafrost-boltspermafrost-boltsSkillGemPermafrostBoltsPermafrost Bolts### Perpetual Charge
+Support gem · Intelligence · https://wraeclastindex.fyi/item/perpetual-charge
+No requirements
+Supports skills that consume Power, Frenzy or Endurance Charges on use, giving them a chance not to remove each Charge while still gaining the benefits of consuming them.
+Tags: Supportperpetual-chargeperpetual-chargeSupportGemPerpetualChargePerpetual Charge### Persistent Ground I
+Support gem · Strength · https://wraeclastindex.fyi/item/persistent-ground-i
+No requirements
+Supports Skills which create Ground Surfaces, causing created Surfaces to last much longer.
+Tags: Supportpersistent-ground-ipersistent-ground-iSupportGemDomainPersistent Ground I### Persistent Ground II
+Support gem · Strength · https://wraeclastindex.fyi/item/persistent-ground-ii
+No requirements
+Supports Skills which create Ground Surfaces, causing created Surfaces to last much longer and only end when their duration expires.
+Tags: Supportpersistent-ground-iipersistent-ground-iiSupportGemDomainTwoPersistent Ground II### Persistent Ground III
+Support gem · Strength · https://wraeclastindex.fyi/item/persistent-ground-iii
+No requirements
+Supports Skills which create Ground Surfaces, causing created Surfaces to last much longer as well as lowering the Cooldown Recovery Speed of affected Enemies. Ground Surfaces from Supported Skills only end when their duration expires.
+Tags: Supportpersistent-ground-iiipersistent-ground-iiiSupportGemDomainThreePersistent Ground III### Phantasmal Arrow
+Skill gem · https://wraeclastindex.fyi/item/phantasmal-arrow
+Requires at gem level 20: level 90
+1 s use time · 40 Mana at gem level 20
+Fires an arrow that embeds where it lands for a short duration. At the end of the duration, the arrow explodes in spectral flame, turning it to ashes and damaging enemies, with a high chance to Ignite. Igniting any enemy with the Explosion also applies Ignite to enemies within range.
+Tags: Attack, AoE, Projectile, Fire, Duration, Repeatablephantasmal-arrowphantasmal-arrowSkillGemPhantasmalArrowPhantasmal Arrow### Physical Mastery
+Support gem · Intelligence · https://wraeclastindex.fyi/item/physical-mastery
+No requirements
+Supports Physical skills, granting them an additional level. Does not support skills which do not have levels.
+Tags: Support, Physicalphysical-masteryphysical-masterySupportGemPhysicalMasteryPhysical Mastery### Pierce I
+Support gem · Dexterity · https://wraeclastindex.fyi/item/pierce-i
+No requirements
+Supports Projectile skills, making their Projectiles Pierce an enemy but deal less damage after doing so.
+Tags: Support, Projectilepierce-ipierce-iSupportGemPiercePierce I### Pierce II
+Support gem · Dexterity · https://wraeclastindex.fyi/item/pierce-ii
+No requirements
+Supports Projectile skills, making their Projectiles Pierce an enemy.
+Tags: Support, Projectilepierce-iipierce-iiSupportGemPierceTwoPierce II### Pierce III
+Support gem · Dexterity · https://wraeclastindex.fyi/item/pierce-iii
+No requirements
+Supports Projectile skills, making their Projectiles Pierce an unlimited number of enemies, losing damage as they do so.
+Tags: Support, Projectilepierce-iiipierce-iiiSupportGemPierceThreePierce III### Pin I
+Support gem · Dexterity · https://wraeclastindex.fyi/item/pin-i
+No requirements
+Supports any skill that Hits enemies, allowing its Physical damage to Pin enemies but making it unable to Stun.
+Tags: Support, Physicalpin-ipin-iSupportGemPinPin I### Pin II
+Support gem · Dexterity · https://wraeclastindex.fyi/item/pin-ii
+No requirements
+Supports any skill that Hits enemies, allowing its Physical damage to Pin enemies but making it unable to Stun, as well as granting Critial Hit Chance against Immobilised enemies.
+Tags: Support, Physicalpin-iipin-iiSupportGemPinTwoPin II### Pin III
+Support gem · Dexterity · https://wraeclastindex.fyi/item/pin-iii
+No requirements
+Supports any skill that Hits enemies, allowing its Physical damage to Pin enemies but making it unable to Stun. Pin buildup caused by Supported Skill is lessened, but Pin duration is significantly longer.
+Tags: Support, Physicalpin-iiipin-iiiSupportGemPinThreePin III### Pinnacle of Power
+Skill gem · https://wraeclastindex.fyi/item/pinnacle-of-power
+Requires at gem level 20: level 90
+93 Mana at gem level 20
+Consume all Power Charges to master the elements, gaining Elemental Damage and the ability to apply Elemental Ailments with other damage types. Can only be used while you have maximum Power Charges.
+Tags: Spell, Buff, Lightning, Cold, Fire, Duration, Conditionalpinnacle-of-powerpinnacle-of-powerSkillGemPinnacleOfPowerPinnacle of Power### Pinpoint Critical
+Support gem · Intelligence · https://wraeclastindex.fyi/item/pinpoint-critical
+No requirements
+Supports any skill that Hits Enemies, causing it to Critically Hit more often but deal less damage with Critical Hits.
+Tags: Supportpinpoint-criticalpinpoint-criticalSupportGemPinpointCriticalPinpoint Critical### Plague Bearer
+Skill gem · Dexterity · https://wraeclastindex.fyi/item/plague-bearer
+Requires at gem level 20: level 90, 157 Dex
+30 Spirit
+While active, stores a portion of the Poison Damage you deal. Using this Skill unleashes the stored Poison to damage and Poison enemies around you.
+Tags: Buff, Persistent, AoE, Physical, Chaos, Novaplague-bearerplague-bearerSkillGemPlagueBearerPlague Bearer### Plasma Blast
+Skill gem · https://wraeclastindex.fyi/item/plasma-blast
+Requires at gem level 20: level 90, 86 Str, 86 Dex
+1 s use time · 122 Mana at gem level 20
+Load your Crossbow with unstable bolts that require a lengthy charging period to fire but deal devastating damage, Pierce through enemies, and explode upon hitting terrain. Additional Projectiles are fired in a spread, unlike other Crossbow Skills.
+Tags: Attack, AoE, Ammunition, Projectile, Lightning, Channellingplasma-blastplasma-blastSkillGemPlasmaBlastPlasma Blast### Playtest Attack
+Skill gem · https://wraeclastindex.fyi/item/playtest-attack
+Requires at gem level 20: level 90
+1 s use time · 10 Mana at gem level 20
+Strike your foes down with a powerful blow using a melee weapon.
+Tags: Attack, AoE, Melee, Strikeplaytest-attackplaytest-attackSkillGemPlaytestAttackPlaytest Attack### Playtest Slam
+Skill gem · https://wraeclastindex.fyi/item/playtest-slam
+Requires at gem level 20: level 90
+1 s use time · 10 Mana at gem level 20
+Jump into the air, damaging enemies where you land.
+Tags: Attack, AoE, Melee, Slam, Travelplaytest-slamplaytest-slamSkillGemPlaytestSlamPlaytest Slam### Playtest Spell
+Skill gem · https://wraeclastindex.fyi/item/playtest-spell
+Requires at gem level 20: level 90
+1 s use time · 10 Mana at gem level 20
+Launch a fiery Projectile towards a target.
+Tags: Spell, AoE, Projectile, Fire, Repeatableplaytest-spellplaytest-spellSkillGemPlaytestSpellPlaytest Spell### Poison I
+Support gem · Dexterity · https://wraeclastindex.fyi/item/poison-i
+No requirements
+Supports any skill that Hits enemies, giving it a chance to Poison enemies.
+Tags: Support, Chaospoison-ipoison-iSupportGemEnvenomPoison I### Poison II
+Support gem · Dexterity · https://wraeclastindex.fyi/item/poison-ii
+No requirements
+Supports any skill that Hits enemies, giving it a chance to Poison enemies.
+Tags: Support, Chaospoison-iipoison-iiSupportGemEnvenomTwoPoison II### Poison III
+Support gem · Dexterity · https://wraeclastindex.fyi/item/poison-iii
+No requirements
+Supports any skill that Hits enemies, giving it a chance to Poison enemies and causing it to inflict more powerful Poisons against Bleeding Enemies.
+Tags: Support, Chaospoison-iiipoison-iiiSupportGemEnvenomThreePoison III### Poison Spores
+Support gem · Dexterity · https://wraeclastindex.fyi/item/poison-spores
+No requirements
+Supports Plant Skills which Hit enemies. Supported Skills Trigger Toxic Pustule on Hitting an enemy.
+Tags: Support, Attack, Buff, AoE, Trigger, Physical, Chaos, Duration, Plantpoison-sporespoison-sporesSupportGemPoisonSporesPoison Spores### Poisonburst Arrow
+Skill gem · Dexterity · https://wraeclastindex.fyi/item/poisonburst-arrow
+Requires at gem level 20: level 90, 157 Dex
+1 s use time · 38 Mana at gem level 20
+Fire a virulent arrow that creates a burst of Poison on hit, affecting all enemies in an area.
+Tags: Attack, AoE, Projectile, Chaos, Duration, Repeatablepoisonburst-arrowpoisonburst-arrowSkillGemPoisonBurstArrowPoisonburst Arrow### Potent Exposure
+Support gem · Intelligence · https://wraeclastindex.fyi/item/potent-exposure
+No requirements
+Supports Skills which apply Exposure to Enemies, increasing the effect of applied Exposure.
+Tags: Support, Spellpotent-exposurepotent-exposureSupportGemStripAwayPotent Exposure### Potential
+Support gem · Intelligence · https://wraeclastindex.fyi/item/potential
+No requirements
+Supports Skills that you use yourself. Supported Skills will consume a Power Charge on use if possible, and will be much more likely to Critically Hit if they do. Supported Skills cannot generate Power Charges. Cannot Support Skills which consume Power Charges.
+Tags: SupportpotentialpotentialSupportGemPotentialPotential### Pounce
+Spirit gem · https://wraeclastindex.fyi/item/pounce
+Requires at gem level 20: level 90, 86 Str, 86 Int
+1 s use time · 102 Mana at gem level 20
+Shapeshift into a Werewolf and leap to a target location, damaging enemies in an area around where you land. Predator's Mark will be Triggered targeting the highest Rarity enemy Hit, or if a Mark gem is socketed into this Skill, that Mark will be Triggered instead. Using this Skill allows any Wolf Minions you have to leap immediately.
+Tags: Attack, Minion, Shapeshift, Werewolf, AoE, Melee, Slam, Trigger, Mark, Duration, Travel, MetapouncepounceSkillGemWolfPouncePounce### Power Siphon
+Skill gem · Intelligence · https://wraeclastindex.fyi/item/power-siphon
+Requires at gem level 20: level 90, 157 Int
+0.7 s use time
+Attempt to rip the lifeforce from an enemy. Enemies within Culling range will be highlighted and instantly killed on Hit, granting a Power Charge. Can only target Enemies in Culling range.
+Tags: Spell, Physicalpower-siphonpower-siphonSkillGemPowerSiphonPower Siphon### Powered by Verisium
+Skill gem · https://wraeclastindex.fyi/item/powered-by-verisium
+Requires at gem level 20: level 90
+0.7 s use time · 155 Ward at gem level 20
+Spends Ward to generate Verisium Infusions, which can be used in place of any Elemental Infusions.
+Tags: Spell, Repeatablepowered-by-verisiumpowered-by-verisiumSkillGemPoweredByVerisiumPowered by Verisium### Practical Magic I
+Support gem · Intelligence · https://wraeclastindex.fyi/item/practical-magic-i
+No requirements
+Supports Skills which Hit enemies. Heavy Stunning an enemy with Supported Skills increases your Spell damage for a duration.
+Tags: Support, Spell, Durationpractical-magic-ipractical-magic-iSupportGemPracticalMagicPractical Magic I### Practical Magic II
+Support gem · Intelligence · https://wraeclastindex.fyi/item/practical-magic-ii
+No requirements
+Supports Skills which Hit enemies. Heavy Stunning an enemy with Supported Skills increases your Spell damage for a duration.
+Tags: Support, Spell, Durationpractical-magic-iipractical-magic-iiSupportGemPracticalMagicTwoPractical Magic II### Practiced Combo
+Support gem · Dexterity · https://wraeclastindex.fyi/item/practiced-combo
+No requirements
+Supports Strike Skills. Supported Skills have a chance to build additional Combo on Hit. Cannot support Skills used by Minions.
+Tags: Support, Attack, Melee, Strikepracticed-combopracticed-comboSupportGemPracticedComboPracticed Combo### Precision I
+Support gem · Dexterity · https://wraeclastindex.fyi/item/precision-i
+No requirements
+10 Spirit
+Supports Persistent Buff Skills, causing you to gain increased Accuracy while the Skill is active.
+Tags: Support, Buff, Persistentprecision-iprecision-iSupportGemPrecisionPrecision I### Precision II
+Support gem · Dexterity · https://wraeclastindex.fyi/item/precision-ii
+No requirements
+20 Spirit
+Supports Persistent Buff Skills, causing you to gain increased Accuracy while the Skill is active.
+Tags: Support, Buff, Persistentprecision-iiprecision-iiSupportGemPrecisionTwoPrecision II### Premeditation
+Support gem · Strength · https://wraeclastindex.fyi/item/premeditation
+No requirements
+Supports skills that can Empower skills other than themselves, causing skills they Empower to deal more damage.
+Tags: SupportpremeditationpremeditationSupportGemPremeditationPremeditation### Primal Avatar
+Skill gem · https://wraeclastindex.fyi/item/primal-avatar
+Requires at gem level 20: level 90, 86 Str, 86 Int
+1 s use time · 99 Mana at gem level 20
+Conjure Azmeri wisps to engulf a Rare Beast for a duration, Hindering them. If you defeat the Beast while it is engulfed in wisps, it will be captured by this gem, transforming the gem to instead allow you to summon the Beast as a Reviving Companion.
+Tags: Durationprimal-avatarprimal-avatarSkillGemPrimalAvatarPrimal Avatar### Primal Bounty
+Skill gem · https://wraeclastindex.fyi/item/primal-bounty
+Requires at gem level 20: level 90
+Empowers the next Projectile Skill you use, causing it to create additional Projectiles and fly faster.
+Tags: Buff, Triggerprimal-bountyprimal-bountySkillGemPrimalBountyPrimal Bounty### Primal Strikes
+Skill gem · Dexterity · https://wraeclastindex.fyi/item/primal-strikes
+Requires at gem level 20: level 90, 157 Dex
+1 s use time · 38 Mana at gem level 20
+Perform a Lightning-charged stab that can be chained into a combination of up to three attacks. The first two attacks conjure a charging Wildwood spirit if they Hit a Shocked enemy and refresh Shock duration. The third attack is a large swipe that inflicts Elemental Exposure, and can Consume Shock to conjure a stampede of spirits.
+Tags: Attack, AoE, Melee, Strike, Lightning, Payoffprimal-strikesprimal-strikesSkillGemPrimalStrikesPrimal Strikes### Profane Ritual
+Skill gem · Intelligence · https://wraeclastindex.fyi/item/profane-ritual
+Requires at gem level 20: level 90, 157 Int
+1 s use time · 65 Mana at gem level 20
+Mark a Corpse with a profane rune, dealing Chaos damage over time to nearby enemies. When the ritual is complete the Corpse is consumed and you gain a Power Charge.
+Tags: Spell, AoE, Chaos, Duration, Repeatableprofane-ritualprofane-ritualSkillGemProfaneRitualProfane Ritual### Profanity I
+Support gem · Intelligence · https://wraeclastindex.fyi/item/profanity-i
+No requirements
+Supports Skills you use yourself. Supported Skills consume a Corpse on use, dealing more Chaos Damage if they do.
+Tags: Support, Chaosprofanity-iprofanity-iSupportGemProfanityProfanity I### Profanity II
+Support gem · Intelligence · https://wraeclastindex.fyi/item/profanity-ii
+No requirements
+Supports Skills you use yourself. Supported Skills consume many Corpses on use, dealing more Chaos Damage per Corpse consumed.
+Tags: Support, Chaosprofanity-iiprofanity-iiSupportGemProfanityTwoProfanity II### Projectile Acceleration I
+Support gem · Dexterity · https://wraeclastindex.fyi/item/projectile-acceleration-i
+No requirements
+Supports Projectile skills, making those Projectiles travel faster.
+Tags: Support, Projectileprojectile-acceleration-iprojectile-acceleration-iSupportGemAccelerationProjectile Acceleration I### Projectile Acceleration II
+Support gem · Dexterity · https://wraeclastindex.fyi/item/projectile-acceleration-ii
+No requirements
+Supports Projectile skills, making those Projectiles travel faster, and granting them a chance to Pierce Enemies.
+Tags: Support, Projectileprojectile-acceleration-iiprojectile-acceleration-iiSupportGemAccelerationTwoProjectile Acceleration II### Projectile Acceleration III
+Support gem · Dexterity · https://wraeclastindex.fyi/item/projectile-acceleration-iii
+No requirements
+Supports Projectile skills, making those Projectiles travel faster, and causing increases and reductions to Projectile speed to also apply to Damage.
+Tags: Support, Projectileprojectile-acceleration-iiiprojectile-acceleration-iiiSupportGemAccelerationThreeProjectile Acceleration III### Projectile Deceleration I
+Support gem · Dexterity · https://wraeclastindex.fyi/item/projectile-deceleration-i
+No requirements
+Supports Projectile skills, making those Projectiles travel more slowly.
+Tags: Support, Projectileprojectile-deceleration-iprojectile-deceleration-iSupportGemDecelerationProjectile Deceleration I### Projectile Deceleration II
+Support gem · Dexterity · https://wraeclastindex.fyi/item/projectile-deceleration-ii
+No requirements
+Supports Projectile skills, making those Projectiles travel more slowly.
+Tags: Support, Projectileprojectile-deceleration-iiprojectile-deceleration-iiSupportGemDecelerationTwoProjectile Deceleration II### Prolonged Duration I
+Support gem · Strength · https://wraeclastindex.fyi/item/prolonged-duration-i
+No requirements
+Supports any skill that has a duration, making that duration longer.
+Tags: Support, Durationprolonged-duration-iprolonged-duration-iSupportGemPersistenceProlonged Duration I### Prolonged Duration II
+Support gem · Strength · https://wraeclastindex.fyi/item/prolonged-duration-ii
+No requirements
+Supports any skill that has a duration, making that duration longer.
+Tags: Support, Durationprolonged-duration-iiprolonged-duration-iiSupportGemPersistenceTwoProlonged Duration II### Prolonged Duration III
+Support gem · Strength · https://wraeclastindex.fyi/item/prolonged-duration-iii
+No requirements
+Supports any skill that has a duration, making that duration significantly longer while applying a cooldown. Cannot support Skills which already have a cooldown.
+Tags: Support, Durationprolonged-duration-iiiprolonged-duration-iiiSupportGemPersistenceThreeProlonged Duration III### Prototype Seventeen
+Lineage support gem · https://wraeclastindex.fyi/item/prototype-seventeen
+No requirements
+Supports non-Channelling skill you use yourself that Hits enemies, causing it to gain Critical Hit chance based on Rage, but also remove all Rage upon Critically Hitting.
+Tags: Support, Lineageprototype-seventeenprototype-seventeenSupportGemPrototypeSeventeenPrototype Seventeen### Punch
+Skill gem · https://wraeclastindex.fyi/item/punch
+Requires at gem level 20: level 90
+1 s use time
+Perform an Unarmed Strike.
+Tags: Attack, AoE, Melee, StrikepunchpunchSkillGemPlayerDefaultUnarmedPunch### Punch Through
+Support gem · Dexterity · https://wraeclastindex.fyi/item/punch-through
+No requirements
+Supports Melee Attack Skills. Supported Skills apply Easy Target when Knocking Back Enemies, causing the next Projectile Attack Hit they take to deal increased Damage.
+Tags: Support, Attack, Meleepunch-throughpunch-throughSupportGemPunchThroughPunch Through### Purity of Fire
+Skill gem · Intelligence · https://wraeclastindex.fyi/item/purity-of-fire
+Requires at gem level 20: level 90, 48 Str, 122 Int
+Emit an Aura that boosts the Fire Resistance of you and Allies in your Presence.
+Tags: Buff, Persistent, Aura, Firepurity-of-firepurity-of-fireSkillGemPurityOfFirePurity of Fire### Purity of Ice
+Skill gem · Intelligence · https://wraeclastindex.fyi/item/purity-of-ice
+Requires at gem level 20: level 90, 48 Str, 122 Int
+Emit an Aura that boosts the Cold Resistance of you and Allies in your Presence.
+Tags: Buff, Persistent, Aura, Coldpurity-of-icepurity-of-iceSkillGemPurityOfIcePurity of Ice### Purity of Lightning
+Skill gem · Intelligence · https://wraeclastindex.fyi/item/purity-of-lightning
+Requires at gem level 20: level 90, 48 Str, 122 Int
+Emit an Aura that boosts the Lightning Resistance of you and Allies in your Presence.
+Tags: Buff, Persistent, Aura, Lightningpurity-of-lightningpurity-of-lightningSkillGemPurityOfLightningPurity of Lightning### Pursuit I
+Support gem · Dexterity · https://wraeclastindex.fyi/item/pursuit-i
+No requirements
+Supports Melee Attacks. Supported Skills deal more Melee damage if you have struck with a Projectile Attack Hit in the last eight seconds, but cannot themselves deal Projectile Damage.
+Tags: Support, Attack, Meleepursuit-ipursuit-iSupportGemPursuitPursuit I### Pursuit II
+Support gem · Dexterity · https://wraeclastindex.fyi/item/pursuit-ii
+No requirements
+Supports Melee Attacks. Supported Skills deal more Melee damage if you have struck with a Projectile Attack Hit in the last eight seconds, but cannot themselves deal Projectile Damage.
+Tags: Support, Attack, Meleepursuit-iipursuit-iiSupportGemPursuitTwoPursuit II### Pursuit III
+Support gem · Dexterity · https://wraeclastindex.fyi/item/pursuit-iii
+No requirements
+Supports Melee Attacks. Supported Skills deal more Melee damage if you have struck with a Projectile Attack Hit in the last two seconds, but cannot themselves deal Projectile Damage.
+Tags: Support, Attack, Meleepursuit-iiipursuit-iiiSupportGemPursuitThreePursuit III### Quarterstaff Strike
+Skill gem · https://wraeclastindex.fyi/item/quarterstaff-strike
+Requires at gem level 20: level 90
+1 s use time
+Strike with your Quarterstaff.
+Tags: Attack, AoE, Melee, Strikequarterstaff-strikequarterstaff-strikeSkillGemPlayerDefaultQuarterstaffQuarterstaff Strike### Queen's Procession
+Skill gem · https://wraeclastindex.fyi/item/queens-procession
+Requires at gem level 20: level 90
+1 s use time
+While active, Sprinting turns you into a locust swarm which deals Physical Attack damage, which is not based on your Weapon's damage, in an area around you. You take damage and gain Heavy Stun buildup if this Hits any targets, but damage you take from other sources while sprinting will not apply Heavy Stun or interrupt your sprinting.
+Tags: Buff, Attack, Persistent, AoE, Physicalqueens-processionqueens-processionSkillGemAscendancyQueensProcessionQueen's Procession### Quill Burst
+Support gem · Strength · https://wraeclastindex.fyi/item/quill-burst
+No requirements
+Supports Melee Attack Skills. Supported Skills trigger Quill Burst, which deals your Thorns Damage in an Area around the target struck. Quill Burst can only be triggered on Hit after you've Retaliated with Thorns Damage.
+Tags: Support, Attack, AoE, Melee, Trigger, Physicalquill-burstquill-burstSupportGemQuillBurstQuill Burst### Rage I
+Support gem · Strength · https://wraeclastindex.fyi/item/rage-i
+No requirements
+Supports Melee Attacks, causing them to grant Rage on Hit.
+Tags: Support, Attack, Meleerage-irage-iSupportGemRageRage I### Rage II
+Support gem · Strength · https://wraeclastindex.fyi/item/rage-ii
+No requirements
+Supports Melee Attacks, causing them to grant Rage on Hit.
+Tags: Support, Attack, Meleerage-iirage-iiSupportGemRageTwoRage II### Rage III
+Support gem · Strength · https://wraeclastindex.fyi/item/rage-iii
+No requirements
+Supports Melee Attacks, causing them to grant Rage on Hit. Supported Skills have signficantly higher Attack speed while you or supported minion are not at maximum Rage.
+Tags: Support, Attack, Meleerage-iiirage-iiiSupportGemRageThreeRage III### Rageforged I
+Support gem · Strength · https://wraeclastindex.fyi/item/rageforged-i
+No requirements
+Supports any damaging skill that you use or Trigger yourself, causing it to spend Rage to deal more damage. If you don't have enough Rage to spend, the damage bonus will not apply.
+Tags: Supportrageforged-irageforged-iSupportGemRageforgedRageforged I### Rageforged II
+Support gem · Strength · https://wraeclastindex.fyi/item/rageforged-ii
+No requirements
+Supports any damaging skill that you use or Trigger yourself, causing it to spend Rage to deal more damage, with a chance to skip spending Rage while still benefitting as though it had. If you don't have enough Rage to spend, the damage bonus will not apply.
+Tags: Supportrageforged-iirageforged-iiSupportGemRageforgedTwoRageforged II### Raging Cry
+Support gem · Strength · https://wraeclastindex.fyi/item/raging-cry
+No requirements
+Supports Warcry skills, causing them to grant you Rage on use depending on counted monster Power.
+Tags: Support, Warcryraging-cryraging-crySupportGemRagingCryRaging Cry### Raging Spirits
+Skill gem · Intelligence · https://wraeclastindex.fyi/item/raging-spirits
+Requires at gem level 20: level 90, 157 Int
+1 s use time · 30 Spirit
+While active, Fire Spells you use yourself will also summon Raging Spirits, which are short-lived flaming skulls that rush at nearby enemies and rapidly Attack them, ignoring commands. Enemies will not directly engage these Minions, and can pass through them.
+Tags: Buff, Minion, Persistent, Fire, Durationraging-spiritsraging-spiritsSkillGemRagingSpiritsRaging Spirits### Rain of Arrows
+Skill gem · Dexterity · https://wraeclastindex.fyi/item/rain-of-arrows
+Requires at gem level 20: level 90, 157 Dex
+1 s use time · 103 Mana at gem level 20
+Fire a hail of arrows into the air, causing them to rain from above. Consumes a Frenzy Charge to fire more arrows.
+Tags: Attack, AoE, Projectile, Sustainedrain-of-arrowsrain-of-arrowsSkillGemRainOfArrowsRain of Arrows### Rain of Blades
+Skill gem · https://wraeclastindex.fyi/item/rain-of-blades
+Requires at gem level 20: level 90
+1 s use time · 59 Ward at gem level 20
+Pour your Runic Ward into conjuring blades. For the duration of the Buff, these blades fall on enemies Hit by your Projectile Attacks.
+Tags: Attack, Buff, AoE, Trigger, Durationrain-of-bladesrain-of-bladesSkillGemRainOfBladesRain of Blades### Raise Shield
+Skill gem · https://wraeclastindex.fyi/item/raise-shield
+Requires at gem level 20: level 90
+1 s use time
+Raise your Shield to Block all incoming Blockable hits. Release immediately after Blocking when an enemy is close to perform a Shield Bash, damaging and Stunning enemies. While your Shield is raised you cannot be Light Stunned by hits you Block, but Blocking too much damage may Heavy Stun you. You cannot Evade while your Shield is raised, but Evasion instead grants an equal chance to avoid this Heavy Stun buildup.
+Tags: Attack, AoE, Melee, Physical, Channellingraise-shieldraise-shieldSkillGemShieldBlockRaise Shield### Raise Zombie
+Skill gem · Intelligence · https://wraeclastindex.fyi/item/raise-zombie
+Requires at gem level 20: level 90, 157 Int
+0.6 s use time · 102 Mana at gem level 20
+Consume a Corpse or Power Charge to create a short-lived Zombie. Zombies created from Power Charges are Empowered and also create two additional non-empowered Zombies.
+Tags: Minion, Physical, Durationraise-zombieraise-zombieSkillGemRaiseZombieRaise Zombie### Rake
+Skill gem · Dexterity · https://wraeclastindex.fyi/item/rake
+Requires at gem level 20: level 90, 157 Dex
+1 s use time · 40 Mana at gem level 20
+Dash towards an enemy and perform a lacerating slash, inflicting Bleeding on all enemies struck.
+Tags: Attack, AoE, Melee, Strike, PhysicalrakerakeSkillGemRakeRake### Rakiata's Flow
+Lineage support gem · Dexterity · https://wraeclastindex.fyi/item/rakiatas-flow
+No requirements
+Supports Skills that can cause Damaging Hits, causing those Hits to treat Enemy Elemental Resistances as inverted.
+Tags: Support, Lineagerakiatas-flowrakiatas-flowSupportGemRakiatasFlowRakiata's Flow### Rally
+Support gem · Strength · https://wraeclastindex.fyi/item/rally
+No requirements
+Supports Melee Attacks you use yourself. Supported Skills Consume all Endurance Charge on use, causing you to restore a percentage of your maximum Life for each Charge Consumed. Cannot Support Skills which consume Endurance Charges.
+Tags: Support, Attack, MeleerallyrallySupportGemRallyRally### Rampage
+Skill gem · https://wraeclastindex.fyi/item/rampage
+Requires at gem level 20: level 90, 86 Str, 86 Int
+1 s use time · 97 Mana at gem level 20
+Shapeshift into a Bear and charge forward, Slamming the ground as you run. Channelling ends after a short amount of time but can be prolonged by spending Rage.
+Tags: Attack, Shapeshift, Bear, AoE, Melee, Slam, Sustained, Channelling, TravelrampagerampageSkillGemBearRampageRampage### Rapid Assault
+Skill gem · Dexterity · https://wraeclastindex.fyi/item/rapid-assault
+Requires at gem level 20: level 90, 157 Dex
+1 s use time · 69 Mana at gem level 20
+Perform a series of six rapid stabs. The final stab inflicts Bleeding and leaves a spearhead stuck in the target, Maiming them for a duration. Detonator Skills will cause the stuck spearheads to explode, dealing further damage to the target and other nearby enemies.
+Tags: Attack, AoE, Melee, Strike, Physical, Durationrapid-assaultrapid-assaultSkillGemRapidAssaultRapid Assault### Rapid Attacks I
+Support gem · Dexterity · https://wraeclastindex.fyi/item/rapid-attacks-i
+No requirements
+Supports Attacks, causing them to Attack faster.
+Tags: Support, Attackrapid-attacks-irapid-attacks-iSupportGemMartialTempoRapid Attacks I### Rapid Attacks II
+Support gem · Dexterity · https://wraeclastindex.fyi/item/rapid-attacks-ii
+No requirements
+Supports Attacks, causing them to Attack faster.
+Tags: Support, Attackrapid-attacks-iirapid-attacks-iiSupportGemMartialTempoTwoRapid Attacks II### Rapid Attacks III
+Support gem · Dexterity · https://wraeclastindex.fyi/item/rapid-attacks-iii
+No requirements
+Supports Attacks, causing them to Attack faster at the cost of Damage.
+Tags: Support, Attackrapid-attacks-iiirapid-attacks-iiiSupportGemMartialTempoThreeRapid Attacks III### Rapid Casting I
+Support gem · Intelligence · https://wraeclastindex.fyi/item/rapid-casting-i
+No requirements
+Supports Spells, causing them to cast faster.
+Tags: Support, Spellrapid-casting-irapid-casting-iSupportGemArcaneTempoRapid Casting I### Rapid Casting II
+Support gem · Intelligence · https://wraeclastindex.fyi/item/rapid-casting-ii
+No requirements
+Supports Spells, causing them to cast faster.
+Tags: Support, Spellrapid-casting-iirapid-casting-iiSupportGemArcaneTempoTwoRapid Casting II### Rapid Casting III
+Support gem · Intelligence · https://wraeclastindex.fyi/item/rapid-casting-iii
+No requirements
+Supports Spells, causing them to cast faster for each different Spell you've cast in the last eight seconds.
+Tags: Support, Spellrapid-casting-iiirapid-casting-iiiSupportGemArcaneTempoThreeRapid Casting III### Rapid Shot
+Skill gem · https://wraeclastindex.fyi/item/rapid-shot
+Requires at gem level 20: level 90, 86 Str, 86 Dex
+1.2 s use time · 186 Mana at gem level 20
+Load your Crossbow with a large clip of heated bolts. Heat builds up on your Crossbow as you fire them, and reaching maximum Heat will prevent you from firing or reloading these bolts for a short time. However, other Skills can Consume Heat for extra benefits. Using this Skill again reloads the clip.
+Tags: Attack, Ammunition, Projectile, Firerapid-shotrapid-shotSkillGemRapidShotRapid Shot### Ratha's Assault
+Lineage support gem · Dexterity · https://wraeclastindex.fyi/item/rathas-assault
+No requirements
+Supports Crossbow Ammunition Skills, causing them to load multiple extra bolts and attack faster. Supported Skills cannot reload normally, instead loading bolts when you Dodge.
+Tags: Support, Lineage, Ammunition, Projectilerathas-assaultrathas-assaultSupportGemCombatReloadRatha's Assault### Ravenous Swarm
+Skill gem · Intelligence · https://wraeclastindex.fyi/item/ravenous-swarm
+Requires at gem level 20: level 90, 157 Int
+30 Spirit
+While active and enemies are present, swarms of insects emerge from your body to pursue nearby enemies. The swarms are untargetable Minions that Attack and Poison enemies.
+Tags: Buff, Minion, Persistent, Physical, Chaos, Durationravenous-swarmravenous-swarmSkillGemRavenousSwarmRavenous Swarm### Reap
+Skill gem · Intelligence · https://wraeclastindex.fyi/item/reap
+Requires at gem level 20: level 90, 157 Int
+1.2 s use time
+Conjure a bloody scythe that sweeps across the targeted area, dealing Physical damage to enemies and applying Critical Weakness. Cannot be Triggered.
+Tags: Spell, AoE, Physical, DurationreapreapSkillGemReapReap### Reaper's Invocation
+Spirit gem · https://wraeclastindex.fyi/item/reapers-invocation
+Requires at gem level 20: level 90, 86 Dex, 86 Int
+30 Spirit
+While active, gains Energy when you kill an enemy with a Melee Attack. Using the Invocation once sufficient Energy is gathered will consume the Energy to trigger socketed Spells, and can trigger them multiple times if it has enough Energy.
+Tags: Buff, Persistent, Trigger, Invocation, Metareapers-invocationreapers-invocationSkillGemReapersInvocationReaper's Invocation### Rearm I
+Support gem · Dexterity · https://wraeclastindex.fyi/item/rearm-i
+No requirements
+Supports Skills which create Hazards. Hazards created by Supported Skills have a chance to be rearmed a short duration after triggering.
+Tags: Support, Hazardrearm-irearm-iSupportGemRearmRearm I### Rearm II
+Support gem · Dexterity · https://wraeclastindex.fyi/item/rearm-ii
+No requirements
+Supports Skills which create Hazards. Hazards created by Supported Skills have a chance to be rearmed a short duration after triggering.
+Tags: Support, Hazardrearm-iirearm-iiSupportGemRearmTwoRearm II### Refraction I
+Support gem · Strength · https://wraeclastindex.fyi/item/refraction-i
+No requirements
+10 Spirit
+Supports Banner Skills, causing those affected by Auras they create to gain Refractive Plating, a Buff which grants Deflection Rating and causes Armour to partially apply to Elemental Hit Damage.
+Tags: Support, Buff, Persistentrefraction-irefraction-iSupportGemRefractionRefraction I### Refraction II
+Support gem · Strength · https://wraeclastindex.fyi/item/refraction-ii
+No requirements
+10 Spirit
+Supports Banner Skills, causing those affected by Auras they create to gain Refractive Plating, a Buff which grants Deflection Rating and causes Armour to partially apply to Elemental Hit Damage.
+Tags: Support, Buff, Persistentrefraction-iirefraction-iiSupportGemRefractionTwoRefraction II### Refraction III
+Support gem · Strength · https://wraeclastindex.fyi/item/refraction-iii
+No requirements
+10 Spirit
+Supports Banner Skills, causing Enemies within their area to gain Refractive Dissolution, a Debuff which lowers Elemental Resistances.
+Tags: Support, Buff, Persistentrefraction-iiirefraction-iiiSupportGemRefractionThreeRefraction III### Refutation
+Skill gem · https://wraeclastindex.fyi/item/refutation
+Requires at gem level 20: level 90
+0.65 s use time · 13 Ward at gem level 20
+Spends all your Runic Ward to gain a short-duration Buff that causes you to Block all Blockable Hits and apply Parried to enemies from which you've Blocked a Hit. This Buff is removed if you are Heavy Stunned. While this Buff is active, you cannot be Light Stunned, but Blocking too much damage may Heavy Stun you.
+Tags: Buff, Spell, Duration, RepeatablerefutationrefutationSkillGemRefutationRefutation### Reinforced Totems I
+Support gem · Strength · https://wraeclastindex.fyi/item/reinforced-totems-i
+No requirements
+Supports Skills which create Totems. Totems created by Supported Skills have additional Elemental Resistances.
+Tags: Support, Totemreinforced-totems-ireinforced-totems-iSupportGemIronwoodReinforced Totems I### Reinforced Totems II
+Support gem · Strength · https://wraeclastindex.fyi/item/reinforced-totems-ii
+No requirements
+Supports Skills which create Totems. Totems created by Supported Skills have additional Elemental Resistances.
+Tags: Support, Totemreinforced-totems-iireinforced-totems-iiSupportGemIronwoodTwoReinforced Totems II### Relentless Rage
+Support gem · Strength · https://wraeclastindex.fyi/item/relentless-rage
+No requirements
+Supports Skills you use yourself. On spending Rage with any skill you will gain a Buff. Using Supported Skills consumes this Buff to grant you Rage.
+Tags: Supportrelentless-ragerelentless-rageSupportGemGrudgeRelentless Rage### Remnant Potency I
+Support gem · Strength · https://wraeclastindex.fyi/item/remnant-potency-i
+No requirements
+Supports Skills which create Remnants, making those Remnants more powerful.
+Tags: Support, Remnantremnant-potency-iremnant-potency-iSupportGemInterludeRemnant Potency I### Remnant Potency II
+Support gem · Strength · https://wraeclastindex.fyi/item/remnant-potency-ii
+No requirements
+Supports Skills which create Remnants, making those Remnants more powerful, but delaying their effect.
+Tags: Support, Remnantremnant-potency-iiremnant-potency-iiSupportGemInterludeTwoRemnant Potency II### Remnant Potency III
+Support gem · Strength · https://wraeclastindex.fyi/item/remnant-potency-iii
+No requirements
+Supports Skills which create Remnants, making those Remnants more powerful, but delaying their effect.
+Tags: Support, Remnantremnant-potency-iiiremnant-potency-iiiSupportGemInterludeThreeRemnant Potency III### Remnants of Kalguur
+Skill gem · https://wraeclastindex.fyi/item/remnants-of-kalguur
+Requires at gem level 20: level 90
+1 s use time · 30 Spirit
+While active, enemies you Stun or kill have a chance to generate a Runic Ward Remnant. These Remnants can Overflow your Runic Ward.
+Tags: Buff, Persistent, Remnantremnants-of-kalguurremnants-of-kalguurSkillGemRemnantsOfKalguurRemnants of Kalguur### Rend
+Skill gem · https://wraeclastindex.fyi/item/rend
+Requires at gem level 20: level 90
+1 s use time
+Shapeshift into a Wyvern and perform a wide slash with your wingtip claws. Consumes a Power Charge if possible to grant you a Buff that gives you extra Lightning damage. While you have the Buff, Rend covers a much larger area but is slower.
+Tags: Attack, Shapeshift, Wyvern, AoE, Melee, Strike, DurationrendrendSkillGemRendRend### Rending Apex
+Support gem · Strength · https://wraeclastindex.fyi/item/rending-apex
+No requirements
+Supports Strikes that perform a Final Strike at the end of a combination of attacks, causing the Final Strike to Break Armour based on a portion of Attack damage dealt.
+Tags: Support, Attack, Melee, Strikerending-apexrending-apexSupportGemRendingApexRending Apex### Repulsion
+Skill gem · https://wraeclastindex.fyi/item/repulsion
+Requires at gem level 20: level 90
+0.5 s use time · 116 Ward at gem level 20
+Spend Runic Ward to Curse enemies with a Verisium Rune, inflicting them with Fragility. Hitting these enemies removes the Curse to Trigger an explosion, Knocking Back nearby enemies and causing more Stun buildup based on the Fragility on the target Hit.
+Tags: Spell, Attack, AoE, Trigger, Physical, Duration, Curse, RepeatablerepulsionrepulsionSkillGemRepulsionRepulsion### Requiem
+Skill gem · https://wraeclastindex.fyi/item/requiem
+Requires at gem level 20: level 90
+1 s use time · 150 Mana at gem level 20
+Your weapon passively accumulates anguish from the tormented souls within. When fully charged, use this skill to compose the Requiem, transforming your Crossbow shot into a torrent of anguish for a short, fixed amount of time. Does not use Ammunition.
+Tags: Attack, AoE, Ammunition, Projectile, Cold, ConditionalrequiemrequiemSkillGemCrossbowRequiemRequiem### Resonating Shield
+Skill gem · Strength · https://wraeclastindex.fyi/item/resonating-shield
+Requires at gem level 20: level 90, 157 Str
+1 s use time · 2816 Mana per minute at gem level 20
+Repeatedly hammer your Shield with your weapon causing damaging shockwaves in an area around you. Enemies hit by the shockwave lose Armour for a duration. While Channelling Resonating Shield, your Shield is raised and you will Block all incoming Blockable hits.
+Tags: Attack, AoE, Melee, Sustained, Physical, Channellingresonating-shieldresonating-shieldSkillGemResonatingShieldResonating Shield### Retaliate I
+Support gem · Strength · https://wraeclastindex.fyi/item/retaliate-i
+No requirements
+Supports Melee Attack Skills you use yourself. Supported Skills gain much more damage the closer you are to being Heavily Stunned.
+Tags: Support, Attack, Meleeretaliate-iretaliate-iSupportGemRetaliateRetaliate I### Retaliate II
+Support gem · Strength · https://wraeclastindex.fyi/item/retaliate-ii
+No requirements
+Supports Melee Attack Skills you use yourself. Supported Skills gain much more damage and are more capable of Stunning Enemies the closer you are to being Heavily Stunned.
+Tags: Support, Attack, Meleeretaliate-iiretaliate-iiSupportGemRetaliateTwoRetaliate II### Retreat I
+Support gem · Dexterity · https://wraeclastindex.fyi/item/retreat-i
+No requirements
+Supports Skills which create Projectiles. Supported Skills deal more damage with Projectiles if you have struck with a Melee Hit in the last eight seconds, but cannot themselves deal Melee Damage.
+Tags: Support, Projectileretreat-iretreat-iSupportGemRetreatRetreat I### Retreat II
+Support gem · Dexterity · https://wraeclastindex.fyi/item/retreat-ii
+No requirements
+Supports Skills which create Projectiles. Supported Skills deal more damage with Projectiles if you have struck with a Melee Hit in the last eight seconds, but cannot themselves deal Melee Damage.
+Tags: Support, Projectileretreat-iiretreat-iiSupportGemRetreatTwoRetreat II### Retreat III
+Support gem · Dexterity · https://wraeclastindex.fyi/item/retreat-iii
+No requirements
+Supports Skills which create Projectiles. Supported Skills deal more damage with Projectiles if you have struck with a Melee Hit in the last two seconds, but cannot themselves deal Melee Damage.
+Tags: Support, Projectileretreat-iiiretreat-iiiSupportGemRetreatThreeRetreat III### Reverberate
+Support gem · Strength · https://wraeclastindex.fyi/item/reverberate
+No requirements
+Supports Slam Skills. Supported Skills that have a chance to Aftershock have increased chance to cause Aftershocks the longer their Attack time.
+Tags: Support, Attack, Melee, SlamreverberatereverberateSupportGemReverberateReverberate### Rhoa Mount
+Skill gem · Dexterity · https://wraeclastindex.fyi/item/rhoa-mount
+Requires at gem level 20: level 90, 157 Dex
+1 s use time · 100 Spirit
+Harnesses a Companion Rhoa you can mount while you're wielding a Bow or Spear. While mounted you can use Bow, thrown Spear, and Mark Skills, and are much less slowed while using Skills, but being Hit will cause Heavy Stun buildup. While you aren't mounted, the Rhoa will attack your enemies alongside you with its beak, but can be damaged.
+Tags: Minion, Buff, Companion, Persistentrhoa-mountrhoa-mountSkillGemRhoaMountRhoa Mount### Ricochet I
+Support gem · Dexterity · https://wraeclastindex.fyi/item/ricochet-i
+No requirements
+Supports any Skill which creates Projectiles, giving those Projectiles a chance to Chain when impacting terrain.
+Tags: Support, Projectilericochet-iricochet-iSupportGemRicochetRicochet I### Ricochet II
+Support gem · Dexterity · https://wraeclastindex.fyi/item/ricochet-ii
+No requirements
+Supports any Skill which creates Projectiles, giving those Projectiles a chance to Chain when impacting terrain.
+Tags: Support, Projectilericochet-iiricochet-iiSupportGemRicochetTwoRicochet II### Ricochet III
+Support gem · Dexterity · https://wraeclastindex.fyi/item/ricochet-iii
+No requirements
+Supports any Skill which creates Projectiles, causing those Projectiles to Chain when impacting terrain, at the cost of any additional Projectiles, as well as causing them to always Pierce.
+Tags: Support, Projectilericochet-iiiricochet-iiiSupportGemRicochetThreeRicochet III### Righteous Descent
+Skill gem · https://wraeclastindex.fyi/item/righteous-descent
+Requires at gem level 20: level 90
+1 s use time
+Leap into the air carried by divine wings, damaging enemies with your spear where you land. If there is a Fragment of Divinity near you or the targeted location, this attack will Consume it when you leap to become Empowered, dealing more damage and granting life and mana recovery. This skill does not use up its Cooldown when empowered.
+Tags: Attack, AoE, Melee, Slam, Physical, Lightning, Travelrighteous-descentrighteous-descentSkillGemRighteousDescentRighteous Descent### Rigwald's Ferocity
+Lineage support gem · Dexterity · https://wraeclastindex.fyi/item/rigwalds-ferocity
+No requirements
+Supports Attack skills, granting them Attack Speed at the cost of Damage or Damage at the cost of Attack Speed depending on Weapon Set they are used in. Does not modify skills used by Minions.
+Tags: Support, Lineage, Attackrigwalds-ferocityrigwalds-ferocitySupportGemRigwaldsFerocityRigwald's Ferocity### Rime
+Support gem · Intelligence · https://wraeclastindex.fyi/item/rime
+No requirements
+Supports Skills which create Ground Surfaces, causing Enemies Chilled by those Surfaces to be more easily Frozen, but at the cost of some Chill magnitude.
+Tags: Support, ColdrimerimeSupportGemRimeRime### Rip
+Support gem · Strength · https://wraeclastindex.fyi/item/rip
+No requirements
+Supports Melee Attack Skills you use or Trigger yourself. Killing Blows with Supported Skills on Bleeding enemies create a Blood Remnant. Blood Remnants increase your Life regeneration rate for a short while after being collected.
+Tags: Support, Attack, Melee, Physical, Duration, RemnantripripSupportGemRipRip### Rising Tempest
+Support gem · Intelligence · https://wraeclastindex.fyi/item/rising-tempest
+No requirements
+Supports Skills which deal Damage, raising Elemental Damage dealt for each Skill used Recently of a different Elemental type. Cannot support Minion Skills.
+Tags: Supportrising-tempestrising-tempestSupportGemRisingTempestRising Tempest### Rite of Restoration
+Skill gem · https://wraeclastindex.fyi/item/rite-of-restoration
+Requires at gem level 20: level 90
+0.6 s use time
+Place a Sigil on the ground, providing a powerful Buff to you and Allies standing in it which grants Life Regeneration and amplifies Armour, Evasion and Energy Shield. The Buff becomes more powerful the more mana you spend while standing in the Sigil.
+Tags: Spell, AoE, Duration, Stagedrite-of-restorationrite-of-restorationSkillGemSigilOfLifeRite of Restoration### Ritual Sacrifice
+Skill gem · https://wraeclastindex.fyi/item/ritual-sacrifice
+Requires at gem level 20: level 90
+5 s use time · 20 Mana at gem level 20
+Sacrifice the Corpse of a Rare Monster to grant you its Modifiers for a duration, or gain a single random Modifier at the cost of your own life force.
+Tags: Buff, Durationritual-sacrificeritual-sacrificeSkillGemAscendancyRitualSacrificeRitual Sacrifice### Ritualistic Curse
+Support gem · Intelligence · https://wraeclastindex.fyi/item/ritualistic-curse
+No requirements
+Supports Curse skills, causing them to cover a larger area but take longer to Curse enemies.
+Tags: Support, AoE, Curseritualistic-curseritualistic-curseSupportGemRitualisticCurseRitualistic Curse### Rolling Magma
+Skill gem · https://wraeclastindex.fyi/item/rolling-magma
+Requires at gem level 20: level 90, 86 Str, 86 Int
+0.7 s use time · 83 Mana at gem level 20
+Shapeshift into a Wyvern and lob a ball of magma that deals area damage as it hits the ground. The skillChains, bouncing forward to deal damage multiple times. Impacts on Molten Fissures or Volcanos will activate them as though they were Slammed.
+Tags: Attack, Shapeshift, Wyvern, AoE, Projectile, Fire, Detonatorrolling-magmarolling-magmaSkillGemRollingMagmaRolling Magma### Rolling Slam
+Skill gem · Strength · https://wraeclastindex.fyi/item/rolling-slam
+Requires at gem level 20: level 90, 157 Str
+1 s use time · 96 Mana at gem level 20
+Slam the ground to Stun enemies and knock them away, then continue forward and perform a devastating second Slam.
+Tags: Attack, AoE, Melee, Slamrolling-slamrolling-slamSkillGemRollingSlamRolling Slam### Romira's Requital
+Lineage support gem · Intelligence · https://wraeclastindex.fyi/item/romiras-requital
+No requirements
+Supports Skills that create Companions which can be damaged. Minions created by Supported Skills take a portion of Hit Damage you would otherwise have taken, but have lowered maximum Life. A percentage of Damage taken this way is Recouped by you as Life.
+Tags: Support, Lineage, Minionromiras-requitalromiras-requitalSupportGemRomirasRequitalRomira's Requital### Runeforged Blades
+Support gem · https://wraeclastindex.fyi/item/runeforged-blades
+No requirements
+Supports Attacks you use yourself, causing them to Consume Fully Broken Armour on enemies to fire a nova of runic Projectiles at the cost of Runic Ward. The Projectiles cannot Hit the enemy from which they originated. Cannot support skills that Consume Broken Armour.
+Tags: Support, Attack, Projectile, Trigger, Payoffruneforged-bladesruneforged-bladesSupportGemRuneforgedBladesRuneforged Blades### Runic Extraction
+Support gem · https://wraeclastindex.fyi/item/runic-extraction
+No requirements
+Supports any Skill that deals damage. Enemies you kill with supported Skills have a chance to drop a Verisium Infusion Remnant.
+Tags: Support, Remnantrunic-extractionrunic-extractionSupportGemRunicExtractionRunic Extraction### Runic Infusion
+Support gem · https://wraeclastindex.fyi/item/runic-infusion
+No requirements
+Supports Attacks you use or Trigger yourself, causing them to cost Runic Ward to use but deal additional Physical damage based on their Runic Ward cost. Cannot Support Channelling Skills, Sustained Skills, or Skills without a cost.
+Tags: Support, Attack, Physicalrunic-infusionrunic-infusionSupportGemRunicInfusionRunic Infusion### Runic Reprieve
+Skill gem · https://wraeclastindex.fyi/item/runic-reprieve
+Requires at gem level 20: level 90
+0.12 s use time · 780 Ward per minute at gem level 20
+Channel to create a protective bubble all around you, Blocking Hits against you. While Channelling this Skill, you cannot be Light Stunned by Hits you Block, and damage you take from Hits is also removed from Runic Ward. Blocking Hits this way causes you to accumulate Heavy Stun buildup. You cannot recover Runic Ward while this Skill is active.
+Tags: Spell, Channellingrunic-reprieverunic-reprieveSkillGemRunicReprieveRunic Reprieve### Runic Tempering
+Skill gem · https://wraeclastindex.fyi/item/runic-tempering
+Requires at gem level 20: level 90
+1.13 s use time · 1179 Mana per minute at gem level 20
+Channel to imbue your armour with Runic Plates. When you are Hit while you have these plates, some of the damage you would take will be prevented, and this skill will cause backlash, dealing your Thorns damage in an area around your attacker.
+Tags: Channellingrunic-temperingrunic-temperingSkillGemRunicTemperingRunic Tempering### Rupture
+Support gem · Strength · https://wraeclastindex.fyi/item/rupture
+No requirements
+Supports skills that Hit Enemies. Supported skills Aggravate Bleeding on Hitting Heavily Stunned Enemies.
+Tags: Support, PhysicalruptureruptureSupportGemRuptureRupture### Rusted Spikes
+Support gem · Strength · https://wraeclastindex.fyi/item/rusted-spikes
+No requirements
+Supports Skills which deal Damage with Hits. When Supported Skills Pin an Enemy, they also Aggravate Bleeding on that Enemy.
+Tags: Supportrusted-spikesrusted-spikesSupportGemRustedSpikesRusted Spikes### Ruthless
+Support gem · Strength · https://wraeclastindex.fyi/item/ruthless
+No requirements
+Supports Attacks, causing repeated uses to be more effective at Stunning enemies.
+Tags: SupportruthlessruthlessSupportGemRuthlessRuthless### Ruzhan, the Blazing Sword
+Skill gem · https://wraeclastindex.fyi/item/ruzhan-the-blazing-sword
+Requires at gem level 20: level 90
+Summon Ruzhan, an invulnerable Flame Djinn Minion, to do your bidding. Ruzhan emerges to Strike enemies with his greatsword whenever you use a damaging Skill, and casts devastating Fire Spells when Commanded to do so.
+Tags: Minion, Persistent, Command, Fireruzhan-the-blazing-swordruzhan-the-blazing-swordSkillGemAscendancySummonFireDjinnRuzhan, the Blazing Sword### Ruzhan's Fury
+Skill gem · https://wraeclastindex.fyi/item/ruzhans-fury
+Requires at gem level 20: level 90
+0.4 s use time · 41 Mana at gem level 20
+Tags: Command, AoE, Projectile, Fireruzhans-furyruzhans-furySkillGemAscendancyCommandFireDjinnMassFusilladeRuzhan's Fury### Ruzhan's Reckoning
+Skill gem · https://wraeclastindex.fyi/item/ruzhans-reckoning
+Requires at gem level 20: level 90
+0.4 s use time · 68 Mana at gem level 20
+Tags: Command, AoE, Fireruzhans-reckoningruzhans-reckoningSkillGemAscendancyCommandFireDjinnMeteorRuzhan's Reckoning### Ruzhan's Trap
+Skill gem · https://wraeclastindex.fyi/item/ruzhans-trap
+Requires at gem level 20: level 90
+0.4 s use time · 47 Mana at gem level 20
+Tags: Command, AoE, Projectile, Fire, Duration, Hazardruzhans-trapruzhans-trapSkillGemAscendancyCommandFireDjinnFlameRunesRuzhan's Trap### Sacrifice
+Skill gem · Intelligence · https://wraeclastindex.fyi/item/sacrifice
+Requires at gem level 20: level 90, 157 Int
+1 s use time · 60 Spirit
+While active, your undead Reviving Minions can be used in place of Corpses by your skills, but your Minions Revive more slowly.
+Tags: Buff, Minion, PersistentsacrificesacrificeSkillGemSacrificeSacrifice### Sacrificial Lamb I
+Support gem · Intelligence · https://wraeclastindex.fyi/item/sacrificial-lamb-i
+No requirements
+Supports Skills which create Minions, causing your Skills which can target Minions to prioritise targeting Minions from the Supported Skill before your other Minions where possible.
+Tags: Support, Minionsacrificial-lamb-isacrificial-lamb-iSupportGemSacrificialLambSacrificial Lamb I### Sacrificial Lamb II
+Support gem · Intelligence · https://wraeclastindex.fyi/item/sacrificial-lamb-ii
+No requirements
+Supports Skills which create Minions, causing your Skills which can target Minions to prioritise targeting Minions from the Supported Skill before your other Minions where possible, as well as causing them to always be considered Detonatable.
+Tags: Support, Minionsacrificial-lamb-iisacrificial-lamb-iiSupportGemSacrificialLambTwoSacrificial Lamb II### Sacrificial Offering
+Support gem · Intelligence · https://wraeclastindex.fyi/item/sacrificial-offering
+No requirements
+Supports Offering Skills. Supported Skills Sacrifice a portion of your life on use, but deal much more damage and have more powerful Buffs in return.
+Tags: Supportsacrificial-offeringsacrificial-offeringSupportGemAblationSacrificial Offering### Salvo
+Support gem · Dexterity · https://wraeclastindex.fyi/item/salvo
+No requirements
+Supports Attack Skills you use yourself which fire Projectiles, Sealing them over time. The Seals are broken when used, causing additional Projectiles to be fired. Projectiles from Supported Skills are fired in random directions. Cannot Support Skills which require Combo, have a Cooldown or which already gain Seals.
+Tags: Support, Attack, ProjectilesalvosalvoSupportGemSalvoSalvo### Sanguine Revelry
+Skill gem · https://wraeclastindex.fyi/item/sanguine-revelry
+Requires at gem level 20: level 90
+Conjure hateful energy to fuel your Rage and Life. While active, Bleeding enemies you kill have a chance to spawn a Hateful Remnant, and Hitting a Bleeding target spawns a Hateful Remnant every few seconds. Picking up a Hateful Remnant grants you Rage and recovers Life based on your current Rage.
+Tags: Buff, Persistent, Remnantsanguine-revelrysanguine-revelrySkillGemSanguineRevelrySanguine Revelry### Savage Fury
+Skill gem · https://wraeclastindex.fyi/item/savage-fury
+Requires at gem level 20: level 90, 86 Str, 86 Int
+30 Spirit
+While active, your Fury builds from Attacking enemies. Using this Skill releases your Fury to send you into a bestial frenzy, gaining damage and Onslaught but constantly losing life and forcing you into animal form. The frenzy ends immediately if you return to human form. You cannot gain Fury while in a frenzy.
+Tags: Buff, Persistent, Durationsavage-furysavage-furySkillGemSavageFurySavage Fury### Scavenged Plating
+Skill gem · Strength · https://wraeclastindex.fyi/item/scavenged-plating
+Requires at gem level 20: level 90, 157 Str
+1 s use time · 30 Spirit
+While active, uses fragments of armour scavenged from enemies to bolster your own. Fully Breaking an enemy's Armour grants you stacks of Scavenged Plating for a duration based on the enemy's Rarity, and you gain Armour and Thorns per stack. Normal enemies grant 1 stack, Magic enemies grant 2 stacks, Rare enemies grant 5 stacks and Unique enemies grant 10 stacks.
+Tags: Buff, Persistent, Physical, Durationscavenged-platingscavenged-platingSkillGemScavengedPlatingScavenged Plating### Scouring Flame
+Support gem · https://wraeclastindex.fyi/item/scouring-flame
+No requirements
+Supports any skill that Hits enemies, causing inflicted Ignites to deal more damage but the skill to gain a Runic Ward cost.
+Tags: Support, Firescouring-flamescouring-flameSupportGemScouringFlameScouring Flame### Searing Flame I
+Support gem · Strength · https://wraeclastindex.fyi/item/searing-flame-i
+No requirements
+Supports any skill that Hits enemies, causing inflicted Ignites to deal more damage but its Hits to deal less damage.
+Tags: Support, Firesearing-flame-isearing-flame-iSupportGemSearingFlameSearing Flame I### Searing Flame II
+Support gem · Strength · https://wraeclastindex.fyi/item/searing-flame-ii
+No requirements
+Supports any skill that Hits enemies, causing inflicted Ignites to deal more damage but its Hits to deal less damage.
+Tags: Support, Firesearing-flame-iisearing-flame-iiSupportGemSearingFlameTwoSearing Flame II### Second Wind I
+Support gem · Dexterity · https://wraeclastindex.fyi/item/second-wind-i
+No requirements
+Supports Skills which have a cooldown, giving them extra uses of that cooldown. Cannot support Meta, instant, or Triggered Skills, and cannot modify the Skills of Minions.
+Tags: Supportsecond-wind-isecond-wind-iSupportGemSecondWindSecond Wind I### Second Wind II
+Support gem · Dexterity · https://wraeclastindex.fyi/item/second-wind-ii
+No requirements
+Supports Skills which have a cooldown, giving them extra uses of that cooldown. Cannot support Meta, instant, or Triggered Skills, and cannot modify the Skills of Minions.
+Tags: Supportsecond-wind-iisecond-wind-iiSupportGemSecondWindTwoSecond Wind II### Second Wind III
+Support gem · Dexterity · https://wraeclastindex.fyi/item/second-wind-iii
+No requirements
+Supports Skills which have a cooldown, giving them extra uses of that cooldown and causing them to recover your Life when a Skill is used and goes on cooldown. Cannot support Meta, instant, or Triggered Skills, and cannot modify the Skills of Minions.
+Tags: Supportsecond-wind-iiisecond-wind-iiiSupportGemSecondWindThreeSecond Wind III### See Red
+Support gem · Strength · https://wraeclastindex.fyi/item/see-red
+No requirements
+Supports Attack Skills. Bleeding inflicted with Supported Skills lasts significantly longer, but enemies you inflict Bleeding onto with Supported Skills will move and Attack faster.
+Tags: Support, Attack, Physicalsee-redsee-redSupportGemSeeRedSee Red### Seismic Cry
+Skill gem · Strength · https://wraeclastindex.fyi/item/seismic-cry
+Requires at gem level 20: level 90, 157 Str
+0.8 s use time · 85 Mana at gem level 20
+Perform a damaging Warcry, Knocking Back nearby enemies and Heavy Stunning enemies that are Primed for Stun. If an enemy is Heavy Stunned or a currently Heavy Stunned enemy is Hit, this Skill Empowers subsequent Slams to perform an additional Aftershock. This Skill's cooldown can be bypassed by expending an Endurance Charge.
+Tags: Warcry, AoE, Physical, Novaseismic-cryseismic-crySkillGemSeismicCrySeismic Cry### Selfless Remnants
+Support gem · Strength · https://wraeclastindex.fyi/item/selfless-remnants
+No requirements
+Supports Skills that generate Remnants, causing those Remnants to affect Allies in your Presence when collected instead of you.
+Tags: Support, Remnantselfless-remnantsselfless-remnantsSupportGemFigureheadSelfless Remnants### Seraph's Heart
+Lineage support gem · https://wraeclastindex.fyi/item/seraphs-heart
+No requirements
+45 Spirit
+Supports Persistent Buff Skills, providing a chance for enemies to calculate their Hits as though your Resistances were 90% while the skill is active.
+Tags: Support, Lineage, Buff, Persistentseraphs-heartseraphs-heartSupportGemSeraphsHeartSeraph's Heart### Shard Scavenger
+Skill gem · https://wraeclastindex.fyi/item/shard-scavenger
+Requires at gem level 20: level 90, 86 Str, 86 Dex
+30 Spirit
+While active, Consuming Freeze, Shock, Ignite, or Fully Broken Armour on an enemy reloads your Crossbow, restores one cooldown use for your Grenades and grants a Buff causing Crossbow Attacks to not consume bolts for a duration. This can only occur once every few seconds.
+Tags: Buff, Persistent, Physical, Lightning, Cold, Fire, Durationshard-scavengershard-scavengerSkillGemShardScavengerShard Scavenger### Shattering Concoction
+Skill gem · https://wraeclastindex.fyi/item/shattering-concoction
+Requires at gem level 20: level 90
+1 s use time
+Consume charges from your Mana Flask to throw a flask that explodes, dealing Cold Attack damage in an area and inflicting Exposure. This damage is not based on your unarmed damage, so this is not considered an Unarmed Attack.
+Tags: Attack, AoE, Projectile, Coldshattering-concoctionshattering-concoctionSkillGemAscendancyShatteringConcoctionShattering Concoction### Shattering Palm
+Skill gem · https://wraeclastindex.fyi/item/shattering-palm
+Requires at gem level 20: level 90, 86 Dex, 86 Int
+1 s use time · 40 Mana at gem level 20
+Dash to an enemy and Strike them with an Attack that manifests a wave of cold, coating nearby enemies in shards of ice. Dealing enough damage to these enemies will shatter the shards, causing an icy explosion that deals Attack damage.
+Tags: Attack, AoE, Melee, Strike, Trigger, Coldshattering-palmshattering-palmSkillGemShatteringPalmShattering Palm### Shattering Spite
+Skill gem · https://wraeclastindex.fyi/item/shattering-spite
+Requires at gem level 20: level 90
+1 s use time
+Stamp your spear, destroying all Bloodstone Lances on each enemy in your Presence to cause a damaging explosion around that enemy. Each explosion gains new benefits when reaching higher thresholds of Bloodstone Lances removed from an enemy, causing them to deal more damage, have increased area of effect, and Leech Life from enemies caught in the blast.
+Tags: Attack, AoE, Physical, Lightning, Fireshattering-spiteshattering-spiteSkillGemShatteringSpiteShattering Spite### Shield Charge
+Skill gem · Strength · https://wraeclastindex.fyi/item/shield-charge
+Requires at gem level 20: level 90, 157 Str
+1 s use time · 2921 Mana per minute at gem level 20
+Channel to charge in the target direction. You will crash into enemies on your path, stopping your charge and dealing damage to enemies in an area, and extra damage to the enemies you collided with. While charging, your Shield is raised and you will Block all incoming Blockable hits.
+Tags: Attack, AoE, Melee, Physical, Channelling, Travelshield-chargeshield-chargeSkillGemShieldChargeShield Charge### Shield Wall
+Skill gem · Strength · https://wraeclastindex.fyi/item/shield-wall
+Requires at gem level 20: level 90, 157 Str
+1 s use time · 92 Mana at gem level 20
+Ram your Shield into the ground, throwing up a wall of earth. Enemies can attack your wall segments, and your Slams, Warcries, and Shield Charge will instantly shatter them all. The segments explode when shattered, damaging enemies in front of and around them.
+Tags: Attack, AoE, Melee, Physical, Durationshield-wallshield-wallSkillGemShieldWallShield Wall### Shock
+Support gem · Dexterity · https://wraeclastindex.fyi/item/shock
+No requirements
+Supports any skill that Hits enemies, making it more likely to Shock.
+Tags: Support, LightningshockshockSupportGemConductionShock### Shock Conduction
+Support gem · Intelligence · https://wraeclastindex.fyi/item/shock-conduction
+No requirements
+Supports any skill that Hits enemies, giving it a chance to also Shock nearby enemies when you Shock an enemy.
+Tags: Support, AoE, Lightningshock-conductionshock-conductionSupportGemCoursingCurrentShock Conduction### Shock Conduction II
+Support gem · Intelligence · https://wraeclastindex.fyi/item/shock-conduction-ii
+No requirements
+Supports any skill that Hits enemies, giving it a chance to also Shock nearby enemies when you Shock an enemy. Always Shocks enemies which are Drenched.
+Tags: Support, AoE, Lightningshock-conduction-iishock-conduction-iiSupportGemCoursingCurrentTwoShock Conduction II### Shock Siphon
+Support gem · Intelligence · https://wraeclastindex.fyi/item/shock-siphon
+No requirements
+Supports any skill that Hits enemies, causing you to recover Energy Shield when it kills a Shocked enemy.
+Tags: Support, Lightningshock-siphonshock-siphonSupportGemShockSiphonShock Siphon### Shockburst Rounds
+Skill gem · https://wraeclastindex.fyi/item/shockburst-rounds
+Requires at gem level 20: level 90, 86 Str, 86 Dex
+0.8 s use time · 100 Mana at gem level 20
+Load your Crossbow with a clip of charged bolts which release damaging pulses upon Hitting an enemy affected by a Lightning Ailment. Using this Skill again reloads the clip.
+Tags: Attack, AoE, Ammunition, Projectile, Lightning, Payoffshockburst-roundsshockburst-roundsSkillGemShockburstRoundsShockburst Rounds### Shockchain Arrow
+Skill gem · Dexterity · https://wraeclastindex.fyi/item/shockchain-arrow
+Requires at gem level 20: level 90, 157 Dex
+1 s use time · 68 Mana at gem level 20
+Fire a Lightning-charged arrow that homes in on enemies afflicted by Lightning Ailments. Hitting such an enemy will cause your arrow to release a damaging shockwave and Chain towards nearby targets, with those Chaining Hits also releasing a shockwave. After the final Chain, the arrow lodges into the ground as a Lightning Rod. Consumes Shock from enemies it Hits, but not Electrocution.
+Tags: Attack, AoE, Projectile, Lightning, Chaining, Payoff, Repeatableshockchain-arrowshockchain-arrowSkillGemShockchainArrowShockchain Arrow### Shocking Leap
+Support gem · Dexterity · https://wraeclastindex.fyi/item/shocking-leap
+No requirements
+Supports Skills that leap into the air and deal damage, causing them to create Shocked Ground the first time they Critically Hit an enemy.
+Tags: Support, AoE, Durationshocking-leapshocking-leapSupportGemShockingLeapShocking Leap### Shockwave Totem
+Skill gem · Strength · https://wraeclastindex.fyi/item/shockwave-totem
+Requires at gem level 20: level 90, 157 Str
+0.6 s use time · 103 Mana at gem level 20
+Raise a Totem that Slams the ground around it, repeatedly damaging nearby enemies. Jagged Ground erupts when hit by this Slam, damaging enemies standing on it. The Totem cannot create Jagged Ground. This Skill can be used while Shapeshifted.
+Tags: Attack, Totem, AoE, Melee, Slam, Duration, Novashockwave-totemshockwave-totemSkillGemShockwaveTotemShockwave Totem### Short Fuse I
+Support gem · Strength · https://wraeclastindex.fyi/item/short-fuse-i
+No requirements
+Supports Skills which Detonate after some amount of time has elapsed, shortening the time before Detonation.
+Tags: Supportshort-fuse-ishort-fuse-iSupportGemExpediteShort Fuse I### Short Fuse II
+Support gem · Strength · https://wraeclastindex.fyi/item/short-fuse-ii
+No requirements
+Supports Skills which Detonate after some amount of time has elapsed, massively shortening the time before Detonation at the cost of Damage.
+Tags: Supportshort-fuse-iishort-fuse-iiSupportGemExpediteTwoShort Fuse II### Shred
+Skill gem · https://wraeclastindex.fyi/item/shred
+Requires at gem level 20: level 90
+1 s use time
+Shapeshift into a Werewolf and lash out with a flurry of claw swipes. The first Attack can dash to faraway enemies and the final Attack Strikes twice. Attacking a Frozen enemy will create Ice Fragments, which are Projectiles that land and explode after a short delay.
+Tags: Attack, Shapeshift, Werewolf, AoE, Melee, Strike, Projectile, Trigger, Cold, PayoffshredshredSkillGemWolfShredShred### Shroud
+Skill gem · https://wraeclastindex.fyi/item/shroud
+Requires at gem level 20: level 90
+25 Spirit
+Gain Stealth after not using Skills or being Hit for a short time.
+Tags: Spell, Buff, PersistentshroudshroudSkillGemShroudShroud### Siege Ballista
+Skill gem · https://wraeclastindex.fyi/item/siege-ballista
+Requires at gem level 20: level 90, 86 Str, 86 Dex
+1 s use time · 121 Mana at gem level 20
+Deploy a Ballista Totem that fires bolts skyward, to explode a short time after landing.
+Tags: Attack, Totem, AoE, Projectile, Sustained, Fire, Duration, Repeatablesiege-ballistasiege-ballistaSkillGemArtilleryBallistaSiege Ballista### Siege Cascade
+Skill gem · https://wraeclastindex.fyi/item/siege-cascade
+Requires at gem level 20: level 90, 86 Str, 86 Dex
+1 s use time · 81 Mana at gem level 20
+Load your Crossbow with enemy-seeking payloads which are fired into the air, dropping a bolt near every enemy in the target area. These bolts lodge in the ground and explode after a short delay.
+Tags: Attack, AoE, Ammunition, Projectile, Sustainedsiege-cascadesiege-cascadeSkillGemSiegeCascadeSiege Cascade### Sigil of Power
+Skill gem · Intelligence · https://wraeclastindex.fyi/item/sigil-of-power
+Requires at gem level 20: level 90, 157 Int
+0.6 s use time
+Place a Sigil on the ground, providing a powerful Spell Damage Buff to you and Allies while standing in it. The Buff becomes more powerful the more mana you spend while standing in the Sigil.
+Tags: Spell, AoE, Duration, Stagedsigil-of-powersigil-of-powerSkillGemSigilOfPowerSigil of Power### Sione's Temper
+Lineage support gem · Intelligence · https://wraeclastindex.fyi/item/siones-temper
+No requirements
+Supports Projectile Spells. Supported Spells have an increasingly higher chance to fire many additional Projectiles in a circle, resetting when they do.
+Tags: Support, Lineage, Spell, Projectilesiones-tempersiones-temperSupportGemWildshardsThreeSione's Temper### Siphon Elements
+Skill gem · Intelligence · https://wraeclastindex.fyi/item/siphon-elements
+Requires at gem level 20: level 90, 157 Int
+30 Spirit
+While active, has a chance to create an Infusion Remnant when you Freeze, Shock or Ignite a target.
+Tags: Buff, Persistent, Lightning, Cold, Fire, Remnantsiphon-elementssiphon-elementsSkillGemSiphonElementsSiphon Elements### Siphoning Strike
+Skill gem · https://wraeclastindex.fyi/item/siphoning-strike
+Requires at gem level 20: level 90, 86 Dex, 86 Int
+1 s use time · 47 Mana at gem level 20
+Dash to a target and Strike them with your Quarterstaff. If the target is Shocked, Consume their Shock to release a Lightning shockwave around the target and grant you a Power Charge. This skill cannot be Ancestrally Boosted.
+Tags: Attack, AoE, Melee, Strike, Lightning, Payoffsiphoning-strikesiphoning-strikeSkillGemSiphoningStrikeSiphoning Strike### Skeletal Arsonist
+Skill gem · Intelligence · https://wraeclastindex.fyi/item/skeletal-arsonist
+Requires at gem level 20: level 90, 157 Int
+39 Spirit
+Activate to summon bomb-throwing, Reviving Skeletal Arsonists that can detonate other Minions on Command.
+Tags: Minion, Persistent, Fire, Detonatorskeletal-arsonistskeletal-arsonistSkillGemSkeletalArsonistSkeletal Arsonist### Skeletal Brute
+Skill gem · Intelligence · https://wraeclastindex.fyi/item/skeletal-brute
+Requires at gem level 20: level 90, 157 Int
+48 Spirit
+Activate to summon hard-hitting, Reviving Skeletal Brutes that can Stun Primed enemies and Warcry on Command. This Warcry Intimidates nearby enemies and Consumes Freeze on enemies and allies to deal damage in an Area around them.
+Tags: Minion, Warcry, Persistent, Physical, Payoffskeletal-bruteskeletal-bruteSkillGemSkeletalBruteSkeletal Brute### Skeletal Cleric
+Skill gem · Intelligence · https://wraeclastindex.fyi/item/skeletal-cleric
+Requires at gem level 20: level 90, 157 Int
+20 Spirit
+Activate to summon Reviving Skeletal Clerics that heal other minions and revive fallen Skeletons.
+Tags: Minion, Persistentskeletal-clericskeletal-clericSkillGemSkeletalClericSkeletal Cleric### Skeletal Frost Mage
+Skill gem · Intelligence · https://wraeclastindex.fyi/item/skeletal-frost-mage
+Requires at gem level 20: level 90, 157 Int
+39 Spirit
+Activate to summon Reviving Skeletal Frost Mages that can envelop your Minions in an icy shield on Command.
+Tags: Minion, Persistent, Coldskeletal-frost-mageskeletal-frost-mageSkillGemSkeletalFrostMageSkeletal Frost Mage### Skeletal Reaver
+Skill gem · Intelligence · https://wraeclastindex.fyi/item/skeletal-reaver
+Requires at gem level 20: level 90, 157 Int
+30 Spirit
+Activate to summon aggressive, Reviving Skeletal Reavers that can enrage on Command. Skeletal Reavers do more Attack Damage and gain increased Attack speed based on their Rage
+Tags: Minion, Persistent, Physicalskeletal-reaverskeletal-reaverSkillGemSkeletalReaverSkeletal Reaver### Skeletal Sniper
+Skill gem · Intelligence · https://wraeclastindex.fyi/item/skeletal-sniper
+Requires at gem level 20: level 90, 157 Int
+30 Spirit
+Activate to summon long-ranged, Reviving Skeletal Snipers that can fire a gas arrow on Command.
+Tags: Minion, Persistent, Physical, Fire, Chaosskeletal-sniperskeletal-sniperSkillGemSkeletalSniperSkeletal Sniper### Skeletal Sniper
+Skill gem · Intelligence · https://wraeclastindex.fyi/item/skeletal-sniper-2
+Requires at gem level 20: level 90, 157 Int
+30 Spirit
+Activate to summon long-ranged, Reviving Skeletal Snipers that can fire a gas arrow on Command.
+Tags: Minion, Persistent, Physical, Fire, Chaosskeletal-sniper-2skeletal-sniperSkillGemSkeletalWarriorSkeletal Sniper### Skeletal Storm Mage
+Skill gem · Intelligence · https://wraeclastindex.fyi/item/skeletal-storm-mage
+Requires at gem level 20: level 90, 157 Int
+39 Spirit
+Activate to summon Reviving Skeletal Storm Mages that can call down a lightning strike on dead Skeletons on Command.
+Tags: Minion, Persistent, Lightningskeletal-storm-mageskeletal-storm-mageSkillGemSkeletalStormMageSkeletal Storm Mage### Skeletal Warrior
+Skill gem · Intelligence · https://wraeclastindex.fyi/item/skeletal-warrior
+Requires at gem level 20: level 90, 157 Int
+20 Spirit
+Activate to summon Reviving Skeletal Warriors.
+Tags: Minion, Persistent, Physicalskeletal-warriorskeletal-warriorSkillGemSkeletalWarriorWeaponSkillSkeletal Warrior### Skittering Stone I
+Support gem · Strength · https://wraeclastindex.fyi/item/skittering-stone-i
+No requirements
+Supports Skills which create shatterable earthen objects. After killing enough Enemies in range of these objects, they will shatter, releasing skittering stone Minions.
+Tags: Support, Minion, Trigger, Physical, Durationskittering-stone-iskittering-stone-iSupportGemSkitteringStoneSkittering Stone I### Skittering Stone II
+Support gem · Strength · https://wraeclastindex.fyi/item/skittering-stone-ii
+No requirements
+Supports Skills which create shatterable earthen objects. After killing enough Enemies in range of these objects, they will shatter, releasing skittering stone Minions.
+Tags: Support, Minion, Trigger, Physical, Durationskittering-stone-iiskittering-stone-iiSupportGemSkitteringStoneTwoSkittering Stone II### Skyfall
+Skill gem · https://wraeclastindex.fyi/item/skyfall
+Requires at gem level 20: level 90
+1 s use time · 135 Ward at gem level 20
+Build Glory by spending Runic Ward. When you have maximum Glory, you may call down a mass of Verisium from the sky, dealing high damage at the targeted location and summoning a Temporary Minion. Targeting close to you will cause you to jump back as you cast. Consumes a Verisium Infusion, if possible, to increase the number of Minions summoned.
+Tags: Spell, Minion, AoE, Physical, Cold, Conditional, RepeatableskyfallskyfallSkillGemSkyfallSkyfall### Slow Potency
+Support gem · Dexterity · https://wraeclastindex.fyi/item/slow-potency
+No requirements
+Supports any skill, causing inflicted Slows to be more powerful.
+Tags: Support, Spellslow-potencyslow-potencySupportGemEncumbranceSlow Potency### Smash to Smithereens
+Skill gem · https://wraeclastindex.fyi/item/smash-to-smithereens
+Requires at gem level 20: level 90
+1 s use time
+Blows strong enough to Heavy Stun an enemy reverberate in an area around the enemy and heavily Break Armour.
+Tags: Attack, AoE, Trigger, Firesmash-to-smithereenssmash-to-smithereensSkillGemSmashToSmithereensSmash to Smithereens### Snap
+Skill gem · Intelligence · https://wraeclastindex.fyi/item/snap
+Requires at gem level 20: level 90, 157 Int
+0.5 s use time · 89 Mana at gem level 20
+Consume the elemental energy from a Frozen, Shocked or Ignited enemy, creating an elemental blast that leaves behind an Infusion Remnant. The blast will spread to other enemies affected by the same Ailment, but those blasts cannot spread further. Can also be cast on a Frostbolt to create a larger cold blast.
+Tags: Spell, AoE, Lightning, Cold, Fire, Payoff, Remnant, RepeatablesnapsnapSkillGemColdSnapSnap### Snipe
+Skill gem · Dexterity · https://wraeclastindex.fyi/item/snipe
+Requires at gem level 20: level 90, 157 Dex
+1 s use time · 7114 Mana per minute at gem level 20
+Channel to charge up your bow before releasing a powerful shot. Releasing with Perfect Timing causes the arrow to explode on impact and Consume Freeze on directly Hitting. Consuming Freeze enhances the explosion.
+Tags: Attack, AoE, Projectile, Cold, Channelling, Payoff, RepeatablesnipesnipeSkillGemSnipeSnipe### Sniper's Mark
+Skill gem · Dexterity · https://wraeclastindex.fyi/item/snipers-mark
+Requires at gem level 20: level 90, 157 Dex
+0.5 s use time · 79 Mana at gem level 20
+Mark a target. The next Critical Hit the target receives Activates the Mark, Consuming it to deal extra damage and grant you a Frenzy Charge.
+Tags: Mark, Durationsnipers-marksnipers-markSkillGemSnipersMarkSniper's Mark### Soaring Midnight
+Skill gem · https://wraeclastindex.fyi/item/soaring-midnight
+Requires at gem level 20: level 90
+1 s use time
+Hurl your Shield as a Projectile which Returns to you at the end of its flight. While the Shield is in flight, this skill is replaced with Embrace the Fall. This skill's cooldown is skipped if you catch the Shield as it Returns, or destroy an Ice Crystal with the Embrace the Fall.
+Tags: Attack, AoE, Melee, Slam, Projectile, Physical, Cold, Travelsoaring-midnightsoaring-midnightSkillGemGlacialClashSoaring Midnight### Solar Orb
+Skill gem · Intelligence · https://wraeclastindex.fyi/item/solar-orb
+Requires at gem level 20: level 90, 157 Int
+0.8 s use time
+Create a fiery Orb that periodically releases fiery pulses. Enemies that are very close to the Orb are Ignited. Flameblast can target a Solar Orb to be centred on the Orb instead of your location.
+Tags: Spell, AoE, Sustained, Fire, Duration, Orb, Repeatablesolar-orbsolar-orbSkillGemSolarOrbSolar Orb### Sorcery Ward
+Skill gem · https://wraeclastindex.fyi/item/sorcery-ward
+Requires at gem level 20: level 90
+1 s use time
+Passively manifests a protective barrier which takes Elemental Damage from Hits for you until depleted. The barrier instantly recharges to its full value a short time after it stops taking damage or is fully depleted.
+Tags: Spell, Buff, Persistent, Lightning, Cold, Firesorcery-wardsorcery-wardSkillGemAscendancySorceryWardSorcery Ward### Soul Crystal: any Undead
+Skill gem · Intelligence · https://wraeclastindex.fyi/item/soul-crystal-any-undead
+Requires at gem level 20: level 90, 157 Int
+1 s use time
+Summon a Reviving Undead Companion to aid you in combat.
+Tags: Minion, Companion, Persistentsoul-crystal-any-undeadsoul-crystal-any-undeadSkillGemSoulCrystalSoul Crystal: any Undead### Soul Drain
+Support gem · Dexterity · https://wraeclastindex.fyi/item/soul-drain
+No requirements
+Supports any skill that Hits enemies, causing you to recover Mana when it Culls an enemy.
+Tags: Supportsoul-drainsoul-drainSupportGemSoulDrainSoul Drain### Soul Offering
+Skill gem · Intelligence · https://wraeclastindex.fyi/item/soul-offering
+Requires at gem level 20: level 90, 157 Int
+1 s use time · 141 Mana at gem level 20
+Skewer a Skeleton on a bone spike, granting you a powerful Spell damage Buff as long as the spike remains. Does not affect your Minions. The bone spike is itself a Minion. If it dies, the effect ends immediately.
+Tags: Minion, Buff, Durationsoul-offeringsoul-offeringSkillGemSoulOfferingSoul Offering### Soulbreaker
+Support gem · Intelligence · https://wraeclastindex.fyi/item/soulbreaker
+No requirements
+Supports skills you use yourself, causing them to Trigger a Chaos Damage nova when breaking Enemy Energy Shield.
+Tags: Support, AoE, ChaossoulbreakersoulbreakerSupportGemSoulbreakerSoulbreaker### Soulrend
+Skill gem · Intelligence · https://wraeclastindex.fyi/item/soulrend
+Requires at gem level 20: level 90, 157 Int
+0.8 s use time
+Fire a Piercing Projectile that seeks out enemies. Enemies hit are inflicted with a Debuff that Hinders them and deals Chaos damage over time for a short duration.
+Tags: Spell, Projectile, Chaos, Duration, RepeatablesoulrendsoulrendSkillGemSoulrendSoulrend### Spar
+Support gem · Strength · https://wraeclastindex.fyi/item/spar
+No requirements
+Supports Melee Attack Skills. Supported Skills are more capable of Stunning Enemies the closer you are to being Heavily Stunned.
+Tags: Support, Attack, MeleesparsparSupportGemSparSpar### Spark
+Skill gem · Intelligence · https://wraeclastindex.fyi/item/spark-2
+Requires at gem level 20: level 90, 157 Int
+0.7 s use time · 56 Mana at gem level 20
+Launch a spray of sparking Projectiles that travel erratically along the ground until they hit an enemy or expire. Consumes a Cold Infusion if possible to fire many sparks in a circle.
+Tags: Spell, Projectile, Trigger, Lightning, Cold, Duration, Repeatablespark-2sparkSkillGemUniqueEarthboundTriggeredSparkSpark### Spark
+Skill gem · Intelligence · https://wraeclastindex.fyi/item/spark
+Requires at gem level 20: level 90, 157 Int
+0.7 s use time · 56 Mana at gem level 20
+Launch a spray of sparking Projectiles that travel erratically along the ground until they hit an enemy or expire. Consumes a Cold Infusion if possible to fire many sparks in a circle.
+Tags: Spell, Projectile, Lightning, Duration, RepeatablesparksparkSkillGemSparkSpark### Spear of Solaris
+Skill gem · Dexterity · https://wraeclastindex.fyi/item/spear-of-solaris
+Requires at gem level 20: level 90, 157 Dex
+1 s use time · 91 Mana at gem level 20
+Build Glory by inflicting Freeze, Shock or Ignite on enemies. When you have maximum Glory you may call forth the Azmeri goddess Solaris, jumping backwards and throwing your Spear in the air. On landing the spear deals heavy damage in an area, then calls a divine skybeam that pulses periodically and creates expanding Ignited Ground. Modifiers to number of Projectiles fired do not apply to this skill.
+Tags: Attack, AoE, Projectile, Sustained, Fire, Conditionalspear-of-solarisspear-of-solarisSkillGemSpearOfSolarisSpear of Solaris### Spear Stab
+Skill gem · https://wraeclastindex.fyi/item/spear-stab
+Requires at gem level 20: level 90
+1 s use time
+Strike with your Spear.
+Tags: Attack, AoE, Melee, Strikespear-stabspear-stabSkillGemPlayerDefaultSpearSpear Stab### Spear Stab
+Skill gem · https://wraeclastindex.fyi/item/spear-stab-2
+Requires at gem level 20: level 90
+1 s use time
+Strike with your Spear.
+Tags: Attack, AoE, Melee, Strikespear-stab-2spear-stabSkillGemPlayerDefaultSpearOffHandSpear Stab### Spear Throw
+Skill gem · https://wraeclastindex.fyi/item/spear-throw
+Requires at gem level 20: level 90
+1 s use time
+Hurl your Spear with force. Consumes a Frenzy Charge if you have one to cause the Spear to explode at the end of its flight.
+Tags: Attack, AoE, Projectile, Repeatablespear-throwspear-throwSkillGemPlayerDefaultSpearThrowSpear Throw### Spearfield
+Skill gem · Dexterity · https://wraeclastindex.fyi/item/spearfield
+Requires at gem level 20: level 90, 157 Dex
+1 s use time · 39 Mana at gem level 20
+Stab the ground causing multiple spears to burst out of the ground in front of you in a large area. The spears remain for a duration, or explode when enemies touch them, damaging and Maiming them.
+Tags: Attack, AoE, Melee, Sustained, Duration, HazardspearfieldspearfieldSkillGemSpearfieldSpearfield### Spectral Volley
+Support gem · Dexterity · https://wraeclastindex.fyi/item/spectral-volley
+No requirements
+Supports Bow or Spear Projectile Attacks you use yourself. Supported Skills deal lower damage initially, but generate Spectral Projectiles, which deal more damage when they fire. Spectral Projectiles linger and will fire a short duration after no new Spectral Projectiles have been created. Cannot support Channelling Skills, Leaping skills, or skills which rain Projectiles from above.
+Tags: Support, Attack, Projectilespectral-volleyspectral-volleySupportGemSpectralVolleySpectral Volley### Spectre: any monster
+Skill gem · Intelligence · https://wraeclastindex.fyi/item/spectre-any-monster
+Requires at gem level 20: level 90, 157 Int
+0.85 s use time · 50 Spirit
+Summon the spirit of the bound monster as a Reviving Minion.
+Tags: Minion, Persistentspectre-any-monsterspectre-any-monsterSkillGemSummonSpectreSpectre: any monster### Spell Cascade
+Support gem · Intelligence · https://wraeclastindex.fyi/item/spell-cascade
+No requirements
+Supports Cascadable Spells, causing them to Cascade to either side of the target area, along a randomly chosen axis.
+Tags: Support, AoEspell-cascadespell-cascadeSupportGemSpellCascadeSpell Cascade### Spell Echo
+Support gem · Intelligence · https://wraeclastindex.fyi/item/spell-echo
+No requirements
+Supports Cascadable Spells you use yourself. Supported Spells Echo.
+Tags: Support, Spell, AoEspell-echospell-echoSupportGemSpellEchoSpell Echo### Spell Totem
+Spirit gem · https://wraeclastindex.fyi/item/spell-totem
+Requires at gem level 20: level 90, 86 Str, 86 Int
+0.5 s use time · 121 Mana at gem level 20
+Consume any combination of 3 Power and/or Endurance Charges to raise a Totem that uses socketed Spells. Cannot use Skills with Cooldowns.
+Tags: Totem, Spell, Duration, Conditional, Metaspell-totemspell-totemSkillGemSpellTotemSpell Totem### Spellslinger
+Spirit gem · Intelligence · https://wraeclastindex.fyi/item/spellslinger
+Requires at gem level 20: level 90, 157 Int
+While active, gains Energy when you cast Spells. Using the Invocation once sufficient Energy is gathered will consume the Energy to trigger socketed Spells, and can trigger them multiple times if it has enough Energy.
+Tags: Buff, Persistent, Trigger, Invocation, MetaspellslingerspellslingerSkillGemSpellslingerSpellslinger### Spinning Inferno
+Skill gem · Strength · https://wraeclastindex.fyi/item/spinning-inferno
+Requires at gem level 20: level 90, 157 Str
+1 s use time · 137 Mana at gem level 20
+Tags: Attack, AoE, Melee, Strike, Firespinning-infernospinning-infernoSkillGemSpinningInfernoSpinning Inferno### Spiral Volley
+Skill gem · Dexterity · https://wraeclastindex.fyi/item/spiral-volley
+Requires at gem level 20: level 90, 157 Dex
+1 s use time · 64 Mana at gem level 20
+Load your Bow with a volley of enchanted arrows and fire them in a circle as you spin forward, firing directly at targets if possible. Consumes Frenzy Charges to cause the arrows to deal more damage and Chain to other targets. Each target can only be Hit once.
+Tags: Attack, Projectile, Sustainedspiral-volleyspiral-volleySkillGemSpiralVolleySpiral Volley### Spiraling Conspiracy
+Skill gem · Intelligence · https://wraeclastindex.fyi/item/spiraling-conspiracy
+Requires at gem level 20: level 90, 157 Int
+1 s use time
+A flock of mist ravens circle you, dealing damage over time in an area. Their numbers are bolstered by slain foes, or in the Presence of dangerous enemies, but the flock as a whole is considered a single minion. You can Command some of them to take flight, leaving the flock to assail your enemies.
+Tags: Minion, Persistent, AoE, Physical, Chaos, Durationspiraling-conspiracyspiraling-conspiracySkillGemSpiralingConspiracySpiraling Conspiracy### Spirit Vessel
+Spirit gem · https://wraeclastindex.fyi/item/spirit-vessel
+Requires at gem level 20: level 90
+1 s use time
+Summons a Shapeshifting Spirit Vessel Companion that uses copies of socketed Bear, Werewolf, and Wyvern Skills.
+Tags: Minion, Companion, Persistent, Metaspirit-vesselspirit-vesselSkillGemSpiritVesselSpirit Vessel### Splinter Totem I
+Support gem · Strength · https://wraeclastindex.fyi/item/splinter-totem-i
+No requirements
+Supports Skills which create Totems, preventing having more than one active Totem but causing that Totem to splinter into smaller versions of itself after it uses an Attack or Spell, with each Totem becoming less effective. Each splintered Totem can further splinter, up to a maximum. Does not Support Skills used by Minions. Only one Totem can be splintering at a time.
+Tags: Support, Totemsplinter-totem-isplinter-totem-iSupportGemSplinteringTotemSplinter Totem I### Splinter Totem II
+Support gem · Strength · https://wraeclastindex.fyi/item/splinter-totem-ii
+No requirements
+Supports Skills which create Totems, preventing having more than one active Totem but causing that Totem to splinter into smaller versions of itself after it uses an Attack or Spell, with each Totem becoming less effective. Each splintered Totem can further splinter, up to a maximum. Does not Support Skills used by Minions. Only one Totem can be splintering at a time.
+Tags: Support, Totemsplinter-totem-iisplinter-totem-iiSupportGemSplinteringTotemTwoSplinter Totem II### Spreading Frost
+Support gem · Intelligence · https://wraeclastindex.fyi/item/spreading-frost
+No requirements
+Supports any skill that hits enemies, causing them to Chill enemies near enemies they Freeze.
+Tags: Support, Coldspreading-frostspreading-frostSupportGemSpreadingFrostSpreading Frost### Staggering Palm
+Skill gem · https://wraeclastindex.fyi/item/staggering-palm
+Requires at gem level 20: level 90, 86 Dex, 86 Int
+1 s use time · 47 Mana at gem level 20
+Dash to an enemy and Strike them, instantly Heavily Stunning enemies which are Primed for Stun and performing additional dashing Strikes to other Primed targets in range if your first target was Stunned. Heavy Stunning an enemy with this Skill grants you a Buff that causes your Quarterstaff Attacks to also fire Projectiles for a short duration. Heavy Stunning additional enemies adds to the Buff's duration.
+Tags: Attack, Buff, AoE, Melee, Strike, Projectile, Physical, Duration, Windstaggering-palmstaggering-palmSkillGemStaggeringPalmStaggering Palm### Stampede
+Skill gem · Strength · https://wraeclastindex.fyi/item/stampede
+Requires at gem level 20: level 90, 157 Str
+1 s use time · 65 Mana at gem level 20
+Charges forward, cracking the earth and leaving a patch of Jagged Ground with every footstep. At the end of your charge, a massive leaping Slam damages enemies and causes all nearby patches of Jagged Ground to explode, damaging enemies standing on them. Once you begin your charge, the use speed of this Skill is affected by movement speed instead of Attack speed.
+Tags: Attack, AoE, Melee, Slam, Duration, TravelstampedestampedeSkillGemStampedeStampede### Starborn Onslaught
+Skill gem · https://wraeclastindex.fyi/item/starborn-onslaught
+Requires at gem level 20: level 90
+1 s use time
+Build up Glory by Freezing or Chilling enemies. When you have maximum Glory you may jump backwards loosing your Mace with the force of a falling comet onto your target. The impact releases Fissures and causes stars to fall in the area for a brief period.
+Tags: Attack, AoE, Melee, Slam, Physical, Cold, Durationstarborn-onslaughtstarborn-onslaughtSkillGemStarbornOnslaughtStarborn Onslaught### Static Shocks
+Support gem · Intelligence · https://wraeclastindex.fyi/item/static-shocks
+No requirements
+Supports Skills which can Hit enemies. Shocking an enemy with Hits from Supported Skills Triggers Static Shocks, causing that enemy to become a source of Lightning damage sending pulses towards nearby enemies.
+Tags: Support, Spell, AoE, Trigger, Sustained, Lightning, Durationstatic-shocksstatic-shocksSupportGemStaticShocksStatic Shocks### Steadfast I
+Support gem · Strength · https://wraeclastindex.fyi/item/steadfast-i
+No requirements
+Supports Channelling Skills you use yourself, granting you higher Stun Threshold while Channelling them.
+Tags: Support, Channellingsteadfast-isteadfast-iSupportGemSteadfastSteadfast I### Steadfast II
+Support gem · Strength · https://wraeclastindex.fyi/item/steadfast-ii
+No requirements
+Supports Channelling Skills you use yourself, granting you higher Stun Threshold and Ailment Threshold while Channelling them.
+Tags: Support, Channellingsteadfast-iisteadfast-iiSupportGemSteadfastTwoSteadfast II### Stoicism I
+Support gem · Strength · https://wraeclastindex.fyi/item/stoicism-i
+No requirements
+Supports Attack Skills you use yourself. Supported Skills steadily gain more Damage, up to a cap. This Damage bonus is reset if you Dodge Roll or use a Travel Skill.
+Tags: Supportstoicism-istoicism-iSupportGemStoicismStoicism I### Stoicism II
+Support gem · Strength · https://wraeclastindex.fyi/item/stoicism-ii
+No requirements
+Supports Attack Skills you use yourself. Supported Skills steadily gain more Damage, up to a cap. This Damage bonus is reset if you Dodge Roll or use a Travel Skill.
+Tags: Supportstoicism-iistoicism-iiSupportGemStoicismTwoStoicism II### Stomping Ground
+Support gem · Strength · https://wraeclastindex.fyi/item/stomping-ground
+No requirements
+Supports Travel skills, causing your footsteps to crack the earth and emit damaging shockwaves while using the skill.
+Tags: Support, Attack, AoE, Triggerstomping-groundstomping-groundSupportGemStompingGroundStomping Ground### Storm Lance
+Skill gem · Dexterity · https://wraeclastindex.fyi/item/storm-lance
+Requires at gem level 20: level 90, 157 Dex
+1 s use time · 46 Mana at gem level 20
+Throw an electrified Spear that lodges in the ground and periodically zaps nearby enemies with Lightning bolts. If the Spear is Detonated by another Skill, it immediately unleashes a volley of bolts and expires. Consumes a Frenzy Charge if possible to fire bolts more frequently for a shorter duration, automatically Detonate at the end of its duration, and create Shocked Ground on Detonation.
+Tags: Attack, AoE, Projectile, Sustained, Lightning, Duration, Repeatablestorm-lancestorm-lanceSkillGemStormLanceStorm Lance### Storm Wave
+Skill gem · https://wraeclastindex.fyi/item/storm-wave
+Requires at gem level 20: level 90, 86 Dex, 86 Int
+1 s use time · 54 Mana at gem level 20
+Sweep your Quarterstaff, projecting a bolt of Lightning through the ground in a long fissure ahead of you.
+Tags: Attack, AoE, Melee, Lightningstorm-wavestorm-waveSkillGemStormWaveStorm Wave### Stormblast Bolts
+Skill gem · https://wraeclastindex.fyi/item/stormblast-bolts
+Requires at gem level 20: level 90, 86 Str, 86 Dex
+1 s use time · 63 Mana at gem level 20
+Load your Crossbow with charged bolts that land around the target location and explode if hit by a Detonator Skill. Using this Skill again reloads the clip.
+Tags: Attack, AoE, Ammunition, Projectile, Lightning, Durationstormblast-boltsstormblast-boltsSkillGemStormblastBoltsStormblast Bolts### Stormcaller Arrow
+Skill gem · Dexterity · https://wraeclastindex.fyi/item/stormcaller-arrow
+Requires at gem level 20: level 90, 157 Dex
+1 s use time · 50 Mana at gem level 20
+Fire an arrow that embeds where it lands for a short duration. At the end of the duration, a Lightning Bolt strikes the arrow, disintegrating it and damaging enemies, with a high chance to Shock. Shocking any enemy with the Bolt also applies Shock to all enemies near the impact.
+Tags: Attack, AoE, Projectile, Lightning, Duration, Repeatablestormcaller-arrowstormcaller-arrowSkillGemStormcallerArrowStormcaller Arrow### Stormchain
+Support gem · Dexterity · https://wraeclastindex.fyi/item/stormchain
+No requirements
+Supports Projectile Skills and Skills which can Chain. Supported Skills always Chain when initially Hitting a Shocked Enemy, but cannot themselves inflict Shock. Does not support Skills which cannot Chain.
+Tags: Support, Projectile, Lightning, ChainingstormchainstormchainSupportGemStormchainStormchain### Stormfire
+Support gem · Intelligence · https://wraeclastindex.fyi/item/stormfire
+No requirements
+Supports any skill that Hits enemies. Enemies Shocked by Supported Skills take a percentage of damage from Ignite as Lightning damage as well as Fire damage.
+Tags: Support, Lightning, FirestormfirestormfireSupportGemStormfireStormfire### Streamlined Rounds
+Support gem · Dexterity · https://wraeclastindex.fyi/item/streamlined-rounds
+No requirements
+Supports Crossbow Ammunition Skills. Supported Skills have significantly higher Attack speed and bolt capacity, but deal less damage and have longer reload time.
+Tags: Support, Ammunition, Projectilestreamlined-roundsstreamlined-roundsSupportGemStreamlinedRoundsStreamlined Rounds### Strong Hearted
+Support gem · Intelligence · https://wraeclastindex.fyi/item/strong-hearted
+No requirements
+15 Spirit
+Supports Persistent Buff Skills, causing Shock applied to you to last for a shorter duration while the Supported Skill is active.
+Tags: Support, Buff, Persistentstrong-heartedstrong-heartedSupportGemStrongHeartedStrong Hearted### Stun I
+Support gem · Strength · https://wraeclastindex.fyi/item/stun-i
+No requirements
+Supports any skill that Hits Enemies, causing it to build up Stun more quickly.
+Tags: Supportstun-istun-iSupportGemOverpowerStun I### Stun II
+Support gem · Strength · https://wraeclastindex.fyi/item/stun-ii
+No requirements
+Supports any skill that Hits Enemies, causing it to build up Stun more quickly.
+Tags: Supportstun-iistun-iiSupportGemOverpowerTwoStun II### Stun III
+Support gem · Strength · https://wraeclastindex.fyi/item/stun-iii
+No requirements
+Supports any skill that Hits Enemies, causing it to build up Stun significantly more quickly, at the cost of Damage.
+Tags: Supportstun-iiistun-iiiSupportGemOverpowerThreeStun III### Styrn's Anthem
+Lineage support gem · https://wraeclastindex.fyi/item/styrns-anthem
+No requirements
+Tags: Support, Lineagestyrns-anthemstyrns-anthemSupportGemKnightsAnthemStyrn's Anthem### Styrn's Ferocity
+Lineage support gem · https://wraeclastindex.fyi/item/styrns-ferocity
+No requirements
+Supports Shield Skills that Hit, causing those Hits to Crush their targets, and Physical Hits against those targets while Crushed to Break their Armour.
+Tags: Support, Lineage, Physicalstyrns-ferocitystyrns-ferocitySupportGemStyrnsFerocityStyrn's Ferocity### Styrn's Mountain
+Lineage support gem · https://wraeclastindex.fyi/item/styrns-mountain
+No requirements
+Supports Skills that Raise your Shield causing your other melee skills to deal more damage if you block.
+Tags: Support, Lineagestyrns-mountainstyrns-mountainSupportGemStyrnsMountainStyrn's Mountain### Summon Companion
+Spirit gem · https://wraeclastindex.fyi/item/summon-companion
+Requires at gem level 20: level 90
+100 Spirit
+Summon a Reviving Companion to aid you in combat. The Mercenary will use socketed Attacks, and can be given equipment in the Skills Panel.
+Tags: Attack, Minion, Companion, Persistent, Ammunition, Metasummon-companionsummon-companionSkillGemSummonMercenaryCompanionSummon Companion### Summon Infernal Hound
+Skill gem · https://wraeclastindex.fyi/item/summon-infernal-hound
+Requires at gem level 20: level 90
+Activate to summon a Reviving Infernal Hound which Ignites enemies near it.
+Tags: Minion, Companion, Persistent, Firesummon-infernal-houndsummon-infernal-houndSkillGemAscendancySummonInfernalHoundSummon Infernal Hound### Sunder
+Skill gem · Strength · https://wraeclastindex.fyi/item/sunder
+Requires at gem level 20: level 90, 157 Str
+1 s use time · 106 Mana at gem level 20
+Slam the ground, creating a roiling fissure that damages enemies in a sequence of areas in front of you. A number of enemies hit by the wave will release a shockwave, damaging other enemies. Hitting an enemy with Fully Broken Armour applies Sundered Armour, making it take additional increased Physical damage.
+Tags: Attack, AoE, Melee, Slam, Duration, PayoffsundersunderSkillGemSunderSunder### Supercharged Slam
+Skill gem · Strength · https://wraeclastindex.fyi/item/supercharged-slam
+Requires at gem level 20: level 90, 157 Str
+1 s use time · 3203 Mana per minute at gem level 20
+Channel to charge up a heavy swing, drawing earth from the ground to enlarge your mace. Release to Slam the ground, dealing damage in an area around the impact, followed by Aftershocks dealing damage in a larger area. This Skill has its own Attack time, which is not affected by your weapon's attack speed and cannot be modified.
+Tags: Attack, AoE, Melee, Slam, Channelling, Stagedsupercharged-slamsupercharged-slamSkillGemSuperchargedSlamSupercharged Slam### Supercritical
+Support gem · Intelligence · https://wraeclastindex.fyi/item/supercritical
+No requirements
+Supports any skill that Hits enemies, causing it to deal more damage with Critical Hits but have less Critical Hit chance.
+Tags: SupportsupercriticalsupercriticalSupportGemSupercriticalSupercritical### Supporting Fire
+Skill gem · https://wraeclastindex.fyi/item/supporting-fire
+Requires at gem level 20: level 90
+Recruit artillery Minions that take up positions behind you. They will lie in wait for your Command, then fire volleys of arrows at the target location.
+Tags: Minion, Persistentsupporting-firesupporting-fireSkillGemAscendancySupportingFireSupporting Fire### Swift Affliction I
+Support gem · Dexterity · https://wraeclastindex.fyi/item/swift-affliction-i
+No requirements
+Supports any skill that deals damage, causing it to deal more non-Ailment damage over time but have a shorter duration.
+Tags: Support, Durationswift-affliction-iswift-affliction-iSupportGemSwiftAfflictionSwift Affliction I### Swift Affliction II
+Support gem · Dexterity · https://wraeclastindex.fyi/item/swift-affliction-ii
+No requirements
+Supports any skill that deals damage, causing it to deal more non-Ailment damage over time but have a shorter duration.
+Tags: Support, Durationswift-affliction-iiswift-affliction-iiSupportGemSwiftAfflictionTwoSwift Affliction II### Swift Affliction III
+Support gem · Dexterity · https://wraeclastindex.fyi/item/swift-affliction-iii
+No requirements
+Supports any skill that deals damage, causing effects with a duration of one second or less to deal more non-Ailment damage over time.
+Tags: Support, Durationswift-affliction-iiiswift-affliction-iiiSupportGemSwiftAfflictionThreeSwift Affliction III### Sword Slash
+Skill gem · https://wraeclastindex.fyi/item/sword-slash
+Requires at gem level 20: level 90
+1 s use time
+Strike with your Sword.
+Tags: Attack, AoE, Melee, Strikesword-slashsword-slashSkillGemPlayerDefault1HSwordSword Slash### Sword Slash
+Skill gem · https://wraeclastindex.fyi/item/sword-slash-2
+Requires at gem level 20: level 90
+1 s use time
+Strike with your Sword.
+Tags: Attack, AoE, Melee, Strikesword-slash-2sword-slashSkillGemPlayerDefault2HSwordSword Slash### Sword Slash
+Skill gem · https://wraeclastindex.fyi/item/sword-slash-3
+Requires at gem level 20: level 90
+1 s use time
+Strike with your Swords.
+Tags: Attack, AoE, Melee, Strikesword-slash-3sword-slashSkillGemPlayerDefaultSwordSwordSword Slash### Syzygy
+Support gem · Strength · https://wraeclastindex.fyi/item/syzygy
+No requirements
+Supports Slam Skills you use yourself. Hits from Supported Skills are considered Crushing Blows against Enemies which are both Ignited and Fully Armour Broken. Hits with Supported Skills that Heavily Stun Ignited and Fully Armour Broken Enemies will Intimidate them.
+Tags: Support, Attack, Melee, Slam, FiresyzygysyzygySupportGemSyzygySyzygy### Tacati's Ire
+Lineage support gem · Dexterity · https://wraeclastindex.fyi/item/tacatis-ire
+No requirements
+Supports Skills which can cause Damaging Hits. Poison inflicted with Supported Skills deals Damage faster the higher your Rage.
+Tags: Support, Lineage, Chaostacatis-iretacatis-ireSupportGemTacatisIreTacati's Ire### Tame Beast
+Skill gem · Dexterity · https://wraeclastindex.fyi/item/tame-beast
+Requires at gem level 20: level 90, 157 Dex
+1 s use time · 99 Mana at gem level 20
+Conjure Azmeri wisps to engulf a Rare Beast for a duration, Hindering them. If you defeat the Beast while it is engulfed in wisps, it will be captured by this gem, transforming the gem to instead allow you to summon the Beast as a Reviving Companion.
+Tags: Minion, Companion, Persistent, Durationtame-beasttame-beastSkillGemTameBeastTame Beast### Tangmazu's Thurible
+Lineage support gem · https://wraeclastindex.fyi/item/tangmazus-thurible
+No requirements
+30 Spirit
+Supports Skills which summon Companions causing them to be Gigantic and gain Evasion and Deflection based on your own.
+Tags: Support, Lineage, Minion, Persistenttangmazus-thuribletangmazus-thuribleSupportGemTangmazusThuribleTangmazu's Thurible### Tasalio's Rhythm
+Lineage support gem · Dexterity · https://wraeclastindex.fyi/item/tasalios-rhythm
+No requirements
+Supports Skills which have a benefit for Perfectly Timing their use. On successfully executing Perfect Timing with Supported Skills, gain Tasalio's Rhythm. Tasalio's Rhythm causes Supported Skills to deal more damage and have shorter Perfect Timing windows for each stack. Failing to execute any Perfect Timing (even with skills not supported by Tasalio's Rhythm) will remove all Tasalio's Rhythm on you.
+Tags: Support, Lineagetasalios-rhythmtasalios-rhythmSupportGemTasaliosRhythmTasalio's Rhythm### Tawhoa's Tending
+Lineage support gem · Strength · https://wraeclastindex.fyi/item/tawhoas-tending
+No requirements
+Supports Skills which create Totems, causing those Totems to have more Life. Totems created by Supported Skills explode on death, dealing Physical damage based on their Life.
+Tags: Support, Lineage, Totem, AoE, Trigger, Physicaltawhoas-tendingtawhoas-tendingSupportGemHardyTotemsThreeTawhoa's Tending### Tear
+Support gem · Strength · https://wraeclastindex.fyi/item/tear
+No requirements
+Supports Melee Attacks you use or Trigger yourself. On-Kill effects caused by Killing Blows with Supported Skills on Bleeding enemies have a chance to occur twice.
+Tags: Support, Attack, Melee, PhysicalteartearSupportGemTearTear### Tecrod's Revenge
+Lineage support gem · Intelligence · https://wraeclastindex.fyi/item/tecrods-revenge
+No requirements
+Supports Skills that create Persistent Minions, causing those Minions to fight on when they are fatally wounded, dying after a duration. Minions from Supported Skills gain Soul Eater and a burst of speed on entering this state.
+Tags: Support, Lineage, Minion, Persistent, Durationtecrods-revengetecrods-revengeSupportGemTecrodsRevengeTecrod's Revenge### Tectonic Slams
+Support gem · Strength · https://wraeclastindex.fyi/item/tectonic-slams
+No requirements
+Supports Slams you use yourself, causing them to create simultaneous Aftershocks behind the Slam, but lowering Aftershock damage and area of effect with Supported Skills. Cannot Support Skills which create Fissures.
+Tags: Support, Attack, Melee, Slamtectonic-slamstectonic-slamsSupportGemSlamAftershocksTectonic Slams### Temper Weapon
+Skill gem · https://wraeclastindex.fyi/item/temper-weapon
+Requires at gem level 20: level 90
+1.13 s use time · 1179 Mana per minute at gem level 20
+Channel to temper your main hand Melee Martial Weapon. Each hit of the hammer against the anvil Empowers subsequent Attacks to Combust when Hitting enemies.
+Tags: Attack, Buff, AoE, Melee, Trigger, Fire, Channellingtemper-weapontemper-weaponSkillGemAscendancyTemperWeaponTemper Weapon### Tempest Bell
+Skill gem · https://wraeclastindex.fyi/item/tempest-bell
+Requires at gem level 20: level 90, 86 Dex, 86 Int
+1 s use time · 98 Mana at gem level 20
+Build Combo by successfully Striking Enemies with other skills. After reaching maximum Combo, use this skill to cause the Bell on your staff to grow to massive size as you drop it on the ground. The Bell damages enemies on impact and can be Hit by your skills, creating a damaging shockwave. Elemental Ailments applied to the Bell cause its shockwaves to deal extra damage of the corresponding type, and Hits which would have caused Knockback increase the area of effect of the shockwaves.
+Tags: Attack, AoE, Melee, Sustained, Duration, Conditionaltempest-belltempest-bellSkillGemTempestBellTempest Bell### Tempest Flurry
+Skill gem · https://wraeclastindex.fyi/item/tempest-flurry
+Requires at gem level 20: level 90, 86 Dex, 86 Int
+1 s use time · 37 Mana at gem level 20
+Perform a series of aggressive Strikes. When used in quick succession, the third use Strikes three times, and the fourth use performs a Final Strike that calls down a powerful Shocking bolt.
+Tags: Attack, AoE, Melee, Strike, Lightningtempest-flurrytempest-flurrySkillGemTempestFlurryTempest Flurry### Temporal Chains
+Skill gem · Intelligence · https://wraeclastindex.fyi/item/temporal-chains
+Requires at gem level 20: level 90, 157 Int
+0.7 s use time · 178 Mana at gem level 20
+Curse all enemies in an area, Slowing them and making other effects on them expire more slowly.
+Tags: Spell, AoE, Duration, Curse, Repeatabletemporal-chainstemporal-chainsSkillGemTemporalChainsTemporal Chains### Temporal Rift
+Skill gem · https://wraeclastindex.fyi/item/temporal-rift
+Requires at gem level 20: level 90
+0.1 s use time
+While active, passively leaves afterimages of your recent past. Cast the Spell to return to the oldest afterimage, teleporting to that location and resetting your Life, Mana and Energy Shield to the values they had at the time. Removes any upcoming damage delayed by Phased Form on use.
+Tags: Spell, Buff, Persistenttemporal-rifttemporal-riftSkillGemAscendancyTemporalRiftTemporal Rift### The Stars Answer
+Skill gem · https://wraeclastindex.fyi/item/the-stars-answer
+Requires at gem level 20: level 90
+2 s use time · 10000 Mana at gem level 20
+Leash the stars themselves by leveraging your vast magical power, repeatedly Triggering Starfall targeting an enemy in an area around you, or a random location in that area if no enemies can be targeted.
+Tags: Spell, Buff, AoE, Trigger, Physical, Cold, Durationthe-stars-answerthe-stars-answerSkillGemTheStarsAnswerThe Stars Answer### Thornskin I
+Support gem · Strength · https://wraeclastindex.fyi/item/thornskin-i
+No requirements
+20 Spirit
+Supports Persistent Buff Skills, causing you to deal increased Thorns Damage while the Supported Skill is active.
+Tags: Support, Buff, Persistentthornskin-ithornskin-iSupportGemThornskinThornskin I### Thornskin II
+Support gem · Strength · https://wraeclastindex.fyi/item/thornskin-ii
+No requirements
+40 Spirit
+Supports Persistent Buff Skills, causing you to deal increased Thorns Damage while the Supported Skill is active.
+Tags: Support, Buff, Persistentthornskin-iithornskin-iiSupportGemThornskinTwoThornskin II### Thrashing Vines
+Skill gem · https://wraeclastindex.fyi/item/thrashing-vines
+Requires at gem level 20: level 90, 86 Str, 86 Int
+1 s use time · 152 Mana at gem level 20
+Spur the growth of huge vines, which emerge randomly within the target area. The vines crash to the ground then retreat, targeting nearby enemies if possible.
+Tags: Spell, AoE, Sustained, Physical, Duration, Plantthrashing-vinesthrashing-vinesSkillGemThrashingVinesThrashing Vines### Thrill of the Kill
+Support gem · Intelligence · https://wraeclastindex.fyi/item/thrill-of-the-kill
+No requirements
+Supports Skills you use yourself which Hit enemies. Culling a Shocked enemy with Supported Skills infuses all of your Attacks with Lightning damage for a short time.
+Tags: Support, Attack, Lightning, Durationthrill-of-the-killthrill-of-the-killSupportGemThrillOfTheKillThrill of the Kill### Thrill of the Kill II
+Support gem · Intelligence · https://wraeclastindex.fyi/item/thrill-of-the-kill-ii
+No requirements
+Supports Skills you use yourself which Hit enemies. Culling a Shocked enemy with Supported Skills infuses all of your Attacks with Lightning damage and grants an increased chance to Shock for a short time.
+Tags: Support, Attack, Lightning, Durationthrill-of-the-kill-iithrill-of-the-kill-iiSupportGemThrillOfTheKillTwoThrill of the Kill II### Thundergod's Wrath
+Spirit gem · https://wraeclastindex.fyi/item/thundergods-wrath
+Requires at gem level 20: level 90
+While active, gains Energy when you Hit enemies with Melee Attacks and triggers socketed Lightning spells on reaching maximum Energy.
+Tags: Buff, Persistent, Trigger, Lightning, Metathundergods-wraththundergods-wrathSkillGemLightningSpellOnHitThundergod's Wrath### Thunderous Leap
+Skill gem · Dexterity · https://wraeclastindex.fyi/item/thunderous-leap
+Requires at gem level 20: level 90, 157 Dex
+1 s use time · 76 Mana at gem level 20
+Leap into the air and plunge your Spear into the ground at the target location, emitting a Lightning-charged shockwave.
+Tags: Attack, AoE, Melee, Slam, Lightning, Detonator, Travelthunderous-leapthunderous-leapSkillGemThunderousLeapThunderous Leap### Thunderstorm
+Skill gem · https://wraeclastindex.fyi/item/thunderstorm
+Requires at gem level 20: level 90, 86 Str, 86 Int
+0.9 s use time · 129 Mana at gem level 20
+Conjure a thunderstorm which causes lightning strikes and torrential rain in an area. Enemies in the area are Drenched, causing them to become Shocked or Frozen more easily. Plants in the area become Overgrown.
+Tags: Spell, AoE, Sustained, Lightning, Duration, StormthunderstormthunderstormSkillGemThunderstormThunderstorm### Time Freeze
+Skill gem · https://wraeclastindex.fyi/item/time-freeze
+Requires at gem level 20: level 90
+0.7 s use time · 20 Mana at gem level 20
+Release a large wave that stops time for all affected enemies for a duration. Duration is lower the more times the enemy has had time stopped for them.
+Tags: Spell, AoE, Durationtime-freezetime-freezeSkillGemAscendancyTimeFreezeTime Freeze### Time of Need
+Skill gem · Strength · https://wraeclastindex.fyi/item/time-of-need
+Requires at gem level 20: level 90, 122 Str, 48 Int
+1 s use time · 30 Spirit
+While active, periodically invokes divine blessings to heal you and remove Curses and Elemental Ailments from you.
+Tags: Buff, Persistenttime-of-needtime-of-needSkillGemTimeOfNeedTime of Need### Time Snap
+Skill gem · https://wraeclastindex.fyi/item/time-snap
+Requires at gem level 20: level 90
+0.6 s use time · 20 Mana at gem level 20
+Manipulate time, resetting the cooldowns of your other Skills.
+Tags: Spelltime-snaptime-snapSkillGemAscendancyTimeSnapTime Snap### Tireless
+Support gem · Strength · https://wraeclastindex.fyi/item/tireless
+No requirements
+Supports Warcry Skills. Attacks Empowered by Supported Skills have a chance not to lower the Empowerment count of Supported Skills when they are used.
+Tags: Support, WarcrytirelesstirelessSupportGemTirelessTireless### Tornado
+Skill gem · https://wraeclastindex.fyi/item/tornado
+Requires at gem level 20: level 90, 86 Str, 86 Int
+0.75 s use time · 110 Mana at gem level 20
+Create a storm that sucks in enemies and deals Physical damage over time. A Tornado that overlaps an Elemental Ground Surface absorbs that surface's Debuff, applying it to enemies inside the Tornado and causing the Tornado to deal extra damage of that element.
+Tags: Spell, AoE, Physical, Duration, Wind, StormtornadotornadoSkillGemTornadoTornado### Tornado Shot
+Skill gem · Dexterity · https://wraeclastindex.fyi/item/tornado-shot
+Requires at gem level 20: level 90, 157 Dex
+1 s use time · 88 Mana at gem level 20
+Fire a skyward shot that whips up a Tornado where it lands, dealing Physical damage over time and Hindering enemies standing in it. Arrows, thrown Spears and Crossbow bolts fired at the Tornado are sucked into it, causing the Tornado to spit out a ring of copied Projectiles. Copied Projectiles cannot be copied again, even by further Tornados.
+Tags: Attack, AoE, Projectile, Physical, Duration, Repeatable, Windtornado-shottornado-shotSkillGemTornadoShotTornado Shot### Toxic Domain
+Skill gem · Dexterity · https://wraeclastindex.fyi/item/toxic-domain
+Requires at gem level 20: level 90, 157 Dex
+1 s use time · 106 Mana at gem level 20
+Create an area of Toxic Bloom on the ground around you. While in the Bloom, you have increased Skill costs, Regenerate Life, and your Projectile Attacks attach a Toxic Pustule, which can be Poisoned. Pustules will Detonate after a duration or when enough Poison has been applied, dealing more damage based on the stored Poison damage and applying Poison in an area around it.
+Tags: Buff, Attack, AoE, Physical, Chaos, Duration, Planttoxic-domaintoxic-domainSkillGemToxicDomainToxic Domain### Toxic Growth
+Skill gem · Dexterity · https://wraeclastindex.fyi/item/toxic-growth
+Requires at gem level 20: level 90, 157 Dex
+1 s use time · 98 Mana at gem level 20
+Fire a rain of Toxic Pustules into the air. The Pustules deal damage on impact, then Detonate after a delay. They can also be Poisoned, causing them to Detonate faster and more violently.
+Tags: Attack, AoE, Projectile, Chaos, Repeatable, Planttoxic-growthtoxic-growthSkillGemToxicGrowthToxic Growth### Trail of Caltrops
+Skill gem · Dexterity · https://wraeclastindex.fyi/item/trail-of-caltrops
+Requires at gem level 20: level 90, 157 Dex
+30 Spirit
+While active, scatters caltrops in your wake when you dodge.
+Tags: Attack, Buff, Persistent, AoE, Projectile, Trigger, Physical, Duration, Hazardtrail-of-caltropstrail-of-caltropsSkillGemTrailOfCaltropsTrail of Caltrops### Tremors
+Support gem · Strength · https://wraeclastindex.fyi/item/tremors
+No requirements
+Supports Slam Skills you use yourself. Supported Skills gain multiple independent chances to cause Aftershocks, but deal less Damage.
+Tags: Support, Attack, Melee, SlamtremorstremorsSupportGemTremorsTremors### Trickster's Shard
+Lineage support gem · https://wraeclastindex.fyi/item/tricksters-shard
+No requirements
+Supports non-instant Spells you cast yourself. Supported Spells will Trigger Fragment Self, creating a Fractured Mimic which will cast that Spell if you get enough of them.
+Tags: Support, Lineage, Spell, AoE, Trigger, Durationtricksters-shardtricksters-shardSupportGemTrickstersShardTrickster's Shard### Trinity
+Skill gem · https://wraeclastindex.fyi/item/trinity
+Requires at gem level 20: level 90, 86 Dex, 86 Int
+100 Spirit
+Become attuned to all Elements building up Fire, Cold and Lightning Affinity based off the highest Elemental Damage type dealt by your Hits. Your Elemental Damage is enhanced the more Affinity of any type you have.
+Tags: Buff, Persistent, Lightning, Cold, FiretrinitytrinitySkillGemTrinityTrinity### Triskelion Cascade
+Skill gem · https://wraeclastindex.fyi/item/triskelion-cascade
+Requires at gem level 20: level 90
+0.45 s use time · 155 Ward at gem level 20
+Tap into the power of the Triskelion Flame to Empower the next Cascadable Spell you cast. The Empowered Spell becomes centred on your location, and Cascades to six areas around you in a Triskelion pattern.
+Tags: Spell, Buff, Durationtriskelion-cascadetriskelion-cascadeSkillGemTriskelionCascadeTriskelion Cascade### Tul's Avalanche
+Lineage support gem · https://wraeclastindex.fyi/item/tuls-avalanche
+No requirements
+Supports Cascadable Spells you cast yourself, Sealing them when you Block, The Seals are broken when used, each making the Spell Echo. Cannot support skills with a Cooldown or which already gain Seals.
+Tags: Support, Lineage, Spell, AoEtuls-avalanchetuls-avalancheSupportGemTulsAvalancheTul's Avalanche### Tul's Stillness
+Lineage support gem · Dexterity · https://wraeclastindex.fyi/item/tuls-stillness
+No requirements
+Supports Skills that can cause Damaging Hits, granting extra Chaos damage and causing Chaos damage to Contribute to Freeze Buildup.
+Tags: Support, Lineage, Cold, Chaostuls-stillnesstuls-stillnessSupportGemTulsStillnessTul's Stillness### Tumult
+Support gem · Dexterity · https://wraeclastindex.fyi/item/tumult
+No requirements
+Supports Skills you use yourself which can cause Damaging Hits. Supported Skills consume a Frenzy Charge on use to powerfully Break Armour.
+Tags: Support, PhysicaltumulttumultSupportGemTumultTumult### Twister
+Skill gem · Dexterity · https://wraeclastindex.fyi/item/twister
+Requires at gem level 20: level 90, 157 Dex
+1 s use time · 32 Mana at gem level 20
+Whip up a twister with a flick of your Spear. The twister moves forward erratically, Blinding and repeatedly Hitting enemies within. If a twister touches a Whirlwind from your other skills, it Consumes the Whirlwind to create additional twisters that deal more damage. Passing over Elemental Ground Surfaces or Consuming an elemental Whirlwind will grant twisters extra damage of that element.
+Tags: Attack, AoE, Projectile, Duration, Repeatable, WindtwistertwisterSkillGemTwisterTwister### Uhtred's Augury
+Lineage support gem · Strength · https://wraeclastindex.fyi/item/uhtreds-augury
+No requirements
+Supports Skills which can gain levels, granting them additional levels provided exactly two other supports are used with the supported Skill. Does not support skills which do not have levels.
+Tags: Support, Lineageuhtreds-auguryuhtreds-augurySupportGemUhtredsAuguryUhtred's Augury### Uhtred's Constellation
+Lineage support gem · https://wraeclastindex.fyi/item/uhtreds-constellation
+No requirements
+Supports non-instant skills which have a cooldown, granting them two additional cooldown uses and more damage per different skill with a cooldown you have used recently.
+Tags: Support, Lineageuhtreds-constellationuhtreds-constellationSupportGemUhtredsConstellationUhtred's Constellation### Uhtred's Exodus
+Lineage support gem · Strength · https://wraeclastindex.fyi/item/uhtreds-exodus
+No requirements
+Supports Skills which can gain levels, granting them many additional levels provided no other supports are used with the supported Skill. Does not support skills which do not have levels.
+Tags: Support, Lineageuhtreds-exodusuhtreds-exodusSupportGemUhtredsExodusUhtred's Exodus### Uhtred's Omen
+Lineage support gem · Strength · https://wraeclastindex.fyi/item/uhtreds-omen
+No requirements
+Supports Skills which can gain levels, granting them additional levels provided exactly one other support is used with the supported Skill. Does not support skills which do not have levels.
+Tags: Support, Lineageuhtreds-omenuhtreds-omenSupportGemUhtredsOmenUhtred's Omen### Uhtred's Rite
+Lineage support gem · https://wraeclastindex.fyi/item/uhtreds-rite
+No requirements
+Supports skills with Cooldowns, causing them to grant Overflowing Chalice when used. Supported skills deal more damage during the effect of your Life Flask and have increased Mana Cost Efficiency during the effect of your Mana Flask.
+Tags: Support, Lineage, Durationuhtreds-riteuhtreds-riteSupportGemUhtredsRiteUhtred's Rite### Unabating
+Support gem · Strength · https://wraeclastindex.fyi/item/unabating
+No requirements
+Supports Attack Skills you use yourself. While using Supported Skills, you gain increased Armour, with the increase scaling higher the longer the Attack time of the supported Skill. Cannot Support Channelling Skills.
+Tags: Support, AttackunabatingunabatingSupportGemUnabatingUnabating### Unbending
+Support gem · Intelligence · https://wraeclastindex.fyi/item/unbending
+No requirements
+Supports Spell Skills you use yourself. While using Supported Skills, a percentage of Damage taken is Recouped as Mana, with the percentage scaling higher the longer the Cast time of the Supported Skill. Cannot Support Channelling Skills.
+Tags: Support, SpellunbendingunbendingSupportGemUnbendingUnbending### Unbound Avatar
+Skill gem · https://wraeclastindex.fyi/item/unbound-avatar
+Requires at gem level 20: level 90
+Gain Unbound Fury by inflicting Elemental Ailments with Hits on enemies. Once you reach maximum Unbound Fury, consume it to become Unbound for a duration, vastly augmenting your Elemental prowess.
+Tags: Buff, Lightning, Cold, Fire, Duration, Conditionalunbound-avatarunbound-avatarSkillGemAscendancyUnboundAvatarUnbound Avatar### Unbreakable
+Support gem · Strength · https://wraeclastindex.fyi/item/unbreakable
+No requirements
+Supports any skill that you can use, making you harder to Stun while using it.
+Tags: SupportunbreakableunbreakableSupportGemUnbreakableUnbreakable### Undermine
+Support gem · Strength · https://wraeclastindex.fyi/item/undermine
+No requirements
+Supports Attack Skills. Supported Skills Consume Maim on hit, Breaking a percentage of the Maimed target's Armour in doing so. Supported Skills cannot themselves inflict Maim.
+Tags: Support, PhysicalundermineundermineSupportGemUndermineUndermine### Unearth
+Skill gem · Intelligence · https://wraeclastindex.fyi/item/unearth
+Requires at gem level 20: level 90, 157 Int
+0.95 s use time · 76 Mana at gem level 20
+Raise spikes of bone from the earth in front of you, damaging enemies. The bones of Corpses and dead Reviving Minions in the area are ripped out and reassembled into short-lived Bone Construct Minions that fight for you. Larger Corpses create more than one Bone Construct.
+Tags: Spell, Minion, AoE, Physical, Duration, RepeatableunearthunearthSkillGemUnearthUnearth### Unerring Power
+Support gem · Dexterity · https://wraeclastindex.fyi/item/unerring-power
+No requirements
+Supports Attack Skills you use yourself. When Supported Attacks are Empowered, they have significantly lowered cost and raised Accuracy.
+Tags: Support, Attackunerring-powerunerring-powerSupportGemUnerringPowerUnerring Power### Unleash
+Skill gem · https://wraeclastindex.fyi/item/unleash-3
+Requires at gem level 20: level 90
+0.75 s use time
+Augment yourself with temporal magic for a short duration, Empowering the next Repeatable Spell you cast to Repeat multiple times. Cannot Empower Skills with a Cooldown.
+Tags: Spell, Buff, Durationunleash-3unleashSkillGemAscendancyUnleashUnleash### Unleash
+Support gem · Intelligence · https://wraeclastindex.fyi/item/unleash
+No requirements
+Supports Repeatable Spells you cast yourself, Sealing them over time. The Seals are broken when cast, each causing the Spell to Repeat. Cannot support skills with a Cooldown or which already gain Seals.
+Tags: Support, SpellunleashunleashSupportGemUnleashUnleash### Unleash
+Skill gem · Intelligence · https://wraeclastindex.fyi/item/unleash-2
+Requires at gem level 20: level 90, 157 Int
+0.75 s use time
+Augment yourself with temporal magic for a short duration, Empowering the next Repeatable Spell you cast to Repeat multiple times. Cannot Empower Skills with a Cooldown.
+Tags: Spell, Buff, Durationunleash-2unleashSkillGemStaffUnleashUnleash### Unsteady Tempo
+Support gem · Strength · https://wraeclastindex.fyi/item/unsteady-tempo
+No requirements
+Supports Melee Attack Skills you use yourself. Attacking with Supported Skills will cycle through various effects, with the first Attack in sequence inflicting Hobble on you. The second and third Attacks in sequence will powerfully scale chance to Critically Hit and overall damage, respectively, at which point the cycle will reset. Cannot Support Channelling Skills.
+Tags: Support, Attack, Meleeunsteady-tempounsteady-tempoSupportGemUnsteadyTempoUnsteady Tempo### Untether
+Skill gem · Intelligence · https://wraeclastindex.fyi/item/untether
+Requires at gem level 20: level 90, 157 Int
+0.6 s use time
+Plant a seed of Abyssal Energy on the enemy's heart. Dealing enough damage to the enemy, or killing it outright, causes their heart to explode, dealing Physical damage in an area.
+Tags: Spell, AoE, Physical, DurationuntetheruntetherSkillGemAbyssalLivingBombUntether### Untouchable
+Support gem · Dexterity · https://wraeclastindex.fyi/item/untouchable
+No requirements
+Supports Attack Skills you use yourself. While using Supported Skills, you gain increased Evasion Rating, with the increase scaling higher the longer the Attack time of the supported Skill. Cannot Support Channelling Skills.
+Tags: Support, AttackuntouchableuntouchableSupportGemUntouchableUntouchable### Unyielding
+Support gem · Strength · https://wraeclastindex.fyi/item/unyielding
+No requirements
+Supports Melee Attack Skills you use yourself. While using Supported Skills, a percentage of Damage taken is Recouped as Life, with the percentage scaling higher the longer the Attack time of the Supported Skill. Cannot Support Channelling Skills.
+Tags: Support, Attack, MeleeunyieldingunyieldingSupportGemUnyieldingUnyielding### Upheaval I
+Support gem · Strength · https://wraeclastindex.fyi/item/upheaval-i
+No requirements
+Supports Skills which create fissures in the ground, causing them to create an additional fissure at the cost of damage and speed.
+Tags: Supportupheaval-iupheaval-iSupportGemUpheavalUpheaval I### Upheaval II
+Support gem · Strength · https://wraeclastindex.fyi/item/upheaval-ii
+No requirements
+Supports Skills which create fissures in the ground, causing them to create additional fissures at the cost of damage and speed.
+Tags: Supportupheaval-iiupheaval-iiSupportGemUpheavalTwoUpheaval II### Upwelling I
+Support gem · Intelligence · https://wraeclastindex.fyi/item/upwelling-i
+No requirements
+15 Spirit
+Supports Persistent Buff Skills, causing your Minions to deal increased Damage while you are not on full Mana while the Supported Skill is active.
+Tags: Support, Buff, Persistentupwelling-iupwelling-iSupportGemUpwellingUpwelling I### Upwelling II
+Support gem · Intelligence · https://wraeclastindex.fyi/item/upwelling-ii
+No requirements
+30 Spirit
+Supports Persistent Buff Skills, causing your Minions to deal increased Damage while you are not on full Mana while the Supported Skill is active.
+Tags: Support, Buff, Persistentupwelling-iiupwelling-iiSupportGemUpwellingTwoUpwelling II### Urgent Totems I
+Support gem · Strength · https://wraeclastindex.fyi/item/urgent-totems-i
+No requirements
+Supports Skills which create Totems, causing those Skills to place Totems much more quickly.
+Tags: Support, Totemurgent-totems-iurgent-totems-iSupportGemAncestralUrgencyUrgent Totems I### Urgent Totems II
+Support gem · Strength · https://wraeclastindex.fyi/item/urgent-totems-ii
+No requirements
+Supports Skills which create Totems, causing those Skills to place Totems much more quickly.
+Tags: Support, Totemurgent-totems-iiurgent-totems-iiSupportGemAncestralUrgencyTwoUrgent Totems II### Urgent Totems III
+Support gem · Strength · https://wraeclastindex.fyi/item/urgent-totems-iii
+No requirements
+Supports Skills which create Totems, causing those Skills to place Totems much more quickly. Totems created by Supported Skills have increased Attack and Cast Speed.
+Tags: Support, Totemurgent-totems-iiiurgent-totems-iiiSupportGemAncestralUrgencyThreeUrgent Totems III### Uruk's Smelting
+Lineage support gem · Strength · https://wraeclastindex.fyi/item/uruks-smelting
+No requirements
+Supports any skill, causing Armour Break it inflicts to be stronger. Fully Breaking Armour with Supported Skills permanently increases the Physical Damage taken by those affected, up to a cap.
+Tags: Support, Lineage, Physicaluruks-smeltinguruks-smeltingSupportGemUruksSmeltingUruk's Smelting### Uul-Netol's Embrace
+Lineage support gem · Strength · https://wraeclastindex.fyi/item/uul-netols-embrace
+No requirements
+Supports Skills that can cause Damaging Hits, granting extra Chaos damage and causing Chaos damage to Break Armour.
+Tags: Support, Lineage, Physical, Chaosuul-netols-embraceuul-netols-embraceSupportGemUulNetolsEmbraceUul-Netol's Embrace### Valako's Charge
+Skill gem · https://wraeclastindex.fyi/item/valakos-charge
+Requires at gem level 20: level 90
+While active, taking Lightning damage builds up charge on you. Reaching full charge expends all charge to Trigger this skill, creating a Chaining lightning bolt that arcs to nearby enemies.
+Tags: Spell, AoE, Trigger, Lightning, Chainingvalakos-chargevalakos-chargeSkillGemValakosChargeValako's Charge### Vanguard I
+Support gem · Strength · https://wraeclastindex.fyi/item/vanguard-i
+No requirements
+Supports Shield Skills, causing you to gain Guard on Stunning Enemies with the Supported Skill.
+Tags: Supportvanguard-ivanguard-iSupportGemVanguardVanguard I### Vanguard II
+Support gem · Strength · https://wraeclastindex.fyi/item/vanguard-ii
+No requirements
+Supports Shield Skills, causing you to gain Guard on Stunning Enemies with the Supported Skill.
+Tags: Supportvanguard-iivanguard-iiSupportGemVanguardTwoVanguard II### Varashta's Blessing
+Lineage support gem · Intelligence · https://wraeclastindex.fyi/item/varashtas-blessing
+No requirements
+Supports any Skill that can deal damage, causing it to deal more damage for each different Command Skill you have used in the past few seconds. Cannot modify the Skills of Minions.
+Tags: Support, Lineagevarashtas-blessingvarashtas-blessingSupportGemVarashtasBlessingVarashta's Blessing### Vaulting Impact
+Skill gem · https://wraeclastindex.fyi/item/vaulting-impact
+Requires at gem level 20: level 90, 86 Dex, 86 Int
+1 s use time · 83 Mana at gem level 20
+Leap forward and Slam the ground, sending out a shockwave. The shockwave applies Broken Stance to Dazed enemies, causing any Hits against those enemies to deal extra damage.
+Tags: Attack, AoE, Melee, Slam, Physical, Duration, Travel, Payoffvaulting-impactvaulting-impactSkillGemVaultingImpactVaulting Impact### Verglas
+Support gem · Intelligence · https://wraeclastindex.fyi/item/verglas
+No requirements
+Supports Skills you use yourself which can Hit Enemies. Supported Skills Gain a percentage of their Damage as Cold Damage when you destroy Ice Crystals.
+Tags: Support, ColdverglasverglasSupportGemVerglasVerglas### Verisium Manifestations
+Skill gem · https://wraeclastindex.fyi/item/verisium-manifestations
+Requires at gem level 20: level 90
+1 s use time · 30 Spirit
+While active, Hitting with an Attack will spend Runic Ward to summon a Verisium Manifestation, a short-lived Temporary Minion that rapidly Attacks nearby enemies, ignoring commands. Enemies will not directly engage these Minions, and can pass through them.
+Tags: Buff, Minion, Persistent, Durationverisium-manifestationsverisium-manifestationsSkillGemVerisiumManifestationVerisium Manifestations### Vilenta's Propulsion
+Lineage support gem · Intelligence · https://wraeclastindex.fyi/item/vilentas-propulsion
+No requirements
+Supports Spell Skills that fire Projectiles, causing increases and reductions to cast speed to also apply to Projectile speed.
+Tags: Support, Lineage, Spell, Projectilevilentas-propulsionvilentas-propulsionSupportGemVilentasPropulsionVilenta's Propulsion### Vine Arrow
+Skill gem · Dexterity · https://wraeclastindex.fyi/item/vine-arrow
+Requires at gem level 20: level 90, 157 Dex
+1 s use time · 47 Mana at gem level 20
+Fire an arrow into the air that lands after a short delay, damaging enemies and causing a plant to spring up at the impact location. The plant sprouts vines that latch onto nearby enemies, Slowing their movement speed and dealing Chaos damage over time. The plant can be Poisoned, causing it to deal more damage.
+Tags: Attack, AoE, Projectile, Chaos, Duration, Repeatable, Plantvine-arrowvine-arrowSkillGemVineArrowVine Arrow### Virtuous Barrier
+Skill gem · https://wraeclastindex.fyi/item/virtuous-barrier
+Requires at gem level 20: level 90
+While active, conjures a glittering barrier that accumulates protective gemstone Motes of each Attribute type over time, but loses a random Mote when you are Hit.
+Tags: Buff, Persistentvirtuous-barriervirtuous-barrierSkillGemAscendancyVirtuousBarrierVirtuous Barrier### Vitality I
+Support gem · Strength · https://wraeclastindex.fyi/item/vitality-i
+No requirements
+20 Spirit
+Supports Persistent Buff Skills, causing you to gain Life Regeneration while the Skill is active.
+Tags: Support, Buff, Persistentvitality-ivitality-iSupportGemVitalityVitality I### Vitality II
+Support gem · Strength · https://wraeclastindex.fyi/item/vitality-ii
+No requirements
+40 Spirit
+Supports Persistent Buff Skills, causing you to gain Life Regeneration while the Skill is active.
+Tags: Support, Buff, Persistentvitality-iivitality-iiSupportGemVitalityTwoVitality II### Vivid Stampede
+Skill gem · https://wraeclastindex.fyi/item/vivid-stampede
+Requires at gem level 20: level 90
+Call upon Spirits of the Stag, sending them leaping forward. Each Stag releases a damaging shockwave each time it lands, and any Stags that travel the maximum possible distance also leave behind Shocked Ground.
+Tags: Attack, AoE, Trigger, Lightning, Durationvivid-stampedevivid-stampedeSkillGemAscendancyVividStampedeVivid Stampede### Void Illusion
+Skill gem · https://wraeclastindex.fyi/item/void-illusion
+Requires at gem level 20: level 90
+While active, creates a short-lived illusory copy of yourself whenever you dodge roll. The copy can be damaged by enemies, and copies that are destroyed by an enemy will cause damaging explosions. Copies created this way have 1 Life.
+Tags: Attack, Buff, Persistent, AoE, Trigger, Durationvoid-illusionvoid-illusionSkillGemAscendancyVoidIllusionVoid Illusion### Volatile Dead
+Skill gem · Intelligence · https://wraeclastindex.fyi/item/volatile-dead
+Requires at gem level 20: level 90, 157 Int
+0.8 s use time
+Consume a Corpse to create a volatile core that seeks out enemies and Ignites enemies near it. The core explodes at the end of its duration.
+Tags: Spell, AoE, Fire, Repeatablevolatile-deadvolatile-deadSkillGemVolatileDeadVolatile Dead### Volatile Power
+Support gem · Intelligence · https://wraeclastindex.fyi/item/volatile-power
+No requirements
+Supports Skills which you use yourself. On using Supported Skills while they are Empowered, you gain Volatility.
+Tags: Support, Physical, Chaosvolatile-powervolatile-powerSupportGemVolatilePowerVolatile Power### Volatility
+Support gem · Intelligence · https://wraeclastindex.fyi/item/volatility
+No requirements
+Supports Skills you use yourself which can cause Damaging Hits. Supported Skills grant Volatility on Critical Hit.
+Tags: Support, Physical, ChaosvolatilityvolatilitySupportGemVolatilityVolatility### Volcanic Eruption
+Support gem · Strength · https://wraeclastindex.fyi/item/volcanic-eruption
+No requirements
+Supports Melee Strike Skills you use yourself. Supported Skills trigger Volcanic Eruption on Hit against Ignited Enemies.
+Tags: Support, Attack, AoE, Melee, Strike, Projectile, Trigger, Firevolcanic-eruptionvolcanic-eruptionSupportGemVolcanicEruptionVolcanic Eruption### Volcanic Fissure
+Skill gem · Strength · https://wraeclastindex.fyi/item/volcanic-fissure
+Requires at gem level 20: level 90, 157 Str
+1 s use time · 41 Mana at gem level 20
+Slam the ground, creating a branching Molten Fissure that deals damage as it travels and remains for a duration. Using a different Slam on a Molten Fissure creates a spreading Aftershock.
+Tags: Attack, AoE, Melee, Slam, Sustained, Fire, Durationvolcanic-fissurevolcanic-fissureSkillGemVolcanicFissureVolcanic Fissure### Volcano
+Skill gem · https://wraeclastindex.fyi/item/volcano
+Requires at gem level 20: level 90, 86 Str, 86 Int
+0.8 s use time · 73 Mana at gem level 20
+Uplift a volcano from the earth, damaging enemies standing on it and releasing a spray of molten Projectiles. While the volcano persists, Slamming it will cause another Projectile spray. Channelling this Skill for longer makes the initial eruption more violent, but does not affect subsequent Projectile sprays.
+Tags: Spell, AoE, Projectile, Sustained, Fire, Duration, ChannellingvolcanovolcanoSkillGemVolcanoVolcano### Volt
+Support gem · Dexterity · https://wraeclastindex.fyi/item/volt
+No requirements
+Supports Projectile Attack Skills you use yourself. Supported Skills gain Voltaic Charge as you move, up to a maximum. When used, Supported Skills expend that Charge to gain extra Lightning Damage.
+Tags: Support, Attack, Projectile, LightningvoltvoltSupportGemVoltVolt### Voltaic Barrier
+Skill gem · https://wraeclastindex.fyi/item/voltaic-barrier
+Requires at gem level 20: level 90
+1 s use time · 108 Ward at gem level 20
+Spend Runic Ward to raise a pair of electrified pylons in front of you which project a wall of electricity between them, damaging and Electrocuting enemies caught between them. Projectiles you fire through the wall become energised, and discharge that energy on Hit as Chaining Lightning beams.
+Tags: Attack, AoE, Trigger, Lightning, Chainingvoltaic-barriervoltaic-barrierSkillGemVoltaicBarrierVoltaic Barrier### Voltaic Grenade
+Skill gem · https://wraeclastindex.fyi/item/voltaic-grenade
+Requires at gem level 20: level 90, 86 Str, 86 Dex
+1 s use time · 73 Mana at gem level 20
+Fire a bouncing Grenade that discharges an Electrocuting Lightning blast when its fuse expires, causing all Lightning Hits against enemies to contribute to Electrocution buildup for a duration.
+Tags: Attack, AoE, Projectile, Grenade, Lightning, Durationvoltaic-grenadevoltaic-grenadeSkillGemVoltaicGrenadeVoltaic Grenade### Voltaic Mark
+Skill gem · Dexterity · https://wraeclastindex.fyi/item/voltaic-mark
+Requires at gem level 20: level 90, 157 Dex
+0.5 s use time · 79 Mana at gem level 20
+Mark a target, making them more susceptible to being Electrocuted. When the Marked target is Electrocuted, the Mark Activates, granting a Buff which gives extra Lightning damage and Consuming the Mark. Marking another target while you have the Buff will remove the Buff.
+Tags: Mark, Buff, Lightning, Durationvoltaic-markvoltaic-markSkillGemVoltaicMarkVoltaic Mark### Vorana's Siege
+Lineage support gem · https://wraeclastindex.fyi/item/voranas-siege
+No requirements
+Supports skills which Hit targets and have an area of effect, increasing the affected area and causing it to Hit Isolated targets harder.
+Tags: Support, Lineage, AoEvoranas-siegevoranas-siegeSupportGemVoranasSiegeVorana's Siege### Vruun's Aftermath
+Lineage support gem · https://wraeclastindex.fyi/item/vruuns-aftermath
+No requirements
+Supports Warcries, causing them to destroy Ice Crystals and Ice Fragments. Supported Skills empower additional Attacks if they destroy enough Ice Crystals and Ice Fragments.
+Tags: Support, Lineage, Warcryvruuns-aftermathvruuns-aftermathSupportGemVruunsAftermathVruun's Aftermath### Vruun's Inevitability
+Lineage support gem · Strength · https://wraeclastindex.fyi/item/vruuns-inevitability
+No requirements
+Supports Melee Attack Skills. Supported Skills gain Combo when you successfully Strike Enemies with other Melee Attacks. Supported Skills expend their Combo when used, gaining more area of effect the higher Combo they had. Cannot support skills which already gain Combo. Cannot modify the Skills of Minions.
+Tags: Support, Lineage, Attack, Melee, Conditionalvruuns-inevitabilityvruuns-inevitabilitySupportGemVruunsInevitabilityVruun's Inevitability### Vulnerability
+Skill gem · Intelligence · https://wraeclastindex.fyi/item/vulnerability
+Requires at gem level 20: level 90, 157 Int
+0.7 s use time · 178 Mana at gem level 20
+Curse all targets in an area after a short delay, making Hits against them ignore a portion of their Armour.
+Tags: Spell, AoE, Physical, Duration, Curse, RepeatablevulnerabilityvulnerabilitySkillGemVulnerabilityVulnerability### Walking Calamity
+Skill gem · https://wraeclastindex.fyi/item/walking-calamity
+Requires at gem level 20: level 90, 86 Str, 86 Int
+1 s use time · 166 Mana at gem level 20
+Build Glory by gaining Rage while already at maximum Rage. When you have maximum Glory, roar to the heavens to bring them down upon your enemies. For the duration of the Skill, meteors rain down around you and you Gain Fire damage and Rage regeneration. This Skill's effects are suppressed if you leave Bear form, but will resume if you return to Bear form before the duration expires.
+Tags: Attack, Shapeshift, Buff, Bear, AoE, Trigger, Fire, Duration, Conditionalwalking-calamitywalking-calamitySkillGemWalkingCalamityWalking Calamity### War Banner
+Skill gem · https://wraeclastindex.fyi/item/war-banner
+Requires at gem level 20: level 90, 86 Str, 86 Dex
+1 s use time · 30 Spirit
+While active, Attacking enemies builds Glory. When you have maximum Glory, you can place an inspiring Banner for a duration with an Aura that grants you and nearby Allies Attack damage, Attack speed and Accuracy.
+Tags: Banner, Buff, Persistent, AoE, Aura, Duration, Conditionalwar-bannerwar-bannerSkillGemWarBannerWar Banner### Wardbound Minions
+Skill gem · https://wraeclastindex.fyi/item/wardbound-minions
+Requires at gem level 20: level 90
+0.75 s use time · 59 Ward at gem level 20
+Spend all your Runic Ward to summon Temporary Wardbound Casters. These Minions target nearby enemies with damaging Cold Spells.
+Tags: Spell, Minion, Duration, Repeatablewardbound-minionswardbound-minionsSkillGemWardboundMinionsWardbound Minions### Warm Blooded
+Support gem · Dexterity · https://wraeclastindex.fyi/item/warm-blooded
+No requirements
+15 Spirit
+Supports Persistent Buff Skills, causing Freeze applied to you to last for a shorter duration while the Supported Skill is active.
+Tags: Support, Buff, Persistentwarm-bloodedwarm-bloodedSupportGemWarmBloodedWarm Blooded### Wave of Frost
+Skill gem · https://wraeclastindex.fyi/item/wave-of-frost
+Requires at gem level 20: level 90, 86 Dex, 86 Int
+1 s use time · 100 Mana at gem level 20
+Flip backwards and send forth a Freezing wave in front of you, immediately Freezing enemies which are Primed for Freeze.
+Tags: Attack, AoE, Melee, Coldwave-of-frostwave-of-frostSkillGemWaveOfFrostWave of Frost### Whirling Assault
+Skill gem · https://wraeclastindex.fyi/item/whirling-assault
+Requires at gem level 20: level 90, 86 Dex, 86 Int
+1 s use time · 126 Mana at gem level 20
+Advance while hitting enemies around you with a series of spinning Strikes.
+Tags: Attack, AoE, Melee, Strikewhirling-assaultwhirling-assaultSkillGemWhirlingAssaultWhirling Assault### Whirling Slash
+Skill gem · Dexterity · https://wraeclastindex.fyi/item/whirling-slash
+Requires at gem level 20: level 90, 157 Dex
+1 s use time · 39 Mana at gem level 20
+Perform a circular slash that kicks up a Whirlwind around you, Slowing enemies and Blinding them in its area of effect. Leaving the area collapses the storm, dealing damage and causing Knockback.
+Tags: Attack, AoE, Melee, Strike, Staged, Windwhirling-slashwhirling-slashSkillGemWhirlingSlashWhirling Slash### Whirlwind Lance
+Skill gem · Dexterity · https://wraeclastindex.fyi/item/whirlwind-lance
+Requires at gem level 20: level 90, 157 Dex
+1 s use time · 46 Mana at gem level 20
+Throw a Spear with enough force to kick up a Whirlwind where it lands, Slowing enemies and Blinding them in its area of effect. Entering the Whirlwind collapses it, dealing damage and causing Knockback. Consumes a Frenzy Charge if possible to create the Whirlwind with one more than its normal maximum number of stages.
+Tags: Attack, AoE, Projectile, Duration, Repeatable, Windwhirlwind-lancewhirlwind-lanceSkillGemWhirlwindLanceWhirlwind Lance### Wild Protector
+Skill gem · https://wraeclastindex.fyi/item/wild-protector
+Requires at gem level 20: level 90
+Call upon a Bear Spirit Companion to maul your foes. The Bear Spirit leaps at enemies to Maim them, Leeches Life with its slam, and periodically roars to Intimidate enemies. The Bear Spirit does not count toward your Companion limit.
+Tags: Minion, Companion, Persistent, Physicalwild-protectorwild-protectorSkillGemWildProtectorWild Protector### Wildfire
+Support gem · Intelligence · https://wraeclastindex.fyi/item/wildfire
+No requirements
+Supports any skill that Hits enemies, Spreading Ignites it inflicts to nearby enemies after a delay.
+Tags: Support, AoE, FirewildfirewildfireSupportGemWildfireWildfire### Wildshards I
+Support gem · Intelligence · https://wraeclastindex.fyi/item/wildshards-i
+No requirements
+Supports Projectile Spells. Supported Spells have a chance to fire many additional Projectiles in a circle.
+Tags: Support, Spell, Projectilewildshards-iwildshards-iSupportGemWildshardsWildshards I### Wildshards II
+Support gem · Intelligence · https://wraeclastindex.fyi/item/wildshards-ii
+No requirements
+Supports Projectile Spells. Supported Spells have a chance to fire many additional Projectiles in a circle.
+Tags: Support, Spell, Projectilewildshards-iiwildshards-iiSupportGemWildshardsTwoWildshards II### Wildwood's Gifts
+Skill gem · https://wraeclastindex.fyi/item/wildwoods-gifts
+Requires at gem level 20: level 90
+1 s use time
+You are chosen by Azmerian spirits who provide guidance, allowing you to see nearby Ancient Blooms.
+Tags: Buff, Persistent, Remnantwildwoods-giftswildwoods-giftsSkillGemAncientGiftsWildwood's Gifts### Wind Blast
+Skill gem · https://wraeclastindex.fyi/item/wind-blast
+Requires at gem level 20: level 90, 86 Dex, 86 Int
+1 s use time · 63 Mana at gem level 20
+Batter enemies at range by generating a gust of wind as you swing. Enemies will be Dazed and Knocked Back based on how close they are to you.
+Tags: Attack, AoE, Melee, Windwind-blastwind-blastSkillGemWindBlastWind Blast### Wind Dancer
+Skill gem · Dexterity · https://wraeclastindex.fyi/item/wind-dancer
+Requires at gem level 20: level 90, 157 Dex
+1 s use time · 30 Spirit
+While active, periodically grants stages of a buff that gives you more Evasion per stage. Being Hit by an Enemy while you have this buff consumes all stages to damage and Knock Back enemies around you.
+Tags: Buff, Attack, Persistent, AoE, Melee, Trigger, Stagedwind-dancerwind-dancerSkillGemWindDancerWind Dancer### Wind Serpent's Fury
+Skill gem · Dexterity · https://wraeclastindex.fyi/item/wind-serpents-fury
+Requires at gem level 20: level 90, 157 Dex
+1 s use time · 69 Mana at gem level 20
+Consume all Frenzy Charges to perform a gigantic spear thrust that Knocks Back enemies. For each Frenzy Charge consumed, a Wind Serpent follows in the spear's wake. Each Serpent also damages and Knocks Back enemies.
+Tags: Attack, AoE, Melee, Sustained, Conditional, Windwind-serpents-furywind-serpents-furySkillGemWindSerpentsFuryWind Serpent's Fury### Wind Wave
+Support gem · Dexterity · https://wraeclastindex.fyi/item/wind-wave
+No requirements
+Supports any skill that you can use, triggering a blast of wind that Knocks Back enemies if you are Stunned while using it.
+Tags: Support, AoE, Triggerwind-wavewind-waveSupportGemWindWaveWind Wave### Window of Opportunity I
+Support gem · Dexterity · https://wraeclastindex.fyi/item/window-of-opportunity-i
+No requirements
+Supports Channelling skills that have special effects if released with Perfect Timing, causing them to deal much more damage if released with Perfect Timing but reducing the Perfect Timing window.
+Tags: Support, Channellingwindow-of-opportunity-iwindow-of-opportunity-iSupportGemWindowOfOpportunityWindow of Opportunity I### Window of Opportunity II
+Support gem · Dexterity · https://wraeclastindex.fyi/item/window-of-opportunity-ii
+No requirements
+Supports Channelling skills that have special effects if released with Perfect Timing, causing them to deal much more damage and grant Perfect Deflection if released with Perfect Timing but reducing the Perfect Timing window.
+Tags: Support, Channellingwindow-of-opportunity-iiwindow-of-opportunity-iiSupportGemWindowOfOpportunityTwoWindow of Opportunity II### Wing Blast
+Skill gem · https://wraeclastindex.fyi/item/wing-blast
+Requires at gem level 20: level 90, 86 Str, 86 Int
+0.5 s use time · 55 Mana at gem level 20
+Shapeshift into a Wyvern and launch yourself backwards with a powerful wingbeat that Knocks Back enemies. Enemies Primed for Heavy Stun will be stunned, release a shockwave, and have a chance to grant you a Power Charge. This skill can be used while using other skills to interrupt them.
+Tags: Attack, Shapeshift, Wyvern, AoE, Melee, Windwing-blastwing-blastSkillGemWingBlastWing Blast### Wither
+Skill gem · Intelligence · https://wraeclastindex.fyi/item/wither
+Requires at gem level 20: level 90, 157 Int
+0.25 s use time
+Channel a debilitating hex that Withers enemies in the area.
+Tags: Spell, AoE, Chaos, Duration, ChannellingwitherwitherSkillGemWitherWither### Withering Presence
+Skill gem · Intelligence · https://wraeclastindex.fyi/item/withering-presence
+Requires at gem level 20: level 90, 157 Int
+1 s use time · 30 Spirit
+While active, emits an Aura that periodically Withers enemies in your Presence.
+Tags: Buff, Persistent, Aura, Chaos, Durationwithering-presencewithering-presenceSkillGemWitheringPresenceWithering Presence### Withering Presence
+Skill gem · https://wraeclastindex.fyi/item/withering-presence-2
+Requires at gem level 20: level 90
+While active, emits an Aura that periodically Withers enemies in your Presence.
+Tags: Buff, Persistent, Aura, Chaos, Durationwithering-presence-2withering-presenceUniqueSkillGemWitheringPresenceWithering Presence### Withering Touch
+Support gem · Intelligence · https://wraeclastindex.fyi/item/withering-touch
+No requirements
+Supports any skill that Hits enemies, giving it a chance to Wither enemies on Hit.
+Tags: Support, Chaos, Durationwithering-touchwithering-touchSupportGemWitheringTouchWithering Touch### Wolf Pack
+Skill gem · https://wraeclastindex.fyi/item/wolf-pack
+Requires at gem level 20: level 90, 86 Str, 86 Int
+1 s use time · 60 Spirit
+Activate to summon a pack of Wolf Companions. The pack treated as a single Companion for effects that count or limit Companions, regardless of the number of Wolves in the pack.
+Tags: Minion, Companion, Persistent, Physicalwolf-packwolf-packSkillGemWolfPackWolf Pack### Xibaqua's Rending
+Lineage support gem · Intelligence · https://wraeclastindex.fyi/item/xibaquas-rending
+No requirements
+Supports Skills that leap into the air, causing Corpses in the area you land to violently explode, damaging surrounding enemies.
+Tags: Support, Lineage, AoE, Trigger, Firexibaquas-rendingxibaquas-rendingSupportGemXibaquasRendingXibaqua's Rending### Xoph's Pyre
+Lineage support gem · Strength · https://wraeclastindex.fyi/item/xophs-pyre
+No requirements
+Supports Skills that can cause Damaging Hits, granting extra Chaos damage and causing Chaos damage to Contribute to Ignites.
+Tags: Support, Lineage, Fire, Chaosxophs-pyrexophs-pyreSupportGemXophsPyreXoph's Pyre### Zarokh's Refrain
+Lineage support gem · Intelligence · https://wraeclastindex.fyi/item/zarokhs-refrain
+No requirements
+Supports Cascadable Spells you cast yourself. Supported Spells Echo thrice, but are given a Cooldown. Cannot support skills which already have a Cooldown.
+Tags: Support, Lineage, Spell, AoEzarokhs-refrainzarokhs-refrainSupportGemZarokhsRefrainZarokh's Refrain### Zarokh's Revolt
+Lineage support gem · Intelligence · https://wraeclastindex.fyi/item/zarokhs-revolt
+No requirements
+Supports Repeatable Spells you cast yourself, Sealing them over time and giving them a moderate Cooldown. The Seals are broken when cast, each causing the Spell to Repeat. Cannot support skills which already have a Cooldown or gain seals.
+Tags: Support, Spellzarokhs-revoltzarokhs-revoltSupportGemZarokhsRevoltZarokh's Revolt### Zenith I
+Support gem · Intelligence · https://wraeclastindex.fyi/item/zenith-i
+No requirements
+Supports Spell Skills. Supported Skills deal more damage while you are above 90% of your Maximum Mana. Does not modify Skills used by Minions.
+Tags: Support, Spellzenith-izenith-iSupportGemZenithZenith I### Zenith II
+Support gem · Intelligence · https://wraeclastindex.fyi/item/zenith-ii
+No requirements
+Supports Spell Skills. Supported Skills have increased Mana cost Efficiency and deal more damage while you are above 90% of your maximum Mana. Does not modify Skills used by Minions.
+Tags: Support, Spellzenith-iizenith-iiSupportGemZenithTwoZenith II### Zerphi's Infamy
+Lineage support gem · Strength · https://wraeclastindex.fyi/item/zerphis-infamy
+No requirements
+Supports Attacks and Warcries you use yourself. Supported Skills gain a Glory requirement, and build Glory when you spend Life on Skills. Supported Skills deal more damage and have significantly increased area of effect.
+Tags: Support, Lineage, Warcryzerphis-infamyzerphis-infamySupportGemZerphisLegacyZerphi's Infamy

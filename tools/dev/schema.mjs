@@ -6,7 +6,8 @@
    patch that changes the shape of a field is caught where it is built, not on a card.
 
      node tools/dev/schema.mjs                 check data/ against the declarations
-     node tools/dev/schema.mjs --data DIR      check another data folder (the pipeline's staging copy)
+     node tools/dev/schema.mjs --data DIR      check another data folder (the pipeline's staging copy: the cut
+                                               below is left to the pipeline's last stage and its --check)
      node tools/dev/schema.mjs --write         write data/schema.json again out of assets/kinds.js
 
    What it checks, per kind, printing the first few problems of each:
@@ -15,6 +16,7 @@
        the wrong shape; a field no declaration of its kind names
      * data/index-core.json and data/index-rest.json: both parts are of this index, and put back together they
        hold the same rows, of the same shapes
+     * data/manifest.json (tools/shards.py): of this index, every kind's rows all there, every file it names there
      * data/bosses.json: every boss row has the fields the Bosses tab reads
    tools/dev/guard.mjs runs it inside the frame check; run on its own it needs nothing but the files. */
 import { readFile, writeFile } from 'node:fs/promises';
@@ -181,7 +183,7 @@ function unpackPart(part){
   return out;
 }
 
-export async function checkSchema({data = join(ROOT, 'data')} = {}){
+export async function checkSchema({data = join(ROOT, 'data'), cut = true} = {}){
   const bad = {}, top = [];
   const read = async f => JSON.parse(await readFile(join(data, f), 'utf8'));
   const want = schemaText();
@@ -218,6 +220,22 @@ export async function checkSchema({data = join(ROOT, 'data')} = {}){
       for(const [k, list] of Object.entries(partBad)) for(const s of list) (bad[k] ||= []).push('in the parts: ' + s);
       parts = 'both parts match it';
     } catch(e){ top.push('the index parts do not read: ' + clip(e.message)); }
+    // the cut the site reads a piece at a time (tools/shards.py): of this index, every kind whole, every file there
+    if(cut) try {
+      const man = await read('manifest.json');
+      const id = createHash('sha1').update(raw).digest('hex').slice(0, 12);
+      if(man.id !== id) top.push('data/manifest.json is of another index.json (' + man.id + ', not ' + id + '): run python tools/shards.py');
+      for(const k of new Set([...Object.keys(counts), ...Object.keys(man.kinds || {})])){
+        const K = (man.kinds || {})[k], cut = K ? K.cards.reduce((a, c) => a + c.n, 0) : 0;
+        if(!K || K.n !== (counts[k] || 0) || cut !== K.n) top.push('data/manifest.json holds ' + (K ? K.n + ' ' + k + ' rows in ' + cut + ' cut' : 'no ' + k + ' rows') + ', the index ' + (counts[k] || 0));
+      }
+      const named = [];
+      (function walk(v){ if(v && typeof v === 'object'){ if(typeof v.file === 'string') named.push(v.file); for(const x of Object.values(v)) walk(x); } })(man);
+      const gone = [];
+      for(const f of named) await readFile(join(data, '..', f)).catch(() => gone.push(f));
+      if(gone.length) top.push(gone.length + ' files data/manifest.json names are not there (' + gone[0] + '): run python tools/shards.py');
+      parts += ', and so does the cut';
+    } catch(e){ top.push('data/manifest.json does not read: ' + clip(e.message) + ': run python tools/shards.py'); }
   }
   // rows a kind's own module reads from a file of its own
   let own = 0;
@@ -251,7 +269,7 @@ if(import.meta.url === 'file:///' + (process.argv[1] || '').replace(/\\/g, '/').
     const s = makeSchema();
     console.log('wrote ' + join(data, OUT) + ': ' + Object.keys(s.kinds).length + ' kinds, ' + Object.keys(s.fields).length + ' fields');
   }
-  const r = await checkSchema({data});
+  const r = await checkSchema({data, cut: at < 0});
   for(const b of r.bad) console.log('FAIL ' + b);
   console.log(r.bad.length ? r.bad.length + ' broken' : 'ok   ' + r.said);
   process.exit(r.bad.length ? 1 : 0);

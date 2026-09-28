@@ -30,7 +30,8 @@ const ROOT = join(HERE, '..', '..');
 const DROP = 0.10;              // a kind or a list may lose this share of its rows before it is flagged
 const EMPTY_N = 20, EMPTY_SHARE = 0.10;   // a field emptied on at least this many cards, and this share of those that had it
 const SHRINK = 0.5;             // a file that loses this share of its bytes
-const HASHED = /\.[0-9a-f]{8,}\.json$/;   // name.<hash>.json: the drill-down page's data, named by its content
+// name.<hash>.json: the drill-down page's data and the index's cut (tools/shards.py, its words files .txt), named by content
+const HASHED = /\.[0-9a-f]{8,}\.(?:json|txt)$/;
 const FIRST = 5;                // names shown per list
 const MAX_MD = 60000;           // a GitHub comment holds 65,536 characters
 

@@ -1,0 +1,483 @@
+{
+ "id": "1236e8a6a1b0",
+ "v": "4.5.5.2",
+ "gen": "2026-09-18",
+ "patch": "0.5.5",
+ "source": "data/index.json: the game files (tools/sync.py and the pipeline stages after it), cut by tools/shards.py",
+ "order": [
+  [
+   "g",
+   1072
+  ],
+  [
+   "u",
+   710
+  ],
+  [
+   "p",
+   2112
+  ],
+  [
+   "t",
+   1017
+  ],
+  [
+   "w",
+   725
+  ],
+  [
+   "b",
+   1554
+  ],
+  [
+   "i",
+   31
+  ],
+  [
+   "a",
+   368
+  ],
+  [
+   "c",
+   96
+  ],
+  [
+   "h",
+   9
+  ],
+  [
+   "q",
+   13
+  ]
+ ],
+ "meta": {
+  "file": "data/cards/meta.7f01271e3e.json",
+  "bytes": 35805
+ },
+ "kinds": {
+  "g": {
+   "n": 1072,
+   "search": {
+    "file": "data/search/g.322b11cb05.json",
+    "bytes": 277748
+   },
+   "cards": [
+    {
+     "file": "data/cards/g/00.3ab4a78776.json",
+     "bytes": 160126,
+     "n": 511
+    },
+    {
+     "file": "data/cards/g/01.c26293f9ad.json",
+     "bytes": 158420,
+     "n": 557
+    },
+    {
+     "file": "data/cards/g/02.c11190a5fa.json",
+     "bytes": 1433,
+     "n": 4
+    }
+   ]
+  },
+  "u": {
+   "n": 710,
+   "search": {
+    "file": "data/search/u.ca11f9bc35.json",
+    "bytes": 301034
+   },
+   "cards": [
+    {
+     "file": "data/cards/u/00.e97c3cde45.json",
+     "bytes": 154360,
+     "n": 301
+    },
+    {
+     "file": "data/cards/u/01.3292f37056.json",
+     "bytes": 155618,
+     "n": 352
+    },
+    {
+     "file": "data/cards/u/02.ea05eac286.json",
+     "bytes": 23592,
+     "n": 57
+    }
+   ]
+  },
+  "p": {
+   "n": 2112,
+   "search": {
+    "file": "data/search/p.cfda1f89a7.json",
+    "bytes": 379298
+   },
+   "cards": [
+    {
+     "file": "data/cards/p/00.773d170e5c.json",
+     "bytes": 146729,
+     "n": 586
+    },
+    {
+     "file": "data/cards/p/01.834cdd07e0.json",
+     "bytes": 147621,
+     "n": 586
+    },
+    {
+     "file": "data/cards/p/02.a7db062641.json",
+     "bytes": 151727,
+     "n": 818
+    },
+    {
+     "file": "data/cards/p/03.403b621db3.json",
+     "bytes": 24803,
+     "n": 122
+    }
+   ]
+  },
+  "t": {
+   "n": 1017,
+   "search": {
+    "file": "data/search/t.cb80059870.json",
+    "bytes": 163537
+   },
+   "cards": [
+    {
+     "file": "data/cards/t/00.7a8ca45285.json",
+     "bytes": 148224,
+     "n": 718
+    },
+    {
+     "file": "data/cards/t/01.d2c09c4a15.json",
+     "bytes": 65630,
+     "n": 299
+    }
+   ]
+  },
+  "w": {
+   "n": 725,
+   "search": {
+    "file": "data/search/w.3260929a15.json",
+    "bytes": 186475
+   },
+   "cards": [
+    {
+     "file": "data/cards/w/00.82cedcbdf1.json",
+     "bytes": 175326,
+     "n": 491
+    },
+    {
+     "file": "data/cards/w/01.125f8e399c.json",
+     "bytes": 60059,
+     "n": 234
+    }
+   ]
+  },
+  "b": {
+   "n": 1554,
+   "search": {
+    "file": "data/search/b.c22dc4c66b.json",
+    "bytes": 219090
+   },
+   "cards": [
+    {
+     "file": "data/cards/b/00.d2b37bd4a9.json",
+     "bytes": 140466,
+     "n": 770
+    },
+    {
+     "file": "data/cards/b/01.bfa62143a4.json",
+     "bytes": 133379,
+     "n": 784
+    }
+   ]
+  },
+  "i": {
+   "n": 31,
+   "search": {
+    "file": "data/search/i.502eb5848d.json",
+    "bytes": 4571
+   },
+   "cards": [
+    {
+     "file": "data/cards/i/00.6ba578f7d2.json",
+     "bytes": 3389,
+     "n": 31
+    }
+   ]
+  },
+  "a": {
+   "n": 368,
+   "search": {
+    "file": "data/search/a.f098eafbd2.json",
+    "bytes": 56352
+   },
+   "cards": [
+    {
+     "file": "data/cards/a/00.38e78d4bc1.json",
+     "bytes": 68926,
+     "n": 368
+    }
+   ]
+  },
+  "c": {
+   "n": 96,
+   "search": {
+    "file": "data/search/c.d09fd2bbf6.json",
+    "bytes": 13165
+   },
+   "cards": [
+    {
+     "file": "data/cards/c/00.5575505692.json",
+     "bytes": 14480,
+     "n": 96
+    }
+   ]
+  },
+  "h": {
+   "n": 9,
+   "search": {
+    "file": "data/search/h.cb3a3c866a.json",
+    "bytes": 6500
+   },
+   "cards": [
+    {
+     "file": "data/cards/h/00.73743972b7.json",
+     "bytes": 14839,
+     "n": 9
+    }
+   ]
+  },
+  "q": {
+   "n": 13,
+   "search": {
+    "file": "data/search/q.dcec142ca9.json",
+    "bytes": 7644
+   },
+   "cards": [
+    {
+     "file": "data/cards/q/00.bcb2e3da1d.json",
+     "bytes": 8563,
+     "n": 13
+    }
+   ]
+  }
+ },
+ "seo": {
+  "base": {
+   "file": "data/seo/base.ceb3041c45.json",
+   "bytes": 164964
+  },
+  "lists": {
+   "g": {
+    "file": "data/seo/list/g.01305e26e4.json",
+    "bytes": 109476
+   },
+   "u": {
+    "file": "data/seo/list/u.5b3394eed9.json",
+    "bytes": 91067
+   },
+   "p": {
+    "file": "data/seo/list/p.efc61c21bf.json",
+    "bytes": 227955
+   },
+   "b": {
+    "file": "data/seo/list/b.3f01bd8c9c.json",
+    "bytes": 163921
+   },
+   "a": {
+    "file": "data/seo/list/a.f6b2a849f8.json",
+    "bytes": 41637
+   },
+   "c": {
+    "file": "data/seo/list/c.1259049feb.json",
+    "bytes": 8609
+   },
+   "w": {
+    "file": "data/seo/list/w.e32f65228d.json",
+    "bytes": 58153
+   }
+  },
+  "words": {
+   "g": [
+    {
+     "file": "data/seo/words/g00.2089dd713f.txt",
+     "bytes": 261985
+    },
+    {
+     "file": "data/seo/words/g01.f97d8440d6.txt",
+     "bytes": 163403
+    }
+   ],
+   "u": [
+    {
+     "file": "data/seo/words/u00.607433cc3d.txt",
+     "bytes": 261508
+    },
+    {
+     "file": "data/seo/words/u01.14e4081f71.txt",
+     "bytes": 73418
+    }
+   ],
+   "p": [
+    {
+     "file": "data/seo/words/p00.1765f7cfd2.txt",
+     "bytes": 261929
+    },
+    {
+     "file": "data/seo/words/p01.86f134af17.txt",
+     "bytes": 262097
+    },
+    {
+     "file": "data/seo/words/p02.a8e9301961.txt",
+     "bytes": 47258
+    }
+   ],
+   "b": [
+    {
+     "file": "data/seo/words/b00.a5e29ce7f8.txt",
+     "bytes": 261938
+    },
+    {
+     "file": "data/seo/words/b01.4eb38717ed.txt",
+     "bytes": 127123
+    }
+   ],
+   "a": [
+    {
+     "file": "data/seo/words/a00.8904f91f1b.txt",
+     "bytes": 95000
+    }
+   ],
+   "c": [
+    {
+     "file": "data/seo/words/c00.8eb8973e0e.txt",
+     "bytes": 24844
+    }
+   ],
+   "w": [
+    {
+     "file": "data/seo/words/w00.26f2819579.txt",
+     "bytes": 261877
+    },
+    {
+     "file": "data/seo/words/w01.433a66bca0.txt",
+     "bytes": 1458
+    }
+   ]
+  },
+  "items": {
+   "files": [
+    {
+     "file": "data/seo/item/00.eaad0f19d3.json",
+     "bytes": 118088
+    },
+    {
+     "file": "data/seo/item/01.77e51bda35.json",
+     "bytes": 120879
+    },
+    {
+     "file": "data/seo/item/02.55c74ca1d4.json",
+     "bytes": 96770
+    },
+    {
+     "file": "data/seo/item/03.c5cc7dc513.json",
+     "bytes": 117066
+    },
+    {
+     "file": "data/seo/item/04.44651968c2.json",
+     "bytes": 123705
+    },
+    {
+     "file": "data/seo/item/05.fb5b2a9e77.json",
+     "bytes": 106760
+    },
+    {
+     "file": "data/seo/item/06.7d2de2f49e.json",
+     "bytes": 121110
+    },
+    {
+     "file": "data/seo/item/07.70052350c9.json",
+     "bytes": 118092
+    },
+    {
+     "file": "data/seo/item/08.1c1293895f.json",
+     "bytes": 112736
+    },
+    {
+     "file": "data/seo/item/09.246973d016.json",
+     "bytes": 110864
+    },
+    {
+     "file": "data/seo/item/10.4f0a982604.json",
+     "bytes": 112916
+    },
+    {
+     "file": "data/seo/item/11.1431f0d517.json",
+     "bytes": 106041
+    },
+    {
+     "file": "data/seo/item/12.f28b918482.json",
+     "bytes": 115739
+    },
+    {
+     "file": "data/seo/item/13.84b15bdc75.json",
+     "bytes": 116598
+    },
+    {
+     "file": "data/seo/item/14.38ff9a9fc5.json",
+     "bytes": 91787
+    },
+    {
+     "file": "data/seo/item/15.92efe489ed.json",
+     "bytes": 110531
+    },
+    {
+     "file": "data/seo/item/16.e04616a5db.json",
+     "bytes": 139875
+    },
+    {
+     "file": "data/seo/item/17.6bfecede36.json",
+     "bytes": 104735
+    },
+    {
+     "file": "data/seo/item/18.a1e671936e.json",
+     "bytes": 111204
+    },
+    {
+     "file": "data/seo/item/19.a0cac9b861.json",
+     "bytes": 116951
+    },
+    {
+     "file": "data/seo/item/20.e25d4a7d9a.json",
+     "bytes": 118302
+    },
+    {
+     "file": "data/seo/item/21.79e982811d.json",
+     "bytes": 128008
+    },
+    {
+     "file": "data/seo/item/22.8d2b334e8c.json",
+     "bytes": 104695
+    },
+    {
+     "file": "data/seo/item/23.8995995d20.json",
+     "bytes": 110211
+    },
+    {
+     "file": "data/seo/item/24.bb7eb18cd7.json",
+     "bytes": 106443
+    },
+    {
+     "file": "data/seo/item/25.8c5c9e4124.json",
+     "bytes": 131864
+    },
+    {
+     "file": "data/seo/item/26.8d679893c5.json",
+     "bytes": 103640
+    },
+    {
+     "file": "data/seo/item/27.bac77d30a6.json",
+     "bytes": 97745
+    }
+   ]
+  }
+ }
+}

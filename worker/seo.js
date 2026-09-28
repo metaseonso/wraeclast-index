@@ -5,8 +5,10 @@
      /gems /uniques /passives /bases /atlas /currency /keywords      the lists
      /sitemap.xml  /llms.txt  /llms-full.txt
      /search?q=...       the app's search (the SearchAction target in the home page's JSON-LD)
-   Data: data/index.json (the game files, via tools/sync.py) and the live price file (/data/market.json: the in-game
-   Currency Exchange for currency, live trade site listings for everything else).
+   Data: the index (the game files, via tools/sync.py) cut into small files by tools/shards.py, with cut() below,
+   and named in data/manifest.json; and the live price file (/data/market.json: the in-game Currency Exchange for
+   currency, live trade site listings for everything else). A page reads the few small files it needs and never
+   data/index.json whole: the free plan gives a request 10 ms of CPU, and parsing the whole index took 17.
    Slugs: the name in lowercase with hyphens. Unique variants add the base ("name-base"; the bare name
    redirects to the plain base). A name used by two kinds goes to the first of unique, gem, passive,
    keyword, currency, base, atlas; the others add their kind ("fulmination-passive"). Same name, same kind: "-2". */
@@ -72,7 +74,8 @@ export async function respond(request, env, ctx, loadMarket){
   const key = new Request(url.origin + url.pathname);
   let res = cache && await cache.match(key);
   if(!res){
-    res = await render(url, await model(env, url.origin, loadMarket));
+    const m = await model(env, url.origin, loadMarket);
+    res = await render(url, m, src(env, url.origin));
     if(cache && res.status === 200){
       const put = cache.put(key, res.clone());
       if(ctx && ctx.waitUntil) ctx.waitUntil(put); else await put;
@@ -81,29 +84,43 @@ export async function respond(request, env, ctx, loadMarket){
   return request.method === 'HEAD' ? new Response(null, res) : res;
 }
 
-function render(url, m){
+async function render(url, m, S){
   const path = url.pathname;
-  if(path === '/sitemap.xml') return text(sitemap(m), 'application/xml');
+  if(path === '/sitemap.xml') return text(sitemap(m, await everyList(m, S)), 'application/xml');
   if(path === '/llms.txt') return text(llms(m), 'text/plain');
-  if(path === '/llms-full.txt') return text(llmsFull(m), 'text/plain');
-  if(LISTS[path.slice(1)]) return html(listPage(m, path.slice(1)));
+  if(path === '/llms-full.txt') return text(await llmsFull(m, S), 'text/plain');
+  if(LISTS[path.slice(1)]) return html(listPage(m, path.slice(1), await listOf(m, S, LISTS[path.slice(1)].k)));
   const seg = path.slice('/item/'.length);
   let want = seg;
   try { want = decodeURIComponent(seg); } catch {}
-  let e = m.bySlug.get(want) || m.bySlug.get(slugify(want));
-  if(e && e.alias) e = m.bySlug.get(e.alias);
+  let e = await entryAt(m, S, want) || await entryAt(m, S, slugify(want));
+  if(e && e.alias) e = await entryAt(m, S, e.alias);
   if(!e) return html(notFound(m), 404, 300);
   if(e.slug !== seg) return new Response(null, {status: 301, headers: {Location: url.origin + '/item/' + e.slug, 'Cache-Control': 'public, max-age=' + AGE}});
+  e.ring = ring(e, await listOf(m, S, e.k));   // its neighbours on its own list (a currency's take in the market's)
   return html(itemPage(m, e));
 }
 
-/* ---------- data ---------- */
-let BASE = null;                          // data/index.json and its slugs: fixed for the life of a deploy
+/* ---------- data ----------
+   tools/shards.py cuts the index with cut() below, so the slugs are decided here and nowhere else, and names the
+   files in data/manifest.json ("seo"):
+     base    every slug the index holds, by the kind holding it, the names the market must not repeat, the first
+             gem of each name (the one a lineage gem's price lands on) and how many of each kind
+     lists   per kind, one short row per entry, in list order: a list page, the sitemap and a neighbour link
+     items   every entry whole, in buckets by its slug (bucketOf), with its other versions and the cards that
+             mention it already worked out; an old bare name as a pointer
+     words   per kind, llms-full.txt's words, with a mark where today's price goes, in files of about 256 KB
+   Each file is fetched and read once per isolate, and only when a page asks for it. They are named by their
+   content, so a file read once is right for the life of the deploy. The market is read again every 5 minutes,
+   and the currency it prices claims its slugs then, against the index's own. */
+let MAN = null, BASE = null;              // the manifest and the base: fixed for the life of a deploy
 let MARKET = null, MARKET_AT = 0;         // the market file, refreshed every 5 minutes
 let MODEL = null;
+const FILES = new Map();                  // path -> a promise of the file, read
 
 async function model(env, origin, loadMarket){
-  if(!BASE) BASE = assetJSON(env, origin, '/data/index.json').then(indexModel).catch(err => { BASE = null; throw err; });
+  const S = src(env, origin);
+  if(!BASE) BASE = S.man().then(man => S.json(man.seo.base.file)).then(baseModel).catch(err => { BASE = null; throw err; });
   const base = await BASE;
   if(!MARKET || Date.now() - MARKET_AT > MARKET_TTL){
     MARKET_AT = Date.now();
@@ -113,37 +130,52 @@ async function model(env, origin, loadMarket){
   if(!MODEL || MODEL.base !== base || MODEL.market !== market) MODEL = withMarket(base, market);
   return MODEL;
 }
-async function assetJSON(env, origin, path){
+// where the files come from: the deploy's own assets, each read once
+function src(env, origin){
+  const get = (path, as) => {
+    if(!FILES.has(path)) FILES.set(path, assetGet(env, origin, '/' + path, as).catch(err => { FILES.delete(path); throw err; }));
+    return FILES.get(path);
+  };
+  return {
+    man: () => MAN || (MAN = assetGet(env, origin, '/data/manifest.json').catch(err => { MAN = null; throw err; })),
+    json: path => get(path, 'json'),
+    text: path => get(path, 'text'),
+  };
+}
+async function assetGet(env, origin, path, as = 'json'){
   const r = await env.ASSETS.fetch(new Request(origin + path));
   if(!r.ok) throw new Error(path + ' ' + r.status);
-  return r.json();
+  return as === 'text' ? r.text() : r.json();
 }
 async function marketJSON(env, origin, loadMarket){
   try {
     if(loadMarket){ const r = await loadMarket(); if(r.ok) return await r.json(); }
   } catch {}
-  try { return await assetJSON(env, origin, '/data/market.json'); } catch { return null; }
+  try { return await assetGet(env, origin, '/data/market.json'); } catch { return null; }
 }
 
 export function slugify(s){
   s = String(s);
   if(/[^ -~]/.test(s)) s = s.normalize('NFKD');
-  return s.replace(/[\u0300-\u036f]/g, '').toLowerCase()
-    .replace(/['\u2019]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+  return s.replace(/[̀-ͯ]/g, '').toLowerCase()
+    .replace(/['’]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
 }
 const byName = (a, b) => a.sort < b.sort ? -1 : a.sort > b.sort ? 1 : 0;
 
-function claim(bySlug, slug, kind){   // the slug a name gets, given what is taken
+/* The slug a name gets, given what is taken: kindAt(slug) is the kind holding a slug, or nothing. */
+function claim(kindAt, slug, kind){
   const base = slug || KIND[kind].word;
-  const other = bySlug.get(base);
+  const other = kindAt(base);
   if(!other) return base;
-  const stem = other.k === kind ? base : base + '-' + KIND[kind].word;
-  if(!bySlug.has(stem)) return stem;
+  const stem = other === kind ? base : base + '-' + KIND[kind].word;
+  if(!kindAt(stem)) return stem;
   let n = 2;
-  while(bySlug.has(stem + '-' + n)) n++;
+  while(kindAt(stem + '-' + n)) n++;
   return stem + '-' + n;
 }
 
+/* ---------- the cut (tools/shards.py, through tools/seoshards.mjs) ----------
+   The whole index, once, at build time: every slug claimed, every entry's lists worked out. */
 function indexModel(index){
   const entries = [], variants = new Map(), named = new Map(), IMGS = index.imgs || {};
   for(const it of index.items){
@@ -158,10 +190,10 @@ function indexModel(index){
     }
     entries.push(e);
   }
-  const bySlug = new Map();
+  const bySlug = new Map(), kindAt = s => (bySlug.get(s) || {}).k;
   for(const list of variants.values()){   // variants first: "name-base" is always theirs
     for(const e of list){
-      e.slug = claim(bySlug, slugify(e.it.n + ' ' + e.base), 'u');
+      e.slug = claim(kindAt, slugify(e.it.n + ' ' + e.base), 'u');
       e.group = list;
       bySlug.set(e.slug, e);
     }
@@ -171,7 +203,7 @@ function indexModel(index){
   for(const [n, list] of variants) claims.push({k: 'u', id: n, s: list[0].sort, list});
   claims.sort((a, b) => KIND[a.k].rank - KIND[b.k].rank || a.id.length - b.id.length);
   for(const c of claims){
-    const s = claim(bySlug, c.s, c.k);
+    const s = claim(kindAt, c.s, c.k);
     if(c.e){ c.e.slug = s; bySlug.set(s, c.e); }
     else {
       const main = c.list.find(e => !/^(Runeforged|Runemastered) /.test(e.base)) || c.list[0];
@@ -182,30 +214,144 @@ function indexModel(index){
   for(const e of entries) if(e.k === 'g' && !gemsByName.has(e.sort)) gemsByName.set(e.sort, e);
   return {v: index.v, gen: index.gen, sprites: index.sprites, entries, bySlug, gemsByName, named};
 }
+// what an entry's page never reads: the search words, the line marks and the like stay in the index
+const UNREAD = ['lx', 'q', 'kw', 'f', 'fg', 'fl', 'qt', 'lo'];
+// a list row: [slug, sort, name, sub line, id where it is not the name, what its group is worked out from]
+function rowOf(e){
+  const it = e.it, more = {};
+  for(const f of ['asc', 'reg', 'at']) if(it[f] !== undefined && it[f] !== null && it[f] !== '') more[f] = it[f];
+  return [e.slug, e.sort, it.n, it.s || '', it.id !== it.n ? it.id : 0, Object.keys(more).length ? more : 0];
+}
+// a card that mentions a keyword: its kind is its sub line there, so only what links it and prices it
+const hitRow = e => [e.k, e.slug, e.sort, e.it.n, e.it.id !== e.it.n ? e.it.id : 0];
+// which bucket an entry's page is in: FNV-1a over its slug
+export function bucketOf(slug, n){
+  let h = 0x811c9dc5;
+  for(let i = 0; i < slug.length; i++){ h ^= slug.charCodeAt(i); h = Math.imul(h, 0x01000193) >>> 0; }
+  return h % n;
+}
+export function cut(index, buckets){
+  const base = indexModel(index);
+  const kinds = {};
+  for(const k of Object.keys(KIND)) kinds[k] = base.entries.filter(e => e.k === k).sort(byName);
+  // every slug taken, one string per kind: a string is read far faster than 7,000 keys
+  const taken = {};
+  for(const [s, e] of base.bySlug) (taken[e.k] || (taken[e.k] = [])).push(s);
+  for(const k of Object.keys(taken)) taken[k] = taken[k].join('\n');
+  const items = Array.from({length: buckets}, () => ({}));
+  for(const [s, e] of base.bySlug){
+    const box = items[bucketOf(s, buckets)];
+    if(e.alias){ box[s] = {alias: e.alias, k: 'u'}; continue; }
+    const it = {};
+    for(const [f, v] of Object.entries(e.it)) if(!UNREAD.includes(f)) it[f] = v;
+    const rec = {k: e.k, slug: e.slug, sort: e.sort, it};
+    if(e.base) rec.base = e.base;
+    if(e.group && e.group.length > 1) rec.group = e.group.filter(x => x !== e).map(rowOf);
+    if(e.k === 'w') rec.hits = mentions(kinds, e).map(hitRow);
+    box[s] = rec;
+  }
+  const lists = {}, words = {};
+  for(const k of Object.keys(KIND)){
+    lists[k] = kinds[k].map(rowOf);
+    words[k] = cutWords(kinds[k]);
+  }
+  return {
+    base: {v: base.v, gen: base.gen, sprites: base.sprites, taken, named: [...base.named.keys()],
+      gems: [...base.gemsByName].map(([s, e]) => s === e.slug ? s : s + ' ' + e.slug).join('\n'),
+      counts: Object.fromEntries(Object.entries(kinds).map(([k, l]) => [k, l.length]))},
+    lists, items, words,
+  };
+}
+/* The cards whose own words name a keyword: the first 30 gems, uniques and passives, in list order. */
+function mentions(kinds, e){
+  const re = new RegExp('(^|[^a-z])' + e.it.n.toLowerCase().replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '([^a-z]|$)');
+  const hits = [];
+  for(const k of ['g', 'u', 'p']) for(const x of kinds[k]){
+    if(hits.length >= 30) break;
+    if(x.hay === undefined) x.hay = ((x.it.ls || []).join(' ') + ' ' + (x.it.t || '')).toLowerCase();
+    if(re.test(x.hay)) hits.push(x);
+  }
+  return hits;
+}
+/* An entry's neighbours on its list: up to 12 of its own group, one per name, from its own place on. */
+function ring(e, list){
+  const g = groupOf(e), seen = new Set([e.it.n]);   // one link per name: same-name versions are listed above or on the list page
+  const peers = list.filter(x => groupOf(x) === g && !seen.has(x.it.n) && seen.add(x.it.n));
+  const out = [];
+  if(peers.length){
+    const i = peers.findIndex(x => x.sort > e.sort), start = i < 0 ? 0 : i;
+    for(let j = 0; j < Math.min(12, peers.length); j++) out.push(peers[(start + j) % peers.length]);
+  }
+  return out.sort(byName);
+}
+
+/* ---------- the cut, read back ---------- */
+function baseModel(b){
+  const taken = new Map(), gems = new Map();
+  for(const [k, list] of Object.entries(b.taken)) for(const s of list.split('\n')) taken.set(s, k);
+  for(const line of b.gems ? b.gems.split('\n') : []){ const [s, slug] = line.split(' '); gems.set(s, slug || s); }
+  return {v: b.v, gen: b.gen, sprites: b.sprites, taken, named: new Set(b.named), gems, counts: b.counts};
+}
+// a list row back into an entry
+function entryOf(k, [slug, sort, n, s, id, more]){
+  const it = {k, n, s, id: id === 0 ? n : id};
+  if(more) Object.assign(it, more);
+  return {k, slug, sort, it};
+}
+// one kind's entries, in list order: the index's, and for the currency the market's among them
+async function listOf(m, S, k){
+  if(!m.lists[k]) m.lists[k] = (async () => {
+    const man = await S.man();
+    const rows = man.seo.lists[k] ? await S.json(man.seo.lists[k].file) : [];
+    const list = rows.map(r => entryOf(k, r));
+    return k === 'c' ? list.concat(m.currency).sort(byName) : list;
+  })().catch(err => { delete m.lists[k]; throw err; });
+  return m.lists[k];
+}
+async function everyList(m, S){
+  const out = {};
+  for(const k of Object.keys(KIND)) out[k] = await listOf(m, S, k);
+  return out;
+}
+// the entry a slug names: the market's currency (claimed on the day), else the index's own
+async function entryAt(m, S, slug){
+  if(!slug) return null;
+  const c = m.currencyBySlug.get(slug);
+  if(c) return c;
+  if(!m.base.taken.has(slug)) return null;
+  const files = (await S.man()).seo.items.files;
+  const rec = (await S.json(files[bucketOf(slug, files.length)].file))[slug];
+  if(!rec) return null;
+  if(rec.alias) return rec;
+  const e = {k: rec.k, slug: rec.slug, sort: rec.sort, it: rec.it};
+  if(rec.base) e.base = rec.base;
+  if(rec.group) e.group = [e, ...rec.group.map(r => entryOf(rec.k, r))];
+  if(rec.hits) e.hits = rec.hits.map(([k, slug, sort, n, id]) => entryOf(k, [slug, sort, n, '', id, 0]));
+  return e;
+}
 
 function withMarket(base, market){
   const M = (market && market.items) || null;
   const m = {base, market, M, rate: market && market.rates && market.rates.exalted,
     league: market && market.league, updated: market && market.updated,
-    v: base.v, gen: base.gen, sprites: base.sprites, lineage: new Map(), currency: [], currencyByName: new Map()};
-  m.bySlug = new Map(base.bySlug);
+    v: base.v, gen: base.gen, sprites: base.sprites, lineage: new Map(), currency: [], currencyByName: new Map(),
+    currencyBySlug: new Map(), lists: {}};
+  const kindAt = s => base.taken.get(s) || (m.currencyBySlug.has(s) ? 'c' : undefined);
   if(M){
     for(const [key, x] of Object.entries(M)){
       if(!key.startsWith('c:') || !x.n) continue;
-      const sort = slugify(x.n), gem = x.cat === 'Lineage Supports' && base.gemsByName.get(sort);
-      if(gem){ m.lineage.set(gem, key); continue; }   // one page per thing: the gem page carries the price
+      const sort = slugify(x.n);
+      if(x.cat === 'Lineage Supports' && base.gems.has(sort)){ m.lineage.set(sort, key); continue; }   // one page per thing: the gem page carries the price
       if(base.named.has(x.n)) continue;               // the index has its card (a bulk item or an atlas thing)
       const it = {k: 'c', id: key.slice(2), n: x.n, s: x.cat || 'Currency', t: x.u || '', img: x.ic, dl: x.dl};
       const e = {it, k: 'c', sort};
-      e.slug = claim(m.bySlug, e.sort, 'c');
-      m.bySlug.set(e.slug, e);
+      e.slug = claim(kindAt, e.sort, 'c');
+      m.currencyBySlug.set(e.slug, e);
       m.currency.push(e);
       m.currencyByName.set(x.n, e);
     }
   }
-  m.entries = base.entries.concat(m.currency);
-  m.kinds = {};
-  for(const k of Object.keys(KIND)) m.kinds[k] = m.entries.filter(e => e.k === k).sort(byName);
+  m.count = k => (base.counts[k] || 0) + (k === 'c' ? m.currency.length : 0);
   m.patch = (m.v || '').replace(/^4\.(\d+)\.(\d+).*$/, '0.$1.$2');
   m.day = (m.updated || '').slice(0, 10) || m.gen;
   return m;
@@ -213,7 +359,7 @@ function withMarket(base, market){
 
 function priceOf(m, e){
   if(!m.M) return null;
-  if(e.k === 'g'){ const key = m.lineage.get(e); return key ? m.M[key] : null; }
+  if(e.k === 'g'){ const key = m.base.gems.get(e.sort) === e.slug && m.lineage.get(e.sort); return key ? m.M[key] : null; }
   if(e.k === 'a') return m.M['c:' + e.it.n] || null;
   if(e.k !== 'u' && e.k !== 'c') return null;
   return m.M[e.k + ':' + e.it.id] || m.M[e.k + ':' + e.it.n] || null;
@@ -543,28 +689,12 @@ function itemPage(m, e){
     '</article>' +
     '<div class="seo-go"><a class="btn gold" href="' + esc(appHref(m, it)) + '">Open in Wraeclast Index →</a></div>';
 
-  // related: other versions, what mentions a keyword, the neighbours in its list
+  // related: other versions, what mentions a keyword, the neighbours in its list (worked out by cut() and ring())
   let more = '';
   if(e.group && e.group.length > 1)
     more += section('Other versions', e.group.filter(x => x !== e), m);
-  if(e.k === 'w'){
-    const re = new RegExp('(^|[^a-z])' + it.n.toLowerCase().replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '([^a-z]|$)');
-    const hits = [];
-    for(const k of ['g', 'u', 'p']) for(const x of m.kinds[k]){
-      if(hits.length >= 30) break;
-      if(x.hay === undefined) x.hay = ((x.it.ls || []).join(' ') + ' ' + (x.it.t || '')).toLowerCase();
-      if(re.test(x.hay)) hits.push(x);
-    }
-    if(hits.length) more += section('Mentioned in', hits, m, true);
-  }
-  const seen = new Set([it.n]);   // one link per name: same-name versions are listed above or on the list page
-  const peers = m.kinds[e.k].filter(x => groupOf(x) === g && !seen.has(x.it.n) && seen.add(x.it.n));
-  if(peers.length){
-    const i = peers.findIndex(x => x.sort > e.sort), start = i < 0 ? 0 : i;
-    const ring = [];
-    for(let j = 0; j < Math.min(12, peers.length); j++) ring.push(peers[(start + j) % peers.length]);
-    more += section(otherTitle(e, g), ring.sort(byName), m);
-  }
+  if(e.hits && e.hits.length) more += section('Mentioned in', e.hits, m, true);
+  if(e.ring && e.ring.length) more += section(otherTitle(e, g), e.ring, m);
 
   // where the thing sits: the site, its list, its own group on that list, and the thing. A group that goes
   // by the list's own name is the list, and a trail never says the same word twice.
@@ -598,7 +728,7 @@ function browse(){
 /* ---------- list pages ---------- */
 function intro(m, name){
   const patch = m.patch ? ', patch ' + m.patch : '';
-  const n = fmt(m.kinds[LISTS[name].k].length);
+  const n = fmt(m.count(LISTS[name].k));
   return {
     gems: 'All ' + n + ' skill, spirit and support gems in Path of Exile 2' + patch + '. Requirements, use times, costs and tags from the game files.',
     uniques: 'All ' + n + ' uniques in Path of Exile 2' + patch + '. Official mod lines, requirements' + (m.league ? ' and ' + m.league + ' prices' : '') + '.',
@@ -609,8 +739,8 @@ function intro(m, name){
     keywords: 'All ' + n + ' Path of Exile 2 keywords, in the game\'s own words.',
   }[name];
 }
-function listPage(m, name){
-  const L = LISTS[name], all = m.kinds[L.k], path = '/' + name;
+function listPage(m, name, all){
+  const L = LISTS[name], path = '/' + name;
   const gs = groups(all);
   const desc = clip(intro(m, name));
   const title = L.title + ' | Wraeclast Index';
@@ -785,16 +915,16 @@ function text(body, type){
 }
 
 /* ---------- sitemap and llms.txt ---------- */
-function sitemap(m){
+function sitemap(m, kinds){
   const urls = [['/', m.day], ['/explore', m.gen]];
   for(const l of ORDER) urls.push(['/' + l, l === 'currency' || l === 'uniques' ? m.day : m.gen]);
-  for(const k of ['u', 'g', 'p', 'b', 'a', 'c', 'w']) for(const e of m.kinds[k]) urls.push(['/item/' + e.slug, priceOf(m, e) ? m.day : m.gen]);
+  for(const k of ['u', 'g', 'p', 'b', 'a', 'c', 'w']) for(const e of kinds[k]) urls.push(['/item/' + e.slug, priceOf(m, e) ? m.day : m.gen]);
   return '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' +
     urls.map(([p, d]) => '<url><loc>' + SITE + p + '</loc>' + (d ? '<lastmod>' + d + '</lastmod>' : '') + '</url>').join('\n') + '\n</urlset>\n';
 }
 
 function llms(m){
-  const n = k => fmt(m.kinds[k].length);
+  const n = k => fmt(m.count(k));
   return `# Wraeclast Index
 
 > Path of Exile 2, made easier for every kind of player. Live prices, the crafting bench, trade search in plain words, and every gem, unique, passive, currency and keyword. Game data from the official game files; prices from the in-game Currency Exchange and live trade site listings.
@@ -836,8 +966,10 @@ ${TERMS}
 `;
 }
 
-function itemText(m, e){
-  const it = e.it, px = priceOf(m, e), out = ['### ' + it.n, (it.s || KIND[e.k].one) + ' · ' + SITE + '/item/' + e.slug];
+/* An entry in plain text: the words that are fixed for the patch (cut() writes these into the "words" files),
+   then today's anoint cost and price. */
+function itemWords(e){
+  const it = e.it, out = ['### ' + it.n, (it.s || KIND[e.k].one) + ' · ' + SITE + '/item/' + e.slug];
   if(e.k === 'g') out.push(it.w ? 'Requires at gem level 20: ' + reqText(gemReq(it.w, 20)) : 'No requirements');
   if(e.k === 'u' && it.rq) out.push('Requires: ' + reqText(it.rq) + (it.cor ? ' · Corrupted' : ''));
   if(e.k === 'p' && it.asc) out.push(it.asc + ' ascendancy');
@@ -850,12 +982,40 @@ function itemText(m, e){
   else if(it.t) out.push(it.t);
   if(it.o) out.push('Choose one: ' + it.o.join(' / '));
   if(it.tags) out.push('Tags: ' + it.tags.join(', '));
+  return out.join('\n');
+}
+function itemToday(m, e){
+  const it = e.it, px = priceOf(m, e), out = [];
   const an = e.k === 'p' ? anoint(m, it) : null;
   if(an) out.push('Anoint with ' + an.parts.map(p => p.n).join(' + ') + (an.div !== null ? ': ' + moneyText(m, an.div) : ''));
   if(px && px.v !== undefined) out.push('Price: ' + moneyText(m, px.v) + (changeText(px.ch) ? ', ' + changeText(px.ch) : ''));
-  return out.join('\n');
+  return out.length ? '\n' + out.join('\n') : '';
 }
-function llmsFull(m){
+/* The words files: one kind's entries in list order, each its fixed words, then (after \u0002) what today's lines
+   are worked out from: slug, sort, id, name, the anoint's oils and its kept cost (\u0003 between them, \u0004
+   between the oils); \u0001 between entries. Split, never parsed as JSON: llms-full.txt is every entry at once. */
+const CUT = ['\u0001', '\u0002', '\u0003', '\u0004'];
+function cutWords(list){
+  return list.map(e => {
+    const it = e.it, words = itemWords(e);
+    for(const x of [words, e.slug, it.id, it.n, ...(it.rec || [])])
+      if(CUT.some(c => String(x).includes(c))) throw new Error(e.slug + ': a control character in its words');
+    const spec = [e.slug, e.sort, it.id !== it.n ? it.id : '', it.n, (it.rec || []).join('\u0004'), it.ac ? String(it.ac) : ''];
+    return words + '\u0002' + spec.join('\u0003');
+  }).join('\u0001');
+}
+function readWords(k, text){
+  if(!text) return [];
+  return text.split('\u0001').map(b => {
+    const [words, spec] = b.split('\u0002');
+    const [slug, sort, id, n, rec, ac] = spec.split('\u0003');
+    const it = {k, n, id: id || n};
+    if(rec) it.rec = rec.split('\u0004');
+    if(ac) it.ac = +ac;
+    return {k, slug, sort, it, words};
+  });
+}
+async function llmsFull(m, S){
   let out = `# Wraeclast Index: everything in plain text
 
 > Every Path of Exile 2 gem, unique, passive, currency and keyword, from the game files (patch ${m.patch}). Prices: ${m.league || 'current'} league, the Currency Exchange and live trade listings, ${when(m.updated)}. Prices are in divine orbs (div), or exalted orbs (ex) below one divine.
@@ -866,9 +1026,13 @@ The second line of every entry below is that thing's canonical URL.
 
 ${TERMS}
 `;
+  const man = await S.man();
   for(const l of ORDER){
     const k = LISTS[l].k;
-    out += '\n## ' + LISTS[l].h1 + '\n\n' + m.kinds[k].map(e => itemText(m, e)).join('\n\n') + '\n';
+    let list = [];
+    for(const f of man.seo.words[k] || []) list = list.concat(readWords(k, await S.text(f.file)));
+    if(k === 'c') list = list.concat(m.currency.map(e => ({...e, words: itemWords(e)}))).sort(byName);
+    out += '\n## ' + LISTS[l].h1 + '\n\n' + list.map(e => e.words + itemToday(m, e)).join('\n\n') + '\n';
   }
   return out;
 }

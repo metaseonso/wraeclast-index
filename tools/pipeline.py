@@ -173,6 +173,12 @@ STAGES = [
          count={'data/index.json': 'items'}),
     dict(name='ninjapast', run=['tools/ninjapast.py'], cadence='hand', source='poe.ninja',
          reads=[NINJA, 'data/leagues.json'], writes=['data/pastprices.json']),
+    # last, once the index is final: the cut the site reads a piece at a time (the search, the cards, the crawler
+    # pages). After a hand stage that edits the index, run it on its own (--only shards); --check says when it is due
+    dict(name='shards', run=['tools/shards.py'], cadence='patch', source='files',
+         reads=['data/index.json', 'data/index-core.json', 'worker/seo.js', 'assets/kinds.js', 'tools/seoshards.mjs'],
+         writes=['data/manifest.json', 'data/search/*.json', 'data/cards/*.json', 'data/cards/*/*.json',
+                 'data/seo/*.json', 'data/seo/*/*.json', 'data/seo/words/*.txt']),
 ]
 BY = {s['name']: s for s in STAGES}
 
@@ -464,9 +470,14 @@ def check_only():
     for p in problems:
         bad.append(p)
         say('FAIL declarations: ' + p)
+    import shards   # the cut is of this index (the staging runs leave it to the last stage)
+    why = shards.stale()
+    if why:
+        bad.append(why)
+        say('FAIL shards: ' + why)
     if not bad:
         say('ok   %d stages in order, %d data files hold up against the last commit, every row holds to its '
-            'declaration' % (len(STAGES), n))
+            'declaration, the cut is of this index' % (len(STAGES), n))
     return 1 if bad else 0
 
 
