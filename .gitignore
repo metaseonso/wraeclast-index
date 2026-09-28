@@ -6,3 +6,4 @@ tools/cache/
 data/exchange-state.json
 dist/
 build/
+data/market/card/

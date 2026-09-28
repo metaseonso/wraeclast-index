@@ -3,9 +3,14 @@
    the list of sections serving an older copy (faults.json, tools/lastgood.py).
    The jobs run on GitHub Actions (.github/workflows/pages.yml) and send each file here when it is done. Kept
    in D1 (table files).
+   The market files (MARKET: market/<name>.json, tools/market_send.py) come from one more job, the daily Market
+   job in the private data repo (metaseonso/wraeclast-data, .github/workflows/market.yml), which holds the
+   exchange archive they are built from. It signs with its own GitHub token too and may send only those
+   names; the Publish site workflow may not send them. Served at /data/market/<name> (worker/index.js).
      POST /api/data/put?name=<file>        the file as the body, signed: GitHub's own short-lived token from
-                                           the Publish site workflow (fromGitHub), or a key of its own for a
-                                           run by hand somewhere else (fromServer)
+                                           the Publish site workflow (fromGitHub), from the data repo's
+                                           Market job for a market file, or a key of its own for a run by
+                                           hand somewhere else (fromServer)
      published(env, origin, name, ctx)     a file, parsed; each data centre keeps a copy for 5 minutes
      publishedRow(env, origin, name, ctx)  the same, with when it came in and which source answered
                                            ({data, at, from}), so what is built from it can say how old it is
@@ -25,6 +30,8 @@
 import { same } from './dash.js';
 
 const NAMES = new Set(['exchange.json', 'market.json', 'leagues.json', 'faults.json']);
+// the market products (design/market-products.md), one file each, and the currency cards' parts in up to 16 bundles
+export const MARKET = /^market\/(?:index|liquidity|playbook|inflation|shocks|sell|crafting|rising|gap|digest|cards-(?:[1-9]|1[0-6]))\.json$/;
 const MAX = 1.5e6;                // bytes
 const TTL = 300;                  // seconds a data centre keeps its copy
 const PAGES = 'https://metaseonso.github.io/wraeclast-index/data/';
@@ -38,6 +45,8 @@ const BUILT = ['/data/market.json?from=trade', '/data/market.json?from=trade&par
 const ISSUER = 'https://token.actions.githubusercontent.com';
 const REPO = 'metaseonso/wraeclast-index';
 const DATA_JOBS = /^metaseonso\/wraeclast-index\/\.github\/workflows\/pages\.yml@refs\/heads\/main$/;   // the hourly files
+const DATA_REPO = 'metaseonso/wraeclast-data';
+const MARKET_JOBS = /^metaseonso\/wraeclast-data\/\.github\/workflows\/market\.yml@refs\/heads\/main$/;   // the market files
 const enc = new TextEncoder();
 const json = (status, body) => new Response(JSON.stringify(body), {status, headers: {'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store'}});
 const copyOf = (origin, name) => new Request(origin + '/data/' + name + '?from=d1');
@@ -52,10 +61,11 @@ export async function fromServer(request, env){
   return same(got, Uint8Array.from(want.match(/../g), h => parseInt(h, 16)));
 }
 
-/* GitHub's own signed token (OpenID Connect) from one workflow on main: the claims, or null. The price job
-   signs in with it (worker/prices.js) and so do the hourly data files (DATA_JOBS). */
+/* GitHub's own signed token (OpenID Connect) from one workflow on main of one repo (this one unless said): the
+   claims, or null. The price job signs in with it (worker/prices.js), and so do the hourly data files (DATA_JOBS)
+   and the data repo's market files (MARKET_JOBS). */
 const unb64 = s => Uint8Array.from(atob(s.replace(/-/g, '+').replace(/_/g, '/') + '==='.slice((s.length + 3) % 4)), c => c.charCodeAt(0));
-export async function fromGitHub(request, url, workflow){
+export async function fromGitHub(request, url, workflow, repo = REPO){
   const m = (request.headers.get('Authorization') || '').match(/^Bearer ([\w-]+)\.([\w-]+)\.([\w-]+)$/);
   if(!m) return null;
   let head, claims;
@@ -69,7 +79,7 @@ export async function fromGitHub(request, url, workflow){
   const ok = await crypto.subtle.verify('RSASSA-PKCS1-v1_5', key, unb64(m[3]), new TextEncoder().encode(m[1] + '.' + m[2]));
   const now = Date.now() / 1000;
   if(!ok || claims.iss !== ISSUER || claims.aud !== url.origin || !(claims.exp > now) || (claims.nbf && claims.nbf > now + 60)) return null;
-  if(claims.repository !== REPO || claims.ref !== 'refs/heads/main' || !workflow.test(claims.workflow_ref || '')) return null;
+  if(claims.repository !== repo || claims.ref !== 'refs/heads/main' || !workflow.test(claims.workflow_ref || '')) return null;
   return claims;
 }
 
@@ -104,6 +114,7 @@ export async function fileRow(env, origin, name, ctx, fresh){
   };
   let row = null;
   try { row = await env.DB.prepare('SELECT body, at FROM files WHERE name = ?').bind(name).first(); } catch {}   // no table yet
+  if(!row && MARKET.test(name)) return null;   // a market file has no GitHub Pages copy: not in yet
   if(!row){   // never came in: the old GitHub Pages copy
     try {
       const r = await fetch(PAGES + name, {headers: {'User-Agent': UA}, cf: {cacheTtl: TTL, cacheEverything: true}});
@@ -149,9 +160,11 @@ export async function published(env, origin, name, ctx){
 /* ---------- POST /api/data/put?name=<file> ---------- */
 export async function putFile(request, env, url, ctx){
   if(request.method !== 'POST') return json(405, {error: 'POST only.'});
-  if(!(await fromServer(request, env)) && !(await fromGitHub(request, url, DATA_JOBS))) return json(401, {error: 'Wrong key.'});
   const name = url.searchParams.get('name') || '';
-  if(!NAMES.has(name)) return json(400, {error: 'Unknown file.'});
+  const market = MARKET.test(name);   // a market file only from the data repo's Market job; the rest only from Publish site
+  if(!(await fromServer(request, env)) && !(await (market ? fromGitHub(request, url, MARKET_JOBS, DATA_REPO) : fromGitHub(request, url, DATA_JOBS))))
+    return json(401, {error: 'Wrong key.'});
+  if(!NAMES.has(name) && !market) return json(400, {error: 'Unknown file.'});
   if(+request.headers.get('Content-Length') > MAX) return json(413, {error: 'Too big.'});
   const raw = await request.arrayBuffer();
   if(raw.byteLength > MAX) return json(413, {error: 'Too big.'});

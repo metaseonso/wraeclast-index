@@ -1,7 +1,7 @@
 // Cloudflare Worker for wraeclastindex.fyi. Cloudflare builds and publishes this on every push to main.
 // The site itself is static files (served straight from the edge, out of dist/: tools/build.mjs copies the repo's
 // website files there and minifies them, before every deploy); the worker only answers
-// /data/market.json (live prices), /api/* (things a browser cannot fetch on its own) and
+// /data/market.json (live prices), /data/market/* (the daily market files), /api/* (things a browser cannot fetch on its own) and
 // /search (a redirect into the app's search). The service worker (sw.js) is a static file stamped by tools/build.mjs.
 // The plain pages for search engines and AI search (item pages, lists,
 // sitemaps, llms.txt, the Markdown copies) are files too: tools/build.mjs makes them with worker/seo.js at every
@@ -21,7 +21,7 @@
   "assets": {
     "directory": "dist",
     "binding": "ASSETS",
-    "run_worker_first": ["/data/market.json", "/data/rollprices.json", "/data/farmprices.json", "/data/bossprices.json", "/api/*", "/search"],
+    "run_worker_first": ["/data/market.json", "/data/market/*", "/data/rollprices.json", "/data/farmprices.json", "/data/bossprices.json", "/api/*", "/search"],
     "not_found_handling": "404-page"
   },
   // the deploy's version id: the market file's built parts are kept per deploy (worker/prices.js builtName)

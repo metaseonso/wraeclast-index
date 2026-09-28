@@ -16,6 +16,8 @@ one may read what an earlier one built (ctx.done). A product writes its own file
   data/market/index.json            every file with its bytes, and the leagues read
   data/market/card/<did>.json       one per currency the league's exchange has priced, named by the did
                                     data/market.json gives the card: each product's part for that card
+                                    (never committed: .gitignore. The data repo's daily Market job builds
+                                    them and sends them to the site in bundles, tools/market_send.py)
 
     python tools/market_history.py                 every product, and the cards
     python tools/market_history.py rising gap      only those products' own files (and index.json); cards untouched
@@ -94,7 +96,7 @@ def main(argv):
     if not want and ctx.cards:
         seen = set()
         for n in sorted(ctx.cards):
-            e = {'n': n, 'source': ml.SOURCE, 'flags': ml.FLAGS, 'updated': ctx.updated,
+            e = {'n': n, 'source': ml.SOURCE, 'flags': ml.FLAGS, 'updated': ctx.updated, 'thresholds': ml.THRESHOLDS,
                  'rules': {part: mod.FILE for mod in PRODUCTS for part in getattr(mod, 'PARTS', ())
                            if part in ctx.cards[n]}}
             e.update(ctx.cards[n])

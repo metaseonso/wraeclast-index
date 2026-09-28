@@ -32,8 +32,8 @@ Every file carries `source` ("Source: Currency Exchange (GGG public feed), read 
 (the rule in words, as a page can print it) and `numbers` (the rule's numbers). `data/market/index.json` lists every
 file with its bytes, and the leagues read.
 
-Nothing under `data/market/` ships to the site yet: `tools/build.mjs` ships a file below `data/` only when a page asks
-for it, and no page does until the front end draws these. The tool names every file, so none is an orphan to the
+Nothing under `data/market/` ships with the site: the site serves the copies the data repo's daily job sends in
+(below, "When new hours arrive"), at `/data/market/<name>`. The tool names every file, so none is an orphan to the
 budget check.
 
 ## The shared rules
@@ -76,27 +76,46 @@ The archive job in `wraeclast-data` (`.github/workflows/archive.yml`) adds the n
 the derived rows and then every raw hour after them, so the products are current to the last archived hour whichever
 of the two the hours are in.
 
-The data repo is private, so a WI job needs either a token or a file the data repo publishes. **Recommended: the token
-WI already has.** The Game patch workflow reads the same repo with `DATA_REPO_READ`, a read-only token for that one
-repo (`WI_DATA_TOKEN`, `tools/gamepull.py`). A daily "Market history" job, at 00:47 UTC (after the 00:23 archive run,
-so the league day that just ended is in), would:
+**Who builds it and how it reaches the site (the owner's decision, 28 Sep 2026).** The files are not committed here:
+a card file changes every day, and 700 of them a day is churn the repo does not need. The data repo builds them, since
+it holds the archive, and sends them to the site the way the hourly jobs send theirs, with no new token:
 
-1. check out `wraeclast-data` with that token, sparse: `cx/derived/leagues.json`, the public leagues' derived files
-   (`cx/derived/*/<league>.jsonl.gz` for the leagues `data/leagues.json` names, about 250 MB), `cx/raw/<this month>`
-   and `cx/raw/<last month>`, and `game/<patch>/out/raw/BaseItemTypes.json`;
-2. restore `tools/cache` (actions/cache, as `patch.yml` does: the valued hours per league and month, about 400 MB, so
-   only the month still running is read again);
-3. run `python tools/pipeline.py --only markethistory` with `WI_CX` pointing at the checkout;
-4. commit `data/market/` to a branch and open or update one pull request, as the Game patch workflow does. It never
-   pushes to main.
+1. `metaseonso/wraeclast-data`, `.github/workflows/market.yml` ("Market"), runs daily at 00:47 UTC and after every
+   Archive run. It checks out its own `cx/` sparsely (`cx/derived/leagues.json`, the public leagues' derived files,
+   Standard and Hardcore only to April 2025, the raw hours of this month and last) and the decoded `BaseItemTypes`, and
+   this repo, which is public, at `main` (an input, `wi_ref`, picks another branch; until #155 is merged the job has
+   no tools to run on `main` and says so).
+2. It runs `python tools/pipeline.py --only markethistory --force` with `WI_CX` on its checkout (the stage's own
+   checks and last good copy apply), `node tools/dev/marketcheck.mjs` (the files and the sums from the raw hours),
+   then `python tools/market_send.py`, which packs `data/market/` into `build/market-send/` (below).
+3. It sends each file to `POST https://wraeclastindex.fyi/api/data/put?name=market/<name>`, signed with the job's own
+   GitHub token (OpenID Connect, audience `https://wraeclastindex.fyi`). `worker/files.js` takes a market name
+   (`MARKET`) only from that workflow on the data repo's `main` (`MARKET_JOBS`), and takes nothing else from it.
+   `workflow_dispatch` with `dry_run` builds and packs and sends nothing.
 
-Why not a published derived file: the data repo's own job has the archive and its own token, but anything it publishes
-from a private repo is private too, so WI would still need a token to read it, and there would be one more file to
-keep in step. The token route reads what is there.
+What is sent (`tools/market_send.py`; each file at most 1.4 MB, under the worker's 1.5 MB):
 
-A card file changes once a day (its league's curve gains a day; its weekday map once a week), so a daily commit
-changes about 700 small files; git keeps each change as a delta. If that ever weighs on the repo, the card files can
-go to the site's own store instead (`tools/sitedata.py`) and the rest stay in git.
+| Name | What |
+|---|---|
+| `<product>.json` | each product file as the tool wrote it: `liquidity`, `playbook`, `inflation`, `sell`, `crafting`, `rising`, `gap` |
+| `shocks.json`, `digest.json` | a folder of files as one: `{"files": {"0.5": ..., "2026-W38": ...}}` |
+| `cards-<n>.json` | the currency cards' parts, `{"cards": {"<did>": card}}`, in as few bundles as fit (4 today). A card's bundle is crc32 of its did, mod the bundle count, so a card stays put from day to day |
+| `index.json` | `data/market/index.json`, plus `site`: each file's bytes, the bundle count and `cards` (did -> bundle) |
+
+Every file keeps its `source`, `flags`, `updated` (the last exchange hour read), `rule`, `numbers`, and `thresholds`
+(`{"version": 1, "set": "2026-09-28", "note": "First numbers, set 28 Sep 2026. They are reviewed after one week of
+data."}`): the owner took this page's defaults as version 1. A page prints the note beside the rule. A change to any
+rule's numbers is version 2, in `tools/marketlib.py`.
+
+**How the front end fetches.** `GET /data/market/<name>` (the worker, `worker/index.js`): the newest copy the job sent,
+each data centre keeping it 5 minutes, with its age in the headers (`X-Data-At`, when it came in, unix seconds;
+`X-Data-Age`, seconds since; `Last-Modified`). A file not sent in yet is a 404, never an older build. A card: fetch
+`/data/market/index.json` once, look up `site.cards[did]`, fetch `/data/market/cards-<n>.json`, read `cards[did]`. A
+tab reads its product file directly (`/data/market/liquidity.json`). Show the age the way the price files do: a file
+more than two days old says so.
+
+`data/market/` here keeps the product files as the stack committed them (what the check and a review read); the card
+files are ignored (`.gitignore`) and exist only where the tool has just run.
 
 ## The check
 
