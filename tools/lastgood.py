@@ -89,7 +89,9 @@ SCHEMA = 'schema.json'      # the declarations, per kind (tools/dev/schema.mjs w
 RAW_ID = (('a game file path', re.compile(r'Metadata/')),
           ('a stat id', re.compile(r'(?:^|[^A-Za-z0-9_])[a-z][a-z0-9]*(?:_[a-z0-9+%]+)+(?![A-Za-z0-9_])')),
           ('a DNT marker', re.compile(r'\[DNT')))
-ID_FIELD = re.compile(r'^(?:id|ids|key|keys|h|hash|hashes|stat|stats)$|_id$|Id$')   # named for what it holds
+# named for what it holds. img is a picture's address, never words: a game art path keeps its own underscores
+# (BuffIcons/shrine_experience), which read as a stat id to the rule above
+ID_FIELD = re.compile(r'^(?:id|ids|key|keys|h|hash|hashes|stat|stats|img)$|_id$|Id$')
 
 FOUND = []    # the faults this run turned up
 FINE = []     # the sections that came back fine this run: their old faults are dropped

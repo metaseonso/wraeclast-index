@@ -229,6 +229,7 @@ export const FIELDS = {
   asc:      {type: 'text', at: 'asc', slot: 'pill', post: ' ascendancy'},
   region:   {type: 'text', at: 'reg', slot: 'pill', post: ' region'},
   droplv:   {type: 'number', at: 'dl', slot: 'pill', pre: 'Drops from area level '},
+  stacks:   {type: 'number', at: 'max', slot: 'pill', pre: 'Up to ', post: ' stack', many: ' stacks', from: 2},
   /* A cluster's two numbers: the points it costs to take the whole of it, and how many of its nodes are
      also in another cluster (tools/clusters.py). Both are numbers with a word after them, so neither is a
      renderer of its own. */
@@ -242,6 +243,7 @@ export const FIELDS = {
   implicit: {type: 'number', at: 'ni', slot: 'fact', post: ' implicit', many: ' implicits'},
   uses:     {type: 'uses', at: 'use', slot: 'fact'},
   weights:  {type: 'weights', at: 'cw', slot: 'fact'},       // how often a mod rolls here (tools/carddata.py)
+  frommods: {type: 'lines', at: 'fm', slot: 'fact'},        // the modifiers with no card that give a buff (tools/buffs.py)
 
   lines:    {type: 'rich', at: 'ls', slot: 'body', every: 1},   // the effect lines: mods, stats, what it adds
   text:     {type: 'rich', at: 't', slot: 'body', every: 1},    // what it does, in the game's own words
@@ -434,7 +436,8 @@ export const REL = {
   klass:    {label: 'Shares its class with', of: 'b', edge: 'klass', map: 'klass', filter: 'craft'},
   klassof:  {label: 'Item class', of: 'i', edge: 'klassof', map: 'klass'},
   inclass:  {label: 'Bases of this class', of: 'b', edge: 'inclass', map: 'klass', filter: 'craft'},
-  grants:   {label: 'Grants', of: 'g', edge: 'grants', needs: 'grants'},
+  // what a card grants: a skill's gem, and the buffs and debuffs it gives (tools/grants.py, tools/buffs.py)
+  grants:   {label: 'Grants', edge: 'grants', needs: 'grants'},
   granted:  {label: 'Granted by', edge: 'granted', needs: 'grants'},
   section:  {label: 'Listed with', of: 'a', edge: 'section', map: 'place', filter: 'atlas'},
   cat:      {label: 'Listed with', edge: 'cat', map: 'cat'},
@@ -463,7 +466,7 @@ export const KINDS = [
    builds: [{at: 'w', key: 'skills'}, {key: 'allskills'}],
    fields: [...HEAD, 'gemreq', 'lineage', 'usetime', 'cost', 'spirit', ...BODY, ...FOOT],
    acts: ['trade', 'pool', 'full', 'pin', 'open'],
-   rel: ['granted', 'named', 'namedby', 'cat']},
+   rel: ['granted', 'grants', 'named', 'namedby', 'cat']},
 
   {k: 'u', one: 'Unique', tone: 'c-unique', many: 'Uniques', place: 'Uniques', sec: 'uniques', link: 'explore#uniques=@n', mark: 'ls',
    index: true, search: true, item: true, crawl: {word: 'unique', list: 'uniques', rank: 0, is: 'Product'},
@@ -522,9 +525,19 @@ export const KINDS = [
 
   {k: 'w', one: 'Keyword', tone: 'accent', many: 'Keywords', sec: 'keywords', index: true, search: true, crawl: {word: 'keyword', list: 'keywords', rank: 3, is: 'DefinedTerm'},
    kw: 'id', rank: -25, words: {n: 'own', f: 'alt', mark: 'game'},
-   fields: [...HEAD, 'uses', ...BODY, ...FOOT],
+   fields: [...HEAD, 'stacks', 'uses', ...BODY, ...FOOT],
    acts: ['full', 'pin'],
-   rel: [...KWUSE, 'named', 'namedby']},
+   rel: [...KWUSE, 'granted', 'named', 'namedby']},
+
+  /* A buff or debuff a player can see on their bar: its name, the game's icon for it, what it does in the game's
+     words, and what gives it (tools/buffs.py, data/buffs.json). One whose name a keyword card already carries is
+     that keyword card, with the buff's icon; so these are the rest. Its name is a door wherever a line says it,
+     the way a keyword's is, and what gives it is the same edge a skill's gem has (data/grants.json). */
+  {k: 'd', one: 'Buff', many: 'Buffs', index: true, search: true, rank: -5,
+   words: {n: 'own', mark: 'game'},
+   fields: [...HEAD, 'stacks', 'frommods', ...BODY, ...FOOT],
+   acts: ['pin'],
+   rel: ['granted', 'namedby', 'cat']},
 
   {k: 'h', one: 'Mechanics', tone: 'blood', many: 'Mechanics', index: true, search: true, mark: 'ls',
    words: {f: 'own', mark: 'ours', only: 'gate'},
