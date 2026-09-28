@@ -14,10 +14,19 @@
    3. sw-files.json: every path the site serves with a short hash of its bytes, and the files the home page needs
       before its first paint (read off index.html and what its modules import). sw.js keeps only those at install,
       takes every unchanged file over from the last deploy's copy, and checks what it keeps against the hashes.
+      The crawler's files (4) are not in it: the service worker never keeps them.
+   4. The crawler's files, made by worker/seo.js crawl() out of dist/'s own data and the prices of this moment
+      (the live https://wraeclastindex.fyi/data/market.json; the copy in data/ when that does not answer, said
+      loudly): every item page (item/<slug>.html) and its Markdown copy (md/item/<slug>.md), the lists
+      (gems.html, ...), 404.html, the sitemaps, llms.txt, llms-full.txt and llms/<list>.txt; an old address as a
+      line of _redirects; and crawl.json, a short hash of each page's own words, so the scheduled rebuild can tell
+      search engines which pages changed (.github/workflows/rebuild.yml). Written after 2, never minified: a page
+      is the bytes worker/seo.js made.
 
    It never stops a deploy for the small part: no esbuild, a file it cannot read, a manifest that will not write,
-   and the site ships unminified or without the manifest (sw.js then does what it always did). Only a copy that
-   cannot be made exits non-zero, and then Cloudflare keeps the deploy that is live.
+   and the site ships unminified or without the manifest (sw.js then does what it always did). A copy that cannot
+   be made, crawler files that cannot be made, more than 2,000 redirects or more files than the free plan's line
+   (tools/dev/budget.mjs LIMITS.count.fail) exit non-zero, and then Cloudflare keeps the deploy that is live.
 
    The repo root stays the website for everything else: the GitHub Pages backup, tools/dev/guard.mjs and the voice
    and frame checks all read the source files, never dist/. */
@@ -26,6 +35,7 @@ import { createHash } from 'node:crypto';
 import { join, dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { gzipSync } from 'node:zlib';
+import { LIMITS } from './dev/budget.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const args = process.argv.slice(2);
@@ -263,6 +273,73 @@ async function manifest(files){
   console.log('build: sw-files.json  ' + Object.keys(have).length + ' paths, ' + shell.length + ' in the home shell, ' + (body.length / 1024).toFixed(1) + ' KB');
 }
 
+/* ---------- 4. the crawler's files ---------- */
+const LIVE_MARKET = 'https://wraeclastindex.fyi/data/market.json';
+const MAX_REDIRECTS = 2000;   // Cloudflare's line for static rules in _redirects (/workers/static-assets/redirects/)
+const TYPE = {json: 'application/json', txt: 'text/plain', md: 'text/markdown', html: 'text/html', xml: 'application/xml'};
+// the price file of this moment: --market <file>, else the live one; null when neither reads (seo.js then takes dist/'s copy)
+async function marketText(){
+  const at = args.indexOf('--market');
+  if(at >= 0 && args[at + 1]) return {text: await readFile(resolve(args[at + 1]), 'utf8'), from: args[at + 1]};
+  if(args.includes('--offline')) return null;
+  try {
+    const r = await fetch(LIVE_MARKET, {signal: AbortSignal.timeout(30000), headers: {'User-Agent': 'wraeclast-index build'}});
+    if(!r.ok) throw new Error('HTTP ' + r.status);
+    const text = await r.text(), j = JSON.parse(text);
+    if(!j || !j.items || !Object.keys(j.items).length || !j.updated) throw new Error('it holds no prices');
+    return {text, from: LIVE_MARKET};
+  } catch(e){
+    warn('the live price file did not answer (' + (e && e.message || e) + '): the crawler pages carry the prices in data/market.json, each with its own checked time');
+    return null;
+  }
+}
+// the file a path is served from: '/item/x' -> item/x.html, '/gems' -> gems.html, '/404' -> 404.html, the rest as named
+const fileOf = p => /\.(xml|txt|md|json)$/.test(p) ? p.slice(1) : p.slice(1) + '.html';
+async function crawlFiles(){
+  const t0 = Date.now();
+  const seo = await import('../worker/seo.js');
+  const got = await marketText();
+  const env = {ASSETS: {fetch: async req => {
+    const p = decodeURIComponent(new URL(req.url).pathname).slice(1);
+    if(p.includes('..')) return new Response('', {status: 400});
+    try { return new Response(await readFile(join(OUT, p)), {headers: {'Content-Type': TYPE[(p.match(/\.(\w+)$/) || [])[1]] || 'application/octet-stream'}}); }
+    catch { return new Response('', {status: 404}); }
+  }}};
+  const load = got ? async () => new Response(got.text, {headers: {'Content-Type': 'application/json'}}) : null;
+  const made = new Set(), redirects = [], pages = {};
+  let n = 0, bytes = 0;
+  for await (const f of seo.crawl(env, 'https://wraeclastindex.fyi', load)){
+    if(f.from){ redirects.push(f.from + ' ' + f.to + ' 301'); continue; }
+    const file = join(OUT, fileOf(f.path)), d = dirname(file);
+    if(!made.has(d)){ await mkdir(d, {recursive: true}); made.add(d); }
+    await writeFile(file, f.body);
+    n++; bytes += Buffer.byteLength(f.body);
+    // what a page says of itself: an item's own words (its Markdown copy), a list or a text file whole
+    const own = f.path.startsWith('/md/item/') ? '/item/' + f.path.slice(9, -3) : f.path.startsWith('/item/') ? null : f.path;
+    if(own) pages[own] = hash(f.body).slice(0, 12);
+  }
+  const m = seo.marketOf();
+  if(!m || !m.items) warn('no prices at all: the crawler pages are built without any');
+  if(redirects.length > MAX_REDIRECTS) throw new Error(redirects.length + ' redirects: Cloudflare takes ' + MAX_REDIRECTS + ' static ones');
+  // _redirects: the repo's own lines (if it has any), then the crawler's old addresses
+  let head = '';
+  try { head = (await readFile(join(OUT, '_redirects'), 'utf8')).replace(/\s*$/, '\n'); } catch {}
+  await writeFile(join(OUT, '_redirects'), head + '# old addresses of the crawler pages (worker/seo.js crawl, tools/build.mjs)\n' + redirects.join('\n') + '\n');
+  await writeFile(join(OUT, 'crawl.json'), JSON.stringify({v: 1, built: new Date().toISOString(),
+    market: m ? {updated: m.updated || null, league: m.league || null, from: got ? got.from : 'data/market.json'} : null, pages}));
+  console.log('build: crawler     ' + n + ' files, ' + (bytes / 1048576).toFixed(1) + ' MB, ' + redirects.length + ' redirects, prices ' +
+    (m && m.updated ? 'of ' + m.updated + ' (' + (got ? got.from : 'data/market.json') + ')' : 'none') + ', ' + ((Date.now() - t0) / 1000).toFixed(1) + ' s');
+}
+// every file dist/ holds, _headers and _redirects too (they count against the same line)
+async function countOut(dir = OUT){
+  let n = 0, bytes = 0;
+  for(const d of await readdir(dir, {withFileTypes: true})){
+    if(d.isDirectory()){ const x = await countOut(join(dir, d.name)); n += x.n; bytes += x.bytes; }
+    else if(d.isFile()){ n++; bytes += (await lstat(join(dir, d.name))).size; }
+  }
+  return {n, bytes};
+}
+
 /* ---------- run ---------- */
 const t0 = Date.now();
 let files;
@@ -284,9 +361,21 @@ if(!PLAIN){
     try { await copyAll(files); } catch(e2){ console.error('build: the copy failed: ' + (e2 && e2.stack || e2)); process.exit(1); }
   }
 }
+// the crawler's files: without them every item page is a not-found, so a build that cannot make them does not ship
+try { await crawlFiles(); }
+catch(e){
+  console.error('build: the crawler pages could not be made, so nothing ships (the live deploy stays): ' + (e && e.stack || e));
+  process.exit(1);
+}
 try { await manifest(files); }
 catch(e){
   warn('no sw-files.json (' + (e && e.message || e) + '): the service worker keeps what it always kept');
   await rm(join(OUT, 'sw-files.json'), {force: true}).catch(() => {});
+}
+const total = await countOut();
+console.log('build: dist/ holds ' + total.n + ' files, ' + (total.bytes / 1048576).toFixed(1) + ' MB (the free plan: ' + LIMITS.count.cap + ' files; this build stops at ' + LIMITS.count.fail + ')');
+if(total.n > LIMITS.count.fail){
+  console.error('build: ' + total.n + ' files is over the line of ' + LIMITS.count.fail + ', so nothing ships (the live deploy stays). tools/dev/budget.mjs has the table.');
+  process.exit(1);
 }
 console.log('build: done in ' + ((Date.now() - t0) / 1000).toFixed(1) + ' s');

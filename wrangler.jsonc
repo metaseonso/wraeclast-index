@@ -1,8 +1,11 @@
 // Cloudflare Worker for wraeclastindex.fyi. Cloudflare builds and publishes this on every push to main.
 // The site itself is static files (served straight from the edge, out of dist/: tools/build.mjs copies the repo's
 // website files there and minifies them, before every deploy); the worker only answers
-// /data/market.json (live prices), /sw.js (the service worker, stamped with the deploy), /api/* (things a browser cannot fetch on its own) and the
-// plain pages for search engines and AI search (worker/seo.js: item pages, lists, sitemap, llms.txt).
+// /data/market.json (live prices), /sw.js (the service worker, stamped with the deploy), /api/* (things a browser cannot fetch on its own) and
+// /search (a redirect into the app's search). The plain pages for search engines and AI search (item pages, lists,
+// sitemaps, llms.txt, the Markdown copies) are files too: tools/build.mjs makes them with worker/seo.js at every
+// deploy, and .github/workflows/rebuild.yml builds again every 6 hours so their prices stay fresh. A path that is
+// no file gets dist/404.html with a 404, and never reaches the worker (not_found_handling).
 // The hourly data jobs (tools/pricepull.py, exchange.py, market.py, leagues.py) run on GitHub Actions
 // (.github/workflows/prices.yml at 2 past the hour, pages.yml at 17 past) and send their results in
 // (worker/prices.js, worker/files.js).
@@ -17,8 +20,8 @@
   "assets": {
     "directory": "dist",
     "binding": "ASSETS",
-    "run_worker_first": ["/data/market.json", "/sw.js", "/data/leagues.json", "/data/rollprices.json", "/data/farmprices.json", "/data/bossprices.json", "/api/*", "/item/*", "/gems", "/uniques", "/passives", "/bases", "/atlas", "/currency",
-                         "/keywords", "/sitemap.xml", "/llms.txt", "/llms-full.txt", "/search"]
+    "run_worker_first": ["/data/market.json", "/sw.js", "/data/leagues.json", "/data/rollprices.json", "/data/farmprices.json", "/data/bossprices.json", "/api/*", "/search"],
+    "not_found_handling": "404-page"
   },
   // the deploy's version id, written into /sw.js by the worker (worker/index.js serviceWorker)
   "version_metadata": { "binding": "CF_VERSION_METADATA" },

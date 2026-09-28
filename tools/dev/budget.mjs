@@ -39,12 +39,14 @@ const LIVE = 'https://wraeclastindex.fyi';
 const KiB = 1024, MiB = 1024 * 1024;
 
 /* ---------- the limits ---------- */
-const LIMITS = {
+export const LIMITS = {
   // Cloudflare Workers static assets: 25 MiB per file on every plan
   // (developers.cloudflare.com/workers/static-assets/#limits, /workers/platform/limits/#static-assets)
   file:  {warn: 5 * MiB, fail: 20 * MiB, cap: 25 * MiB},
-  // the same page: 20,000 files per Worker version on the free plan
-  count: {warn: 10000, fail: 18000, cap: 20000},
+  // the same page: 20,000 files per Worker version on the free plan. The crawler's pages are files since 28 Sep
+  // 2026 (an item page and its Markdown copy each, about 13,500 of them: tools/build.mjs); past 16,000 the owner
+  // decides what gives before anything is cut. tools/build.mjs fails the build itself over the fail line.
+  count: {warn: 16000, fail: 18000, cap: 20000},
   // Workers free plan: 10 ms of CPU per request (/workers/platform/limits/#cpu-time). A JSON.parse of 1 MiB is
   // a few ms on a fast machine and more at the edge, so a file the worker parses stays well under
   parse: {warn: 512 * KiB, fail: 1 * MiB},
@@ -93,7 +95,7 @@ function named(v, out = []){
 
 /* ---------- dist/, fresh ---------- */
 // dist/sw-files.json is the build's last write: any file or folder in the repo newer than it and dist/ is stale
-async function fresh(){
+export async function fresh(){
   let built = 0;
   try { built = (await stat(join(DIST, 'sw-files.json'))).mtimeMs; } catch {}
   if(built){

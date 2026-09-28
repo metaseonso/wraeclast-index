@@ -12,7 +12,8 @@
              game's wording names: how many open a card, how many are marked unclear, how many are left as
              plain text (tools/interactions.py, data/interactions.json)
      links   every deep link the code emits lands on a real row in the data
-     pages   every public page answers 200; the sitemap and llms.txt did not shrink
+     pages   every public page answers 200 (the crawler's pages as the files tools/build.mjs made, an unknown
+             path the 404 page); the sitemaps and the llms files did not shrink; robots.txt says the terms
      rawcode no stat ids, [Word|Word] markup or {0} placeholders where a player can read them
      voice   every word a player reads is the game's, not an assistant's (tools/dev/voice.mjs)
      frame   every card and the map keep to the frame: slots, caps, counts, one rule for every kind
@@ -24,8 +25,10 @@
              home page's first-paint JSON, what the jobs send to the database, and no data file nothing reads
              (tools/dev/budget.mjs; it builds dist/ first when dist/ is missing or stale)
 
-   The local server is this worktree's own files plus worker/seo.js, run in this process, so no
-   wrangler and no deploy. Nothing is written anywhere but the baseline, and only with --bless. */
+   The local server is this worktree's own files, then dist/ (the crawler's files: dist/ is built first when it
+   is missing or stale, tools/dev/budget.mjs fresh), dist/_redirects and dist/404.html, as Cloudflare serves
+   them, plus worker/seo.js for /search, run in this process, so no wrangler and no deploy. Nothing is written
+   anywhere but the baseline and dist/, and the baseline only with --bless. */
 import { createServer } from 'node:http';
 import { readFile, writeFile, mkdtemp, rm } from 'node:fs/promises';
 import { spawn } from 'node:child_process';
@@ -42,10 +45,11 @@ import { checkSchema } from './schema.mjs';
 // the voice: the copy a player reads, held to the game's register and not an assistant's
 import { checkVoice } from './voice.mjs';
 // the budget: what the free plan lets dist/ be, and no data file nothing reads
-import { checkBudget, budgetLine } from './budget.mjs';
+import { checkBudget, budgetLine, fresh } from './budget.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(HERE, '..', '..');
+const DIST = join(ROOT, 'dist');
 const BASELINE = join(HERE, 'guard-baseline.json');
 const LIVE = 'https://wraeclastindex.fyi';
 const TOL = 0.02;          // a kind may lose this much before it counts as broken
@@ -91,17 +95,34 @@ const TYPES = {html: 'text/html; charset=utf-8', js: 'text/javascript; charset=u
   xml: 'application/xml', svg: 'image/svg+xml', png: 'image/png', webp: 'image/webp', woff2: 'font/woff2',
   ico: 'image/x-icon', jpg: 'image/jpeg', avif: 'image/avif'};
 
-// the same file Cloudflare's asset server would send: "/" is index.html, "/explore" is explore.html
+// the same file Cloudflare's asset server would send: "/" is index.html, "/explore" is explore.html; the repo's own
+// file first, then dist/ (the crawler's files), then an old address in dist/_redirects, then dist/404.html
+let REDIRECTS = null;
+function redirects(){
+  return REDIRECTS || (REDIRECTS = (async () => {   // one read, however many requests ask at once
+    const out = new Map();
+    try {
+      for(const line of (await readFile(join(DIST, '_redirects'), 'utf8')).split(/\r?\n/)){
+        const [from, to, code] = line.trim().split(/\s+/);
+        if(from && !from.startsWith('#') && to) out.set(from, [to, +code || 302]);
+      }
+    } catch {}
+    return out;
+  })());
+}
 async function asset(req){
   const path = decodeURIComponent(new URL(req.url).pathname);
   if(path.includes('..')) return new Response('no', {status: 400});
   const tries = path === '/' ? ['/index.html'] : [path, path + '.html', path + '/index.html'];
-  for(const t of tries){
+  for(const dir of [ROOT, DIST]) for(const t of tries){
     let body;
-    try { body = await readFile(join(ROOT, t)); } catch { continue; }
+    try { body = await readFile(join(dir, t)); } catch { continue; }
     const ext = (t.match(/\.(\w+)$/) || [])[1] || '';
     return new Response(body, {status: 200, headers: {'Content-Type': TYPES[ext] || 'application/octet-stream'}});
   }
+  const moved = (await redirects()).get(path);
+  if(moved) return new Response(null, {status: moved[1], headers: {Location: moved[0]}});
+  try { return new Response(await readFile(join(DIST, '404.html')), {status: 404, headers: {'Content-Type': TYPES.html}}); } catch {}
   return new Response('Not found', {status: 404, headers: {'Content-Type': 'text/plain'}});
 }
 /* ---------- the owner's dashboard reads, without a password and without the live site ----------
@@ -130,7 +151,6 @@ async function adminRead(path){
 // sw.js is served unstamped on purpose: unstamped it switches itself off (sw.js OFF), so a check never
 // reads a page out of a service worker's copy
 async function startServer(){
-  const env = {ASSETS: {fetch: asset}};
   const srv = createServer(async (req, res) => {
     const url = new URL(req.url, 'http://' + (req.headers.host || '127.0.0.1'));
     let r;
@@ -138,7 +158,7 @@ async function startServer(){
       r = url.pathname.startsWith('/api/admin/')
         ? await adminRead(url.pathname)
         : seo.handles(url.pathname)
-          ? await seo.respond(new Request(url.href, {method: req.method}), env, null, null)
+          ? await seo.respond(new Request(url.href, {method: req.method}))
           : await asset(new Request(url.href));
     } catch(e){ r = new Response('guard: ' + (e && e.message), {status: 500}); }
     res.writeHead(r.status, Object.fromEntries(r.headers));
@@ -296,30 +316,40 @@ async function checkLinks(index, market){
     : fmt(tried) + ' links tried, ' + forms.size + ' forms, all land');
 }
 
-/* ---------- 3. the public pages ---------- */
-function publicPaths(src){
-  const lists = [...(src.match(/const LISTS = \{[\s\S]*?\n\};/) || [''])[0].matchAll(/^  (\w+):/gm)].map(m => '/' + m[1]);
-  const flat = [...src.matchAll(/path === '([^']+)'/g)].map(m => m[1]).filter(p => p !== '/search');
-  return ['/', '/explore', '/privacy', ...lists, ...new Set(flat)];
-}
+/* ---------- 3. the public pages ----------
+   The app's pages, the lists and the crawler's text files, and whatever the sitemap index and llms-full.txt name
+   under them. The sitemap count is every <url> under the index; llms-full is every entry in the /llms/ files. */
+const LIST_PATHS = ['/gems', '/uniques', '/passives', '/bases', '/atlas', '/currency', '/keywords'];
 async function checkPages(want){
-  const src = await readFile(join(ROOT, 'worker', 'seo.js'), 'utf8');
-  const paths = publicPaths(src);
   const bad = [];
-  const got = await all(paths, async p => ({p, ...await get(p)}));
+  const first = ['/', '/explore', '/privacy', ...LIST_PATHS, '/sitemap.xml', '/llms.txt', '/llms-full.txt', '/robots.txt'];
+  let got = await all(first, async p => ({p, ...await get(p)}));
+  const text = p => (got.find(r => r.p === p) || {}).text || '';
+  const under = [...text('/sitemap.xml').matchAll(/<loc>https?:\/\/[^/<]+(\/[^<]*)<\/loc>/g)].map(m => m[1])
+    .concat([...text('/llms-full.txt').matchAll(/\]\(https?:\/\/[^/)]+(\/llms\/[^)]+)\)/g)].map(m => m[1]));
+  if(!under.some(p => p.startsWith('/sitemap-'))) bad.push('the sitemap index names no sitemap');
+  if(!under.some(p => p.startsWith('/llms/'))) bad.push('llms-full.txt names no /llms/ file');
+  got = got.concat(await all(under, async p => ({p, ...await get(p)})));
   for(const r of got) if(r.status !== 200) bad.push(r.p + ' ' + r.status);
-  const counts = {};
+  const paths = got.map(r => r.p);
+  // an unknown path: the site's own not-found page, with a 404
+  const nf = await get('/item/no-such-thing-here');
+  if(nf.status !== 404 || !/<h1>Not found<\/h1>/.test(nf.text)) bad.push('an unknown path answers ' + nf.status + ', not the 404 page');
+  // the terms, word for word, where a machine reads them
+  for(const line of seo.TERMS.split('\n')) for(const p of ['/robots.txt', '/llms.txt'])
+    if(!text(p).includes(line)) bad.push(p + ' lacks the terms line ' + JSON.stringify(clip(line, 40)));
+  const counts = {sitemap: 0, llmsFull: 0};
   for(const r of got){
-    if(r.p === '/sitemap.xml') counts.sitemap = (r.text.match(/<url>/g) || []).length;
+    if(r.p.startsWith('/sitemap-')) counts.sitemap += (r.text.match(/<url>/g) || []).length;
     if(r.p === '/llms.txt') counts.llms = (r.text.match(/^- \[/gm) || []).length;
-    if(r.p === '/llms-full.txt') counts.llmsFull = (r.text.match(/^### /gm) || []).length;
+    if(r.p.startsWith('/llms/')) counts.llmsFull += (r.text.match(/^### /gm) || []).length;
   }
   for(const [k, n] of Object.entries(counts)){
     const was = (want || {})[k];
     if(was && n < was * (1 - TOL)) bad.push(k + ' ' + fmt(was) + ' \u2192 ' + fmt(n));
   }
-  say('pages', !bad.length, bad.length ? bad.join(', ')
-    : paths.length + ' pages 200 \u00b7 sitemap ' + fmt(counts.sitemap || 0) + ', llms.txt ' + fmt(counts.llms || 0) +
+  say('pages', !bad.length, bad.length ? clip(bad.join(', '), 220)
+    : paths.length + ' pages 200, unknown paths 404 \u00b7 sitemap ' + fmt(counts.sitemap || 0) + ', llms.txt ' + fmt(counts.llms || 0) +
       ' links, llms-full ' + fmt(counts.llmsFull || 0) + ' items');
   return {paths, counts, got};
 }
@@ -729,7 +759,11 @@ catch { console.log('No baseline yet: run once with --bless to write tools/dev/g
 
 let server = null;
 if(base) SITE = base;
-else { server = await startServer(); SITE = server.url; }
+else {
+  try { console.log('guard \u00b7 ' + await fresh()); }
+  catch(e){ console.log('guard \u00b7 dist/ could not be built: ' + clip(e && e.message || e, 160)); }
+  server = await startServer(); SITE = server.url;
+}
 console.log('guard \u00b7 ' + SITE + (server ? ' (this worktree)' : ''));
 
 let raw = {found: new Map(), text: []}, now = {}, counts = {}, wide = want.phoneWide || {};
