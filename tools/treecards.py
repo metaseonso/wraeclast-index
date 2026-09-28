@@ -101,14 +101,32 @@ def smalls(index, write=True):
             groups[(name, ' · '.join(effect(node)))].append(node)
 
     # the most common spelling of a name keeps the name to itself; the rest are numbered, in the same order
-    # every run (most on the tree first), so a card keeps its address between builds
+    # every run (most on the tree first). A card's id is its address, so one the last commit ships stays on the
+    # same name and effect, whatever order the lines now come in; only a new one takes the next free number
     by_name = defaultdict(list)
     for key in sorted(groups):
         by_name[key[0]].append(key)
+    said = lambda key: frozenset(effect(groups[key][0]))
+    was = {(it['n'], frozenset(it.get('ls') or [])): it['id'] for it in sync.shipped_items('p') if it.get('lo')}
     ids = {}
     for name, keys in by_name.items():
-        for i, key in enumerate(sorted(keys, key=lambda k: (-len(groups[k]), k[1]))):
-            ids[key] = name if not i else '%s | %d' % (name, i + 1)
+        order = sorted(keys, key=lambda k: (-len(groups[k]), k[1]))
+        taken = set()
+        for key in order:
+            cid = was.get((name, said(key)))
+            if cid and cid not in taken and (cid == name or cid.startswith(name + ' | ')):
+                ids[key] = cid
+                taken.add(cid)
+        n = 0
+        for key in order:
+            if key in ids:
+                continue
+            cid = name
+            while cid in taken:
+                n += 1
+                cid = '%s | %d' % (name, n + 1)
+            ids[key] = cid
+            taken.add(cid)
 
     cards, kept = [], 0
     for key in sorted(groups, key=lambda k: (k[0], ids[k])):

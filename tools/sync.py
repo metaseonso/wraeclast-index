@@ -514,9 +514,9 @@ def published_ids(kind):
     return {it['id'] for it in index.get('items') or [] if it.get('k') == kind}
 
 
-def shipped_ids(kind):
-    """The ids of one kind of card in the last commit's data/index.json: what the site ships, even after a stage of
-    this run rewrote the file (tools/pipeline.py runs in build/tree/, where git still reads the worktree's commit).
+def shipped_items(kind):
+    """The cards of one kind in the last commit's data/index.json: what the site ships, even after a stage of this
+    run rewrote the file (tools/pipeline.py runs in build/tree/, where git still reads the worktree's commit).
     Empty, and said so, where git cannot answer."""
     import subprocess
     try:
@@ -526,8 +526,13 @@ def shipped_ids(kind):
         index = None
     if not index:
         print('  (no committed data/index.json to read: the ids it ships are not held here)', file=sys.stderr)
-        return set()
-    return {it['id'] for it in index.get('items') or [] if it.get('k') == kind}
+        return []
+    return [it for it in index.get('items') or [] if it.get('k') == kind]
+
+
+def shipped_ids(kind):
+    """The ids of one kind of card the last commit ships (shipped_items)."""
+    return {it['id'] for it in shipped_items(kind)}
 
 
 def unique_ids(uniq, kept=()):
