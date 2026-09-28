@@ -31,7 +31,7 @@ const ROOT = join(HERE, '..', '..');
    a file left off it is copy nobody checks. Everything the browser runs, every page, everything the worker
    answers with (its crawler pages and the lines it writes onto a card), and the tools that write card text.
    A tool that starts writing copy is caught by being a .py in here, not by anyone remembering. */
-const READS = [['', /\.html$/], ['assets', /\.js$/], ['worker', /\.js$/], ['tools', /^(mechanics|mechanics_league|interactions)\.py$/],
+const READS = [['', /\.html$/], ['assets', /\.js$/], ['worker', /\.js$/], ['tools', /^(mechanics|mechanics_league|interactions|rules|gold)\.py$/],
                ['data', /^changelog\.json$/]];   // the patch notes: copy a player reads, written by hand every time
 export async function files(){
   const out = [];
