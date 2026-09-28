@@ -1,54 +1,37 @@
 Wraeclast Index · the official game data, and what we ship of it
 
   export  patch 0.5.5, files dated 11 Sep 2026
-  pulled  2026-09-28 01:49 UTC · 22 files, 0 downloaded
-  index   7,725 cards over 7,221 names
+  pulled  2026-09-28 16:14 UTC · 23 files, 4 downloaded
+  index   7,736 cards over 7,208 names
 
   Counts are names, not cards: one name can be several cards.
 
   kind             game  carded     gap  missing, a sample
   gems             1050    1048       2  Coming Soon, Removed Skill
   uniques           441     441       0  +18 we card that the export has no name for
-  notables         1192    1186       6  Brew Concoction, Implanted Gems, Lucid Dreaming …
+  notables         1192    1184       8  Brew Concoction, Crystalline Phylactery, Implanted Gems …
   keystones          33      33       0  -
-  small passives    781     671     110  Accuracy Mastery, Acolyte of Chayula, Amazon …
-  keywords          759     758       1  Test
-  bases            1555    1555       0  -
-  currency          667     659       8  Black Scythe Artifact, Broken Circle Artifact, Exotic Coinage …
+  small passives    784     670     114  Accuracy Mastery, Acolyte of Chayula, Amazon …
+  keywords          759     722      37  Ancestral Bond, Avatar of Fire, Blackflame Covenant …
+  bases            1555    1554       1  Timeless Jewel
+  currency          667     651      16  Albino Rhoa Feather, Black Scythe Artifact, Broken Circle Artifact …
   atlas tree        333     333       0  -
-
-  Why each gap stays (every name the game has and no card carries has one reason):
-
-  · gems, 1: a slot the game holds open for a gem that is not in it yet (Coming Soon)
-  · gems, 1: the stand-in the game shows where a skill was taken out (Removed Skill)
-  · notables, 5: a choice notable: no effect of its own, and each option it offers is a card (Brew
-    Concoction, Implanted Gems, Lucid Dreaming, Path Seeker …)
-  · notables, 1: an ascendancy notable with no stat line and no skill: no lines, no card (Weapon Master)
-  · small passives, 68: an icon-only node (a mastery or a blank plate): no effect to show (Accuracy
-    Mastery, Armour Mastery, Armour and Energy Shield Mastery, Armour and Evasion Mastery …)
-  · small passives, 34: where an ascendancy starts on its wheel: no effect to show (Acolyte of Chayula,
-    Amazon, Arcane Archer, Assassin …)
-  · small passives, 6: a class's starting plate on the tree: no effect to show (DUELIST, MARAUDER,
-    RANGER, SIX …)
-  · small passives, 2: grants passive points: the tree gives it no line of text (Passive Point, Passive
-    Points)
-  · keywords, 1: the game's own placeholder, "This test case is designed to be overwitten" (Test)
-  · currency, 7: the game's own text says it is no longer usable (Black Scythe Artifact, Broken Circle
-    Artifact, Exotic Coinage, Order Artifact …)
-  · currency, 1: no text anywhere in the game files for it (poe2db shows none either) (Omen of
-    Recombination)
+  areas             389     285     104  Act 1, Act 2, Act 3 …
 
   game: the export, minus the names players never see ([DNT] markers, names the game fills in).
   Bases and currency count the official trade site's lists instead (data/trade.json): the export
   still marks hundreds of old and unused items released.
 
-  · 1086 items have official text in data/info.json and 337 of them get no card — but only 7 of those
+  · 8 of the missing notables are ascendancy notables with no stat lines; 0 of those grant a skill
+    instead. No lines, no card.
+  · 1086 items have official text in data/info.json and 339 of them get no card — but only 9 of those
     are on the trade site's list today. The rest are old items the export still carries.
   · 239 base items grant a skill; we card 201 of them and name the skill on 201. The other 38 are not on
     the trade site's list.
-  · The drill-down page lists 28 timeless jewel lines. data/jewels.json (tools/gamelib.py) holds the
-    Jewel kind's data: 9 jewel bases, 7 timeless factions and 23 conquerors; the card kind itself is
-    proposed in design/gems-gaps.md.
+  · 442 areas in the game files are 288 places in data/areas.json (38 more merged into a place of the
+    same name); 116 are hidden on purpose (5 [DNT], 92 hideout, 1 no name, 9 not a place, 9 test). No
+    card kind draws them yet (design/areas.md).
+  · The drill-down page lists 28 jewels; there is no jewel card kind at all.
   · No tool here reads these export files at all: active_skill_types.min.json, audio.min.json,
     buff_visuals.min.json, buffs.min.json, cost_types.min.json, mods_by_base.min.json,
     stat_value_handlers.min.json, stats_by_file.min.json, tag_details.min.json.

@@ -1,0 +1,92 @@
+{
+ "note": "What each patch did to the passive tree, from GGG's own tree export. One file per patch, named for the patch it arrives at. Written by tools/treeexport.py.",
+ "src": "Source: GGG's passive tree export",
+ "url": "https://github.com/grindinggear/poe2-skilltree-export",
+ "latest": "0.5.5",
+ "updated": "2026-09-29",
+ "steps": [
+  {
+   "from": "0.4.0",
+   "to": "0.5.0",
+   "dated": "2026-05-28",
+   "file": "treechanges/0.5.0.json",
+   "added": 164,
+   "removed": 21,
+   "reworded": 253,
+   "moved": 381
+  },
+  {
+   "from": "0.5.0",
+   "to": "0.5.1",
+   "dated": "2026-06-05",
+   "file": "treechanges/0.5.1.json",
+   "added": 68,
+   "removed": 0,
+   "reworded": 12,
+   "moved": 149
+  },
+  {
+   "from": "0.5.1",
+   "to": "0.5.2",
+   "dated": "2026-06-16",
+   "file": "treechanges/0.5.2.json",
+   "added": 0,
+   "removed": 0,
+   "reworded": 7,
+   "moved": 0
+  },
+  {
+   "from": "0.5.2",
+   "to": "0.5.4",
+   "dated": "2026-09-05",
+   "file": "treechanges/0.5.4.json",
+   "added": 0,
+   "removed": 0,
+   "reworded": 4,
+   "moved": 0
+  },
+  {
+   "from": "0.5.4",
+   "to": "0.5.5",
+   "dated": "2026-09-05",
+   "file": "treechanges/0.5.5.json",
+   "added": 0,
+   "removed": 0,
+   "reworded": 4,
+   "moved": 0
+  }
+ ],
+ "check": {
+  "against": "RePoE passive_skill_trees/Default.min.json (patch 0.5.5)",
+  "only_ggg": 0,
+  "only_repoe": 0,
+  "only_ggg_names": [],
+  "only_repoe_names": [],
+  "names_differ": [],
+  "unnamed_in_ggg": [
+   "Arcane Archer",
+   "Assassin",
+   "Berserker",
+   "Champion",
+   "Chieftain",
+   "Deathmarked",
+   "Devotion to the King",
+   "Gladiator",
+   "Guardian",
+   "Heretic",
+   "Inquisitor",
+   "Movement Speed",
+   "Phantom",
+   "Saboteur",
+   "Warlord"
+  ],
+  "flags_differ": [
+   "Devotion to the King",
+   "a node with no name"
+  ],
+  "lines_differ": 0,
+  "lines_order_only": 0,
+  "lines_skill_only": 0,
+  "lines_sample": []
+ }
+}

@@ -30,8 +30,8 @@ import email.utils
 import gzip
 import hashlib
 import json
-import os
 import re
+import shutil
 import subprocess
 import sys
 import time
@@ -66,6 +66,7 @@ PULL = [
     'flavour.min.json',             # every flavour text, by art id (tools/uniqueitems.py)
     'default_monster_stats.min.json',   # one monster of each level  } data/gamestats.json,
     'characters.min.json',              # what each class starts with } tools/gamelib.py
+    'world_areas.min.json',         # every area: level, waypoint, connections, bosses (tools/areas.py, tools/bosses.py)
     'passive_skill_trees/Default.min.json',
     'passive_skill_trees/Atlas.min.json',
     'stat_translations/stat_descriptions.min.json',
@@ -182,66 +183,53 @@ def official(name):
 
 # ---------------------------------------------------------------- the game's own tables
 
-DATA_REPO = 'repos/metaseonso/wraeclast-data/contents/game'
-_dat_ver = None
+_dat_dir = None
 
 
-def _said(e):
-    """What gh itself said when it failed (GitHub's own answer), so a refusal names its reason."""
-    err = getattr(e, 'stderr', None)
-    if isinstance(err, bytes):
-        err = err.decode('utf-8', 'replace')
-    return (' — gh: ' + ' '.join(err.split())[:300]) if err else ''
-
-
-def _gh_env():
-    """The data repo is private. On the owner's machine the signed-in gh reads it; in Actions the site repo's own
-    token cannot, so the Game patch workflow hands in a read-only token for that one repo as WI_DATA_TOKEN (the
-    DATA_REPO_READ secret). It is used for these reads only: the run's own token still opens its tickets."""
-    tok = os.environ.get('WI_DATA_TOKEN')
-    return dict(os.environ, GH_TOKEN=tok) if tok else None
-
-
-def dat_version():
-    """The patch folder of the decoded tables to read: this patch's, else the newest the data repo has (said on
-    stderr, so a table a patch behind is never read in silence)."""
-    global _dat_ver
-    if _dat_ver is None:
-        want = patch(build(refresh=False) or build())
+def dat_dir():
+    """tools/cache/dat-<CDN folder>/ (not in git): the live patch folder on GGG's CDN, asked once a run, so every
+    table a run reads is from the same client and a hotfix reads them all again. The CDN out of reach: the newest
+    folder already read, said on stderr, so a table a hotfix behind is never read in silence."""
+    global _dat_dir
+    if _dat_dir is None:
+        cache = ROOT / 'tools' / 'cache'
+        node = shutil.which('node')
+        live = ''
         try:
-            got = subprocess.run(['gh', 'api', DATA_REPO, '--jq', '.[].name'], capture_output=True, text=True,
-                                 check=True, timeout=120, env=_gh_env()).stdout.split()
+            live = subprocess.run([node, str(ROOT / 'tools' / 'datpull.mjs'), '--find-patch'], cwd=str(ROOT),
+                                  capture_output=True, text=True, check=True, timeout=300).stdout.strip()
         except Exception as e:
-            got = []
-            print('  could not list %s: %s%s' % (DATA_REPO, e, _said(e)), file=sys.stderr)
-        have = sorted((v for v in got if re.fullmatch(r'\d+\.\d+\.\d+', v)), key=lambda v: [int(x) for x in v.split('.')])
-        if want in have or (not have and want):
-            _dat_ver = want
-        elif have:
-            _dat_ver = have[-1]
-            print('  the decoded game tables have no %s folder yet: reading %s' % (want or 'patch', _dat_ver),
+            print('  could not ask GGG\'s CDN for the live patch folder: %s' % (getattr(e, 'stderr', '') or e),
                   file=sys.stderr)
-        else:
-            raise SystemExit('no patch known and no decoded game tables listed (%s)' % DATA_REPO)
-    return _dat_ver
+        if not re.fullmatch(r'\d+(?:\.\d+)+', live):
+            have = sorted((p.name[4:] for p in cache.glob('dat-*') if re.fullmatch(r'dat-\d+(?:\.\d+)+', p.name)),
+                          key=lambda v: [int(x) for x in v.split('.')])
+            if not have:
+                raise SystemExit('cannot read the game tables: no live patch folder and none read before')
+            live = have[-1]
+            print('  reading the game tables of %s, the newest read before' % live, file=sys.stderr)
+        _dat_dir = cache / ('dat-' + live)
+    return _dat_dir
 
 
 def dat(table):
-    """One of the game's own tables, decoded (metaseonso/wraeclast-data, game/<patch>/out/raw/<table>.json): for
-    what the export leaves out. Read with the GitHub CLI once, kept in tools/cache/dat-<patch>/, so a new patch
-    reads a new folder."""
-    ver = dat_version()
-    f = ROOT / 'tools' / 'cache' / ('dat-' + ver) / (table + '.json')
+    """One of the game's own tables, decoded, for what the export leaves out: a list of rows keyed by
+    poe-tool-dev dat-schema's column names, a foreign key as the row number it points at, an enum by its name,
+    _i the row's own number.
+
+    Read straight out of the game's bundles on GGG's patch CDN by tools/datpull.mjs --raw, the same reader that
+    writes data/game/: no token, no private copy of the tables. Kept in dat_dir(), so a second read is a file."""
+    d = dat_dir()
+    f = d / (table + '.json')
     if not f.exists():
-        try:
-            body = subprocess.run(['gh', 'api', '-H', 'Accept: application/vnd.github.raw',
-                                   '%s/%s/out/raw/%s.json' % (DATA_REPO, ver, table)],
-                                  capture_output=True, check=True, timeout=300, env=_gh_env()).stdout
-            json.loads(body)   # a broken download fails here, before it is kept
-        except Exception as e:
-            raise SystemExit('cannot read the game table %s for %s (gh api): %s%s' % (table, ver, e, _said(e)))
-        f.parent.mkdir(parents=True, exist_ok=True)
-        f.write_bytes(body)
+        node = shutil.which('node')
+        if not node:
+            raise SystemExit('cannot read the game table %s: there is no Node here to run tools/datpull.mjs' % table)
+        r = subprocess.run([node, str(ROOT / 'tools' / 'datpull.mjs'), '--raw', table, '--patch', d.name[4:],
+                            '--out', str(d)], cwd=str(ROOT), stdout=sys.stderr, timeout=1800)
+        if r.returncode or not f.exists():
+            raise SystemExit('cannot read the game table %s from %s (tools/datpull.mjs --raw stopped with %d)'
+                             % (table, d.name[4:], r.returncode))
     return json.loads(f.read_bytes())
 
 
@@ -340,6 +328,10 @@ def rows():
 
     atlas = real(v.get('name') for v in official('passive_skill_trees/Atlas.min.json')['passives'].values())
     out.append(('atlas tree', atlas, ours.get('a', set()), False))
+
+    # areas are not a card kind yet: data/areas.json holds what the Area card will draw (tools/areas.py)
+    places = real(v.get('name') for v in official('world_areas.min.json').values() if v.get('name') != 'NULL')
+    out.append(('areas', places, {a['n'] for a in (site('areas.json') or {}).get('areas') or []}, True))
     return out
 
 
@@ -414,6 +406,14 @@ def notes():
     said.append('%d base items grant a skill; we card %d of them and name the skill on %d. The other %d are not on '
                 'the trade site\'s list.' % (len(grants), len(grants & carded), len(grants & shown),
                                              len(grants - carded)))
+
+    areas = site('areas.json')
+    if areas:
+        c = areas.get('counts') or {}
+        said.append('%d areas in the game files are %d places in data/areas.json (%d more merged into a place of the '
+                    'same name); %d are hidden on purpose (%s). No card kind draws them yet (design/areas.md).'
+                    % (c.get('game', 0), c.get('carded', 0), c.get('merged', 0), sum((c.get('hidden') or {}).values()),
+                       ', '.join('%d %s' % (n, w) for w, n in (c.get('hidden') or {}).items())))
 
     jewels = sorted((ROOT / 'data' / 'explore').glob('jewels.*.json'))
     if jewels:

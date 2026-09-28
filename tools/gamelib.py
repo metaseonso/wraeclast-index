@@ -73,7 +73,8 @@ OPEN = re.compile(r'<[^<>{}]*>\{')     # a tag and the words it wraps, which may
 # What counts as game code on a card, the same marks tools/dev/guard.mjs looks for on a rendered page.
 SHOWN = [re.compile(r'(?:^|[^A-Za-z0-9_])[a-z][a-z0-9]*(?:_[a-z0-9+%]+)+(?![A-Za-z0-9_])'),   # a stat id
          re.compile(r'\[[^\]|]{1,60}\|[^\]]{1,60}\]'), re.compile(r'\[[A-Z][A-Za-z]{2,}\]'),  # keyword markup
-         re.compile(r'\{\d*(?::[^}]{0,12})?\}'), re.compile(r'%\d+\$[sd]'), re.compile(r'\bDNT[-\w]*')]
+         re.compile(r'\{\d*(?::[^}]{0,12})?\}'), re.compile(r'%\d+\$[sd]'), re.compile(r'\bDNT[-\w]*'),
+         re.compile(r'[^\s@"]@[+-]?\d+(?:\.\d+)?%')]   # a stat's short form with its value stuck on (#133)
 
 
 def real(s):

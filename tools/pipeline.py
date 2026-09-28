@@ -76,18 +76,21 @@ POE2DB = 'https://poe2db.tw/us/'
 COE = 'https://www.craftofexile.com/'
 NINJA = 'https://poe.ninja/poe2/'
 FEED = 'https://web.poecdn.com/ (the Currency Exchange feed)'
-TABLES = 'https://github.com/metaseonso/wraeclast-data (the game\'s own tables, tools/gamepull.py dat())'
+CDN = 'https://patch-poe2.poecdn.com/'
+DATSCHEMA = 'https://github.com/poe-tool-dev/dat-schema'
 
 """The stages, in the order the data needs them: a stage reads what the ones above it wrote. Per stage:
 
   name     what it is called here (--only, --from)
-  run      the tool and its arguments; '@artifact' is the artifact's path, given with --artifact
+  run      the tool and its arguments; '@artifact' is the artifact's path, given with --artifact. A .py tool
+           runs with this Python, a .mjs tool with Node
   cadence  patch (after a game patch), daily, hourly, or hand (run on purpose, never by a cadence)
-  source   where its facts come from: game files (RePoE's export of them), poe2db, Craft of Exile, trade (the
+  source   where its facts come from: game files (RePoE's export of them, or the game's own bundles), poe2db, Craft of Exile, trade (the
            official trade site's lists), Exchange (the in-game Currency Exchange feed), poe.ninja, the artifact,
            files (only what is already on disk), or a named outside page
   reads    files it reads (globs welcome) and the addresses it fetches
-  writes   files it writes; count names the part of a file its rows are in, for the last good count
+  writes   files it writes; count names the part of a file its rows are in, for the last good count (a glob
+           names every file it matches; the first key that matches a file is the one)
   needs    something only the owner's machine has: the stage is skipped with a line saying so without it
   without  what to run instead when it is not given (sync: --from-game, the drill-down from the game files)
   last     a file it reads on purpose from the last good copy, though a later stage writes it
@@ -99,12 +102,19 @@ STAGES = [
          writes=['data/gamedata.json', 'tools/dev/gaps.txt'], count={'data/gamedata.json': 'patch'}),
     dict(name='gameinfo', run=['tools/gameinfo.py'], cadence='patch', source='game files',
          reads=[REPOE], writes=['data/reqs.json', 'data/info.json'], count={'data/reqs.json': 'bases'}),
+    dict(name='datpull', run=['tools/datpull.mjs'], cadence='patch', source='game files',
+         reads=[CDN, DATSCHEMA, REPOE], writes=['data/game/*.json'],
+         count={'data/game/_meta.json': 'files', 'data/game/*.json': 'rows'}),
     dict(name='tradedata', run=['tools/tradedata.py'], cadence='patch', source='trade',
          reads=[TRADE, REPOE], writes=['data/trade.json']),
     dict(name='rollprices', run=['tools/rollprices.py'], cadence='patch', source='files',
          reads=['data/trade.json'], writes=['data/pricejobs.json']),
     dict(name='atlas', run=['tools/atlas.py'], cadence='patch', source='game files',
          reads=[REPOE, TRADE, POE2DB, NINJA, 'data/market.json'], writes=['data/atlas.json']),
+    dict(name='areas', run=['tools/areas.py'], cadence='patch', source='game files',
+         reads=[REPOE, CDN, DATSCHEMA, 'data/atlas.json',
+                'data/bosses.json'], last=['data/bosses.json'],
+         writes=['data/areas.json'], count={'data/areas.json': 'areas'}),
     dict(name='craftweights', run=['tools/craftweights.py'], cadence='patch', source='Craft of Exile',
          reads=[COE], writes=['tools/craftweights.json']),
     dict(name='craft', run=['tools/craft.py'], cadence='patch', source='game files',
@@ -119,13 +129,14 @@ STAGES = [
     dict(name='sync', run=['tools/sync.py', '@artifact'], cadence='patch', source='game files, or the artifact',
          needs='the Wraeclast Index artifact, which lives only on the owner\'s machine (--artifact PATH)',
          without=['--from-game'],   # no artifact: the blocks tools/fromgame.py ADOPTED, from the game files
-         reads=['@artifact', REPOE, NINJA, TRADE, 'data/uniques.json', 'data/market.json', 'data/reqs.json',
+         reads=['@artifact', REPOE, NINJA, TRADE, 'https://github.com/grindinggear/poe2-skilltree-export', 'data/patches.json',
+                'data/uniques.json', 'data/market.json', 'data/reqs.json',
                 'data/trade.json', 'data/craft.json', 'data/atlas.json', 'data/info.json'],
          writes=['data/index.json', 'data/index-core.json', 'data/index-rest.json', 'explore.html',
                  'data/explore/*.json', 'data/interactions.json'],
          count={'data/index.json': 'items'}, minutes=45),
     dict(name='gamelib', run=['tools/gamelib.py'], cadence='patch', source='game files',
-         reads=[REPOE, TABLES, 'explore.html', 'data/explore/*.json', 'data/index.json', 'data/craft.json',
+         reads=[REPOE, CDN, DATSCHEMA, 'explore.html', 'data/explore/*.json', 'data/index.json', 'data/craft.json',
                 'data/craft/*.json', 'data/trade.json', 'data/market.json', 'data/info.json'],
          writes=['data/index.json', 'data/index-core.json', 'data/index-rest.json', 'data/gamestats.json',
                  'data/jewels.json'],
@@ -157,6 +168,14 @@ STAGES = [
          reads=['data/explore/gems.*.json'], writes=['data/gemlines.json']),
     dict(name='treelines', run=['tools/treelines.py'], cadence='patch', source='files',
          reads=['data/explore/tree.*.json'], writes=['data/treelines.json']),
+    dict(name='treechanges', run=['tools/treeexport.py'], cadence='patch', source="GGG's passive tree export",
+         reads=['https://github.com/grindinggear/poe2-skilltree-export', REPOE, 'data/patches.json', 'explore.html',
+                'data/explore/tree.*.json'],
+         writes=['data/treechanges/*.json'], count={'data/treechanges/index.json': 'steps'}),
+    dict(name='patchnotes', run=['tools/patchnotes.py'], cadence='patch', source="GGG's patch notes forum",
+         reads=['https://www.pathofexile.com/forum/ (the patch notes threads data/patches.json names)',
+                'data/patches.json', 'data/index.json'],
+         writes=['data/patchnotes.json'], count={'data/patchnotes.json': 'lines'}),
     dict(name='map', run=['tools/map.py'], cadence='patch', source='files',
          reads=['data/index.json', 'data/kwuse.json', 'data/grants.json', 'data/gamedata.json', 'assets/kinds.js',
                 'assets/theme.css'],
@@ -172,9 +191,11 @@ STAGES = [
          reads=[POE2DB + 'League', 'https://www.pathofexile.com/forum/'], writes=['data/leagues.json'],
          count={'data/leagues.json': 'leagues'}),
     dict(name='bosses', run=['tools/bosses.py'], cadence='hand', source='game files',
-         reads=[REPOE, 'https://www.poe2wiki.net/', 'https://github.com/ (Path of Building)', 'data/market.json',
-                'data/bossqueries.json', 'data/index.json'],
-         writes=['data/bosses.json'], count={'data/bosses.json': 'bosses'}),
+         reads=[REPOE, 'https://www.poe2wiki.net/', 'https://github.com/ (Path of Building)',
+                'https://maxroll.gg/ (boss loot table)', POE2DB, 'data/market.json', 'data/bossqueries.json',
+                'data/index.json'],
+         writes=['data/bosses.json', 'data/dropsfrom.json'],
+         count={'data/bosses.json': 'bosses', 'data/dropsfrom.json': 'uniques'}),
     dict(name='farms', run=['tools/farms.py'], cadence='hand', source='BawLoch\'s tier list sheet',
          reads=['https://docs.google.com/ (the tier list sheet)', 'data/trade.json', 'data/market.json',
                 'data/index-core.json', 'data/leagues.json'],
@@ -209,6 +230,11 @@ def rel(p):
 
 def matches(path, globs):
     return any(fnmatch.fnmatch(path, g) for g in globs)
+
+
+def count_of(stage, path):
+    """The part of a file its rows are in, from the stage's count: the first key that matches the file."""
+    return next((at for g, at in (stage or {}).get('count', {}).items() if fnmatch.fnmatch(path, g)), None)
 
 
 def digest(b):
@@ -256,7 +282,10 @@ def stamp(stage, root, artifact):
     such a file runs it anyway (see main)."""
     h = hashlib.sha1()
     tool = Path(stage['run'][0]).stem
-    for t in sorted(imports(tool)):
+    js = stage['run'][0].endswith('.mjs')        # a Node tool: the file itself (its reads name what else it needs)
+    if js:
+        h.update(digest((root / stage['run'][0]).read_bytes()).encode())
+    for t in [] if js else sorted(imports(tool)):
         h.update(t.encode() + digest((root / 'tools' / (t + '.py')).read_bytes()).encode())
     h.update(json.dumps(args_of(stage, artifact)).encode())
     for r in stage['reads']:
@@ -346,6 +375,11 @@ def last_copy(path, root=ROOT):
 
 
 CARD_FILES = ('data/index.json', 'data/index-core.json', 'data/index-rest.json', 'data/bosses.json', 'data/schema.json')
+# One numbered piece of the cut (tools/shards.py): data/cards/<kind>/NN.<hash>.json, data/seo/item/NN.<hash>.json.
+# Which cards land in piece NN moves whenever the number of pieces does (a card more, a card less), so a piece is
+# never held to the old piece of the same number: the cut as a whole is held to the index (shards.stale()), and
+# the index to the committed one. A piece's own ids still hold.
+CUT_PIECE = re.compile(r'^data/(?:cards|seo)/[\w-]+/\d+\.[0-9a-f]{6,}\.json$')
 
 
 def links(index):
@@ -389,7 +423,6 @@ def check_files(stage, changed, root, against, schema=True, later=()):
     """What a stage wrote, held to the rules: (file, why) for the first file that does not hold up, else None.
     against(path) gives the last good copy of a file (data/ as it is, or the committed one). later: files a
     later stage of the run writes too, whose count and shape are checked once, on the final state."""
-    count = stage.get('count', {}) if stage else {}
     for path in sorted(changed):
         if not path.endswith('.json') or path == RECORD:
             continue
@@ -400,11 +433,14 @@ def check_files(stage, changed, root, against, schema=True, later=()):
             new = json.loads(p.read_text(encoding='utf-8'))
         except ValueError as e:
             return path, 'it does not read as JSON: %s' % str(e)[:100], {}
-        old = None if path in later else against(path)
-        if old is None:
+        old = None if path in later or CUT_PIECE.match(path) else against(path)
+        if old is None:                       # new, rewritten later, or a piece of the cut: its own ids still hold
+            why = lastgood.own_ids(new)
+            if why:
+                return path, why, {}
             continue
         name = path[len('data/'):] if path.startswith('data/') else path
-        bad = lastgood.look(new, old, count.get(path), file=name)
+        bad = lastgood.look(new, old, count_of(stage, path), file=name)
         if bad:
             return path, bad['why'], bad
         if path == 'data/index.json':
@@ -445,8 +481,13 @@ def rewritten_later(stage, chosen):
 
 
 def run_stage(stage, artifact, log, later=()):
-    cmd = [sys.executable, str(TREE / stage['run'][0])] + args_of(stage, artifact)
+    runner = node() if stage['run'][0].endswith('.mjs') else sys.executable
     started = time.time()
+    if not runner:
+        Path(log).write_text('there is no Node here to run %s with\n' % stage['run'][0], encoding='utf-8')
+        say('  | there is no Node here to run %s with' % stage['run'][0])
+        return 127, 0
+    cmd = [runner, str(TREE / stage['run'][0])] + args_of(stage, artifact)
     with open(log, 'w', encoding='utf-8') as out:
         out.write('$ %s\n' % ' '.join(cmd))
         p = subprocess.Popen(cmd, cwd=str(TREE), env=env_for_stage(later), stdout=subprocess.PIPE,
@@ -472,9 +513,24 @@ def faults_since(t0):
 
 
 # ---------------------------------------------------------------- the run
+def wipe(path):
+    """shutil.rmtree, and on Windows past the read-only files git keeps (tools/cache/treeexport.git's packs)."""
+    def writable(fn, f, _):
+        os.chmod(f, 0o700)
+        fn(f)
+    shutil.rmtree(path, onexc=writable) if sys.version_info >= (3, 12) else shutil.rmtree(path, onerror=writable)
+
+
+def over(src, dst):
+    """shutil.copy2 onto a file git left read-only (tools/cache/treeexport.git's packs, on Windows)."""
+    if os.path.exists(dst) and not os.access(dst, os.W_OK):
+        os.chmod(dst, 0o600)
+    return shutil.copy2(src, dst)
+
+
 def copy_tree():
     if TREE.exists():
-        shutil.rmtree(TREE)
+        wipe(TREE)
     for p in ROOT.iterdir():
         if p.name in LEAVE:
             continue
@@ -528,10 +584,9 @@ def check_only():
             return None
     files = sorted({rel(Path(f).relative_to(ROOT)) for s in STAGES for w in s['writes'] if w.endswith('.json')
                     for f in glob.glob(str(ROOT / w))})
-    counted = {p: s for s in STAGES for p in s.get('count', {})}
     n = 0
     for path in files:
-        one = check_files(counted.get(path), [path], ROOT, committed, schema=False)
+        one = check_files(next((s for s in STAGES if count_of(s, path)), None), [path], ROOT, committed, schema=False)
         n += 1
         if one:
             bad.append('%s: %s' % one[:2])
@@ -605,7 +660,7 @@ def main():
     BUILD.mkdir(exist_ok=True)
     for old in BUILD.iterdir():
         if old.is_dir():
-            shutil.rmtree(old)
+            wipe(old)
     copy_tree()
     start = snapshot(TREE)
     stamps = {} if a.force else (json_at(STAMPS) or {})
@@ -675,7 +730,7 @@ def main():
                         faults_since(t0))
         held = {p for p in changed if matches(p, list(later))}
         for p in held:
-            deferred[p] = stage.get('count', {}).get(p, deferred.get(p))
+            deferred[p] = count_of(stage, p) or deferred.get(p)
         why = check_files(stage, changed, TREE, last_copy, later=held)
         if why:
             return fail(stage, '%s: %s' % why[:2], [], why[2])
@@ -714,7 +769,7 @@ def main():
     CACHE.mkdir(parents=True, exist_ok=True)
     fresh = TREE / 'tools' / 'cache'
     if fresh.exists():
-        shutil.copytree(fresh, CACHE, dirs_exist_ok=True, ignore=shutil.ignore_patterns('stamps.json'))
+        shutil.copytree(fresh, CACHE, dirs_exist_ok=True, ignore=shutil.ignore_patterns('stamps.json'), copy_function=over)
     lastgood.save(STAMPS, json.dumps(stamps, indent=1, sort_keys=True))
     say('pipeline: %d ran, %d skipped, %d file%s into data/ in one step%s' % (
         len(ran), len(skipped), len(final), '' if len(final) == 1 else 's',
