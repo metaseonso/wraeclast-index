@@ -7,7 +7,7 @@
      node tools/dev/guard.mjs --no-phone      skip the headless Chrome pass
      node tools/dev/guard.mjs --offline       the budget's first-paint line from the shipped copy, not the live site
 
-   Nine checks, one line each, non-zero exit on any FAIL:
+   Ten checks, one line each, non-zero exit on any FAIL:
      cards   how many cards of each kind, against tools/dev/guard-baseline.json, and every interaction the
              game's wording names: how many open a card, how many are marked unclear, how many are left as
              plain text (tools/interactions.py, data/interactions.json)
@@ -16,6 +16,8 @@
              path the 404 page); the sitemaps and the llms files did not shrink; robots.txt says the terms
      rawcode no stat ids, [Word|Word] markup, {0} placeholders or "...@100%" stat text where a player can read them
      voice   every word a player reads is the game's, not an assistant's (tools/dev/voice.mjs)
+     market  data/market/ carries its source, flag and rule and no internal id, and a sample of its sums worked
+             out again from the exchange archive's raw hours where the archive is here (tools/dev/marketcheck.mjs)
      frame   every card and the map keep to the frame: slots, caps, counts, one rule for every kind
              (tools/dev/frame.mjs), and every row the data ships holds to its kind's declaration
              (tools/dev/schema.mjs, data/schema.json)
@@ -44,6 +46,8 @@ import { checkTable, checkMap, checkOneTable, checkCards as drawCards } from './
 import { checkSchema } from './schema.mjs';
 // the voice: the copy a player reads, held to the game's register and not an assistant's
 import { checkVoice } from './voice.mjs';
+// data/market/: the files, and a sample of the sums against the raw exchange hours
+import { checkMarket } from './marketcheck.mjs';
 // the budget: what the free plan lets dist/ be, and no data file nothing reads
 import { checkBudget, budgetLine, fresh } from './budget.mjs';
 
@@ -784,6 +788,8 @@ try {
   say('voice', !voice.bad.length, voice.bad.length
     ? voice.bad.length + ' broken: ' + clip(voice.bad.slice(0, 2).join(' | '), 220)
     : voice.said + ' · the game does the talking');
+  try { const m = await checkMarket(); say('market', !m.bad.length, m.bad.length ? m.bad.length + ' broken: ' + clip(m.bad.slice(0, 2).join(' | '), 200) : m.said); }
+  catch(e){ say('market', false, 'could not run: ' + clip(e && e.message || e, 160)); }
   try { const b = await checkBudget({offline}); say('budget', !b.bad.length, budgetLine(b)); }
   catch(e){ say('budget', false, 'could not run: ' + clip(e && e.message || e, 160)); }
   if(!noPhone){
