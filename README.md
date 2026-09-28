@@ -43,7 +43,8 @@ The site is static, and every hourly job that keeps it live runs on GitHub Actio
 | `tools/build.mjs`, `package.json` | What Cloudflare serves: before every deploy (`wrangler.jsonc` `build`) the files `.assetsignore` lets through are copied into `dist/` and the JS, CSS and the pages' inline scripts minified by esbuild, one file at a time. `dist/sw-files.json` lists every path with a hash of its bytes for `sw.js`. A file esbuild cannot read ships as it is, and no esbuild at all ships the plain copy. `dist/` is never committed; GitHub Pages and the checks read the repo itself |
 | `assets/fonts/` | The site's own copies of its fonts (Cinzel, IBM Plex Sans, IBM Plex Mono; SIL Open Font License) |
 | `data/kwuse.json` | What uses each keyword (the nine groups under Connections on a keyword card), built by `tools/kwuse.py` for every keyword the site cards, not only the ones the drill-down page carries. It also names the keywords that page can filter its own lists by (`dd`), which is what decides whether a card's "See all in Gems" has a list to send anyone to. Loaded the first time a card that needs it opens |
-| `data/grants.json` | What grants a skill and what each skill is granted by (base items, ascendancy notables and uniques), both directions, built by `tools/grants.py`. Loaded the first time a card that needs it opens, like `data/kwuse.json` |
+| `data/buffs.json` | Every buff and debuff a player can see: its name, what it does in the game's words, its icon and what gives it (gems, passives, uniques, base items, and the modifiers with no card, counted). Built by `tools/buffs.py` from the game files, which also writes the buff cards into `data/index.json` (kind `d`) and lends a buff's icon to the keyword card of the same name. `design/buffs.md` |
+| `data/grants.json` | What grants a skill and what each skill is granted by (base items, ascendancy notables and uniques), and what gives each buff (`data/buffs.json`), both directions, built by `tools/grants.py`. Loaded the first time a card that needs it opens, like `data/kwuse.json` |
 | `data/essences.json` | What an essence adds, on each kind of item: one row per modifier, the game's own wording for it, the kinds of item that get that same one (each opening the Craft tab there), which side it lands on and its level. Built by `tools/essences.py` from the essence tables in `data/craft/`, 24 kB; the `adds` field declares it in `assets/kinds.js` and it is fetched the first time a card that needs it opens, so the 1.6 MB behind it stays on the Craft tab |
 | `data/info.json`, `data/reqs.json` | Item text and requirements, built by `tools/gameinfo.py` |
 | `data/market.json` | Prices, rebuilt every hour by `tools/market.py` |
@@ -179,7 +180,7 @@ python tools/pipeline.py patch --dry                                  build and 
 |---|---|---|
 | `gamepull` | daily | the game files (RePoE's export); also the gap report `tools/dev/gaps.txt` |
 | `datpull` | patch | the game's own bundles on GGG's patch CDN (`data/game/`; Node, `npm ci`, about 120 MB the first time a patch is read) |
-| `gameinfo`, `atlas`, `craft`, `gamelib`, `treecards`, `clusters`, `grants` | patch | the game files (`craft` also checks essences and orb levels on poe2db) |
+| `gameinfo`, `atlas`, `craft`, `gamelib`, `treecards`, `clusters`, `buffs`, `grants` | patch | the game files (`craft` also checks essences and orb levels on poe2db) |
 | `areas` | patch | the game files: RePoE's areas and mods, and the game's own tables read through `tools/gamepull.py` `dat()` (`data/areas.json`) |
 | `tradedata` | patch | the official trade site's lists |
 | `craftweights` | patch | Craft of Exile (the mod weights the game files do not carry) |
