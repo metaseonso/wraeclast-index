@@ -112,7 +112,7 @@ STAGES = [
     dict(name='atlas', run=['tools/atlas.py'], cadence='patch', source='game files',
          reads=[REPOE, TRADE, POE2DB, NINJA, 'data/market.json'], writes=['data/atlas.json']),
     dict(name='areas', run=['tools/areas.py'], cadence='patch', source='game files',
-         reads=[REPOE, 'https://github.com/metaseonso/wraeclast-data (the decoded game tables)', 'data/atlas.json',
+         reads=[REPOE, CDN, DATSCHEMA, 'data/atlas.json',
                 'data/bosses.json'], last=['data/bosses.json'],
          writes=['data/areas.json'], count={'data/areas.json': 'areas'}),
     dict(name='craftweights', run=['tools/craftweights.py'], cadence='patch', source='Craft of Exile',
