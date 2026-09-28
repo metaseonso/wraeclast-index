@@ -260,8 +260,32 @@ def patch(b=None):
 
 
 def listing():
-    """Every file at the top of the export, from the listing page (used to spot what we never read)."""
-    return sorted(set(re.findall(r'>([a-z_]+\.min\.json)<', home())))
+    """Every file at the top of the export, from the listing page (used to spot what we never read). The list is
+    kept with the pull, so --report, which fetches nothing, still has the one the last pull saw."""
+    got = sorted(set(re.findall(r'>([a-z_]+\.min\.json)<', home())))
+    if got:
+        state()['listing'] = got
+    return got or state().get('listing') or []
+
+
+# The export files no tool reads, and why not: each one is a line in the gap report instead of a silent gap
+# (#90). A file that gets a reader drops out of the report by itself; one that turns up with no reader and no
+# line here is listed on its own, so it is looked at.
+UNREAD = {
+    'active_skill_types.min.json': 'the names of the skill types; skills.min.json already names every skill\'s '
+                                   'types, and the gem cards draw the game\'s own tag names (gem_tags) instead',
+    'audio.min.json': 'the sound each thing plays; the site plays none',
+    'cost_types.min.json': 'what each skill cost is paid in and how the game writes it; skills.min.json already '
+                           'names the resource on every cost the gem cards show',
+    'stat_value_handlers.min.json': 'how a stat description turns a number before it is shown (negate, per minute '
+                                    'to per second); the few the tree uses are applied in tools/tree.py (Wording), '
+                                    'and every other line comes already worded in the export',
+    'stats_by_file.min.json': 'which description file words each stat; the tools read the two files the items and '
+                              'the tree are worded from, in the game\'s order, and never need to look one up',
+    'tag_details.min.json': 'the display names of the spawn tags; no card shows a spawn tag',
+    'tags.min.json': 'the spawn tags items and modifiers roll by; tools/craft.py reads them straight off each base '
+                     'and modifier, and they are never shown',
+}
 
 
 # ---------------------------------------------------------------- the gap report
@@ -273,7 +297,7 @@ def site(name):
 
 def real(names):
     """Names a player could ever see: no [DNT] marker, no {0} the game fills in."""
-    return {n for n in names if n and not DNT.search(n) and not TEMPLATE.search(n)}
+    return {n.strip() for n in names if n and not DNT.search(n) and not TEMPLATE.search(n)}   # a card's name is trimmed
 
 
 def sample(missing, n=3):
@@ -312,7 +336,8 @@ def rows():
     out.append(('small passives', small, p, False))
 
     kw = real(v.get('term') for v in official('keywords.min.json').values() if (v.get('definition') or '').strip())
-    out.append(('keywords', kw, ours.get('w', set()), True))
+    # a keystone is its own keyword: its card stands for both (tools/sync.py, index "kwx")
+    out.append(('keywords', kw, ours.get('w', set()) | set((index.get('kwx') or {}).values()), True))
 
     trade = (site('trade.json') or {}).get('bases') or {}
     if trade:
@@ -334,17 +359,57 @@ def rows():
     return out
 
 
+def reasons(kind, missing):
+    """Why each name the game has and no card carries is left out: {name: reason}. A name with no reason here is
+    a gap nobody has looked at, and the report says so."""
+    why = {}
+    if kind == 'gems':
+        for n in missing:
+            if n == 'Coming Soon':
+                why[n] = 'a slot the game holds open for a gem that is not in it yet'
+            elif n == 'Removed Skill':
+                why[n] = 'the stand-in the game shows where a skill was taken out'
+    elif kind in ('notables', 'small passives'):
+        nodes = {}
+        for v in official('passive_skill_trees/Default.min.json')['passives'].values():
+            if (v.get('name') or '').strip() in missing:
+                nodes.setdefault(v['name'].strip(), []).append(v)
+        for n, vs in nodes.items():
+            if all(v.get('is_icon_only') for v in vs):
+                why[n] = 'an icon-only node (a mastery or a blank plate): no effect to show'
+            elif all(v.get('is_ascendancy_starting_node') for v in vs):
+                why[n] = 'where an ascendancy starts on its wheel: no effect to show'
+            elif all(v.get('is_multiple_choice') for v in vs):
+                why[n] = 'a choice notable: no effect of its own, and each option it offers is a card'
+            elif all(v.get('skill_points') for v in vs):
+                why[n] = 'grants passive points: the tree gives it no line of text'
+            elif all(not v.get('stats') and not v.get('ascendancy') for v in vs):
+                why[n] = 'a class\'s starting plate on the tree: no effect to show'
+            elif all(not v.get('stats') and not v.get('granted_skill') for v in vs):
+                why[n] = 'an ascendancy notable with no stat line and no skill: no lines, no card'
+    elif kind == 'keywords':
+        from gamelib import pick   # the rule the keyword cards are made by (tools/gamelib.py)
+        _, _, left = pick(site('index.json') or {'items': []})
+        export = official('keywords.min.json')
+        for k, r in left.items():
+            n = (export[k].get('term') or '').strip()
+            if n in missing and r != 'already ours':
+                why[n] = {'a placeholder': 'the game\'s own placeholder, "This test case is designed to be overwitten"'}.get(r, r)
+    elif kind == 'currency':
+        info = site('info.json') or {}
+        for n in missing:
+            t = (info.get(n) or {}).get('t') or ''
+            if 'no longer usable' in t:
+                why[n] = 'the game\'s own text says it is no longer usable'
+            elif not t:
+                why[n] = 'no text anywhere in the game files for it (poe2db shows none either)'
+    return why
+
+
 def notes():
     """The few things a row of numbers does not say."""
     said = []
-    tree = official('passive_skill_trees/Default.min.json')['passives'].values()
-    index = site('index.json') or {'items': []}
-    have = {it['n'] for it in index['items'] if it['k'] == 'p'}
-    lost = [v for v in tree if v.get('is_notable') and real([v.get('name')]) and v['name'] not in have]
-    if lost:
-        grant = sum(1 for v in lost if v.get('granted_skill'))
-        said.append('%d of the missing notables are ascendancy notables with no stat lines; %d of those grant a '
-                    'skill instead. No lines, no card.' % (len(lost), grant))
+    index = site('index.json') or {'items': []}   # the missing notables have their reasons above (reasons())
 
     info = site('info.json') or {}
     if info:
@@ -377,15 +442,26 @@ def notes():
     jewels = sorted((ROOT / 'data' / 'explore').glob('jewels.*.json'))
     if jewels:
         n = len(json.loads(jewels[0].read_text(encoding='utf-8')).get('rows') or [])
-        said.append('The drill-down page lists %d jewels; there is no jewel card kind at all.' % n)
+        jw = site('jewels.json') or {}
+        said.append('The drill-down page lists %d timeless jewel lines. data/jewels.json (tools/gamelib.py) holds the '
+                    'Jewel kind\'s data: %d jewel bases, %d timeless factions and %d conquerors; the card kind itself '
+                    'is proposed in design/gems-gaps.md.' % (n, len(jw.get('bases') or []), len(jw.get('timeless') or []),
+                                                            sum(len(f.get('conquerors') or []) for f in jw.get('timeless') or [])))
 
     everything = listing()
     if everything:   # this file names every export file it pulls, so it does not count as a reader
-        src = '\n'.join(f.read_text(encoding='utf-8', errors='replace') for f in sorted(ROOT.glob('tools/*.py'))
-                        if f.name != Path(__file__).name)
-        unread = [n for n in everything if n not in src and n.replace('.min', '') not in src]
-        if unread:
-            said.append('No tool here reads these export files at all: ' + ', '.join(unread) + '.')
+        tools = sorted(ROOT.glob('tools/*.py')) + sorted(ROOT.glob('tools/dev/*.py'))
+        src = '\n'.join(f.read_text(encoding='utf-8', errors='replace') for f in tools if f.name != Path(__file__).name)
+        # a whole file name, so tags.min.json is not read because gem_tags.min.json is
+        named = lambda n: re.search(r'(?<![\w-])' + re.escape(n), src)
+        unread = [n for n in everything if not named(n) and not named(n.replace('.min', ''))]
+        why = [n for n in unread if n in UNREAD]
+        if why:
+            said.append('%d of the %d export files no tool reads, each for a reason:' % (len(why), len(everything)))
+            said += ['%s: %s.' % (n, UNREAD[n]) for n in why]
+        lost = [n for n in unread if n not in UNREAD]
+        if lost:
+            said.append('No tool here reads these export files at all, and nothing says why: ' + ', '.join(lost) + '.')
     return said
 
 
@@ -413,10 +489,20 @@ def report(pulls=None):
                                                        f"{len({(i['k'], i['n']) for i in index['items']}):,}"))
     lines += ['', '  Counts are names, not cards: one name can be several cards.', '',
               '  kind             game  carded     gap  missing, a sample']
+    why = []
     for kind, game, ours, whole in rows():
         missing, extra = game - ours, ours - game
         tail = sample(missing) or ('+%d we card that the export has no name for' % len(extra) if whole and extra else '-')
         lines.append(('  %-14s %6d  %6d  %6d  %s' % (kind, len(game), len(game & ours), len(missing), tail)).rstrip())
+        said = reasons(kind, missing)
+        count = {}
+        for n in sorted(missing):
+            count.setdefault(said.get(n, 'NO REASON YET'), []).append(n)
+        for r, names in sorted(count.items(), key=lambda x: (x[0] == 'NO REASON YET', -len(x[1]), x[0])):
+            why.append('%s, %d: %s (%s)' % (kind, len(names), r, sample(names, 4)))
+    lines += ['', '  Why each gap stays (every name the game has and no card carries has one reason):', '']
+    for w in why:
+        lines += wrap(w)
     lines += ['',
               '  game: the export, minus the names players never see ([DNT] markers, names the game fills in).',
               '  Bases and currency count the official trade site\'s lists instead (data/trade.json): the export',

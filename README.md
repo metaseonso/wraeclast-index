@@ -43,7 +43,9 @@ The site is static, and every hourly job that keeps it live runs on GitHub Actio
 | `tools/build.mjs`, `package.json` | What Cloudflare serves: before every deploy (`wrangler.jsonc` `build`) the files `.assetsignore` lets through are copied into `dist/` and the JS, CSS and the pages' inline scripts minified by esbuild, one file at a time. `dist/sw-files.json` lists every path with a hash of its bytes for `sw.js`. A file esbuild cannot read ships as it is, and no esbuild at all ships the plain copy. `dist/` is never committed; GitHub Pages and the checks read the repo itself |
 | `assets/fonts/` | The site's own copies of its fonts (Cinzel, IBM Plex Sans, IBM Plex Mono; SIL Open Font License) |
 | `data/kwuse.json` | What uses each keyword (the nine groups under Connections on a keyword card), built by `tools/kwuse.py` for every keyword the site cards, not only the ones the drill-down page carries. It also names the keywords that page can filter its own lists by (`dd`), which is what decides whether a card's "See all in Gems" has a list to send anyone to. Loaded the first time a card that needs it opens |
-| `data/grants.json` | What grants a skill and what each skill is granted by (base items, ascendancy notables and uniques), both directions, built by `tools/grants.py`. Loaded the first time a card that needs it opens, like `data/kwuse.json` |
+| `data/buffs.json` | Every buff and debuff a player can see: its name, what it does in the game's words, its icon and what gives it (gems, passives, uniques, base items, and the modifiers with no card, counted). Built by `tools/buffs.py` from the game files, which also writes the buff cards into `data/index.json` (kind `d`) and lends a buff's icon to the keyword card of the same name. `design/buffs.md` |
+| `data/ascendancies.json` | Every ascendancy: its class, the game's flavour text for it, its notables by name, and which trial gives which set of its eight points. Built by `tools/ascendancies.py` from the game files, which also writes the Ascendancy cards into `data/index.json` (kind `y`). `design/ascendancies.md` |
+| `data/grants.json` | What grants a skill and what each skill is granted by (base items, ascendancy notables and uniques), and what gives each buff (`data/buffs.json`), both directions, built by `tools/grants.py`. Loaded the first time a card that needs it opens, like `data/kwuse.json` |
 | `data/essences.json` | What an essence adds, on each kind of item: one row per modifier, the game's own wording for it, the kinds of item that get that same one (each opening the Craft tab there), which side it lands on and its level. Built by `tools/essences.py` from the essence tables in `data/craft/`, 24 kB; the `adds` field declares it in `assets/kinds.js` and it is fetched the first time a card that needs it opens, so the 1.6 MB behind it stays on the Craft tab |
 | `data/info.json`, `data/reqs.json` | Item text and requirements, built by `tools/gameinfo.py` |
 | `data/market.json` | Prices, rebuilt every hour by `tools/market.py` |
@@ -63,6 +65,7 @@ The site is static, and every hourly job that keeps it live runs on GitHub Actio
 | `data/gamestats.json` | One monster of each level (life, damage, accuracy, armour, evasion) and what each class starts with, from the game files by `tools/gamelib.py`. Nothing reads it yet |
 | `data/guides.json` | The community guides the Build tab links out to: one line each, and the day the address was last read. Built by `tools/guides.py`, which holds the list and reads every address on each publish — a guide whose page has gone, or no longer carries its own words, keeps the row it last checked out on and becomes a named fault instead of a dead link. Someone else's work, named where it is shown and never ours |
 | `data/patches.json` | Every Path of Exile 2 patch, hotfix and restart since 0.1 (260 rows at 0.5.5c): the hour its notes went up (UTC), its league, its thread on the official patch notes forum, the league-opening day where a patch opened one, the passive tree export commit and tag that match it, and every client build the index has carried with the day it was first seen. Built by `tools/patches.py`; see Patches, snapshots and price history |
+| `data/patchnotes.json` | GGG's own patch-note lines, each with the cards it names (`g:Frostbolt`, kind and name, never a game id), read from the first post of every thread `data/patches.json` names; a patch is its row id there. Lines that name no card are counted per patch and section, not shipped; `--gaps` writes them to `tools/dev/patchgaps.txt`. Built by `tools/patchnotes.py`, the `patchnotes` stage. Nothing reads it yet: how a card shows it is proposed in [`design/patch-notes.md`](design/patch-notes.md) |
 | `data/changes/<build>.json` | What the game moved between two patches, card by card: old and new value per field, the cards added, and the cards removed with their names kept. Written by `tools/diff.py`, fetched the first time a card asks for it and never in first paint |
 | `data/faults.json` | Which sections are showing an older copy right now, and why, written by `tools/lastgood.py` (see below). The dashboard's Data jobs block and `/api/health` read it |
 | `data/map.png`, `data/map.json`, `data/map-nodes.json` | The map of the index (`assets/map.js`, at `#/map`, linked from the footer): every card a dot and every connection a line, in one 1600×800 picture, laid out once at build time by `tools/map.py` — a force layout over all 6,609 cards and the 24,541 edges the site can follow (`data/kwuse.json`, `data/grants.json`, a unique's base, a card's own marks, `lx`). Same data in, same picture out. `map.json` is the key, the busiest card of each kind, a few edges for the travelling lights and what the picture leaves out; `map-nodes.json` is every dot's seat, so a later pass can make a dot clickable without laying anything out again. Nothing but the tab fetches any of it, and the kinds, their names, their colours and their counts come from `assets/kinds.js` and `assets/theme.css`, never a list in the tool |
@@ -78,7 +81,7 @@ reused (where the `gh` CLI is signed in), and the run exits non-zero. The owner 
 dashboard's Data jobs block and in `/api/health`, in the same fine/late/stopped style as the jobs. Applies to
 `sync.py`, `craft.py`, `uniques.py`, `leagues.py`, `market.py`, `exchange.py`, `gamepull.py`, `datpull.mjs` (through its
 pipeline stage), `tradedata.py`,
-`gameinfo.py`, `atlas.py`, `bosses.py`, `areas.py`, `farms.py`, `treeexport.py`, `guides.py` (where the outside source is a link we
+`gameinfo.py`, `atlas.py`, `bosses.py`, `areas.py`, `farms.py`, `treeexport.py`, `patchnotes.py`, `guides.py` (where the outside source is a link we
 send players to, and the fault is that it has rotted) and `baseprices.py` (whose source is the craft tables a
 patch fills: a patch that empties one of them must not empty the price list with it). The tools that build only from files already on disk
 (`appdata.py`, `mechanics.py`, `kwuse.py`, `nodelinks.py`, `essences.py`, `grants.py`, `gamelib.py`, `rollprices.py`) have no
@@ -182,7 +185,7 @@ python tools/pipeline.py patch --dry                                  build and 
 | `datpull` | patch | the game's own bundles on GGG's patch CDN (`data/game/`; Node, `npm ci`, about 120 MB the first time a patch is read) |
 | `odds` | patch | the game's own tables in `data/game/` (`data/odds.json`, the weights behind the hidden rolls) |
 | `leaguemech` | patch | the game's own tables, and the Currency Exchange archive on the owner's machine (`data/leaguemech.json`; without the archive the popularity already in the file is kept) |
-| `gameinfo`, `atlas`, `craft`, `gamelib`, `treecards`, `clusters`, `grants` | patch | the game files (`craft` also checks essences and orb levels on poe2db) |
+| `gameinfo`, `atlas`, `craft`, `gamelib`, `treecards`, `clusters`, `buffs`, `ascendancies`, `grants` | patch | the game files (`craft` also checks essences and orb levels on poe2db) |
 | `areas` | patch | the game files: RePoE's areas and mods, and the game's own tables read through `tools/gamepull.py` `dat()` (`data/areas.json`) |
 | `tradedata` | patch | the official trade site's lists |
 | `craftweights` | patch | Craft of Exile (the mod weights the game files do not carry) |
@@ -190,6 +193,7 @@ python tools/pipeline.py patch --dry                                  build and 
 | `sync` | patch | the Wraeclast Index artifact, plus RePoE and poe.ninja for the cards it lacks |
 | `rollprices`, `craftmods`, `baseprices`, `carddata`, `nodelinks`, `essences`, `kwuse`, `gemlines`, `treelines`, `map` | patch | the files the stages above wrote |
 | `treechanges` | patch | GGG's passive tree export, at the commits `data/patches.json` names; checked against RePoE's tree and the drill-down's |
+| `patchnotes` | patch | GGG's patch notes threads, the ones `data/patches.json` names, matched to the finished index |
 | `guides` | daily | the community guides the Build tab links to |
 | `market`, `exchange`, `leagues` | hourly | poe.ninja, the in-game Currency Exchange, poe2db (the Publish site workflow runs these three on its own) |
 | `bosses`, `farms`, `mechanics`, `ninjapast` | by hand | the game files and poe2wiki, BawLoch's tier list sheet, our own cards, poe.ninja |
@@ -232,7 +236,8 @@ shipped row to it (a stale `data/schema.json` fails too), `tools/lastgood.py` ho
 `assets/kinds.js`, then `node tools/dev/schema.mjs --write`.
 
 After a game patch, also `python tools/patches.py --notes --tree` (see Patches, snapshots and price history),
-before the run: the `treechanges` stage reads the tree export at the commits it names. After a run:
+before the run: the `treechanges` stage reads the tree export at the commits it names, and the `patchnotes`
+stage reads the new threads. After a run:
 `node tools/dev/guard.mjs`, commit, push to `main`. The site republishes in about a minute, and the data repo's own
 workflow freezes the new index under its build within twelve hours.
 
