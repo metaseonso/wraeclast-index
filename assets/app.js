@@ -2616,7 +2616,9 @@ const IS_APP = !!document.getElementById('view-home');
 const STAMP = document.getElementById('stamp');
 if(STAMP) NOW.then(M => {
   STAMP.classList.remove('wait');
-  if(M && M.updated) STAMP.innerHTML = 'Prices: <b>' + esc(M.league) + '</b> · ' + ago(M.updated) +
+  // the league and its dot are the part a tight row drops (assets/cards.css .stamp-lg)
+  if(M && M.updated) STAMP.title = 'Prices: ' + M.league + ' · ' + ago(M.updated);
+  if(M && M.updated) STAMP.innerHTML = 'Prices: <b class="stamp-lg">' + esc(M.league) + '</b><span class="stamp-lg"> · </span>' + ago(M.updated) +
     (M.late ? ' · <span class="err">waiting for new prices</span>' : '');
   else STAMP.textContent = 'Prices not loaded yet';
 });

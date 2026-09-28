@@ -2,8 +2,9 @@
    the crawler pages (worker/seo.js). It reads the bar it is given and keeps no list of pages of its own.
    - a group of the index (Items, Endgame) opens under its name on a click, Enter or Space, and closes on a second
      click, Escape, a click anywhere else or focus leaving it; with one open, the pointer on another opens that one
-   - ☰ opens the rest: Patch notes, Suggest, Runs, Pins and the keybindings; narrower than the row (cards.css,
-     NARROW) the index too, as a sheet under the bar with every group open
+   - ☰ opens the rest: Patch notes, Runs, Pins and the keybindings; narrower than the row (cards.css, NARROW)
+     the index too, as a sheet under the bar with every group open, and Suggest, which the bar holds when it is
+     wide enough for the index
    - a phone's search button opens the top search under the bar, or on the home page goes to its own search box
    - the group holding the page on show wears the tab's own "here" look: the app marks its links (app.js show()),
      the drill-down page its section buttons (#nav, kept out of sight), and this follows either */
@@ -99,8 +100,19 @@ if(bar && !bar.dataset.nav){
     if(menuOpen()){ e.preventDefault(); setMenu(false); if(burger) burger.focus(); return; }
     if(bar.classList.contains('find')){ setFind(false); if(find) find.focus(); }
   });
-  // wider or narrower than the row: nothing stays open from the other shape
-  NARROW.addEventListener('change', closeAll);
+  // wider or narrower than the row: nothing stays open from the other shape, and Suggest goes where the index is
+  const more = document.getElementById('topmore');
+  function placeSuggest(){
+    const s = document.getElementById('suggestbtn');
+    if(!s || !more) return;
+    if(NARROW.matches){
+      if(s.parentNode === more) return;
+      const notes = more.querySelector('#notesbtn');
+      if(notes) notes.after(s); else more.prepend(s);
+    } else if(s.parentNode === more && burger) burger.before(s);
+  }
+  placeSuggest();
+  NARROW.addEventListener('change', () => { closeAll(); placeSuggest(); });
 
   /* ---------- the page on show ---------- */
   // only what changes is written: these run from observers of the same attribute

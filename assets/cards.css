@@ -353,6 +353,11 @@ header.top .topmore .keysbtn{display:flex; align-items:center; gap:8px; padding:
 /* one row: the top search gives up its width; a page without the app has nothing else for ☰ to hold */
 @media (min-width:641px){ .top-in{flex-wrap:nowrap} .top .stamp{flex:none} }
 @media (min-width:1280px){ .topbtn.narrow{display:none} }
+/* Suggest: in the bar beside ☰ while the index is in the bar, under ☰ with it otherwise (assets/topnav.js moves it) */
+header.top .top-in > .suggestbtn{order:0; margin:0}
+@media (max-width:1279px){ .top-in > .suggestbtn{display:none} }
+/* the row is tight until 1420px: the stamp keeps its age and lets the league go (it is in the stamp's tooltip) */
+@media (min-width:1280px) and (max-width:1419px){ .stamp-lg{display:none} .stamp.wait{min-width:110px} .topsearch{min-width:140px} }
 @media (max-width:899px){ .stamp{display:none} }
 /* narrower than the row: the index goes into ☰ too, as a sheet under the bar */
 @media (max-width:1279px){
