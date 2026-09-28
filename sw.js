@@ -1,7 +1,9 @@
 /* Wraeclast Index service worker: repeat visits paint straight from this browser's own copy of the site.
 
-   worker/index.js writes the deploy's version id into BUILD when it serves this file, so every deploy is a new
-   service worker with its own copy, and a page holds to the files of the deploy it was loaded with:
+   tools/build.mjs writes a hash of every file the deploy serves into BUILD, so every deploy that changes a file is a
+   new service worker with its own copy (a deploy that changes none is the same worker, holding the same files), and
+   a page holds to the files of the deploy it was loaded with. This file is then a plain static file: a page load
+   never calls the worker for it, and the browser checks it with the server on every load (_headers: no-cache).
    - The pages (/, /explore, /privacy) and the site's files (assets/, data/, sprites/) come from the copy of the deploy
      the page was loaded with. A page from an older deploy, or from before this worker, gets the network, exactly as
      if there were no service worker.

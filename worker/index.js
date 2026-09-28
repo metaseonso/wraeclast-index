@@ -1,7 +1,7 @@
 /* Wraeclast Index on Cloudflare.
-   Static files are served straight from the edge. This worker only answers:
+   Static files are served straight from the edge, the service worker (sw.js, stamped by tools/build.mjs) among
+   them. This worker only answers:
      /data/market.json   every price, from real trade listings only (worker/prices.js serveMarket; ?part=now|past|live|hist|facts)
-     /sw.js              the service worker (sw.js), with this deploy's version id written in: a new one every deploy
      /data/leagues.json  league dates (poe2db), sent in by the data server: worker/files.js
      /api/pob?url=...    the build code behind a pobb.in, poe.ninja, maxroll, mobalytics, poe2db or pastebin link
                          (browsers cannot fetch those sites themselves)
@@ -30,7 +30,6 @@ export default {
   async fetch(request, env, ctx){
     const url = new URL(request.url);
     if(url.pathname === '/data/market.json') return serveMarket(request, env, ctx);
-    if(url.pathname === '/sw.js') return serviceWorker(request, env);
     if(url.pathname === '/data/leagues.json') return leagues(request, env, url, ctx);
     if(url.pathname === '/api/pob') return pob(url);
     if(url.pathname === '/api/trade/searches') return tradeSearches(request, env, ctx, url);
@@ -61,16 +60,6 @@ async function dataPut(request, env, url, ctx){
     ctx.waitUntil((name === 'exchange.json' ? rollLeagues(env, url.origin, ctx).catch(() => null) : Promise.resolve())
       .then(() => buildMarket(env, url.origin, ctx)).catch(() => null));
   return res;
-}
-
-/* The service worker keeps each deploy's files together (sw.js). Its BUILD is this deploy's version id, so every deploy
-   is a new service worker with its own copy of the site. Browsers ask for it on every page load: never cached. */
-async function serviceWorker(request, env){
-  const r = await env.ASSETS.fetch(new Request(new URL('/sw.js', request.url)));
-  if(!r.ok) return r;
-  const id = (env.CF_VERSION_METADATA && env.CF_VERSION_METADATA.id) || '';
-  const body = (await r.text()).replace("'__WI_BUILD__'", JSON.stringify(id ? 'v-' + id : '__WI_BUILD__'));
-  return new Response(body, {headers: {'Content-Type': 'text/javascript; charset=utf-8', 'Cache-Control': 'no-cache'}});
 }
 
 /* league dates: each data centre keeps its copy for 5 minutes (worker/files.js) */

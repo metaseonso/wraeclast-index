@@ -1,8 +1,9 @@
 // Cloudflare Worker for wraeclastindex.fyi. Cloudflare builds and publishes this on every push to main.
 // The site itself is static files (served straight from the edge, out of dist/: tools/build.mjs copies the repo's
 // website files there and minifies them, before every deploy); the worker only answers
-// /data/market.json (live prices), /sw.js (the service worker, stamped with the deploy), /api/* (things a browser cannot fetch on its own) and
-// /search (a redirect into the app's search). The plain pages for search engines and AI search (item pages, lists,
+// /data/market.json (live prices), /api/* (things a browser cannot fetch on its own) and
+// /search (a redirect into the app's search). The service worker (sw.js) is a static file stamped by tools/build.mjs.
+// The plain pages for search engines and AI search (item pages, lists,
 // sitemaps, llms.txt, the Markdown copies) are files too: tools/build.mjs makes them with worker/seo.js at every
 // deploy, and .github/workflows/rebuild.yml builds again every 6 hours so their prices stay fresh. A path that is
 // no file gets dist/404.html with a 404, and never reaches the worker (not_found_handling).
@@ -20,10 +21,10 @@
   "assets": {
     "directory": "dist",
     "binding": "ASSETS",
-    "run_worker_first": ["/data/market.json", "/sw.js", "/data/leagues.json", "/data/rollprices.json", "/data/farmprices.json", "/data/bossprices.json", "/api/*", "/search"],
+    "run_worker_first": ["/data/market.json", "/data/leagues.json", "/data/rollprices.json", "/data/farmprices.json", "/data/bossprices.json", "/api/*", "/search"],
     "not_found_handling": "404-page"
   },
-  // the deploy's version id, written into /sw.js by the worker (worker/index.js serviceWorker)
+  // the deploy's version id: the market file's built parts are kept per deploy (worker/prices.js builtName)
   "version_metadata": { "binding": "CF_VERSION_METADATA" },
   "d1_databases": [
     { "binding": "DB", "database_name": "wraeclast", "database_id": "d1c4d101-dce9-4f19-9dc3-4525eca2f17e", "migrations_dir": "worker/migrations" }

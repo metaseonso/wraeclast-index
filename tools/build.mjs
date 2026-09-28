@@ -9,8 +9,7 @@
       less the files below data/ that nothing on the site asks for (a drill-down data copy the page no longer names).
    2. Smaller. The .js and .css files, and the inline <script>/<style> of the pages, through esbuild: one file at a
       time, no bundling, every import path and export name kept, whitespace and comments gone. sw.js keeps its
-      '__WI_BUILD__' exactly (worker/index.js writes the deploy's id over it) or ships as it is. A file esbuild throws
-      on ships as it is.
+      '__WI_BUILD__' exactly (step 5 writes over it) or ships as it is. A file esbuild throws on ships as it is.
    3. sw-files.json: every path the site serves with a short hash of its bytes, and the files the home page needs
       before its first paint (read off index.html and what its modules import). sw.js keeps only those at install,
       takes every unchanged file over from the last deploy's copy, and checks what it keeps against the hashes.
@@ -22,6 +21,10 @@
       line of _redirects; and crawl.json, a short hash of each page's own words, so the scheduled rebuild can tell
       search engines which pages changed (.github/workflows/rebuild.yml). Written after 2, never minified: a page
       is the bytes worker/seo.js made.
+   5. sw.js stamped: its '__WI_BUILD__' becomes a hash of every path sw-files.json lists and the bytes behind it, so
+      a deploy that changes any of those files is a new service worker with its own copy, and /sw.js is a plain
+      static file: no page load ever calls the worker for it (the worker stamped it on every load until 28 Sep). A
+      sw.js the stamp cannot be written into ships unstamped, and an unstamped sw.js switches itself off (sw.js OFF).
 
    It never stops a deploy for the small part: no esbuild, a file it cannot read, a manifest that will not write,
    and the site ships unminified or without the manifest (sw.js then does what it always did). A copy that cannot
@@ -168,7 +171,7 @@ async function copyAll(files){
 /* ---------- 2. smaller ---------- */
 const JS = {loader: 'js', minify: true, target: 'es2020', legalComments: 'none'};
 const CSS = {loader: 'css', minify: true, target: ['chrome90', 'edge90', 'firefox88', 'safari14'], legalComments: 'none'};
-// worker/index.js stamps sw.js by its exact text '__WI_BUILD__' (single quotes): esbuild writes strings in double
+// step 5 stamps sw.js by its exact text '__WI_BUILD__' (single quotes): esbuild writes strings in double
 // quotes, so the one literal is put back, and a sw.js where that is not exactly one literal ships as it is
 const STAMP = "'__WI_BUILD__'";
 function stampKept(src, out){
@@ -264,9 +267,13 @@ async function homeShell(have){
   }
   return [...shell].sort().map(p => p.slice(1));
 }
-async function manifest(files){
+// every path the deploy serves, with the short hash of its bytes
+async function hashes(files){
   const have = {};
   for(const f of files) { const h = hash(await readFile(join(OUT, f))); for(const p of paths(f)) have[p] = h; }
+  return have;
+}
+async function manifest(files, have){
   const shell = await homeShell(have);
   const body = JSON.stringify({v: 1, shell, files: have});
   await writeFile(join(OUT, 'sw-files.json'), body);
@@ -340,6 +347,17 @@ async function countOut(dir = OUT){
   return {n, bytes};
 }
 
+/* ---------- 5. sw.js stamped ----------
+   BUILD is "v-" and the first 16 hex of the SHA-256 of every served path and its bytes' hash, in path order: the
+   same files give the same stamp, any changed, added or removed file a new one. */
+async function stampSW(have){
+  const stamp = 'v-' + hash(Object.keys(have).sort().map(p => p + ' ' + have[p]).join('\n'));
+  const file = join(OUT, 'sw.js'), src = await readFile(file, 'utf8');
+  if(src.split(STAMP).length !== 2) throw new Error('dist/sw.js does not hold one ' + STAMP);
+  await writeFile(file, src.replace(STAMP, JSON.stringify(stamp)));
+  console.log('build: sw.js stamped ' + stamp);
+}
+
 /* ---------- run ---------- */
 const t0 = Date.now();
 let files;
@@ -367,7 +385,8 @@ catch(e){
   console.error('build: the crawler pages could not be made, so nothing ships (the live deploy stays): ' + (e && e.stack || e));
   process.exit(1);
 }
-try { await manifest(files); }
+let have = null;
+try { have = await hashes(files); await manifest(files, have); }
 catch(e){
   warn('no sw-files.json (' + (e && e.message || e) + '): the service worker keeps what it always kept');
   await rm(join(OUT, 'sw-files.json'), {force: true}).catch(() => {});
@@ -378,4 +397,6 @@ if(total.n > LIMITS.count.fail){
   console.error('build: ' + total.n + ' files is over the line of ' + LIMITS.count.fail + ', so nothing ships (the live deploy stays). tools/dev/budget.mjs has the table.');
   process.exit(1);
 }
+try { await stampSW(have || await hashes(files)); }
+catch(e){ warn('sw.js ships unstamped (' + (e && e.message || e) + '): the service worker switches itself off until the next deploy'); }
 console.log('build: done in ' + ((Date.now() - t0) / 1000).toFixed(1) + ' s');

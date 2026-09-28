@@ -3,8 +3,8 @@
 # Art never changes under the same name: keep it a month ("! Cache-Control" drops the general rule first).
 # Fonts never change, and the drill-down page's data files are named by their content (tools/sync.py): keep a year.
 # The drill-down page itself is small and names those files, so it is always checked (never an old page with new files).
-# Repeat visits mostly skip all of this: the service worker (sw.js, served by the worker, never cached) keeps each
-# deploy's files together in the browser.
+# Repeat visits mostly skip all of this: the service worker (sw.js, stamped by tools/build.mjs, always checked) keeps
+# each deploy's files together in the browser.
 /assets/*
   Cache-Control: public, max-age=120, stale-while-revalidate=600
 /data/*
@@ -65,3 +65,5 @@
 # other live ones, set their own headers: worker/prices.js.)
 /data/*
   Access-Control-Allow-Origin: *
+/sw.js
+  Cache-Control: no-cache

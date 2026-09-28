@@ -104,8 +104,9 @@ card without it snapping shut. See [`tools/dev/README.md`](tools/dev/README.md).
   (`assets/fonts`, only the weights in use; the two that paint first are preloaded).
 - **The drill-down page** is only the page (about 35 KB); its data comes from `data/explore/`, the Gems table's files
   first. Until its table is drawn, the space under the header stays empty, so nothing jumps.
-- **Repeat visits** open from the browser's own copy: `sw.js` keeps each deploy's files together. The worker writes the
-  deploy's version id into it, so every deploy is a new copy and a page is never a mix of two deploys. After a deploy,
+- **Repeat visits** open from the browser's own copy: `sw.js` keeps each deploy's files together. `tools/build.mjs` writes a
+  hash of the deploy's files into it (a static file: no worker call), so every deploy that changes a file is a new copy
+  and a page is never a mix of two deploys. After a deploy,
   the next load still opens the copy it has while the new one downloads; the load after that is the new deploy (reload
   twice to check a deploy in a browser that has visited before). A new deploy downloads only what changed: every file
   whose bytes match `dist/sw-files.json` is taken over from the last copy, the home page's first-paint files are fetched
