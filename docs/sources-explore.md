@@ -7,8 +7,9 @@ source, and says what has none.
 
 **Sources, best first.** The game files, read through the RePoE fork's PoE2 export
 (`https://repoe-fork.github.io/poe2/`, pulled by `tools/gamepull.py` into `tools/cache/official/`). Where the
-export lacks a value, the game's own tables decoded for 0.5.5 (`metaseonso/wraeclast-data`, `game/0.5.5/out/raw/`,
-issue #83). Then poe2db. Anything else is named where it is used.
+export lacks a value, the game's own tables, read out of the game's bundles on GGG's patch CDN by
+`tools/datpull.mjs --raw` through `tools/gamepull.py` `dat()` (issue #83; the same rows the private data repo's
+`game/0.5.5/out/raw/` held, checked table for table). Then poe2db. Anything else is named where it is used.
 
 **Proving it.** `python tools/dev/explorecmp.py` builds every block and holds it up against the committed file,
 field by field (`--show N`, `--field F` for the differences). The numbers below are from patch 0.5.5

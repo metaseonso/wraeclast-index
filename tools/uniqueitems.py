@@ -11,7 +11,7 @@ Sources, best first:
     base_items.min.json    each base: item class, level requirement, drop level, properties, implicit mods
     item_classes.min.json  each item class's own name ("category")
     flavour.min.json       every flavour text, by the art id of the unique it belongs to
-  the game's own tables, decoded (metaseonso/wraeclast-data, game/<patch>/out/raw/, tools/gamepull.py dat()),
+  the game's own tables, read out of the game's bundles on GGG's patch CDN (tools/gamepull.py dat()),
   for what the export leaves out:
     UniqueStashLayout            which uniques the collection tab hides (ShowIfEmpty...), and each one's name key
     Expedition2VerisiumCrafts    the Runeforged and Runemastered base each unique can be forged onto
