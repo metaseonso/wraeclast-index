@@ -500,9 +500,17 @@ def faults_since(t0):
 
 
 # ---------------------------------------------------------------- the run
+def wipe(path):
+    """shutil.rmtree, and on Windows past the read-only files git keeps (tools/cache/treeexport.git's packs)."""
+    def writable(fn, f, _):
+        os.chmod(f, 0o700)
+        fn(f)
+    shutil.rmtree(path, onexc=writable) if sys.version_info >= (3, 12) else shutil.rmtree(path, onerror=writable)
+
+
 def copy_tree():
     if TREE.exists():
-        shutil.rmtree(TREE)
+        wipe(TREE)
     for p in ROOT.iterdir():
         if p.name in LEAVE:
             continue
@@ -632,7 +640,7 @@ def main():
     BUILD.mkdir(exist_ok=True)
     for old in BUILD.iterdir():
         if old.is_dir():
-            shutil.rmtree(old)
+            wipe(old)
     copy_tree()
     start = snapshot(TREE)
     stamps = {} if a.force else (json_at(STAMPS) or {})
