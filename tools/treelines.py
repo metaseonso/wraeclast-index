@@ -8,7 +8,7 @@ So this writes the one file that does: the wordings once, and per passive the wo
 keyword brackets are taken out here rather than in the browser, because nothing downstream wants them and a
 player must never see one.
 
-It reads the committed data/explore/tree.*.json and nothing else — no network, no export — so it can be run
+It reads the committed data/explore/tree.*.json (the one explore.html names) and nothing else — no network, no export — so it can be run
 on any checkout:
 
     python tools/treelines.py
@@ -32,7 +32,9 @@ def plain(text):
 
 
 def build():
-    src = next(p for p in sorted((ROOT / 'data' / 'explore').iterdir()) if p.name.startswith('tree.'))
+    # the file explore.html names, never a glob: data/explore/ can keep the last version's file beside it
+    m = re.search(r'var F=(\{[^{}]*\})[,;]', (ROOT / 'explore.html').read_text(encoding='utf-8'))
+    src = ROOT / json.loads(m.group(1))['trdata']
     passives = json.loads(src.read_text(encoding='utf-8'))['passives']
     words, at, nodes = [], {}, {}
     for p in passives:

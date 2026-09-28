@@ -369,7 +369,8 @@
      ],
      "by": [
       "row",
-      "name"
+      "name",
+      "drop"
      ],
      "need": 1,
      "drawn": 1
@@ -3095,6 +3096,24 @@
       "row"
      ],
      "drawn": 1
+    },
+    "checked": {
+     "json": [
+      "array"
+     ],
+     "by": [
+      "row"
+     ],
+     "drawn": 1
+    },
+    "nodrops": {
+     "json": [
+      "object"
+     ],
+     "by": [
+      "row"
+     ],
+     "drawn": 1
     }
    }
   }
@@ -3223,6 +3242,21 @@
    "drawn": [],
    "by": [
     "declaration"
+   ]
+  },
+  "checked": {
+   "json": [
+    "array"
+   ],
+   "kinds": [
+    "x"
+   ],
+   "need": [],
+   "drawn": [
+    "x"
+   ],
+   "by": [
+    "row"
    ]
   },
   "cor": {
@@ -3782,6 +3816,7 @@
     "adds",
     "cancorrupt",
     "canroll",
+    "drop",
     "name",
     "row"
    ]
@@ -3820,6 +3855,21 @@
    ],
    "by": [
     "implicit"
+   ]
+  },
+  "nodrops": {
+   "json": [
+    "object"
+   ],
+   "kinds": [
+    "x"
+   ],
+   "need": [],
+   "drawn": [
+    "x"
+   ],
+   "by": [
+    "row"
    ]
   },
   "nt": {

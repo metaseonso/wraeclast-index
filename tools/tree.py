@@ -15,8 +15,8 @@ Source: the RePoE fork's PoE2 export (https://repoe-fork.github.io/poe2/), throu
   ascendancies.min.json                  an ascendancy's name, and the angle of its class's part of the
                                          wheel (tree_region_angle)
   characters.min.json                    each class's name and starting attributes
-Where the export falls short, the game's own tables, decoded for 0.5.5 (metaseonso/wraeclast-data,
-game/<patch>/out/raw/, through tools/gamepull.py dat(), kept in tools/cache/dat-<patch>/, not in git):
+Where the export falls short, the game's own tables, read out of the game's bundles on GGG's patch CDN
+(tools/gamepull.py dat(), which runs tools/datpull.mjs --raw; kept in tools/cache/dat-<CDN folder>/, not in git):
   BlightCraftingRecipes    the three emotions of each anointing recipe (BlightCraftingItems) and its result
   BlightCraftingResults    the passive a result anoints (PassiveSkill)
   BlightCraftingItems      each emotion's base item (BaseItemType)
@@ -32,7 +32,11 @@ The fields of a row (the artifact's layout):
   t             its lines in the game's wording and order (the description files' order, the way the game
                 lists them), [Id|words] markup kept, then "Grants Skill: <name>" when it grants one; left out
                 when it has none. Where an entry gives a short "Label@{0}%" form (the game's stat tables) and
-                the full sentence, the full sentence
+                the full sentence, the full sentence. Where GGG's own passive tree export
+                (https://github.com/grindinggear/poe2-skilltree-export, tools/treeexport.py official_lines)
+                gives the node other lines, GGG's (#133): the tree GGG publish is the game's own wording, and
+                RePoE's rendering of the stat files is the check. Only when the export's newest patch is the
+                patch the export files are from; a node GGG give no lines keeps these
   k             keystone; ascendancy start; anoint (anoint-only and on the anointing list); jewel socket;
                 notable; small
   kw            every keyword id its lines mark, sorted
@@ -64,10 +68,11 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from gamepull import build as export_build, dat, official  # noqa: E402
+from gamepull import build as export_build, dat, official, patch as export_patch  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent
 KWREF = re.compile(r'\[([A-Za-z][A-Za-z0-9_-]*)(?:\|[^\]]*)?\]')
+MARKUP = re.compile(r'\[([^\]|]+)(?:\|([^\]]+))?\]')   # [Id|words] or [Id]: the words a player reads
 STYLE = re.compile(r'<[^<>{}]*>\{([^{}]*)\}')   # the game's text styling, <i>{dekhara}: the words stay
 GRANTS = 'Grants Skill: %s'   # ClientStrings ItemDisplayGrantedSkillNoScaling, "Grants Skill: <underline>{{{0}}}"
 ATTRS = ('strength', 'dexterity', 'intelligence')
@@ -325,6 +330,34 @@ def kind(p, anoint_only, rec):
     return 'small'
 
 
+def ggg_lines(rows, patch_now):
+    """GGG's wording on every node where it differs from the rendered lines (#133), in place. Returns (the export's
+    patch, how many nodes took GGG's lines), or (its patch, None) when it is another patch than the export files
+    and nothing was taken."""
+    import treeexport
+    got, lines = treeexport.official_lines()
+    if got != patch_now:
+        print('  GGG\'s tree export is patch %s and the game files %s: the rendered lines stay' % (got, patch_now),
+              file=sys.stderr)
+        return got, None
+    def plain(xs):     # what a player reads: the same words in another order, or other markup, is no difference
+        return sorted(' '.join(MARKUP.sub(lambda m: m.group(2) or m.group(1), x).split()) for x in xs)
+    taken = 0
+    for r in rows:
+        theirs = lines.get(r['h'])
+        if not theirs or plain(theirs) == plain(r.get('t') or []):
+            continue
+        r['t'] = theirs
+        kw = sorted({m for x in theirs for m in KWREF.findall(x)})
+        if kw:
+            r['kw'] = kw
+        else:
+            r.pop('kw', None)
+        taken += 1
+    print('  passives: GGG\'s own lines on %d nodes (their %s tree export)' % (taken, got))
+    return got, taken
+
+
 def build(old=None):
     tree = official('passive_skill_trees/Default.min.json')
     asc = {k: v['name'] for k, v in official('ascendancies.min.json').items()}
@@ -371,7 +404,9 @@ def build(old=None):
             r['mc'] = 1
         rows.append(r)
     b = export_build(refresh=False) or export_build()
-    return {'meta': {'src': 'RePoE %s Default tree' % b, 'n': len(rows)}, 'passives': rows,
+    ggg, taken = ggg_lines(rows, export_patch(b))
+    src = 'RePoE %s Default tree' % b + (", lines from GGG's %s tree export where they differ" % ggg if taken is not None else '')
+    return {'meta': {'src': src, 'n': len(rows)}, 'passives': rows,
             'emotions': emotions, 'rates': {}, 'regions': region_at}
 
 
