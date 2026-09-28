@@ -1826,7 +1826,12 @@ Duelist region
 Notable · https://wraeclastindex.fyi/item/crystalline-flesh
 Templar region
 Minions have +20% to all Elemental Resistances
-Minions have +5% to all Maximum Elemental Resistancescrystalline-fleshcrystalline-fleshminion_defence21Crystalline FleshLiquid DespairLiquid ParanoiaConcentrated Liquid Suffering### Crystalline Resistance
+Minions have +5% to all Maximum Elemental Resistancescrystalline-fleshcrystalline-fleshminion_defence21Crystalline FleshLiquid DespairLiquid ParanoiaConcentrated Liquid Suffering### Crystalline Phylactery
+Notable · Lich · https://wraeclastindex.fyi/item/crystalline-phylactery
+Lich ascendancy
+Can Socket a non-Unique Basic Jewel into the Phylactery
+100% increased Effect of bonuses gained from Socketed Jewel
+50% more Mana Cost of Skills if you have no Energy Shieldcrystalline-phylacterycrystalline-phylacteryAscendancyWitch3Notable1Crystalline Phylactery### Crystalline Resistance
 Notable · https://wraeclastindex.fyi/item/crystalline-resistance
 Duelist region
 +1% to all Maximum Elemental Resistances if you have at
@@ -3405,9 +3410,4 @@ Witch region
 Enemies in your Presence have 75% reduced Life Regeneration rateheartstopping-presenceheartstopping-presencelife_recoup28Heartstopping PresenceConcentrated Liquid IsolationDiluted Liquid IreConcentrated Liquid Suffering### Heat of the Forge
 Notable · Smith of Kitava · https://wraeclastindex.fyi/item/heat-of-the-forge
 Smith of Kitava ascendancy
-Grants Skill: Fire Spell on Hitheat-of-the-forgeheat-of-the-forgeAscendancyWarrior3Notable1Heat of the Forge### Heatproof
-Notable · https://wraeclastindex.fyi/item/heatproof
-Marauder region
-10% increased Armour
-+30% of Armour also applies to Fire Damage
-30% reduced Magnitude of Ignite on youheatproofheatproofarmour17HeatproofLiquid DisgustLiquid DisgustDiluted Liquid Greed
+Grants Skill: Fire Spell on Hitheat-of-the-forgeheat-of-the-forgeAscendancyWarrior3Notable1Heat of the Forge

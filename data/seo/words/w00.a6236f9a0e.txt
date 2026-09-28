@@ -639,7 +639,9 @@ Keyword · https://wraeclastindex.fyi/item/enfeeble-keyword
 Used by 3 uniques
 Enfeeble is a Curse that lessens the damage dealt by those affected. If not otherwise specified, Enfeeble lessens damage dealt by unique targets by 10%, and other targets by 20%.enfeeble-keywordenfeebleEnfeeble### Enlightening Shrine
 Keyword · https://wraeclastindex.fyi/item/enlightening-shrine
-Enlightening Shrines cause you to gain increased Experience.enlightening-shrineenlightening-shrineEnlighteningShrineEnlightening Shrine### Equipment
+Enlightening Shrines cause you to gain increased Experience.enlightening-shrineenlightening-shrineEnlighteningShrineEnlightening Shrine### Enraged
+Keyword · https://wraeclastindex.fyi/item/enraged
+Enraged is a Buff that grants 25% Toughness and 25% increased damage.enragedenragedEnraged### Equipment
 Keyword · https://wraeclastindex.fyi/item/equipment
 Used by 7 uniques, 8 passives
 Equipment are items that can be EquippedequipmentequipmentEquipment### Equippable Armours
@@ -1560,12 +1562,16 @@ Keyword · https://wraeclastindex.fyi/item/shrine
 Used by 5 uniques
 Shrines are Precursor Artifacts that empower monsters with its Presence with various effects. Defeat all the monsters Worshipping the Shrine and interact with it to temporarily gain the power for yourself.shrineshrineShrine### Shrine Worship
 Keyword · https://wraeclastindex.fyi/item/shrine-worship
-Shrines are found with multiple packs of monsters Worshipping the Shrine. Other monsters may be affected by the Shrine's Presence but do not count as Worshippers.shrine-worshipshrine-worshipShrineMonsterShrine Worship### Sinister Jewel Sockets
+Shrines are found with multiple packs of monsters Worshipping the Shrine. Other monsters may be affected by the Shrine's Presence but do not count as Worshippers.shrine-worshipshrine-worshipShrineMonsterShrine Worship### Shroud Walker
+Keyword · https://wraeclastindex.fyi/item/shroud-walker
+Monster periodically teleports to an enemy they can see, creating a Smoke Cloud where they leave and where they teleport to.shroud-walkershroud-walkerMonsterShroudWalker1Shroud Walker### Sinister Jewel Sockets
 Keyword · https://wraeclastindex.fyi/item/sinister-jewel-sockets
 Used by 1 unique, 1 passive
 Allocated Sinister Jewel Sockets are visible on the left edge of the character portrait in the centre of the passive skill tree. Unique Jewels cannot be socketed in Sinister Jewel Sockets, and modifiers to the effect of Jewel Sockets do not apply to Sinister Jewel Sockets. They are entirely disconnected from the rest of your passive skill tree - they are not considered to be within any radius of any other passive skill, and no passive skill is within any radius of a Sinister Jewel Socket. Multiple Sinister Jewel Sockets are also not within any radius of each other. Radius effects of Jewels will therefore have no effect when socketed in Sinister Sockets.sinister-jewel-socketssinister-jewel-socketsSinisterJewelSocketsSinister Jewel Sockets### Siphons Flask Charges
 Keyword · https://wraeclastindex.fyi/item/siphons-flask-charges
-Monster creates an Aura that removes 3 Flask and Charm charges from enemies every 3 seconds within 3.6 metres.siphons-flask-chargessiphons-flask-chargesMonsterFlaskRemovalAura1Siphons Flask Charges### Skill Speed
+Monster creates an Aura that removes 3 Flask and Charm charges from enemies every 3 seconds within 3.6 metres.siphons-flask-chargessiphons-flask-chargesMonsterFlaskRemovalAura1Siphons Flask Charges### Siphons Mana and Deals Lightning Damage
+Keyword · https://wraeclastindex.fyi/item/siphons-mana-and-deals-lightning-damage
+Monster creates a circular effect that drains Mana and deals Lightning Damage over time to enemies near the edge of the circle.siphons-mana-and-deals-lightning-damagesiphons-mana-and-deals-lightning-damageMonsterManaSiphonAura1Siphons Mana and Deals Lightning Damage### Skill Speed
 Keyword · https://wraeclastindex.fyi/item/skill-speed-keyword
 Used by 13 gems, 8 uniques, 44 passives
 Affects the speed at which all Skills are used. Increases and reductions to Skill Speed stack additively with increases and reductions to Attack Speed, Cast Speed, Warcry Speed, and similar stats.skill-speed-keywordskill-speedSkillSpeedSkill Speed### Sky Rune
@@ -1928,9 +1934,4 @@ Used by 7 gems, 7 uniques, 6 passives
 Withered applies 5% increased Chaos damage Taken, and can be inflicted up to 10 times.witheredwitheredWithered### Withering Ground
 Keyword · https://wraeclastindex.fyi/item/withering-ground
 Used by 1 gem
-Withering Ground applies Withered every second to enemies standing in it.withering-groundwithering-groundWitheringGroundWithering Ground### Wombgifts
-Keyword · https://wraeclastindex.fyi/item/wombgifts
-Wombgifts are found within Breaches and are grown on The Genesis Tree. The 4 types of Wombgifts are: * Lavish Wombgift * Ornate Wombgift * Banded Wombgift * Signet WombgiftwombgiftswombgiftsBreachWombgiftWombgifts### Wyvern Form
-Keyword · https://wraeclastindex.fyi/item/wyvern-form
-Used by 7 gems
-Shapeshift into a Wyvern to bombard your enemies with Fire and Lightning, then close in for the kill. While in Wyvern form, you gain: • 50% increased Stun Threshold • 50% increased Elemental Ailment Threshold • 50% faster start of Energy Shield Rechargewyvern-formwyvern-formWyvernWyvern Form
+Withering Ground applies Withered every second to enemies standing in it.withering-groundwithering-groundWitheringGroundWithering Ground

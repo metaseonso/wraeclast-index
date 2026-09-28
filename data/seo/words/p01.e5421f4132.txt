@@ -1,4 +1,9 @@
-### Heatproofing
+### Heatproof
+Notable · https://wraeclastindex.fyi/item/heatproof
+Marauder region
+10% increased Armour
++30% of Armour also applies to Fire Damage
+30% reduced Magnitude of Ignite on youheatproofheatproofarmour17HeatproofLiquid DisgustLiquid DisgustDiluted Liquid Greed### Heatproofing
 Notable · Smith of Kitava · https://wraeclastindex.fyi/item/heatproofing
 Smith of Kitava ascendancy
 Body Armour grants Unaffected by Damaging AilmentsheatproofingheatproofingAscendancyWarrior3Notable6_12_Heatproofing### Heavy Ammunition
@@ -3394,8 +3399,4 @@ Notable · https://wraeclastindex.fyi/item/tolerant-equipment
 Duelist region
 15% increased Armour and Evasion Rating
 Immune to Bleeding if Equipped Helmet has higher Armour than Evasion Rating
-Immune to Poison if Equipped Helmet has higher Evasion Rating than Armourtolerant-equipmenttolerant-equipmentarmour_and_evasion40Tolerant EquipmentDiluted Liquid GuiltConcentrated Liquid IsolationConcentrated Liquid Fear### Total Incineration
-Notable · https://wraeclastindex.fyi/item/total-incineration
-Templar region
-10% increased Ignite Duration on Enemies
-25% increased Damage with Hits against Ignited Enemiestotal-incinerationtotal-incinerationfire28_Total IncinerationDiluted Liquid GuiltConcentrated Liquid IsolationConcentrated Liquid Suffering
+Immune to Poison if Equipped Helmet has higher Evasion Rating than Armourtolerant-equipmenttolerant-equipmentarmour_and_evasion40Tolerant EquipmentDiluted Liquid GuiltConcentrated Liquid IsolationConcentrated Liquid Fear
