@@ -7,6 +7,11 @@
    - The pages (/, /explore, /privacy) and the site's files (assets/, data/, sprites/) come from the copy of the deploy
      the page was loaded with. A page from an older deploy, or from before this worker, gets the network, exactly as
      if there were no service worker.
+   - A file of the index the page reads after a newer deploy (data/cards, data/search, data/explore) comes from the
+     network when it is not in the copy: the newer deploy still serves the ones the deploy before it named
+     (tools/build.mjs, "the previous generation"). A page further behind finds its file gone, asks for the
+     manifest past this copy, drops the older copies' pages and reloads once into the newer deploy (assets/app.js
+     moved, tools/sync.py DATA_JS for the drill-down page).
    - The one thing it cannot hold to is a file that deploy never had. The older copy is deleted on activate and the
      server keeps one version of each path, so a module a newer deploy added reaches an older page new, and will not
      link against the app.js that page is already running. assets/app.js fetches every module it needs later through
@@ -190,7 +195,8 @@ async function file(e, path){
   const hit = await kept.match(e.request, {ignoreVary: true});
   if(hit) return hit;
   const res = await fetch(e.request);
-  if(res.ok && res.status === 200 && res.type === 'basic'){
+  // a file asked for with a query (the page checking the site past this copy, assets/app.js moved) is never kept
+  if(res.ok && res.status === 200 && res.type === 'basic' && !new URL(e.request.url).search){
     const mine = res.clone();
     e.waitUntil(files().then(f => keepIf(kept, e.request, mine, wanted(f, path))).catch(() => {}));
   }
