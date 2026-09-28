@@ -7,8 +7,8 @@ Two official sources, joined on the area's own id and nothing else:
                tools/gamepull.py): each area's name, act, area level, waypoint, town, the town it belongs to and
                the areas it connects to. The modifiers an area always carries are worded from RePoE's mods
                (their "text", the game's own words)
-  the tables   the 0.5.5 game tables decoded from the client (the private data archive's game/<patch>/out,
-               issue #83; --game or WI_GAME points at it): the boss names an area lists (WorldAreas,
+  the tables   the game tables decoded from the client, for the patch (the private data repo's game/<patch>/out,
+               issue #83, read through tools/gamepull.py dat(); --game or WI_GAME points at a local copy instead): the boss names an area lists (WorldAreas,
                MonsterVarieties), which areas are hideouts, the act titles (Acts), the elemental resistance
                penalty per area level (ResistancePenaltyPerAreaLevel), the areas a quest's own tracker names
                (QuestStates), and per Atlas map its biomes and its flavour line (EndgameMaps)
@@ -36,9 +36,12 @@ developers' own areas (TEST), and the entries that are not a place (level 0: cha
 "Current Town"). One name in one act is one card: the Trial of the Sekhemas is 16 areas in the files and one
 place to a player, so its entries are merged, their ids kept in "id", the level a pair where they differ.
 
-Run after tools/bosses.py (it names the bosses that have a card) and after tools/atlas.py (the Waystone range):
+A stage of tools/pipeline.py (areas, after atlas: the Waystone range), which applies the last good rule to it. It
+reads data/bosses.json as last committed (the bosses stage runs by hand) for the bosses that have a card.
 
+  python tools/pipeline.py --only areas   the stage
   python tools/areas.py              write data/areas.json
+  python tools/areas.py --game DIR   the same, from a local copy of the decoded tables' out/ folder
   python tools/areas.py --report     count and say what would change, write nothing
 """
 import argparse
@@ -52,7 +55,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import lastgood  # noqa: E402
-from gamepull import REPOE, official  # noqa: E402
+from gamepull import REPOE, dat, official  # noqa: E402
 from sync import DNT, RAW, plain  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -79,21 +82,28 @@ HIDDEN = {
 
 # ---------------------------------------------------------------- the decoded tables
 
-def game_dir(arg=None):
-    """The decoded tables' out/ folder: --game, WI_GAME, or the archive beside the checkout or in home."""
-    patch = (lastgood.committed('gamedata.json', quiet=True) or {}).get('patch') or '0.5.5'
-    for p in [arg, os.environ.get('WI_GAME'),
-              ROOT.parent / 'wraeclast-data' / 'game' / patch / 'out',
-              Path.home() / 'wraeclast-data' / 'game' / patch / 'out']:
-        if p and (Path(p) / 'world_areas.json').exists():
-            return Path(p)
-    raise lastgood.Stale('no decoded game tables for patch %s (pass --game DIR or set WI_GAME)' % patch)
+def tables(arg=None):
+    """A reader for the decoded tables: a local out/ folder when one is given (--game or WI_GAME), else the data
+    repo's copy for the patch through tools/gamepull.py dat() (kept in tools/cache/dat-<patch>/)."""
+    where = arg or os.environ.get('WI_GAME')
+    if where:
+        where = Path(where)
+        if not (where / 'world_areas.json').exists():
+            raise lastgood.Stale('no decoded game tables in %s' % where)
 
-
-def table(where, name):
-    """One decoded table: a curated file's rows, or a raw table."""
-    d = json.loads((where / name).read_text(encoding='utf-8'))
-    return d['data'] if isinstance(d, dict) and 'data' in d else d
+    def table(name):
+        """One decoded table by its path under out/ ('raw/WorldAreas.json' or 'world_areas.json'): a made
+        file's rows, or a raw table."""
+        if where:
+            d = json.loads((where / name).read_text(encoding='utf-8'))
+        else:
+            part, _, stem = name[:-len('.json')].rpartition('/')
+            try:
+                d = dat(stem, part)
+            except SystemExit as e:
+                raise lastgood.Stale(str(e))
+        return d['data'] if isinstance(d, dict) and 'data' in d else d
+    return table
 
 
 # ---------------------------------------------------------------- the rules
@@ -125,25 +135,25 @@ def pair(lo, hi):
 
 # ---------------------------------------------------------------- build
 
-def build(where):
+def build(table):
     areas = official(AREAS)
     if len(areas) < 300:
         raise lastgood.Stale('the area export came back with %d areas' % len(areas))
     mods = official(MODS)
-    raw = {w['Id']: w for w in table(where, 'raw/WorldAreas.json')}
-    named = {w['id']: w for w in table(where, 'world_areas.json')}
+    raw = {w['Id']: w for w in table('raw/WorldAreas.json')}
+    named = {w['id']: w for w in table('world_areas.json')}
     acts = {a['ActNumber']: (a.get('UI_Title') or '').strip() or 'Act %d' % a['ActNumber']
-            for a in table(where, 'raw/Acts.json')}
-    penalty = {r['areaLevel']: r['penalty'] for r in table(where, 'resistance_penalty.json')}
-    maps = {m['areaId']: m for m in table(where, 'map_bosses.json')}
+            for a in table('raw/Acts.json')}
+    penalty = {r['areaLevel']: r['penalty'] for r in table('resistance_penalty.json')}
+    maps = {m['areaId']: m for m in table('map_bosses.json')}
     bosses = {b['name'] for b in (lastgood.committed('bosses.json', quiet=True) or {}).get('bosses') or []}
     ways = [w.get('al') for w in (lastgood.committed('atlas.json', quiet=True) or {}).get('ways') or [] if w.get('al')]
 
     # the areas a quest's own tracker names
-    quests = table(where, 'raw/Quest.json')
-    rows = table(where, 'raw/WorldAreas.json')
+    quests = table('raw/Quest.json')
+    rows = table('raw/WorldAreas.json')
     questsof = defaultdict(set)
-    for s in table(where, 'raw/QuestStates.json'):
+    for s in table('raw/QuestStates.json'):
         q = quests[s['Quest']] if s.get('Quest') is not None and s['Quest'] < len(quests) else None
         qn = plain((q or {}).get('Name') or '')
         if not qn or DNT.search(qn):
@@ -270,8 +280,7 @@ def main():
     ap.add_argument('--report', action='store_true', help='count and say what would change, write nothing')
     ap.add_argument('--game', help="the decoded tables' out/ folder")
     args = ap.parse_args()
-    where = game_dir(args.game)
-    out = lastgood.pull('Areas', lambda: build(where), file=OUT, url=URL, at='areas', floor=200)
+    out = lastgood.pull('Areas', lambda: build(tables(args.game)), file=OUT, url=URL, at='areas', floor=200)
     if out is None:
         return lastgood.report()
     c = out['counts']
