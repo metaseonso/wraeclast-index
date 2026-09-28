@@ -542,6 +542,14 @@ export const KINDS = [
    acts: ['full', 'pin'],
    rel: [...KWUSE, 'granted', 'named', 'namedby']},
 
+  /* An ascendancy: its class, the flavour text the game shows for it, its notables by name (each line a door to
+     the notable's card, and the notable "Named by" it, tools/nodelinks.py) and where its eight points come from
+     (tools/ascendancies.py; which trial gives which set is in data/ascendancies.json). */
+  {k: 'y', one: 'Ascendancy', many: 'Ascendancies', index: true, search: true, mark: 'ls',
+   fields: [...HEAD, ...BODY, ...FOOT],
+   acts: ['pin'],
+   rel: ['named', 'cat']},
+
   /* A buff or debuff a player can see on their bar: its name, the game's icon for it, what it does in the game's
      words, and what gives it (tools/buffs.py, data/buffs.json). One whose name a keyword card already carries is
      that keyword card, with the buff's icon; so these are the rest. Its name is a door wherever a line says it,
