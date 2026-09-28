@@ -166,6 +166,37 @@ axis), each league in its own colour and dash, as the card chart already does.
 **The owner decides**: the basket (13 currencies, equal weights), and the base day (day 1; the first hours of a league
 trade thin, and day 2 would be steadier).
 
+## #102 Patch shocks: `data/market/shocks/<league version>.json`
+
+One file per league, so a patch page reads its own (5-37 kB each, 135 kB in all, 40 kB gzipped).
+`tools/market_shocks.py`. Every patch, hotfix and restart in `data/patches.json` (`tools/patches.py`: the hour GGG
+posted its notes), newest first: `{v, title, kind, at, league, basket, near, listed, up, down}`, each move `[name, price
+before (div), % in 24 hours, % in 72 hours, volume % in 72 hours]`.
+
+**The rule.** Before: the 72 hours up to the patch's hour. After: the 72 hours from it, and the first 24. A price is
+the middle of the hourly prices in the window, not the window's total: one odd trade in a thin market (a thousand
+divines for a rune) moves one hour, not the window. A currency is listed where it traded in 24 or more hours before
+and 8 or more of the first 24 after, with 5 divines or more changed hands on each side. The 5 biggest rises and falls
+in the first 24 hours. `basket` is the basket's own move over the same 72 hours (#101), so a fall on a day everything
+fell reads as what it is. `near` counts the other patches inside a patch's window (hotfixes come in bunches and share
+hours). A patch with fewer than 48 hours of trading on a side is left out and counted (61 of 260 today: a league's
+opening patch, its last days, and 0.1.0, which has no hour).
+
+A card's part (`shocks`): the patches whose notes name it (`data/patchnotes.json`, #86, where that file is built), and
+any patch (not a hotfix) that moved it 25% or more in its first 24 hours: `[patch, posted, % in 24 hours, % in 72
+hours, its notes name it]`.
+
+**Today.** 199 patches listed. 0.5.3 (18 Jun 2026, 22:30 UTC): Tecrod's Revenge -94% in 24 hours (from 1.39 div),
+Ancient Collarbone -87% (from 16.5 div), Kulemak's Invitation +3,125%; the basket +25% over the same 72 hours.
+
+**In the frame.** The card half joins #86's `changed` field (`design/patch-notes.md` in #138): each patch heading row
+it draws gains the move when the card's `shocks` part has that patch, `Changed in 0.5.3 · price -94% in 24 hours`. No
+new field: `changed` reads `data/market/card/@did.json` beside `data/patchnotes.json`. The patch page lists the patch's
+`up` and `down`, with `basket` beside them in the same words ("the basket: +25% over the same hours").
+
+**The owner decides**: the windows (72 and 24 hours), the listing floor (24 and 8 hours, 5 divines), 5 each way, and
+the card's 25% line.
+
 ## When new hours arrive
 
 The archive job in `wraeclast-data` (`.github/workflows/archive.yml`) adds the new hours every 6 hours (at :23 past 0,
