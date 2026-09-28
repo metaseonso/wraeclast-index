@@ -2,9 +2,16 @@
    Plain, fast HTML built from the site's own data files, so crawlers that do not run scripts
    still find every gem, unique, passive, base item, atlas thing, currency and keyword.
      /item/<slug>        one thing: requirements, official lines, price, a gold link into the app
+     /md/item/<slug>.md  the same thing in Markdown, for a model to read (noindex: _headers)
      /gems /uniques /passives /bases /atlas /currency /keywords      the lists
-     /sitemap.xml  /llms.txt  /llms-full.txt
+     /sitemap.xml        the sitemap index; /sitemap-pages.xml and /sitemap-<list>.xml under it
+     /llms.txt  /llms-full.txt (the index of /llms/<list>.txt, each under 256 KB)
+     /404                the not-found page every unknown path gets (wrangler.jsonc not_found_handling)
      /search?q=...       the app's search (the SearchAction target in the home page's JSON-LD)
+   All but /search are files: tools/build.mjs runs crawl() below at every deploy and writes them into dist/, with the
+   prices of that moment (each with the time it was checked), so a crawler's visit costs no worker request. A
+   scheduled rebuild keeps those prices within 6 hours (.github/workflows/rebuild.yml). Old addresses (a unique's bare
+   name) go out as dist/_redirects. The worker answers /search only (respond below).
    Data: the index (the game files, via tools/sync.py) cut into small files by tools/shards.py, with cut() below,
    and named in data/manifest.json; and the live price file (/data/market.json: the in-game Currency Exchange for
    currency, live trade site listings for everything else). A page reads the few small files it needs and never
@@ -18,18 +25,24 @@ import { KINDS } from '../assets/kinds.js';
 const SITE = 'https://wraeclastindex.fyi';
 const AGE = 3600;                 // pages and files: an hour (currency refreshes hourly, listings daily)
 const MARKET_TTL = 300e3;         // the market copy in memory: 5 minutes, like /data/market.json
+const LLMS_PART = 250 * 1024;     // one /llms/<list>.txt file at most (bytes): a model's fetch reads it whole
+export const REBUILD_HOURS = 6;   // how often the files are built again (.github/workflows/rebuild.yml)
 
 /* ---------- the terms ----------
-   What we ask of anything that reads this data, in four lines. It is a request and nothing more: no crawler
-   is blocked over it, no page is held back over it, and there is nothing here that could enforce it. What it
-   can do is make the credit the short way round — the same four lines wherever a machine looks, and one
-   canonical URL per thing to link. robots.txt carries the same four lines word for word; a change to one is a
-   change to both. Every page says it again in its own data: creditText, and usageInfo pointing back here. */
-const TERMS = [
+   The licence, owner's decision of 28 Sep 2026: the index's own compilation and its prices are CC BY 4.0; the
+   game's own text and art stay Grinding Gear Games'. Five lines, the same wherever a machine looks: robots.txt
+   carries them word for word, llms.txt and every /llms/ file say them, and every page says them again in its
+   own data (license, creditText, copyrightNotice, usageInfo pointing at llms.txt). A change to one is a change
+   to all of them. Nobody is blocked and nothing is held back: bots and people get the same pages. */
+export const LICENCE = 'https://creativecommons.org/licenses/by/4.0/';
+const CONTACT = 'https://github.com/metaseonso/wraeclast-index/issues';
+const GGG = {'@type': 'Organization', '@id': SITE + '/#ggg', name: 'Grinding Gear Games', url: 'https://www.grindinggear.com/'};
+export const TERMS = [
   'Free to read, free to quote, free to build on.',
-  'An answer built on this data should name Wraeclast Index and link the page it came from.',
+  'Licence: CC BY 4.0 (' + LICENCE + '), for the index\'s own compilation and its prices.',
+  'Credit: name Wraeclast Index and link the page the data came from.',
+  'Game text and item art: © Grinding Gear Games.',
   'One page per thing, one canonical URL per page: ' + SITE + '/item/<name>.',
-  'A request, not a licence: nothing here enforces it, and nothing is held back from anyone who ignores it.',
 ].join('\n');
 
 /* ---------- kinds ----------
@@ -57,39 +70,75 @@ const LISTS = {
 };
 const ORDER = ['gems', 'uniques', 'passives', 'bases', 'atlas', 'currency', 'keywords'];
 
+/* What the worker still answers here: /search, a redirect it cannot know before the request. Everything else is a
+   file (crawl() below, through tools/build.mjs). */
 export function handles(path){
-  return path.startsWith('/item/') || path === '/sitemap.xml' || path === '/llms.txt' || path === '/llms-full.txt' ||
-    path === '/search' || Object.hasOwn(LISTS, path.slice(1));
+  return path === '/search';
 }
 
-export async function respond(request, env, ctx, loadMarket){
+export async function respond(request){
   if(request.method !== 'GET' && request.method !== 'HEAD')
     return new Response('Method not allowed', {status: 405, headers: {Allow: 'GET, HEAD'}});
   const url = new URL(request.url);
-  if(url.pathname === '/search'){   // the app searches in the address after #, which servers never see
-    const q = (url.searchParams.get('q') || '').trim();
-    return new Response(null, {status: 302, headers: {Location: url.origin + (q ? '/#/?q=' + encodeURIComponent(q) : '/'), 'Cache-Control': 'no-store'}});
-  }
-  const cache = typeof caches !== 'undefined' ? caches.default : null;
-  const key = new Request(url.origin + url.pathname);
-  let res = cache && await cache.match(key);
-  if(!res){
-    const m = await model(env, url.origin, loadMarket);
-    res = await render(url, m, src(env, url.origin));
-    if(cache && res.status === 200){
-      const put = cache.put(key, res.clone());
-      if(ctx && ctx.waitUntil) ctx.waitUntil(put); else await put;
-    }
-  }
-  return request.method === 'HEAD' ? new Response(null, res) : res;
+  // the app searches in the address after #, which servers never see
+  const q = (url.searchParams.get('q') || '').trim();
+  return new Response(null, {status: 302, headers: {Location: url.origin + (q ? '/#/?q=' + encodeURIComponent(q) : '/'), 'Cache-Control': 'no-store'}});
 }
+
+/* ---------- the files (tools/build.mjs) ----------
+   Every crawler file, one at a time: {path, body} for a file (path as the site serves it: '/item/divine-orb',
+   '/gems', '/sitemap.xml', '/md/item/divine-orb.md'), {from, to} for an old address. env.ASSETS reads the
+   deploy's own files (dist/ at build time); loadMarket gives the price file of the moment. Each page is made by
+   render(), the same dispatcher for every path, so there is one template per page and it lives here. */
+export async function* crawl(env, origin, loadMarket){
+  const m = await model(env, origin, loadMarket), S = src(env, origin);
+  const one = async path => {
+    const r = await render(new URL(origin + path), m, S);
+    if(r.status !== 200 && !(path === '/404' && r.status === 404)) throw new Error(path + ': ' + r.status);
+    return {path, body: await r.text()};
+  };
+  for(const l of ORDER) yield one('/' + l);
+  const kinds = await everyList(m, S), listed = new Set();
+  for(const k of Object.keys(kinds)) for(const e of kinds[k]){
+    listed.add(e.slug);
+    yield one('/item/' + e.slug);
+    yield one('/md/item/' + e.slug + '.md');
+  }
+  // a slug the index holds that no list shows is an old bare name: it points at the thing's own page
+  for(const s of m.base.taken.keys()){
+    if(listed.has(s)) continue;
+    const e = await entryAt(m, S, s);
+    if(e && e.alias) yield {from: '/item/' + s, to: '/item/' + e.alias};
+  }
+  yield one('/404');
+  yield one('/sitemap.xml');
+  for(const name of ['pages', ...ORDER]) yield one('/sitemap-' + name + '.xml');
+  yield one('/llms.txt');
+  yield one('/llms-full.txt');
+  for(const l of ORDER) for(const p of await llmsParts(m, S, l)) yield {path: p.path, body: p.body};
+}
+// the market the files were made with: when it was read and where from (tools/build.mjs prints it)
+export const marketOf = () => MODEL && {updated: MODEL.updated, league: MODEL.league, items: MODEL.M ? Object.keys(MODEL.M).length : 0};
 
 async function render(url, m, S){
   const path = url.pathname;
-  if(path === '/sitemap.xml') return text(sitemap(m, await everyList(m, S)), 'application/xml');
-  if(path === '/llms.txt') return text(llms(m), 'text/plain');
+  if(path === '/sitemap.xml') return text(sitemapIndex(m, await everyList(m, S)), 'application/xml');
+  const sm = path.match(/^\/sitemap-([a-z]+)\.xml$/);
+  if(sm && (sm[1] === 'pages' || LISTS[sm[1]])) return text(sitemap(m, await everyList(m, S), sm[1]), 'application/xml');
+  if(path === '/llms.txt') return text(llms(m, await allParts(m, S)), 'text/plain');
   if(path === '/llms-full.txt') return text(await llmsFull(m, S), 'text/plain');
+  if(path.startsWith('/llms/')){
+    for(const l of ORDER) for(const p of await llmsParts(m, S, l)) if(p.path === path) return text(p.body, 'text/plain');
+    return text('', 'text/plain', 404);
+  }
+  if(path === '/404') return html(notFound(m), 404, 300);
   if(LISTS[path.slice(1)]) return html(listPage(m, path.slice(1), await listOf(m, S, LISTS[path.slice(1)].k)));
+  const md = path.match(/^\/md\/item\/([^/]+)\.md$/);
+  if(md){
+    const e = await entryAt(m, S, md[1]);
+    if(!e || e.alias) return text('', 'text/markdown', 404);
+    return text(itemMarkdown(m, e), 'text/markdown');
+  }
   const seg = path.slice('/item/'.length);
   let want = seg;
   try { want = decodeURIComponent(seg); } catch {}
@@ -563,19 +612,32 @@ function titleOf(e, px){
    price row, in the game's own money). Nothing is worked out here that the card does not already show. */
 const artOf = it => it.img && /^https?:/.test(it.img) ? it.img : null;
 
-/* The price, off the same row the card draws. The Currency Exchange is one market and one rate, so it is one
-   offer; trade listings are many sellers, so they are the lowest real listing and how many there are. The
-   money is the game's own and it is named in full: no three-letter code stands for a divine orb. */
-function offerOf(m, px, url){
-  if(!px || !(px.v > 0)) return null;
+/* The price, off the same row the card draws, as two properties of its own: what it costs, and when that was
+   checked. Not an Offer: nobody sells anything here, and an Offer's priceCurrency takes an ISO 4217 code, which
+   a divine orb does not have. The money is the game's own and it is named in full (unitText). A price and a
+   fact never share a property. */
+const priceSource = (m, px) => px.src === 'cx'
+  ? (m.league ? m.league + ': ' : '') + 'the in-game Currency Exchange'
+  : (m.league ? m.league + ': ' : '') + 'live trade site listings' + (px.ls !== undefined ? ', ' + fmt(px.ls) + ' listed' : '');
+const checkedAt = (m, px) => px.at || m.updated || '';
+function pricePropsOf(m, px){
+  if(!px || !(px.v > 0)) return [];
   const x = money(m, px.v);
-  if(!x) return null;
-  const price = x.v.replace(/,/g, '');
-  const cur = x.u === 'div' ? 'Divine Orb' : 'Exalted Orb';
-  if(px.src === 'cx') return {'@type': 'Offer', price, priceCurrency: cur, url};
-  const o = {'@type': 'AggregateOffer', lowPrice: price, priceCurrency: cur, url};
-  if(px.ls !== undefined) o.offerCount = px.ls;
-  return o;
+  if(!x) return [];
+  const at = checkedAt(m, px);
+  const out = [{'@type': 'PropertyValue', name: 'Price', value: +x.v.replace(/,/g, ''), unitText: x.u === 'div' ? 'Divine Orb' : 'Exalted Orb',
+    measurementTechnique: priceSource(m, px), description: 'Checked ' + when(at)}];
+  if(at) out.push({'@type': 'PropertyValue', name: 'Price checked', value: isoTime(at)});
+  return out;
+}
+// "2026-09-28T01:00+00:00", "2026-09-27T17:34:59.376Z" -> "2026-09-28T01:00:00Z"
+const isoTime = s => { const t = Date.parse(s); return isFinite(t) ? new Date(t).toISOString().replace(/\.\d+Z$/, 'Z') : s; };
+/* What the page is made from: the game files of its patch, and where its price came from. */
+function basedOn(m, px){
+  const out = [{'@type': 'CreativeWork', name: 'Path of Exile 2 game files' + (m.patch ? ', patch ' + m.patch : ''), author: {'@id': GGG['@id']}}];
+  if(px && px.src === 'cx') out.push({'@type': 'CreativeWork', name: 'Path of Exile 2 in-game Currency Exchange', author: {'@id': GGG['@id']}});
+  else if(px) out.push({'@type': 'WebSite', name: 'Path of Exile 2 trade site', url: 'https://www.pathofexile.com/trade2', publisher: {'@id': GGG['@id']}});
+  return out;
 }
 
 /* The card's facts, one name and one value at a time, so an answer can quote a number without reading prose.
@@ -609,10 +671,8 @@ function thingOf(m, e, px){
   if(art) t.image = art;
   if(type === 'Product'){
     if(it.s) t.category = it.s;
-    const props = propsOf(e);
+    const props = [...propsOf(e), ...pricePropsOf(m, px)];
     if(props.length) t.additionalProperty = props;
-    const offer = offerOf(m, px, url);
-    if(offer) t.offers = offer;
   } else t.inDefinedTermSet = {'@type': 'DefinedTermSet', '@id': SITE + '/' + K.list + '#terms',
     name: LISTS[K.list].h1, url: SITE + '/' + K.list};
   return t;
@@ -622,9 +682,11 @@ function itemPage(m, e){
   const it = e.it, K = KIND[e.k], px = priceOf(m, e), path = '/item/' + e.slug, g = groupOf(e);
   const lines = it.ls || [], ni = it.ni || 0;
   const an = e.k === 'p' ? anoint(m, it) : null;
-  // what it costs today, in the first words a result shows: its own price, or what the anoint costs
-  const priceLine = px && px.v !== undefined ? 'Price ' + moneyText(m, px.v) + (changeText(px.ch) ? ', ' + changeText(px.ch) : '') + '.'
-    : an && an.div !== null ? 'Anoint with ' + an.parts.map(p => p.n).join(' + ') + ': ' + moneyText(m, an.div) + '.' : '';
+  // what the page carries, never the price itself: a search result keeps its snippet for weeks with no age on it,
+  // so the number stays on the page, beside the time it was checked
+  const week = px && ((px.sp || []).filter(v => v !== null && isFinite(v)).length > 1);
+  const priceLine = px && px.v !== undefined ? 'Today\'s price' + (week ? ' and a 7-day chart' : '') + '.'
+    : an && an.div !== null ? 'Anoint with ' + an.parts.map(p => p.n).join(' + ') + ', at today\'s prices.' : '';
   const desc = clip([lead(m, e), priceLine, lines.length ? lines.slice(0, 3).map(sentence).join(' ') : sentence(it.t)].filter(Boolean).join(' '));
   const title = titleOf(e, px) + ' | Wraeclast Index';
 
@@ -681,7 +743,8 @@ function itemPage(m, e){
       body +
       (it.tags ? '<p class="card-tags">' + it.tags.map(esc).join(' · ') + '</p>' : '') +
       (an ? '<div class="card-inv"><span>Anoint with ' + an.parts.map(p => p.e ? link(p.e) : esc(p.n)).join(' + ') + '</span><b>' +
-        (an.div !== null ? moneyHTML(m, an.div) : '') + '</b></div>' : '') +
+        (an.div !== null ? moneyHTML(m, an.div) : '') + '</b></div>' +
+        (an.div !== null ? '<p class="card-facts">' + esc(anointAge(m, an)) + '</p>' : '') : '') +
       price +
       '<div class="card-ft">' + (px ? spark(px.sp, px.ch) : '') +
         (px && px.ls !== undefined && px.ls < 3 ? '<span class="use">few listed</span>' : '') +
@@ -696,6 +759,7 @@ function itemPage(m, e){
     more += section('Other versions', e.group.filter(x => x !== e), m);
   if(e.hits && e.hits.length) more += section('Mentioned in', e.hits, m, true);
   if(e.ring && e.ring.length) more += section(otherTitle(e, g), e.ring, m);
+  if(more) more += agesHTML(m, [...(e.group || []).filter(x => x !== e), ...(e.hits || []), ...(e.ring || [])]);
 
   // where the thing sits: the site, its list, its own group on that list, and the thing. A group that goes
   // by the list's own name is the list, and a trail never says the same word twice.
@@ -703,10 +767,34 @@ function itemPage(m, e){
   if(g !== LISTS[K.list].h1) crumbs.push([g, '/' + K.list + '#' + anchor(g)]);
   crumbs.push([it.n, path]);
   return page(m, {
-    title, desc, path, list: K.list, art: artOf(it), alt: it.n,
-    ld: ld(m, {path, title, desc, crumbs, thing: thingOf(m, e, px), day: px ? m.day : m.gen, art: artOf(it)}),
+    title, desc, path, list: K.list, art: artOf(it), alt: it.n, md: '/md/item/' + e.slug + '.md',
+    ld: ld(m, {path, title, desc, crumbs, thing: thingOf(m, e, px), day: px ? m.day : m.gen, art: artOf(it), px}),
     body: crumbsHTML(crumbs) + card + more + browse(),
   });
+}
+
+/* ---------- the age of every price ----------
+   A price is never shown without the time it was checked. The card says its own; a list of neighbours, or a
+   whole list page, says the span its prices were checked in, once under them. */
+const anointAge = (m, an) => (m.league ? m.league + ': ' : '') + 'oils on the in-game Currency Exchange, ' +
+  when(isoTime(an.parts.map(p => p.x && p.x.at).filter(Boolean).map(isoTime).sort().pop() || m.updated || ''));
+function agesHTML(m, list){
+  let cx = '', lo = '', hi = '';
+  for(const x of list){
+    const px = priceOf(m, x);
+    if(!px || px.v === undefined) continue;
+    const at = checkedAt(m, px);
+    if(px.src === 'cx'){ if(at > cx) cx = at; continue; }
+    const t = isoTime(at);
+    if(!lo || t < lo) lo = t;
+    if(!hi || t > hi) hi = t;
+  }
+  const out = [];
+  if(cx) out.push('Currency Exchange prices: ' + when(isoTime(cx)));
+  if(lo) out.push('trade site listings checked ' + (lo.slice(0, 16) === hi.slice(0, 16) ? when(lo) : when(lo) + ' to ' + when(hi)));
+  if(!out.length) return '';
+  const s = out.join(' · ');
+  return '<p class="card-facts ages">' + esc(s.charAt(0).toUpperCase() + s.slice(1)) + '</p>';
 }
 
 function entryHTML(m, x, withKind){
@@ -747,7 +835,7 @@ function listPage(m, name, all){
   const title = L.title + ' | Wraeclast Index';
   const crumbs = [['Wraeclast Index', '/'], [L.h1, path]];
   const body = crumbsHTML(crumbs) +
-    '<div class="pagehd"><h1>' + L.h1 + '</h1><p>' + esc(intro(m, name)) + '</p></div>' +
+    '<div class="pagehd"><h1>' + L.h1 + '</h1><p>' + esc(intro(m, name)) + '</p>' + agesHTML(m, all) + '</div>' +
     '<div class="seo-go"><a class="btn gold" href="' + L.app + '">Open in Wraeclast Index →</a></div>' +
     (gs.length > 1 ? '<nav class="jump" aria-label="Groups">' + gs.map(([g, l]) => '<a class="chip" href="#' + anchor(g) + '">' + esc(g) +
       '<span class="ct">' + l.length + '</span></a>').join('') + '</nav>' : '') +
@@ -760,8 +848,11 @@ function listPage(m, name, all){
       item: SITE + path + '#' + anchor(g)}))};
   const more = [list];
   if(isSet(L.k)) more.push({'@type': 'DefinedTermSet', '@id': SITE + path + '#terms', name: L.h1, url: SITE + path, description: desc});
+  const priced = all.map(x => priceOf(m, x)).filter(px => px && px.v !== undefined);
   return page(m, {title, desc, path, list: name, body,
-    ld: ld(m, {path, title, desc, crumbs, day: L.k === 'c' || L.k === 'u' ? m.day : m.gen, nodes: more})});
+    ld: ld(m, {path, title, desc, crumbs, day: L.k === 'c' || L.k === 'u' ? m.day : m.gen, nodes: more,
+      sources: [...basedOn(m, null), ...['cx', 'trade'].filter(s => priced.some(px => (px.src === 'cx') === (s === 'cx')))
+        .map(s => basedOn(m, {src: s})[1])]})});
 }
 
 function notFound(m){
@@ -833,7 +924,7 @@ const TOPBAR = `<header class="top">
 /* `art` is the card's own picture, where the thing has one of its own. A page that has one says so instead of
    the brand card: a share of one unique shows that unique, and a crawler is handed the same picture the
    structured data points at. A page with none keeps the wide brand card. */
-function page(m, {title, desc, path, body, ld: data, noindex, art, alt}){
+function page(m, {title, desc, path, body, ld: data, noindex, art, alt, md}){
   const url = SITE + path;
   const img = art || SITE + '/assets/brand/social.png';
   const imgAlt = art ? alt || title : 'Wraeclast Index: Path of Exile 2, made easier for every kind of player.';
@@ -845,6 +936,7 @@ function page(m, {title, desc, path, body, ld: data, noindex, art, alt}){
 <title>${esc(title)}</title>
 <meta name="description" content="${esc(desc)}">
 ${noindex ? '<meta name="robots" content="noindex">' : `<link rel="canonical" href="${url}">`}
+${md ? `<link rel="alternate" type="text/markdown" href="${md}">\n` : ''}<link rel="license" href="${LICENCE}">
 <meta name="theme-color" content="#070807">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Wraeclast Index">
@@ -872,8 +964,9 @@ ${body}
 <footer class="foot">
   <p>Game data: patch <b>${esc(m.patch || '')}</b>. Prices: the in-game Currency Exchange (currency) and live trade site listings (everything else, checked over the day).
   This product isn't affiliated with or endorsed by Grinding Gear Games in any way. <a href="/privacy">Privacy</a></p>
+  <p>Compilation and prices: <a href="${LICENCE}" rel="license">CC BY 4.0</a>, credit Wraeclast Index. Game text and item art © Grinding Gear Games.</p>
 </footer>
-</body>
+${noindex ? '' : '<script src="/assets/landing.js" defer></script>\n'}</body>
 </html>
 `;
 }
@@ -882,7 +975,8 @@ ${body}
    about, the page itself, the trail of crumbs down to it, the thing it is about, and whatever else the page
    itself declares. `creditText` and `usageInfo` are the terms said once more, per page, in the place a
    machine looks for them, and the credit names this page's own canonical URL so there is one thing to link. */
-function ld(m, {path, title, desc, crumbs, thing, day, art, nodes = []}){
+const NOTICE = 'Compilation and prices: Wraeclast Index, CC BY 4.0. Game text and item art © Grinding Gear Games.';
+function ld(m, {path, title, desc, crumbs, thing, day, art, nodes = [], px, sources}){
   const url = SITE + path;
   const main = thing ? url + '#item' : nodes.length ? nodes[0]['@id'] : null;
   const self = {'@type': thing ? 'WebPage' : 'CollectionPage', '@id': url, url, name: title, description: desc,
@@ -892,15 +986,19 @@ function ld(m, {path, title, desc, crumbs, thing, day, art, nodes = []}){
     mainEntity: main ? {'@id': main} : undefined,
     primaryImageOfPage: art ? {'@type': 'ImageObject', '@id': url + '#art', url: art, contentUrl: art} : undefined,
     dateModified: day || undefined,
-    isAccessibleForFree: true, creditText: 'Wraeclast Index, ' + url, usageInfo: SITE + '/llms.txt'};
+    isBasedOn: sources || basedOn(m, px),
+    isAccessibleForFree: true, license: LICENCE, creditText: 'Wraeclast Index, ' + url, copyrightNotice: NOTICE,
+    usageInfo: SITE + '/llms.txt'};
   const graph = [
     {'@type': 'WebSite', '@id': SITE + '/#website', url: SITE + '/', name: 'Wraeclast Index',
-      publisher: {'@id': SITE + '/#org'}, potentialAction: {'@type': 'SearchAction',
+      publisher: {'@id': SITE + '/#org'}, license: LICENCE, potentialAction: {'@type': 'SearchAction',
         target: {'@type': 'EntryPoint', urlTemplate: SITE + '/search?q={search_term_string}'},
         'query-input': 'required name=search_term_string'}},
     {'@type': 'Organization', '@id': SITE + '/#org', name: 'Wraeclast Index', url: SITE + '/',
       logo: {'@type': 'ImageObject', url: SITE + '/assets/brand/logo-320.webp', width: 253, height: 320}},
-    {'@type': 'VideoGame', '@id': SITE + '/#game', name: 'Path of Exile 2'},
+    GGG,
+    {'@type': 'VideoGame', '@id': SITE + '/#game', name: 'Path of Exile 2', url: 'https://pathofexile2.com/',
+      sameAs: ['https://pathofexile2.com/', 'https://en.wikipedia.org/wiki/Path_of_Exile_2'], publisher: {'@id': GGG['@id']}},
     self,
     {'@type': 'BreadcrumbList', '@id': url + '#breadcrumb', itemListElement: crumbs.map((c, i) => ({'@type': 'ListItem', position: i + 1, name: c[0], item: SITE + c[1]}))},
   ];
@@ -911,32 +1009,67 @@ function ld(m, {path, title, desc, crumbs, thing, day, art, nodes = []}){
 function html(body, status = 200, age = AGE){
   return new Response(body, {status, headers: {'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'public, max-age=' + age, 'X-Content-Type-Options': 'nosniff'}});
 }
-function text(body, type){
-  return new Response(body, {headers: {'Content-Type': type + '; charset=utf-8', 'Cache-Control': 'public, max-age=' + AGE, 'X-Content-Type-Options': 'nosniff'}});
+function text(body, type, status = 200){
+  return new Response(body, {status, headers: {'Content-Type': type + '; charset=utf-8', 'Cache-Control': 'public, max-age=' + AGE, 'X-Content-Type-Options': 'nosniff'}});
 }
 
-/* ---------- sitemap and llms.txt ---------- */
-function sitemap(m, kinds){
-  const urls = [['/', m.day], ['/explore', m.gen]];
-  for(const l of ORDER) urls.push(['/' + l, l === 'currency' || l === 'uniques' ? m.day : m.gen]);
-  for(const k of ['u', 'g', 'p', 'b', 'a', 'c', 'w']) for(const e of kinds[k]) urls.push(['/item/' + e.slug, priceOf(m, e) ? m.day : m.gen]);
+/* ---------- sitemaps ----------
+   /sitemap.xml is the index; under it one file for the site's own pages and lists, and one per list. A page's
+   lastmod is the day its own price was checked, or the index's day where it has none. */
+const SITEMAPS = ['pages', ...ORDER];
+const dayOf = s => { const t = isoTime(s || ''); return /^\d{4}-\d\d-\d\d/.test(t) ? t.slice(0, 10) : ''; };
+function urlsOf(m, kinds, name){
+  if(name === 'pages'){
+    const urls = [['/', m.day], ['/explore', m.gen]];
+    for(const l of ORDER) urls.push(['/' + l, l === 'currency' || l === 'uniques' ? m.day : m.gen]);
+    return urls;
+  }
+  return kinds[LISTS[name].k].map(e => {
+    const px = priceOf(m, e);
+    return ['/item/' + e.slug, px && px.v !== undefined ? dayOf(checkedAt(m, px)) || m.day : m.gen];
+  });
+}
+const newest = urls => urls.reduce((a, [, d]) => d && d > a ? d : a, '');
+function sitemapIndex(m, kinds){
+  return '<?xml version="1.0" encoding="UTF-8"?>\n<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' +
+    SITEMAPS.map(n => { const d = newest(urlsOf(m, kinds, n));
+      return '<sitemap><loc>' + SITE + '/sitemap-' + n + '.xml</loc>' + (d ? '<lastmod>' + d + '</lastmod>' : '') + '</sitemap>'; }).join('\n') +
+    '\n</sitemapindex>\n';
+}
+function sitemap(m, kinds, name){
   return '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' +
-    urls.map(([p, d]) => '<url><loc>' + SITE + p + '</loc>' + (d ? '<lastmod>' + d + '</lastmod>' : '') + '</url>').join('\n') + '\n</urlset>\n';
+    urlsOf(m, kinds, name).map(([p, d]) => '<url><loc>' + SITE + p + '</loc>' + (d ? '<lastmod>' + d + '</lastmod>' : '') + '</url>').join('\n') + '\n</urlset>\n';
 }
 
-function llms(m){
+/* ---------- llms.txt and the plain-text files ---------- */
+const MONEY = 'Prices are in divine orbs (div), or exalted orbs (ex) below one divine.';
+function llms(m, parts){
   const n = k => fmt(m.count(k));
+  const files = ORDER.flatMap(l => parts[l].map(p => '- [' + p.name + '](' + SITE + p.path + '): ' + fmt(p.count) + ' entries, ' +
+    (p.bytes / 1024).toFixed(0) + ' KB'));
   return `# Wraeclast Index
 
-> Path of Exile 2, made easier for every kind of player. Live prices, the crafting bench, trade search in plain words, and every gem, unique, passive, currency and keyword. Game data from the official game files; prices from the in-game Currency Exchange and live trade site listings.
+> Path of Exile 2, indexed: every gem, unique, passive, base item, atlas thing, currency and keyword from the official game files, with real prices from the in-game Currency Exchange and live trade site listings. Free to read, quote and build on.
 
-Game data: patch ${m.patch} (${m.gen}). Prices: ${m.league || 'current'} league, the in-game Currency Exchange (currency) and live trade site listings (everything else, checked over the day) (last ${when(m.updated)}). Prices are in divine orbs (div), or exalted orbs (ex) below one divine. This product isn\'t affiliated with or endorsed by Grinding Gear Games in any way.
-
-Every item has its own plain page at ${SITE}/item/<name>, for example ${SITE}/item/divine-orb: requirements, the official mod lines, price and 7-day change, and a link into the app. Each page carries the same answers as structured data (schema.org): the thing, its art, today's price and the trail down to it.
+Game data: patch ${m.patch} (${m.gen}). Prices: ${m.league || 'current'} league, price file of ${when(isoTime(m.updated || ''))}. ${MONEY} This product isn't affiliated with or endorsed by Grinding Gear Games in any way.
 
 ## Terms
 
 ${TERMS}
+
+## Pages
+
+- ${SITE}/item/<name>, for example ${SITE}/item/divine-orb: one thing per page. What it is, its requirements, the official lines, its price with the time it was checked and a 7-day chart, its neighbours on its list, and a link into the app. The same answers as structured data (schema.org JSON-LD) in the page.
+- ${SITE}/md/item/<name>.md: the same thing in Markdown, with its sources and checked times. Each page links its copy (rel="alternate", type="text/markdown").
+- The lists below: every thing of a kind on one page, in groups, with prices.
+- ${SITE}/search?q=<words>: the app's search, opened on those words.
+
+## How fresh
+
+- Game data: once per game patch, from the game files.
+- Currency prices: every hour, from the in-game Currency Exchange.
+- Trade prices (uniques, base items and the like): live trade site listings, every priced thing checked at least once a day.
+- These pages and files: built again every ${REBUILD_HOURS} hours with the prices of that moment. Every price carries the time it was checked. /data/market.json is live.
 
 ## Lists
 
@@ -948,6 +1081,20 @@ ${TERMS}
 - [Currency](${SITE}/currency): ${n('c')} currency items, essences, runes, omens and more, with prices
 - [Keywords](${SITE}/keywords): ${n('w')} game keywords, in the game's own words
 
+## Plain text
+
+- [Everything in plain text](${SITE}/llms-full.txt): the index of the files below
+${files.join('\n')}
+
+## Data
+
+- [Item index](${SITE}/data/index.json): every gem, unique, passive, base item, atlas thing and keyword, as JSON. Changes with the game patch.
+- [Manifest](${SITE}/data/manifest.json): the index cut into small files, every file named with its size
+- [Prices now](${SITE}/data/market.json?part=now): every price, its 7-day line and when it was checked, as JSON. Live.
+- [Price history](${SITE}/data/market.json?part=past): the day-by-day history of this league and the past leagues' lines. Live.
+- [Prices, whole](${SITE}/data/market.json): both of the above in one file
+- [Sitemap](${SITE}/sitemap.xml): every page, with the day it last changed
+
 ## App
 
 - [Search](${SITE}/): search everything at once; each result is a live card with price and trend
@@ -955,20 +1102,15 @@ ${TERMS}
 - [Trade](${SITE}/#/trade): build any trade search in plain words, then open it on the official trade site
 - [Gems, uniques and passive tree](${SITE}/explore): the full tables and the passive tree
 
-## Data
+## Contact
 
-- [Item index](${SITE}/data/index.json): every gem, unique, passive, base item, atlas thing and keyword, as JSON
-- [Prices](${SITE}/data/market.json): real prices (Currency Exchange hourly, live trade listings over the day) and trends, as JSON
-- [Sitemap](${SITE}/sitemap.xml): every page
-
-## Optional
-
-- [Everything in plain text](${SITE}/llms-full.txt): every item page in one text file
+- The Suggest button, on every page of the app
+- GitHub issues: ${CONTACT}
 `;
 }
 
 /* An entry in plain text: the words that are fixed for the patch (cut() writes these into the "words" files),
-   then today's anoint cost and price. */
+   then today's anoint cost and price, each on its own line with where and when it was checked. */
 function itemWords(e){
   const it = e.it, out = ['### ' + it.n, (it.s || KIND[e.k].one) + ' · ' + SITE + '/item/' + e.slug];
   if(e.k === 'g') out.push(it.w ? 'Requires at gem level 20: ' + reqText(gemReq(it.w, 20)) : 'No requirements');
@@ -988,9 +1130,32 @@ function itemWords(e){
 function itemToday(m, e){
   const it = e.it, px = priceOf(m, e), out = [];
   const an = e.k === 'p' ? anoint(m, it) : null;
-  if(an) out.push('Anoint with ' + an.parts.map(p => p.n).join(' + ') + (an.div !== null ? ': ' + moneyText(m, an.div) : ''));
-  if(px && px.v !== undefined) out.push('Price: ' + moneyText(m, px.v) + (changeText(px.ch) ? ', ' + changeText(px.ch) : ''));
+  if(an) out.push('Anoint with ' + an.parts.map(p => p.n).join(' + ') + (an.div !== null ? ': ' + moneyText(m, an.div) + ' (' + anointAge(m, an) + ')' : ''));
+  if(px && px.v !== undefined) out.push('Price: ' + moneyText(m, px.v) + (changeText(px.ch) ? ', ' + changeText(px.ch) : '') +
+    ' (' + priceSource(m, px) + ', checked ' + when(isoTime(checkedAt(m, px))) + ')');
   return out.length ? '\n' + out.join('\n') : '';
+}
+/* An entry in Markdown (/md/item/<slug>.md): the page's own facts, then its price and where and when it was
+   checked, then its sources and the licence. The neighbours stay on the page. */
+function itemMarkdown(m, e){
+  const it = e.it, px = priceOf(m, e), url = SITE + '/item/' + e.slug;
+  const words = itemWords(e).split('\n');
+  const out = ['# ' + it.n, '', (it.s || KIND[e.k].one) + ' · Path of Exile 2', '', 'Page: ' + url, '', '## The card', ''];
+  for(const line of words.slice(2)) out.push('- ' + line);
+  const an = e.k === 'p' ? anoint(m, it) : null;
+  if(an){
+    out.push('', '## Anoint', '', '- ' + an.parts.map(p => p.n).join(' + ') + (an.div !== null ? ': ' + moneyText(m, an.div) : ''));
+    if(an.div !== null) out.push('- ' + anointAge(m, an));
+  }
+  if(px && px.v !== undefined){
+    out.push('', '## Price', '', '- ' + moneyText(m, px.v) + (changeText(px.ch) ? ', ' + changeText(px.ch) : ''),
+      '- ' + priceSource(m, px), '- Checked ' + when(isoTime(checkedAt(m, px))));
+  }
+  out.push('', '## Sources', '', '- Game data: the Path of Exile 2 game files' + (m.patch ? ', patch ' + m.patch : ''));
+  if(px && px.v !== undefined) out.push('- Price: ' + (px.src === 'cx' ? 'the in-game Currency Exchange' : 'the Path of Exile 2 trade site, https://www.pathofexile.com/trade2'));
+  if(an && an.div !== null) out.push('- Anoint cost: the in-game Currency Exchange');
+  out.push('- Licence: CC BY 4.0, ' + LICENCE + '. Credit Wraeclast Index and link ' + url + '. Game text and item art © Grinding Gear Games.', '');
+  return out.join('\n');
 }
 /* The words files: one kind's entries in list order, each its fixed words, then (after \u0002) what today's lines
    are worked out from: slug, sort, id, name and the anoint's oils (\u0003 between them, \u0004 between the
@@ -1015,24 +1180,53 @@ function readWords(k, text){
     return {k, slug, sort, it, words};
   });
 }
+/* One list in plain text, in files under LLMS_PART bytes each: /llms/<list>.txt, or /llms/<list>-1.txt, -2, ... when
+   it takes more than one. Worked out once per model. */
+const BYTES = s => new TextEncoder().encode(s).length;
+async function llmsParts(m, S, l){
+  if(!m.parts) m.parts = {};
+  if(m.parts[l]) return m.parts[l];
+  const k = LISTS[l].k, man = await S.man();
+  let list = [];
+  for(const f of man.seo.words[k] || []) list = list.concat(readWords(k, await S.text(f.file)));
+  if(k === 'c') list = list.concat(m.currency.map(e => ({...e, words: itemWords(e)}))).sort(byName);
+  const head = (i, n) => '# Wraeclast Index: ' + LISTS[l].h1 + (n > 1 ? ' (' + i + ' of ' + n + ')' : '') + '\n\n' +
+    '> Path of Exile 2 ' + LISTS[l].h1.toLowerCase() + ' from the game files (patch ' + m.patch + '). The second line of every entry is its canonical URL. ' +
+    'Every price line carries where and when it was checked. ' + MONEY + '\n\n## Terms\n\n' + TERMS + '\n\n## ' + LISTS[l].h1 + '\n\n';
+  const room = LLMS_PART - BYTES(head(99, 99)) - 16;
+  const groups = [[]];
+  let size = 0;
+  for(const e of list){
+    const t = e.words + itemToday(m, e), b = BYTES(t) + 2;
+    if(size + b > room && groups[groups.length - 1].length){ groups.push([]); size = 0; }
+    groups[groups.length - 1].push(t);
+    size += b;
+  }
+  const n = groups.length;
+  m.parts[l] = groups.map((g, i) => {
+    const body = head(i + 1, n) + g.join('\n\n') + '\n';
+    return {path: '/llms/' + l + (n > 1 ? '-' + (i + 1) : '') + '.txt', name: LISTS[l].h1 + (n > 1 ? ', ' + (i + 1) + ' of ' + n : ''),
+      count: g.length, bytes: BYTES(body), body};
+  });
+  return m.parts[l];
+}
+async function allParts(m, S){
+  const out = {};
+  for(const l of ORDER) out[l] = await llmsParts(m, S, l);
+  return out;
+}
 async function llmsFull(m, S){
-  let out = `# Wraeclast Index: everything in plain text
+  const parts = await allParts(m, S);
+  return `# Wraeclast Index: everything in plain text
 
-> Every Path of Exile 2 gem, unique, passive, currency and keyword, from the game files (patch ${m.patch}). Prices: ${m.league || 'current'} league, the Currency Exchange and live trade listings, ${when(m.updated)}. Prices are in divine orbs (div), or exalted orbs (ex) below one divine.
-
-The second line of every entry below is that thing's canonical URL.
+> Every Path of Exile 2 gem, unique, passive, base item, atlas thing, currency and keyword, from the game files (patch ${m.patch}), in one file per list, each under ${Math.round(LLMS_PART / 1024)} KB. Prices: ${m.league || 'current'} league, the in-game Currency Exchange and live trade site listings; every price line carries where and when it was checked. ${MONEY}
 
 ## Terms
 
 ${TERMS}
+
+## Files
+
+${ORDER.flatMap(l => parts[l].map(p => '- [' + p.name + '](' + SITE + p.path + '): ' + fmt(p.count) + ' entries')).join('\n')}
 `;
-  const man = await S.man();
-  for(const l of ORDER){
-    const k = LISTS[l].k;
-    let list = [];
-    for(const f of man.seo.words[k] || []) list = list.concat(readWords(k, await S.text(f.file)));
-    if(k === 'c') list = list.concat(m.currency.map(e => ({...e, words: itemWords(e)}))).sort(byName);
-    out += '\n## ' + LISTS[l].h1 + '\n\n' + list.map(e => e.words + itemToday(m, e)).join('\n\n') + '\n';
-  }
-  return out;
 }

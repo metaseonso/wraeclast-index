@@ -5,8 +5,8 @@
      /data/leagues.json  league dates (poe2db), sent in by the data server: worker/files.js
      /api/pob?url=...    the build code behind a pobb.in, poe.ninja, maxroll, mobalytics, poe2db or pastebin link
                          (browsers cannot fetch those sites themselves)
-     /item/*, /gems, /uniques, /passives, /currency, /keywords, /sitemap.xml, /llms.txt, /search
-                         plain pages for search engines and AI search: worker/seo.js
+     /search?q=...       the app's search, as a redirect (worker/seo.js). The crawler pages themselves (/item/*,
+                         the lists, the sitemaps, llms.txt, /md/*) are files, built by tools/build.mjs with worker/seo.js
      /data/rollprices.json, /data/farmprices.json
                          live trade prices (sent in through the hour: /api/prices/ingest): worker/prices.js
      /data/bossprices.json  what every item on the Bosses tab costs: worker/prices.js
@@ -44,7 +44,7 @@ export default {
     if(url.pathname === '/data/rollprices.json') return servePrices(request, env, ctx, 'roll');
     if(url.pathname === '/data/farmprices.json') return servePrices(request, env, ctx, 'farm');
     if(url.pathname === '/data/bossprices.json') return serveBossPrices(request, env, ctx);
-    if(seo.handles(url.pathname)) return seo.respond(request, env, ctx, () => serveMarket(new Request(url.origin + '/data/market.json'), env, ctx));
+    if(seo.handles(url.pathname)) return seo.respond(request);
     return env.ASSETS.fetch(request);
   },
 };
