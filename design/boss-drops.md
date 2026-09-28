@@ -66,7 +66,10 @@ A drop rate is only ever a measured one (the wiki's kill samples, with the sampl
 `st` is one of `boss`, `anywhere`, `gone` (Path of Building: no longer obtainable), `off` (poe2db: drop
 disabled) and `unknown` ("Source not known"). `line` is the words a card shows; `labels` the labels beside
 it, in order. A `from` entry that is not a boss of its own on the site (the Simulacrum, Atziri's Vault, a
-league mechanic poe2db names) is a plain row, not a card. `labels` at the top carries the tooltip.
+league mechanic poe2db names) is a plain row, not a card. A unique a boss drops also carries `card`, the key of
+the first card of that name in the index's order (a unique on several bases is a card per base): the page holds
+only the cards it shows, so a boss's "Drops" list opens that key instead of looking the name up. `labels` at the
+top carries the tooltip.
 
 ## In frame terms
 
@@ -97,7 +100,8 @@ REL_FILES.dropsfrom = 'data/dropsfrom.json'
 EDGE.dropsfrom(it, F) = F.dropsfrom.uniques[it.n].from -> a boss card where one answers to the name,
                         a plain row {n, sub: sources} where none does (Simulacrum, Abyss)
 EDGE.drops(it, F)     = every unique whose `from` names this boss (matched as the file matches names:
-                        "Tangmazu, The Raven Trickster" is the boss the areas call "The Raven Trickster")
+                        "Tangmazu, The Raven Trickster" is the boss the areas call "The Raven Trickster"),
+                        each opening the unique's `card`
 ```
 
 The unique kind names `dropsfrom` in its `rel`; the boss kind names `drops`. Read from both ends: a unique

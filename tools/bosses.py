@@ -685,6 +685,20 @@ def join(names):
     return names[0] if len(names) == 1 else ', '.join(names[:-1]) + ' and ' + names[-1]
 
 
+def add_cards(found, index):
+    """Give every unique a boss drops the card its row opens: `card`, the key of the first card of that name in
+    the index's order. A unique on several bases is a card per base, and the page holds only the cards it shows,
+    so the boss card's "Drops" list cannot look the name up itself (assets/edges.js)."""
+    first = {}
+    for it in index:
+        if it.get('k') == 'u':
+            first.setdefault(it['n'], 'u:' + it['id'])
+    for n, e in found.items():
+        if e.get('from') and n in first:
+            e['card'] = first[n]
+    return found
+
+
 def drops_from(rows, extra, uniques, levels, limits, gone):
     """unique name -> where it drops, for data/dropsfrom.json.
 
@@ -949,6 +963,7 @@ def main():
         if b.get('drop_level') and b.get('name') and 'Unique' not in mid:
             levels[b['name']] = min(b['drop_level'], levels.get(b['name'], b['drop_level']))
     found, unique_notes = drops_from(rows, extra, uniques, levels, limits, gone)
+    add_cards(found, index)
     count = {}
     for e in found.values():
         count[e['st']] = count.get(e['st'], 0) + 1
