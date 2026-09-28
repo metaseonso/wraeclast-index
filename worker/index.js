@@ -4,6 +4,8 @@
      /data/market.json   every price, from real trade listings only (worker/prices.js serveMarket; ?part=now|past|live|hist|facts),
                          with the league dates (leagues.json, sent in by the data server) riding in live.
                          A build that throws serves the last good copy, marked late (worker/prices.js lastGood)
+     /data/market/<name> the market products and the currency cards' parts (design/market-products.md), sent in
+                         once a day by the data repo's Market job: worker/files.js MARKET, with their age
      /api/pob?url=...    the build code behind a pobb.in, poe.ninja, maxroll, mobalytics, poe2db or pastebin link
                          (browsers cannot fetch those sites themselves)
      /search?q=...       the app's search, as a redirect (worker/seo.js). The crawler pages themselves (/item/*,
@@ -20,7 +22,7 @@
      /api/t, /api/admin/* page views and clicks, and the owner's dashboard (admin.html): worker/dash.js */
 import * as seo from './seo.js';
 import { servePrices, ingest, state, serveMarket, serveBossPrices, rollLeagues, buildMarket } from './prices.js';
-import { putFile } from './files.js';
+import { fileRow, putFile, MARKET } from './files.js';
 import { tradeSearches, suggest } from './community.js';
 import { track, admin } from './dash.js';
 import { serveHealth } from './health.js';
@@ -31,6 +33,7 @@ export default {
   async fetch(request, env, ctx){
     const url = new URL(request.url);
     if(url.pathname === '/data/market.json') return serveMarket(request, env, ctx);
+    if(url.pathname.startsWith('/data/market/')) return marketFile(env, url, ctx);
     if(url.pathname === '/api/pob') return pob(url);
     if(url.pathname === '/api/trade/searches') return tradeSearches(request, env, ctx, url);
     if(url.pathname === '/api/suggest') return suggest(request, env, url, ctx);
@@ -60,6 +63,24 @@ async function dataPut(request, env, url, ctx){
     ctx.waitUntil((name === 'exchange.json' ? rollLeagues(env, url.origin, ctx).catch(() => null) : Promise.resolve())
       .then(() => buildMarket(env, url.origin, ctx)).catch(() => null));
   return res;
+}
+
+/* a market file (worker/files.js MARKET): the newest copy the Market job sent, each data centre keeping it for 5
+   minutes. Its age travels with it: X-Data-At (when it came in, unix seconds) and X-Data-Age (seconds since), and
+   the file's own "updated" is the last exchange hour it was built to. Nothing in yet: 404, never an older build. */
+async function marketFile(env, url, ctx){
+  const name = 'market/' + url.pathname.slice('/data/market/'.length);
+  const none = (status, error) => new Response(JSON.stringify({error}), {status, headers: {'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store'}});
+  if(!MARKET.test(name)) return none(404, 'No such market file.');
+  const row = await fileRow(env, url.origin, name, ctx);
+  if(!row || !row.at) return none(404, 'Not sent in yet.');
+  return new Response(row.body, {headers: {
+    'Content-Type': 'application/json; charset=utf-8',
+    'Cache-Control': 'public, max-age=300, stale-while-revalidate=600',
+    'Last-Modified': new Date(row.at * 1000).toUTCString(),
+    'X-Data-At': String(row.at),
+    'X-Data-Age': String(Math.max(0, Math.floor(Date.now() / 1000) - row.at)),
+  }});
 }
 
 /* A build link -> the raw code, from the sites that host Path of Building codes. */

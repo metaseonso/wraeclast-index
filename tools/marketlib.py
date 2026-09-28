@@ -23,6 +23,10 @@ SOURCE = 'Source: Currency Exchange (GGG public feed), read every hour since 6 D
 FLAG = 'Subject to change'
 FLAGS = {FLAG: 'Depends on GGG. May change without notice.'}
 DAY, WEEK = 86400, 7 * 86400
+# Which numbers every rule is at (the owner's decision of 28 Sep 2026: design/market-products.md's defaults are
+# version 1). A page prints the note beside the rule; a change to any rule's numbers is a new version.
+THRESHOLDS = {'version': 1, 'set': '2026-09-28',
+              'note': 'First numbers, set 28 Sep 2026. They are reviewed after one week of data.'}
 MONEY = ('Divine Orb', 'Chaos Orb')      # what the rest is paid in (the Exalted Orb has no price of its own in exalted)
 
 
@@ -59,8 +63,9 @@ def did(name, dids):
 
 
 def head(rule, **numbers):
-    """What every product file opens with: its source, the flag, the rule in words and the rule's numbers."""
-    return {'source': SOURCE, 'flags': FLAGS, 'rule': rule, 'numbers': numbers}
+    """What every product file opens with: its source, the flag, the rule in words, the rule's numbers and which
+    version of the numbers they are."""
+    return {'source': SOURCE, 'flags': FLAGS, 'rule': rule, 'numbers': numbers, 'thresholds': THRESHOLDS}
 
 
 class League:
