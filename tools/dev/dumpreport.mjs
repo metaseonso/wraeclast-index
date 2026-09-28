@@ -16,7 +16,8 @@
    Flagged, by the last-good rule (a source that collapses is a fault, not news, tools/lastgood.py):
      - a kind, or a list in index-core/rest, that lost more than 10% of its rows
      - a field that went empty on many cards of one kind (20 cards, and a tenth of those that had it)
-     - a data file that went away, or lost more than half its bytes
+     - a data file that went away (not one .gitignore now keeps out: that is said, not flagged), or lost more than
+       half its bytes
      - a part of another data file that lost more than 10% of its rows
    Reads git and data/, writes the one JSON file, no network. */
 import { readFile, readdir, writeFile, mkdir } from 'node:fs/promises';
@@ -147,6 +148,11 @@ async function report(){
   const emptied = (where, c) => { for(const [f, x] of Object.entries(c.fields)) if(x.emptied >= EMPTY_N && x.emptied >= EMPTY_SHARE * x.had)
     flag(where + ' · ' + f, 'went empty on ' + x.emptied + ' of the ' + x.had + ' rows that had it'); };
   const got = {};
+  // a file the working tree's .gitignore now keeps out went on purpose (data/market/card/: built by the data repo's
+  // daily job and sent to the site, never committed): said, not flagged
+  const gone = paths.filter(p => !after.includes(p));
+  const r = gone.length ? spawnSync('git', ['check-ignore', '--no-index', '--stdin'], {cwd: ROOT, input: gone.join('\n'), encoding: 'utf8'}) : null;
+  const ignored = new Set(r && r.status === 0 ? r.stdout.split('\n').filter(Boolean) : []);
   for(const p of paths){
     const [a, b] = await Promise.all([A.bytes(p), B.bytes(p)]);
     const f = {file: p, before: a ? a.length : null, after: b ? b.length : null};
@@ -156,6 +162,7 @@ async function report(){
     const heir = block && after.find(q => q !== p && q.replace(HASHED, '.') === block);
     if(heir){ f.state = 'replaced'; f.by = heir; }
     out.files.push(f);
+    if(f.state === 'removed' && ignored.has(p)) f.state = 'no longer committed';
     if(f.state === 'removed') flag(p, 'the file went away');
     else if(f.state === 'changed' && f.before >= 10240 && f.after < f.before * (1 - SHRINK))
       flag(p, 'lost ' + Math.round(100 * (1 - f.after / f.before)) + '% of its bytes');
