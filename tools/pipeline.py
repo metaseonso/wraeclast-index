@@ -200,6 +200,11 @@ STAGES = [
          writes=['data/gold.json'], count={'data/gold.json': 'exchange'}),
     dict(name='gemlines', run=['tools/gemlines.py'], cadence='patch', source='files',
          reads=['data/explore/gems.*.json'], writes=['data/gemlines.json']),
+    # Runes of Aldur: the recipes both ways, the highlight bands, the Verisium Anvil (#113)
+    dict(name='runes', run=['tools/runes.py'], cadence='patch', source='game files',
+         reads=['data/game/rune_recipes.json', 'data/game/rune_highlights.json', 'data/game/verisium_crafts.json',
+                'data/index.json', 'data/exchange.json'],
+         writes=['data/runes.json'], count={'data/runes.json': 'recipes'}),
     dict(name='treelines', run=['tools/treelines.py'], cadence='patch', source='files',
          reads=['data/explore/tree.*.json'], writes=['data/treelines.json']),
     dict(name='treechanges', run=['tools/treeexport.py'], cadence='patch', source="GGG's passive tree export",
