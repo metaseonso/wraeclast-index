@@ -55,6 +55,7 @@ const OWN_ROWS = {
   x: {file: 'bosses.json', at: 'bosses', row: {
     name: {json: ['string'], need: 1}, areas: {json: ['array'], need: 1}, pinnacle: {json: ['boolean'], need: 1},
     drops: {json: ['array']}, access: {json: ['array']}, rates: {json: ['object']},
+    checked: {json: ['array']}, nodrops: {json: ['object']},
   }},
 };
 
