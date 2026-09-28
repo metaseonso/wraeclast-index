@@ -36,3 +36,32 @@
   Cache-Control: public, max-age=0, must-revalidate
 /sprites/*
   Cache-Control: public, max-age=604800, stale-while-revalidate=86400
+# The crawler's files (tools/build.mjs, worker/seo.js): built again at every deploy and every 6 hours, so a copy is
+# kept 5 minutes, then used while the new one is fetched. Every price on them carries its own checked time.
+/item/*
+  Cache-Control: public, max-age=300, stale-while-revalidate=3600
+  X-Content-Type-Options: nosniff
+/llms/*
+  ! Content-Type
+  Content-Type: text/plain; charset=utf-8
+  Cache-Control: public, max-age=300, stale-while-revalidate=3600
+  Access-Control-Allow-Origin: *
+/llms.txt
+  ! Content-Type
+  Content-Type: text/plain; charset=utf-8
+  Access-Control-Allow-Origin: *
+/llms-full.txt
+  ! Content-Type
+  Content-Type: text/plain; charset=utf-8
+  Access-Control-Allow-Origin: *
+# The Markdown copies: for a model to read, never a search result of their own (the page is the result)
+/md/*
+  ! Content-Type
+  Content-Type: text/markdown; charset=utf-8
+  Cache-Control: public, max-age=300, stale-while-revalidate=3600
+  X-Robots-Tag: noindex
+  Access-Control-Allow-Origin: *
+# The open data: any site may read it from a browser. (The files the worker answers, /data/market.json and the
+# other live ones, set their own headers: worker/prices.js.)
+/data/*
+  Access-Control-Allow-Origin: *

@@ -1,14 +1,18 @@
 # Wraeclast Index: Path of Exile 2, made easier for every kind of player.
 # Everything here is public game data. Search engines and AI search are welcome.
-# Plain text for AI: https://wraeclastindex.fyi/llms.txt
+# Plain text for AI: https://wraeclastindex.fyi/llms.txt (and every item in Markdown: /md/item/<name>.md)
 #
-# Terms. The same four lines as /llms.txt and /llms-full.txt, and every page says them again in its own
-# structured data (creditText, usageInfo). A change to one is a change to all of them.
+# Terms. The same five lines as /llms.txt and every /llms/ file, and every page says them again in its own
+# structured data (license, creditText, copyrightNotice, usageInfo). A change to one is a change to all of them.
 #
 # Free to read, free to quote, free to build on.
-# An answer built on this data should name Wraeclast Index and link the page it came from.
+# Licence: CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/), for the index's own compilation and its prices.
+# Credit: name Wraeclast Index and link the page the data came from.
+# Game text and item art: © Grinding Gear Games.
 # One page per thing, one canonical URL per page: https://wraeclastindex.fyi/item/<name>.
-# A request, not a licence: nothing here enforces it, and nothing is held back from anyone who ignores it.
+#
+# Content signals (contentsignals.org): search, answers built on a page (ai-input) and training (ai-train) are
+# all welcome. Every reader gets the same pages.
 
 User-agent: *
 User-agent: Googlebot
@@ -31,6 +35,7 @@ User-agent: Amazonbot
 User-agent: meta-externalagent
 User-agent: MistralAI-User
 User-agent: Bytespider
+Content-Signal: search=yes, ai-input=yes, ai-train=yes
 Allow: /
 Disallow: /api/
 Disallow: /search
