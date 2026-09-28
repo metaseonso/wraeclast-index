@@ -1,8 +1,8 @@
 /* Wraeclast Index on Cloudflare.
    Static files are served straight from the edge, the service worker (sw.js, stamped by tools/build.mjs) among
    them. This worker only answers:
-     /data/market.json   every price, from real trade listings only (worker/prices.js serveMarket; ?part=now|past|live|hist|facts)
-     /data/leagues.json  league dates (poe2db), sent in by the data server: worker/files.js
+     /data/market.json   every price, from real trade listings only (worker/prices.js serveMarket; ?part=now|past|live|hist|facts),
+                         with the league dates (leagues.json, sent in by the data server) riding in now and live
      /api/pob?url=...    the build code behind a pobb.in, poe.ninja, maxroll, mobalytics, poe2db or pastebin link
                          (browsers cannot fetch those sites themselves)
      /search?q=...       the app's search, as a redirect (worker/seo.js). The crawler pages themselves (/item/*,
@@ -19,7 +19,7 @@
      /api/t, /api/admin/* page views and clicks, and the owner's dashboard (admin.html): worker/dash.js */
 import * as seo from './seo.js';
 import { servePrices, ingest, state, serveMarket, serveBossPrices, rollLeagues, buildMarket } from './prices.js';
-import { fileText, putFile } from './files.js';
+import { putFile } from './files.js';
 import { tradeSearches, suggest } from './community.js';
 import { track, admin } from './dash.js';
 import { serveHealth } from './health.js';
@@ -30,7 +30,6 @@ export default {
   async fetch(request, env, ctx){
     const url = new URL(request.url);
     if(url.pathname === '/data/market.json') return serveMarket(request, env, ctx);
-    if(url.pathname === '/data/leagues.json') return leagues(request, env, url, ctx);
     if(url.pathname === '/api/pob') return pob(url);
     if(url.pathname === '/api/trade/searches') return tradeSearches(request, env, ctx, url);
     if(url.pathname === '/api/suggest') return suggest(request, env, url, ctx);
@@ -60,16 +59,6 @@ async function dataPut(request, env, url, ctx){
     ctx.waitUntil((name === 'exchange.json' ? rollLeagues(env, url.origin, ctx).catch(() => null) : Promise.resolve())
       .then(() => buildMarket(env, url.origin, ctx)).catch(() => null));
   return res;
-}
-
-/* league dates: each data centre keeps its copy for 5 minutes (worker/files.js) */
-async function leagues(request, env, url, ctx){
-  const body = await fileText(env, url.origin, 'leagues.json', ctx);
-  if(body === null) return env.ASSETS.fetch(request);   // the copy that shipped with the site
-  return new Response(body, {headers: {
-    'Content-Type': 'application/json; charset=utf-8',
-    'Cache-Control': 'public, max-age=300, stale-while-revalidate=600',
-  }});
 }
 
 /* A build link -> the raw code, from the sites that host Path of Building codes. */

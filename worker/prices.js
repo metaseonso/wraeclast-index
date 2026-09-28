@@ -37,6 +37,8 @@
                        and descriptions come from the hourly catalogue (market.json); its prices are dropped.
                        updated is the real age of the data behind these prices, times says where that came from
                        and late is true once a job has missed a run (worker/health.js): the page stamps them.
+                       leagues is data/leagues.json as the jobs last sent it in (the league clock and the charts'
+                       colours), so no page asks the worker for the league dates on their own.
                        ?part=now: the same without the day-by-day history (h) and the exchange pairs (half the size:
                        what the first cards need); ?part=past: only those and the past leagues' lines (lh), for
                        the charts (assets/app.js); ?part=live, ?part=hist: the same two written shorter, and
@@ -242,13 +244,14 @@ async function leagueOrder(env, fresh){
 /* Which day of its own league a day is, from the league start dates (data/leagues.json, tools/leagues.py), so
    the lines on a chart line up by day of league and not by date. A league that list does not name gets 0: its
    line starts at the left of its own league, which is what it is, rather than being shifted by a guess. */
-/* Also gives the time of the copy it read (its arrival, or the backup's own hour), which a build keeps. */
+/* Also gives the time of the copy it read (its arrival, or the backup's own hour), which a build keeps, and the
+   file itself, which rides in today's prices (the league clock and the charts' colours read it from there). */
 async function leagueStarts(env, origin, ctx, fresh){
   const row = await publishedRow(env, origin, 'leagues.json', ctx, fresh);
   const f = (row && row.data) || (await asset(env, origin, 'leagues.json')) || {};
   const out = new Map();
   for(const l of f.leagues || []) if(l && l.name && /^\d{4}-\d{2}-\d{2}$/.test(l.start || '')) out.set(l.name, dayNo(l.start));
-  return [out, (row && (row.at || row.own)) || 0];
+  return [out, (row && (row.at || row.own)) || 0, f];
 }
 
 /* Once a day: put the Currency Exchange's own day-by-day prices (exchange.json, tools/exchange.py) into this
@@ -512,10 +515,10 @@ export async function serveMarket(request, env, ctx){
    a new one and a late file still says so. Anything else (no built row, a newer input, another deploy, no
    table) builds it the way it always was, and keeps it. A part over 1.2 MB goes in numbered rows (#2, #3, ...),
    each well under D1's 2 MB a row. */
-const BUILT_V = 1;          // the shape of a built row: a new number reads every older row as missing
+const BUILT_V = 2;          // the shape of a built row: a new number reads every older row as missing (2: league dates in now)
 const CHUNK = 1.2e6;        // bytes in one built row at most
 // the files each group is made from: a built group is out of date once one of these has moved on
-const INPUTS = {full: ['market.json', 'exchange.json', 'leagues.json'], now: ['market.json', 'exchange.json'],
+const INPUTS = {full: ['market.json', 'exchange.json', 'leagues.json'], now: ['market.json', 'exchange.json', 'leagues.json'],
   past: ['market.json', 'exchange.json', 'leagues.json']};
 const groupOf = part => !part ? 'full' : GROUP[part][0] === 'now' ? 'now' : 'past';
 const deployOf = env => String((env.CF_VERSION_METADATA && env.CF_VERSION_METADATA.id) || 'local').slice(0, 8);
@@ -615,6 +618,10 @@ async function makeMarket(env, origin, ctx, group, inputs, memo){
   const cxRow = await publishedRow(env, origin, 'exchange.json', ctx, fresh('exchange.json')), cx = (cxRow && cxRow.data) || {items: {}};
   const stamp = row => (row && (row.at || row.own)) || 0;
   const head = {v: BUILT_V, t: inputs.t, f: {'market.json': stamp(catRow), 'exchange.json': stamp(cxRow)}, lateAt: null, at: Date.now()};
+  // the league dates (tools/leagues.py): the past leagues' lines line up by them, and today's prices carry the file
+  // itself, so a page never calls the worker for it on its own
+  const [starts, leaguesAt, leagueFile] = await leagueStarts(env, origin, ctx, fresh('leagues.json'));
+  head.f['leagues.json'] = leaguesAt;
   const league = cat.league || '';
   const rows = memo && memo.league === league ? memo.rows : await kindRows(env, 'key, v, total, at, h', league, ['uniq', 'base']);
   if(memo){ memo.league = league; memo.rows = rows; }
@@ -672,15 +679,12 @@ async function makeMarket(env, origin, ctx, group, inputs, memo){
     own.set(k, {k: r.key, f: pts.length ? pts[0][0] : null, n: pts.length, g: gapsOf(pts)});
   }
   // the past leagues' lines. Left out of now and live, so the first cards never wait for them.
-  if(group !== 'now'){
-    const [starts, leaguesAt] = await leagueStarts(env, origin, ctx, fresh('leagues.json'));
-    head.f['leagues.json'] = leaguesAt;
-    await addLeagueLines(env, origin, ctx, league, items, own, starts);
-  }
+  if(group !== 'now') await addLeagueLines(env, origin, ctx, league, items, own, starts);
   const top = {league, updated, late, times: {currency: currencyAt, trade: tradeAt, catalogue: came(catRow)},
     primary: 'divine', rates: rate ? {exalted: rate} : {},
     source: 'Currency Exchange and trade site listings', builds: cat.builds,
-    markets: cx.league === league ? (cx.markets || []).slice(0, 40) : []};
+    markets: cx.league === league ? (cx.markets || []).slice(0, 40) : [],
+    leagues: {updated: leagueFile.updated || null, source: leagueFile.source || null, leagues: Array.isArray(leagueFile.leagues) ? leagueFile.leagues : []}};
   const bodies = {};
   if(group === 'full') bodies[''] = {...top, items};
   else {

@@ -21,7 +21,7 @@
   "assets": {
     "directory": "dist",
     "binding": "ASSETS",
-    "run_worker_first": ["/data/market.json", "/data/leagues.json", "/data/rollprices.json", "/data/farmprices.json", "/data/bossprices.json", "/api/*", "/search"],
+    "run_worker_first": ["/data/market.json", "/data/rollprices.json", "/data/farmprices.json", "/data/bossprices.json", "/api/*", "/search"],
     "not_found_handling": "404-page"
   },
   // the deploy's version id: the market file's built parts are kept per deploy (worker/prices.js builtName)

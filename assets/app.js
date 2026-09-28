@@ -117,9 +117,12 @@ const BOSS = GO.then(() => getJSON('data/bosses.json', {priority: 'low'}).catch(
 // the catalogue's words, when today's prices came without them (the drill-down page's copy has them already)
 const FACTS = GO.then(() => NOW).then(m => m && m.part === 'live'
   ? getJSON('data/market.json?part=facts&v=' + encodeURIComponent(m.facts || '')).then(f => facts(m, f)) : null).catch(() => null);
-// the league dates: the league clock and the charts' colours read the one copy (assets/league.js)
+// the league dates: the league clock and the charts' colours read the one copy (assets/league.js). They ride in
+// today's prices (worker/prices.js); a price file without them (the drill-down page's ?part=now from before, the
+// backup site) falls back to the copy that shipped with the site
 let LEAGUES = null;
-export const leagues = () => LEAGUES || (LEAGUES = getJSON('data/leagues.json').catch(() => null));
+export const leagues = () => LEAGUES || (LEAGUES = NOW.then(m => m && m.leagues && Array.isArray(m.leagues.leagues) && m.leagues.leagues.length
+  ? m.leagues : getJSON('data/leagues.json')).catch(() => null));
 /* Each league's own colour, by name (data/leagues.json, tools/leagues.py): GGG's colour for that league,
    sampled from their art for it and already lifted to read on the chart's ground. A card's price chart
    draws a retired league in it (bigLine). A league without one keeps the faded ladder, and so does every

@@ -15,8 +15,8 @@
    - After a deploy, the next page load still opens instantly from the copy it has while the new deploy downloads in
      the background; the load after that is the new deploy.
    - Never from the copy: /api/*, the owner's dashboard, the crawler pages, and the live files the worker answers
-     (market.json, leagues.json, rollprices.json, farmprices.json, bossprices.json): those follow their own cache rules
-     (a few minutes).
+     (market.json, rollprices.json, farmprices.json, bossprices.json): those follow their own cache rules (a few
+     minutes). data/leagues.json is a file of the deploy like any other: today's prices carry the league dates.
    What a deploy downloads (sw-files.json, written by tools/build.mjs: every path the deploy serves with a hash of its
    bytes, and the home page's first-paint files):
    - On install: every file in the last copy whose bytes still hash to this deploy's entry is taken over from it, so
@@ -54,7 +54,7 @@ const SHELL = ['./', 'explore', 'privacy',
   'assets/brand/haze.webp', 'assets/brand/favicon-64.png', 'assets/brand/favicon-32.png', 'assets/brand/ninja.png',
   'data/manifest.json', 'data/bosses.json', 'data/changelog.json', 'data/support.json'];
 const OWN = /^\/(assets|data|sprites)\//;
-const PASS = /^\/(api\/|admin|assets\/admin\.js|sw\.js|data\/(market|leagues|rollprices|farmprices|bossprices)\.json)/;
+const PASS = /^\/(api\/|admin|assets\/admin\.js|sw\.js|data\/(market|rollprices|farmprices|bossprices)\.json)/;
 const NAMED = /^\/(data\/explore|data\/search|data\/cards|assets\/fonts)\//;   // named by their content, or never changed: the browser's copy is fine
 const pathOf = u => new URL(u, location).pathname;
 
