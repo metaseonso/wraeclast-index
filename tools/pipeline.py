@@ -20,6 +20,12 @@ How a run goes:
   3. What it changed is checked: every JSON file still reads; the files the cards are made of hold to their
      declarations (tools/dev/schema.mjs, data/schema.json); and every JSON file it wrote holds up against the
      copy in data/ under the last good rule, counts and shape (tools/lastgood.py).
+     A file a later stage of the same run writes too (data/index.json and its two parts: sync builds it, then
+     gamelib, treecards, clusters and the rest add their cards to it) is held to the last good rule once, on
+     its final state after the last stage that writes it, against the copy in data/. Halfway through it is
+     not the file that ships, so its count means nothing there. The stage is told so in WI_CHECKED_LATER (the
+     files, comma separated), and a builder that checks such a file itself (tools/sync.py, the index) keeps
+     its floor and its declarations but leaves the comparison with the copy in data/ to the end of the run.
   4. Only when every stage passed does it all go into data/ at once: every file written beside its place
      first, then each moved over in one step. The stamps are written, and the warm caches copied back.
 
@@ -337,9 +343,10 @@ def last_copy(path, root=ROOT):
 CARD_FILES = ('data/index.json', 'data/index-core.json', 'data/index-rest.json', 'data/bosses.json', 'data/schema.json')
 
 
-def check_files(stage, changed, root, against, schema=True):
+def check_files(stage, changed, root, against, schema=True, later=()):
     """What a stage wrote, held to the rules: (file, why) for the first file that does not hold up, else None.
-    against(path) gives the last good copy of a file (data/ as it is, or the committed one)."""
+    against(path) gives the last good copy of a file (data/ as it is, or the committed one). later: files a
+    later stage of the run writes too, whose count and shape are checked once, on the final state."""
     count = stage.get('count', {}) if stage else {}
     for path in sorted(changed):
         if not path.endswith('.json') or path == RECORD:
@@ -351,7 +358,7 @@ def check_files(stage, changed, root, against, schema=True):
             new = json.loads(p.read_text(encoding='utf-8'))
         except ValueError as e:
             return path, 'it does not read as JSON: %s' % str(e)[:100], {}
-        old = against(path)
+        old = None if path in later else against(path)
         if old is None:
             continue
         name = path[len('data/'):] if path.startswith('data/') else path
@@ -366,20 +373,35 @@ def check_files(stage, changed, root, against, schema=True):
 
 
 # ---------------------------------------------------------------- one stage
-def env_for_stage():
+def env_for_stage(later=()):
     e = {k: v for k, v in os.environ.items() if k not in SENDS}   # nothing is sent to the site from here
     e['WI_NO_TICKET'] = '1'        # the pipeline raises the ticket itself, in the real record, once
     e['PYTHONIOENCODING'] = 'utf-8'
     e['PYTHONUTF8'] = '1'
+    e.pop('WI_CHECKED_LATER', None)
+    if later:                      # files a later stage rewrites: the run holds their final state to the rule
+        e['WI_CHECKED_LATER'] = ','.join(sorted(later))
     return e
 
 
-def run_stage(stage, artifact, log):
+def rewritten_later(stage, chosen):
+    """The files this stage writes that a stage after it in this run writes too: (path pattern -> the last
+    stage that writes it). Their count and shape are checked once, on the final state (see the top)."""
+    rest = chosen[chosen.index(stage) + 1:]
+    out = {}
+    for w in stage['writes']:
+        for t in rest:
+            if w in t['writes'] or matches(w, t['writes']):
+                out[w] = t['name']
+    return out
+
+
+def run_stage(stage, artifact, log, later=()):
     cmd = [sys.executable, str(TREE / stage['run'][0])] + args_of(stage, artifact)
     started = time.time()
     with open(log, 'w', encoding='utf-8') as out:
         out.write('$ %s\n' % ' '.join(cmd))
-        p = subprocess.Popen(cmd, cwd=str(TREE), env=env_for_stage(), stdout=subprocess.PIPE,
+        p = subprocess.Popen(cmd, cwd=str(TREE), env=env_for_stage(later), stdout=subprocess.PIPE,
                              stderr=subprocess.STDOUT, text=True, encoding='utf-8', errors='replace')
         stuck = threading.Timer(60 * stage.get('minutes', 20), p.kill)
         stuck.start()
@@ -540,6 +562,7 @@ def main():
     start = snapshot(TREE)
     stamps = {} if a.force else (json_at(STAMPS) or {})
     new_stamps, ran, skipped, changed_all = {}, [], [], set()
+    deferred = {}              # a file a later stage rewrites -> what to count in it, for the final check
     report = {'started': t0, 'dry': a.dry, 'stages': []}
 
     def fail(stage, why, found, counts=None):
@@ -582,8 +605,12 @@ def main():
             new_stamps[name] = key
             continue
         say('\n== %s (%s, %s)' % (name, stage['cadence'], stage['source']))
+        later = rewritten_later(stage, chosen)
+        if later:
+            say('  %s: checked on the final state, after %s' % (', '.join(sorted(later)),
+                                                               ', '.join(sorted(set(later.values())))))
         before = snapshot(TREE)
-        code, secs = run_stage(stage, artifact, out / 'log.txt')
+        code, secs = run_stage(stage, artifact, out / 'log.txt', later)
         after = snapshot(TREE)
         changed = {p for p in set(before) | set(after) if before.get(p) != after.get(p)} - {RECORD}
         for p in changed:
@@ -598,11 +625,15 @@ def main():
             return fail(stage, 'the stage stopped with exit %d' % code
                         + (' (over its %d minutes)' % stage.get('minutes', 20) if code == 124 else ''),
                         faults_since(t0))
-        why = check_files(stage, changed, TREE, last_copy)
+        held = {p for p in changed if matches(p, list(later))}
+        for p in held:
+            deferred[p] = stage.get('count', {}).get(p, deferred.get(p))
+        why = check_files(stage, changed, TREE, last_copy, later=held)
         if why:
             return fail(stage, '%s: %s' % why[:2], [], why[2])
-        say('  %s: done in %ds, %d file%s changed, all of it holds up' % (name, secs, len(changed),
-                                                                         '' if len(changed) == 1 else 's'))
+        say('  %s: done in %ds, %d file%s changed, %s' % (
+            name, secs, len(changed), '' if len(changed) == 1 else 's',
+            'the rest holds up' if held else 'all of it holds up'))
         ran.append(name)
         changed_all |= changed
         new_stamps[name] = key
@@ -610,6 +641,15 @@ def main():
     end = snapshot(TREE)
     final = {p: ('gone' if p not in end else 'new' if p not in start else 'changed')
              for p in changed_all if start.get(p) != end.get(p)}
+    # the files several stages wrote, as they stand after the last of them, against the copy in data/
+    last = sorted(p for p in deferred if p in final and final[p] != 'gone')
+    if last:
+        say('\n== final check: %s, against the copy in data/' % ', '.join(last))
+        why = check_files({'count': {p: deferred[p] for p in last if deferred[p]}}, last, TREE, last_copy)
+        if why:
+            by = next((s for s in reversed(chosen) if s['name'] in ran and matches(why[0], s['writes'])), chosen[-1])
+            return fail(by, 'the final %s: %s' % why[:2], [], why[2])
+        say('  it holds up')
     record_moved = start.get(RECORD) != end.get(RECORD)
     report.update(ran=ran, skipped=skipped, files=final)
     (BUILD / 'report.json').write_text(json.dumps(report, indent=1), encoding='utf-8')

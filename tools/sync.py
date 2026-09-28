@@ -24,6 +24,7 @@ Usage:
 import gzip
 import hashlib
 import json
+import os
 import re
 import sys
 import time
@@ -1032,7 +1033,15 @@ def main():
     # source that went quiet used to thin the search index in silence. The index and its two parts go out
     # together or not at all. 4,000 is the floor: the artifact's own cards are about 3,700, so under that
     # those sources gave nothing. explore.html is the artifact itself, so it is written either way.
-    if lastgood.pull('Search index', lambda: index, file='index.json', url=REPOE, at='items', floor=4000) is not None:
+    # In a pipeline run the stages after this one (gamelib, treecards, clusters, ...) add some 2,200 cards to the
+    # index, so the index written here is not the one that ships: the pipeline holds the final index to the
+    # committed one (WI_CHECKED_LATER, tools/pipeline.py), and here only the floor and the declarations count.
+    # Run on its own, this index is the one that ships, and it is held to the committed copy as always.
+    later = 'data/index.json' in os.environ.get('WI_CHECKED_LATER', '').split(',')
+    if later:
+        print('Search index: the pipeline holds the final index to the committed copy, after the stages that add to it')
+    if lastgood.pull('Search index', lambda: index, file='index.json', url=REPOE, at='items', floor=4000,
+                     old={} if later else None) is not None:
         lastgood.save(ROOT / 'data' / 'index.json', json.dumps(index, ensure_ascii=False, separators=(',', ':')))
         import appdata   # the index in two parts for the home page (data/index-core.json, data/index-rest.json)
         appdata.write(index)
