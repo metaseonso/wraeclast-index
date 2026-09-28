@@ -267,6 +267,11 @@ export const FIELDS = {
   /* what an item can already have, off its own item class's table: the modifiers its pool rolls, and the
      ones a corruption can add instead. `of` picks which list of the pool it reads. The table is a file per
      item class, so the field's own "file" carries the class the entry names (tools/craft.py). */
+  /* Where a unique drops: one line ("Drops from The Arbiter of Ash", "Drops anywhere, from area level 50",
+     "Source not known") and its labels, out of a table of its own keyed by the name (tools/bosses.py writes
+     data/dropsfrom.json). Drop pools are held on GGG's servers, so every line names its sources; the file's
+     own `labels` gives the one that carries a tooltip. design/boss-drops.md. */
+  drop:     {type: 'drop', at: 'n', slot: 'body', file: 'data/dropsfrom.json'},
   canroll:  {type: 'pool', at: 'n', slot: 'body', file: 'data/craft/@cr.json', of: 'm', label: 'Modifiers it can roll'},
   cancorrupt: {type: 'pool', at: 'n', slot: 'body', file: 'data/craft/@cr.json', of: 'c', label: 'A corruption can add'},
   quote:    {type: 'quote', at: 'qt', slot: 'body', every: 1},   // the game's own flavour line
@@ -444,6 +449,10 @@ export const REL = {
   /* The two ends of one edge: the nodes a cluster holds, and the cluster or clusters a node sits in. A node
      the same number of steps from two notables is in both, so the second one answers with two rows and each
      of them says it is shared (data/clusters.json, tools/clusters.py). */
+  /* The two ends of one edge out of data/dropsfrom.json: the bosses and encounters a unique drops from, and
+     the uniques a boss drops. A place with no card of its own (the Simulacrum, an Abyss) is a plain row. */
+  dropsfrom: {label: 'Drops from', of: 'x', edge: 'dropsfrom', needs: 'dropsfrom'},
+  drops:    {label: 'Drops', of: 'u', edge: 'drops', needs: 'dropsfrom'},
   incluster: {label: 'Nodes in this cluster', of: 'p', edge: 'incluster', needs: 'clusters'},
   clusterof: {label: 'Cluster it sits in', of: 't', edge: 'clusterof', needs: 'clusters'},
 };
@@ -469,9 +478,9 @@ export const KINDS = [
    index: true, search: true, item: true, crawl: {word: 'unique', list: 'uniques', rank: 0, is: 'Product'},
    sprite: 'uniques', make: {base: 'sub1'},
    builds: [{key: 'items'}],
-   fields: [...HEAD, 'reqs', 'corrupt', 'limit', 'group', 'props', 'implicit', ...BODY, ...FOOT],
+   fields: [...HEAD, 'reqs', 'corrupt', 'limit', 'group', 'props', 'implicit', ...BODY, 'drop', ...FOOT],
    acts: ['trade', 'pool', 'full', 'pin', 'open'],
-   rel: ['base', 'variants', 'grants', 'named', 'namedby', 'cat']},
+   rel: ['base', 'variants', 'grants', 'dropsfrom', 'named', 'namedby', 'cat']},
 
   {k: 'p', one: 'Passive', tone: 'c-keystone', many: 'Passives', place: 'Passive tree', sec: 'tree', link: 'explore#tree=@n', mark: 'ls',
    index: true, search: true, crawl: {word: 'passive', list: 'passives', rank: 2, is: 'DefinedTerm'},
@@ -546,7 +555,7 @@ export const KINDS = [
    search: true,
    fields: [...HEAD, ...BODY, ...FOOT],
    acts: ['pin', 'open'],
-   rel: ['namedby', 'cat']},
+   rel: ['drops', 'namedby', 'cat']},
 
   /* The bench: one card, holding an item and the currency and omens picked for it before anything runs. It
      has no rows in the index — you reach it from a base, from the currency it crafts with, or from the Craft

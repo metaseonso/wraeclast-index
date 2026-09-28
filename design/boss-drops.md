@@ -2,8 +2,10 @@
 
 The design for [issue #74](https://github.com/metaseonso/wraeclast-index/issues/74), in the terms of
 `docs/frame.md`, with the hook for player drop reports ([#125](https://github.com/metaseonso/wraeclast-index/issues/125)).
-The data is built (`tools/bosses.py` writes `data/bosses.json` and `data/dropsfrom.json`); the cards that
-draw it are the owner's, for 1.0. Nothing here touches `assets/`.
+The data is built (`tools/bosses.py` writes `data/bosses.json` and `data/dropsfrom.json`), and the
+declarations below are in: the `drop` field and its renderer, and the `dropsfrom` / `drops` groups with their
+edges (`assets/kinds.js`, `assets/app.js`, `assets/edges.js`). The report act (#125) is not: it needs a worker
+endpoint first.
 
 ## What the data can and cannot say
 
@@ -82,9 +84,8 @@ card whose name the table does not hold draws nothing. Add `drop` to the unique 
 next to `source`. No kind is named in the renderer, so the day a gem or a currency has a drop line, it is
 one word in that kind's `fields`.
 
-*If the owner would rather not add a type:* move 1 works too. `tools/uniqueitems.py` copies `line` and the
-labels into the entry's `src` as words, and the `source` field draws them as they stand. What is lost is the
-tooltip.
+No existing renderer fits: `source` reads the entry, not a table, and `adds` and `pool` read tables of
+their own shapes. So `drop` is one `TYPE` entry (`dropFill`), drawn on an opened card like `adds`.
 
 **The Connections group, both ways: move 3, one relationship with two ends** (the pair `grants`/`granted`
 already is):

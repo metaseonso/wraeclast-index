@@ -350,7 +350,8 @@
      ],
      "by": [
       "row",
-      "name"
+      "name",
+      "drop"
      ],
      "need": 1,
      "drawn": 1
@@ -3780,6 +3781,7 @@
     "adds",
     "cancorrupt",
     "canroll",
+    "drop",
     "name",
     "row"
    ]
