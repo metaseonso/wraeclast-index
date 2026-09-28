@@ -2,7 +2,7 @@
    Static files are served straight from the edge, the service worker (sw.js, stamped by tools/build.mjs) among
    them. This worker only answers:
      /data/market.json   every price, from real trade listings only (worker/prices.js serveMarket; ?part=now|past|live|hist|facts),
-                         with the league dates (leagues.json, sent in by the data server) riding in now and live.
+                         with the league dates (leagues.json, sent in by the data server) riding in live.
                          A build that throws serves the last good copy, marked late (worker/prices.js lastGood)
      /api/pob?url=...    the build code behind a pobb.in, poe.ninja, maxroll, mobalytics, poe2db or pastebin link
                          (browsers cannot fetch those sites themselves)

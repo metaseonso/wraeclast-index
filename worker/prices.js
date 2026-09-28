@@ -37,8 +37,8 @@
                        and descriptions come from the hourly catalogue (market.json); its prices are dropped.
                        updated is the real age of the data behind these prices, times says where that came from
                        and late is true once a job has missed a run (worker/health.js): the page stamps them.
-                       leagues is data/leagues.json as the jobs last sent it in (the league clock and the charts'
-                       colours), so no page asks the worker for the league dates on their own.
+                       ?part=live carries leagues, data/leagues.json as the jobs last sent it in (the league clock
+                       and the charts' colours), so no page asks the worker for the league dates on their own.
                        ?part=now: the same without the day-by-day history (h) and the exchange pairs (half the size:
                        what the first cards need); ?part=past: only those and the past leagues' lines (lh), for
                        the charts (assets/app.js); ?part=live, ?part=hist: the same two written shorter, and
@@ -551,7 +551,7 @@ async function lastGood(ctx, name, key, err){
    a new one and a late file still says so. Anything else (no built row, a newer input, another deploy, no
    table) builds it the way it always was, and keeps it. A part over 1.2 MB goes in numbered rows (#2, #3, ...),
    each well under D1's 2 MB a row. */
-const BUILT_V = 3;          // the shape of a built row: a new number reads every older row as missing (2: league dates in now, 3: only the fields the page reads)
+const BUILT_V = 4;          // the shape of a built row: a new number reads every older row as missing (2: league dates, 3: only the fields the page reads, 4: in live only)
 const CHUNK = 1.2e6;        // bytes in one built row at most
 // the files each group is made from: a built group is out of date once one of these has moved on
 const INPUTS = {full: ['market.json', 'exchange.json', 'leagues.json'], now: ['market.json', 'exchange.json', 'leagues.json'],
@@ -719,10 +719,11 @@ async function makeMarket(env, origin, ctx, group, inputs, memo){
   const top = {league, updated, late, times: {currency: currencyAt, trade: tradeAt, catalogue: came(catRow)},
     primary: 'divine', rates: rate ? {exalted: rate} : {},
     source: 'Currency Exchange and trade site listings', builds: cat.builds,
-    markets: cx.league === league ? (cx.markets || []).slice(0, 40) : [],
-    // only what the league clock and the charts' colours read: the name, the version, the first day and the colour
-    leagues: {updated: leagueFile.updated || null, leagues: (Array.isArray(leagueFile.leagues) ? leagueFile.leagues : [])
-      .filter(l => l && l.name).map(l => ({name: l.name, v: l.v, start: l.start, ...(l.colour ? {colour: l.colour} : {})}))}};
+    markets: cx.league === league ? (cx.markets || []).slice(0, 40) : []};
+  // live only (the home page's part): what the league clock and the charts' colours read, the name, the version, the
+  // first day and the colour. The drill-down page's ?part=now does without: it reads the shipped data/leagues.json
+  const leagueDates = {updated: leagueFile.updated || null, leagues: (Array.isArray(leagueFile.leagues) ? leagueFile.leagues : [])
+    .filter(l => l && l.name).map(l => ({name: l.name, v: l.v, start: l.start, ...(l.colour ? {colour: l.colour} : {})}))};
   const bodies = {};
   if(group === 'full') bodies[''] = {...top, items};
   else {
@@ -737,7 +738,7 @@ async function makeMarket(env, origin, ctx, group, inputs, memo){
       const facts = await factsOf(cat);
       if(ctx && ctx.waitUntil) ctx.waitUntil(keepFacts(origin, facts));
       bodies.now = {...top, part: 'now', items: now};
-      bodies.live = {...top, part: 'live', facts: facts.v, ...liveItems(now, cat, currencyAt)};
+      bodies.live = {...top, part: 'live', facts: facts.v, leagues: leagueDates, ...liveItems(now, cat, currencyAt)};
     } else {
       bodies.past = {league, updated, part: 'past', items: past};
       bodies.hist = {league, updated, part: 'hist', ...histItems(past, days)};
