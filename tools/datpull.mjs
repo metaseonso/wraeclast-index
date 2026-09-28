@@ -1,14 +1,23 @@
 /* The game's own tables, read straight out of the game files: the ones RePoE's export does not carry (#83).
 
-     node tools/datpull.mjs                  find today's patch, pull, write data/game/
+     python tools/pipeline.py --only datpull   the way to run it: a patch stage, under the last good rule
+     node tools/datpull.mjs                  find today's patch, pull, write data/game/ in place
      node tools/datpull.mjs --patch 4.5.5.3  that CDN folder, no probing
-     node tools/datpull.mjs --out <dir>      write somewhere else (tools/datpull.py writes to a scratch folder)
+     node tools/datpull.mjs --out <dir>      write somewhere else
      node tools/datpull.mjs --only strongboxes,ritual_rites   those files only
      node tools/datpull.mjs --all            the files marked later too
      node tools/datpull.mjs --list           the declared files and the tables behind each, nothing fetched
+     node tools/datpull.mjs --raw PassiveSkills,Stats --out <dir>
+                                             whole tables, row for row, as tools/gamepull.py dat() reads them
+     node tools/datpull.mjs --find-patch     print the live CDN folder, nothing else fetched
 
-   Run it through `python tools/datpull.py`, which is this plus the last-good rule (tools/lastgood.py): a pull
-   that fails or comes back thin never overwrites the copy in data/game/. Run on its own it writes straight in.
+   It is the patch stage "datpull" of tools/pipeline.py, which runs it in build/tree/ and holds every file it
+   wrote to the last good rule (tools/lastgood.py) before any of it goes into data/: a pull that stops, or a file
+   that comes back thin, a kind of its rows gone, or an internal id in a field its `ids` does not name, keeps the
+   whole of data/game/ on its last good copy and says why. Run on its own it writes straight in.
+
+   --raw is the other half: every Python tool that needs a table the export leaves out asks tools/gamepull.py
+   dat(), and dat() asks this. One reader of the game's bundles, no token and no private copy of the tables.
 
    How, step by step (proved on all 1,023 tables of 0.5.5 in #83):
    1. The patch folder. GGG's patch server speaks raw TCP on 13060 and says nothing through a proxy, so start from
@@ -19,7 +28,7 @@
    3. The bundles. The index (about 115 MB) and then only the bundles the declared tables sit in, each kept in
       tools/cache/datpull/<patch>/ so a second run downloads nothing.
    4. The tables. Decoded with pathofexile-dat 15.2.0 (package.json, optional like esbuild: the site never needs
-      it). Three things that cost a morning each: paths inside the bundles are lower case
+      it; npm ci). Three things that cost a morning each: paths inside the bundles are lower case
       (data/balance/<table>.datc64); dist/dat/dat-file.js and dist/dat/reader.js are imported by file, because
       the package's dat.js fetches a wasm file the moment it is imported; and Node's fetch ignores HTTPS_PROXY
       unless NODE_USE_ENV_PROXY=1, so this sets it and starts itself again when it is missing.
@@ -29,7 +38,7 @@
       it is kept by its id under `hidden` and never in a field a page draws.
 
    Every file is { source, table, note, ids, rows }. `ids` names the fields that may hold an internal id (a join
-   key, a hidden stat): tools/dev/ids.mjs fails a build where any other field does. Nothing else is written
+   key, a hidden stat): tools/lastgood.py fails a pull where any other field does. Nothing else is written
    anywhere but the cache. */
 import { mkdir, readFile, writeFile, rename, stat } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
@@ -48,7 +57,8 @@ if((process.env.HTTPS_PROXY || process.env.https_proxy) && !process.env.NODE_USE
   process.exit(r.status == null ? 1 : r.status);
 }
 
-const OUT = resolve(opt('--out') || join(ROOT, 'data', 'game'));
+const HOME = 'data/game/';        // the files the patch stage writes, one per declaration below
+const OUT = resolve(ROOT, opt('--out') || HOME);
 const CACHE = resolve(opt('--cache') || join(ROOT, 'tools', 'cache', 'datpull'));
 const OFFICIAL = join(ROOT, 'tools', 'cache', 'official');     // tools/gamepull.py's copies of the export, shared
 const REPOE = 'https://repoe-fork.github.io/poe2/';
@@ -58,7 +68,7 @@ const SCHEMA_GIT = 'https://github.com/poe-tool-dev/dat-schema';
 const DAT_VERSION = '15.2.0';
 const UA = 'wraeclast-index/1.0 (contact: https://wraeclastindex.fyi/)';
 const say = m => process.stderr.write(m + '\n');
-// a pull that stops says why in one line and exits 1; tools/datpull.py turns that into the last-good fault
+// a pull that stops says why in one line and exits 1; the pipeline turns that into the last good fault
 const stop = e => { say('datpull stopped: ' + (e && e.message || e)); process.exit(1); };
 process.on('uncaughtException', stop);
 process.on('unhandledRejection', stop);
@@ -104,7 +114,7 @@ async function findPatch(){
 const gamePatch = cdn => cdn.replace(/^4\.(\d+)\.(\d+).*$/, '0.$1.$2');
 
 /* ---------- 2. the schema, and the commit it came from ---------- */
-async function loadSchema(){
+async function loadSchema(askGit = true){
   const file = opt('--schema') || join(CACHE, 'schema.min.json');
   if(!opt('--schema') && existsSync(file) && Date.now() - (await stat(file)).mtimeMs > 864e5)
     await rename(file, file + '.old');   // a day old: dat-schema moves with the patches, ask again
@@ -116,7 +126,7 @@ async function loadSchema(){
     schema = JSON.parse(await readFile(file + '.old'));
   }
   let commit = null;
-  try {
+  if(askGit) try {
     const out = execFileSync('git', ['ls-remote', SCHEMA_GIT, 'refs/tags/latest^{}', 'refs/tags/latest'],
       {encoding: 'utf8', timeout: 30000});
     const peeled = out.split('\n').find(l => l.endsWith('^{}')) || out.split('\n')[0];
@@ -127,8 +137,13 @@ async function loadSchema(){
 
 /* ---------- 3 and 4. the bundles, and a table as plain rows ---------- */
 async function openGame(patch, schema){
-  const nm = join(ROOT, 'node_modules', 'pathofexile-dat', 'dist');
-  if(!existsSync(nm)) throw new Error('pathofexile-dat is not installed: npm install (it is an optional dependency)');
+  // the package where Node itself would find it: here, or in a folder above (the pipeline runs this in build/tree/)
+  let nm = null;
+  for(let d = ROOT; !nm; d = dirname(d)){
+    if(existsSync(join(d, 'node_modules', 'pathofexile-dat', 'dist'))) nm = join(d, 'node_modules', 'pathofexile-dat', 'dist');
+    else if(dirname(d) === d) break;
+  }
+  if(!nm) throw new Error('pathofexile-dat is not installed: npm ci (it is an optional dependency)');
   const B = await import(pathToFileURL(join(nm, 'bundles.js')));
   const {readDatFile} = await import(pathToFileURL(join(nm, 'dat', 'dat-file.js')));
   const {getFieldReader} = await import(pathToFileURL(join(nm, 'dat', 'reader.js')));
@@ -451,6 +466,24 @@ const FILES = [
 ];
 
 /* ---------- run ---------- */
+if(args.includes('--find-patch')){ console.log(await findPatch()); process.exit(0); }
+if(opt('--raw')){
+  // whole tables for tools/gamepull.py dat(): every row, every column dat-schema names (Unknown<n> where it
+  // does not), a foreign key as its row number, _i the row's own.
+  const names = opt('--raw').split(',').filter(Boolean);
+  const patch = opt('--patch') || await findPatch();
+  const {schema} = await loadSchema(false);
+  const game = await openGame(patch, schema);
+  await mkdir(OUT, {recursive: true});
+  for(const name of names){
+    const t = await game.table(name);
+    const body = JSON.stringify(t.rows.map((r, i) => ({_i: i, ...r})));
+    await writeFile(join(OUT, name + '.json.tmp'), body);
+    await rename(join(OUT, name + '.json.tmp'), join(OUT, name + '.json'));
+    say('  ' + name + ': ' + t.rows.length + ' rows from ' + patch + (t.exact ? '' : ' (schema shorter than the row: read what fits)'));
+  }
+  process.exit(0);
+}
 if(args.includes('--list')){
   for(const f of FILES) console.log(f.file.padEnd(22) + f.tables.join(', ') + (f.later ? '  (later)' : ''));
   process.exit(0);

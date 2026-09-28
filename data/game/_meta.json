@@ -5,7 +5,7 @@
  ],
  "source": "game files, patch 0.5.5",
  "patch": "0.5.5",
- "cdn": "4.5.5.3",
+ "cdn": "4.5.5.4",
  "reader": "pathofexile-dat 15.2.0",
  "schema": {
   "commit": "36ab7bee1b4eacc197e401383ff76d6e57de0b46",

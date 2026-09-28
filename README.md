@@ -55,6 +55,7 @@ The site is static, and every hourly job that keeps it live runs on GitHub Actio
 | `data/craft.json`, `data/craft/` | Craft tab: every base and the mods it can roll (all tiers, item levels, groups), how often each mod rolls, essences, runes and soul cores, desecrated and corruption mods, orbs, omens and catalysts, built by `tools/craft.py` from the game files (essence tables and orb levels checked on poe2db; run after a game patch, after `tools/tradedata.py`). The weights are the one thing the game files do not carry — every spawn weight in the export is 1 or 0, can roll or cannot — so they come from Craft of Exile, pulled into `tools/craftweights.json` by `tools/craftweights.py` and named on the page where they are shown |
 | `data/craftmods.json` | The Craft tab's second question, "how do I get this mod", which is asked with no base in hand: one row per modifier — its own wording, its side, its tags and every kind of item that can carry it, with the lowest level it lands at and whether an essence guarantees it there. Built by `tools/craftmods.py` out of the item class files above, so nothing official is read twice, 58 kB against their 1.6 MB; fetched the first time that question is asked and never in first paint. Run it after `tools/craft.py` |
 | `data/gamedata.json` | Which patch the shipped data is from, written by `tools/gamepull.py` (one daily pull of the official export; it also writes the gap report `tools/dev/gaps.txt` — what the game files hold against what we card) |
+| `data/game/` | The game's own tables that RePoE's export does not carry (#83): monsters and their resistance sets, quest rewards, gold, Trial of Chaos modifiers, the Trial of the Sekhemas, strongboxes, Forbidden Rites, ritual altars, atlas corruption, map content, Azmeri spirits, the engine's constants, the resistance penalty and the rare monster modifiers, one plain JSON file each, about 600 kB in all. Read straight out of the game's bundles on GGG's patch CDN by `tools/datpull.mjs` (pathofexile-dat and poe-tool-dev's dat-schema; an optional dependency like esbuild, `npm ci`), the pipeline's `datpull` stage. Every foreign key comes out as the name a player reads; a file names the fields that may hold an internal id in its own `ids`, and the last good rule fails a pull where any other field does. `_meta.json` says which patch and which dat-schema commit each file is from. No page asks for them yet, so the build leaves them out of `dist/`. The same reader hands whole tables to the Python tools: `tools/gamepull.py` `dat()` runs `tools/datpull.mjs --raw` and keeps them in `tools/cache/dat-<CDN folder>/` |
 | `data/gamestats.json` | One monster of each level (life, damage, accuracy, armour, evasion) and what each class starts with, from the game files by `tools/gamelib.py`. Nothing reads it yet |
 | `data/guides.json` | The community guides the Build tab links out to: one line each, and the day the address was last read. Built by `tools/guides.py`, which holds the list and reads every address on each publish — a guide whose page has gone, or no longer carries its own words, keeps the row it last checked out on and becomes a named fault instead of a dead link. Someone else's work, named where it is shown and never ours |
 | `data/patches.json` | Every Path of Exile 2 patch, hotfix and restart since 0.1 (260 rows at 0.5.5c): the hour its notes went up (UTC), its league, its thread on the official patch notes forum, the league-opening day where a patch opened one, the passive tree export commit and tag that match it, and every client build the index has carried with the day it was first seen. Built by `tools/patches.py`; see Patches, snapshots and price history |
@@ -71,7 +72,8 @@ copy stays, the run prints what went stale with the counts before and after, how
 likely cause, the fault is written to `data/faults.json`, a GitHub issue labelled `data-fault` is opened or
 reused (where the `gh` CLI is signed in), and the run exits non-zero. The owner sees the section in the
 dashboard's Data jobs block and in `/api/health`, in the same fine/late/stopped style as the jobs. Applies to
-`sync.py`, `craft.py`, `uniques.py`, `leagues.py`, `market.py`, `exchange.py`, `gamepull.py`, `tradedata.py`,
+`sync.py`, `craft.py`, `uniques.py`, `leagues.py`, `market.py`, `exchange.py`, `gamepull.py`, `datpull.mjs` (through its
+pipeline stage), `tradedata.py`,
 `gameinfo.py`, `atlas.py`, `bosses.py`, `farms.py`, `guides.py` (where the outside source is a link we
 send players to, and the fault is that it has rotted) and `baseprices.py` (whose source is the craft tables a
 patch fills: a patch that empties one of them must not empty the price list with it). The tools that build only from files already on disk
@@ -85,7 +87,9 @@ the uniques before, on 38% now), a field that comes back in another shape (a lis
 string), and a value shaped like a raw game id (`Metadata/...`, a snake_case stat id, `[DNT]`) in a field a card
 draws as words, or in any field that held none before, are each a collapse: last good copy kept, fault, ticket.
 Which fields a card draws comes from `data/schema.json`; the fields no card draws (the Technical details ids, the
-search words, a keyword chip's ids) may hold ids. The live price files skip the "fewer of them" rule, since a
+search words, a keyword chip's ids) may hold ids. A file that lists its own `ids` (`data/game/`) is held to that
+list alone, new or not: an id, an `Art/` path, an area id, `[Tag|Word]` markup or an unfilled `{0}` anywhere else
+fails it. The live price files skip the "fewer of them" rule, since a
 price that thins out is the market and not the parse. `python tools/lastgood.py --shape` shows all three on a
 spoiled copy of the committed index, writing nothing.
 
@@ -168,6 +172,7 @@ python tools/pipeline.py patch --dry                                  build and 
 | Stages, in order | Cadence | Source |
 |---|---|---|
 | `gamepull` | daily | the game files (RePoE's export); also the gap report `tools/dev/gaps.txt` |
+| `datpull` | patch | the game's own bundles on GGG's patch CDN (`data/game/`; Node, `npm ci`, about 120 MB the first time a patch is read) |
 | `gameinfo`, `atlas`, `craft`, `gamelib`, `treecards`, `clusters`, `grants` | patch | the game files (`craft` also checks essences and orb levels on poe2db) |
 | `tradedata` | patch | the official trade site's lists |
 | `craftweights` | patch | Craft of Exile (the mod weights the game files do not carry) |
