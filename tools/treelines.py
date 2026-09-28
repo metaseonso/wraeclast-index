@@ -56,7 +56,7 @@ def main():
     args = ap.parse_args()
     out = build()
     text = json.dumps(out, ensure_ascii=False, separators=(',', ':')) + '\n'
-    was = OUT.read_text(encoding='utf-8', newline='') if OUT.exists() else ''
+    was = (open(OUT, encoding='utf-8', newline='').read() if OUT.exists() else '')   # read_text(newline=) is Python 3.13+; Actions runs 3.12
     print('treelines %d passives, %d wordings, %.0f KB%s'
           % (len(out['n']), len(out['w']), len(text.encode('utf-8')) / 1024,
              '' if text == was else (' (would change)' if args.report else ' -> data/treelines.json')))
