@@ -19,7 +19,9 @@ How a run goes:
      copied to build/<stage>/ with its log.
   3. What it changed is checked: every JSON file still reads; the files the cards are made of hold to their
      declarations (tools/dev/schema.mjs, data/schema.json); and every JSON file it wrote holds up against the
-     copy in data/ under the last good rule, counts and shape (tools/lastgood.py).
+     copy in data/ under the last good rule, counts and shape (tools/lastgood.py). The index's links too
+     (tools/nodelinks.py, "lx"): a link the copy in data/ has is lost only with its card or its words. One
+     lost while both cards are still there and the line still says the words fails the run (lost_links).
      A file a later stage of the same run writes too (data/index.json and its two parts: sync builds it, then
      gamelib, treecards, clusters and the rest add their cards to it) is held to the last good rule once, on
      its final state after the last stage that writes it, against the copy in data/. Halfway through it is
@@ -343,6 +345,43 @@ def last_copy(path, root=ROOT):
 CARD_FILES = ('data/index.json', 'data/index-core.json', 'data/index-rest.json', 'data/bosses.json', 'data/schema.json')
 
 
+def links(index):
+    """The index's links (tools/nodelinks.py): (card, card it opens, the words) for every span in every line."""
+    import nodelinks
+    keys, out = index.get('lxk') or [], []
+    for it in index.get('items') or []:
+        lines = nodelinks.lines_of(it)
+        for j, row in enumerate(it.get('lx') or []):
+            for s, n, k in (row or []) if j < len(lines) else []:
+                if 0 <= k < len(keys):
+                    out.append((it['k'] + ':' + it['id'], keys[k], lines[j][s:s + n]))
+    return out
+
+
+def lost_links(new, old):
+    """The links the last good index had that this one lost while nothing explains it: both cards are still
+    there and the card's lines still say the words. Links are the graph, so one of those is a fault. A link whose
+    card went, or whose line no longer says the words, went with them."""
+    import nodelinks
+    now = {(a, b) for a, b, _ in links(new)}
+    cards = {it['k'] + ':' + it['id']: it for it in new.get('items') or []}
+    lost = []
+    for a, b, words in links(old):
+        if (a, b) in now or a not in cards or b not in cards:
+            continue
+        if any(words in line for line in nodelinks.lines_of(cards[a])):
+            lost.append((a, b, words))
+    return sorted(set(lost))
+
+
+def link_counts(index):
+    """How many links reach each kind of card."""
+    out = {}
+    for _, b, _ in links(index):
+        out[b.split(':')[0]] = out.get(b.split(':')[0], 0) + 1
+    return out
+
+
 def check_files(stage, changed, root, against, schema=True, later=()):
     """What a stage wrote, held to the rules: (file, why) for the first file that does not hold up, else None.
     against(path) gives the last good copy of a file (data/ as it is, or the committed one). later: files a
@@ -365,6 +404,12 @@ def check_files(stage, changed, root, against, schema=True, later=()):
         bad = lastgood.look(new, old, count.get(path), file=name)
         if bad:
             return path, bad['why'], bad
+        if path == 'data/index.json':
+            lost = lost_links(new, old)
+            if lost:
+                return path, '%d link%s lost, both cards still there and the words still in the line: %s' % (
+                    len(lost), '' if len(lost) == 1 else 's', '; '.join('%s -> %s "%s"' % x for x in lost[:6])), {
+                    'was': len(lost), 'now': 0, 'gone': sorted({x[1].split(':')[0] for x in lost})}
     if schema and any(p in CARD_FILES for p in changed):
         problems = schema_check(root / 'data')
         if problems:
