@@ -385,7 +385,6 @@ function anoint(m, it){
   if(!it.rec || !it.rec.length) return null;
   const parts = it.rec.map(n => ({n, e: m.currencyByName.get(n), x: m.M && m.M['c:' + n]}));
   let div = parts.every(p => p.x && p.x.v !== undefined) ? parts.reduce((a, p) => a + p.x.v, 0) : null;
-  if(div === null && it.ac) div = it.ac;
   return {parts, div};
 }
 

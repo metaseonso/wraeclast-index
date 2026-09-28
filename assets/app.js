@@ -661,7 +661,7 @@ function anointHTML(it){
     const vals = it.rec.map(n => (M['c:' + n] || M['c:' + n.toLowerCase().replace(/[^a-z]+/g, '-')] || {}).v);
     if(vals.every(v => v !== undefined)) div = vals.reduce((a, b) => a + b, 0);
   }
-  if(div === null && it.ac) div = it.ac;
+  // no live price for all three: no sum. The artifact's saved cost (ac) was a price with no source or age, and is gone
   return '<div class="card-inv"><span title="' + esc(it.rec.join(' + ')) + '">Anoint with 3 emotions</span><b>' +
     (div !== null ? moneyHTML(div) : '') + '</b></div>';
 }
