@@ -40,8 +40,9 @@ import {SECTIONS} from './kinds.js';   // what each section is called: the one t
   /* The app (top search, card popups, the header's buttons) is not part of the page's first paint. It is asked for
      when first needed (the top search, a key, a pointer over the header or a table, a row or keyword that opens a
      card) or once the page is idle after its table, whichever comes first. It takes the page's own price file
-     (window.WI_MARKET, tools/sync.py LIVE), so that file comes down once. The index behind the cards is its own
-     step (need() in app.js): a pointer over a list's rows asks for it, and so does a click that opens a card. */
+     (window.WI_MARKET, tools/sync.py LIVE), so that file comes down once. The search behind the cards is its own
+     step (wake() in app.js): a pointer over a list's rows asks for it, and so does a click that opens a card, which
+     then fetches that one card whole. */
   let app = null;
   function loadApp(){
     if(app) return app;
@@ -59,10 +60,10 @@ import {SECTIONS} from './kinds.js';   // what each section is called: the one t
     app.catch(() => host && host.remove());
     return app;
   }
-  // everything a card needs (the whole index): asked for once, then the app's own promise
-  const whole = m => Promise.resolve(m.need ? m.need() : m.ready);
+  // what a card needs: the search, which holds the words that mark its lines and fetches it whole
+  const waking = m => Promise.resolve(m.wake ? m.wake() : m.need ? m.need() : m.ready);
   const soon = () => { loadApp().catch(() => {}); };
-  const cards = () => { loadApp().then(whole).catch(() => {}); };
+  const cards = () => { loadApp().then(waking).catch(() => {}); };
   Promise.resolve(drawn).then(() => idle(loadApp));
   const mast = document.querySelector('header.top, .mast');
   if(mast) for(const t of ['pointerover', 'focusin', 'touchstart']) mast.addEventListener(t, soon, {once: true, passive: true});
@@ -151,24 +152,18 @@ import {SECTIONS} from './kinds.js';   // what each section is called: the one t
      Anything the app has no card for still opens the page's own panel. A click that comes before the app and its
      index are in waits for them, the way a card opened anywhere else on the site waits (openDetail in app.js). */
   const ROWS = Object.values(BODY).map(b => b + ' tr').join(', ');
-  let byName = null;
-  function itemFor(tr){
-    const D = M.D;
-    if(tr.dataset.id && D.byKey.get('g:' + tr.dataset.id)) return D.byKey.get('g:' + tr.dataset.id);
+  // the card behind a row, whole: fetched through the app, which holds only the cards it has shown
+  const one = async key => (await M.whole([key]))[0] || null;
+  async function itemFor(tr){
+    if(tr.dataset.id){ const g = await one('g:' + tr.dataset.id); if(g) return g; }
     const name = rowName(tr);
     if(tr.closest(BODY.uniques)){
       const base = ((tr.querySelector('.sublbl') || {}).textContent || '').split(' \u00b7 ')[0].trim();
-      return D.byKey.get('u:' + name + ' | ' + base) || D.byKey.get('u:' + name) || null;
+      return await one('u:' + name + ' | ' + base) || await one('u:' + name);
     }
     if(tr.closest(BODY.tree)){
-      if(!byName){
-        byName = new Map();   // a name can stand for several cards: the tree carries "Armour" in eight strengths
-        for(const it of D.index.items) if(it.k === 'p'){
-          if(!byName.has(it.n)) byName.set(it.n, []);
-          byName.get(it.n).push(it);
-        }
-      }
-      const list = byName.get(name) || [];
+      // a name can stand for several cards: the tree carries "Armour" in eight strengths
+      const list = await M.named('p', name);
       if(list.length < 2) return list[0] || null;
       // same name, different numbers: the row's own effect lines say which of them this row is
       const said = flat((tr.querySelector('.blurb') || {}).innerText);
@@ -176,15 +171,14 @@ import {SECTIONS} from './kinds.js';   // what each section is called: the one t
     }
     return null;
   }
-  const ready = () => M && M.D.full;
   // the card for a keyword or a row, opened; false when the app has none (the page's own panel then)
-  function cardFor(kw, tr){
+  async function cardFor(kw, tr){
     if(kw){
       const c = M.keywordCard(kw.dataset.k);
       if(c) M.openDetail(c, {}, null);
       return !!c;
     }
-    const it = itemFor(tr);
+    const it = await itemFor(tr);
     if(!it) return false;
     document.querySelectorAll('tbody tr[aria-selected]').forEach(r => r.removeAttribute('aria-selected'));
     tr.setAttribute('aria-selected', 'true');
@@ -194,14 +188,10 @@ import {SECTIONS} from './kinds.js';   // what each section is called: the one t
   }
   const ownPanel = (kw, tr) => kw ? window.PoE && PoE.openKeyword(kw.dataset.k) : tr.onclick.call(tr);
   function take(e, kw, tr){
-    if(ready()){
-      if(cardFor(kw, tr)){ e.stopImmediatePropagation(); e.preventDefault(); }
-      return;
-    }
     if(M && M.D.failed) return;   // no index to be had: the page's own panel
     e.stopImmediatePropagation(); e.preventDefault();
     if(tr) tr.setAttribute('aria-selected', 'true');
-    loadApp().then(whole).then(() => { if(!ready() || !cardFor(kw, tr)) ownPanel(kw, tr); }, () => ownPanel(kw, tr));
+    loadApp().then(waking).then(() => cardFor(kw, tr)).then(ok => { if(!ok) ownPanel(kw, tr); }, () => ownPanel(kw, tr));
   }
   addEventListener('click', e => {
     if(e.button !== 0 || e.ctrlKey || e.metaKey || e.shiftKey || e.altKey) return;

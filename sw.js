@@ -38,7 +38,8 @@ const PAGE_KEYS = ['./', 'explore', 'privacy'];
 // files read from that page (tools/sync.py names them)
 const SHELL = ['./', 'explore', 'privacy',
   'assets/app.css', 'assets/cards.css', 'assets/theme.css', 'assets/look.css', 'assets/bridge.css',
-  'assets/app.js', 'assets/kinds.js', 'assets/edges.js', 'assets/marks.js', 'assets/keys.js', 'assets/suggest.js', 'assets/notes.js',
+  'assets/app.js', 'assets/kinds.js', 'assets/edges.js', 'assets/graph.js', 'assets/rank.js', 'assets/cut.js',
+  'assets/searchworker.js', 'assets/marks.js', 'assets/keys.js', 'assets/suggest.js', 'assets/notes.js',
   'assets/pins.js', 'assets/runs.js', 'assets/support.js', 'assets/track.js', 'assets/topnav.js',
   'assets/league.js', 'assets/bridge.js', 'assets/build.js', 'assets/currency.js', 'assets/trade.js', 'assets/tradepage.js',
   'assets/basepool.js',
@@ -49,10 +50,10 @@ const SHELL = ['./', 'explore', 'privacy',
   'assets/fonts/ibmplexmono-500-latin.woff2', 'assets/fonts/ibmplexmono-600-latin.woff2',
   'assets/brand/logo-64.webp', 'assets/brand/logo-320.webp', 'assets/brand/wisp-b.webp', 'assets/brand/fog-bank.webp',
   'assets/brand/haze.webp', 'assets/brand/favicon-64.png', 'assets/brand/favicon-32.png', 'assets/brand/ninja.png',
-  'data/index-core.json', 'data/index-rest.json', 'data/bosses.json', 'data/changelog.json', 'data/support.json'];
+  'data/manifest.json', 'data/bosses.json', 'data/changelog.json', 'data/support.json'];
 const OWN = /^\/(assets|data|sprites)\//;
 const PASS = /^\/(api\/|admin|assets\/admin\.js|sw\.js|data\/(market|leagues|rollprices|farmprices|bossprices)\.json)/;
-const NAMED = /^\/(data\/explore|assets\/fonts)\//;   // named by their content, or never changed: the browser's copy is fine
+const NAMED = /^\/(data\/explore|data\/search|data\/cards|assets\/fonts)\//;   // named by their content, or never changed: the browser's copy is fine
 const pathOf = u => new URL(u, location).pathname;
 
 self.addEventListener('install', e => {

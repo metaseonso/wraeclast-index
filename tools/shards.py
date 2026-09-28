@@ -289,7 +289,7 @@ def write():
         p.parent.mkdir(parents=True, exist_ok=True)
         if not p.exists() or p.read_bytes() != b:
             lastgood.save(p, b.decode('utf-8'))
-    lastgood.save(DATA / 'manifest.json', json.dumps(man, ensure_ascii=False, indent=1))
+    lastgood.save(DATA / 'manifest.json', body(man))   # read before every search: kept short
     # a file an older cut named goes: nothing names it now, and it would ship
     keep = set(files)
     gone = 0

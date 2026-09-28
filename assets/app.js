@@ -8,6 +8,8 @@ import {initKeys, setCardKeys, keyLabel} from './keys.js';
 import {KIND, DEFAULT, FIELDS, ACTS, CHIPS, NAMES, ROUTES, SHUT, fieldsOf, FRAME, SLOTS, BOXES, MAKE, KW, holds, markOf, ours, slotList, jobOf} from './kinds.js';
 import * as edges from './edges.js';
 import * as marks from './marks.js';
+import {ranker, hits, SEEN_MAX} from './rank.js';
+import {unpack, inOrder} from './cut.js';
 
 export const $ = (s, el = document) => el.querySelector(s);
 export const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -67,36 +69,50 @@ function stuck(what){
 }
 
 /* ---------- data ----------
-   Nothing of the index is fetched until the page needs it (need(), below). The home page is a search bar, so all
-   its first paint takes is today's prices, for the stamp in the top bar.
+   The home page is a search bar, so all its first paint takes is today's prices, for the stamp in the top bar,
+   and the manifest, for the patch it names. Nothing of the index is fetched until the page needs it, and then
+   only the piece it needs (the cut, tools/shards.py):
      data/market.json?part=live   every price, without the day-by-day history, written short (worker/prices.js).
                                   index.html asks for it before its styles; the drill-down page hands in the
                                   ?part=now it has already read (window.WI_MARKET), so no page asks twice
+     data/manifest.json           the index's id and patch, and every file of the cut. Never kept long
      data/market.json?part=facts  what the catalogue says about each currency: its name, picture and what it does.
                                   Named by its content, so the browser keeps it for a year
-     data/index-core.json, data/index-rest.json   the search index, in two parts (tools/appdata.py)
+     data/cards/meta.<h>.json     what every card is drawn with and no card carries: sprite sheets, image servers,
+                                  the orb ladders, keyword names, the table the line marks point into
+     data/search/<k>.<h>.json     every kind's search rows: read by the search worker (assets/searchworker.js),
+                                  never by the page. The page asks it for answers and holds only what it shows
+     data/cards/<k>/<nn>.<h>.json the cards whole, a couple of hundred KB a file: through the worker as a card is
+                                  drawn or opened, or all of them on a tab that works over the whole index
      data/bosses.json             the bosses, which join the search (tools/bosses.py)
      data/market.json?part=hist   the history, for the charts: only once a chart or a popup asks (hist())
-   need() starts the index, once: a search box touched, the "/" key, a search in the address, any tab but home, a
-   card or a box opened, or the home page sitting idle a few seconds after it is drawn. `first` is the core with
-   today's prices, `ready` is all of it: search, the popups and the other tabs wait for it. Neither starts
-   anything by itself, so anything that waits on one of them calls need() first. */
+   Three steps, each started once and never by itself:
+     wake()   the search: a search box touched, the "/" key, a search in the address, a card or a box opened, or
+              the home page sitting idle a few seconds after it is drawn. `first` is the meta with today's prices
+              and the cards the page makes itself; `searching` is the worker answering and the keyword and
+              mechanics cards held, whose words mark every card's lines
+     have(keys), whole(keys)   the head, or the whole card, of each key the page is about to draw
+     need()   the whole index, for a tab that works over all of it (and the Map): `ready`. A page holding the
+              whole index answers its searches itself, by the same rules (assets/rank.js). */
 export const D = { index: null, market: null, usage: null, byKey: new Map(), full: false };   // usage stays empty: see buildsHref
 async function getJSON(url, opt, early){
   const r = await (early || fetch(url, opt));   // the browser keeps it for 2 minutes (_headers), then checks for a new one
   if(!r) return getJSON(url, opt);              // the copy handed in never came: ask
   if(typeof r.json !== 'function') return r;    // the drill-down page's own copy, already read
-  if(!r.ok) throw new Error(url + ' ' + r.status);
+  if(!r.ok) throw Object.assign(new Error(url + ' ' + r.status), {gone: r.status === 404});
   return r.json();
 }
 const EARLY = window.WI_FIRST || {};   // index.html asks for today's prices before its styles
 const NOW = getJSON('data/market.json?part=live', undefined, EARLY.now || window.WI_MARKET)
   .then(m => (D.market = live(m)), () => null);
-let go;
-const GO = new Promise(r => { go = r; });
-export function need(){ go(); return ready; }
-const CORE = GO.then(() => getJSON('data/index-core.json', undefined, EARLY.core)).then(unpack);
-const REST = GO.then(() => getJSON('data/index-rest.json')).then(unpack);
+const MAN = getJSON('data/manifest.json', {cache: 'no-cache'}, EARLY.man);
+let go, seek, all;
+const GO = new Promise(r => { go = r; });      // the meta, the bosses, the catalogue's words
+const SEEK = new Promise(r => { seek = r; });  // the search worker
+const ALL = new Promise(r => { all = r; });    // every card
+export function wake(){ go(); seek(); return searching; }
+export function need(){ go(); all(); return ready; }
+const META = GO.then(() => MAN).then(m => getJSON(m.meta.file));
 const BOSS = GO.then(() => getJSON('data/bosses.json', {priority: 'low'}).catch(() => null));
 // the catalogue's words, when today's prices came without them (the drill-down page's copy has them already)
 const FACTS = GO.then(() => NOW).then(m => m && m.part === 'live'
@@ -120,34 +136,24 @@ export function hist(){
     leagues().then(f => { for(const l of (f && f.leagues) || []) if(l.colour) LEAGUE_COLOUR.set(l.name, l.colour); }),
   ]).then(() => { D.past = true; }));
 }
-/* The page asks for the index as soon as a player reaches for search: a tap or a key in a search box, or the "/"
+/* The page wakes the search as soon as a player reaches for it: a tap or a key in a search box, or the "/"
    that jumps to one. Not when the home page puts the cursor in its own box as it opens: that is before anyone has
    touched the page. */
 const BOX = '#view-home #q, .tsearch input';
-const touched = e => { const t = e.target; if(t && t.closest && t.closest(BOX)) need(); };
+const touched = e => { const t = e.target; if(t && t.closest && t.closest(BOX)) wake(); };
 addEventListener('pointerdown', touched, {capture: true, passive: true});
-addEventListener('keydown', e => { if(e.key === '/') need(); else touched(e); }, {capture: true, passive: true});
+addEventListener('keydown', e => { if(e.key === '/') wake(); else touched(e); }, {capture: true, passive: true});
 addEventListener('focusin', e => { const u = navigator.userActivation; if(!u || u.hasBeenActive) touched(e); }, true);
 
 /* ---------- the short files, read back ----------
    Every file above that is written short is put back into the shape the rest of the page reads here, as it
    arrives, and nowhere else: nothing past this point knows it was short.
-   unpack   an index part: every word said once in its "dict", back on each card (tools/appdata.py)
+   unpack   a file of the cut: every word said once in its "dict", back on each row (assets/cut.js)
    live     today's prices: n where it is the name in the key, and each price's age and source from "a"
    facts    the catalogue's words (names, pictures, what it does) onto today's prices
    past     the history (hist): the days back from numbers to "Sep 5", and each note and each pair's currency
             back from its place in notes and pn. The old ?part=past is joined as it comes
    (worker/prices.js "the compact parts") */
-function unpack(part){
-  const W = part && part.dict;
-  if(!W) return part;
-  const word = (f, v) => typeof v === 'number' ? W[f][v] : Array.isArray(v) ? v.map(i => W[f][i]) : v;
-  for(const list of Object.values(part)) if(Array.isArray(list)) for(const it of list)
-    if(it && typeof it === 'object' && !Array.isArray(it)) for(const f in W) if(it[f] !== undefined) it[f] = word(f, it[f]);
-  if(part.ckw && W.kw) for(const key in part.ckw) part.ckw[key] = word('kw', part.ckw[key]);
-  delete part.dict;
-  return part;
-}
 function live(m){
   if(!m || m.part !== 'live' || !m.items) return m;
   const t0 = m.t0 ? Date.parse(m.t0) : null, cx = m.times ? m.times.currency : null;
@@ -226,7 +232,7 @@ function prep(it, k, IMGS, lxk){   // once per card: its kind, full image link, 
   }
   return it;
 }
-/* Every orb on an upgrade ladder, pointing at the ladder it is on (index-core "up", tools/carddata.py).
+/* Every orb on an upgrade ladder, pointing at the ladder it is on (the meta's "up", tools/carddata.py).
    Built once, from the table, so no orb name is written down here. */
 let RUNG = null;
 function rungs(up){
@@ -240,47 +246,22 @@ const rungOf = name => (RUNG && RUNG.get(name)) || null;
 
 const MC = new Map();   // the market's own currency cards, made once
 const MB = new Map();   // the boss cards, made once
-/* The index as the pages use it: every card in the index's own order, then the market's currency and the bosses.
-   Without the rest (the first cards), only the core's kinds. */
-function assemble(core, rest){
-  rungs(core.up);   // the orb ladders, before any currency card is made
-  const IMGS = core.imgs || {}, pool = {}, at = {}, lxk = {};   // lxk: each part's own table of the cards its lines name
-  for(const part of [core, rest]) if(part) for(const [k] of core.order) if(Array.isArray(part[k])){ pool[k] = part[k]; at[k] = 0; lxk[k] = part.lxk || []; }
-  const items = [], byKey = new Map();
-  for(const [k, n] of core.order){
-    const list = pool[k]; if(!list) continue;
-    for(let i = 0; i < n && at[k] < list.length; i++){ const it = prep(list[at[k]++], k, IMGS, lxk[k]); items.push(it); byKey.set(k + ':' + it.id, it); }
-  }
-  if(rest) for(const [key, kw] of Object.entries(rest.ckw || {})){ const it = byKey.get(key); if(it) it.kw = kw; }
-  // the core's own cards keep their keyword chips and flavour line in the rest, so the first cards stay small
-  // the flavour line lands with the rest, after the haystack was built, so the haystack takes it here:
-  // a search for a line somebody remembers reading has to reach the line they read
-  if(rest) for(const [key, qt] of Object.entries(rest.cqt || {})){
-    const it = byKey.get(key);
-    if(it){ it.qt = qt; it._hay += ' ' + String(qt).toLowerCase(); }
-  }
-  /* A kind whose prices are listed under another kind says so once (KINDS px). There are two ways of meeting
-     the market there, and the declaration says which: a kind listed there whole keeps its own card, and the
-     market must not repeat it; a kind only some of whose entries are listed there (px carries a test: a
-     lineage support gem) leaves the market its card and lends it the words the index holds. A third case is a
-     third declaration, not a third branch. */
-  const named = new Map();     // index cards the market must not repeat, by name
-  const itemText = new Map();  // our own words for a market card of the same name
-  for(const it of items){
-    const px = (KIND[it.k] || {}).px;
-    if(!px) continue;
-    if(px.at === undefined) named.set(px.as + ':' + it.n, it);
-    else if(holds(it, px) && it.t) itemText.set(px.as + ':' + it.n, it.t);
-  }
-  const skip = rest ? new Set() : new Set(core.skip || []);   // cards the rest has: their prices wait for it
-  const lineage = new Set(core.li || []);   // lineage support gems: the market lists them too (the gem card shows that price)
-  // currencies live in the market file; they join the search as their own kind
+const CN = new Map();   // today's currency rows by name, for an index card the market lists under its name
+/* The cards the page makes itself, off today's prices and the bosses' own file: the market's currency and the
+   bosses. They join the search as their own kinds, after every card of the index. A kind whose prices are listed
+   under another kind says so once (KINDS px): an index card the market also lists by name (the meta's "named",
+   tools/shards.py) is the card, and its price row joins it as it is read (joinMarket); a lineage support gem
+   the market lists keeps the market's card for the Currency tab, lends it the gem card's words ("lt"), and the
+   search shows the gem card. */
+function runtime(){
+  const out = [], meta = D.meta || {};
+  const named = D.named || new Set(), lineage = D.lineage || new Set();
   const market = D.market;
   if(market && market.items){
     for(const [key, m] of Object.entries(market.items)){
-      if(!key.startsWith('c:') || skip.has(m.n)) continue;
-      const own = named.get('c:' + m.n);
-      if(own){ own.nx = false; if(!own.img) own.img = m.ic; continue; }   // the index has it: its card, with the market's price
+      if(!key.startsWith('c:')) continue;
+      CN.set(m.n, m);
+      if(named.has('c:' + m.n)) continue;   // the index has its card, with the market's price
       let it = MC.get(key);
       if(!it){
         // the game writes some of these lines as a table rather than a sentence; the card carries one or
@@ -299,12 +280,12 @@ function assemble(core, rest){
       }
       // A priced card must still say what the thing does. The market file says so for most of them; for the
       // rest the official text is in the index — a lineage support gem's own card, or "ix" for a name no card
-      // covers at all (tools/carddata.py). Both are in the rest, so this fills in when the rest lands.
-      if(!it.t && !it.pv && rest){
-        it.t = itemText.get('c:' + m.n) || (rest.ix || {})[m.n] || '';
+      // covers at all (tools/carddata.py), both in the meta.
+      if(!it.t && !it.pv){
+        it.t = (meta.lt || {})[m.n] || (meta.ix || {})[m.n] || '';
         if(it.t) it._hay += ' ' + it.t.toLowerCase();
       }
-      items.push(it); byKey.set('c:' + it.id, it);
+      out.push(it);
     }
   }
   // the bosses live in their own file; they join the search as their own kind, and the Bosses tab draws their card
@@ -317,32 +298,153 @@ function assemble(core, rest){
       it._hay = (it.n + ' ' + where + ' boss' + (b.pinnacle ? ' pinnacle' : '')).toLowerCase();
       MB.set(b.name, it);
     }
-    items.push(it); byKey.set('x:' + it.id, it);
+    out.push(it);
   }
-  D.index = {v: core.v, gen: core.gen, sprites: core.sprites, imgs: IMGS, up: core.up || [], kwx: rest ? rest.kwx || {} : {},
-    ws: (rest && rest.ws) || core.ws || '', items};
-  D.byKey = byKey;
+  D.rt = out;
+  for(const it of out){
+    const key = it.k + ':' + it.id;
+    if(!D.byKey.has(key)){ D.byKey.set(key, it); D.index.items.push(it); }
+  }
 }
+// what the worker is told of a card the page made: what it searches and groups by
+const rtRow = it => ({k: it.k, id: it.id, n: it.n, s: it.s, job: it.job, dup: it.dup, _nl: it._nl, _hay: it._hay});
+/* An index card the market lists under its name: the card is its own, with the market's price and picture. */
+function joinMarket(it){
+  const px = (KIND[it.k] || {}).px;
+  if(!px || px.at !== undefined || !D.named || !D.named.has(px.as + ':' + it.n)) return;
+  const m = CN.get(it.n);
+  if(!m) return;
+  it.nx = false;
+  if(!it.img) it.img = m.ic;
+}
+/* A head (assets/cut.js HEAD) into the page: drawn as its name, sub line, art and price until its card is in. */
+function hold(h){
+  const key = h.k + ':' + (h.id !== undefined ? h.id : h.n);
+  let it = D.byKey.get(key);
+  if(it) return it;
+  it = h;
+  it._head = true;
+  prep(it, h.k, D.index.imgs, (D.meta || {}).lxk);
+  joinMarket(it);
+  D.byKey.set(key, it);
+  D.index.items.push(it);
+  return it;
+}
+/* A whole card into the page. Its head, where the page holds one, becomes the card: the same object, so a
+   list, a trail or a grid holding it holds the card. */
+function settle(raw){
+  const key = raw.k + ':' + (raw.id !== undefined ? raw.id : raw.n);
+  let it = D.byKey.get(key);
+  if(it && !it._head) return it;
+  if(it){ for(const f of Object.keys(it)) delete it[f]; Object.assign(it, raw); }
+  else { it = raw; D.byKey.set(key, it); D.index.items.push(it); }
+  prep(it, raw.k, D.index.imgs, (D.meta || {}).lxk);
+  joinMarket(it);
+  return it;
+}
+
+/* ---------- the search worker ----------
+   One question at a time is a message; each answer comes back under its own number. Where a browser will not
+   start a module worker, the same code runs on the page (assets/searchworker.js handle), and answers the same. */
+let WK = null, WN = 0;
+const WAITS = new Map();
+function worker(){
+  if(WK) return WK;
+  try {
+    const w = new Worker(new URL('./searchworker.js', import.meta.url), {type: 'module'});
+    w.onmessage = e => { const m = e.data, x = WAITS.get(m.id); if(!x) return; WAITS.delete(m.id); m.error ? x.bad(m.error) : x.ok(m); };
+    w.onerror = () => { for(const x of WAITS.values()) x.bad('the search did not start'); WAITS.clear(); };
+    WK = {ask: m => new Promise((ok, bad) => { const id = ++WN; WAITS.set(id, {ok, bad}); w.postMessage({...m, id}); })};
+  } catch {
+    const mod = lazy('./searchworker.js', 'The search');
+    WK = {ask: m => mod.then(x => x.handle(m)).catch(err => { throw err && err.gone ? 'gone' : err; })};
+  }
+  return WK;
+}
+function ask(op, m = {}){
+  return worker().ask({op, ...m}).catch(err => { if(err === 'gone') moved(); throw new Error(String(err)); });
+}
+/* A file of the cut that is not there any more: the site has moved to a newer index under this page, and its
+   files are new names. The page is a deploy behind: one reload a session, as for a module (spend above). */
+let MOVED = false;
+function moved(){
+  if(MOVED) return;
+  MOVED = true;
+  getJSON('data/manifest.json', {cache: 'no-cache'}).then(m => {
+    if(m && D.man && m.id !== D.man.id && spend('data/manifest.json')) location.reload();
+    else stuck('The index');
+  }, () => stuck('The index'));
+}
+
 export const first = (async () => {
-  const [core] = await Promise.all([CORE, NOW, FACTS]);
-  D.core = core;
-  assemble(core, null);
+  const [man, meta] = await Promise.all([MAN, META, NOW, FACTS]);
+  D.man = man; D.meta = meta;
+  rungs(meta.up);   // the orb ladders, before any currency card is made
+  D.named = new Set(meta.named || []);
+  D.lineage = new Set(meta.li || []);   // lineage support gems: the market lists them too (the gem card shows that price)
+  D.index = {v: man.v, gen: man.gen, sprites: meta.sprites, imgs: meta.imgs || {}, up: meta.up || [], kwx: meta.kwx || {},
+    ws: meta.ws || '', items: []};
+  runtime();
   return D;
 })();
-export const ready = (async () => {
-  let [, rest, boss] = await Promise.all([first, REST, BOSS]);
-  let core = D.core;
-  D.bosses = boss;
-  if(rest.id !== core.id){   // two versions (a new one went live between the two files): both again, fresh
-    [core, rest] = await Promise.all([getJSON('data/index-core.json', {cache: 'no-cache'}).then(unpack),
-      getJSON('data/index-rest.json', {cache: 'no-cache'}).then(unpack)]);
-    D.core = core;
-  }
-  assemble(core, rest);
+/* The search: the worker has every kind's rows, the bosses have joined, and the cards whose words mark other
+   cards' lines are held (keywords, mechanics, interactions, and the keystones a keyword stands for). */
+export const searching = SEEK.then(() => first).then(async () => {
+  await ask('init', {man: D.man, base: new URL('.', document.baseURI).href,
+    market: Object.keys((D.market && D.market.items) || {}), runtime: D.rt.map(rtRow), seen: seenKeys()});
+  const w = await ask('words', {names: Object.values(D.index.kwx || {})});
+  for(const h of w.heads) hold(h);
+  D.bosses = await BOSS;
+  runtime();
+  await ask('runtime', {runtime: D.rt.map(rtRow)});
+  D.index = {...D.index};   // a new index: what was worked out from the old one (the marks) is worked out again
+  D.search = true;
+  return D;
+});
+searching.catch(() => { D.failed = true; });
+/* The whole index, for a tab that works over all of it: every card file, read on the page, put in the index's
+   own order, then the market's currency and the bosses. */
+export const ready = ALL.then(() => first).then(async () => {
+  const man = D.man, byKind = {};
+  await Promise.all(Object.entries(man.kinds).map(async ([k, K]) => {
+    const parts = await Promise.all(K.cards.map(c => getJSON(c.file).then(unpack)));
+    byKind[k] = parts.flatMap(p => p.rows.map(r => { r.k = k; return r; }));
+  }));
+  D.bosses = await BOSS;
+  runtime();
+  const items = inOrder(man.order, byKind).map(settle);
+  for(const it of D.rt) items.push(it);
+  D.index = {...D.index, items};
   D.full = true;
   return D;
-})();
-ready.catch(() => { D.failed = true; });
+});
+ready.catch(err => { D.failed = true; if(err && err.gone) moved(); });
+
+/* The heads of these keys, where there is a card for them: enough to draw a row, a pin or a result. */
+export async function have(keys){
+  const want = keys.filter(k => !D.byKey.has(k));
+  if(want.length && !D.full){
+    await wake();
+    for(const h of (await ask('heads', {keys: want})).heads) hold(h);
+  }
+  return keys.map(k => D.byKey.get(k)).filter(Boolean);
+}
+/* These cards whole, where there is a card for them: enough to draw it in the grid or open it. */
+export async function whole(keys){
+  const want = keys.filter(k => { const it = D.byKey.get(k); return !it || it._head; });
+  if(want.length && !D.full){
+    await wake();
+    for(const b of (await ask('bodies', {keys: want})).bodies) settle(b);
+  }
+  return keys.map(k => D.byKey.get(k)).filter(it => it && !it._head);
+}
+/* Every card of one kind by one name, whole (the drill-down page's rows: the tree carries one name in several
+   strengths). */
+export async function named(k, n){
+  if(D.full) return D.index.items.filter(it => it.k === k && it.n === n);
+  await wake();
+  return whole((await ask('find', {k, n})).keys);
+}
 
 /* ---------- market lookups ---------- */
 /* A card's own row first, then the row its kind says its price may be listed under (KINDS px: the Atlas's
@@ -535,21 +637,8 @@ function lineHTML(it, at, i, text, marked){
     drawLine(it, text, marked && it.hx && it.hx[i], marked && it.lx && it.lx[i]);
   return html;
 }
-/* The keyword cards land with the rest of the index, so the home page's very first cards can be drawn with
-   nothing to mark yet. They take their marks in place the moment it lands: only the lines are drawn again, so
-   a card keeps its place, its price and its buttons. */
-function remark(host){
-  for(const el of host.querySelectorAll('[data-mk]')){
-    const c = el.closest('.card');
-    const it = c && c.dataset.key ? D.byKey.get(c.dataset.key) : null;
-    if(!it) continue;
-    const [at, i] = el.dataset.mk.split(':');
-    const v = it[at];
-    el.innerHTML = lineHTML(it, at, +i, Array.isArray(v) ? v[+i] : v, (KIND[it.k] || {}).mark === at);
-  }
-}
-/* The card behind a marked word: a keyword's, or a mechanics card's. The index loads in two parts, so one of
-   the very first cards can be tapped before the part the mechanics cards are in has arrived: then it waits. */
+/* The card behind a marked word: a keyword's, or a mechanics card's. The page holds their heads; a card a line
+   names that the page does not hold yet is fetched first. */
 function openMark(el, opts){
   const id = el.dataset.kw;
   if(id !== undefined){ const c = keywordCard(id); if(c) openDetail(c, opts, hrefOf(c)); return; }
@@ -558,11 +647,11 @@ function openMark(el, opts){
 function openMech(key, opts){
   const c = D.byKey.get(key);
   if(c) return void openDetail(c, opts, null);
-  ready.then(() => { const x = D.byKey.get(key); if(x) openDetail(x, opts, null); }, () => {});
+  whole([key]).then(([x]) => { if(x) openDetail(x, opts, null); }, () => {});
 }
 /* A field of lines — one string, or a list of them — with the marked words in whichever of them the index
    marked (the kind's own "mark", assets/kinds.js). A list longer than max says how many are left.
-   Every drawn line says which field and which line it is ("data-mk"), so remark above can find it again. */
+   Every drawn line says which field and which line it is ("data-mk"). */
 function richHTML(it, at, max){
   const v = it[at];
   if(v === undefined || v === null || v === '') return '';
@@ -1237,7 +1326,7 @@ export function card(it, opts = {}){
   o.href = opts.href !== undefined ? opts.href : hrefOf(it);
   const d = KIND[it.k] || DEFAULT;
   const el = document.createElement('article');
-  el.className = 'card k-' + it.k + (o.href ? ' linked' : '');
+  el.className = 'card k-' + it.k + (o.href ? ' linked' : '') + (it._head ? ' headonly' : '');
   if(!o.href) el.tabIndex = 0;
   const head = slotHTML(it, 'head', o), pills = slotHTML(it, 'pill', o);
   const facts = slotHTML(it, 'fact', o), body = slotHTML(it, 'body', o), foot = slotHTML(it, 'foot', o);
@@ -1590,7 +1679,7 @@ export function actPanel(node, tag){
 }
 /* the same popup for anything else (e.g. the Suggest box): no card, so no trail */
 export function openBox(node, label = 'Details'){
-  need();   // a box can name cards (Pins): the index, if it is not on its way already
+  wake();   // a box can name cards (Pins): their heads come through the search
   ensureOV();
   TRAIL = []; AT = -1;
   OV.querySelector('.ov-box').setAttribute('aria-label', label);
@@ -1602,11 +1691,14 @@ export function openBox(node, label = 'Details'){
 /* opts.nested: opened from inside the popup (a keyword, or something that uses it).
    opts.onFull: the drill-down page's own full-stats panel, offered as a button. */
 export function openDetail(it, opts = {}, href){
-  if(!(D.full && D.past) && !D.failed){
-    // its keywords and history: a moment away. A second tap while it loads takes over, so one tap, one card
+  const key = it.k + ':' + it.id;
+  it = D.byKey.get(key) || it;
+  if(!((D.search || D.full) && D.past && !it._head) && !D.failed){
+    // the card whole, the words that mark its lines, and its history: a moment away. A second tap while it
+    // loads takes over, so one tap, one card. A card that never comes whole does not open
     const mine = PEND = {};
-    const go = () => { if(PEND !== mine) return; PEND = null; openDetail(it, opts, href); };
-    need(); Promise.all([ready, hist()]).then(go, go);
+    const go = () => { if(PEND !== mine) return; PEND = null; const x = D.byKey.get(key) || it; if(!x._head) openDetail(x, opts, href); };
+    Promise.all([wake(), hist(), whole([key, ...refsOf(it)])]).then(go, go);
     return;
   }
   PEND = null;
@@ -1627,6 +1719,14 @@ export function openDetail(it, opts = {}, href){
   showOV();
   history.pushState({ov: TRAIL[AT].id, d}, '', location.href);   // one entry per card, both ways
   paintStep();
+}
+/* The cards a card draws from as it opens: the one a switch on it reads its lines from (FIELDS swaps). */
+function refsOf(it){
+  const out = [];
+  for(const name of (KIND[it.k] || {}).fields || []){
+    for(const x of (FIELDS[name] || {}).of || []) if(x && x.card && holds(it, x.on)) out.push(x.card);
+  }
+  return out;
 }
 /* ---------- pins: a personal watch list ----------
    Any card whose kind names 'pin' in its acts (assets/kinds.js) can be kept here, from the one button under
@@ -1923,7 +2023,7 @@ const {cap: CAP, slack: SLACK, filter: USE_FILTER} = FRAME.rel;
 // ...and what "See all" draws at a time: a keyword like Hit is on 1,448 things, and a thousand rows at once is
 // a long wait on a weak machine. The rest is one Show more away, and the filter box searches all of it.
 const REL_STEP = 200;
-edges.setup({D, keywordCard, keywordIdOf, kindOf: k => KIND[k]});
+edges.setup({D, keywordCard, keywordIdOf, kindOf: k => KIND[k], has: key => D.byKey.has(key)});
 
 /* one row: anything with a card of its own opens it, an Atlas row without one goes to its tab, and the rest
    is a plain row. `hay` is what the filter box searches — the same words the search itself uses. */
@@ -1983,17 +2083,38 @@ function relSection(it, want){
   sec._open = new Set((want && want.open) || []);
   sec._more = {...((want && want.more) || {})};   // an opened category drawn past its first REL_STEP rows
   sec._want = want || null;
+  // a page holding only what it shows first asks for the card's lists and the heads of every row they name
+  sec._wait = !D.full;
   const need = paintRel(sec);
-  if(need.length) needFiles(need).then(() => { paintRel(sec); if(sec._then) sec._then(); });
+  if(!sec._wait){
+    if(need.length) needFiles(need).then(() => { paintRel(sec); if(sec._then) sec._then(); });
+    return sec;
+  }
+  relHeads(it).then(() => { sec._wait = false; paintRel(sec); if(sec._then) sec._then(); },
+    () => { relBad = true; sec._wait = false; paintRel(sec); });
   return sec;
+}
+/* What a card's Connections need before they are drawn, where the page holds only what it shows: the lists its
+   groups give it (the search worker's, "_g": assets/graph.js), the files its other lists come from, and the head
+   of every card any of them names, so a row that has a card draws it and one that has none is left out, as ever. */
+async function relHeads(it){
+  const key = it.k + ':' + it.id;
+  if(!it._g && D.byKey.has(key) && !D.full){
+    await wake();
+    const r = await ask('rel', {key});
+    if(r.lists) it._g = r.lists;
+  }
+  const need = edges.categories(it, HAVE).need;
+  if(need.length) await needFiles(need);
+  if(!D.full) await have(edges.keysOf(it, HAVE));
 }
 function paintRel(sec){
   const it = sec._it;
   // what the player had typed and where they had scrolled: a "See all" redraws the whole section
   const was = sec.querySelector('.uses-q');
   const keep = was ? {q: was.value, top: (sec.querySelector('.uses-list') || {}).scrollTop || 0} : null;
-  const got = edges.categories(it, HAVE);
-  const cats = got.list, waiting = got.need.length && !relBad;
+  const got = sec._wait ? {list: [], need: []} : edges.categories(it, HAVE);
+  const cats = got.list, waiting = (sec._wait || got.need.length) && !relBad;
   sec.hidden = !cats.length && !waiting;
   if(sec.hidden){ sec.innerHTML = ''; sec._rows = []; return got.need; }
   const all = [];   // every row drawn, in order, for the filter box
@@ -2137,11 +2258,7 @@ export function flow(grid, list, make){
    answering that list of keys - and nothing else here changes. Accounts are not built, so the slot stays
    empty, the way D.usage does. */
 export const BEEN = {account: null};
-const SEEN = 'wi.seen';        // the trail, in this tab's own storage
-const SEEN_MAX = 12;           // cards kept; the oldest drops off
-const SEEN_FADE = 0.7;         // what each card further back is worth against the one in front of it
-const SEEN_NAMED = 0.6;        // a card one of yours names, against one you opened yourself
-const NEAR_CAP = 150, NEAR_STEP = 60;   // the most closeness can add, and what one full share of it is worth
+const SEEN = 'wi.seen';        // the trail, in this tab's own storage (SEEN_MAX cards, assets/rank.js)
 
 // the tab's storage is read once and kept here after: a keystroke must not go looking for it
 let SEEN_LIST = null;
@@ -2155,155 +2272,15 @@ function sawCard(it){
   const key = it.k + ':' + it.id;
   SEEN_LIST = [key, ...tabSeen().filter(k => k !== key)].slice(0, SEEN_MAX);   // opened again, it goes to the front
   try { sessionStorage.setItem(SEEN, JSON.stringify(SEEN_LIST)); } catch {}   // a browser that will not keep it searches as a guest
-  NEAR = null;
 }
-// how many cards carry a keyword, off the keyword card's own tally: one on a thousand cards says much less
-// about where you have been than one on five
-function kwSpread(id){
-  const c = D.byKey.get(KW.own + ':' + id);
-  return c && c.use ? Object.values(c.use).reduce((a, b) => a + b, 0) : 1;
-}
-const weigh = (map, k, w) => map.set(k, (map.get(k) || 0) + w);
-/* What the trail has in common, worked out again whenever it moves. Nothing here runs until a card has been
-   opened, and nothing at all before something is typed. */
-let NEAR = null, NEARN = 0;   // NEARN counts the times it has been worked out, and stamps what the cards keep
-function nearness(){
-  const keys = seenKeys().slice(0, SEEN_MAX);
-  if(!keys.length) return null;              // nothing opened yet: there is no trail to be near, and no cost
-  const sig = keys.join(' ');
-  if(NEAR && NEAR.sig === sig && NEAR.v === D.index) return NEAR;
-  const group = new Map(), card = new Map(), kw = new Map();
-  let w = 1;
-  for(const key of keys){
-    const it = D.byKey.get(key);   // a card a newer index no longer carries is simply not there
-    if(it){
-      weigh(card, key, w);
-      for(const [g, n] of edges.groupsOf(it)) weigh(group, g, w / Math.log2(2 + n));
-      for(const id of it.kw || []) weigh(kw, id, w / Math.log2(2 + kwSpread(id)));
-      for(const t of it.rx || []) weigh(card, t, w * SEEN_NAMED);
-    }
-    w *= SEEN_FADE;
-  }
-  NEAR = {sig, v: D.index, n: ++NEARN, group, card, kw};
-  return NEAR;
-}
-/* One card against the trail: every share of it counted, then capped. Worked out once per card and kept on
-   the card until the trail moves, because a search is a whole list of matches scored again on every
-   keystroke, and between two keystrokes none of this has changed. */
-function nearScore(it, N){
-  if(it._ncs === N.n) return it._ncv;
-  let c = N.card.get(it.k + ':' + it.id) || 0;
-  for(const g of edges.groupsOf(it)) c += N.group.get(g[0]) || 0;
-  for(const id of it.kw || []) c += N.kw.get(id) || 0;
-  it._ncs = N.n;
-  return it._ncv = c && Math.min(NEAR_CAP, c * NEAR_STEP);
-}
-
-/* ---------- a word that was nearly typed ----------
-   A search where every letter has to be right is a search that answers nothing the moment a finger slips,
-   and the names here are not ones anybody spells from memory: Uul-Netol, Quarterstaff, Simulacrum.
-
-   So a word the index has never seen is looked up in the index's own vocabulary — every word on every card,
-   about 7,700 of them — and whatever was nearly typed stands in for it. The distance is Damerau's, which
-   counts two letters swapped as one slip rather than two, because that is the most common slip there is:
-   "divien" is one away from "divine" and would be two away under plain Levenshtein.
-
-   It runs only where a word matched nothing at all. Typing "divin" matches, so nothing here happens on the
-   way to "divine"; it is the finished word that misses, and then it costs one pass over a list of short
-   words, once, on that keystroke. */
-const NEAR_LETTERS = 6;   // from here up a word is allowed two slips; under it, one
-let VOCAB = null, VOCAB_AT = -1;
-const wordsOf = (set, it) => { for(const w of (it._hay || '').match(/[a-z0-9]+/g) || []) if(w.length > 2) set.add(w); };
-function vocab(){
-  const n = D.index && D.index.items ? D.index.items.length : 0;
-  if(VOCAB && VOCAB_AT === n) return VOCAB;
-  const set = new Set();
-  for(const it of (D.index && D.index.items) || []) wordsOf(set, it);
-  VOCAB_AT = n;
-  return VOCAB = [...set];
-}
-/* The list is worked out while the page has nothing else to do, a few milliseconds at a time, once the whole
-   index is in, so the first key typed never pays for it. A key that comes before it is finished builds the
-   list whole, there and then, and this stops. */
-function vocabLater(){
-  const items = D.index.items, n = items.length, set = new Set();
-  let i = 0;
-  const slice = () => {
-    if(VOCAB_AT === n || D.index.items !== items) return;
-    const stop = performance.now() + 6;
-    while(i < n){
-      wordsOf(set, items[i++]);
-      if(!(i & 127) && performance.now() > stop) return void idle(slice);
-    }
-    VOCAB_AT = n;
-    VOCAB = [...set];
-  };
-  idle(slice);
-}
-ready.then(vocabLater, () => {});
-/* Damerau–Levenshtein, given up on as soon as the whole row is already further than max. */
-function apart(a, b, max){
-  const al = a.length, bl = b.length;
-  if(Math.abs(al - bl) > max) return max + 1;
-  let two = null;                        // the row two back, which a swap is measured against
-  let one = new Array(bl + 1);           // ...and the row before this one
-  for(let j = 0; j <= bl; j++) one[j] = j;
-  for(let i = 1; i <= al; i++){
-    const row = new Array(bl + 1);
-    row[0] = i;
-    let best = i;
-    for(let j = 1; j <= bl; j++){
-      const cost = a[i - 1] === b[j - 1] ? 0 : 1;
-      let v = Math.min(one[j] + 1, row[j - 1] + 1, one[j - 1] + cost);
-      if(two && j > 1 && a[i - 1] === b[j - 2] && a[i - 2] === b[j - 1]) v = Math.min(v, two[j - 2] + 1);
-      row[j] = v;
-      if(v < best) best = v;
-    }
-    if(best > max) return max + 1;       // the whole row is already too far: nothing below it can come back
-    two = one; one = row;
-  }
-  return one[bl];
-}
-
-/* What was nearly typed, nearest first, at most a handful. */
-function nearWords(t){
-  const max = t.length >= NEAR_LETTERS ? 2 : 1;
-  const hit = [];
-  for(const w of vocab()){
-    if(Math.abs(w.length - t.length) > max) continue;
-    const d = apart(t, w, max);
-    if(d <= max) hit.push([d, w]);
-  }
-  hit.sort((a, b) => a[0] - b[0] || a[1].length - b[1].length);
-  return hit.slice(0, 6).map(x => x[1]);
-}
-/* One typed word, turned into what a card is allowed to match it with. `near` says the word was not the one
-   typed, so a card that matched it scores under one that matched the letters as they were given. */
-export function words(qs){
-  const out = [];
-  for(const t of qs.trim().toLowerCase().split(/\s+/).filter(Boolean)){
-    if(t.length < 3){ out.push({alts: [t], near: false}); continue; }
-    if(vocab().some(w => w.includes(t))){ out.push({alts: [t], near: false}); continue; }
-    const alts = nearWords(t);
-    out.push({alts: alts.length ? alts : [t], near: !!alts.length});
-  }
-  return out;
-}
-/* Does this card answer to every word typed, and how well. Null where one word has no answer on it at all —
-   every word has to land somewhere, which is what keeps a two-word search from widening. */
-export function hits(it, ws){
-  let s = 0;
-  for(const w of ws){
-    let best = 0;
-    for(const a of w.alts){
-      if(it._nl.includes(a)){ best = w.near ? 30 : 40; break; }
-      if(it._hay.includes(a)) best = Math.max(best, w.near ? 5 : 8);
-    }
-    if(!best) return null;
-    s += best;
-  }
-  return s;
-}
+/* The search's rules (assets/rank.js), over the cards the page holds. A page holding the whole index (a tab that
+   works over all of it) answers its own searches with them, and the Currency tab's box and the map's find match
+   their words against the cards. The worker holds the same rules over every kind's search rows. */
+const PR = ranker({items: () => (D.index && D.index.items) || [], get: key => D.byKey.get(key), groupsOf: it => edges.groupsOf(it),
+  priced: it => !!priceOf(it), usage: usageOf, seen: seenKeys, version: () => D.index, idle: f => idle(f)});
+export const words = qs => PR.words(qs);
+export {hits};
+ready.then(() => PR.vocabLater(), () => {});
 
 /* ---------- a box that answers as you type ----------
    Every search box on the site runs through here. A hand at the keys types five letters in a burst, and only
@@ -2330,51 +2307,27 @@ export function onType(box, run, wait = TYPE_WAIT){
   return () => { if(t) now(); };
 }
 
-/* ---------- search ---------- */
-export function search(q, kind = 'all'){
-  const qs = q.trim().toLowerCase();
-  const ws = words(qs);          // each typed word, and whatever was nearly typed where it answered nothing
-  const out = [];
-  if(!ws.length) return out;
-  const slipped = ws.some(w => w.near);
-  /* Where a word slipped, the whole-name bonuses are worked against the words the index really has rather
-     than the letters given, at half weight: somebody who typed "quaterstaff" wants the Quarterstaff above
-     the Aegis Quarterstaff, and the only thing that says so is the name matching the word they meant. */
-  const fixed = slipped ? ws.map(w => w.alts[0]).join(' ') : qs;
-  const fw = slipped ? 0.5 : 1;
-  const wordStart = new RegExp('(^|[^a-z0-9])' + qs.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
-  const near = nearness();   // no trail, and the score below is the one it always was
-  for(const it of D.index.items){
-    if((kind !== 'all' && it.k !== kind) || it.dup) continue;
-    let s = hits(it, ws);
-    if(s === null) continue;
-    if(it._nl === fixed) s += 1000 * fw;
-    else if(it._nl.startsWith(fixed)) s += 600 * fw;
-    else if(!slipped && wordStart.test(it._nl)) s += 380;
-    else if(it._nl.includes(fixed)) s += 220 * fw;
-    s += (KIND[it.k] || {}).rank || 0;              // a kind that should not rank beside the rest says so once
-    if(priceOf(it)) s += 12;
-    const u = usageOf(it); if(u) s += Math.min(40, u * 2);
-    if(near) s += nearScore(it, near);              // how close it sits to the cards already opened
-    out.push({it, s: s - it.n.length * 0.2});
-  }
-  /* Two bands, and the low one is always second: a card marked "lo" is the tree's own wording for a stat
-     ("Attack Speed", "Armour" — the 893 small passives tools/treecards.py cards), so the words match it every
-     time and it would crowd out what the words actually name. Nothing low ever sits above something else the
-     same words matched: typing "life" still puts the notable and the unique first. Inside the low band they
-     sort by the same score as everything else, so the one the words really name leads it. */
-  out.sort((a, b) => (a.it.lo ? 1 : 0) - (b.it.lo ? 1 : 0) || b.s - a.s);
-  return out.map(x => x.it);
+/* ---------- search ----------
+   Every card that answers the words, best first, as keys, and the first n of them held on the page as heads. The
+   search worker answers while the page holds only what it shows; a page holding the whole index answers itself,
+   by the same rules. */
+export async function find(q, kind = 'all', n = 0){
+  if(D.full) return PR.search(q, kind).map(it => it.k + ':' + it.id);
+  await wake();
+  const r = await ask('search', {q, kind, seen: seenKeys(), n});
+  for(const h of r.heads) hold(h);
+  return r.keys;
 }
 
 /* ---------- home view ----------
    The search bar and nothing under it until something is typed. */
 const PAGE = 30;   // cards added each time the list reaches the bottom of the screen
 const ENDLESS = 150;   // cards the list adds by itself; past this, one more page is a press of Show more
-/* H.all is every match for the words typed, H.list the part of it the kind chip lets through. Both are kept
-   between draws: a chip, or the next page of the list, is a slice of what the search already answered and
-   never a second search. */
-const H = {q:'', kind:'all', shown:PAGE, all:[], list:[]};
+/* H.all is every match for the words typed, H.list the part of it the kind chip lets through, both as card keys.
+   Both are kept between draws: a chip, or the next page of the list, is a slice of what the search already
+   answered and never a second search. H.asked and H.draw count the questions and the draws, so an answer that
+   comes after a newer one is dropped. */
+const H = {q:'', kind:'all', shown:PAGE, all:[], list:[], asked:0, draw:0};
 function homeInit(){
   const q = $('#q'), kinds = $('#kinds');
   // index.html draws these chips itself, so the bar never changes shape on the first paint; the table is the
@@ -2401,20 +2354,24 @@ function homeInit(){
   H.io.observe(more);
 }
 /* The next page of the list, added under the cards already there: nothing above it is searched, drawn or
-   moved again. */
+   moved again. Its cards come whole first (whole()), so a page is drawn once. */
 function homeMore(){
   const from = H.shown;
   H.shown += PAGE;
-  const add = H.list.slice(from, H.shown), grid = $('#cards');
+  const add = H.list.slice(from, H.shown), draw = H.draw;
   if(!add.length) return paintMore();
-  const nodes = add.map(it => { const n = card(it); n.dataset.key = it.k + ':' + it.id; return n; });
-  grid.append(...nodes);
-  if(!calm()) nodes.slice(0, 16).forEach((n, k) =>
-    n.animate([{opacity:0, transform:'translateY(18px) scale(.97)'}, {opacity:1, transform:'none'}],
-      {duration:420, delay:k * 24, easing:'cubic-bezier(.2,.8,.2,1)', fill:'backwards'}));
   paintMore();
-  // the observer only speaks when the bottom crosses into view: a page that left it in view is asked again
-  if(H.io){ H.io.unobserve($('#more')); H.io.observe($('#more')); }
+  whole(add).catch(() => []).then(() => {
+    if(draw !== H.draw) return;   // drawn again since: the list this page belonged to is gone
+    const grid = $('#cards');
+    const nodes = add.map(k => D.byKey.get(k)).filter(Boolean).map(it => { const n = card(it); n.dataset.key = it.k + ':' + it.id; return n; });
+    grid.append(...nodes);
+    if(!calm()) nodes.slice(0, 16).forEach((n, k) =>
+      n.animate([{opacity:0, transform:'translateY(18px) scale(.97)'}, {opacity:1, transform:'none'}],
+        {duration:420, delay:k * 24, easing:'cubic-bezier(.2,.8,.2,1)', fill:'backwards'}));
+    // the observer only speaks when the bottom crosses into view: a page that left it in view is asked again
+    if(H.io){ H.io.unobserve($('#more')); H.io.observe($('#more')); }
+  });
 }
 // under the list: the words that say more is on its way while it still comes by itself, a button after
 function paintMore(){
@@ -2428,43 +2385,76 @@ function syncHash(){
   const h = H.q ? '#/?q=' + encodeURIComponent(H.q) : '#/';
   if(location.hash !== h) history.replaceState(null, '', h);
 }
-/* again: the words have not changed (a kind chip), so the matches already worked out are the ones drawn */
+/* again: the words have not changed (a kind chip), so the matches already worked out are the ones drawn. The
+   answer is card keys (find); the cards on show come whole before they are drawn, and a moment is all the grid
+   waits for them: past HEAD_WAIT it draws their heads and each card fills in where it stands. */
+const HEAD_WAIT = 150;
 function homeRender(again){
   const hero = $('#hero'), status = $('#status'), more = $('#more');
   const has = H.q.trim().length > 0;
   hero.classList.toggle('docked', has);
   let list, label;
-  if(has && !D.full && !D.failed){   // search covers everything: it waits for the rest of the index, a moment
+  if(has && !D.search && !D.full && !D.failed){   // the search is on its way, a moment
     status.textContent = 'Loading…';
     for(const b of $('#kinds').children) b.querySelector('.ct').textContent = '';
     $('#quote').hidden = true; more.hidden = true;
     flow($('#cards'), [], null);
-    if(!H.waiting){ H.waiting = true; ready.then(() => { H.waiting = false; if(route() === 'home') homeRender(); }, () => {}); }
+    if(!H.waiting){ H.waiting = true; wake().then(() => { H.waiting = false; if(route() === 'home') homeRender(); }, () => {}); }
+    return;
+  }
+  if(has && !(again && H.allq === H.q)){
+    // the grid keeps what it shows until the answer is in; an answer to words since replaced is dropped
+    const q = H.q, ask = ++H.asked;
+    find(q, 'all', PAGE).then(keys => {
+      if(ask !== H.asked || q !== H.q) return;
+      H.all = keys; H.allq = q;
+      homeRender(true);
+    }, () => {});
     return;
   }
   if(has){
-    const all = again && H.allq === H.q ? H.all : search(H.q, 'all');
-    H.all = all; H.allq = H.q;
+    const all = H.all;
     const counts = {all: all.length};
-    for(const it of all) counts[it.k] = (counts[it.k] || 0) + 1;
+    for(const key of all){ const k = key.slice(0, key.indexOf(':')); counts[k] = (counts[k] || 0) + 1; }
     for(const b of $('#kinds').children) b.querySelector('.ct').textContent = counts[b.dataset.k] || 0;
-    list = H.kind === 'all' ? all : all.filter(it => it.k === H.kind);
+    list = H.kind === 'all' ? all : all.filter(key => key.startsWith(H.kind + ':'));
     label = list.length ? '<b>' + list.length.toLocaleString() + '</b> match' + (list.length === 1 ? '' : 'es') : '';
   } else {
     for(const b of $('#kinds').children) b.querySelector('.ct').textContent = '';
-    list = []; label = ''; H.all = []; H.allq = '';
+    list = []; label = ''; H.all = []; H.allq = ''; H.asked++;
   }
   H.list = list;
-  status.innerHTML = label;
-  $('#cards').classList.remove('wait');   // the first answer is in: the grid takes its own height
-  $('#quote').hidden = has;
-  const shown = list.slice(0, H.shown);
-  flow($('#cards'), shown.map(it => ({key: it.k + ':' + it.id, it})), x => card(x.it));
-  // these are the only cards drawn before the whole index is in: they take their keyword marks when it lands
-  if(!D.full && !H.marked){ H.marked = true; ready.then(() => remark($('#cards')), () => {}); }
-  paintMore();
-  if(has && !list.length){
-    $('#cards').innerHTML = '<div class="empty" style="grid-column:1/-1"><h3>Nothing matches</h3></div>';
+  const draw = ++H.draw, shown = list.slice(0, H.shown);
+  const paint = () => {
+    if(draw !== H.draw) return;
+    status.innerHTML = label;
+    $('#cards').classList.remove('wait');   // the first answer is in: the grid takes its own height
+    $('#quote').hidden = has;
+    flow($('#cards'), shown.map(key => ({key, it: D.byKey.get(key)})).filter(x => x.it), x => card(x.it));
+    paintMore();
+    if(has && !list.length){
+      $('#cards').innerHTML = '<div class="empty" style="grid-column:1/-1"><h3>Nothing matches</h3></div>';
+    }
+  };
+  const heads = shown.some(key => { const it = D.byKey.get(key); return !it || it._head; });
+  if(!heads) return paint();
+  let drawn = false;
+  const late = setTimeout(() => { drawn = true; paint(); }, HEAD_WAIT);
+  whole(shown).catch(() => []).then(() => {
+    if(draw !== H.draw) return;
+    clearTimeout(late);
+    if(!drawn) return paint();
+    fill($('#cards'));
+  });
+}
+/* A card drawn as its head, drawn again whole where it stands once its card is in: no glide, no fade. */
+function fill(host){
+  for(const el of [...host.querySelectorAll(':scope > .card[data-key]')]){
+    const it = D.byKey.get(el.dataset.key);
+    if(!it || it._head || !el.classList.contains('headonly')) continue;
+    const n = card(it);
+    n.dataset.key = el.dataset.key;
+    el.replaceWith(n);
   }
 }
 
@@ -2492,12 +2482,15 @@ export function mountTopSearch(host){
     : '<div class="tsearch-none">Nothing matches.</div>';
     drop.hidden = false; q.setAttribute('aria-expanded', 'true');
   };
+  let asked = 0;
   onType(q, async () => {
-    if(!D.full) await ready;   // in, it answers at once, so Enter picks from the rows for every letter typed
-    if(!q.value.trim()){ close(); return; }
+    const words = q.value, mine = ++asked;
+    if(!words.trim()){ close(); return; }
+    let keys;
+    try { keys = await find(words, 'all', 10); } catch { return; }
+    if(mine !== asked || q.value !== words) return;   // more was typed since: that answer is on its way
     if(document.activeElement !== q) return;   // left the box before its answer came: nothing drops open behind it
-    const all = search(q.value);
-    total = all.length; rows = all.slice(0, 10); sel = 0; paint();
+    total = keys.length; rows = keys.slice(0, 10).map(k => D.byKey.get(k)).filter(Boolean); sel = 0; paint();
   });
   q.addEventListener('keydown', e => {
     if(e.key === 'ArrowDown' && rows.length){ e.preventDefault(); sel = (sel + 1) % rows.length; paint(); }
@@ -2583,7 +2576,7 @@ async function show(e){
   }
   if(r === 'home'){
     const q = params().get('q') || '';
-    if(q) need();   // a search in the address (search waits for the index itself)
+    if(q) wake();   // a search in the address (the search waits for its worker itself)
     if(q !== H.q){ H.q = q; $('#q').value = q; }
     homeRender();
     if(!matchMedia('(pointer:coarse)').matches) $('#q').focus({preventScroll:true});
@@ -2631,14 +2624,14 @@ const failed = err => { $('#status').innerHTML = '<span class="err">Could not lo
 NOW.then(M => {
   lazy('./league.js').then(m => m.mountLeague($('#leagueclock'))).catch(() => {});   // the league clock
   later();   // the crest's fog, once the stamp is in
-  // a player who has not reached for search yet: the index comes in while the page sits idle
-  setTimeout(() => idle(need), 3000);
+  // a player who has not reached for search yet: the search comes in while the page sits idle
+  setTimeout(() => idle(wake), 3000);
 });
-first.then(() => {
+MAN.then(man => {
   // the client build (4.5.5.2) as players know it: patch 0.5.5
-  $('#gamever').textContent = (D.index.v || '').replace(/^4\.(\d+)\.(\d+).*$/, '0.$1.$2');
+  $('#gamever').textContent = (man.v || '').replace(/^4\.(\d+)\.(\d+).*$/, '0.$1.$2');
 }).catch(failed);
-ready.then(() => {
+searching.then(() => {
   // once this page is idle: the service worker (repeat visits paint from this browser's copy, and it keeps a copy of
   // the drill-down page, so Gems / Uniques / Passive tree open fast); without one, fetch the drill-down page ahead
   idle(() => {

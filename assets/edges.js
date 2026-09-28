@@ -16,53 +16,38 @@
 
    A row is a seed, not markup: {key} for anything with a card of its own, or {n, sub, ...} for a row there is
    no card for (a small passive, a crafting mod). app.js draws both. */
-import {REL, MAPS} from './kinds.js';
+import {REL} from './kinds.js';
+import * as graph from './graph.js';
 
-let X = null;   // what app.js lends us: the index and its own lookups
+let X = null;   // what app.js lends us: the index, its own lookups, and has(key): whether a card of that key exists
 export function setup(ctx){ X = ctx; }
+const has = key => X.has(key);
 
 const DOT = ' · ';
-/* The index turned round, once per load: one pass over every card, building the maps MAPS declares and no
-   others. A card goes into a group when it carries the field that group is keyed by; a group named after a
-   kind is only a group where a card of that kind answers to the name (a unique whose base item the files do
-   not name carries its item class there instead, and an item class is not a base item); and a card is never
-   put into its own group, because nothing on the site is its own connection. */
+/* The lists a card's groups give it (assets/graph.js). A page that holds only the cards it shows is handed them
+   by the search worker, which holds every card's search row ("_g" on the card, app.js); a page holding the whole
+   index works them out itself, once per load, over every card. */
 let IX = null;
-function turn(){
+function local(){
   const D = X.D;
   if(IX && IX.v === D.index && IX.full === D.full) return IX;
-  const maps = {};
-  for(const m of Object.keys(MAPS)) maps[m] = new Map();
-  const namedby = new Map();
-  for(const it of D.index.items){
-    if(it.dup) continue;
-    const key = it.k + ':' + it.id;
-    for(const [m, g] of Object.entries(MAPS)){
-      const v = it[g.at];
-      if(v === undefined || v === null || v === '') continue;
-      if(g.of){
-        const target = g.of + ':' + v;
-        if(target === key || !D.byKey.get(target)) continue;
-      }
-      push(maps[m], g.per === 'kind' ? it.k + '/' + v : v, key);
-    }
-    for(const target of it.rx || []) push(namedby, target, key);   // a line of this card names that one
-  }
-  IX = {v: D.index, full: D.full, ...maps, namedby};
+  IX = {v: D.index, full: D.full, ix: graph.turn(D.index.items, has)};
   return IX;
 }
-function push(map, k, v){ const a = map.get(k); if(a) a.push(v); else map.set(k, [v]); }
-const others = (list, key) => (list || []).filter(x => x !== key);
-/* the one card this card's own field names, as that field's map declares it: the field it reads ("at") and the
-   kind that answers to the name ("of"). A card is never a row of its own, and a name no card answers to is no
-   row at all, so one line covers a unique's base item and a base item's class alike. */
-const to = (it, m) => {
-  const g = MAPS[m], v = it[g.at], t = v ? g.of + ':' + v : '';
-  return t && t !== it.k + ':' + it.id && X.D.byKey.get(t) ? [{key: t}] : [];
-};
+let collecting = false;   // keysOf below: every key is taken as there, so nothing worked out now may be kept
+const NONE = {base: [], variants: [], uniques: [], klass: [], klassof: [], inclass: [], section: [], cat: [], job: [], named: [], namedby: []};
+const lists = it => it._g || (collecting ? NONE : it._gl && it._glv === X.D.index ? it._gl
+  : (it._glv = X.D.index, it._gl = graph.lists(local().ix, it, has)));
+/* Which groups a card sits in, and how many cards each holds: what the search weighs the cards you opened by
+   (assets/rank.js). Kept on the card: a list of matches is walked on every keystroke, and this must be a lookup. */
+export function groupsOf(it){
+  if(it._gx && it._gxv === X.D.index) return it._gx;
+  it._gxv = X.D.index;
+  return it._gx = graph.groupsOf(local().ix, it, has);
+}
 /* a key with no card behind it draws nothing, so it is never a row (the tree carries small passives the
    index has no card for, and kwuse names them by id) */
-const cardRows = keys => keys.filter(key => X.D.byKey.get(key)).map(key => ({key}));
+const cardRows = keys => keys.filter(has).map(key => ({key}));
 
 /* ---------- the clusters (data/clusters.json) ----------
    One file, read both ways: the nodes a cluster holds, and the clusters a node sits in. The file is places,
@@ -91,58 +76,21 @@ function clusters(C){
 }
 const clusterAt = C => (C._at || (C._at = new Map(C.id.map((id, j) => [id, j]))));
 
-/* ---------- where a card sits, for the search to weigh ----------
-   The same maps the lists above are drawn from, asked a shorter question: which groups is this card in, and
-   how many cards are in each. The search reads it at both ends - the cards you opened, to see what they have
-   in common, and every card the words matched, to see whether it shares any of it (assets/app.js).
-   Both ends, so both ways round: a card is never put inside its own group, so a base item has to be asked
-   for the group that carries its name, or the unique that sits on it would answer to nothing. Ask every card
-   the same question and the two meet in the same group.
-   A group holding only this card joins it to nothing, so it is left out. The answer is kept on the card, the
-   way its search words are: a list of matches is walked on every keystroke, and this must be a lookup. */
-const MAPLIST = Object.entries(MAPS);
-export function groupsOf(it){
-  if(it._gx && it._gxv === X.D.index) return it._gx;
-  const IX = turn(), key = it.k + ':' + it.id, out = [];
-  for(const [m, g] of MAPLIST){
-    const v = it[g.at];
-    if(v === undefined || v === null || v === '') continue;
-    if(g.of){                                           // the same two tests turn() puts a card through
-      const target = g.of + ':' + v;
-      if(target === key || !X.D.byKey.get(target)) continue;
-    }
-    const gk = g.per === 'kind' ? it.k + '/' + v : v;
-    const list = IX[m].get(gk);
-    // a group named after a card holds that card as well, though the map never puts it in there: one unique
-    // on a base item is still two cards that belong together
-    const n = list ? list.length + (g.of ? 1 : 0) : 0;
-    if(n > 1) out.push([m + ':' + gk, n]);
-  }
-  // the group named after this card: the uniques that sit on this base item, the items of this item class
-  for(const [m, g] of MAPLIST){
-    if(g.of !== it.k) continue;
-    const list = IX[m].get(it.id);
-    if(list && list.length) out.push([m + ':' + it.id, list.length + 1]);
-  }
-  it._gxv = X.D.index; it._gx = out;
-  return out;
-}
-
 /* ---------- one edge each ---------- */
 const EDGE = {
-  base(it){ return to(it, 'base'); },
-  variants(it){ return cardRows(others(turn().base.get(it.base), it.k + ':' + it.id)); },
-  uniques(it){ return cardRows(turn().base.get(it.base) || []); },
-  klass(it){ return cardRows(others(turn().klass.get(it.cr), it.k + ':' + it.id)); },
-  klassof(it){ return to(it, 'klass'); },
+  base(it){ return cardRows(lists(it).base); },
+  variants(it){ return cardRows(lists(it).variants); },
+  uniques(it){ return cardRows(lists(it).uniques); },
+  klass(it){ return cardRows(lists(it).klass); },
+  klassof(it){ return cardRows(lists(it).klassof); },
   // an item class is its own class (KINDS make), so the whole class reads the same map from the other end
-  inclass(it){ return cardRows(turn().klass.get(it.cr) || []); },
-  section(it){ return cardRows(others(turn().place.get(it.at), it.k + ':' + it.id)); },
-  cat(it){ return cardRows(others(turn().cat.get(it.k + '/' + it.s), it.k + ':' + it.id)); },
+  inclass(it){ return cardRows(lists(it).inclass); },
+  section(it){ return cardRows(lists(it).section); },
+  cat(it){ return cardRows(lists(it).cat); },
   /* Things whose own line says they do the same job, cheapest first — which is the whole question a player
      choosing between them is asking. One the market has no price for today sorts last, never as free. */
   job(it){
-    const rows = others(turn().job.get(it.k + '/' + it.job), it.k + ':' + it.id);
+    const rows = lists(it).job;
     const M = (X.D.market && X.D.market.items) || {};
     const px = key => { const r = M[key]; return r && r.v !== undefined && r.v !== null ? r.v : Infinity; };
     return cardRows(rows.slice().sort((a, b) => px(a) - px(b)));
@@ -153,15 +101,15 @@ const EDGE = {
   // the nodes a cluster holds, its own notable first, and the clusters one node sits in
   incluster(it, F){
     const C = F.clusters, j = C ? clusterAt(C).get(it.id) : undefined;
-    return j === undefined ? [] : clusters(C).rows[j].filter(r => X.D.byKey.get(r.key));
+    return j === undefined ? [] : clusters(C).rows[j].filter(r => has(r.key));
   },
   clusterof(it, F){
     const C = F.clusters;
     if(!C) return [];
     return cardRows((clusters(C).of.get(it.k + ':' + it.id) || []).map(j => 't:' + C.id[j]));
   },
-  named(it){ return cardRows((it.rx || []).filter(key => X.D.byKey.get(key))); },
-  namedby(it){ return cardRows(others(turn().namedby.get(it.k + ':' + it.id), it.k + ':' + it.id)); },
+  named(it){ return cardRows(lists(it).named); },
+  namedby(it){ return cardRows(lists(it).namedby); },
 };
 
 /* ---------- a keyword's own nine lists (data/kwuse.json) ----------
@@ -179,7 +127,7 @@ const KWROWS = {
   p(U, list){ return list.map(x => {
     if(typeof x !== 'number'){
       const [id, n] = Array.isArray(x) ? x : [x, 1];
-      return X.D.byKey.get('p:' + id) ? {key: 'p:' + id, x: n} : null;
+      return has('p:' + id) ? {key: 'p:' + id, x: n} : null;
     }
     const [n, t, k, where] = U.sp[x] || [];
     return n ? {n, sub: t + (where ? DOT + where : ''), x: k, ic: true, hay: 'small passive'} : null;
@@ -188,13 +136,13 @@ const KWROWS = {
     const [n, line, kinds] = (U.es || [])[i] || [];
     if(!n) return null;
     const names = (kinds || []).map(k => U.ck[k] || k);
-    return X.D.byKey.get('c:' + n) ? {key: 'c:' + n, sub: line, kinds: names}
+    return has('c:' + n) ? {key: 'c:' + n, sub: line, kinds: names}
       : {n, sub: line, kinds: names, ic: true};
   }).filter(Boolean); },
   a(U, list){ return list.map(([i, line]) => {
     const [s, n, what, key] = (U.at || [])[i] || [];
     if(!n) return null;
-    if(key && X.D.byKey.get(key)) return {key, sub: what + DOT + line};
+    if(key && has(key)) return {key, sub: what + DOT + line};
     return {n, sub: what + DOT + line, go: './#/atlas?s=' + s + '&q=' + encodeURIComponent(n)};
   }).filter(Boolean); },
   m(U, list){ return list.map(i => {
@@ -206,7 +154,7 @@ const KWROWS = {
     const [n, cat, t] = (U.cu || [])[i] || [];
     if(!n) return null;
     const sub = cat + DOT + t;
-    return X.D.byKey.get('c:' + n) ? {key: 'c:' + n, sub} : {n, sub, ic: true};
+    return has('c:' + n) ? {key: 'c:' + n, sub} : {n, sub, ic: true};
   }).filter(Boolean); },
 };
 function kwRows(U, e, r){
@@ -241,4 +189,14 @@ export function categories(it, F = {}){
       note: onTree !== rows.length ? onTree.toLocaleString() + ' on the tree, ' + rows.length + ' different' : ''});
   }
   return {list, need: [...need]};
+}
+
+/* Every key a card's lists would name, whether or not a card answers to it: what a page that holds only the
+   cards it shows asks the search worker about before it draws the lists (app.js relSection). */
+export function keysOf(it, F = {}){
+  const seen = new Set(), was = X.has;
+  X.has = key => { seen.add(key); return true; };
+  collecting = true;
+  try { categories(it, F); } finally { X.has = was; collecting = false; }
+  return [...seen];
 }

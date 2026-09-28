@@ -20,5 +20,19 @@
 /data/explore/*
   ! Cache-Control
   Cache-Control: public, max-age=31536000, immutable
+# The index's cut (tools/shards.py) is named by its content too: a year. Its manifest names those files, so it is
+# always checked: an old manifest would name files the site no longer has.
+/data/search/*
+  ! Cache-Control
+  Cache-Control: public, max-age=31536000, immutable
+/data/cards/*
+  ! Cache-Control
+  Cache-Control: public, max-age=31536000, immutable
+/data/seo/*
+  ! Cache-Control
+  Cache-Control: public, max-age=31536000, immutable
+/data/manifest.json
+  ! Cache-Control
+  Cache-Control: public, max-age=0, must-revalidate
 /sprites/*
   Cache-Control: public, max-age=604800, stale-while-revalidate=86400

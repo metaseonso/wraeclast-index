@@ -246,7 +246,7 @@ export async function checkOneTable(){
 export const CARD_PROBE = `(async () => {
   const m = await import('/assets/app.js');
   const k = await import('/assets/kinds.js');
-  await m.ready;
+  await m.need();   // the whole index: the page otherwise holds only the cards it shows
   const bad = [], fill = {}, widest = {};
   let cut = 0, cards = 0, lines = 0, marks = 0;
   const seen = new Set();
@@ -290,7 +290,7 @@ export const CARD_PROBE = `(async () => {
 export const REL_PROBE = `(async () => {
   const m = await import('/assets/app.js');
   const e = await import('/assets/edges.js');
-  await m.ready;
+  await m.need();   // the whole index: the page otherwise holds only the cards it shows
   const F = {};
   for(const [n, u] of [['kwuse', 'data/kwuse.json'], ['grants', 'data/grants.json']])
     F[n] = await fetch(u).then(r => r.json()).catch(() => null);
