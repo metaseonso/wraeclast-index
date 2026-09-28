@@ -3,6 +3,29 @@
 The full list of changes. The public patch notes (data/changelog.json, shown on the site) stay short.
 Add the details here first, then a short public line there.
 
+## Next — Holding up under load
+
+The owner, 27 September 2026: run lean, with resilience layers that keep the site up under traffic it struggles
+with. On the free plan a worker path past 100,000 requests a day answers 429 until midnight, and D1 past its daily
+reads or writes fails every query; files are free and unlimited.
+
+- **3 worker calls a visit, not 7, and no database writes.** `/sw.js` is a file stamped by the build with a hash of
+  what the deploy serves; league dates ride in `market.json?part=live`; the page-view beacon sends once when the
+  page is hidden (sendBeacon) and its counts go to Workers Analytics Engine (binding `TRACK`, dataset `wi_track`),
+  so D1 holds prices. The rate limit per address is in the worker's memory. The dashboard adds D1's older counts
+  to Analytics Engine's (its SQL API, `CF_ANALYTICS_TOKEN`). A visit to home, a search, a popup and one tab: 7 → 3
+  worker calls, 18 → 0 D1 rows written.
+- **When prices cannot be had, the last good ones show with their time.** The build writes
+  `data/market-last.json`; the page reads it when live prices fail or take over 4 s, and the stamp says "Prices
+  from 28 Sep 02:57 UTC · live prices paused". The service worker goes network-first on prices and keeps the last
+  good answer; the worker keeps a 24-hour copy of each price file and serves it, marked late (`X-WI-Last`), when
+  its database or build fails. Every price keeps its own checked time throughout.
+- **Alarms before limits.** `/api/health` reports today's worker requests and D1 rows read and written;
+  `watch.yml` (at :11 and :41, and after each price run) checks home, an item page, the price age and health, and
+  opens or updates one `quota` issue at 50% and 80% of any daily limit or on any failure. Quiet when all is well.
+- The price files the worker serves send `Access-Control-Allow-Origin: *`. `/privacy` says what is kept now:
+  anonymous data points in Cloudflare Workers Analytics Engine with no identifier, kept three months.
+
 ## Next — Crawler pages as files, the licence, and AI welcome
 
 The owner, 28 September 2026: CC BY 4.0 for the index's own compilation and prices, and AI crawlers welcome for
