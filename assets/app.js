@@ -2277,7 +2277,7 @@ function sawCard(it){
    works over all of it) answers its own searches with them, and the Currency tab's box and the map's find match
    their words against the cards. The worker holds the same rules over every kind's search rows. */
 const PR = ranker({items: () => (D.index && D.index.items) || [], get: key => D.byKey.get(key), groupsOf: it => edges.groupsOf(it),
-  priced: it => !!priceOf(it), usage: usageOf, seen: seenKeys, version: () => D.index, idle: f => idle(f)});
+  priced: it => !!priceOf(it), usage: usageOf, seen: () => TRAIL_NOW || seenKeys(), version: () => D.index, idle: f => idle(f)});
 export const words = qs => PR.words(qs);
 export {hits};
 ready.then(() => PR.vocabLater(), () => {});
@@ -2308,26 +2308,39 @@ export function onType(box, run, wait = TYPE_WAIT){
 }
 
 /* ---------- search ----------
-   Every card that answers the words, best first, as keys, and the first n of them held on the page as heads. The
-   search worker answers while the page holds only what it shows; a page holding the whole index answers itself,
-   by the same rules. */
-export async function find(q, kind = 'all', n = 0){
-  if(D.full) return PR.search(q, kind).map(it => it.k + ':' + it.id);
+   What answers the words, best first: how many of each kind, the keys from..take of the kind asked for, and the
+   first n of those held on the page as heads. The search worker answers while the page holds only what it shows,
+   and it hands over only what the page draws; a page holding the whole index answers itself, by the same rules. */
+export async function find(q, {kind = 'all', n = 0, take, from = 0, seen = seenKeys()} = {}){
+  if(D.full){   // the page answers itself: the last answer kept, as the worker keeps it
+    const trail = seen.join(' ');
+    if(!LAST || LAST.q !== q || LAST.seen !== trail || LAST.v !== D.index){
+      const was = TRAIL_NOW;
+      TRAIL_NOW = seen;
+      const all = PR.search(q, 'all').map(it => it.k + ':' + it.id), counts = {all: all.length};
+      TRAIL_NOW = was;
+      for(const key of all){ const k = key.slice(0, key.indexOf(':')); counts[k] = (counts[k] || 0) + 1; }
+      LAST = {q, seen: trail, v: D.index, all, counts};
+    }
+    const keys = kind === 'all' ? LAST.all : LAST.all.filter(key => key.startsWith(kind + ':'));
+    return {keys: keys.slice(from, take === undefined ? keys.length : take), total: keys.length, counts: LAST.counts};
+  }
   await wake();
-  const r = await ask('search', {q, kind, seen: seenKeys(), n});
+  const r = await ask('search', {q, kind, seen, n, take, from});
   for(const h of r.heads) hold(h);
-  return r.keys;
+  return r;
 }
+let LAST = null, TRAIL_NOW = null;   // TRAIL_NOW: the trail a page-side search is asked against
 
 /* ---------- home view ----------
    The search bar and nothing under it until something is typed. */
 const PAGE = 30;   // cards added each time the list reaches the bottom of the screen
 const ENDLESS = 150;   // cards the list adds by itself; past this, one more page is a press of Show more
-/* H.all is every match for the words typed, H.list the part of it the kind chip lets through, both as card keys.
-   Both are kept between draws: a chip, or the next page of the list, is a slice of what the search already
-   answered and never a second search. H.asked and H.draw count the questions and the draws, so an answer that
-   comes after a newer one is dropped. */
-const H = {q:'', kind:'all', shown:PAGE, all:[], list:[], asked:0, draw:0};
+/* H.res is the answer for the words typed and the kind chip: how many of each kind, and H.list the keys of the
+   chip's matches as far as the list has gone. A chip, or the next page of the list, is a slice of what the search
+   already answered and never a second search (find). H.asked and H.draw count the questions and the draws, so an
+   answer that comes after a newer one is dropped. */
+const H = {q:'', kind:'all', shown:PAGE, res:null, list:[], asked:0, draw:0};
 function homeInit(){
   const q = $('#q'), kinds = $('#kinds');
   // index.html draws these chips itself, so the bar never changes shape on the first paint; the table is the
@@ -2338,7 +2351,7 @@ function homeInit(){
     const b = e.target.closest('button'); if(!b) return;
     H.kind = b.dataset.k; H.shown = PAGE;
     [...kinds.children].forEach(c => c.setAttribute('aria-pressed', String(c === b)));
-    homeRender(true); q.focus();
+    homeRender(); q.focus();
   });
   onType(q, () => { H.q = q.value; H.shown = PAGE; homeRender(); syncHash(); });
   q.addEventListener('keydown', e => {
@@ -2358,10 +2371,15 @@ function homeInit(){
 function homeMore(){
   const from = H.shown;
   H.shown += PAGE;
-  const add = H.list.slice(from, H.shown), draw = H.draw;
-  if(!add.length) return paintMore();
+  const draw = H.draw, q = H.q, kind = H.kind;
+  if(!H.res || from >= H.res.total) return paintMore();
   paintMore();
-  whole(add).catch(() => []).then(() => {
+  // the keys past what the list has, then the cards whole
+  // the same trail the list was answered with, so the rest comes in the same order
+  (H.list.length >= H.shown ? Promise.resolve() : find(q, {kind, take: H.shown, from: H.list.length, seen: H.res.seen}).then(r => {
+    if(draw === H.draw) H.list = H.list.concat(r.keys);
+  })).then(() => whole(H.list.slice(from, H.shown))).catch(() => []).then(() => {
+    const add = H.list.slice(from, H.shown);
     if(draw !== H.draw) return;   // drawn again since: the list this page belonged to is gone
     const grid = $('#cards');
     const nodes = add.map(k => D.byKey.get(k)).filter(Boolean).map(it => { const n = card(it); n.dataset.key = it.k + ':' + it.id; return n; });
@@ -2376,7 +2394,7 @@ function homeMore(){
 // under the list: the words that say more is on its way while it still comes by itself, a button after
 function paintMore(){
   const more = $('#more'), auto = H.shown < ENDLESS;
-  more.hidden = H.list.length <= H.shown;
+  more.hidden = !H.res || H.res.total <= H.shown;
   if(more.dataset.auto === String(auto)) return;
   more.dataset.auto = String(auto);
   more.innerHTML = auto ? '<span class="note">Loading more…</span>' : '<button type="button" class="btn">Show more</button>';
@@ -2385,11 +2403,10 @@ function syncHash(){
   const h = H.q ? '#/?q=' + encodeURIComponent(H.q) : '#/';
   if(location.hash !== h) history.replaceState(null, '', h);
 }
-/* again: the words have not changed (a kind chip), so the matches already worked out are the ones drawn. The
-   answer is card keys (find); the cards on show come whole before they are drawn, and a moment is all the grid
-   waits for them: past HEAD_WAIT it draws their heads and each card fills in where it stands. */
+/* The answer is counts and card keys (find); the cards on show come whole before they are drawn, and a moment is
+   all the grid waits for them: past HEAD_WAIT it draws their heads and each card fills in where it stands. */
 const HEAD_WAIT = 150;
-function homeRender(again){
+function homeRender(){
   const hero = $('#hero'), status = $('#status'), more = $('#more');
   const has = H.q.trim().length > 0;
   hero.classList.toggle('docked', has);
@@ -2402,28 +2419,26 @@ function homeRender(again){
     if(!H.waiting){ H.waiting = true; wake().then(() => { H.waiting = false; if(route() === 'home') homeRender(); }, () => {}); }
     return;
   }
-  if(has && !(again && H.allq === H.q)){
-    // the grid keeps what it shows until the answer is in; an answer to words since replaced is dropped
-    const q = H.q, ask = ++H.asked;
-    find(q, 'all', PAGE).then(keys => {
-      if(ask !== H.asked || q !== H.q) return;
-      H.all = keys; H.allq = q;
-      homeRender(true);
+  if(has && !(H.res && H.res.q === H.q && H.res.kind === H.kind)){
+    // the grid keeps what it shows until the answer is in; an answer to words or a chip since replaced is dropped
+    const q = H.q, kind = H.kind, ask = ++H.asked, seen = seenKeys();
+    find(q, {kind, n: H.shown, take: H.shown, seen}).then(r => {
+      if(ask !== H.asked || q !== H.q || kind !== H.kind) return;
+      H.res = {q, kind, seen, total: r.total, counts: r.counts};
+      H.list = r.keys;
+      homeRender();
     }, () => {});
     return;
   }
   if(has){
-    const all = H.all;
-    const counts = {all: all.length};
-    for(const key of all){ const k = key.slice(0, key.indexOf(':')); counts[k] = (counts[k] || 0) + 1; }
+    const counts = H.res.counts, total = H.res.total;
     for(const b of $('#kinds').children) b.querySelector('.ct').textContent = counts[b.dataset.k] || 0;
-    list = H.kind === 'all' ? all : all.filter(key => key.startsWith(H.kind + ':'));
-    label = list.length ? '<b>' + list.length.toLocaleString() + '</b> match' + (list.length === 1 ? '' : 'es') : '';
+    list = H.list;
+    label = total ? '<b>' + total.toLocaleString() + '</b> match' + (total === 1 ? '' : 'es') : '';
   } else {
     for(const b of $('#kinds').children) b.querySelector('.ct').textContent = '';
-    list = []; label = ''; H.all = []; H.allq = ''; H.asked++;
+    list = []; label = ''; H.res = null; H.list = []; H.asked++;
   }
-  H.list = list;
   const draw = ++H.draw, shown = list.slice(0, H.shown);
   const paint = () => {
     if(draw !== H.draw) return;
@@ -2487,10 +2502,10 @@ export function mountTopSearch(host){
     const words = q.value, mine = ++asked;
     if(!words.trim()){ close(); return; }
     let keys;
-    try { keys = await find(words, 'all', 10); } catch { return; }
+    try { keys = await find(words, {n: 10, take: 10}); } catch { return; }
     if(mine !== asked || q.value !== words) return;   // more was typed since: that answer is on its way
     if(document.activeElement !== q) return;   // left the box before its answer came: nothing drops open behind it
-    total = keys.length; rows = keys.slice(0, 10).map(k => D.byKey.get(k)).filter(Boolean); sel = 0; paint();
+    total = keys.total; rows = keys.keys.map(k => D.byKey.get(k)).filter(Boolean); sel = 0; paint();
   });
   q.addEventListener('keydown', e => {
     if(e.key === 'ArrowDown' && rows.length){ e.preventDefault(); sel = (sel + 1) % rows.length; paint(); }

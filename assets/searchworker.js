@@ -8,8 +8,10 @@
               currency, the bosses) and the trail; replies once every kind's rows are in
      runtime  the cards the page makes itself, again (the bosses land after the market)
      market   today's priced keys, again
-     search   {q, kind, seen, n}: every matching key, best first, by the rules in assets/rank.js, and the first
-              n of them as heads (assets/cut.js HEAD)
+     search   {q, kind, seen, n, from, take}: the matches, best first, by the rules in assets/rank.js: how many
+              of each kind, and of the kind asked for (every kind: 'all') the keys from..take and the first n of
+              them as heads (assets/cut.js HEAD). The answer to the last words is kept, so a kind chip or the
+              next page of the list is a slice of it and never a second search
      heads    {keys}: the head of each key there is a card for
      bodies   {keys}: each card whole, read out of its card file (data/cards/<k>/<nn>.<hash>.json), a few files
               kept at a time
@@ -96,7 +98,7 @@ const heads = keys => keys.map(k => S.byKey.get(k)).filter(it => it && it._c !==
 
 /* the card files, a few kept at a time: a search draws cards from all over the index, and each file is a read of
    a couple of hundred KB */
-const KEEP = 6;
+const KEEP = 12;
 const FILES = new Map();
 function cardFile(f){
   let p = FILES.get(f);
@@ -127,14 +129,26 @@ async function bodies(keys){
   return out;
 }
 
+/* An answer as the page takes it: the page never holds a list of every match, only the part it draws. */
+function answer(m, S){
+  const sig = m.q + '\u0001' + S.seen.join(' ') + '\u0001' + S.v;
+  if(!S.last || S.last.sig !== sig){
+    const all = R.search(m.q, 'all').map(it => it.k + ':' + it.id), counts = {all: all.length};
+    for(const key of all){ const k = key.slice(0, key.indexOf(':')); counts[k] = (counts[k] || 0) + 1; }
+    S.last = {sig, all, counts, by: {}};
+  }
+  const L = S.last, kind = m.kind || 'all';
+  const keys = kind === 'all' ? L.all : L.by[kind] || (L.by[kind] = L.all.filter(key => key.startsWith(kind + ':')));
+  const from = m.from || 0, take = m.take === undefined ? keys.length : m.take;
+  return {keys: keys.slice(from, take), total: keys.length, counts: L.counts, heads: heads(keys.slice(0, m.n || 0))};
+}
 const OPS = {
   init,
   async runtime(m){ S.runtime = m.runtime || []; rebuild(); return {}; },
   async market(m){ S.market = new Set(m.market || []); S.v++; return {}; },
   async search(m){
     if(m.seen) S.seen = m.seen;
-    const keys = R.search(m.q, m.kind || 'all').map(it => it.k + ':' + it.id);
-    return {keys, heads: heads(keys.slice(0, m.n || 0))};
+    return answer(m, S);
   },
   async heads(m){ return {heads: heads(m.keys || [])}; },
   async bodies(m){ return {bodies: await bodies(m.keys || [])}; },
