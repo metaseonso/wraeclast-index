@@ -3,6 +3,23 @@
 The full list of changes. The public patch notes (data/changelog.json, shown on the site) stay short.
 Add the details here first, then a short public line there.
 
+## Next — One top bar, the index in groups
+
+The owner, 27 September 2026, on the first layout proposal: it was a mockup, not the site, and was set aside;
+the second was built in the site's own code, the header only, and shipped with Suggest kept in the bar ("B").
+
+- **One row on every page.** The nav is the index in groups: Search · Items ▾ (Uniques, Gems, Currency) · Passive
+  tree · Endgame ▾ (Atlas, Bosses) · Trade · Craft. The groups are real buttons (`aria-expanded`; Enter, Space,
+  arrow keys, Escape; a click outside closes), and the group over the current page wears the active plate.
+  `assets/topnav.js` runs it, with no imports. Desktop 107 → 59 px tall; phone about 240 → 52 px.
+- **Suggest stays in the bar** from 1280 px up, gold, beside ☰; Patch notes, Runs, Pins and Keybindings are under ☰.
+  From 1280 to 1419 px the price stamp drops the league name (it stays in the tooltip). Below 1280 the nav and
+  Suggest go under ☰ as a panel; on a phone the bar is the crest, a search button and ☰, and the sheet holds
+  every group and button. Nothing wraps or scrolls sideways from 390 to 1920 px.
+- **The same bar on /explore** (written by `tools/sync.py`; the page's own section buttons stay in the page,
+  hidden, because its scripts use them), **the crawler pages** (`worker/seo.js`) **and /privacy**. The phone
+  nav on /explore no longer prints its links over each other.
+
 ## Next — Framework for big data dumps
 
 The owner, 27 September 2026, on the framework plan: "A" — start now, in order, each part tested and live as it lands.
