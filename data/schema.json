@@ -350,7 +350,8 @@
      ],
      "by": [
       "row",
-      "name"
+      "name",
+      "mapdanger"
      ],
      "need": 1,
      "drawn": 1
@@ -1725,7 +1726,8 @@
      ],
      "by": [
       "row",
-      "name"
+      "name",
+      "mapdanger"
      ],
      "need": 1,
      "drawn": 1
@@ -3748,6 +3750,7 @@
     "adds",
     "cancorrupt",
     "canroll",
+    "mapdanger",
     "mondanger",
     "name",
     "row"
