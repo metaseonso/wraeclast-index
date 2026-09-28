@@ -211,6 +211,11 @@ STAGES = [
          reads=['https://www.pathofexile.com/forum/ (the patch notes threads data/patches.json names)',
                 'data/patches.json', 'data/index.json'],
          writes=['data/patchnotes.json'], count={'data/patchnotes.json': 'lines'}),
+    # the game's achievements, joined by name to the cards (#91); data/areas.json is #72's, on main
+    dict(name='achievements', run=['tools/achievements.py'], cadence='patch', source='game files',
+         reads=['data/game/achievements.json', 'data/game/achievement_sets.json', 'data/index.json',
+                'data/exchange.json', 'data/bosses.json', 'data/areas.json'],
+         writes=['data/achievements.json'], count={'data/achievements.json': 'achievements'}),
     dict(name='map', run=['tools/map.py'], cadence='patch', source='files',
          reads=['data/index.json', 'data/kwuse.json', 'data/grants.json', 'data/gamedata.json', 'assets/kinds.js',
                 'assets/theme.css'],
