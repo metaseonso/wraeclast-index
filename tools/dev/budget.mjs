@@ -26,7 +26,10 @@
      orphan    a file under data/ that nothing reads: no page, module, worker file, sw.js, tool or workflow names it
                (a file named by its content, name.<hash>.json, only by its exact path; any other by its name, or by
                its folder where the code builds the name). The build already leaves such a file out
-               (tools/build.mjs); this says it is still in the repo. */
+               (tools/build.mjs); this says it is still in the repo. In dist/: every file under data/ named by its
+               content is this deploy's own (sw-files.json "files") or the previous generation (sw-files.json
+               "prev", tools/build.mjs 4b), and that is one generation: a file of the index a page reads by name
+               (data/cards, data/search, data/explore) this deploy does not have, at most one per name, in dist/. */
 import { readFile, readdir, stat } from 'node:fs/promises';
 import { spawnSync } from 'node:child_process';
 import { dirname, join } from 'node:path';
@@ -169,6 +172,28 @@ async function orphans(){
   });
 }
 
+// dist/: files named by their content that neither this deploy nor the previous generation names, and a previous
+// generation that is more than one ({what, note} each)
+const CARRY = /^\/data\/(cards|search|explore)\/.+\.[0-9a-f]{8,}\.json$/;   // tools/build.mjs CARRY
+async function distOrphans(){
+  let list = null;
+  try { list = JSON.parse(await readFile(join(DIST, 'sw-files.json'), 'utf8')); } catch { return []; }
+  const own = list.files || {}, prev = list.prev || {}, out = [], slots = new Set();
+  for(const p of Object.keys(prev).sort()){
+    const slot = p.replace(HASHED, '');
+    if(!CARRY.test(p)) out.push({what: p.slice(1), note: 'in the previous generation, but not a file of the index a page reads by name'});
+    else if(own[p]) out.push({what: p.slice(1), note: 'in the previous generation and in this deploy both'});
+    else if(slots.has(slot)) out.push({what: p.slice(1), note: 'a second older ' + slot.slice(1) + ': the previous generation is one generation'});
+    else if(!(await stat(join(DIST, p.slice(1))).catch(() => null))) out.push({what: p.slice(1), note: 'in the previous generation, not in dist/'});
+    slots.add(slot);
+  }
+  for(const {p, dir} of await walk(join(DIST, 'data'))){
+    const f = '/' + p.slice(DIST.length + 1).split(/[\\/]/).join('/');
+    if(!dir && HASHED.test(f) && !own[f] && !prev[f]) out.push({what: f.slice(1), note: 'in dist/, and neither this deploy nor the previous generation names it'});
+  }
+  return out;
+}
+
 /* ---------- the check ---------- */
 function judge(line, n, what, lim, held){
   if(held){
@@ -260,6 +285,10 @@ export async function checkBudget({offline = false} = {}){
   // orphans
   rows.orphan = await orphans();
   for(const f of rows.orphan) bad.push({line: 'orphan', what: f, state: 'FAIL', note: 'nothing reads it: delete it, or name what reads it'});
+  const stray = await distOrphans();
+  for(const x of stray) bad.push({line: 'orphan', what: 'dist/' + x.what, state: 'FAIL', note: x.note});
+  rows.orphan.push(...stray.map(x => 'dist/' + x.what));
+  try { rows.prev = Object.keys(JSON.parse(await readFile(join(DIST, 'sw-files.json'), 'utf8')).prev || {}).length; } catch { rows.prev = 0; }
 
   return {bad, warn, rows, how, offline};
 }
@@ -275,6 +304,7 @@ export function budgetLine(r){
     'search ' + size(r.rows.searchSum.n) + '/' + size(LIMITS.search.fail),
     'd1 ' + (d1 ? mb(d1.n) + '/' + mb(LIMITS.d1.fail) : '-'),
     r.rows.orphan.length + ' orphans',
+    r.rows.prev + ' of the previous generation',
   ].join(' · ');
   const say = x => x.line + ' ' + x.what + (x.n ? ' ' + size(x.n) : '') + (x.note ? ' (' + x.note + ')' : '');
   if(r.bad.length) return r.bad.length + ' over: ' + r.bad.slice(0, 3).map(say).join(' | ');

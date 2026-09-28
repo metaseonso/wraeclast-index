@@ -22,6 +22,15 @@
       before its first paint (read off index.html and what its modules import). sw.js keeps only those at install,
       takes every unchanged file over from the last deploy's copy, and checks what it keeps against the hashes.
       The crawler's files (5) are not in it: the service worker never keeps them.
+   4b. The previous generation: the files of the index a page reads by name (data/cards, data/search,
+      data/explore: named by their content) that the live deploy names and this build no longer has, fetched from
+      the live site (WI_PREV_FROM, default https://wraeclastindex.fyi; off: none) and checked against the hash the
+      live sw-files.json gives them. A returning visitor's first load after a data deploy is the service worker's
+      copy of the deploy before (sw.js), with that deploy's manifest: its files still answer, so its cards draw
+      whole. One generation only: sw-files.json lists them under "prev", never under "files" (the service worker
+      never keeps them and they do not change the stamp), and the next build carries them again only for a folder
+      whose own files did not change. A file that will not fetch or does not match its hash is left out, loudly;
+      a page further behind reloads once into the new deploy (assets/app.js moved).
    5. The crawler's files, made by worker/seo.js crawl() out of dist/'s own data and the prices of this moment
       (the live https://wraeclastindex.fyi/data/market.json; the copy in data/ when that does not answer, said
       loudly): every item page (item/<slug>.html) and its Markdown copy (md/item/<slug>.md), the lists
@@ -331,11 +340,57 @@ async function hashes(files){
   for(const f of files) { const h = hash(await readFile(join(OUT, f))); for(const p of paths(f)) have[p] = h; }
   return have;
 }
-async function manifest(files, have){
+async function manifest(files, have, prev = {}){
   const shell = await homeShell(have);
-  const body = JSON.stringify({v: 1, shell, files: have});
+  const body = JSON.stringify({v: 1, shell, files: have, prev});
   await writeFile(join(OUT, 'sw-files.json'), body);
   console.log('build: sw-files.json  ' + Object.keys(have).length + ' paths, ' + shell.length + ' in the home shell, ' + (body.length / 1024).toFixed(1) + ' KB');
+}
+
+/* ---------- 4b. the previous generation ---------- */
+const PREV_FROM = (process.env.WI_PREV_FROM || 'https://wraeclastindex.fyi').replace(/\/$/, '');
+// the files a page reads by name out of a manifest or its own page: what an older page still asks for
+const CARRY = /^\/data\/(cards|search|explore)\/.+\.[0-9a-f]{8,}\.json$/;
+const folder = p => p.split('/')[2];
+async function getBytes(url){
+  const r = await fetch(url, {headers: {'User-Agent': UA}, signal: AbortSignal.timeout(30000)});
+  if(!r.ok) throw new Error(url + ' answered ' + r.status);
+  if(/text\/html/i.test(r.headers.get('Content-Type') || '')) throw new Error(url + ' answered a page');
+  return Buffer.from(await r.arrayBuffer());
+}
+// {path: hash} of every file written, each checked against the live deploy's hash for it
+async function previous(have){
+  if(PREV_FROM === 'off' || args.includes('--offline')){ console.log('build: previous generation: not carried (' + (PREV_FROM === 'off' ? 'WI_PREV_FROM=off' : '--offline') + ')'); return {}; }
+  let live = null;
+  try { live = JSON.parse(await getText(PREV_FROM + '/sw-files.json')); } catch(e){ live = null; warn('previous generation: ' + PREV_FROM + '/sw-files.json did not read (' + (e && e.message || e) + ')'); }
+  if(!live || live.v !== 1 || !live.files || typeof live.files !== 'object'){
+    warn('previous generation NOT carried: no live sw-files.json. A visitor whose first load after this deploy is the copy of the last one may find its cards without lines and reload once');
+    return {};
+  }
+  // per folder: the live deploy's own files this build drops; a folder that dropped none carries on the live
+  // deploy's own previous generation (price-only rebuilds keep it), so never more than one generation back
+  const want = {}, dropped = new Set();
+  for(const [p, h] of Object.entries(live.files)) if(CARRY.test(p) && !have[p]){ want[p] = h; dropped.add(folder(p)); }
+  for(const [p, h] of Object.entries(live.prev || {})) if(CARRY.test(p) && !have[p] && !dropped.has(folder(p))) want[p] = h;
+  const out = {}, bad = [], jobs = Object.entries(want);
+  let bytes = 0;
+  const run = async () => {
+    for(let j; (j = jobs.shift()); ){
+      const [p, h] = j;
+      try {
+        const buf = await getBytes(PREV_FROM + p);
+        if(hash(buf) !== h) throw new Error('its bytes do not match the live hash');
+        await mkdir(dirname(join(OUT, p.slice(1))), {recursive: true});
+        await writeFile(join(OUT, p.slice(1)), buf);
+        out[p] = h; bytes += buf.length;
+      } catch(e){ bad.push(p + ' (' + (e && e.message || e) + ')'); }
+    }
+  };
+  await Promise.all([run(), run(), run(), run(), run(), run()]);
+  if(bad.length) warn('previous generation: ' + bad.length + ' file(s) left out, so a page of the last deploy that asks for one reloads once: ' + bad.slice(0, 3).join('; '));
+  console.log('build: previous generation  ' + Object.keys(out).length + ' files, ' + (bytes / 1048576).toFixed(1) + ' MB, from ' + PREV_FROM +
+    (Object.keys(out).length ? ' (' + [...new Set(Object.keys(out).map(folder))].join(', ') + ')' : ''));
+  return out;
 }
 
 /* ---------- 5. the crawler's files ---------- */
@@ -446,7 +501,13 @@ catch(e){
   process.exit(1);
 }
 let have = null;
-try { have = await hashes(files); await manifest(files, have); }
+try {
+  have = await hashes(files);
+  let prev = {};
+  try { prev = await previous(have); }
+  catch(e){ warn('previous generation NOT carried (' + (e && e.message || e) + ')'); }
+  await manifest(files, have, prev);
+}
 catch(e){
   warn('no sw-files.json (' + (e && e.message || e) + '): the service worker keeps what it always kept');
   await rm(join(OUT, 'sw-files.json'), {force: true}).catch(() => {});

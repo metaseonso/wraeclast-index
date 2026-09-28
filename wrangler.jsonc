@@ -30,10 +30,11 @@
     { "binding": "DB", "database_name": "wraeclast", "database_id": "d1c4d101-dce9-4f19-9dc3-4525eca2f17e", "migrations_dir": "worker/migrations" }
   ],
   // page views, clicks and click spots for the owner's dashboard (worker/dash.js; each field: worker/cfstats.js),
-  // kept out of D1 so page tracking can never spend the database's daily writes. Off until Analytics Engine is
-  // enabled on the account (a deploy with it refuses: "You need to enable Analytics Engine", code 10089); without
-  // the binding the worker counts into D1 as before (worker/index.js track). Put it back once it is enabled:
-  // "analytics_engine_datasets": [ { "binding": "TRACK", "dataset": "wi_track" } ],
+  // kept out of D1 so page tracking can never spend the database's daily writes (Analytics Engine enabled on the
+  // account 28 Sep 2026; without the binding the worker counts into D1 as before)
+  "analytics_engine_datasets": [
+    { "binding": "TRACK", "dataset": "wi_track" }
+  ],
   "triggers": { "crons": [] },
   "observability": { "enabled": true }
 }
