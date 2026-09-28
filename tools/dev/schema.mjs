@@ -35,7 +35,7 @@ const SHOW = 3;            // problems printed per kind
    string, so it takes either. A renderer that reads no field of the row is not here. */
 const TYPE_JSON = {
   text: ['string'], enum: ['string'], quote: ['string'], source: ['string'], note: ['string'],
-  adds: ['string'], pool: ['string'], danger: ['string'],
+  adds: ['string'], pool: ['string'], danger: ['string'], odds: ['string'], drop: ['string'],
   number: ['number'], duration: ['number'],
   flag: ['number', 'boolean', 'string'],
   rich: ['array', 'string'],
@@ -55,6 +55,7 @@ const OWN_ROWS = {
   x: {file: 'bosses.json', at: 'bosses', row: {
     name: {json: ['string'], need: 1}, areas: {json: ['array'], need: 1}, pinnacle: {json: ['boolean'], need: 1},
     drops: {json: ['array']}, access: {json: ['array']}, rates: {json: ['object']},
+    checked: {json: ['array']}, nodrops: {json: ['object']},
   }},
 };
 
