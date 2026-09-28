@@ -55,6 +55,7 @@ The site is static, and every hourly job that keeps it live runs on GitHub Actio
 | `data/craft.json`, `data/craft/` | Craft tab: every base and the mods it can roll (all tiers, item levels, groups), how often each mod rolls, essences, runes and soul cores, desecrated and corruption mods, orbs, omens and catalysts, built by `tools/craft.py` from the game files (essence tables and orb levels checked on poe2db; run after a game patch, after `tools/tradedata.py`). The weights are the one thing the game files do not carry — every spawn weight in the export is 1 or 0, can roll or cannot — so they come from Craft of Exile, pulled into `tools/craftweights.json` by `tools/craftweights.py` and named on the page where they are shown |
 | `data/craftmods.json` | The Craft tab's second question, "how do I get this mod", which is asked with no base in hand: one row per modifier — its own wording, its side, its tags and every kind of item that can carry it, with the lowest level it lands at and whether an essence guarantees it there. Built by `tools/craftmods.py` out of the item class files above, so nothing official is read twice, 58 kB against their 1.6 MB; fetched the first time that question is asked and never in first paint. Run it after `tools/craft.py` |
 | `data/gamedata.json` | Which patch the shipped data is from, written by `tools/gamepull.py` (one daily pull of the official export; it also writes the gap report `tools/dev/gaps.txt` — what the game files hold against what we card) |
+| `data/treechanges/` | What each patch did to the passive tree: nodes added, removed, reworded (the old name and lines kept) and moved, one file per patch named for the patch it arrives at, from GGG's own tree export (https://github.com/grindinggear/poe2-skilltree-export) at the commits `data/patches.json` ties to each patch. `index.json` lists the steps with their counts and the check of that tree against RePoE's and against the lines the drill-down shows. Every node carries the tree's own number in `id` for the tree view, and nothing else of the game's code. Built by `tools/treeexport.py`, the `treechanges` stage. Nothing reads it yet: how a card and the tree show it is `design/tree-diff.md` |
 | `data/game/` | The game's own tables that RePoE's export does not carry (#83): monsters and their resistance sets, quest rewards, gold, Trial of Chaos modifiers, the Trial of the Sekhemas, strongboxes, Forbidden Rites, ritual altars, atlas corruption, map content, Azmeri spirits, the engine's constants, the resistance penalty and the rare monster modifiers, one plain JSON file each, about 600 kB in all. Read straight out of the game's bundles on GGG's patch CDN by `tools/datpull.mjs` (pathofexile-dat and poe-tool-dev's dat-schema; an optional dependency like esbuild, `npm ci`), the pipeline's `datpull` stage. Every foreign key comes out as the name a player reads; a file names the fields that may hold an internal id in its own `ids`, and the last good rule fails a pull where any other field does. `_meta.json` says which patch and which dat-schema commit each file is from. No page asks for them yet, so the build leaves them out of `dist/`. The same reader hands whole tables to the Python tools: `tools/gamepull.py` `dat()` runs `tools/datpull.mjs --raw` and keeps them in `tools/cache/dat-<CDN folder>/` |
 | `data/gamestats.json` | One monster of each level (life, damage, accuracy, armour, evasion) and what each class starts with, from the game files by `tools/gamelib.py`. Nothing reads it yet |
 | `data/guides.json` | The community guides the Build tab links out to: one line each, and the day the address was last read. Built by `tools/guides.py`, which holds the list and reads every address on each publish — a guide whose page has gone, or no longer carries its own words, keeps the row it last checked out on and becomes a named fault instead of a dead link. Someone else's work, named where it is shown and never ours |
@@ -74,7 +75,7 @@ reused (where the `gh` CLI is signed in), and the run exits non-zero. The owner 
 dashboard's Data jobs block and in `/api/health`, in the same fine/late/stopped style as the jobs. Applies to
 `sync.py`, `craft.py`, `uniques.py`, `leagues.py`, `market.py`, `exchange.py`, `gamepull.py`, `datpull.mjs` (through its
 pipeline stage), `tradedata.py`,
-`gameinfo.py`, `atlas.py`, `bosses.py`, `farms.py`, `guides.py` (where the outside source is a link we
+`gameinfo.py`, `atlas.py`, `bosses.py`, `farms.py`, `treeexport.py`, `guides.py` (where the outside source is a link we
 send players to, and the fault is that it has rotted) and `baseprices.py` (whose source is the craft tables a
 patch fills: a patch that empties one of them must not empty the price list with it). The tools that build only from files already on disk
 (`appdata.py`, `mechanics.py`, `kwuse.py`, `nodelinks.py`, `essences.py`, `grants.py`, `gamelib.py`, `rollprices.py`) have no
@@ -182,6 +183,7 @@ python tools/pipeline.py patch --dry                                  build and 
 | `uniques` | patch | poe2db |
 | `sync` | patch | the Wraeclast Index artifact, plus RePoE and poe.ninja for the cards it lacks |
 | `rollprices`, `craftmods`, `baseprices`, `carddata`, `nodelinks`, `essences`, `kwuse`, `gemlines`, `treelines`, `map` | patch | the files the stages above wrote |
+| `treechanges` | patch | GGG's passive tree export, at the commits `data/patches.json` names; checked against RePoE's tree and the drill-down's |
 | `guides` | daily | the community guides the Build tab links to |
 | `market`, `exchange`, `leagues` | hourly | poe.ninja, the in-game Currency Exchange, poe2db (the Publish site workflow runs these three on its own) |
 | `bosses`, `farms`, `mechanics`, `ninjapast` | by hand | the game files and poe2wiki, BawLoch's tier list sheet, our own cards, poe.ninja |
@@ -223,7 +225,8 @@ shipped row to it (a stale `data/schema.json` fails too), `tools/lastgood.py` ho
 `worker/seo.js` reads the kinds it publishes (`crawl`) from the same table. A new kind or field is one entry in
 `assets/kinds.js`, then `node tools/dev/schema.mjs --write`.
 
-After a game patch, also `python tools/patches.py --notes` (see Patches, snapshots and price history). After a run:
+After a game patch, also `python tools/patches.py --notes --tree` (see Patches, snapshots and price history),
+before the run: the `treechanges` stage reads the tree export at the commits it names. After a run:
 `node tools/dev/guard.mjs`, commit, push to `main`. The site republishes in about a minute, and the data repo's own
 workflow freezes the new index under its build within twelve hours.
 
