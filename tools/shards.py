@@ -72,10 +72,15 @@ def body(o):
     return json.dumps(o, ensure_ascii=False, separators=(',', ':'))
 
 
+# never in a card file: the kind (the file says it), and "ac", a kept anoint cost, which is a price with no source
+# and no age (an anoint shows a sum only when every oil has a live price)
+DROP = ('k', 'ac')
+
+
 def card_of(it):
-    """A card as the page reads it: no kind (the file says it), no id where it is the name, a gem's search
-    words trimmed the way the page has always had them."""
-    o = {f: v for f, v in it.items() if f != 'k' and not (f == 'id' and v == it['n'])}
+    """A card as the page reads it: no id where it is the name, a gem's search words trimmed the way the page
+    has always had them, nothing in DROP."""
+    o = {f: v for f, v in it.items() if f not in DROP and not (f == 'id' and v == it['n'])}
     if it['k'] == 'g' and 'q' in o:
         o['q'] = gem_words(it)
         if not o['q']:

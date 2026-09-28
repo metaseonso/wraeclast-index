@@ -111,24 +111,24 @@
    },
    "cards": [
     {
-     "file": "data/cards/p/00.773d170e5c.json",
-     "bytes": 146729,
-     "n": 586
+     "file": "data/cards/p/00.f66b181e5d.json",
+     "bytes": 145281,
+     "n": 603
     },
     {
-     "file": "data/cards/p/01.834cdd07e0.json",
-     "bytes": 147621,
-     "n": 586
+     "file": "data/cards/p/01.4863b18590.json",
+     "bytes": 146675,
+     "n": 604
     },
     {
-     "file": "data/cards/p/02.a7db062641.json",
-     "bytes": 151727,
-     "n": 818
+     "file": "data/cards/p/02.b59bb0a22e.json",
+     "bytes": 148518,
+     "n": 834
     },
     {
-     "file": "data/cards/p/03.403b621db3.json",
-     "bytes": 24803,
-     "n": 122
+     "file": "data/cards/p/03.4e05130ab4.json",
+     "bytes": 15426,
+     "n": 71
     }
    ]
   },
@@ -298,184 +298,184 @@
   "words": {
    "g": [
     {
-     "file": "data/seo/words/g00.2089dd713f.txt",
-     "bytes": 261985
+     "file": "data/seo/words/g00.dcf45cca3e.txt",
+     "bytes": 262023
     },
     {
-     "file": "data/seo/words/g01.f97d8440d6.txt",
-     "bytes": 163403
+     "file": "data/seo/words/g01.b534c6878c.txt",
+     "bytes": 162293
     }
    ],
    "u": [
     {
-     "file": "data/seo/words/u00.607433cc3d.txt",
-     "bytes": 261508
+     "file": "data/seo/words/u00.65674ec810.txt",
+     "bytes": 261936
     },
     {
-     "file": "data/seo/words/u01.14e4081f71.txt",
-     "bytes": 73418
+     "file": "data/seo/words/u01.b86d163a2f.txt",
+     "bytes": 72280
     }
    ],
    "p": [
     {
-     "file": "data/seo/words/p00.1765f7cfd2.txt",
-     "bytes": 261929
+     "file": "data/seo/words/p00.915aba2016.txt",
+     "bytes": 261959
     },
     {
-     "file": "data/seo/words/p01.86f134af17.txt",
-     "bytes": 262097
+     "file": "data/seo/words/p01.f340639482.txt",
+     "bytes": 262016
     },
     {
-     "file": "data/seo/words/p02.a8e9301961.txt",
-     "bytes": 47258
+     "file": "data/seo/words/p02.972285d415.txt",
+     "bytes": 38305
     }
    ],
    "b": [
     {
-     "file": "data/seo/words/b00.a5e29ce7f8.txt",
-     "bytes": 261938
+     "file": "data/seo/words/b00.db42e83658.txt",
+     "bytes": 262003
     },
     {
-     "file": "data/seo/words/b01.4eb38717ed.txt",
-     "bytes": 127123
+     "file": "data/seo/words/b01.9dc1e0c6cf.txt",
+     "bytes": 125504
     }
    ],
    "a": [
     {
-     "file": "data/seo/words/a00.8904f91f1b.txt",
-     "bytes": 95000
+     "file": "data/seo/words/a00.a1001339b6.txt",
+     "bytes": 94632
     }
    ],
    "c": [
     {
-     "file": "data/seo/words/c00.8eb8973e0e.txt",
-     "bytes": 24844
+     "file": "data/seo/words/c00.aea6624e93.txt",
+     "bytes": 24748
     }
    ],
    "w": [
     {
-     "file": "data/seo/words/w00.26f2819579.txt",
-     "bytes": 261877
+     "file": "data/seo/words/w00.513784f050.txt",
+     "bytes": 262086
     },
     {
-     "file": "data/seo/words/w01.433a66bca0.txt",
-     "bytes": 1458
+     "file": "data/seo/words/w01.243e8e13ef.txt",
+     "bytes": 524
     }
    ]
   },
   "items": {
    "files": [
     {
-     "file": "data/seo/item/00.eaad0f19d3.json",
-     "bytes": 118088
+     "file": "data/seo/item/00.d35b6af567.json",
+     "bytes": 117713
     },
     {
-     "file": "data/seo/item/01.77e51bda35.json",
-     "bytes": 120879
+     "file": "data/seo/item/01.3514f74c38.json",
+     "bytes": 120391
     },
     {
-     "file": "data/seo/item/02.55c74ca1d4.json",
-     "bytes": 96770
+     "file": "data/seo/item/02.a1f8116fea.json",
+     "bytes": 96480
     },
     {
-     "file": "data/seo/item/03.c5cc7dc513.json",
-     "bytes": 117066
+     "file": "data/seo/item/03.f3136b2b1f.json",
+     "bytes": 116562
     },
     {
-     "file": "data/seo/item/04.44651968c2.json",
-     "bytes": 123705
+     "file": "data/seo/item/04.a457176560.json",
+     "bytes": 123206
     },
     {
-     "file": "data/seo/item/05.fb5b2a9e77.json",
-     "bytes": 106760
+     "file": "data/seo/item/05.d3011885c6.json",
+     "bytes": 106370
     },
     {
-     "file": "data/seo/item/06.7d2de2f49e.json",
-     "bytes": 121110
+     "file": "data/seo/item/06.09ae223968.json",
+     "bytes": 120819
     },
     {
-     "file": "data/seo/item/07.70052350c9.json",
-     "bytes": 118092
+     "file": "data/seo/item/07.e6c1d0b19e.json",
+     "bytes": 117555
     },
     {
-     "file": "data/seo/item/08.1c1293895f.json",
-     "bytes": 112736
+     "file": "data/seo/item/08.b45c8c9c7c.json",
+     "bytes": 112302
     },
     {
-     "file": "data/seo/item/09.246973d016.json",
-     "bytes": 110864
+     "file": "data/seo/item/09.8c7413caa5.json",
+     "bytes": 110500
     },
     {
-     "file": "data/seo/item/10.4f0a982604.json",
-     "bytes": 112916
+     "file": "data/seo/item/10.aa1c9386ba.json",
+     "bytes": 112513
     },
     {
-     "file": "data/seo/item/11.1431f0d517.json",
-     "bytes": 106041
+     "file": "data/seo/item/11.09c7c9a648.json",
+     "bytes": 105598
     },
     {
-     "file": "data/seo/item/12.f28b918482.json",
-     "bytes": 115739
+     "file": "data/seo/item/12.ee3effa77c.json",
+     "bytes": 115184
     },
     {
-     "file": "data/seo/item/13.84b15bdc75.json",
-     "bytes": 116598
+     "file": "data/seo/item/13.67468f929c.json",
+     "bytes": 116183
     },
     {
-     "file": "data/seo/item/14.38ff9a9fc5.json",
-     "bytes": 91787
+     "file": "data/seo/item/14.0721017a1f.json",
+     "bytes": 91487
     },
     {
-     "file": "data/seo/item/15.92efe489ed.json",
-     "bytes": 110531
+     "file": "data/seo/item/15.fe65c9992a.json",
+     "bytes": 110046
     },
     {
-     "file": "data/seo/item/16.e04616a5db.json",
-     "bytes": 139875
+     "file": "data/seo/item/16.9a563e37cf.json",
+     "bytes": 139491
     },
     {
-     "file": "data/seo/item/17.6bfecede36.json",
-     "bytes": 104735
+     "file": "data/seo/item/17.70dbe1175d.json",
+     "bytes": 104319
     },
     {
-     "file": "data/seo/item/18.a1e671936e.json",
-     "bytes": 111204
+     "file": "data/seo/item/18.6c8626d62b.json",
+     "bytes": 110870
     },
     {
-     "file": "data/seo/item/19.a0cac9b861.json",
-     "bytes": 116951
+     "file": "data/seo/item/19.0f7d15e8be.json",
+     "bytes": 116518
     },
     {
-     "file": "data/seo/item/20.e25d4a7d9a.json",
-     "bytes": 118302
+     "file": "data/seo/item/20.87080d9ddc.json",
+     "bytes": 117676
     },
     {
-     "file": "data/seo/item/21.79e982811d.json",
-     "bytes": 128008
+     "file": "data/seo/item/21.bc5e9ee022.json",
+     "bytes": 127562
     },
     {
-     "file": "data/seo/item/22.8d2b334e8c.json",
-     "bytes": 104695
+     "file": "data/seo/item/22.3254186644.json",
+     "bytes": 104275
     },
     {
-     "file": "data/seo/item/23.8995995d20.json",
-     "bytes": 110211
+     "file": "data/seo/item/23.e3e625391e.json",
+     "bytes": 109754
     },
     {
-     "file": "data/seo/item/24.bb7eb18cd7.json",
-     "bytes": 106443
+     "file": "data/seo/item/24.67dafe401b.json",
+     "bytes": 106042
     },
     {
-     "file": "data/seo/item/25.8c5c9e4124.json",
-     "bytes": 131864
+     "file": "data/seo/item/25.8bfd8c86f9.json",
+     "bytes": 131363
     },
     {
-     "file": "data/seo/item/26.8d679893c5.json",
-     "bytes": 103640
+     "file": "data/seo/item/26.0fe96853e1.json",
+     "bytes": 103167
     },
     {
-     "file": "data/seo/item/27.bac77d30a6.json",
-     "bytes": 97745
+     "file": "data/seo/item/27.1f8c4ccb42.json",
+     "bytes": 97273
     }
    ]
   }

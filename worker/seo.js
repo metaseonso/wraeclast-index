@@ -214,8 +214,9 @@ function indexModel(index){
   for(const e of entries) if(e.k === 'g' && !gemsByName.has(e.sort)) gemsByName.set(e.sort, e);
   return {v: index.v, gen: index.gen, sprites: index.sprites, entries, bySlug, gemsByName, named};
 }
-// what an entry's page never reads: the search words, the line marks and the like stay in the index
-const UNREAD = ['lx', 'q', 'kw', 'f', 'fg', 'fl', 'qt', 'lo'];
+// what an entry's page never reads: the search words, the line marks and the like stay in the index. "ac", a
+// kept anoint cost, is a price with no source and no age: it never leaves the index
+const UNREAD = ['lx', 'q', 'kw', 'f', 'fg', 'fl', 'qt', 'lo', 'ac'];
 // a list row: [slug, sort, name, sub line, id where it is not the name, what its group is worked out from]
 function rowOf(e){
   const it = e.it, more = {};
@@ -992,15 +993,15 @@ function itemToday(m, e){
   return out.length ? '\n' + out.join('\n') : '';
 }
 /* The words files: one kind's entries in list order, each its fixed words, then (after \u0002) what today's lines
-   are worked out from: slug, sort, id, name, the anoint's oils and its kept cost (\u0003 between them, \u0004
-   between the oils); \u0001 between entries. Split, never parsed as JSON: llms-full.txt is every entry at once. */
+   are worked out from: slug, sort, id, name and the anoint's oils (\u0003 between them, \u0004 between the
+   oils); \u0001 between entries. Split, never parsed as JSON: llms-full.txt is every entry at once. */
 const CUT = ['\u0001', '\u0002', '\u0003', '\u0004'];
 function cutWords(list){
   return list.map(e => {
     const it = e.it, words = itemWords(e);
     for(const x of [words, e.slug, it.id, it.n, ...(it.rec || [])])
       if(CUT.some(c => String(x).includes(c))) throw new Error(e.slug + ': a control character in its words');
-    const spec = [e.slug, e.sort, it.id !== it.n ? it.id : '', it.n, (it.rec || []).join('\u0004'), it.ac ? String(it.ac) : ''];
+    const spec = [e.slug, e.sort, it.id !== it.n ? it.id : '', it.n, (it.rec || []).join('\u0004')];
     return words + '\u0002' + spec.join('\u0003');
   }).join('\u0001');
 }
@@ -1008,10 +1009,9 @@ function readWords(k, text){
   if(!text) return [];
   return text.split('\u0001').map(b => {
     const [words, spec] = b.split('\u0002');
-    const [slug, sort, id, n, rec, ac] = spec.split('\u0003');
+    const [slug, sort, id, n, rec] = spec.split('\u0003');
     const it = {k, n, id: id || n};
     if(rec) it.rec = rec.split('\u0004');
-    if(ac) it.ac = +ac;
     return {k, slug, sort, it, words};
   });
 }
