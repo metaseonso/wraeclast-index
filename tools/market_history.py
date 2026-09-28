@@ -28,11 +28,12 @@ import sys
 
 import cxlib
 import marketlib as ml
+import market_liquidity
 import sitedata
 
 INDEX = 'data/market/index.json'
 CARDS = 'data/market/card/'
-PRODUCTS = []      # the product modules, in build order: each ticket's product adds itself here
+PRODUCTS = [market_liquidity]   # in build order: each ticket's product adds itself here
 
 
 class Ctx:

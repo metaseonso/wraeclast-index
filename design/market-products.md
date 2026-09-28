@@ -69,6 +69,42 @@ no product carries it today. A product that one day converts across leagues or f
 the check fails a file with a `Metadata/` id in it. A card file is named by the `did` `data/market.json` gives the card
 (`orb-of-annulment`), else the same rule on the name.
 
+## #99 Liquidity: `data/market/liquidity.json`
+
+33.2 kB (10.3 kB gzipped). `tools/market_liquidity.py`. One row per currency the league traded in the last 24 hours,
+already in the order the Currency tab sorts by: `[name, pill, hours traded of 24, divines traded, ratio range %
+(middle hour), in stock this hour (up to)]`.
+
+**The rule.** Over the last 24 hours read, on its markets against Divine, Exalted and Chaos Orbs. **Easy to trade**:
+traded in 20 or more of the 24 hours, and 50 divines or more changed hands. **Thin to trade**: traded in fewer than 6
+hours, or under 1 divine changed hands. **Slow to trade**: everything between. **In stock**: the most of it on offer
+this hour on those markets, added together (the top of the hour's stock range).
+
+The ratio range is in the row but not in the pill, which the ticket had asked for. Measured over Forbidden Rites' last
+day, the middle hour's range grows with the market: 0% for currencies trading under 10 divines a day (one trade, one
+ratio), 25% at 10-100, 100% at 100-1,000, 58% at 1,000-100,000, 10% above that. In the pill it would call Orb of
+Annulment (604,000 divines a day, every hour) slow. It is a range within the hour, never a spread.
+
+**Today** (26 Sep 01:00 to 27 Sep 00:00 UTC): 656 currencies, 391 Easy, 218 Slow, 47 Thin. Omen of Light: Easy, 24
+hours, 1,490,000 divines, up to 12,667 in stock this hour.
+
+**In the frame.** Procedure (b), step 2: one field type, since nothing draws a value read by name out of a file of its
+own into the pill and fact slots.
+
+```js
+// FIELDS, assets/kinds.js
+liquid: {type: 'market', of: 'pill', slot: 'pill', file: 'data/market/liquidity.json', src: 'Currency Exchange'},
+stock:  {type: 'market', of: 'stock', slot: 'fact', file: 'data/market/liquidity.json', pre: 'Up to about ', post: ' in stock this hour'},
+```
+
+- **pill**: `Easy to trade`, `Slow to trade`, `Thin to trade`, the rule (`rule`) as its title, `Subject to change` on it.
+- **fact**: `Up to about 12,667 in stock this hour`. Never "bid", "ask" or "spread".
+- **Currency tab**: a sort, "Easiest to trade", is the file's own row order; the counts (`counts`) sit over the list.
+- The currency kind (`c`) adds `liquid` and `stock` to its `fields`. A card the file has no row for draws neither.
+
+**The owner decides**: the four numbers (20 hours, 50 divines; 6 hours, 1 divine), and whether the ratio range is
+shown at all.
+
 ## When new hours arrive
 
 The archive job in `wraeclast-data` (`.github/workflows/archive.yml`) adds the new hours every 6 hours (at :23 past 0,
