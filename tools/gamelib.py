@@ -39,7 +39,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from gamepull import official, patch, state  # noqa: E402
-from sync import (BLANK_NODE, CUT, DNT, DNT_GEMS, KWREF, RAW, SHOWN_FIELDS, published_ids,  # noqa: E402
+from sync import (BLANK_NODE, CUT, DNT, DNT_GEMS, KWREF, RAW, SHOWN_FIELDS, published_ids, shipped_ids,  # noqa: E402
                   unique_ids, data_files, plain, shows, whole)
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -155,9 +155,19 @@ def pick(index):
             seen[it['n'].lower()] = seen.get(it['n'].lower(), 0) + 1
     for v in rest.values():
         seen[v['term'].lower()] = seen.get(v['term'].lower(), 0) + 1
+    # a keyword card already shipped keeps its card when the export adds another term of the same name: its id
+    # is its address, its pins and its links (Power Rune: Expedition2PowerRune shipped, then the export added a
+    # tooltip-only PowerRune with the same name). Only where it is the one shipped term of that name.
+    had = shipped_ids('w')
+    keeps = {}
+    for k, v in rest.items():
+        keeps.setdefault(v['term'].lower(), []).append(k)
     new = {}
     for k, v in rest.items():
-        if seen[v['term'].lower()] > 1:
+        t = v['term'].lower()
+        mine = [x for x in keeps[t] if x in had]
+        clash = [it['id'] for it in index['items'] if it['k'] == 'w' and it['n'].lower() == t]
+        if seen[t] > 1 and not (k in had and mine == [k] and not clash):
             why[k] = 'the name is on another card'
         else:
             new[k] = v
