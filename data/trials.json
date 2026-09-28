@@ -1,0 +1,4782 @@
+{
+ "source": "game files, patch 0.5.5; relic modifiers from RePoE; poe2db where an entry says so",
+ "table": "UltimatumModifiers, Mods, Stats, UltimatumModifierTypes, UltimatumEncounterTypes, UltimatumTrialLength, WorldAreas, SanctumFloors, SanctumRooms, SanctumPersistentEffects, SanctumPersistentEffectCategories, SanctumRewardObjects, ClientStrings, BaseItemTypes, SanctumRoomTypes; relics: Mods, BaseItemTypes (RePoE)",
+ "note": "One entry per thing a player meets in the two Trials of Ascendancy; s says which. t is plain words (ours; a Trial of Chaos modifier carries them as its risk), ls the game's own lines (tiers: one per tier, with rarity, the hidden reward bonus that tier adds). tags say what it does to you, in #77's words; mark is danger or safe only where the rule in tools/trials.py decides it from the modifier's own words, and why says which rule. risk and reward are the two sides of a choice. later is why an entry carries the Subject to change label (labels.later: its words and tooltip). q holds search words, honour on everything that touches Honour. Written by tools/trials.py; design/trials.md.",
+ "labels": {
+  "later": {
+   "text": "Subject to change",
+   "tip": "Depends on GGG. May change without notice."
+  },
+  "est": "Estimate"
+ },
+ "ids": [
+  "id"
+ ],
+ "rows": [
+  {
+   "n": "Reduced Recovery",
+   "id": "Reduced Recovery",
+   "s": "Trial of Chaos modifier",
+   "on": "On you",
+   "tiers": [
+    {
+     "n": "Reduced Recovery",
+     "step": "I",
+     "tier": 1,
+     "ls": [
+      "20% reduced Life, Mana, and Energy Shield Recovery Rate"
+     ],
+     "rarity": 4
+    },
+    {
+     "n": "Reduced Recovery II",
+     "step": "II",
+     "tier": 2,
+     "ls": [
+      "35% reduced Life, Mana, and Energy Shield Recovery Rate"
+     ],
+     "rarity": 9
+    },
+    {
+     "n": "Reduced Recovery III",
+     "step": "III",
+     "tier": 3,
+     "ls": [
+      "50% reduced Life, Mana, and Energy Shield Recovery Rate"
+     ],
+     "rarity": 15
+    },
+    {
+     "n": "Reduced Recovery IV",
+     "step": "IV",
+     "tier": 4,
+     "ls": [
+      "65% reduced Life, Mana, and Energy Shield Recovery Rate"
+     ],
+     "rarity": 22
+    },
+    {
+     "n": "Reduced Recovery V",
+     "step": "V",
+     "tier": 5,
+     "ls": [
+      "80% reduced Life, Mana, and Energy Shield Recovery Rate"
+     ],
+     "rarity": 30
+    }
+   ],
+   "risk": "You heal, regain Mana and recharge Energy Shield slower, from every source: flasks, regeneration, leech.",
+   "reward": "4% to 30% more Rarity of Items found in the trial, by tier",
+   "tags": [
+    "less recovery"
+   ],
+   "mark": "danger",
+   "why": "From Reduced Recovery III: halves or worse every way you recover Life, Mana and Energy Shield",
+   "src": "Source: the game files",
+   "q": "dangerous less recovery"
+  },
+  {
+   "n": "Lessened Reach",
+   "id": "Lessened Reach",
+   "s": "Trial of Chaos modifier",
+   "on": "On you",
+   "tiers": [
+    {
+     "n": "Lessened Reach",
+     "step": "I",
+     "tier": 1,
+     "ls": [
+      "20% less Area of Effect and Projectile Speed"
+     ],
+     "rarity": 4
+    },
+    {
+     "n": "Lessened Reach II",
+     "step": "II",
+     "tier": 2,
+     "ls": [
+      "35% less Area of Effect and Projectile Speed"
+     ],
+     "rarity": 9
+    },
+    {
+     "n": "Lessened Reach III",
+     "step": "III",
+     "tier": 3,
+     "ls": [
+      "50% less Area of Effect and Projectile Speed"
+     ],
+     "rarity": 15
+    },
+    {
+     "n": "Lessened Reach IV",
+     "step": "IV",
+     "tier": 4,
+     "ls": [
+      "65% less Area of Effect and Projectile Speed"
+     ],
+     "rarity": 22
+    },
+    {
+     "n": "Lessened Reach V",
+     "step": "V",
+     "tier": 5,
+     "ls": [
+      "80% less Area of Effect and Projectile Speed"
+     ],
+     "rarity": 30
+    }
+   ],
+   "risk": "Your area skills cover less ground and your projectiles fly slower.",
+   "reward": "4% to 30% more Rarity of Items found in the trial, by tier",
+   "tags": [
+    "area and projectiles"
+   ],
+   "src": "Source: the game files",
+   "q": "area and projectiles"
+  },
+  {
+   "n": "Time Paradox",
+   "id": "Time Paradox",
+   "s": "Trial of Chaos modifier",
+   "on": "On you",
+   "tiers": [
+    {
+     "n": "Time Paradox",
+     "step": "I",
+     "tier": 1,
+     "ls": [
+      "Buffs on you expire 50% faster and Debuffs on you expire 25% slower"
+     ],
+     "rarity": 9
+    },
+    {
+     "n": "Time Paradox II",
+     "step": "II",
+     "tier": 3,
+     "ls": [
+      "Buffs on you expire 100% faster and Debuffs on you expire 50% slower"
+     ],
+     "rarity": 15
+    },
+    {
+     "n": "Time Paradox III",
+     "step": "III",
+     "tier": 5,
+     "ls": [
+      "Buffs on you expire 200% faster and Debuffs on you expire 100% slower"
+     ],
+     "rarity": 22
+    }
+   ],
+   "risk": "Your buffs run out sooner, and ailments and curses on you last longer.",
+   "reward": "9% to 22% more Rarity of Items found in the trial, by tier",
+   "tags": [
+    "shorter buffs"
+   ],
+   "src": "Source: the game files",
+   "q": "shorter buffs"
+  },
+  {
+   "n": "Damaged Defences",
+   "id": "Damaged Defences",
+   "s": "Trial of Chaos modifier",
+   "on": "On you",
+   "tiers": [
+    {
+     "n": "Damaged Defences",
+     "step": "I",
+     "tier": 1,
+     "ls": [
+      "20% less Armour, Evasion and Energy Shield"
+     ],
+     "rarity": 4
+    },
+    {
+     "n": "Damaged Defences II",
+     "step": "II",
+     "tier": 2,
+     "ls": [
+      "35% less Armour, Evasion and Energy Shield"
+     ],
+     "rarity": 9
+    },
+    {
+     "n": "Damaged Defences III",
+     "step": "III",
+     "tier": 3,
+     "ls": [
+      "50% less Armour, Evasion and Energy Shield"
+     ],
+     "rarity": 15
+    },
+    {
+     "n": "Damaged Defences IV",
+     "step": "IV",
+     "tier": 4,
+     "ls": [
+      "65% less Armour, Evasion and Energy Shield"
+     ],
+     "rarity": 22
+    },
+    {
+     "n": "Damaged Defences V",
+     "step": "V",
+     "tier": 5,
+     "ls": [
+      "80% less Armour, Evasion and Energy Shield"
+     ],
+     "rarity": 30
+    }
+   ],
+   "risk": "Less Armour, Evasion and Energy Shield, all three at once.",
+   "reward": "4% to 30% more Rarity of Items found in the trial, by tier",
+   "tags": [
+    "less defences"
+   ],
+   "mark": "danger",
+   "why": "From Damaged Defences III: takes away half or more of all your Armour, Evasion and Energy Shield",
+   "src": "Source: the game files",
+   "q": "dangerous less defences"
+  },
+  {
+   "n": "Reduced Resistances",
+   "id": "Reduced Resistances",
+   "s": "Trial of Chaos modifier",
+   "on": "On you",
+   "tiers": [
+    {
+     "n": "Reduced Resistances",
+     "step": "I",
+     "tier": 1,
+     "ls": [
+      "-15% to Elemental Resistances"
+     ],
+     "rarity": 4
+    },
+    {
+     "n": "Reduced Resistances II",
+     "step": "II",
+     "tier": 2,
+     "ls": [
+      "-25% to Elemental Resistances"
+     ],
+     "rarity": 9
+    },
+    {
+     "n": "Reduced Resistances III",
+     "step": "III",
+     "tier": 3,
+     "ls": [
+      "-35% to Elemental Resistances and -5% to Maximum Elemental Resistances"
+     ],
+     "rarity": 15
+    },
+    {
+     "n": "Reduced Resistances IV",
+     "step": "IV",
+     "tier": 4,
+     "ls": [
+      "-45% to Elemental Resistances and -10% to Maximum Elemental Resistances"
+     ],
+     "rarity": 22
+    },
+    {
+     "n": "Reduced Resistances V",
+     "step": "V",
+     "tier": 5,
+     "ls": [
+      "-55% to Elemental Resistances and -15% to Maximum Elemental Resistances"
+     ],
+     "rarity": 30
+    }
+   ],
+   "risk": "Your elemental resistances drop; from tier III your maximum resistances drop too.",
+   "reward": "4% to 30% more Rarity of Items found in the trial, by tier",
+   "tags": [
+    "less resistance"
+   ],
+   "mark": "danger",
+   "why": "From Reduced Resistances III: lowers your maximum resistances, which no gear inside the trial can make up",
+   "src": "Source: the game files",
+   "q": "dangerous less resistance"
+  },
+  {
+   "n": "Drought",
+   "id": "Drought",
+   "s": "Trial of Chaos modifier",
+   "on": "On monsters",
+   "tiers": [
+    {
+     "n": "Drought",
+     "step": "I",
+     "tier": 1,
+     "ls": [
+      "Monsters grant 20% reduced Flask and Charm Charges on death"
+     ],
+     "rarity": 4
+    },
+    {
+     "n": "Drought II",
+     "step": "II",
+     "tier": 2,
+     "ls": [
+      "Monsters grant 40% reduced Flask and Charm Charges on death"
+     ],
+     "rarity": 9
+    },
+    {
+     "n": "Drought III",
+     "step": "III",
+     "tier": 3,
+     "ls": [
+      "Monsters grant 60% reduced Flask and Charm Charges on death"
+     ],
+     "rarity": 15
+    },
+    {
+     "n": "Drought IV",
+     "step": "IV",
+     "tier": 4,
+     "ls": [
+      "Monsters grant 80% reduced Flask and Charm Charges on death"
+     ],
+     "rarity": 22
+    },
+    {
+     "n": "Drought V",
+     "step": "V",
+     "tier": 5,
+     "ls": [
+      "Monsters grant no Flask and Charm Charges on death"
+     ],
+     "rarity": 30
+    }
+   ],
+   "risk": "Kills refill your flasks and charms less, and at tier V not at all.",
+   "reward": "4% to 30% more Rarity of Items found in the trial, by tier",
+   "tags": [
+    "fewer flask charges",
+    "on death"
+   ],
+   "src": "Source: the game files",
+   "q": "fewer flask charges on death"
+  },
+  {
+   "n": "Escalating Damage Taken",
+   "id": "Escalating Damage Taken",
+   "s": "Trial of Chaos modifier",
+   "on": "On you",
+   "tiers": [
+    {
+     "n": "Escalating Damage Taken",
+     "step": "I",
+     "tier": 1,
+     "ls": [
+      "In each encounter room, damage taken will increase by 1% every 2.5 seconds, up to 50%"
+     ],
+     "rarity": 15
+    },
+    {
+     "n": "Escalating Damage Taken II",
+     "step": "II",
+     "tier": 3,
+     "ls": [
+      "In each encounter room, damage taken will increase by 1% every 1.75 seconds, up to 50%"
+     ],
+     "rarity": 22
+    },
+    {
+     "n": "Escalating Damage Taken III",
+     "step": "III",
+     "tier": 5,
+     "ls": [
+      "In each encounter room, damage taken will increase by 1% every second, up to 50%"
+     ],
+     "rarity": 30
+    }
+   ],
+   "risk": "The longer you stay in a room, the more damage you take, up to 50% more.",
+   "reward": "15% to 30% more Rarity of Items found in the trial, by tier",
+   "tags": [
+    "more damage taken"
+   ],
+   "src": "Source: the game files",
+   "q": "more damage taken"
+  },
+  {
+   "n": "Monster Speed",
+   "id": "Monster Speed",
+   "s": "Trial of Chaos modifier",
+   "on": "On monsters",
+   "tiers": [
+    {
+     "n": "Monster Speed",
+     "step": "I",
+     "tier": 1,
+     "ls": [
+      "Monsters gain 10% increased Skill Speed and Movement Speed"
+     ],
+     "rarity": 9
+    },
+    {
+     "n": "Monster Speed II",
+     "step": "II",
+     "tier": 3,
+     "ls": [
+      "Monsters gain 15% increased Skill Speed and Movement Speed"
+     ],
+     "rarity": 15
+    },
+    {
+     "n": "Monster Speed III",
+     "step": "III",
+     "tier": 5,
+     "ls": [
+      "Monsters gain 20% increased Skill Speed and Movement Speed"
+     ],
+     "rarity": 22
+    }
+   ],
+   "risk": "Monsters attack, cast and move faster.",
+   "reward": "9% to 22% more Rarity of Items found in the trial, by tier",
+   "tags": [
+    "faster"
+   ],
+   "src": "Source: the game files",
+   "q": "faster"
+  },
+  {
+   "n": "Prismatic Monsters",
+   "id": "Prismatic Monsters",
+   "s": "Trial of Chaos modifier",
+   "on": "On monsters",
+   "tiers": [
+    {
+     "n": "Prismatic Monsters",
+     "step": "I",
+     "tier": 1,
+     "ls": [
+      "Monsters gain 10% of Damage as Extra Damage of a random Element"
+     ],
+     "rarity": 4
+    },
+    {
+     "n": "Prismatic Monsters II",
+     "step": "II",
+     "tier": 2,
+     "ls": [
+      "Monsters gain 15% of Damage as Extra Damage of a random Element"
+     ],
+     "rarity": 9
+    },
+    {
+     "n": "Prismatic Monsters III",
+     "step": "III",
+     "tier": 3,
+     "ls": [
+      "Monsters gain 20% of Damage as Extra Damage of a random Element"
+     ],
+     "rarity": 15
+    },
+    {
+     "n": "Prismatic Monsters IV",
+     "step": "IV",
+     "tier": 4,
+     "ls": [
+      "Monsters gain 25% of Damage as Extra Damage of a random Element"
+     ],
+     "rarity": 22
+    },
+    {
+     "n": "Prismatic Monsters V",
+     "step": "V",
+     "tier": 5,
+     "ls": [
+      "Monsters gain 30% of Damage as Extra Damage of a random Element"
+     ],
+     "rarity": 30
+    }
+   ],
+   "risk": "Monster hits carry extra fire, cold or lightning damage.",
+   "reward": "4% to 30% more Rarity of Items found in the trial, by tier",
+   "tags": [
+    "extra element"
+   ],
+   "src": "Source: the game files",
+   "q": "extra element"
+  },
+  {
+   "n": "Chaotic Monsters",
+   "id": "Chaotic Monsters",
+   "s": "Trial of Chaos modifier",
+   "on": "On monsters",
+   "tiers": [
+    {
+     "n": "Chaotic Monsters",
+     "step": "I",
+     "tier": 1,
+     "ls": [
+      "Monsters gain 5% of Damage as Extra Chaos Damage"
+     ],
+     "rarity": 4
+    },
+    {
+     "n": "Chaotic Monsters II",
+     "step": "II",
+     "tier": 2,
+     "ls": [
+      "Monsters gain 11% of Damage as Extra Chaos Damage"
+     ],
+     "rarity": 9
+    },
+    {
+     "n": "Chaotic Monsters III",
+     "step": "III",
+     "tier": 3,
+     "ls": [
+      "Monsters gain 17% of Damage as Extra Chaos Damage"
+     ],
+     "rarity": 15
+    },
+    {
+     "n": "Chaotic Monsters IV",
+     "step": "IV",
+     "tier": 4,
+     "ls": [
+      "Monsters gain 23% of Damage as Extra Chaos Damage"
+     ],
+     "rarity": 22
+    },
+    {
+     "n": "Chaotic Monsters V",
+     "step": "V",
+     "tier": 5,
+     "ls": [
+      "Monsters gain 29% of Damage as Extra Chaos Damage"
+     ],
+     "rarity": 30
+    }
+   ],
+   "risk": "Monster hits carry extra chaos damage.",
+   "reward": "4% to 30% more Rarity of Items found in the trial, by tier",
+   "tags": [
+    "extra element"
+   ],
+   "src": "Source: the game files",
+   "q": "extra element"
+  },
+  {
+   "n": "Deadly Monsters",
+   "id": "Deadly Monsters",
+   "s": "Trial of Chaos modifier",
+   "on": "On monsters",
+   "tiers": [
+    {
+     "n": "Deadly Monsters",
+     "step": "I",
+     "tier": 1,
+     "ls": [
+      "Monsters have 100% increased Critical Hit Chance"
+     ],
+     "rarity": 4
+    },
+    {
+     "n": "Deadly Monsters II",
+     "step": "II",
+     "tier": 2,
+     "ls": [
+      "Monsters have 200% increased Critical Hit Chance"
+     ],
+     "rarity": 9
+    },
+    {
+     "n": "Deadly Monsters III",
+     "step": "III",
+     "tier": 3,
+     "ls": [
+      "Monsters have 300% increased Critical Hit Chance"
+     ],
+     "rarity": 15
+    },
+    {
+     "n": "Deadly Monsters IV",
+     "step": "IV",
+     "tier": 4,
+     "ls": [
+      "Monsters have 400% increased Critical Hit Chance"
+     ],
+     "rarity": 22
+    },
+    {
+     "n": "Deadly Monsters V",
+     "step": "V",
+     "tier": 5,
+     "ls": [
+      "Monsters have 500% increased Critical Hit Chance"
+     ],
+     "rarity": 30
+    }
+   ],
+   "risk": "Monsters land critical hits far more often.",
+   "reward": "4% to 30% more Rarity of Items found in the trial, by tier",
+   "tags": [
+    "more crits"
+   ],
+   "src": "Source: the game files",
+   "q": "more crits"
+  },
+  {
+   "n": "Toxic Monsters",
+   "id": "Toxic Monsters",
+   "s": "Trial of Chaos modifier",
+   "on": "On monsters",
+   "tiers": [
+    {
+     "n": "Toxic Monsters",
+     "step": "I",
+     "tier": 1,
+     "ls": [
+      "Monsters have 10% chance to inflict Bleed or Poison"
+     ],
+     "rarity": 4
+    },
+    {
+     "n": "Toxic Monsters II",
+     "step": "II",
+     "tier": 2,
+     "ls": [
+      "Monsters have 20% chance to inflict Bleed or Poison"
+     ],
+     "rarity": 9
+    },
+    {
+     "n": "Toxic Monsters III",
+     "step": "III",
+     "tier": 3,
+     "ls": [
+      "Monsters have 30% chance to inflict Bleed or Poison"
+     ],
+     "rarity": 15
+    },
+    {
+     "n": "Toxic Monsters IV",
+     "step": "IV",
+     "tier": 4,
+     "ls": [
+      "Monsters have 40% chance to inflict Bleed or Poison"
+     ],
+     "rarity": 22
+    },
+    {
+     "n": "Toxic Monsters V",
+     "step": "V",
+     "tier": 5,
+     "ls": [
+      "Monsters have 50% chance to inflict Bleed or Poison"
+     ],
+     "rarity": 30
+    }
+   ],
+   "risk": "Monster hits can poison you or make you bleed.",
+   "reward": "4% to 30% more Rarity of Items found in the trial, by tier",
+   "tags": [
+    "ailment on hit"
+   ],
+   "src": "Source: the game files",
+   "q": "ailment on hit"
+  },
+  {
+   "n": "Resistant Monsters",
+   "id": "Resistant Monsters",
+   "s": "Trial of Chaos modifier",
+   "on": "On monsters",
+   "tiers": [
+    {
+     "n": "Resistant Monsters",
+     "step": "I",
+     "tier": 1,
+     "ls": [
+      "Monsters have +10% to all Resistances"
+     ],
+     "rarity": 4
+    },
+    {
+     "n": "Resistant Monsters II",
+     "step": "II",
+     "tier": 2,
+     "ls": [
+      "Monsters have +20% to all Resistances"
+     ],
+     "rarity": 9
+    },
+    {
+     "n": "Resistant Monsters III",
+     "step": "III",
+     "tier": 3,
+     "ls": [
+      "Monsters have +30% to all Resistances"
+     ],
+     "rarity": 15
+    },
+    {
+     "n": "Resistant Monsters IV",
+     "step": "IV",
+     "tier": 4,
+     "ls": [
+      "Monsters have +40% to all Resistances"
+     ],
+     "rarity": 22
+    },
+    {
+     "n": "Resistant Monsters V",
+     "step": "V",
+     "tier": 5,
+     "ls": [
+      "Monsters have +50% to all Resistances"
+     ],
+     "rarity": 30
+    }
+   ],
+   "risk": "Monsters resist fire, cold and lightning damage.",
+   "reward": "4% to 30% more Rarity of Items found in the trial, by tier",
+   "tags": [
+    "resists fire",
+    "resists cold",
+    "resists lightning"
+   ],
+   "src": "Source: the game files",
+   "q": "resists cold resists fire resists lightning"
+  },
+  {
+   "n": "Unstoppable Monsters",
+   "id": "Unstoppable Monsters",
+   "s": "Trial of Chaos modifier",
+   "on": "On monsters",
+   "tiers": [
+    {
+     "n": "Unstoppable Monsters",
+     "step": "I",
+     "tier": 1,
+     "ls": [
+      "Monsters have 30% reduced Slowing Potency of Debuffs on them and 30% increased Stun Threshold"
+     ],
+     "rarity": 9
+    },
+    {
+     "n": "Unstoppable Monsters II",
+     "step": "II",
+     "tier": 3,
+     "ls": [
+      "Monsters have 50% reduced Slowing Potency of Debuffs on them and 50% increased Stun Threshold"
+     ],
+     "rarity": 15,
+     "stats": [
+      "30% less Slowing Potency of Debuffs on me",
+      "30% increased Stun Threshold"
+     ]
+    },
+    {
+     "n": "Unstoppable Monsters III",
+     "step": "III",
+     "tier": 5,
+     "ls": [
+      "Monsters have 75% reduced Slowing Potency of Debuffs on them and 75% increased Stun Threshold"
+     ],
+     "rarity": 22,
+     "stats": [
+      "30% less Slowing Potency of Debuffs on me",
+      "30% increased Stun Threshold"
+     ]
+    }
+   ],
+   "risk": "Monsters are harder to slow and to stun.",
+   "reward": "9% to 22% more Rarity of Items found in the trial, by tier",
+   "tags": [
+    "harder to kill"
+   ],
+   "later": "The game's line and the stats behind it give different numbers on Unstoppable Monsters II, Unstoppable Monsters III",
+   "src": "Source: the game files",
+   "q": "harder to kill"
+  },
+  {
+   "n": "Shielding Monsters",
+   "id": "Shielding Monsters",
+   "s": "Trial of Chaos modifier",
+   "on": "On monsters",
+   "tiers": [
+    {
+     "n": "Shielding Monsters",
+     "step": "I",
+     "tier": 1,
+     "ls": [
+      "Monsters gain 10% of maximum Life as Extra maximum Energy Shield"
+     ],
+     "rarity": 4
+    },
+    {
+     "n": "Shielding Monsters II",
+     "step": "II",
+     "tier": 2,
+     "ls": [
+      "Monsters gain 20% of maximum Life as Extra maximum Energy Shield"
+     ],
+     "rarity": 9
+    },
+    {
+     "n": "Shielding Monsters III",
+     "step": "III",
+     "tier": 3,
+     "ls": [
+      "Monsters gain 30% of maximum Life as Extra maximum Energy Shield"
+     ],
+     "rarity": 15
+    },
+    {
+     "n": "Shielding Monsters IV",
+     "step": "IV",
+     "tier": 4,
+     "ls": [
+      "Monsters gain 40% of maximum Life as Extra maximum Energy Shield"
+     ],
+     "rarity": 22
+    },
+    {
+     "n": "Shielding Monsters V",
+     "step": "V",
+     "tier": 5,
+     "ls": [
+      "Monsters gain 50% of maximum Life as Extra maximum Energy Shield"
+     ],
+     "rarity": 30
+    }
+   ],
+   "risk": "Monsters get Energy Shield on top of their Life.",
+   "reward": "4% to 30% more Rarity of Items found in the trial, by tier",
+   "tags": [
+    "harder to kill"
+   ],
+   "src": "Source: the game files",
+   "q": "harder to kill"
+  },
+  {
+   "n": "Volatile Fiends",
+   "id": "Volatile Fiends",
+   "s": "Trial of Chaos modifier",
+   "on": "On monsters",
+   "tiers": [
+    {
+     "n": "Volatile Fiends",
+     "step": "I",
+     "tier": 1,
+     "ls": [
+      "Monsters have a 10% chance to release deadly Volatiles on death. Rare monsters leave larger ones"
+     ],
+     "rarity": 4
+    },
+    {
+     "n": "Volatile Fiends II",
+     "step": "II",
+     "tier": 2,
+     "ls": [
+      "Monsters have a 20% chance to release deadly Volatiles on death. Rare monsters leave larger ones"
+     ],
+     "rarity": 9
+    },
+    {
+     "n": "Volatile Fiends III",
+     "step": "III",
+     "tier": 3,
+     "ls": [
+      "Monsters have a 30% chance to release deadly Volatiles on death. Rare monsters leave larger ones"
+     ],
+     "rarity": 15
+    },
+    {
+     "n": "Volatile Fiends IV",
+     "step": "IV",
+     "tier": 4,
+     "ls": [
+      "Monsters have a 40% chance to release deadly Volatiles on death. Rare monsters leave larger ones"
+     ],
+     "rarity": 22
+    },
+    {
+     "n": "Volatile Fiends V",
+     "step": "V",
+     "tier": 5,
+     "ls": [
+      "Monsters have a 50% chance to release deadly Volatiles on death. Rare monsters leave larger ones"
+     ],
+     "rarity": 30
+    }
+   ],
+   "risk": "Monsters can leave an exploding orb behind when they die; rare monsters leave bigger ones.",
+   "reward": "4% to 30% more Rarity of Items found in the trial, by tier",
+   "tags": [
+    "damage bursts",
+    "on death",
+    "stronger pack"
+   ],
+   "src": "Source: the game files",
+   "q": "damage bursts on death stronger pack"
+  },
+  {
+   "n": "Enraged Bosses",
+   "id": "Enraged Bosses",
+   "s": "Trial of Chaos modifier",
+   "on": "On monsters",
+   "tiers": [
+    {
+     "n": "Enraged Bosses",
+     "step": "I",
+     "tier": 1,
+     "ls": [
+      "Bosses have 30% increased Toughness and 10% increased Damage"
+     ],
+     "rarity": 15
+    },
+    {
+     "n": "Enraged Bosses II",
+     "step": "II",
+     "tier": 3,
+     "ls": [
+      "Bosses have 60% increased Toughness and 20% increased Damage"
+     ],
+     "rarity": 22
+    },
+    {
+     "n": "Enraged Bosses III",
+     "step": "III",
+     "tier": 5,
+     "ls": [
+      "Bosses have 100% increased Toughness and 30% increased Damage"
+     ],
+     "rarity": 30
+    }
+   ],
+   "risk": "The bosses take longer to kill and hit harder.",
+   "reward": "15% to 30% more Rarity of Items found in the trial, by tier",
+   "tags": [
+    "harder to kill",
+    "boss only"
+   ],
+   "src": "Source: the game files",
+   "q": "boss only harder to kill"
+  },
+  {
+   "n": "Lethal Rare Monsters",
+   "id": "Lethal Rare Monsters",
+   "s": "Trial of Chaos modifier",
+   "on": "On monsters",
+   "tiers": [
+    {
+     "n": "Lethal Rare Monsters",
+     "step": "I",
+     "tier": 1,
+     "ls": [
+      "30% increased Rare Monsters"
+     ],
+     "rarity": 9
+    },
+    {
+     "n": "Lethal Rare Monsters",
+     "step": "II",
+     "tier": 3,
+     "ls": [
+      "60% increased Rare Monsters"
+     ],
+     "rarity": 15
+    },
+    {
+     "n": "Lethal Rare Monsters",
+     "step": "III",
+     "tier": 5,
+     "ls": [
+      "Rare Monsters have an additional Modifier",
+      "100% increased Rare Monsters"
+     ],
+     "rarity": 22
+    }
+   ],
+   "risk": "More rare monsters; at tier III each has one more modifier.",
+   "reward": "9% to 22% more Rarity of Items found in the trial, by tier",
+   "tags": [
+    "stronger pack"
+   ],
+   "src": "Source: the game files",
+   "q": "stronger pack"
+  },
+  {
+   "n": "Stormcaller Runes",
+   "id": "Stormcaller Runes",
+   "s": "Trial of Chaos modifier",
+   "on": "In the room",
+   "tiers": [
+    {
+     "n": "Stormcaller Runes",
+     "step": "I",
+     "tier": 1,
+     "ls": [
+      "Runes will appear that will call deadly Lightning storms if you remain in them"
+     ],
+     "rarity": 9
+    },
+    {
+     "n": "Stormcaller Runes II",
+     "step": "II",
+     "tier": 3,
+     "ls": [
+      "Large runes will appear that will call deadly Lightning storms if you remain in them"
+     ],
+     "rarity": 15
+    },
+    {
+     "n": "Stormcaller Runes III",
+     "step": "III",
+     "tier": 5,
+     "ls": [
+      "Many large runes will appear that will call deadly Lightning storms if you remain in them"
+     ],
+     "rarity": 22
+    }
+   ],
+   "risk": "Runes on the floor call lightning down on you if you stand in them.",
+   "reward": "9% to 22% more Rarity of Items found in the trial, by tier",
+   "tags": [
+    "room hazard",
+    "damage bursts"
+   ],
+   "src": "Source: the game files",
+   "q": "damage bursts room hazard"
+  },
+  {
+   "n": "Impending Doom",
+   "id": "Impending Doom",
+   "s": "Trial of Chaos modifier",
+   "on": "In the room",
+   "tiers": [
+    {
+     "n": "Impending Doom",
+     "step": "I",
+     "tier": 1,
+     "ls": [
+      "Rings of Doom appear on the ground which grow over time, exploding for Physical damage once they reach a maximum area"
+     ],
+     "rarity": 12
+    },
+    {
+     "n": "Impending Doom II",
+     "step": "II",
+     "tier": 2,
+     "ls": [
+      "Rings and circles of Doom appear on the ground which grow over time, exploding for Physical damage once they reach a maximum area"
+     ],
+     "rarity": 20
+    }
+   ],
+   "risk": "Rings grow on the floor and explode for physical damage when they are full size.",
+   "reward": "12% to 20% more Rarity of Items found in the trial, by tier",
+   "tags": [
+    "room hazard",
+    "damage bursts"
+   ],
+   "src": "Source: the game files",
+   "q": "damage bursts room hazard"
+  },
+  {
+   "n": "Blood Globules",
+   "id": "Blood Globules",
+   "s": "Trial of Chaos modifier",
+   "on": "In the room",
+   "tiers": [
+    {
+     "n": "Blood Globules",
+     "step": "I",
+     "tier": 1,
+     "ls": [
+      "Globules of blood manifest nearby, tracking you. When above you they will fall, dealing Physical damage"
+     ],
+     "rarity": 12
+    },
+    {
+     "n": "Blood Globules II",
+     "step": "II",
+     "tier": 2,
+     "ls": [
+      "Globules of blood manifest nearby, tracking you. When above you they will fall, dealing Physical damage and creating damaging blood ground"
+     ],
+     "rarity": 20
+    }
+   ],
+   "risk": "Blood globules follow you and drop on you for physical damage.",
+   "reward": "12% to 20% more Rarity of Items found in the trial, by tier",
+   "tags": [
+    "room hazard",
+    "damage bursts"
+   ],
+   "src": "Source: the game files",
+   "q": "damage bursts room hazard"
+  },
+  {
+   "n": "Vaal Omnitect",
+   "id": "Vaal Omnitect",
+   "s": "Trial of Chaos modifier",
+   "on": "In the room",
+   "tiers": [
+    {
+     "n": "Vaal Omnitect",
+     "step": "I",
+     "tier": 1,
+     "ls": [
+      "An ancient Vaal machination will deploy attacks against nearby intruders"
+     ],
+     "rarity": 9
+    },
+    {
+     "n": "Vaal Omnitect II",
+     "step": "II",
+     "tier": 3,
+     "ls": [
+      "An ancient Vaal machination will deploy an array of attacks against nearby intruders"
+     ],
+     "rarity": 15
+    },
+    {
+     "n": "Vaal Omnitect III",
+     "step": "III",
+     "tier": 5,
+     "ls": [
+      "An ancient Vaal machination will deploy a powerful array of attacks against nearby intruders"
+     ],
+     "rarity": 22
+    }
+   ],
+   "risk": "A Vaal machine in the room attacks you.",
+   "reward": "9% to 22% more Rarity of Items found in the trial, by tier",
+   "tags": [
+    "room hazard"
+   ],
+   "src": "Source: the game files",
+   "q": "room hazard"
+  },
+  {
+   "n": "Pyramid Beams",
+   "id": "Pyramid Beams",
+   "s": "Trial of Chaos modifier",
+   "on": "In the room",
+   "tiers": [
+    {
+     "n": "Pyramid Beams",
+     "step": "I",
+     "tier": 1,
+     "ls": [
+      "Pyramid objects appear, projecting four rotating lasers that inflict Corrupted Blood on Hit"
+     ],
+     "rarity": 12
+    },
+    {
+     "n": "Pyramid Beams II",
+     "step": "II",
+     "tier": 2,
+     "ls": [
+      "Pyramid objects appear, projecting four fast rotating lasers that inflict Corrupted Blood on Hit"
+     ],
+     "rarity": 20
+    }
+   ],
+   "risk": "Pyramids sweep the room with rotating beams that inflict Corrupted Blood.",
+   "reward": "12% to 20% more Rarity of Items found in the trial, by tier",
+   "tags": [
+    "ailment on hit",
+    "room hazard"
+   ],
+   "src": "Source: the game files",
+   "q": "ailment on hit room hazard"
+  },
+  {
+   "n": "Petrification Statues",
+   "id": "Petrification Statues",
+   "s": "Trial of Chaos modifier",
+   "on": "In the room",
+   "tiers": [
+    {
+     "n": "Petrification Statues",
+     "step": "I",
+     "tier": 1,
+     "ls": [
+      "Challenge area contains several statues that Petrify you if you stand within their gaze for a duration"
+     ],
+     "rarity": 9
+    },
+    {
+     "n": "Petrification Statues II",
+     "step": "II",
+     "tier": 3,
+     "ls": [
+      "Challenge area contains several statues that Petrify you if you stand within their gaze for a duration"
+     ],
+     "rarity": 15
+    },
+    {
+     "n": "Petrification Statues III",
+     "step": "III",
+     "tier": 5,
+     "ls": [
+      "Challenge area contains several statues that Petrify you if you stand within their gaze for a duration"
+     ],
+     "rarity": 22
+    }
+   ],
+   "risk": "Statues turn you to stone if you stand in their gaze too long.",
+   "reward": "9% to 22% more Rarity of Items found in the trial, by tier",
+   "tags": [
+    "stuns you",
+    "room hazard"
+   ],
+   "src": "Source: the game files",
+   "q": "room hazard stuns you"
+  },
+  {
+   "n": "Stalking Shade",
+   "id": "Stalking Shade",
+   "s": "Trial of Chaos modifier",
+   "on": "In the room",
+   "tiers": [
+    {
+     "n": "Stalking Shade",
+     "step": "I",
+     "tier": 1,
+     "ls": [
+      "An invulnerable shade stalks you, inflicting Ruin with its hits, it gains additional skills at higher tiers"
+     ],
+     "rarity": 9
+    },
+    {
+     "n": "Stalking Shade II",
+     "step": "II",
+     "tier": 2,
+     "ls": [
+      "An invulnerable shade stalks you, inflicting Ruin with its hits, it gains additional skills at higher tiers"
+     ],
+     "rarity": 15
+    },
+    {
+     "n": "Stalking Shade III",
+     "step": "III",
+     "tier": 3,
+     "ls": [
+      "An invulnerable shade stalks you, inflicting Ruin with its hits, it gains additional skills at higher tiers"
+     ],
+     "rarity": 22
+    }
+   ],
+   "risk": "A shade that cannot be killed follows you and inflicts Ruin with its hits.",
+   "reward": "9% to 22% more Rarity of Items found in the trial, by tier",
+   "tags": [
+    "ailment on hit",
+    "room hazard",
+    "cannot be damaged"
+   ],
+   "src": "Source: the game files",
+   "q": "ailment on hit cannot be damaged room hazard"
+  },
+  {
+   "n": "Burning Turrets",
+   "id": "Burning Turrets",
+   "s": "Trial of Chaos modifier",
+   "on": "In the room",
+   "tiers": [
+    {
+     "n": "Burning Turrets",
+     "step": "I",
+     "tier": 1,
+     "ls": [
+      "Challenge area contains Fire turrets that will periodically fire Projectiles ahead"
+     ],
+     "rarity": 9
+    },
+    {
+     "n": "Burning Turrets II",
+     "step": "II",
+     "tier": 3,
+     "ls": [
+      "Challenge area contains more Fire turrets that will periodically fire Projectiles ahead"
+     ],
+     "rarity": 15
+    },
+    {
+     "n": "Burning Turrets III",
+     "step": "III",
+     "tier": 5,
+     "ls": [
+      "Challenge area contains even more Fire turrets that will periodically fire Projectiles ahead"
+     ],
+     "rarity": 22
+    }
+   ],
+   "risk": "Turrets in the room shoot fire projectiles.",
+   "reward": "9% to 22% more Rarity of Items found in the trial, by tier",
+   "tags": [
+    "room hazard"
+   ],
+   "src": "Source: the game files",
+   "q": "room hazard"
+  },
+  {
+   "n": "Shocking Turrets",
+   "id": "Shocking Turrets",
+   "s": "Trial of Chaos modifier",
+   "on": "In the room",
+   "tiers": [
+    {
+     "n": "Shocking Turrets",
+     "step": "I",
+     "tier": 1,
+     "ls": [
+      "Challenge area contains Lightning turrets that will periodically fire Projectiles ahead"
+     ],
+     "rarity": 9
+    },
+    {
+     "n": "Shocking Turrets II",
+     "step": "II",
+     "tier": 3,
+     "ls": [
+      "Challenge area contains more Lightning turrets that will periodically fire Projectiles ahead"
+     ],
+     "rarity": 15
+    },
+    {
+     "n": "Shocking Turrets III",
+     "step": "III",
+     "tier": 5,
+     "ls": [
+      "Challenge area contains even more Lightning turrets that will periodically fire Projectiles ahead"
+     ],
+     "rarity": 22
+    }
+   ],
+   "risk": "Turrets in the room shoot lightning projectiles.",
+   "reward": "9% to 22% more Rarity of Items found in the trial, by tier",
+   "tags": [
+    "room hazard"
+   ],
+   "src": "Source: the game files",
+   "q": "room hazard"
+  },
+  {
+   "n": "Temple Traps",
+   "id": "Temple Traps",
+   "s": "Trial of Chaos modifier",
+   "on": "In the room",
+   "tiers": [
+    {
+     "n": "Temple Traps",
+     "step": "I",
+     "tier": 1,
+     "ls": [
+      "Challenge area contains spikes that deal Physical damage to those who step on them"
+     ],
+     "rarity": 15
+    },
+    {
+     "n": "Temple Traps II",
+     "step": "II",
+     "tier": 2,
+     "ls": [
+      "Challenge area contains many spikes that deal Physical damage to those who step on them"
+     ],
+     "rarity": 22
+    }
+   ],
+   "risk": "Spikes on the floor deal physical damage when you step on them.",
+   "reward": "15% to 22% more Rarity of Items found in the trial, by tier",
+   "tags": [
+    "room hazard"
+   ],
+   "src": "Source: the game files",
+   "q": "room hazard"
+  },
+  {
+   "n": "Entangling Monsters",
+   "id": "Entangling Monsters",
+   "s": "Trial of Chaos modifier",
+   "on": "On monsters",
+   "tiers": [
+    {
+     "n": "Entangling Monsters",
+     "step": "I",
+     "tier": 1,
+     "ls": [
+      "Monsters inflict Grasping Vines on Hit"
+     ],
+     "rarity": 15
+    }
+   ],
+   "risk": "Monster hits wrap you in Grasping Vines.",
+   "reward": "15% more Rarity of Items found in the trial",
+   "tags": [
+    "slows you"
+   ],
+   "src": "Source: the game files",
+   "q": "slows you"
+  },
+  {
+   "n": "Random Projectiles",
+   "id": "Random Projectiles",
+   "s": "Trial of Chaos modifier",
+   "on": "On you",
+   "tiers": [
+    {
+     "n": "Random Projectiles",
+     "step": "I",
+     "tier": 1,
+     "ls": [
+      "Your Projectiles fly in random directions"
+     ],
+     "rarity": 15
+    }
+   ],
+   "risk": "Your projectiles fly in random directions.",
+   "reward": "15% more Rarity of Items found in the trial",
+   "tags": [
+    "area and projectiles"
+   ],
+   "src": "Source: the game files",
+   "q": "area and projectiles"
+  },
+  {
+   "n": "Occasional Impotence",
+   "id": "Occasional Impotence",
+   "s": "Trial of Chaos modifier",
+   "on": "On you",
+   "tiers": [
+    {
+     "n": "Occasional Impotence",
+     "step": "I",
+     "tier": 2,
+     "ls": [
+      "You and your Minions deal no damage for 2 seconds every 8 seconds"
+     ],
+     "rarity": 15
+    }
+   ],
+   "risk": "For 2 seconds in every 8, you and your minions deal no damage.",
+   "reward": "15% more Rarity of Items found in the trial",
+   "tags": [
+    "less damage"
+   ],
+   "mark": "danger",
+   "why": "Cuts your damage by 40% or more, or stops it",
+   "src": "Source: the game files",
+   "q": "dangerous less damage"
+  },
+  {
+   "n": "Heart Tethers",
+   "id": "Heart Tethers",
+   "s": "Trial of Chaos modifier",
+   "on": "In the room",
+   "tiers": [
+    {
+     "n": "Heart Tethers",
+     "step": "I",
+     "tier": 1,
+     "ls": [
+      "Bloody hearts appear that apply tethers, Slowing you for 3 seconds. Breaking the tether will Stun you and cause you to take 5% increased damage for 3 seconds"
+     ],
+     "rarity": 9
+    },
+    {
+     "n": "Heart Tethers II",
+     "step": "II",
+     "tier": 3,
+     "ls": [
+      "Bloody hearts appear that apply tethers, Slowing you for 4 seconds. Breaking the tether will Stun you and cause you to take 10% increased damage for 4 seconds"
+     ],
+     "rarity": 15
+    },
+    {
+     "n": "Heart Tethers III",
+     "step": "III",
+     "tier": 5,
+     "ls": [
+      "Bloody hearts appear that apply tethers, Slowing you for 5 seconds. Breaking the tether will Stun you and cause you to take 15% increased damage for 5 seconds"
+     ],
+     "rarity": 22
+    }
+   ],
+   "risk": "Hearts tether and slow you; breaking a tether stuns you and you take more damage for a while.",
+   "reward": "9% to 22% more Rarity of Items found in the trial, by tier",
+   "tags": [
+    "slows you",
+    "stuns you",
+    "more damage taken",
+    "room hazard"
+   ],
+   "src": "Source: the game files",
+   "q": "more damage taken room hazard slows you stuns you"
+  },
+  {
+   "n": "Blood Mist",
+   "id": "Blood Mist",
+   "s": "Trial of Chaos modifier",
+   "on": "In the room",
+   "tiers": [
+    {
+     "n": "Blood Mist",
+     "step": "I",
+     "tier": 1,
+     "ls": [
+      "Challenge area is enshrouded by a blood mist which makes monsters within it immune to damage"
+     ],
+     "rarity": 10
+    }
+   ],
+   "risk": "Monsters standing in the blood mist cannot be damaged.",
+   "reward": "10% more Rarity of Items found in the trial",
+   "tags": [
+    "room hazard",
+    "cannot be damaged"
+   ],
+   "src": "Source: the game files",
+   "q": "cannot be damaged room hazard"
+  },
+  {
+   "n": "Wager of the Present",
+   "id": "Wager of the Present",
+   "s": "Trial of Chaos wager",
+   "ls": [
+    "All previously chosen Modifiers gain +1 Tier",
+    "All pending Currency Item Rewards are Doubled"
+   ],
+   "risk": "Every modifier you already chose goes up a tier",
+   "reward": "Currency rewards waiting for you are doubled",
+   "src": "Source: the game files"
+  },
+  {
+   "n": "Wager of Rarity",
+   "id": "Wager of Rarity",
+   "s": "Trial of Chaos wager",
+   "ls": [
+    "All pending Rewards are Destroyed",
+    "100% more Item Rarity"
+   ],
+   "risk": "Every reward waiting for you is destroyed",
+   "reward": "100% more item rarity",
+   "src": "Source: the game files"
+  },
+  {
+   "n": "Wager of Rerolling",
+   "id": "Wager of Rerolling",
+   "s": "Trial of Chaos wager",
+   "ls": [
+    "Upgrade 2 previously chosen Modifiers",
+    "All pending Currency Item Rewards are Rerolled"
+   ],
+   "alt": [
+    [
+     "Upgrade 2 previously chosen Modifiers",
+     "All pending Soul Core Rewards are Rerolled"
+    ]
+   ],
+   "risk": "Two of the modifiers you chose go up a tier",
+   "reward": "Rewards waiting for you are rolled again",
+   "src": "Source: the game files"
+  },
+  {
+   "n": "Wager of Ruin",
+   "id": "Wager of Ruin",
+   "s": "Trial of Chaos wager",
+   "ls": [
+    "An invulnerable Shade stalks you, inflicting Ruin with its Hits",
+    "Your current Ruin is set to 5",
+    "Unique Trial Bosses drop a Rare Unique Item"
+   ],
+   "risk": "A shade that cannot be killed hunts you and your Ruin is set to 5",
+   "reward": "The trial bosses drop a rare unique item",
+   "tags": [
+    "ailment on hit",
+    "room hazard",
+    "cannot be damaged"
+   ],
+   "src": "Source: the game files",
+   "q": "ailment on hit cannot be damaged room hazard"
+  },
+  {
+   "n": "Wager of Mystery",
+   "id": "Wager of Mystery",
+   "s": "Trial of Chaos wager",
+   "ls": [
+    "All offered Modifiers are Hidden",
+    "All offered Rewards are Lucky"
+   ],
+   "risk": "You no longer see the modifiers you are offered",
+   "reward": "Every reward offered is Lucky",
+   "src": "Source: the game files"
+  },
+  {
+   "n": "Wager of Upgrades",
+   "id": "Wager of Upgrades",
+   "s": "Trial of Chaos wager",
+   "ls": [
+    "When any offered Modifier is chosen, a previously chosen Modifier also gains +1 Tier",
+    "When a Room is Completed, a pending Currency Item or Soul Core Reward gains +1 to its Stack Size"
+   ],
+   "risk": "Each modifier you choose also raises one you chose before",
+   "reward": "Each room cleared adds one to a waiting reward",
+   "src": "Source: the game files"
+  },
+  {
+   "n": "Wager of Danger",
+   "id": "Wager of Danger",
+   "s": "Trial of Chaos wager",
+   "ls": [
+    "Modifiers offered at Boss Rooms are offered at their Maximum Tier",
+    "Boss Rooms offer an additional Reward"
+   ],
+   "risk": "Boss rooms offer their modifiers at the highest tier",
+   "reward": "Boss rooms offer one more reward",
+   "src": "Source: the game files"
+  },
+  {
+   "n": "Wager of the Future",
+   "id": "Wager of the Future",
+   "s": "Trial of Chaos wager",
+   "ls": [
+    "All offered Modifiers gain +1 Tier",
+    "All offered Currency Item Rewards have their Stack Size Doubled"
+   ],
+   "risk": "Every modifier offered comes a tier higher",
+   "reward": "Currency rewards offered come in double stacks",
+   "src": "Source: the game files"
+  },
+  {
+   "n": "Wager of Chaos",
+   "id": "Wager of Chaos",
+   "s": "Trial of Chaos wager",
+   "ls": [
+    "Upgrade 2 previously chosen Modifiers",
+    "All Rooms offer an additional Reward"
+   ],
+   "alt": [
+    [
+     "Upgrade all previously chosen Modifiers",
+     "All Rooms offer 2 additional Rewards"
+    ]
+   ],
+   "risk": "Modifiers you chose go up a tier",
+   "reward": "Every room offers more rewards",
+   "src": "Source: the game files"
+  },
+  {
+   "n": "Slay all Monsters",
+   "id": "Chaos: Slay all Monsters",
+   "s": "Trial of Chaos room",
+   "src": "Source: the game files"
+  },
+  {
+   "n": "Survive",
+   "id": "Chaos: Survive",
+   "s": "Trial of Chaos room",
+   "src": "Source: the game files"
+  },
+  {
+   "n": "Implant the Soul Cores",
+   "id": "Chaos: Implant the Soul Cores",
+   "s": "Trial of Chaos room",
+   "src": "Source: the game files"
+  },
+  {
+   "n": "Escort the Statue",
+   "id": "Chaos: Escort the Statue",
+   "s": "Trial of Chaos room",
+   "src": "Source: the game files"
+  },
+  {
+   "n": "Sacrifice Monsters",
+   "id": "Chaos: Sacrifice Monsters",
+   "s": "Trial of Chaos room",
+   "src": "Source: the game files"
+  },
+  {
+   "n": "Destroy the Idols",
+   "id": "Chaos: Destroy the Idols",
+   "s": "Trial of Chaos room",
+   "src": "Source: the game files"
+  },
+  {
+   "n": "Slay the Boss",
+   "id": "Chaos: Slay the Boss",
+   "s": "Trial of Chaos room",
+   "src": "Source: the game files"
+  },
+  {
+   "n": "Honed Claws",
+   "id": "Honed Claws",
+   "s": "Minor affliction",
+   "ls": [
+    "Monsters deal 30% more Damage"
+   ],
+   "tags": [
+    "more damage taken"
+   ],
+   "src": "Source: the game files",
+   "q": "more damage taken"
+  },
+  {
+   "n": "Fright Mask",
+   "id": "Fright Mask",
+   "s": "Minor boon",
+   "ls": [
+    "Monsters deal 20% less Damage"
+   ],
+   "src": "Source: the game files"
+  },
+  {
+   "n": "Deadly Snare",
+   "id": "Deadly Snare",
+   "s": "Major affliction",
+   "ls": [
+    "Traps deal Triple Damage"
+   ],
+   "tags": [
+    "more damage taken",
+    "room hazard"
+   ],
+   "src": "Source: the game files",
+   "q": "more damage taken room hazard"
+  },
+  {
+   "n": "Dark Pit",
+   "id": "Dark Pit",
+   "s": "Minor affliction",
+   "ls": [
+    "Traps deal 100% increased Damage"
+   ],
+   "tags": [
+    "more damage taken",
+    "room hazard"
+   ],
+   "src": "Source: the game files",
+   "q": "more damage taken room hazard"
+  },
+  {
+   "n": "Low Rivers",
+   "id": "Low Rivers",
+   "s": "Minor affliction",
+   "ls": [
+    "50% less Sacred Water found"
+   ],
+   "tags": [
+    "costs Sacred Water"
+   ],
+   "mark": "safe",
+   "why": "Changes only Sacred Water, the Merchant or the Trial Map; nothing in a fight",
+   "src": "Source: the game files",
+   "q": "costs Sacred Water safe"
+  },
+  {
+   "n": "Blunt Sword",
+   "id": "Blunt Sword",
+   "s": "Minor affliction",
+   "ls": [
+    "You and your Minions deal 40% less Damage"
+   ],
+   "tags": [
+    "less damage"
+   ],
+   "mark": "danger",
+   "why": "Cuts your damage by 40% or more, or stops it",
+   "src": "Source: the game files",
+   "q": "dangerous less damage"
+  },
+  {
+   "n": "Rapid Quicksand",
+   "id": "Rapid Quicksand",
+   "s": "Minor affliction",
+   "ls": [
+    "Traps are faster"
+   ],
+   "tags": [
+    "faster",
+    "room hazard"
+   ],
+   "src": "Source: the game files",
+   "q": "faster room hazard"
+  },
+  {
+   "n": "Hare Foot",
+   "id": "Hare Foot",
+   "s": "Minor boon",
+   "ls": [
+    "40% increased Movement Speed"
+   ],
+   "src": "Source: the game files"
+  },
+  {
+   "n": "Flooding Rivers",
+   "id": "Flooding Rivers",
+   "s": "Minor boon",
+   "ls": [
+    "50% more Sacred Water found"
+   ],
+   "src": "Source: the game files"
+  },
+  {
+   "n": "Reparations",
+   "id": "Reparations",
+   "s": "Major boon",
+   "ls": [
+    "Gain 2 Sacred Water when you take Damage from an Enemy Hit"
+   ],
+   "t": "Taking a hit pays you 2 Sacred Water.",
+   "src": "Source: the game files"
+  },
+  {
+   "n": "Leaking Waterskin",
+   "id": "Leaking Waterskin",
+   "s": "Minor affliction",
+   "ls": [
+    "Lose 20 Sacred Water when you take Damage from an Enemy Hit"
+   ],
+   "tags": [
+    "costs Sacred Water"
+   ],
+   "mark": "safe",
+   "why": "Changes only Sacred Water, the Merchant or the Trial Map; nothing in a fight",
+   "src": "Source: the game files",
+   "q": "costs Sacred Water safe"
+  },
+  {
+   "n": "Gate Toll",
+   "id": "Gate Toll",
+   "s": "Minor affliction",
+   "ls": [
+    "Lose 30 Sacred Water on room completion"
+   ],
+   "tags": [
+    "costs Sacred Water"
+   ],
+   "mark": "safe",
+   "why": "Changes only Sacred Water, the Merchant or the Trial Map; nothing in a fight",
+   "src": "Source: the game files",
+   "q": "costs Sacred Water safe"
+  },
+  {
+   "n": "Death Toll",
+   "id": "Death Toll",
+   "s": "Major affliction",
+   "ls": [
+    "Monsters no longer drop Sacred Water"
+   ],
+   "tags": [
+    "costs Sacred Water"
+   ],
+   "mark": "safe",
+   "why": "Changes only Sacred Water, the Merchant or the Trial Map; nothing in a fight",
+   "src": "Source: the game files",
+   "q": "costs Sacred Water safe"
+  },
+  {
+   "n": "Death Toll",
+   "id": "Death Toll 2",
+   "s": "Major affliction",
+   "ls": [
+    "Take 250 Physical Damage after completing 8 Rooms"
+   ],
+   "steps": 8,
+   "alt": [
+    "Take 250 Physical Damage after completing 7 Rooms",
+    "Take 250 Physical Damage after completing 6 Rooms",
+    "Take 250 Physical Damage after completing 5 Rooms",
+    "Take 250 Physical Damage after completing 4 Rooms",
+    "Take 250 Physical Damage after completing 3 Rooms",
+    "Take 250 Physical Damage after completing 2 Rooms",
+    "Take 250 Physical Damage after completing the next Room"
+   ],
+   "t": "A countdown: after that many rooms you take 250 physical damage.",
+   "tags": [
+    "more damage taken"
+   ],
+   "src": "Source: the game files",
+   "q": "more damage taken"
+  },
+  {
+   "n": "Exhausted Wells",
+   "id": "Exhausted Wells",
+   "s": "Minor affliction",
+   "ls": [
+    "Chests no longer grant Sacred Water"
+   ],
+   "tags": [
+    "costs Sacred Water"
+   ],
+   "mark": "safe",
+   "why": "Changes only Sacred Water, the Merchant or the Trial Map; nothing in a fight",
+   "src": "Source: the game files",
+   "q": "costs Sacred Water safe"
+  },
+  {
+   "n": "Spiked Shell",
+   "id": "Spiked Shell",
+   "s": "Minor affliction",
+   "ls": [
+    "Monsters have 50% increased Maximum Life"
+   ],
+   "tags": [
+    "harder to kill"
+   ],
+   "src": "Source: the game files",
+   "q": "harder to kill"
+  },
+  {
+   "n": "Hungry Fangs",
+   "id": "Hungry Fangs",
+   "s": "Minor affliction",
+   "ls": [
+    "Monsters remove 5% of your Life, Mana and Energy Shield on Hit"
+   ],
+   "t": "Every hit takes a slice of your Life, Mana and Energy Shield off the top, whatever your defences.",
+   "tags": [
+    "more damage taken"
+   ],
+   "src": "Source: the game files",
+   "q": "more damage taken"
+  },
+  {
+   "n": "Branded Balbalakh",
+   "id": "Branded Balbalakh",
+   "s": "Major affliction",
+   "ls": [
+    "Cannot restore Honour"
+   ],
+   "t": "Nothing restores Honour for the rest of the trial: every hit you take stays taken.",
+   "tags": [
+    "costs Honour"
+   ],
+   "mark": "danger",
+   "why": "Honour you lose does not come back, so every hit brings the end of the trial closer",
+   "src": "Source: the game files",
+   "q": "costs Honour dangerous honour"
+  },
+  {
+   "n": "Suspected Sympathiser",
+   "id": "Suspected Sympathiser",
+   "s": "Minor affliction",
+   "ls": [
+    "50% reduced Honour restored"
+   ],
+   "t": "Shrines, boons and relics give back half as much Honour.",
+   "tags": [
+    "costs Honour"
+   ],
+   "src": "Source: the game files",
+   "q": "costs Honour honour"
+  },
+  {
+   "n": "Honoured Challenger",
+   "id": "Honoured Challenger",
+   "s": "Minor boon",
+   "ls": [
+    "50% increased Honour restored"
+   ],
+   "src": "Source: the game files",
+   "q": "honour"
+  },
+  {
+   "n": "Black Smoke",
+   "id": "Black Smoke",
+   "s": "Minor affliction",
+   "ls": [
+    "You can see one fewer room ahead on the Trial Map"
+   ],
+   "tags": [
+    "hides the map"
+   ],
+   "mark": "safe",
+   "why": "Changes only Sacred Water, the Merchant or the Trial Map; nothing in a fight",
+   "src": "Source: the game files",
+   "q": "hides the map safe"
+  },
+  {
+   "n": "Scrying Crystal",
+   "id": "Scrying Crystal",
+   "s": "Minor boon",
+   "ls": [
+    "You can see an additional room ahead on the Trial Map"
+   ],
+   "src": "Source: the game files"
+  },
+  {
+   "n": "Trade Tariff",
+   "id": "Trade Tariff",
+   "s": "Minor affliction",
+   "ls": [
+    "50% increased Merchant prices"
+   ],
+   "tags": [
+    "worse merchant"
+   ],
+   "mark": "safe",
+   "why": "Changes only Sacred Water, the Merchant or the Trial Map; nothing in a fight",
+   "src": "Source: the game files",
+   "q": "safe worse merchant"
+  },
+  {
+   "n": "Silver Tongue",
+   "id": "Silver Tongue",
+   "s": "Minor boon",
+   "ls": [
+    "50% reduced Merchant prices"
+   ],
+   "src": "Source: the game files"
+  },
+  {
+   "n": "Imperial Seal",
+   "id": "Imperial Seal",
+   "s": "Major boon",
+   "ls": [
+    "Traps are Disabled"
+   ],
+   "src": "Source: the game files"
+  },
+  {
+   "n": "Garukhan's Favour",
+   "id": "Garukhan's Favour",
+   "s": "Major boon",
+   "ls": [
+    "Ignore the first Damage taken from an Enemy Hit in each room"
+   ],
+   "t": "The first hit you take in each room does nothing.",
+   "src": "Source: the game files"
+  },
+  {
+   "n": "Winter Drought",
+   "id": "Winter Drought",
+   "s": "Minor affliction",
+   "ls": [
+    "Lose all Sacred Water on floor completion"
+   ],
+   "tags": [
+    "costs Sacred Water"
+   ],
+   "mark": "safe",
+   "why": "Changes only Sacred Water, the Merchant or the Trial Map; nothing in a fight",
+   "src": "Source: the game files",
+   "q": "costs Sacred Water safe"
+  },
+  {
+   "n": "Earned Honour",
+   "id": "Earned Honour",
+   "s": "Major boon",
+   "ls": [
+    "Restore 7 of your Honour on room completion"
+   ],
+   "t": "Every room you finish gives some Honour back.",
+   "src": "Source: the game files",
+   "q": "honour"
+  },
+  {
+   "n": "Ahkeli's Guard",
+   "id": "Ahkeli's Guard",
+   "s": "Major boon",
+   "ls": [
+    "You cannot be Damaged for 1 second after taking Damage from an Enemy Hit"
+   ],
+   "t": "After each hit you take, you cannot be damaged for a second.",
+   "src": "Source: the game files"
+  },
+  {
+   "n": "Glowing Orb",
+   "id": "Glowing Orb",
+   "s": "Minor boon",
+   "ls": [
+    "The next time you go below 20% of Maximum Life, restore all Life, Energy Shield and 50% of Honour"
+   ],
+   "t": "The first time you drop under 20% Life, you get all your Life and Energy Shield back and half your Honour.",
+   "src": "Source: the game files",
+   "q": "honour"
+  },
+  {
+   "n": "Veiled Sight",
+   "id": "Veiled Sight",
+   "s": "Major affliction",
+   "ls": [
+    "Rooms are unknown on the Trial Map"
+   ],
+   "t": "The Trial Map shows no rooms ahead.",
+   "tags": [
+    "hides the map"
+   ],
+   "mark": "safe",
+   "why": "Changes only Sacred Water, the Merchant or the Trial Map; nothing in a fight",
+   "src": "Source: the game files",
+   "q": "hides the map safe"
+  },
+  {
+   "n": "Red Smoke",
+   "id": "Red Smoke",
+   "s": "Minor affliction",
+   "ls": [
+    "Room types are unknown on the Trial Map"
+   ],
+   "tags": [
+    "hides the map"
+   ],
+   "mark": "safe",
+   "why": "Changes only Sacred Water, the Merchant or the Trial Map; nothing in a fight",
+   "src": "Source: the game files",
+   "q": "hides the map safe"
+  },
+  {
+   "n": "Golden Smoke",
+   "id": "Golden Smoke",
+   "s": "Minor affliction",
+   "ls": [
+    "Rewards are unknown on the Trial Map"
+   ],
+   "tags": [
+    "hides the map"
+   ],
+   "mark": "safe",
+   "why": "Changes only Sacred Water, the Merchant or the Trial Map; nothing in a fight",
+   "src": "Source: the game files",
+   "q": "hides the map safe"
+  },
+  {
+   "n": "Purple Smoke",
+   "id": "Purple Smoke",
+   "s": "Minor affliction",
+   "ls": [
+    "Afflictions are unknown on the Trial Map"
+   ],
+   "tags": [
+    "hides the map"
+   ],
+   "mark": "safe",
+   "why": "Changes only Sacred Water, the Merchant or the Trial Map; nothing in a fight",
+   "src": "Source: the game files",
+   "q": "hides the map safe"
+  },
+  {
+   "n": "Ghastly Scythe",
+   "id": "Ghastly Scythe",
+   "s": "Major affliction",
+   "ls": [
+    "Losing Honour ends the Trial",
+    "(removed after 3 rooms)"
+   ],
+   "steps": 3,
+   "alt": [
+    "(removed after 2 rooms)",
+    "(removed after 1 room)"
+   ],
+   "t": "For the next few rooms, losing any Honour at all ends the trial.",
+   "tags": [
+    "costs Honour"
+   ],
+   "mark": "danger",
+   "why": "Losing any Honour at all ends the trial",
+   "src": "Source: the game files",
+   "q": "costs Honour dangerous honour"
+  },
+  {
+   "n": "Orbala's Leathers",
+   "id": "Orbala's Leathers",
+   "s": "Major boon",
+   "ls": [
+    "Upon reaching 0 Honour, revive once with 50% less Honour"
+   ],
+   "t": "The price of the Orbala's Leathers boon once it has saved you: half your Honour bar.",
+   "src": "Source: the game files",
+   "q": "honour"
+  },
+  {
+   "n": "Orbala's Leathers",
+   "id": "Orbala's Leathers 2",
+   "s": "Major affliction",
+   "ls": [
+    "50% less Maximum Honour"
+   ],
+   "tags": [
+    "costs Honour"
+   ],
+   "src": "Source: the game files",
+   "q": "costs Honour honour"
+  },
+  {
+   "n": "Sekhema's Cloak",
+   "id": "Sekhema's Cloak",
+   "s": "Major boon",
+   "ls": [
+    "Upon reaching 0 Honour, revive once with full Honour"
+   ],
+   "t": "When your Honour runs out, you come back once with it full.",
+   "src": "Source: the game files",
+   "q": "honour"
+  },
+  {
+   "n": "Dekhara's Necklace",
+   "id": "Dekhara's Necklace",
+   "s": "Major boon",
+   "ls": [
+    "You cannot receive any more Minor Afflictions"
+   ],
+   "src": "Source: the game files"
+  },
+  {
+   "n": "Unassuming Brick",
+   "id": "Unassuming Brick",
+   "s": "Major affliction",
+   "ls": [
+    "You cannot gain any more Boons"
+   ],
+   "t": "No more boons for the rest of the trial.",
+   "tags": [
+    "fewer boons"
+   ],
+   "src": "Source: the game files",
+   "q": "fewer boons"
+  },
+  {
+   "n": "Moment's Peace",
+   "id": "Moment's Peace",
+   "s": "Minor boon",
+   "ls": [
+    "You cannot be Damaged until you complete the next room"
+   ],
+   "t": "Nothing can damage you until you finish the next room.",
+   "src": "Source: the game files"
+  },
+  {
+   "n": "Spiked Exit",
+   "id": "Spiked Exit",
+   "s": "Minor affliction",
+   "ls": [
+    "Take 30 Physical Damage on Room Completion"
+   ],
+   "t": "Every room you finish costs 30 physical damage.",
+   "tags": [
+    "more damage taken"
+   ],
+   "src": "Source: the game files",
+   "q": "more damage taken"
+  },
+  {
+   "n": "Tattered Blindfold",
+   "id": "Tattered Blindfold",
+   "s": "Minor affliction",
+   "ls": [
+    "90% reduced Light Radius",
+    "Minimap is hidden"
+   ],
+   "t": "You see almost nothing around you, and the minimap is gone.",
+   "tags": [
+    "hides the map"
+   ],
+   "src": "Source: the game files",
+   "q": "hides the map"
+  },
+  {
+   "n": "Unquenched Thirst",
+   "id": "Unquenched Thirst",
+   "s": "Major affliction",
+   "ls": [
+    "You cannot gain Sacred Water"
+   ],
+   "tags": [
+    "costs Sacred Water"
+   ],
+   "mark": "safe",
+   "why": "Changes only Sacred Water, the Merchant or the Trial Map; nothing in a fight",
+   "src": "Source: the game files",
+   "q": "costs Sacred Water safe"
+  },
+  {
+   "n": "Dishonoured Tattoo",
+   "id": "Dishonoured Tattoo",
+   "s": "Minor affliction",
+   "ls": [
+    "100% increased Damage Taken while on Low Life"
+   ],
+   "t": "Once you are on Low Life, you take double damage.",
+   "tags": [
+    "more damage taken"
+   ],
+   "src": "Source: the game files",
+   "q": "more damage taken"
+  },
+  {
+   "n": "Diverted River",
+   "id": "Diverted River",
+   "s": "Minor boon",
+   "ls": [
+    "Sacred Water found on this floor is doubled"
+   ],
+   "src": "Source: the game files"
+  },
+  {
+   "n": "Raincaller",
+   "id": "Raincaller",
+   "s": "Major boon",
+   "ls": [
+    "Sacred Water found is doubled"
+   ],
+   "src": "Source: the game files"
+  },
+  {
+   "n": "Deceptive Mirror",
+   "id": "Deceptive Mirror",
+   "s": "Minor affliction",
+   "ls": [
+    "You are not always taken to the room you select"
+   ],
+   "t": "A third of the time the door takes you to another room than the one you picked.",
+   "tags": [
+    "hides the map"
+   ],
+   "src": "Source: the game files",
+   "q": "hides the map"
+  },
+  {
+   "n": "Haemorrhage",
+   "id": "Haemorrhage",
+   "s": "Minor affliction",
+   "ls": [
+    "You cannot restore Honour (removed after killing the next Boss)"
+   ],
+   "t": "Nothing restores Honour until the next boss is dead.",
+   "tags": [
+    "costs Honour"
+   ],
+   "mark": "danger",
+   "why": "Honour you lose does not come back, so every hit brings the end of the trial closer",
+   "src": "Source: the game files",
+   "q": "costs Honour dangerous honour"
+  },
+  {
+   "n": "All-Seeing Eye",
+   "id": "All-Seeing Eye",
+   "s": "Major boon",
+   "ls": [
+    "The Trial Map is fully revealed"
+   ],
+   "src": "Source: the game files"
+  },
+  {
+   "n": "Lustrous Pearl",
+   "id": "Lustrous Pearl",
+   "s": "Minor boon",
+   "ls": [
+    "Traps are slower"
+   ],
+   "src": "Source: the game files"
+  },
+  {
+   "n": "Viscous Ichor",
+   "id": "Viscous Ichor",
+   "s": "Minor boon",
+   "ls": [
+    "Monsters have 15% reduced Action Speed"
+   ],
+   "src": "Source: the game files"
+  },
+  {
+   "n": "Sanguine Vial",
+   "id": "Sanguine Vial",
+   "s": "Minor boon",
+   "ls": [
+    "Monsters have 30% less Maximum Life"
+   ],
+   "src": "Source: the game files"
+  },
+  {
+   "n": "Ornate Dagger",
+   "id": "Ornate Dagger",
+   "s": "Minor boon",
+   "ls": [
+    "You and your minions deal 50% more Damage"
+   ],
+   "src": "Source: the game files"
+  },
+  {
+   "n": "Assassin's Blade",
+   "id": "Assassin's Blade",
+   "s": "Minor boon",
+   "ls": [
+    "The next 10 non-Boss Monsters you Hit are killed Instantly"
+   ],
+   "steps": 10,
+   "alt": [
+    "The next 9 non-Boss Monsters you Hit are killed Instantly",
+    "The next 8 non-Boss Monsters you Hit are killed Instantly",
+    "The next 7 non-Boss Monsters you Hit are killed Instantly",
+    "The next 6 non-Boss Monsters you Hit are killed Instantly",
+    "The next 5 non-Boss Monsters you Hit are killed Instantly",
+    "The next 4 non-Boss Monsters you Hit are killed Instantly",
+    "The next 3 non-Boss Monsters you Hit are killed Instantly",
+    "The next 2 non-Boss Monsters you Hit are killed Instantly",
+    "The next non-Boss Monster you Hit is killed Instantly"
+   ],
+   "t": "The next few non-boss monsters you hit die on the spot.",
+   "src": "Source: the game files"
+  },
+  {
+   "n": "Enchanted Urn",
+   "id": "Enchanted Urn",
+   "s": "Minor boon",
+   "ls": [
+    "30% increased Effect of your Non-Unique Relics"
+   ],
+   "src": "Source: the game files"
+  },
+  {
+   "n": "Adrenaline Vial",
+   "id": "Adrenaline Vial",
+   "s": "Minor boon",
+   "ls": [
+    "Restore 60 of your Honour on entering a Boss Room"
+   ],
+   "src": "Source: the game files",
+   "q": "honour"
+  },
+  {
+   "n": "Mirror of Fortune",
+   "id": "Mirror of Fortune",
+   "s": "Minor boon",
+   "ls": [
+    "The next Key you pick up is duplicated"
+   ],
+   "src": "Source: the game files"
+  },
+  {
+   "n": "Orbala Statuette",
+   "id": "Orbala Statuette",
+   "s": "Minor boon",
+   "ls": [
+    "You have 25% more Maximum Honour"
+   ],
+   "src": "Source: the game files",
+   "q": "honour"
+  },
+  {
+   "n": "Holy Water",
+   "id": "Holy Water",
+   "s": "Major boon",
+   "ls": [
+    "Gain a random Minor Boon when you venerate a Maraketh Shrine"
+   ],
+   "t": "Every shrine you venerate also gives you a minor boon.",
+   "src": "Source: the game files"
+  },
+  {
+   "n": "Fountain of Youth",
+   "id": "Fountain of Youth",
+   "s": "Minor boon",
+   "ls": [
+    "Restore 30 of your Honour when you venerate a Maraketh Shrine"
+   ],
+   "src": "Source: the game files",
+   "q": "honour"
+  },
+  {
+   "n": "Silver Chalice",
+   "id": "Silver Chalice",
+   "s": "Minor boon",
+   "ls": [
+    "The next Minor Boon you gain is converted into a random Major Boon"
+   ],
+   "t": "Your next minor boon turns into a major one.",
+   "src": "Source: the game files"
+  },
+  {
+   "n": "Black Pearl",
+   "id": "Black Pearl",
+   "s": "Minor boon",
+   "ls": [
+    "Traps deal 50% reduced Damage"
+   ],
+   "src": "Source: the game files"
+  },
+  {
+   "n": "Balbala's Gift",
+   "id": "Balbala's Gift",
+   "s": "Minor boon",
+   "ls": [
+    "Your next purchase from the Merchant has no cost"
+   ],
+   "src": "Source: the game files"
+  },
+  {
+   "n": "Chipped Dice",
+   "id": "Chipped Dice",
+   "s": "Minor boon",
+   "ls": [
+    "The Merchant's Shop can be Rerolled"
+   ],
+   "src": "Source: the game files"
+  },
+  {
+   "n": "Upward Path",
+   "id": "Upward Path",
+   "s": "Minor boon",
+   "ls": [
+    "Your Sacred Water found is increased by 10% on room completion",
+    "(removed when you purchase something from the Merchant)"
+   ],
+   "src": "Source: the game files"
+  },
+  {
+   "n": "Sacred Mirror",
+   "id": "Sacred Mirror",
+   "s": "Major boon",
+   "ls": [
+    "Keys you pick up are duplicated"
+   ],
+   "src": "Source: the game files"
+  },
+  {
+   "n": "Crystal Shard",
+   "id": "Crystal Shard",
+   "s": "Major boon",
+   "ls": [
+    "The next Affliction you gain is converted into a random Minor Boon"
+   ],
+   "t": "Your next affliction turns into a minor boon.",
+   "src": "Source: the game files"
+  },
+  {
+   "n": "Lustrous Lacquer",
+   "id": "Lustrous Lacquer",
+   "s": "Minor boon",
+   "ls": [
+    "You have 50% more Armour, Evasion and Energy Shield"
+   ],
+   "src": "Source: the game files"
+  },
+  {
+   "n": "Forgotten Traditions",
+   "id": "Forgotten Traditions",
+   "s": "Minor affliction",
+   "ls": [
+    "50% reduced Effect of your Non-Unique Relics"
+   ],
+   "t": "Your relics give half as much, except unique ones.",
+   "tags": [
+    "weaker relics"
+   ],
+   "src": "Source: the game files",
+   "q": "weaker relics"
+  },
+  {
+   "n": "Season of Famine",
+   "id": "Season of Famine",
+   "s": "Minor affliction",
+   "ls": [
+    "The Merchant offers 50% fewer choices"
+   ],
+   "tags": [
+    "worse merchant"
+   ],
+   "mark": "safe",
+   "why": "Changes only Sacred Water, the Merchant or the Trial Map; nothing in a fight",
+   "src": "Source: the game files",
+   "q": "safe worse merchant"
+  },
+  {
+   "n": "Myriad Aspersions",
+   "id": "Myriad Aspersions",
+   "s": "Minor affliction",
+   "ls": [
+    "When you gain an Affliction, gain an additional random Minor Affliction"
+   ],
+   "t": "Every affliction brings another minor one with it.",
+   "tags": [
+    "more afflictions"
+   ],
+   "src": "Source: the game files",
+   "q": "more afflictions"
+  },
+  {
+   "n": "Costly Aid",
+   "id": "Costly Aid",
+   "s": "Minor affliction",
+   "ls": [
+    "Gain a random Minor Affliction when you venerate a Maraketh Shrine"
+   ],
+   "t": "Every shrine you venerate also gives you a minor affliction.",
+   "tags": [
+    "more afflictions"
+   ],
+   "src": "Source: the game files",
+   "q": "more afflictions"
+  },
+  {
+   "n": "Chains of Binding",
+   "id": "Chains of Binding",
+   "s": "Minor affliction",
+   "ls": [
+    "Monsters inflict Binding Chains on Hit"
+   ],
+   "t": "Monster hits bind you in chains for 2 seconds.",
+   "tags": [
+    "slows you"
+   ],
+   "src": "Source: the game files",
+   "q": "slows you"
+  },
+  {
+   "n": "Untouchable",
+   "id": "Untouchable",
+   "s": "Minor affliction",
+   "ls": [
+    "You are Cursed with Enfeeble"
+   ],
+   "t": "Enfeeble is on you for the rest of the trial: you deal less damage.",
+   "tags": [
+    "curse"
+   ],
+   "src": "Source: the game files",
+   "q": "curse"
+  },
+  {
+   "n": "Rusted Mallet",
+   "id": "Rusted Mallet",
+   "s": "Minor affliction",
+   "ls": [
+    "Monsters always Knockback",
+    "Monsters have increased Knockback Distance"
+   ],
+   "t": "Every monster hit knocks you back, and further.",
+   "tags": [
+    "knocks you back"
+   ],
+   "src": "Source: the game files",
+   "q": "knocks you back"
+  },
+  {
+   "n": "Weakened Flesh",
+   "id": "Weakened Flesh",
+   "s": "Minor affliction",
+   "ls": [
+    "25% less Maximum Honour"
+   ],
+   "t": "Your Honour bar is a quarter shorter.",
+   "tags": [
+    "costs Honour"
+   ],
+   "src": "Source: the game files",
+   "q": "costs Honour honour"
+  },
+  {
+   "n": "Fiendish Wings",
+   "id": "Fiendish Wings",
+   "s": "Minor affliction",
+   "ls": [
+    "Monsters' Action Speed cannot be slowed below base",
+    "Monsters have 25% increased Attack, Cast and Movement Speed"
+   ],
+   "t": "Monsters are faster, and nothing can slow them below their normal speed.",
+   "tags": [
+    "faster"
+   ],
+   "src": "Source: the game files",
+   "q": "faster"
+  },
+  {
+   "n": "Worn Sandals",
+   "id": "Worn Sandals",
+   "s": "Minor affliction",
+   "ls": [
+    "30% reduced Movement Speed if you've been Hit by an Enemy Recently"
+   ],
+   "t": "You move slower for a while after each hit you take.",
+   "tags": [
+    "slows you"
+   ],
+   "src": "Source: the game files",
+   "q": "slows you"
+  },
+  {
+   "n": "Orb of Negation",
+   "id": "Orb of Negation",
+   "s": "Major affliction",
+   "ls": [
+    "Non-Unique Relics have no Effect"
+   ],
+   "t": "Your relics do nothing, except unique ones.",
+   "tags": [
+    "weaker relics"
+   ],
+   "src": "Source: the game files",
+   "q": "weaker relics"
+  },
+  {
+   "n": "Tradition's Demand",
+   "id": "Tradition's Demand",
+   "s": "Minor affliction",
+   "ls": [
+    "The Merchant only offers one choice"
+   ],
+   "tags": [
+    "worse merchant"
+   ],
+   "mark": "safe",
+   "why": "Changes only Sacred Water, the Merchant or the Trial Map; nothing in a fight",
+   "src": "Source: the game files",
+   "q": "safe worse merchant"
+  },
+  {
+   "n": "Chiselled Stone",
+   "id": "Chiselled Stone",
+   "s": "Major affliction",
+   "ls": [
+    "Monsters Petrify on Hit"
+   ],
+   "t": "Monster hits turn you to stone.",
+   "tags": [
+    "stuns you"
+   ],
+   "mark": "danger",
+   "why": "Every hit takes control away from you",
+   "src": "Source: the game files",
+   "q": "dangerous stuns you"
+  },
+  {
+   "n": "Glass Shard",
+   "id": "Glass Shard",
+   "s": "Major affliction",
+   "ls": [
+    "The next Boon you gain is converted into a random Minor Affliction"
+   ],
+   "t": "Your next boon turns into a minor affliction.",
+   "tags": [
+    "fewer boons"
+   ],
+   "src": "Source: the game files",
+   "q": "fewer boons"
+  },
+  {
+   "n": "Iron Manacles",
+   "id": "Iron Manacles",
+   "s": "Minor affliction",
+   "ls": [
+    "You have no Evasion"
+   ],
+   "t": "Evasion is gone for the rest of the trial.",
+   "tags": [
+    "less defences"
+   ],
+   "src": "Source: the game files",
+   "q": "less defences"
+  },
+  {
+   "n": "Sharpened Arrowhead",
+   "id": "Sharpened Arrowhead",
+   "s": "Minor affliction",
+   "ls": [
+    "You have no Armour"
+   ],
+   "t": "Armour is gone for the rest of the trial.",
+   "tags": [
+    "less defences"
+   ],
+   "src": "Source: the game files",
+   "q": "less defences"
+  },
+  {
+   "n": "Shattered Shield",
+   "id": "Shattered Shield",
+   "s": "Minor affliction",
+   "ls": [
+    "You have 50% less Energy Shield"
+   ],
+   "tags": [
+    "less defences"
+   ],
+   "src": "Source: the game files",
+   "q": "less defences"
+  },
+  {
+   "n": "Corrosive Concoction",
+   "id": "Corrosive Concoction",
+   "s": "Major affliction",
+   "ls": [
+    "You have no Armour, Evasion and Energy Shield"
+   ],
+   "t": "Armour, Evasion and Energy Shield are all gone for the rest of the trial.",
+   "tags": [
+    "less defences"
+   ],
+   "mark": "danger",
+   "why": "Takes away half or more of all your Armour, Evasion and Energy Shield",
+   "src": "Source: the game files",
+   "q": "dangerous less defences"
+  },
+  {
+   "n": "Pledge to the Guileful",
+   "id": "Pledge to the Guileful",
+   "s": "Pledge",
+   "ls": [
+    "Can Open 1 Reward Chest in each Room without using a Key",
+    "Take 100 Physical Damage on opening a Key Chest without using a Key"
+   ],
+   "t": "Open one reward chest in each room with no key; doing it costs you damage.",
+   "risk": "Take 100 Physical Damage on opening a Key Chest without using a Key",
+   "reward": "Can Open 1 Reward Chest in each Room without using a Key",
+   "tags": [
+    "more damage taken"
+   ],
+   "src": "Source: the game files",
+   "q": "more damage taken"
+  },
+  {
+   "n": "Pledge to the Powerful",
+   "id": "Pledge to the Powerful",
+   "s": "Pledge",
+   "ls": [
+    "50% less Honour lost in Boss Rooms",
+    "100% more Honour lost in non-Boss Rooms"
+   ],
+   "t": "Bosses cost you half the Honour; every other room costs double.",
+   "risk": "100% more Honour lost in non-Boss Rooms",
+   "reward": "50% less Honour lost in Boss Rooms",
+   "tags": [
+    "costs Honour"
+   ],
+   "src": "Source: the game files",
+   "q": "costs Honour honour"
+  },
+  {
+   "n": "Pledge to the Deserted",
+   "id": "Pledge to the Deserted",
+   "s": "Pledge",
+   "ls": [
+    "50% less Merchant prices",
+    "Monsters do not drop Sacred Water"
+   ],
+   "t": "The Merchant is half price, but monsters stop dropping Sacred Water.",
+   "risk": "Monsters do not drop Sacred Water",
+   "reward": "50% less Merchant prices",
+   "tags": [
+    "costs Sacred Water",
+    "worse merchant"
+   ],
+   "src": "Source: the game files",
+   "q": "costs Sacred Water worse merchant"
+  },
+  {
+   "n": "Pledge to the Afflicted",
+   "id": "Pledge to the Afflicted",
+   "s": "Pledge",
+   "ls": [
+    "Gain a Key when you are Afflicted",
+    "10% reduced Honour Restored"
+   ],
+   "t": "Every affliction comes with a key, and Honour comes back a little slower.",
+   "risk": "10% reduced Honour Restored",
+   "reward": "Gain a Key when you are Afflicted",
+   "tags": [
+    "costs Honour"
+   ],
+   "src": "Source: the game files",
+   "q": "costs Honour honour"
+  },
+  {
+   "n": "Escape Trial",
+   "id": "Sekhemas: Escape Trial",
+   "s": "Trial of the Sekhemas room",
+   "rooms": 28,
+   "src": "Source: the game files"
+  },
+  {
+   "n": "Hourglass Trial",
+   "id": "Sekhemas: Hourglass Trial",
+   "s": "Trial of the Sekhemas room",
+   "rooms": 28,
+   "src": "Source: the game files"
+  },
+  {
+   "n": "Ritual Trial",
+   "id": "Sekhemas: Ritual Trial",
+   "s": "Trial of the Sekhemas room",
+   "rooms": 28,
+   "src": "Source: the game files"
+  },
+  {
+   "n": "Chalice Trial",
+   "id": "Sekhemas: Chalice Trial",
+   "s": "Trial of the Sekhemas room",
+   "rooms": 28,
+   "src": "Source: the game files"
+  },
+  {
+   "n": "Gauntlet Trial",
+   "id": "Sekhemas: Gauntlet Trial",
+   "s": "Trial of the Sekhemas room",
+   "rooms": 28,
+   "src": "Source: the game files"
+  },
+  {
+   "n": "Collapsing Cavern",
+   "id": "Sekhemas: Collapsing Cavern",
+   "s": "Trial of the Sekhemas room",
+   "rooms": 4,
+   "names": [
+    "Test of Strength: Collapsing Cavern",
+    "Test of Will: Ceremonial Chamber",
+    "Test of Cunning: Sand Pit",
+    "Test of Time: Outside of Time"
+   ],
+   "src": "Source: the game files"
+  },
+  {
+   "n": "Merchant",
+   "id": "Sekhemas: Merchant",
+   "s": "Trial of the Sekhemas room",
+   "ls": [
+    "Contains Merchant"
+   ],
+   "rooms": 4,
+   "src": "Source: the game files"
+  },
+  {
+   "n": "Honour Tabana",
+   "id": "Sekhemas: Honour Tabana",
+   "s": "Trial of the Sekhemas room",
+   "ls": [
+    "Awards a Shrine to restore Honour"
+   ],
+   "rooms": 4,
+   "src": "Source: the game files",
+   "q": "honour"
+  },
+  {
+   "n": "Pledge to Kochai",
+   "id": "Sekhemas: Pledge to Kochai",
+   "s": "Trial of the Sekhemas room",
+   "ls": [
+    "Awards a Pledge which can be accepted to change the Trial's Parameters"
+   ],
+   "rooms": 4,
+   "src": "Source: the game files"
+  },
+  {
+   "n": "Honour Halani",
+   "id": "Sekhemas: Honour Halani",
+   "s": "Trial of the Sekhemas room",
+   "ls": [
+    "Awards a Shrine to restore Honour and gain Sacred Water"
+   ],
+   "rooms": 4,
+   "src": "Source: the game files",
+   "q": "honour"
+  },
+  {
+   "n": "Honour Ahkeli",
+   "id": "Sekhemas: Honour Ahkeli",
+   "s": "Trial of the Sekhemas room",
+   "ls": [
+    "Awards a Shrine that greatly restores Honour and burdens you with an Affliction"
+   ],
+   "rooms": 4,
+   "src": "Source: the game files",
+   "q": "honour"
+  },
+  {
+   "n": "Honour Orbala",
+   "id": "Sekhemas: Honour Orbala",
+   "s": "Trial of the Sekhemas room",
+   "ls": [
+    "Awards a Shrine that restores Honour and grants you a Boon"
+   ],
+   "rooms": 4,
+   "src": "Source: the game files",
+   "q": "honour"
+  },
+  {
+   "n": "Honour Galai",
+   "id": "Sekhemas: Honour Galai",
+   "s": "Trial of the Sekhemas room",
+   "ls": [
+    "Awards a Shrine that bestows the fickle Blessings of the Wind"
+   ],
+   "rooms": 4,
+   "src": "Source: the game files",
+   "q": "honour"
+  },
+  {
+   "n": "Fountain",
+   "id": "Sekhemas: Fountain (large)",
+   "s": "Trial of the Sekhemas room",
+   "ls": [
+    "Awards a Large Sacred Water Fountain"
+   ],
+   "rooms": 4,
+   "src": "Source: the game files"
+  },
+  {
+   "n": "Fountain",
+   "id": "Sekhemas: Fountain",
+   "s": "Trial of the Sekhemas room",
+   "ls": [
+    "Awards a Sacred Water Fountain"
+   ],
+   "rooms": 4,
+   "src": "Source: the game files"
+  },
+  {
+   "n": "Bronze Key",
+   "id": "Sekhemas: Bronze Key",
+   "s": "Trial of the Sekhemas room",
+   "ls": [
+    "Awards Bronze Key"
+   ],
+   "rooms": 4,
+   "src": "Source: the game files"
+  },
+  {
+   "n": "Silver Key",
+   "id": "Sekhemas: Silver Key",
+   "s": "Trial of the Sekhemas room",
+   "ls": [
+    "Awards Silver Key"
+   ],
+   "rooms": 4,
+   "src": "Source: the game files"
+  },
+  {
+   "n": "Gold Key",
+   "id": "Sekhemas: Gold Key",
+   "s": "Trial of the Sekhemas room",
+   "ls": [
+    "Awards Gold Key"
+   ],
+   "rooms": 4,
+   "src": "Source: the game files"
+  },
+  {
+   "n": "Bronze Cache",
+   "id": "Sekhemas: Bronze Cache",
+   "s": "Trial of the Sekhemas room",
+   "ls": [
+    "Awards a Bronze Cache. Requires a Bronze Key to Open"
+   ],
+   "rooms": 4,
+   "src": "Source: the game files"
+  },
+  {
+   "n": "Silver Cache",
+   "id": "Sekhemas: Silver Cache",
+   "s": "Trial of the Sekhemas room",
+   "ls": [
+    "Awards a Silver Cache. Requires a Silver Key to Open"
+   ],
+   "rooms": 4,
+   "src": "Source: the game files"
+  },
+  {
+   "n": "Golden Cache",
+   "id": "Sekhemas: Golden Cache",
+   "s": "Trial of the Sekhemas room",
+   "ls": [
+    "Awards a Gold Cache. Requires a Gold Key to Open"
+   ],
+   "rooms": 4,
+   "src": "Source: the game files"
+  },
+  {
+   "n": "Test of Strength",
+   "id": "Test of Strength",
+   "s": "Trial of the Sekhemas floor",
+   "ls": [
+    "Contains Rattlecage, the Earthbreaker"
+   ],
+   "level": 1,
+   "key": "Test of Strength Barya",
+   "rooms": 51,
+   "src": "Source: the game files"
+  },
+  {
+   "n": "Test of Will",
+   "id": "Test of Will",
+   "s": "Trial of the Sekhemas floor",
+   "ls": [
+    "Contains the Terracotta Sentinels"
+   ],
+   "level": 45,
+   "key": "Test of Will Barya",
+   "rooms": 51,
+   "src": "Source: the game files"
+  },
+  {
+   "n": "Test of Cunning",
+   "id": "Test of Cunning",
+   "s": "Trial of the Sekhemas floor",
+   "ls": [
+    "Contains Ashar, the Sand Mother"
+   ],
+   "level": 60,
+   "key": "Test of Cunning Barya",
+   "rooms": 51,
+   "src": "Source: the game files"
+  },
+  {
+   "n": "Test of Time",
+   "id": "Test of Time",
+   "s": "Trial of the Sekhemas floor",
+   "ls": [
+    "Contains Zarokh, the Temporal"
+   ],
+   "level": 75,
+   "key": "Test of Time Barya",
+   "rooms": 51,
+   "src": "Source: the game files"
+  },
+  {
+   "n": "#% increased maximum Life",
+   "id": "#% increased maximum Life (small)",
+   "s": "Relic modifier",
+   "gen": "Prefix",
+   "size": "Small",
+   "relics": [
+    "Seal Relic",
+    "Urn Relic"
+   ],
+   "tiers": [
+    {
+     "n": "Steadfast",
+     "level": 1,
+     "ls": [
+      "(5-8)% increased maximum Life"
+     ]
+    },
+    {
+     "n": "Enduring",
+     "level": 40,
+     "ls": [
+      "(9-12)% increased maximum Life"
+     ]
+    },
+    {
+     "n": "Adamant",
+     "level": 55,
+     "ls": [
+      "(13-16)% increased maximum Life"
+     ]
+    },
+    {
+     "n": "Ardent",
+     "level": 67,
+     "ls": [
+      "(17-20)% increased maximum Life"
+     ]
+    },
+    {
+     "n": "Resolute",
+     "level": 76,
+     "ls": [
+      "(21-25)% increased maximum Life"
+     ]
+    }
+   ],
+   "src": "Source: the game files, read by RePoE"
+  },
+  {
+   "n": "#% increased maximum Honour",
+   "id": "#% increased maximum Honour (small)",
+   "s": "Relic modifier",
+   "gen": "Prefix",
+   "size": "Small",
+   "relics": [
+    "Seal Relic",
+    "Urn Relic"
+   ],
+   "tiers": [
+    {
+     "n": "Honourable",
+     "level": 1,
+     "ls": [
+      "(9-12)% increased maximum Honour"
+     ]
+    },
+    {
+     "n": "Moral",
+     "level": 40,
+     "ls": [
+      "(13-16)% increased maximum Honour"
+     ]
+    },
+    {
+     "n": "Principled",
+     "level": 55,
+     "ls": [
+      "(17-20)% increased maximum Honour"
+     ]
+    },
+    {
+     "n": "Respected",
+     "level": 67,
+     "ls": [
+      "(21-24)% increased maximum Honour"
+     ]
+    },
+    {
+     "n": "Venerable",
+     "level": 76,
+     "ls": [
+      "(25-30)% increased maximum Honour"
+     ]
+    }
+   ],
+   "src": "Source: the game files, read by RePoE",
+   "q": "honour"
+  },
+  {
+   "n": "#% increased maximum Honour",
+   "id": "#% increased maximum Honour (medium)",
+   "s": "Relic modifier",
+   "gen": "Prefix",
+   "size": "Medium",
+   "relics": [
+    "Amphora Relic",
+    "Tapestry Relic"
+   ],
+   "tiers": [
+    {
+     "n": "Honourable",
+     "level": 1,
+     "ls": [
+      "(17-20)% increased maximum Honour"
+     ]
+    },
+    {
+     "n": "Moral",
+     "level": 40,
+     "ls": [
+      "(21-24)% increased maximum Honour"
+     ]
+    },
+    {
+     "n": "Principled",
+     "level": 55,
+     "ls": [
+      "(25-30)% increased maximum Honour"
+     ]
+    },
+    {
+     "n": "Respected",
+     "level": 67,
+     "ls": [
+      "(31-35)% increased maximum Honour"
+     ]
+    },
+    {
+     "n": "Venerable",
+     "level": 76,
+     "ls": [
+      "(36-45)% increased maximum Honour"
+     ]
+    }
+   ],
+   "src": "Source: the game files, read by RePoE",
+   "q": "honour"
+  },
+  {
+   "n": "#% increased Honour restored",
+   "id": "#% increased Honour restored (medium)",
+   "s": "Relic modifier",
+   "gen": "Prefix",
+   "size": "Medium",
+   "relics": [
+    "Amphora Relic",
+    "Tapestry Relic"
+   ],
+   "tiers": [
+    {
+     "n": "Revitalising",
+     "level": 1,
+     "ls": [
+      "(16-20)% increased Honour restored"
+     ]
+    },
+    {
+     "n": "Galvanising",
+     "level": 50,
+     "ls": [
+      "(21-24)% increased Honour restored"
+     ]
+    },
+    {
+     "n": "Enlivening",
+     "level": 70,
+     "ls": [
+      "(25-29)% increased Honour restored"
+     ]
+    },
+    {
+     "n": "Emboldening",
+     "level": 75,
+     "ls": [
+      "(30-34)% increased Honour restored"
+     ]
+    },
+    {
+     "n": "Brightening",
+     "level": 80,
+     "ls": [
+      "(35-45)% increased Honour restored"
+     ]
+    }
+   ],
+   "src": "Source: the game files, read by RePoE",
+   "q": "honour"
+  },
+  {
+   "n": "#% increased Honour restored",
+   "id": "#% increased Honour restored (small)",
+   "s": "Relic modifier",
+   "gen": "Prefix",
+   "size": "Small",
+   "relics": [
+    "Seal Relic",
+    "Urn Relic"
+   ],
+   "tiers": [
+    {
+     "n": "Revitalising",
+     "level": 1,
+     "ls": [
+      "(6-10)% increased Honour restored"
+     ]
+    },
+    {
+     "n": "Galvanising",
+     "level": 50,
+     "ls": [
+      "(11-15)% increased Honour restored"
+     ]
+    },
+    {
+     "n": "Enlivening",
+     "level": 70,
+     "ls": [
+      "(16-20)% increased Honour restored"
+     ]
+    },
+    {
+     "n": "Emboldening",
+     "level": 75,
+     "ls": [
+      "(21-24)% increased Honour restored"
+     ]
+    },
+    {
+     "n": "Brightening",
+     "level": 80,
+     "ls": [
+      "(25-29)% increased Honour restored"
+     ]
+    }
+   ],
+   "src": "Source: the game files, read by RePoE",
+   "q": "honour"
+  },
+  {
+   "n": "Monsters have #% chance to drop double Sacred Water",
+   "id": "Monsters have #% chance to drop double Sacred Water (small)",
+   "s": "Relic modifier",
+   "gen": "Suffix",
+   "size": "Small",
+   "relics": [
+    "Seal Relic",
+    "Urn Relic"
+   ],
+   "tiers": [
+    {
+     "n": "of Dampening",
+     "level": 1,
+     "ls": [
+      "Monsters have (5-6)% chance to drop double Sacred Water"
+     ]
+    },
+    {
+     "n": "of Soaking",
+     "level": 35,
+     "ls": [
+      "Monsters have (7-8)% chance to drop double Sacred Water"
+     ]
+    },
+    {
+     "n": "of Drenching",
+     "level": 54,
+     "ls": [
+      "Monsters have (9-10)% chance to drop double Sacred Water"
+     ]
+    },
+    {
+     "n": "of Saturating",
+     "level": 70,
+     "ls": [
+      "Monsters have (11-15)% chance to drop double Sacred Water"
+     ]
+    }
+   ],
+   "src": "Source: the game files, read by RePoE"
+  },
+  {
+   "n": "Fountains have #% chance to grant double Sacred Water",
+   "id": "Fountains have #% chance to grant double Sacred Water (small)",
+   "s": "Relic modifier",
+   "gen": "Suffix",
+   "size": "Small",
+   "relics": [
+    "Seal Relic",
+    "Urn Relic"
+   ],
+   "tiers": [
+    {
+     "n": "of Flowing",
+     "level": 1,
+     "ls": [
+      "Fountains have (5-6)% chance to grant double Sacred Water"
+     ]
+    },
+    {
+     "n": "of Brimming",
+     "level": 35,
+     "ls": [
+      "Fountains have (7-8)% chance to grant double Sacred Water"
+     ]
+    },
+    {
+     "n": "of Overflowing",
+     "level": 54,
+     "ls": [
+      "Fountains have (9-10)% chance to grant double Sacred Water"
+     ]
+    },
+    {
+     "n": "of Abundance",
+     "level": 70,
+     "ls": [
+      "Fountains have (11-15)% chance to grant double Sacred Water"
+     ]
+    }
+   ],
+   "src": "Source: the game files, read by RePoE"
+  },
+  {
+   "n": "#% reduced Merchant Prices",
+   "id": "#% reduced Merchant Prices (medium)",
+   "s": "Relic modifier",
+   "gen": "Suffix",
+   "size": "Medium",
+   "relics": [
+    "Amphora Relic",
+    "Tapestry Relic"
+   ],
+   "tiers": [
+    {
+     "n": "of Charity",
+     "level": 1,
+     "ls": [
+      "(7-6)% reduced Merchant Prices"
+     ]
+    },
+    {
+     "n": "of Diplomacy",
+     "level": 74,
+     "ls": [
+      "(10-8)% reduced Merchant Prices"
+     ]
+    }
+   ],
+   "src": "Source: the game files, read by RePoE"
+  },
+  {
+   "n": "Restore # Honour on killing a Boss",
+   "id": "Restore # Honour on killing a Boss (medium)",
+   "s": "Relic modifier",
+   "gen": "Suffix",
+   "size": "Medium",
+   "relics": [
+    "Amphora Relic",
+    "Tapestry Relic"
+   ],
+   "tiers": [
+    {
+     "n": "of Empowerment",
+     "level": 1,
+     "ls": [
+      "Restore (40-59) Honour on killing a Boss"
+     ]
+    },
+    {
+     "n": "of Championship",
+     "level": 45,
+     "ls": [
+      "Restore (60-79) Honour on killing a Boss"
+     ]
+    },
+    {
+     "n": "of Victory",
+     "level": 60,
+     "ls": [
+      "Restore (80-99) Honour on killing a Boss"
+     ]
+    },
+    {
+     "n": "of Conquest",
+     "level": 72,
+     "ls": [
+      "Restore (100-119) Honour on killing a Boss"
+     ]
+    },
+    {
+     "n": "of Triumph",
+     "level": 78,
+     "ls": [
+      "Restore (120-150) Honour on killing a Boss"
+     ]
+    }
+   ],
+   "src": "Source: the game files, read by RePoE",
+   "q": "honour"
+  },
+  {
+   "n": "Restore # Honour on venerating a Maraketh Shrine",
+   "id": "Restore # Honour on venerating a Maraketh Shrine (medium)",
+   "s": "Relic modifier",
+   "gen": "Suffix",
+   "size": "Medium",
+   "relics": [
+    "Amphora Relic",
+    "Tapestry Relic"
+   ],
+   "tiers": [
+    {
+     "n": "of Refreshment",
+     "level": 1,
+     "ls": [
+      "Restore (25-35) Honour on venerating a Maraketh Shrine"
+     ]
+    },
+    {
+     "n": "of Convalescence",
+     "level": 45,
+     "ls": [
+      "Restore (30-39) Honour on venerating a Maraketh Shrine"
+     ]
+    },
+    {
+     "n": "of Youth",
+     "level": 60,
+     "ls": [
+      "Restore (40-49) Honour on venerating a Maraketh Shrine"
+     ]
+    },
+    {
+     "n": "of Freshness",
+     "level": 72,
+     "ls": [
+      "Restore (50-59) Honour on venerating a Maraketh Shrine"
+     ]
+    },
+    {
+     "n": "of Bloom",
+     "level": 78,
+     "ls": [
+      "Restore (60-75) Honour on venerating a Maraketh Shrine"
+     ]
+    }
+   ],
+   "src": "Source: the game files, read by RePoE",
+   "q": "honour"
+  },
+  {
+   "n": "Gain # Sacred Water at the start of the Trial",
+   "id": "Gain # Sacred Water at the start of the Trial (small)",
+   "s": "Relic modifier",
+   "gen": "Prefix",
+   "size": "Small",
+   "relics": [
+    "Seal Relic",
+    "Urn Relic"
+   ],
+   "tiers": [
+    {
+     "n": "Commoner's",
+     "level": 1,
+     "ls": [
+      "Gain (30-39) Sacred Water at the start of the Trial"
+     ]
+    },
+    {
+     "n": "Dekhara's",
+     "level": 40,
+     "ls": [
+      "Gain (40-49) Sacred Water at the start of the Trial"
+     ]
+    },
+    {
+     "n": "Djinn's",
+     "level": 55,
+     "ls": [
+      "Gain (50-59) Sacred Water at the start of the Trial"
+     ]
+    },
+    {
+     "n": "Sekhema's",
+     "level": 67,
+     "ls": [
+      "Gain (40-49) Sacred Water at the start of the Trial"
+     ]
+    },
+    {
+     "n": "Divinity's",
+     "level": 76,
+     "ls": [
+      "Gain (50-59) Sacred Water at the start of the Trial"
+     ]
+    }
+   ],
+   "src": "Source: the game files, read by RePoE"
+  },
+  {
+   "n": "Gain # Sacred Water when you complete a Room",
+   "id": "Gain # Sacred Water when you complete a Room (large)",
+   "s": "Relic modifier",
+   "gen": "Suffix",
+   "size": "Large",
+   "relics": [
+    "Coffer Relic",
+    "Incense Relic",
+    "Vase Relic"
+   ],
+   "tiers": [
+    {
+     "n": "of the Well",
+     "level": 1,
+     "ls": [
+      "Gain (11-15) Sacred Water when you complete a Room"
+     ]
+    },
+    {
+     "n": "of the Fountain",
+     "level": 56,
+     "ls": [
+      "Gain (16-20) Sacred Water when you complete a Room"
+     ]
+    },
+    {
+     "n": "of the Oasis",
+     "level": 77,
+     "ls": [
+      "Gain (21-30) Sacred Water when you complete a Room"
+     ]
+    }
+   ],
+   "src": "Source: the game files, read by RePoE"
+  },
+  {
+   "n": "Restore # Honour on room completion",
+   "id": "Restore # Honour on room completion (large)",
+   "s": "Relic modifier",
+   "gen": "Suffix",
+   "size": "Large",
+   "relics": [
+    "Coffer Relic",
+    "Incense Relic",
+    "Vase Relic"
+   ],
+   "tiers": [
+    {
+     "n": "of Progress",
+     "level": 60,
+     "ls": [
+      "Restore (10-14) Honour on room completion"
+     ]
+    },
+    {
+     "n": "of Advancement",
+     "level": 70,
+     "ls": [
+      "Restore (15-19) Honour on room completion"
+     ]
+    },
+    {
+     "n": "of Headway",
+     "level": 75,
+     "ls": [
+      "Restore (20-24) Honour on room completion"
+     ]
+    },
+    {
+     "n": "of Betterment",
+     "level": 80,
+     "ls": [
+      "Restore (25-30) Honour on room completion"
+     ]
+    }
+   ],
+   "src": "Source: the game files, read by RePoE",
+   "q": "honour"
+  },
+  {
+   "n": "An additional Room is revealed on the Trial Map",
+   "id": "An additional Room is revealed on the Trial Map (medium)",
+   "s": "Relic modifier",
+   "gen": "Suffix",
+   "size": "Medium",
+   "relics": [
+    "Amphora Relic",
+    "Tapestry Relic"
+   ],
+   "tiers": [
+    {
+     "n": "of Illumination",
+     "level": 1,
+     "ls": [
+      "An additional Room is revealed on the Trial Map"
+     ]
+    }
+   ],
+   "src": "Source: the game files, read by RePoE"
+  },
+  {
+   "n": "# additional Rooms are revealed on the Trial Map",
+   "id": "# additional Rooms are revealed on the Trial Map (medium)",
+   "s": "Relic modifier",
+   "gen": "Suffix",
+   "size": "Medium",
+   "relics": [
+    "Amphora Relic",
+    "Tapestry Relic"
+   ],
+   "tiers": [
+    {
+     "n": "of Clairvoyance",
+     "level": 76,
+     "ls": [
+      "2 additional Rooms are revealed on the Trial Map"
+     ]
+    }
+   ],
+   "src": "Source: the game files, read by RePoE"
+  },
+  {
+   "n": "# additional Rooms are revealed on the Trial Map",
+   "id": "# additional Rooms are revealed on the Trial Map (large)",
+   "s": "Relic modifier",
+   "gen": "Suffix",
+   "size": "Large",
+   "relics": [
+    "Coffer Relic",
+    "Incense Relic",
+    "Vase Relic"
+   ],
+   "tiers": [
+    {
+     "n": "of Illumination",
+     "level": 1,
+     "ls": [
+      "(2-3) additional Rooms are revealed on the Trial Map"
+     ]
+    },
+    {
+     "n": "of Clairvoyance",
+     "level": 76,
+     "ls": [
+      "4 additional Rooms are revealed on the Trial Map"
+     ]
+    }
+   ],
+   "src": "Source: the game files, read by RePoE"
+  },
+  {
+   "n": "#% chance to Avoid gaining an Affliction",
+   "id": "#% chance to Avoid gaining an Affliction (large)",
+   "s": "Relic modifier",
+   "gen": "Suffix",
+   "size": "Large",
+   "relics": [
+    "Coffer Relic",
+    "Incense Relic",
+    "Vase Relic"
+   ],
+   "tiers": [
+    {
+     "n": "of Dignity",
+     "level": 1,
+     "ls": [
+      "(6-7)% chance to Avoid gaining an Affliction"
+     ]
+    },
+    {
+     "n": "of Prestige",
+     "level": 55,
+     "ls": [
+      "(8-9)% chance to Avoid gaining an Affliction"
+     ]
+    },
+    {
+     "n": "of Glory",
+     "level": 69,
+     "ls": [
+      "(10-11)% chance to Avoid gaining an Affliction"
+     ]
+    },
+    {
+     "n": "of Honour",
+     "level": 78,
+     "ls": [
+      "(12-15)% chance to Avoid gaining an Affliction"
+     ]
+    }
+   ],
+   "src": "Source: the game files, read by RePoE",
+   "q": "honour"
+  },
+  {
+   "n": "Monsters take #% increased Damage",
+   "id": "Monsters take #% increased Damage (large)",
+   "s": "Relic modifier",
+   "gen": "Prefix",
+   "size": "Large",
+   "relics": [
+    "Coffer Relic",
+    "Incense Relic",
+    "Vase Relic"
+   ],
+   "tiers": [
+    {
+     "n": "Crushing",
+     "level": 1,
+     "ls": [
+      "Monsters take (11-15)% increased Damage"
+     ]
+    },
+    {
+     "n": "Punishing",
+     "level": 56,
+     "ls": [
+      "Monsters take (16-20)% increased Damage"
+     ]
+    },
+    {
+     "n": "Annihilating",
+     "level": 77,
+     "ls": [
+      "Monsters take (21-30)% increased Damage"
+     ]
+    }
+   ],
+   "src": "Source: the game files, read by RePoE"
+  },
+  {
+   "n": "Rare Monsters take #% increased Damage",
+   "id": "Rare Monsters take #% increased Damage (medium)",
+   "s": "Relic modifier",
+   "gen": "Prefix",
+   "size": "Medium",
+   "relics": [
+    "Amphora Relic",
+    "Tapestry Relic"
+   ],
+   "tiers": [
+    {
+     "n": "Transgressor's",
+     "level": 1,
+     "ls": [
+      "Rare Monsters take (11-15)% increased Damage"
+     ]
+    },
+    {
+     "n": "Violator's",
+     "level": 60,
+     "ls": [
+      "Rare Monsters take (16-20)% increased Damage"
+     ]
+    },
+    {
+     "n": "Disgrace's",
+     "level": 78,
+     "ls": [
+      "Rare Monsters take (21-30)% increased Damage"
+     ]
+    }
+   ],
+   "src": "Source: the game files, read by RePoE"
+  },
+  {
+   "n": "Bosses take #% increased Damage",
+   "id": "Bosses take #% increased Damage (medium)",
+   "s": "Relic modifier",
+   "gen": "Prefix",
+   "size": "Medium",
+   "relics": [
+    "Amphora Relic",
+    "Tapestry Relic"
+   ],
+   "tiers": [
+    {
+     "n": "Challenger's",
+     "level": 1,
+     "ls": [
+      "Bosses take (11-15)% increased Damage"
+     ]
+    },
+    {
+     "n": "Usurper's",
+     "level": 60,
+     "ls": [
+      "Bosses take (16-20)% increased Damage"
+     ]
+    },
+    {
+     "n": "Regicidal",
+     "level": 78,
+     "ls": [
+      "Bosses take (21-30)% increased Damage"
+     ]
+    }
+   ],
+   "src": "Source: the game files, read by RePoE"
+  },
+  {
+   "n": "The Merchant has an additional Choice",
+   "id": "The Merchant has an additional Choice (medium)",
+   "s": "Relic modifier",
+   "gen": "Prefix",
+   "size": "Medium",
+   "relics": [
+    "Amphora Relic",
+    "Tapestry Relic"
+   ],
+   "tiers": [
+    {
+     "n": "Plentiful",
+     "level": 60,
+     "ls": [
+      "The Merchant has an additional Choice"
+     ]
+    }
+   ],
+   "src": "Source: the game files, read by RePoE"
+  },
+  {
+   "n": "Monsters deal #% reduced Damage",
+   "id": "Monsters deal #% reduced Damage (large)",
+   "s": "Relic modifier",
+   "gen": "Prefix",
+   "size": "Large",
+   "relics": [
+    "Coffer Relic",
+    "Incense Relic",
+    "Vase Relic"
+   ],
+   "tiers": [
+    {
+     "n": "Resilient",
+     "level": 1,
+     "ls": [
+      "Monsters deal 6% reduced Damage"
+     ]
+    },
+    {
+     "n": "Fortified",
+     "level": 56,
+     "ls": [
+      "Monsters deal (8-7)% reduced Damage"
+     ]
+    },
+    {
+     "n": "Impenetrable",
+     "level": 77,
+     "ls": [
+      "Monsters deal (12-9)% reduced Damage"
+     ]
+    }
+   ],
+   "src": "Source: the game files, read by RePoE"
+  },
+  {
+   "n": "Rare Monsters deal #% reduced Damage",
+   "id": "Rare Monsters deal #% reduced Damage (medium)",
+   "s": "Relic modifier",
+   "gen": "Prefix",
+   "size": "Medium",
+   "relics": [
+    "Amphora Relic",
+    "Tapestry Relic"
+   ],
+   "tiers": [
+    {
+     "n": "Bulwark",
+     "level": 1,
+     "ls": [
+      "Rare Monsters deal 5% reduced Damage"
+     ]
+    },
+    {
+     "n": "Bastion",
+     "level": 60,
+     "ls": [
+      "Rare Monsters deal (7-6)% reduced Damage"
+     ]
+    },
+    {
+     "n": "Citadel",
+     "level": 78,
+     "ls": [
+      "Rare Monsters deal (10-8)% reduced Damage"
+     ]
+    }
+   ],
+   "src": "Source: the game files, read by RePoE"
+  },
+  {
+   "n": "Bosses deal #% reduced Damage",
+   "id": "Bosses deal #% reduced Damage (medium)",
+   "s": "Relic modifier",
+   "gen": "Prefix",
+   "size": "Medium",
+   "relics": [
+    "Amphora Relic",
+    "Tapestry Relic"
+   ],
+   "tiers": [
+    {
+     "n": "Aegis",
+     "level": 1,
+     "ls": [
+      "Bosses deal 5% reduced Damage"
+     ]
+    },
+    {
+     "n": "Vanguard",
+     "level": 60,
+     "ls": [
+      "Bosses deal (7-6)% reduced Damage"
+     ]
+    },
+    {
+     "n": "Phalanx",
+     "level": 78,
+     "ls": [
+      "Bosses deal (10-8)% reduced Damage"
+     ]
+    }
+   ],
+   "src": "Source: the game files, read by RePoE"
+  },
+  {
+   "n": "#% increased quantity of Relics dropped by Monsters",
+   "id": "#% increased quantity of Relics dropped by Monsters (small)",
+   "s": "Relic modifier",
+   "gen": "Suffix",
+   "size": "Small",
+   "relics": [
+    "Seal Relic",
+    "Urn Relic"
+   ],
+   "tiers": [
+    {
+     "n": "of Discovery",
+     "level": 1,
+     "ls": [
+      "(6-10)% increased quantity of Relics dropped by Monsters"
+     ]
+    },
+    {
+     "n": "of Learning",
+     "level": 50,
+     "ls": [
+      "(11-15)% increased quantity of Relics dropped by Monsters"
+     ]
+    },
+    {
+     "n": "of Investigation",
+     "level": 80,
+     "ls": [
+      "(16-20)% increased quantity of Relics dropped by Monsters"
+     ]
+    }
+   ],
+   "src": "Source: the game files, read by RePoE"
+  },
+  {
+   "n": "#% increased Armour, Evasion and Energy Shield",
+   "id": "#% increased Armour, Evasion and Energy Shield (small)",
+   "s": "Relic modifier",
+   "gen": "Prefix",
+   "size": "Small",
+   "relics": [
+    "Seal Relic",
+    "Urn Relic"
+   ],
+   "tiers": [
+    {
+     "n": "Reinforced",
+     "level": 1,
+     "ls": [
+      "(20-29)% increased Armour, Evasion and Energy Shield"
+     ]
+    },
+    {
+     "n": "Layered",
+     "level": 50,
+     "ls": [
+      "(30-39)% increased Armour, Evasion and Energy Shield"
+     ]
+    },
+    {
+     "n": "Thickened",
+     "level": 65,
+     "ls": [
+      "(40-49)% increased Armour, Evasion and Energy Shield"
+     ]
+    },
+    {
+     "n": "Girded",
+     "level": 75,
+     "ls": [
+      "(50-70)% increased Armour, Evasion and Energy Shield"
+     ]
+    }
+   ],
+   "src": "Source: the game files, read by RePoE"
+  },
+  {
+   "n": "Traps deal #% reduced Damage",
+   "id": "Traps deal #% reduced Damage (small)",
+   "s": "Relic modifier",
+   "gen": "Prefix",
+   "size": "Small",
+   "relics": [
+    "Seal Relic",
+    "Urn Relic"
+   ],
+   "tiers": [
+    {
+     "n": "Acrobatic",
+     "level": 1,
+     "ls": [
+      "Traps deal (7-5)% reduced Damage"
+     ]
+    },
+    {
+     "n": "Limber",
+     "level": 78,
+     "ls": [
+      "Traps deal (10-8)% reduced Damage"
+     ]
+    }
+   ],
+   "src": "Source: the game files, read by RePoE"
+  },
+  {
+   "n": "#% increased Movement Speed",
+   "id": "#% increased Movement Speed (small)",
+   "s": "Relic modifier",
+   "gen": "Prefix",
+   "size": "Small",
+   "relics": [
+    "Seal Relic",
+    "Urn Relic"
+   ],
+   "tiers": [
+    {
+     "n": "Nimble",
+     "level": 1,
+     "ls": [
+      "(3-4)% increased Movement Speed"
+     ]
+    },
+    {
+     "n": "Swift",
+     "level": 55,
+     "ls": [
+      "(5-6)% increased Movement Speed"
+     ]
+    },
+    {
+     "n": "Hasted",
+     "level": 78,
+     "ls": [
+      "(7-10)% increased Movement Speed"
+     ]
+    }
+   ],
+   "src": "Source: the game files, read by RePoE"
+  },
+  {
+   "n": "+# metres to Dodge Roll distance",
+   "id": "+# metres to Dodge Roll distance (small)",
+   "s": "Relic modifier",
+   "gen": "Suffix",
+   "size": "Small",
+   "relics": [
+    "Seal Relic",
+    "Urn Relic"
+   ],
+   "tiers": [
+    {
+     "n": "of Lunging",
+     "level": 1,
+     "ls": [
+      "+(0.3-0.4) metres to Dodge Roll distance"
+     ]
+    },
+    {
+     "n": "of Eluding",
+     "level": 70,
+     "ls": [
+      "+(0.5-0.7) metres to Dodge Roll distance"
+     ]
+    }
+   ],
+   "src": "Source: the game files, read by RePoE"
+  },
+  {
+   "n": "#% reduced Slowing Potency of Debuffs on You",
+   "id": "#% reduced Slowing Potency of Debuffs on You (small)",
+   "s": "Relic modifier",
+   "gen": "Suffix",
+   "size": "Small",
+   "relics": [
+    "Seal Relic",
+    "Urn Relic"
+   ],
+   "tiers": [
+    {
+     "n": "of Unyielding",
+     "level": 1,
+     "ls": [
+      "(11-8)% reduced Slowing Potency of Debuffs on You"
+     ]
+    },
+    {
+     "n": "of Unrelenting",
+     "level": 55,
+     "ls": [
+      "(15-12)% reduced Slowing Potency of Debuffs on You"
+     ]
+    },
+    {
+     "n": "of the Pathfinder",
+     "level": 76,
+     "ls": [
+      "(20-16)% reduced Slowing Potency of Debuffs on You"
+     ]
+    }
+   ],
+   "src": "Source: the game files, read by RePoE"
+  },
+  {
+   "n": "Hits against you have #% reduced Critical Damage Bonus",
+   "id": "Hits against you have #% reduced Critical Damage Bonus (small)",
+   "s": "Relic modifier",
+   "gen": "Suffix",
+   "size": "Small",
+   "relics": [
+    "Seal Relic",
+    "Urn Relic"
+   ],
+   "tiers": [
+    {
+     "n": "of Stoutness",
+     "level": 1,
+     "ls": [
+      "Hits against you have (12-15)% reduced Critical Damage Bonus"
+     ]
+    },
+    {
+     "n": "of Tenacity",
+     "level": 55,
+     "ls": [
+      "Hits against you have (16-19)% reduced Critical Damage Bonus"
+     ]
+    },
+    {
+     "n": "of Unwavering",
+     "level": 76,
+     "ls": [
+      "Hits against you have (20-25)% reduced Critical Damage Bonus"
+     ]
+    }
+   ],
+   "src": "Source: the game files, read by RePoE"
+  },
+  {
+   "n": "When you gain a Key #% chance to gain another",
+   "id": "When you gain a Key #% chance to gain another (large)",
+   "s": "Relic modifier",
+   "gen": "Prefix",
+   "size": "Large",
+   "relics": [
+    "Coffer Relic",
+    "Incense Relic",
+    "Vase Relic"
+   ],
+   "tiers": [
+    {
+     "n": "Pilferer's",
+     "level": 1,
+     "ls": [
+      "When you gain a Key (7-9)% chance to gain another"
+     ]
+    },
+    {
+     "n": "Picklock's",
+     "level": 60,
+     "ls": [
+      "When you gain a Key (10-12)% chance to gain another"
+     ]
+    },
+    {
+     "n": "Thief's",
+     "level": 78,
+     "ls": [
+      "When you gain a Key (13-16)% chance to gain another"
+     ]
+    }
+   ],
+   "src": "Source: the game files, read by RePoE"
+  },
+  {
+   "n": "Restore # Honour on picking up a Key",
+   "id": "Restore # Honour on picking up a Key (large)",
+   "s": "Relic modifier",
+   "gen": "Suffix",
+   "size": "Large",
+   "relics": [
+    "Coffer Relic",
+    "Incense Relic",
+    "Vase Relic"
+   ],
+   "tiers": [
+    {
+     "n": "of Donation",
+     "level": 1,
+     "ls": [
+      "Restore (25-35) Honour on picking up a Key"
+     ]
+    },
+    {
+     "n": "of Offering",
+     "level": 45,
+     "ls": [
+      "Restore (30-39) Honour on picking up a Key"
+     ]
+    },
+    {
+     "n": "of Entrusting",
+     "level": 60,
+     "ls": [
+      "Restore (40-49) Honour on picking up a Key"
+     ]
+    },
+    {
+     "n": "of Bestowing",
+     "level": 72,
+     "ls": [
+      "Restore (50-59) Honour on picking up a Key"
+     ]
+    },
+    {
+     "n": "of Bequeathing",
+     "level": 78,
+     "ls": [
+      "Restore (60-75) Honour on picking up a Key"
+     ]
+    }
+   ],
+   "src": "Source: the game files, read by RePoE",
+   "q": "honour"
+  },
+  {
+   "n": "Monsters have #% reduced Attack, Cast and Movement Speed",
+   "id": "Monsters have #% reduced Attack, Cast and Movement Speed (large)",
+   "s": "Relic modifier",
+   "gen": "Prefix",
+   "size": "Large",
+   "relics": [
+    "Coffer Relic",
+    "Incense Relic",
+    "Vase Relic"
+   ],
+   "tiers": [
+    {
+     "n": "Time-warping",
+     "level": 1,
+     "ls": [
+      "Monsters have 4% reduced Attack, Cast and Movement Speed"
+     ]
+    },
+    {
+     "n": "Chronomancy",
+     "level": 60,
+     "ls": [
+      "Monsters have 5% reduced Attack, Cast and Movement Speed"
+     ]
+    },
+    {
+     "n": "Temporal",
+     "level": 78,
+     "ls": [
+      "Monsters have (7-6)% reduced Attack, Cast and Movement Speed"
+     ]
+    }
+   ],
+   "src": "Source: the game files, read by RePoE"
+  },
+  {
+   "n": "+#% to Honour Resistance",
+   "id": "+#% to Honour Resistance (small)",
+   "s": "Relic modifier",
+   "gen": "Suffix",
+   "size": "Small",
+   "relics": [
+    "Seal Relic",
+    "Urn Relic"
+   ],
+   "tiers": [
+    {
+     "n": "of Worth",
+     "level": 1,
+     "ls": [
+      "+(8-10)% to Honour Resistance"
+     ]
+    },
+    {
+     "n": "of Deserving",
+     "level": 40,
+     "ls": [
+      "+(11-13)% to Honour Resistance"
+     ]
+    },
+    {
+     "n": "of Justification",
+     "level": 55,
+     "ls": [
+      "+(14-16)% to Honour Resistance"
+     ]
+    },
+    {
+     "n": "of Entitlement",
+     "level": 67,
+     "ls": [
+      "+(17-19)% to Honour Resistance"
+     ]
+    },
+    {
+     "n": "of Merit",
+     "level": 76,
+     "ls": [
+      "+(20-22)% to Honour Resistance"
+     ]
+    }
+   ],
+   "src": "Source: the game files, read by RePoE",
+   "q": "honour"
+  },
+  {
+   "n": "+#% to Honour Resistance",
+   "id": "+#% to Honour Resistance (medium)",
+   "s": "Relic modifier",
+   "gen": "Suffix",
+   "size": "Medium",
+   "relics": [
+    "Amphora Relic",
+    "Tapestry Relic"
+   ],
+   "tiers": [
+    {
+     "n": "of Worth",
+     "level": 1,
+     "ls": [
+      "+(15-20)% to Honour Resistance"
+     ]
+    },
+    {
+     "n": "of Deserving",
+     "level": 40,
+     "ls": [
+      "+(21-25)% to Honour Resistance"
+     ]
+    },
+    {
+     "n": "of Justification",
+     "level": 55,
+     "ls": [
+      "+(26-30)% to Honour Resistance"
+     ]
+    },
+    {
+     "n": "of Entitlement",
+     "level": 67,
+     "ls": [
+      "+(31-35)% to Honour Resistance"
+     ]
+    },
+    {
+     "n": "of Merit",
+     "level": 76,
+     "ls": [
+      "+(36-40)% to Honour Resistance"
+     ]
+    }
+   ],
+   "src": "Source: the game files, read by RePoE",
+   "q": "honour"
+  },
+  {
+   "n": "+#% to Maximum Honour Resistance",
+   "id": "+#% to Maximum Honour Resistance (large)",
+   "s": "Relic modifier",
+   "gen": "Suffix",
+   "size": "Large",
+   "relics": [
+    "Coffer Relic",
+    "Incense Relic",
+    "Vase Relic"
+   ],
+   "tiers": [
+    {
+     "n": "of Excellence",
+     "level": 60,
+     "ls": [
+      "+(2-3)% to Maximum Honour Resistance"
+     ]
+    },
+    {
+     "n": "of Brilliance",
+     "level": 78,
+     "ls": [
+      "+(4-5)% to Maximum Honour Resistance"
+     ]
+    }
+   ],
+   "src": "Source: the game files, read by RePoE",
+   "q": "honour"
+  },
+  {
+   "n": "#% increased quantity of Keys dropped by Monsters",
+   "id": "#% increased quantity of Keys dropped by Monsters (small)",
+   "s": "Relic modifier",
+   "gen": "Suffix",
+   "size": "Small",
+   "relics": [
+    "Seal Relic",
+    "Urn Relic"
+   ],
+   "tiers": [
+    {
+     "n": "of Access",
+     "level": 1,
+     "ls": [
+      "(6-10)% increased quantity of Keys dropped by Monsters"
+     ]
+    },
+    {
+     "n": "of Admission",
+     "level": 50,
+     "ls": [
+      "(11-15)% increased quantity of Keys dropped by Monsters"
+     ]
+    },
+    {
+     "n": "of Entry",
+     "level": 65,
+     "ls": [
+      "(16-20)% increased quantity of Keys dropped by Monsters"
+     ]
+    },
+    {
+     "n": "of Entrance",
+     "level": 75,
+     "ls": [
+      "(21-25)% increased quantity of Keys dropped by Monsters"
+     ]
+    }
+   ],
+   "src": "Source: the game files, read by RePoE"
+  },
+  {
+   "n": "#% chance if you were to lose all your Honour to have # Honour instead",
+   "id": "#% chance if you were to lose all your Honour to have # Honour instead (large)",
+   "s": "Relic modifier",
+   "gen": "Prefix",
+   "size": "Large",
+   "relics": [
+    "Coffer Relic",
+    "Incense Relic",
+    "Vase Relic"
+   ],
+   "tiers": [
+    {
+     "n": "Cheater's",
+     "level": 1,
+     "ls": [
+      "(5-8)% chance if you were to lose all your Honour to have 1 Honour instead"
+     ]
+    },
+    {
+     "n": "Deceiver's",
+     "level": 75,
+     "ls": [
+      "(9-12)% chance if you were to lose all your Honour to have 1 Honour instead"
+     ]
+    }
+   ],
+   "src": "Source: the game files, read by RePoE",
+   "q": "honour"
+  },
+  {
+   "n": "#% chance for each of your Keys to upgrade on completing a Floor",
+   "id": "#% chance for each of your Keys to upgrade on completing a Floor (large)",
+   "s": "Relic modifier",
+   "gen": "Prefix",
+   "size": "Large",
+   "relics": [
+    "Coffer Relic",
+    "Incense Relic",
+    "Vase Relic"
+   ],
+   "tiers": [
+    {
+     "n": "Enhancing",
+     "level": 1,
+     "ls": [
+      "(3-4)% chance for each of your Keys to upgrade on completing a Floor"
+     ]
+    },
+    {
+     "n": "Reforging",
+     "level": 60,
+     "ls": [
+      "(5-6)% chance for each of your Keys to upgrade on completing a Floor"
+     ]
+    },
+    {
+     "n": "Upgrading",
+     "level": 77,
+     "ls": [
+      "(7-9)% chance for each of your Keys to upgrade on completing a Floor"
+     ]
+    }
+   ],
+   "src": "Source: the game files, read by RePoE"
+  },
+  {
+   "n": "#% increased Honour restored",
+   "id": "#% increased Honour restored (any)",
+   "s": "Relic modifier",
+   "gen": "Corrupted",
+   "size": "Any",
+   "tiers": [
+    {
+     "level": 1,
+     "ls": [
+      "(8-10)% increased Honour restored"
+     ]
+    }
+   ],
+   "src": "Source: the game files, read by RePoE",
+   "q": "honour"
+  },
+  {
+   "n": "First Ascension",
+   "points": 2,
+   "total": 2,
+   "t": "You choose your Ascendancy, and take its first 2 points.",
+   "ways": [
+    {
+     "trial": "Trial of the Sekhemas",
+     "how": "The Test of Strength: defeat Rattlecage, the Earthbreaker (Act 2 quest Ascent to Power, with Balbala's Barya)",
+     "level": 22,
+     "src": "Source: the game files"
+    }
+   ],
+   "id": "First Ascension",
+   "s": "Ascension",
+   "src": "Source: the game files"
+  },
+  {
+   "n": "Second Ascension",
+   "points": 2,
+   "total": 4,
+   "ways": [
+    {
+     "trial": "The Trial of Chaos",
+     "how": "The Trialmaster's Challenges with the Chimeral Inscribed Ultimatum, 4 trials (Act 3 quest The Trials of Chaos)",
+     "level": 38,
+     "src": "Source: the game files"
+    },
+    {
+     "trial": "Trial of the Sekhemas",
+     "how": "A Barya with two trials, through the Test of Will (the floor opens from level 45)",
+     "level": 45,
+     "later": "Subject to change",
+     "src": "Source: the game files for the level; poe2db for which set it gives"
+    }
+   ],
+   "id": "Second Ascension",
+   "s": "Ascension",
+   "src": "Source: the game files",
+   "later": "The game files hold the levels and the trial counts, not which set of points each gives"
+  },
+  {
+   "n": "Third Ascension",
+   "points": 2,
+   "total": 6,
+   "ways": [
+    {
+     "trial": "Trial of the Sekhemas",
+     "how": "A Barya with three trials, through the Test of Cunning (the floor opens from level 60)",
+     "level": 60,
+     "later": "Subject to change",
+     "src": "Source: the game files for the level; poe2db for which set it gives"
+    },
+    {
+     "trial": "The Trial of Chaos",
+     "how": "An Inscribed Ultimatum of 7 trials (from area level 60)",
+     "level": 60,
+     "later": "Subject to change",
+     "src": "Source: the game files for the level; poe2db for which set it gives"
+    }
+   ],
+   "id": "Third Ascension",
+   "s": "Ascension",
+   "src": "Source: the game files",
+   "later": "The game files hold the levels and the trial counts, not which set of points each gives"
+  },
+  {
+   "n": "Fourth Ascension",
+   "points": 2,
+   "total": 8,
+   "ways": [
+    {
+     "trial": "Trial of the Sekhemas",
+     "how": "A Barya with four trials, through the Test of Time (the floor opens from level 75)",
+     "level": 75,
+     "later": "Subject to change",
+     "src": "Source: the game files for the level; poe2db for which set it gives"
+    },
+    {
+     "trial": "The Trial of Chaos",
+     "how": "An Inscribed Ultimatum of 10 trials (from area level 75), then the Trialmaster behind the door at its end, opened with three Fates",
+     "level": 75,
+     "src": "Source: the game files"
+    }
+   ],
+   "id": "Fourth Ascension",
+   "s": "Ascension",
+   "src": "Source: the game files",
+   "later": "The game files hold the levels and the trial counts, not which set of points each gives"
+  }
+ ]
+}
