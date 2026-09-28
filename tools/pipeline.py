@@ -108,6 +108,8 @@ STAGES = [
     dict(name='monstermods', run=['tools/monstermods.py'], cadence='patch', source='game files',
          reads=[REPOE, 'data/game/monster_modifiers.json'], writes=['data/monstermods.json'],
          count={'data/monstermods.json': 'rows'}),
+    dict(name='odds', run=['tools/odds.py'], cadence='patch', source='game files',
+         reads=['data/game/*.json'], writes=['data/odds.json'], count={'data/odds.json': 'pools'}),
     dict(name='tradedata', run=['tools/tradedata.py'], cadence='patch', source='trade',
          reads=[TRADE, REPOE], writes=['data/trade.json']),
     dict(name='rollprices', run=['tools/rollprices.py'], cadence='patch', source='files',
@@ -139,8 +141,10 @@ STAGES = [
                  'data/explore/*.json', 'data/interactions.json'],
          count={'data/index.json': 'items'}, minutes=45),
     dict(name='gamelib', run=['tools/gamelib.py'], cadence='patch', source='game files',
-         reads=[REPOE, 'explore.html', 'data/explore/*.json', 'data/index.json', 'data/craft.json', 'data/craft/*.json'],
-         writes=['data/index.json', 'data/index-core.json', 'data/index-rest.json', 'data/gamestats.json'],
+         reads=[REPOE, CDN, DATSCHEMA, 'explore.html', 'data/explore/*.json', 'data/index.json', 'data/craft.json',
+                'data/craft/*.json', 'data/trade.json', 'data/market.json', 'data/info.json'],
+         writes=['data/index.json', 'data/index-core.json', 'data/index-rest.json', 'data/gamestats.json',
+                 'data/jewels.json'],
          count={'data/index.json': 'items'}),
     dict(name='treecards', run=['tools/treecards.py'], cadence='patch', source='game files',
          reads=[REPOE, 'data/index.json', 'data/explore/*.json'],
@@ -149,10 +153,18 @@ STAGES = [
          reads=[REPOE, 'data/index.json'],
          writes=['data/tree-shape.json', 'data/clusters.json', 'data/index.json', 'data/index-core.json',
                  'data/index-rest.json'], count={'data/index.json': 'items'}),
+    dict(name='buffs', run=['tools/buffs.py'], cadence='patch', source='game files',
+         reads=[REPOE, 'data/index.json', 'data/grants.json'], last=['data/grants.json'],
+         writes=['data/buffs.json', 'data/index.json', 'data/index-core.json', 'data/index-rest.json'],
+         count={'data/buffs.json': 'rows', 'data/index.json': 'items'}),
+    dict(name='ascendancies', run=['tools/ascendancies.py'], cadence='patch', source='game files',
+         reads=[REPOE, 'data/index.json', 'data/trials.json'],
+         writes=['data/ascendancies.json', 'data/index.json', 'data/index-core.json', 'data/index-rest.json'],
+         count={'data/ascendancies.json': 'rows', 'data/index.json': 'items'}),
     dict(name='grants', run=['tools/grants.py'], cadence='patch', source='game files',
-         reads=[REPOE, 'data/index.json'], writes=['data/grants.json']),
-    dict(name='carddata', run=['tools/carddata.py'], cadence='patch', source='files',
-         reads=['data/explore/*.json', 'data/atlas.json', 'data/info.json', 'data/craft.json', 'data/craft/*.json',
+         reads=[REPOE, 'data/index.json', 'data/buffs.json'], writes=['data/grants.json']),
+    dict(name='carddata', run=['tools/carddata.py'], cadence='patch', source='game files',
+         reads=[REPOE, 'data/explore/*.json', 'data/atlas.json', 'data/info.json', 'data/craft.json', 'data/craft/*.json',
                 'data/market.json', 'data/index.json'],
          writes=['data/index.json', 'data/index-core.json', 'data/index-rest.json'], count={'data/index.json': 'items'}),
     dict(name='nodelinks', run=['tools/nodelinks.py'], cadence='patch', source='files',
@@ -173,6 +185,16 @@ STAGES = [
          reads=['https://github.com/grindinggear/poe2-skilltree-export', REPOE, 'data/patches.json', 'explore.html',
                 'data/explore/tree.*.json'],
          writes=['data/treechanges/*.json'], count={'data/treechanges/index.json': 'steps'}),
+    dict(name='leaguemech', run=['tools/mechanics_league.py'], cadence='patch',
+         source='game files, and the Currency Exchange archive',
+         reads=[CDN, 'data/game/_meta.json', 'data/odds.json', 'data/index.json', 'data/market.json',
+                'data/atlas.json', 'data/bosses.json', 'data/leagues.json',
+                DATSCHEMA, 'the exchange archive (wraeclast-data/cx, only on the owner\'s machine)'],
+         writes=['data/leaguemech.json'], count={'data/leaguemech.json': 'mechanics'}),
+    dict(name='patchnotes', run=['tools/patchnotes.py'], cadence='patch', source="GGG's patch notes forum",
+         reads=['https://www.pathofexile.com/forum/ (the patch notes threads data/patches.json names)',
+                'data/patches.json', 'data/index.json'],
+         writes=['data/patchnotes.json'], count={'data/patchnotes.json': 'lines'}),
     dict(name='map', run=['tools/map.py'], cadence='patch', source='files',
          reads=['data/index.json', 'data/kwuse.json', 'data/grants.json', 'data/gamedata.json', 'assets/kinds.js',
                 'assets/theme.css'],
@@ -188,9 +210,11 @@ STAGES = [
          reads=[POE2DB + 'League', 'https://www.pathofexile.com/forum/'], writes=['data/leagues.json'],
          count={'data/leagues.json': 'leagues'}),
     dict(name='bosses', run=['tools/bosses.py'], cadence='hand', source='game files',
-         reads=[REPOE, 'https://www.poe2wiki.net/', 'https://github.com/ (Path of Building)', 'data/market.json',
-                'data/bossqueries.json', 'data/index.json'],
-         writes=['data/bosses.json'], count={'data/bosses.json': 'bosses'}),
+         reads=[REPOE, 'https://www.poe2wiki.net/', 'https://github.com/ (Path of Building)',
+                'https://maxroll.gg/ (boss loot table)', POE2DB, 'data/market.json', 'data/bossqueries.json',
+                'data/index.json'],
+         writes=['data/bosses.json', 'data/dropsfrom.json'],
+         count={'data/bosses.json': 'bosses', 'data/dropsfrom.json': 'uniques'}),
     dict(name='farms', run=['tools/farms.py'], cadence='hand', source='BawLoch\'s tier list sheet',
          reads=['https://docs.google.com/ (the tier list sheet)', 'data/trade.json', 'data/market.json',
                 'data/index-core.json', 'data/leagues.json'],
@@ -393,13 +417,20 @@ def links(index):
 def lost_links(new, old):
     """The links the last good index had that this one lost while nothing explains it: both cards are still
     there and the card's lines still say the words. Links are the graph, so one of those is a fault. A link whose
-    card went, or whose line no longer says the words, went with them."""
+    card went, or whose line no longer says the words, went with them. So did one whose words a longer link on
+    the same card now covers: "Shroud" (the Shroud gem) inside "Ghost Shroud" (the buff card of that name)."""
     import nodelinks
-    now = {(a, b) for a, b, _ in links(new)}
+    fresh = links(new)
+    now = {(a, b) for a, b, _ in fresh}
+    longer = {}
+    for a, _, words in fresh:
+        longer.setdefault(a, set()).add(words)
     cards = {it['k'] + ':' + it['id']: it for it in new.get('items') or []}
     lost = []
     for a, b, words in links(old):
         if (a, b) in now or a not in cards or b not in cards:
+            continue
+        if any(words in w and words != w for w in longer.get(a, ())):
             continue
         if any(words in line for line in nodelinks.lines_of(cards[a])):
             lost.append((a, b, words))
@@ -514,6 +545,13 @@ def wipe(path):
         os.chmod(f, 0o700)
         fn(f)
     shutil.rmtree(path, onexc=writable) if sys.version_info >= (3, 12) else shutil.rmtree(path, onerror=writable)
+
+
+def over(src, dst):
+    """shutil.copy2 onto a file git left read-only (tools/cache/treeexport.git's packs, on Windows)."""
+    if os.path.exists(dst) and not os.access(dst, os.W_OK):
+        os.chmod(dst, 0o600)
+    return shutil.copy2(src, dst)
 
 
 def copy_tree():
@@ -757,7 +795,7 @@ def main():
     CACHE.mkdir(parents=True, exist_ok=True)
     fresh = TREE / 'tools' / 'cache'
     if fresh.exists():
-        shutil.copytree(fresh, CACHE, dirs_exist_ok=True, ignore=shutil.ignore_patterns('stamps.json'))
+        shutil.copytree(fresh, CACHE, dirs_exist_ok=True, ignore=shutil.ignore_patterns('stamps.json'), copy_function=over)
     lastgood.save(STAMPS, json.dumps(stamps, indent=1, sort_keys=True))
     say('pipeline: %d ran, %d skipped, %d file%s into data/ in one step%s' % (
         len(ran), len(skipped), len(final), '' if len(final) == 1 else 's',

@@ -97,7 +97,9 @@ OWN_ID = RAW_ID + (('a game art path', re.compile(r'\bArt/[A-Za-z0-9_]')),
                   ('an area id', re.compile(r'\b[A-Z]\d+(?:_\d+)+[a-z]?\b')),
                   ('[a|b] markup', re.compile(r'\[[^\]|]{1,60}\|[^\]]{1,60}\](?!\()')),
                   ('a {0} placeholder', re.compile(r'\{\d*\}')))
-ID_FIELD = re.compile(r'^(?:id|ids|key|keys|h|hash|hashes|stat|stats)$|_id$|Id$')   # named for what it holds
+# named for what it holds. img is a picture's address, never words: a game art path keeps its own underscores
+# (BuffIcons/shrine_experience), which read as a stat id to the rule above
+ID_FIELD = re.compile(r'^(?:id|ids|key|keys|h|hash|hashes|stat|stats|img)$|_id$|Id$')
 
 FOUND = []    # the faults this run turned up
 FINE = []     # the sections that came back fine this run: their old faults are dropped
