@@ -1,8 +1,8 @@
 Wraeclast Index · the official game data, and what we ship of it
 
   export  patch 0.5.5, files dated 11 Sep 2026
-  pulled  2026-09-28 04:01 UTC · 22 files, 0 downloaded
-  index   7,707 cards over 7,203 names
+  pulled  2026-09-28 16:14 UTC · 23 files, 4 downloaded
+  index   7,736 cards over 7,208 names
 
   Counts are names, not cards: one name can be several cards.
 
@@ -11,11 +11,12 @@ Wraeclast Index · the official game data, and what we ship of it
   uniques           441     441       0  +18 we card that the export has no name for
   notables         1192    1184       8  Brew Concoction, Crystalline Phylactery, Implanted Gems …
   keystones          33      33       0  -
-  small passives    784     665     119  Accuracy Mastery, Acidic Concoction, Acolyte of Chayula …
+  small passives    784     670     114  Accuracy Mastery, Acolyte of Chayula, Amazon …
   keywords          759     722      37  Ancestral Bond, Avatar of Fire, Blackflame Covenant …
   bases            1555    1554       1  Timeless Jewel
   currency          667     651      16  Albino Rhoa Feather, Black Scythe Artifact, Broken Circle Artifact …
   atlas tree        333     333       0  -
+  areas             389     285     104  Act 1, Act 2, Act 3 …
 
   game: the export, minus the names players never see ([DNT] markers, names the game fills in).
   Bases and currency count the official trade site's lists instead (data/trade.json): the export
@@ -27,6 +28,9 @@ Wraeclast Index · the official game data, and what we ship of it
     are on the trade site's list today. The rest are old items the export still carries.
   · 239 base items grant a skill; we card 201 of them and name the skill on 201. The other 38 are not on
     the trade site's list.
+  · 442 areas in the game files are 288 places in data/areas.json (38 more merged into a place of the
+    same name); 116 are hidden on purpose (5 [DNT], 92 hideout, 1 no name, 9 not a place, 9 test). No
+    card kind draws them yet (design/areas.md).
   · The drill-down page lists 28 jewels; there is no jewel card kind at all.
   · No tool here reads these export files at all: active_skill_types.min.json, audio.min.json,
     buff_visuals.min.json, buffs.min.json, cost_types.min.json, mods_by_base.min.json,

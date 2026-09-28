@@ -66,6 +66,7 @@ PULL = [
     'flavour.min.json',             # every flavour text, by art id (tools/uniqueitems.py)
     'default_monster_stats.min.json',   # one monster of each level  } data/gamestats.json,
     'characters.min.json',              # what each class starts with } tools/gamelib.py
+    'world_areas.min.json',         # every area: level, waypoint, connections, bosses (tools/areas.py, tools/bosses.py)
     'passive_skill_trees/Default.min.json',
     'passive_skill_trees/Atlas.min.json',
     'stat_translations/stat_descriptions.min.json',
@@ -326,6 +327,10 @@ def rows():
 
     atlas = real(v.get('name') for v in official('passive_skill_trees/Atlas.min.json')['passives'].values())
     out.append(('atlas tree', atlas, ours.get('a', set()), False))
+
+    # areas are not a card kind yet: data/areas.json holds what the Area card will draw (tools/areas.py)
+    places = real(v.get('name') for v in official('world_areas.min.json').values() if v.get('name') != 'NULL')
+    out.append(('areas', places, {a['n'] for a in (site('areas.json') or {}).get('areas') or []}, True))
     return out
 
 
@@ -360,6 +365,14 @@ def notes():
     said.append('%d base items grant a skill; we card %d of them and name the skill on %d. The other %d are not on '
                 'the trade site\'s list.' % (len(grants), len(grants & carded), len(grants & shown),
                                              len(grants - carded)))
+
+    areas = site('areas.json')
+    if areas:
+        c = areas.get('counts') or {}
+        said.append('%d areas in the game files are %d places in data/areas.json (%d more merged into a place of the '
+                    'same name); %d are hidden on purpose (%s). No card kind draws them yet (design/areas.md).'
+                    % (c.get('game', 0), c.get('carded', 0), c.get('merged', 0), sum((c.get('hidden') or {}).values()),
+                       ', '.join('%d %s' % (n, w) for w, n in (c.get('hidden') or {}).items())))
 
     jewels = sorted((ROOT / 'data' / 'explore').glob('jewels.*.json'))
     if jewels:
