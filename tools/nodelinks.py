@@ -16,7 +16,10 @@ The rules, and no guessing:
     door and "no more than once" is not; a phrase that only ever means the mechanic ("Converted to") wherever it is
   * exactly one card has that name          -> a reference to it
   * the card's own name                      -> not a door, and nothing else with that name is one either
-  * several cards of one kind share the name -> nothing (two uniques called Decompose: which one?)
+  * several cards of one kind share the name -> nothing (two uniques called Decompose: which one?), except one
+                                                unique on its forged bases: "Temporalis" and "Temporalis |
+                                                Runemastered Silk Robe" are one unique, and its name opens the
+                                                card on the plain base (the one every other base is forged from)
   * several kinds share the name             -> nothing, unless the line declares a preference: a "Grants Skill:"
                                                 line names a gem, so a gem wins there
   * a keyword card, or an interaction card   -> nothing: the spans would push data/index-core.json past its
@@ -26,6 +29,9 @@ The rules, and no guessing:
   * a card ranked low ("lo": the tree's small passives, tools/treecards.py) is never a phrase to look for: its
     name is the stat's own wording ("Attack Speed", "Minion Damage"), so every mod line that says the words
     would open it, and nothing in the line is naming a node. Their own lines are read as any other card's.
+  * a cluster card (tools/clusters.py) is named after its notable or keystone, and a line that says "Zealot's
+    Oath" names the keystone: a cluster is never a phrase to look for (NAMED_AFTER). It is reached from its
+    passive's own card ("Cluster it sits in").
   * a kind whose name is what a thing is rather than the name of one (NOT_A_NAME: the item classes) is left
     out for the same reason — "Gloves" in a mod line is the kind of item the mod rolls on, and "Shield" and
     "Ring" are a keyword and a base item before they are a class. Its own lines are read as any other card's.
@@ -58,6 +64,8 @@ NO_LINK = {'w', 'q'}       # keywords and interactions: the page marks those its
                            # (assets/marks.js) - 9,500 more spans would push data/index-core.json past its
                            # size budget, and the browser already holds every one of those cards
 NOT_A_NAME = {'i'}         # item classes: the words say what a thing is, never which card is meant
+NAMED_AFTER = {'t'}        # clusters: the name is their notable's or keystone's, and a line naming it means that
+FORGED = re.compile(r'^(Runeforged|Runemastered) ')
 FORMS = {'w', 'h'}         # kinds with other words they are reached by ("f")
 # A line that declares which kind it names. "Grants Skill: Ice Nova" is a gem, whatever else shares the name.
 PREFERS = (('Grants Skill:', 'g'),)
@@ -90,6 +98,13 @@ def blank_rep():
             'to': Counter(), 'tocards': defaultdict(set)}   # the mechanics cards, and who reaches them
 
 
+def plain_base(uniques):
+    """One unique on several bases, where every base but one is forged from it (Runeforged, Runemastered): that
+    one, the unique itself. [] for anything else, such as one unique on several plain bases."""
+    plain = [x for x in uniques if not FORGED.match(x.get('s') or '')]
+    return plain if len(plain) == 1 else []
+
+
 class Doors:
     """The rules at the top of this file, over any line at all.
 
@@ -103,7 +118,7 @@ class Doors:
         for it in index['items']:
             # a low-ranked card's name is the stat's own wording and an item class's is what a thing is, not
             # the name of one: neither is a phrase to look for (see the rules above)
-            if it.get('lo') or it['k'] in NOT_A_NAME:
+            if it.get('lo') or it['k'] in NOT_A_NAME or it['k'] in NAMED_AFTER:
                 continue
             by_name[it['n']].append(it)
         for it in index['items']:   # the other words a keyword is shown as, so a longer keyword beats a shorter card name
@@ -140,6 +155,8 @@ class Doors:
             if len(cand) > 1:
                 kinds = {x['k'] for x in cand}
                 pick = [x for x in cand if x['k'] == want] if want else []
+                if not pick and kinds == {'u'}:
+                    pick = plain_base(cand)
                 if len(pick) == 1:
                     cand = pick
                 else:
