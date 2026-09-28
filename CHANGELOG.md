@@ -23,6 +23,14 @@ reads or writes fails every query; files are free and unlimited.
 - **Alarms before limits.** `/api/health` reports today's worker requests and D1 rows read and written;
   `watch.yml` (at :11 and :41, and after each price run) checks home, an item page, the price age and health, and
   opens or updates one `quota` issue at 50% and 80% of any daily limit or on any failure. Quiet when all is well.
+- **No empty cards after a data update.** On 28 Sep a returning visitor's first load after the 0.5.5 data deploy
+  came from the service worker's older copy, asked for card files the new deploy had replaced, and drew cards with
+  no lines that would not open; the reload meant to catch it read the manifest through that same copy, saw nothing
+  new and never fired. Now the build carries the previous generation of the files a page reads (`data/cards`,
+  `data/search`, `data/explore`, listed as `prev` in `sw-files.json`, fetched from the live deploy and checked by
+  hash; guard check 9 allows exactly one generation), and `moved()` asks for the manifest past the copy, clears the
+  older copies' pages and reloads once per new index (at most 4 a tab). The explore page does the same. A local
+  swap: 28–30 of 30 cards empty before, 30 whole after, on the first load.
 - The price files the worker serves send `Access-Control-Allow-Origin: *`. `/privacy` says what is kept now:
   anonymous data points in Cloudflare Workers Analytics Engine with no identifier, kept three months.
 
@@ -48,6 +56,19 @@ search, answers and training. Same page for bots and people; no cloaking.
   Grinding Gear Games. `Content-Signal: search=yes, ai-input=yes, ai-train=yes`. CORS open on `/data/*` files.
 - The dashboard counts landings on item and list pages (`assets/landing.js`, one view on hide) and groups arrivals
   as AI, Search, Social, Direct and Other.
+
+## Next — GGG's patch notes, line by line, on the cards they name (#86)
+
+- **`tools/patchnotes.py`**, the `patchnotes` stage of `tools/pipeline.py` (patch cadence, after the stages that
+  write the index): the first post of every thread `data/patches.json` names (`tools/patches.py`, the registry
+  on main), split into lines under GGG's own sections and matched to the cards the index holds. The patch dates
+  are the registry's; nothing here reads the forum's listing pages or keeps a date of its own.
+- **`data/patchnotes.json`**: 259 threads, 6,175 lines, 4,067 naming a card (66%), 1,925 cards named, keyed by
+  kind and name; a patch is its registry row id. The 2,108 that name nothing are counted, and listed in
+  `tools/dev/patchgaps.txt`. 747 kB. Nothing reads it yet; `design/patch-notes.md` proposes the card's
+  **Changed in** block.
+- An ordinary run reads only threads it has no lines for and the last three days' (GGG edit their notes);
+  `--all` reads every one again (about 7 minutes) and gives the same file.
 
 ## Next — One top bar, the index in groups
 

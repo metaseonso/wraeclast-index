@@ -1,5 +1,0 @@
-### Xopec's Medallion
-Keyword · https://wraeclastindex.fyi/item/xopecs-medallion
-Xopec's Medallion increases your Maximum Crystal Capacity by 6 (up to 60)xopecs-medallionxopecs-medallionIncursionMedallionMaximumCrystalCapacityXopec's Medallion### Zantipi's Medallion
-Keyword · https://wraeclastindex.fyi/item/zantipis-medallion
-Zantipi's Medallion adds one to the number of random Waystone Modifiers added to your Temple.zantipis-medallionzantipis-medallionIncursionMedallionAddTempleModifierZantipi's Medallion

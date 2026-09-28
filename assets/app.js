@@ -104,9 +104,11 @@ async function getJSON(url, opt, early){
   const r = await (early || fetch(url, opt));   // the browser keeps it for 2 minutes (_headers), then checks for a new one
   if(!r) return getJSON(url, opt);              // the copy handed in never came: ask
   if(typeof r.json !== 'function') return r;    // the drill-down page's own copy, already read
-  if(!r.ok) throw Object.assign(new Error(url + ' ' + r.status), {gone: r.status === 404});
+  if(!r.ok || isPage(r)) throw Object.assign(new Error(url + ' ' + r.status), {gone: r.status === 404 || r.status === 410 || isPage(r)});
   return r.json();
 }
+// a page where a data file was asked for: the not-found page, or anything else that is not the file
+const isPage = r => /text\/html/i.test(r.headers.get('Content-Type') || '');
 const EARLY = window.WI_FIRST || {};   // index.html asks for today's prices before its styles
 /* Today's prices: live from the worker, or the last good copy. The live answer is taken unless it fails or is not
    in within LIVE_WAIT; then the copy the deploy shipped (data/market-last.json). A copy kept by the service worker
@@ -396,15 +398,50 @@ function ask(op, m = {}){
   return worker().ask({op, ...m}).catch(err => { if(err === 'gone') moved(); throw new Error(String(err)); });
 }
 /* A file of the cut that is not there any more: the site has moved to a newer index under this page, and its
-   files are new names. The page is a deploy behind: one reload a session, as for a module (spend above). */
+   files are new names. The page is a deploy behind, opened from the service worker's copy of that deploy while
+   the new one downloads (sw.js). The deploy keeps the files the one before it named (tools/build.mjs, "the
+   previous generation"), so this is a page two or more data deploys behind.
+   The manifest is asked for past the copy and past the browser's own cache (a query and no-store): the copy
+   holds this page's own manifest, and asked through it the site never looks moved (the fault of 28 Sep: the
+   stuck line, no reload). Before the reload the copies of older deploys drop their pages (fresh), or the
+   reload is the same page from the same copy.
+   One reload per newer index: wi.moved holds the index ids this tab has reloaded into, so a reload that lands
+   on the same index again stops there, and a later deploy in the same session still gets its own. */
+const MOVED_KEY = 'wi.moved';
 let MOVED = false;
 function moved(){
   if(MOVED) return;
   MOVED = true;
-  getJSON('data/manifest.json', {cache: 'no-cache'}).then(m => {
-    if(m && D.man && m.id !== D.man.id && spend('data/manifest.json')) location.reload();
-    else stuck('The index');
-  }, () => stuck('The index'));
+  Promise.all([MAN.catch(() => null), fetch('data/manifest.json?at=' + Date.now(), {cache: 'no-store'}).then(r => r.ok ? r.json() : null)])
+    .then(async ([mine, now]) => {
+      if(!now || !now.id || !mine || now.id === mine.id || !reloadInto(now.id)) return stuck('The index');
+      await fresh();
+      location.reload();
+    }).catch(() => stuck('The index'));
+}
+// take the reload into this index, if this tab has not already taken it (a browser that will not keep it says no)
+function reloadInto(id){
+  try {
+    const done = JSON.parse(sessionStorage.getItem(MOVED_KEY) || '[]');
+    if(!Array.isArray(done) || done.includes(id) || done.length >= 4) return false;
+    sessionStorage.setItem(MOVED_KEY, JSON.stringify([...done, id]));
+    return true;
+  } catch { return false; }
+}
+/* The pages out of every older deploy's copy (sw.js keeps each deploy's copy under wi-v-<stamp>, with that
+   deploy's sw-files.json): a copy whose sw-files.json is not the site's own now is an older deploy. Without the
+   site's list, every copy drops its pages; the worker then opens them from the network until its next deploy. */
+async function fresh(){
+  try {
+    if(!self.caches) return;
+    const now = await fetch('sw-files.json?at=' + Date.now(), {cache: 'no-store'}).then(r => r.ok ? r.text() : '', () => '');
+    for(const k of await caches.keys()){
+      if(!k.startsWith('wi-v-')) continue;
+      const c = await caches.open(k), list = await c.match('sw-files.json');
+      if(now && list && await list.text() === now) continue;
+      await Promise.all(['./', 'explore', 'privacy'].map(u => c.delete(new URL(u, document.baseURI).href)));
+    }
+  } catch {}
 }
 
 export const first = (async () => {
@@ -433,6 +470,7 @@ export const searching = SEEK.then(() => first).then(async () => {
   return D;
 });
 searching.catch(() => { D.failed = true; });
+first.catch(err => { if(err && err.gone) moved(); });   // the card meta the manifest names is not there
 /* The whole index, for a tab that works over all of it: every card file, read on the page, put in the index's
    own order, then the market's currency and the bosses. */
 export const ready = ALL.then(() => first).then(async () => {
@@ -842,6 +880,22 @@ function addsFill(host, it, f){
   });
 }
 
+/* ---------- where a unique drops ----------
+   One line and its labels, out of data/dropsfrom.json (tools/bosses.py), filled in once the table lands. The
+   file names the tooltip a label carries ("Subject to change"), so no label's words are written down here.
+   A name the table does not hold draws nothing. */
+function dropFill(host, it, f){
+  if(!host) return;
+  tableOf(f.file).then(t => {
+    const e = t && t.uniques && t.uniques[it[f.at]];
+    if(!e || !e.line || !host.isConnected) return;
+    const tips = t.labels || {};
+    host.innerHTML = '<p class="card-src">' + esc(e.line) + '</p>' + (e.labels || []).map(l =>
+      '<span class="pill"' + (tips[l] ? ' title="' + esc(tips[l]) + '"' : '') + '>' + esc(l) + '</span>').join(' ');
+    host.hidden = false;
+  });
+}
+
 /* ---------- what a base item can already have ----------
    Its own item class's table says which modifiers its pool rolls and which ones a corruption adds instead
    (data/craft/<class>.json, tools/craft.py — the same table the Craft tab works from, and assets/basepool.js
@@ -1225,6 +1279,8 @@ export const TYPE = {
         '<li data-mk="' + f.at + ':' + i + '">' + lineHTML(it, f.at, i, x, false) + '</li>').join('') + '</ul>' : '');
   }},
   adds:   {raw: 1, fill: addsFill, v: (it, f, o, name) => o.full && it[f.at]
+    ? '<div class="card-addsbox" data-fill="' + esc(name) + '" hidden></div>' : ''},
+  drop:   {raw: 1, fill: dropFill, v: (it, f, o, name) => o.full && it[f.at]
     ? '<div class="card-addsbox" data-fill="' + esc(name) + '" hidden></div>' : ''},
   pool:   {raw: 1, fill: poolFill, v: (it, f, o, name) => o.full && it[f.at] && fileOf(f, it)
     ? '<div class="card-addsbox" data-fill="' + esc(name) + '" hidden></div>' : ''},
@@ -2020,7 +2076,8 @@ function kwChips(it){
    them is needed. */
 /* The files some of the lists are worked out from, each fetched the first time a card asks for one and kept
    for the rest of the visit. A card that needs none of them never asks for any. */
-const REL_FILES = {kwuse: 'data/kwuse.json', grants: 'data/grants.json', clusters: 'data/clusters.json'};
+const REL_FILES = {kwuse: 'data/kwuse.json', grants: 'data/grants.json', clusters: 'data/clusters.json',
+  dropsfrom: 'data/dropsfrom.json'};
 const HAVE = {};            // what is in
 const JOB = {};             // what is on its way
 let DRILL = null;           // the keywords the drill-down page can filter by, once its file is in

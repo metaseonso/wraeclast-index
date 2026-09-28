@@ -45,6 +45,10 @@ What counts as a fault:
                a card draws as words, or in a field that held none before. A field no card draws may hold
                them: the "Technical details" ids, the search words, a keyword chip's ids (data/schema.json,
                written from assets/kinds.js; issue #12)
+  own ids      a file that lists its own `ids` (the game's tables, data/game/, tools/datpull.mjs): any value,
+               or key, anywhere outside those fields shaped like an id: the raw ids above, and an Art/ path, an
+               area id (G2_4_1), [Tag|Word] markup or an unfilled {0}. Held on a new file too, with nothing
+               committed to hold it against
 
 at= says what to count: one part of the file ("items"), or several with a floor each
 ({'mods': 1000, 'uniques': 100}), or nothing to count the whole file. A file is only as good as its
@@ -89,6 +93,10 @@ SCHEMA = 'schema.json'      # the declarations, per kind (tools/dev/schema.mjs w
 RAW_ID = (('a game file path', re.compile(r'Metadata/')),
           ('a stat id', re.compile(r'(?:^|[^A-Za-z0-9_])[a-z][a-z0-9]*(?:_[a-z0-9+%]+)+(?![A-Za-z0-9_])')),
           ('a DNT marker', re.compile(r'\[DNT')))
+OWN_ID = RAW_ID + (('a game art path', re.compile(r'\bArt/[A-Za-z0-9_]')),
+                  ('an area id', re.compile(r'\b[A-Z]\d+(?:_\d+)+[a-z]?\b')),
+                  ('[a|b] markup', re.compile(r'\[[^\]|]{1,60}\|[^\]]{1,60}\](?!\()')),
+                  ('a {0} placeholder', re.compile(r'\{\d*\}')))
 # named for what it holds. img is a picture's address, never words: a game art path keeps its own underscores
 # (BuffIcons/shrine_experience), which read as a stat id to the rule above
 ID_FIELD = re.compile(r'^(?:id|ids|key|keys|h|hash|hashes|stat|stats|img)$|_id$|Id$')
@@ -203,10 +211,42 @@ def look(new, old, at=None, tolerance=TOLERANCE, floor=0, error=None, file='', s
     gone = sorted(k for k, n in kinds(old, at).items() if n and not fresh.get(k))
     if gone:
         return {'was': was, 'now': now, 'gone': gone, 'why': 'nothing came back for ' + ', '.join(gone)}
-    why = shaped(new, old, at, file) if shape else None
+    why = (shaped(new, old, at, file) if shape else None) or own_ids(new)
     if why:
         return {'was': was, 'now': now, 'gone': [], 'why': why}
     return None
+
+
+def own_ids(data):
+    """For a file that lists its own `ids` (data/game/): the first value or key outside those fields shaped like
+    an internal id, in one line, or None. The list names fields, so a field named in it is left whole at any
+    depth; `ids` itself is a list of field names, never ids."""
+    if not isinstance(data, dict) or not isinstance(data.get('ids'), list):
+        return None
+    allow = set(data['ids']) | {'ids'}
+    found = []
+
+    def walk(v, where):
+        if found:
+            return
+        if isinstance(v, str):
+            kind = next((n for n, r in OWN_ID if r.search(v)), None)
+            if kind:
+                found.append((where, kind, v))
+        elif isinstance(v, list):
+            for i, x in enumerate(v):
+                walk(x, '%s[%d]' % (where, i))
+        elif isinstance(v, dict):
+            for k, x in v.items():
+                if k in allow:
+                    continue
+                walk(k, where + '.{key}')
+                walk(x, (where + '.' + k).lstrip('.'))
+    walk(data, '')
+    if not found:
+        return None
+    where, kind, v = found[0]
+    return '%s holds %s, and the file\'s own ids do not name that field: %s' % (where, kind, show(v))
 
 
 # ---------------------------------------------------------------- the shape of the rows

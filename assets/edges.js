@@ -5,9 +5,10 @@
    names another card gives "Named on this card" one way and "Named by" the other. A keyword's own nine lists
    come from data/kwuse.json (tools/kwuse.py), loaded the first time one is needed.
 
-   Three of them read a file of their own, fetched only when a card asks for one: data/kwuse.json for a
-   keyword's nine lists, data/grants.json for which item grants which skill, both ways round, and
-   data/clusters.json for the tree cut into clusters (tools/kwuse.py, tools/grants.py, tools/clusters.py).
+   Four of them read a file of their own, fetched only when a card asks for one: data/kwuse.json for a
+   keyword's nine lists, data/grants.json for which item grants which skill, both ways round,
+   data/clusters.json for the tree cut into clusters, and data/dropsfrom.json for where a unique drops, both
+   ways round (tools/kwuse.py, tools/grants.py, tools/clusters.py, tools/bosses.py).
    `categories` says which of those it still needs.
 
    Which lists a kind shows is declared in assets/kinds.js (REL), not here. This file only answers, per list:
@@ -107,6 +108,23 @@ const EDGE = {
     const C = F.clusters;
     if(!C) return [];
     return cardRows((clusters(C).of.get(it.k + ':' + it.id) || []).map(j => 't:' + C.id[j]));
+  },
+  /* where a unique drops, and what a boss drops (data/dropsfrom.json, tools/bosses.py): each row says which
+     sources named it, so two sources that disagree show it on the row itself */
+  dropsfrom(it, F){
+    const e = ((F.dropsfrom || {}).uniques || {})[it.n];
+    return ((e && e.from) || []).map(f => has('x:' + f.n)
+      ? {key: 'x:' + f.n, sub: f.src.join(', ')} : {n: f.n, sub: f.src.join(', ')});
+  },
+  /* a unique on several bases is a card per base; a drop names the unique, so its row opens the card the
+     table names for it (`card`, the first of them in the index's order) */
+  drops(it, F){
+    const U = (F.dropsfrom || {}).uniques || {}, out = [];
+    for(const e of Object.values(U)){
+      const f = (e.from || []).find(x => x.n === it.n);
+      if(f && e.card && has(e.card)) out.push({key: e.card, sub: f.src.join(', ')});
+    }
+    return out;
   },
   named(it){ return cardRows(lists(it).named); },
   namedby(it){ return cardRows(lists(it).namedby); },
