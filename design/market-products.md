@@ -140,6 +140,32 @@ day after week 1 when it was half the week-1 price or less. Measured history onl
 **The owner decides**: three leagues, the top 15, ranked by divines traded (the other reading of "worth most" is the
 dearest unit price: a list of Mirrors), and days 14, 28 and 56.
 
+## #101 Inflation index: `data/market/inflation.json`
+
+17.3 kB (6.0 kB gzipped). `tools/market_inflation.py`. For every league, by league day: `[day, index, exalted per
+divine, basket currencies priced, hours read]`.
+
+**The basket**: Chaos Orb, Regal Orb, Orb of Alchemy, Orb of Annulment, Vaal Orb, Orb of Chance, Orb of Transmutation,
+Orb of Augmentation, Artificer's Orb, Gemcutter's Prism, Glassblower's Bauble, Greater Jeweller's Orb, Perfect
+Jeweller's Orb: 13 currencies every league from Early Access to now has traded on every one of its days. The Divine Orb
+is not in it; exalted per divine is drawn beside the index instead.
+
+**The rule.** Each day, each basket currency's price in exalted (the exalted paid for it that day over the amount
+bought). The index is the geometric mean of each one's price over its day-1 price, times 100: day 1 is 100 and every
+currency counts the same, so no one orb's volume carries it.
+
+**Today.** Forbidden Rites, day 22: **674**, and 1 Divine Orb = 497 Exalted Orbs (62 on day 1). The past leagues on
+day 22: Early Access 172, Dawn of the Hunt 147, Rise of the Abyssal 120, Fate of the Vaal 178, Runes of Aldur 238. The
+exalted has lost value faster this league than in any before it. Day 23 so far (2 hours): 696.
+
+**In the frame.** Not a card field: a tile on the home page (`Price index 674 · day 22 · 1 Divine Orb = 497 Exalted
+Orbs`) and a header on the Currency tab with the chart, this league and every past league by league day, the basket
+and the rule printed under it. The chart draws two lines per league (the index, and exalted per divine on its own
+axis), each league in its own colour and dash, as the card chart already does.
+
+**The owner decides**: the basket (13 currencies, equal weights), and the base day (day 1; the first hours of a league
+trade thin, and day 2 would be steadier).
+
 ## When new hours arrive
 
 The archive job in `wraeclast-data` (`.github/workflows/archive.yml`) adds the new hours every 6 hours (at :23 past 0,
