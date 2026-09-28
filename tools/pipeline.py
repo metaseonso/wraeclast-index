@@ -402,13 +402,20 @@ def links(index):
 def lost_links(new, old):
     """The links the last good index had that this one lost while nothing explains it: both cards are still
     there and the card's lines still say the words. Links are the graph, so one of those is a fault. A link whose
-    card went, or whose line no longer says the words, went with them."""
+    card went, or whose line no longer says the words, went with them. So did one whose words a longer link on
+    the same card now covers: "Shroud" (the Shroud gem) inside "Ghost Shroud" (the buff card of that name)."""
     import nodelinks
-    now = {(a, b) for a, b, _ in links(new)}
+    fresh = links(new)
+    now = {(a, b) for a, b, _ in fresh}
+    longer = {}
+    for a, _, words in fresh:
+        longer.setdefault(a, set()).add(words)
     cards = {it['k'] + ':' + it['id']: it for it in new.get('items') or []}
     lost = []
     for a, b, words in links(old):
         if (a, b) in now or a not in cards or b not in cards:
+            continue
+        if any(words in w and words != w for w in longer.get(a, ())):
             continue
         if any(words in line for line in nodelinks.lines_of(cards[a])):
             lost.append((a, b, words))
