@@ -51,6 +51,18 @@ jobs:
           path: tools/cache
           key: tools-cache-${{ github.run_id }}
           restore-keys: tools-cache-
+      - name: The data token can read the game tables
+        # asks GitHub who the DATA_REPO_READ token belongs to and whether it can see the data repo; the token is never printed
+        env:
+          GH_TOKEN: ${{ secrets.DATA_REPO_READ }}
+        run: |
+          if [ -z "$GH_TOKEN" ]; then echo "::error::The DATA_REPO_READ secret is empty or missing."; exit 1; fi
+          who=$(gh api user --jq .login 2>&1) || { echo "::error::GitHub does not accept the DATA_REPO_READ token: $who"; exit 1; }
+          echo "The token belongs to: $who"
+          if gh api repos/metaseonso/wraeclast-data --jq .full_name >/dev/null 2>&1; then echo "It can see metaseonso/wraeclast-data."
+          else echo "::error::The token belongs to $who but cannot see metaseonso/wraeclast-data: its repository access or its Contents permission is missing."; exit 1; fi
+          if gh api repos/metaseonso/wraeclast-data/contents/game --jq '.[].name' >/dev/null 2>&1; then echo "It can read the game tables."
+          else echo "::error::The token can see the repo but cannot read its contents: set Contents to Read-only."; exit 1; fi
       - name: Every patch stage, built aside in build/ and swapped into data/ only if all of them hold up
         env:
           GH_TOKEN: ${{ github.token }}
