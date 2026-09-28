@@ -1,7 +1,7 @@
 """Publish the libraries the official export holds and the site does not ship yet.
 
 tools/gamepull.py counts the gap; this closes the part of it that is nothing but "the game has more than we
-carry". Five jobs, all from the export (tools/cache/official, gamepull.official):
+carry". The jobs, all from the export (tools/cache/official, gamepull.official):
 
   keywords   The drill-down artifact carries 451 keywords. The game's own help text has far more, and every
              one of them is a thing a player meets: map and area mechanics, monster modifiers, shrines,
@@ -18,6 +18,8 @@ carry". Five jobs, all from the export (tools/cache/official, gamepull.official)
              the line, the same line a base item or a unique shows for the same thing.
   gems       Counted only. The export has 1,191 gem entries and we card 1,072; every one of the 119 is a
              name no player ever sees (see gems()). Nothing to add, and the count says so each run.
+  gem cards  What quality adds to each gem and the uncut gem it is cut from, on the gem's own card (gemfacts;
+             tools/gems.py reads both). poe2db shows them on every gem page; now the card does too.
   numbers    data/gamestats.json: what one monster of each level is worth in life, damage and defences, and
              what each class starts with. The only official answer to "how much do I need at level N".
              Written for the site to use later; no page reads it yet.
@@ -449,6 +451,53 @@ def gone(index):
     return sorted(names)
 
 
+# ---------------------------------------------------------------- what a gem card says on top of its lines
+
+QUALITY_HEAD = 'Additional Effects From Quality:'   # the game's own divider above these lines (ClientStrings)
+
+
+def gemfacts(index, write=True):
+    """Two things on every gem card that poe2db shows and the card did not: what quality adds, and the uncut gem it
+    is cut from (tools/gems.py says how each is read from the export).
+
+      gq  the game's own divider, then one line per quality stat: the game's wording with the range its tooltip
+          prints at 0 to 20% quality, "(0-40)% more chance to Shock". The card draws it under the gem's own text.
+      uc  the uncut gem that makes it, by the game's own name for it: "Uncut Skill Gem (Level 1)". An uncut gem
+          cuts to its own level, so the level in the name is also the lowest level this gem can be cut at. A
+          support gem has no level; its uncut gem's level is the tier it offers.
+
+    A gem's history is not written here: it is read where it is kept, by the card's own key (design/gems-gaps.md).
+    Every card is set again each run, so a gem whose quality the game takes away loses the lines here too."""
+    import gems as gemfile
+    ladder = gemfile.uncut_ladder()
+    export = {k.rsplit('/', 1)[-1]: v for k, v in official('skill_gems.min.json').items()}
+    skills = official('skills.min.json')
+    by_id = {g['id']: g for g in drilldown('gemdata')['gems']}
+    n = {'cards': 0, 'quality': 0, 'uncut': 0, 'left': 0}
+    for it in index['items']:
+        if it['k'] != 'g':
+            continue
+        n['cards'] += 1
+        g = by_id.get(it['id']) or {}
+        q, lost = gemfile.quality_lines(gemfile.granted_sets(export.get(it['id']) or {}, skills))
+        n['left'] += lost
+        cut = gemfile.uncut_from(g, ladder)
+        for x in q + [cut or '']:
+            if x and (any(m.search(x) for m in SHOWN) or RAW.search(x) or DNT.search(x)):
+                sys.exit('game code on the gem card %r: %r' % (it['n'], x))
+        n['quality'] += bool(q)
+        n['uncut'] += bool(cut)
+        if not write:
+            continue
+        it.pop('gq', None)
+        it.pop('uc', None)
+        if q:
+            it['gq'] = [QUALITY_HEAD] + q
+        if cut:
+            it['uc'] = cut
+    return n
+
+
 # ---------------------------------------------------------------- monster and class numbers
 
 # The export's own field names are game code; these are the words the file ships.
@@ -545,6 +594,10 @@ def main():
              len(nb['cards']) + len(nb['why']), wasp, wasp + len(nb['cards']), len(nb['cards'])))
     if nwhy:
         print('         left out: ' + ', '.join('%d %s' % (n, r) for r, n in sorted(nwhy.items(), key=lambda x: -x[1])))
+
+    fc = gemfacts(index, write=not args.report)
+    print('gems     %d gem cards: %d say what quality adds, %d the uncut gem that makes them; %d quality stats the game '
+          'prints no line for' % (fc['cards'], fc['quality'], fc['uncut'], fc['left']))
 
     stats = gamestats()
     print('numbers %d monster levels, %d classes in the game (the export lists %d)'
