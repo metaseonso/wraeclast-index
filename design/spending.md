@@ -6,6 +6,11 @@ Written 27 September 2026 against origin/main `5973867`. Docs only: no site code
 `design/traffic.md` and `design/mcp.md` (PR #130), which measured what one visit costs: **~7.5 worker calls and
 ~18 D1 rows written per typical visit**, and **~22,000 worker calls a day today, mostly crawlers**.
 
+Updated for main at `c123ad2` (28 Sep 2026). Worker calls per visit did not change. What did: the price file is
+built once per change (0.32), so the jobs now write ~3,600 more D1 rows a day and `market.json` misses read
+~5-8 rows instead of whole tables (`traffic.md` fix 6 is done). D1 reads ran out once, on 25 Sep, before that
+fix. The rows read are now modelled per data centre, not per call. Monthly costs by phase move by $0.11 at most.
+
 Labels, used everywhere below:
 
 - **Checked (date)**: read on the source page on that date, link given.
@@ -20,15 +25,15 @@ Labels, used everywhere below:
 **What WI is in for: $5 a month, nearly every month, at every traffic level short of a big hit.** Cloudflare
 bills Workers Paid at a $5 minimum, and that $5 includes more than WI uses in all but the first month of 1.0
 in the high scenario. The risk was never the bill. It is the **free plan's daily cliff**: past 100,000 worker
-requests or 100,000 D1 rows written in a UTC day, prices, crawler pages and the service worker stop until
-midnight.
+requests, 100,000 D1 rows written or 5 M D1 rows read in a UTC day, prices, crawler pages and the service
+worker stop until midnight. The reads limit already ran out once, on 25 Sep, before the 0.32 fix.
 
 Monthly Cloudflare cost, Estimate (model and assumptions in section 4):
 
 | Phase | Low (1.0 Steam peak 450k, WI reach 1%) | Mid (700k, 3%) | High (1M, 8%) |
 |---|---|---|---|
 | **Now** (0.5.5 Forbidden Rites, to 11 Dec; ~50 visits/day, ~22k calls/day) | $0 on Free (22% of the cap) | same | same |
-| **1.0 launch month** (7 days of week 1 + 23 days of weeks 2-4) | **$5** | **$5** | **$23-27** without the fixes; **$7** with fixes 3-6 of `traffic.md` |
+| **1.0 launch month** (7 days of week 1 + 23 days of weeks 2-4) | **$5** | **$5** | **$23-27** without the fixes; **$7** with fixes 3-5 of `traffic.md` |
 | 1.0 week 1 alone (visits/day) | 8,400 | 39,000 | 150,000 |
 | **Mid-league month** (month 2) | $5 | $5 | $5 |
 | **Quiet month** (month 3 on) | $5 | $5 | $5 |
@@ -40,7 +45,7 @@ over the year) and $0 for GitHub Actions (public repo, standard runners: free; c
 <https://docs.github.com/en/billing/concepts/product-billing/github-actions>).
 
 What the free plan would do instead, Estimate: it breaks in **1.0 week 1 in every scenario** without the fixes
-(low: 104k calls and 153k D1 writes a day), and even **with** the fixes in the mid and high scenarios. Move to
+(low: 104k calls and 157k D1 writes a day), and even **with** the fixes in the mid and high scenarios. Move to
 Workers Paid before 1.0.
 
 **The tail**: an unblocked scraper at 10 M requests a day on Paid costs ~$3/day in requests plus ~$6/day in
@@ -64,12 +69,12 @@ money that lowers the running cost or the risk for good.
 
 | # | What | Cost | Kind | Why, and when |
 |---|---|---|---|---|
-| 1 | **Workers Paid** | **$5/month** | Running | Removes the 100k/day request cliff, the 10 ms CPU limit (cold isolates already run 60-160 ms, p99 59 ms: Snapshot), and D1's 100k writes/day cliff. Raises static files per version from 20,000 to 100,000, which languages need (section 5). **Switch by ~1 Dec 2026**, then run the 10x load test from `traffic.md` against a preview version (~$0.04). Stay on it through quiet months: dropping back to Free re-arms the cliff for the next patch day. |
+| 1 | **Workers Paid** | **$5/month** | Running | Removes the 100k/day request cliff, the 10 ms CPU limit (cold isolates already run 60-160 ms, p99 59 ms: Snapshot; each price rebuild ~150 ms, Estimate), and D1's 100k writes/day and 5 M reads/day cliffs. Raises static files per version from 20,000 to 100,000, which languages need (section 5). **Switch by ~1 Dec 2026**, then run the 10x load test from `traffic.md` against a preview version (~$0.04). Stay on it through quiet months: dropping back to Free re-arms the cliff for the next patch day. |
 | 2 | **Budget alerts** at $10 and $25 | $0 | Safety | Cloudflare's Budget alerts (Pay-as-you-go accounts, since April 2026; on by default for new PAYG accounts since June 2026) are **informational only, fire the day after, and do not cap spend**. Checked 27 Sep 2026: <https://developers.cloudflare.com/billing/manage/budget-alerts/> (page dated 29 May 2026), <https://developers.cloudflare.com/changelog/post/2026-04-13-billable-usage-dashboard-and-budget-alerts/>, <https://developers.cloudflare.com/changelog/post/2026-06-15-budget-alerts-default-on/>. The subscription fee is not counted in the threshold. |
 | 3 | **Zone rate-limit rule + WAF kill switches** (`traffic.md` fix 2) | $0 (Free zone: 5 custom rules, 1 rate-limit rule) | Safety | The only real spend cap. Blocked requests never reach the worker, so they are never billed. |
 | 4 | **Log sampling** `head_sampling_rate: 0.1` | $0 | Investment (one line) | Workers Logs is the second-largest line in every bad month ($0.60/M past 20 M events). |
 | 5 | **Lighter tracking** (fix 3), ideally into **Workers Analytics Engine** instead of D1 | $0 today | Investment (small code) | Tracking is ~13 of the ~18 D1 rows per visit. Analytics Engine: 10 M data points/month included on Paid, $0.25/M after, **not billed at all yet** (checked 27 Sep 2026, <https://developers.cloudflare.com/analytics/analytics-engine/pricing/>). Takes D1's write limit out of play. |
-| 6 | **`sw.js` and `leagues.json` static** (fix 4), **crawler pages static** (fix 5), **D1 indexes** (fix 6) | $0 | Investment (small to medium code) | Fix 5 turns all crawler traffic (most of today's calls, and ×N with languages) into free static requests. These are what keep the high scenario at $7 instead of $27-40. |
+| 6 | **`sw.js` and `leagues.json` static** (fix 4), **crawler pages static** (fix 5). D1 indexes (fix 6) are done in 0.32 | $0 | Investment (small to medium code) | Fix 5 turns all crawler traffic (most of today's calls, and ×N with languages) into free static requests. These are what keep the high scenario at $7 instead of $27-40. |
 | 7 | Domain renewal | ~$15-20/year (Unverified) | Running | Put it on the running-costs page; it is real. |
 | 8 | Reserve: three months of running costs held back (~$20) | from donations | Buffer | So a slow donation month never touches the site. |
 
@@ -225,28 +230,28 @@ All Estimate. One row per step, so any assumption can be swapped.
 | Visits per user per day | | 1.3 | 1.3 | 1.3 |
 | Worker calls per visit | `traffic.md` (Code) | 7.5 today; **4.5** after fixes 3 and 4 | | |
 | D1 rows written per visit | `traffic.md` | 18 today; **5** after fix 3 | | |
-| D1 rows read per call | Snapshot (0.3 M reads / 22k calls) | 14 today; ~3 after fix 6 | | |
+| D1 rows read | Since 0.32: ~0.21 M a day of price rebuilds (flat), ~4 per visit for tracking, plus each data centre's misses on the price files: `live` and `hist` (~8 rows, 5 min), Trade's `rollprices` (~80 rows, 1 min), Bosses' `bossprices` (~600 rows, 5 min). 60 data centres; Trade on 20% of visits, Bosses 15%, a chart 50% | 0.3 M/day at 768 visits; 4.2 M at 39k | | |
 | Crawlers, scanners | today ~20k calls/day; 1.0 doubles it; **× number of languages** if crawler pages stay worker-rendered | 40k/day (English) | | |
 | After fix 5 | crawler pages static; scanners and unknown paths still run the worker | 5k/day | | |
-| Data jobs | flat | 340/day | | |
+| Data jobs | flat; since 0.32 their rebuilds write ~3,600 D1 rows a day (Estimate, `traffic.md`) | 344/day | | |
 | CPU | 3 ms mean per call (Snapshot) | | | |
 
 ### Daily load by phase (English only)
 
-| Scenario | Phase | Steam avg concurrent | WI visits/day | Worker calls/day (today's code) | D1 writes/day (today) | D1 reads/day (today) | Calls/day (fixes 3-6) | Writes/day (fixes) | Free plan survives? (today / fixes) |
+| Scenario | Phase | Steam avg concurrent | WI visits/day | Worker calls/day (today's code) | D1 writes/day (today) | D1 reads/day (today) | Calls/day (fixes 3-5) | Writes/day (fixes) | Free plan survives? (today / fixes) |
 |---|---|---|---|---|---|---|---|---|---|
-| low | 1.0 week 1 | 248k | 8,443 | 103,660 | 153,469 | 1.5 M | 43,332 | 43,714 | no / yes |
-| low | 1.0 weeks 2-4 | 171k | 5,833 | 84,089 | 106,497 | 1.2 M | 31,589 | 30,666 | no / yes |
-| low | mid-league (month 2) | 58k | 1,996 | 55,307 | 37,420 | 0.8 M | 14,320 | 11,478 | yes / yes |
-| low | quiet (month 3+) | 22k | 768 | 46,096 | 15,315 | 0.6 M | 8,794 | 5,338 | yes / yes |
-| mid | 1.0 week 1 | 385k | 39,399 | 335,835 | 710,688 | 4.7 M | 182,637 | 198,497 | no / no |
-| mid | 1.0 weeks 2-4 | 266k | 27,221 | 244,500 | 491,485 | 3.4 M | 127,836 | 137,607 | no / no |
-| mid | mid-league (month 2) | 91k | 9,313 | 110,184 | 169,126 | 1.5 M | 47,247 | 48,063 | no / yes |
-| mid | quiet (month 3+) | 35k | 3,582 | 67,203 | 65,972 | 0.9 M | 21,458 | 19,409 | yes / yes |
-| high | 1.0 week 1 | 550k | 150,093 | 1,166,036 | 2,703,170 | 16.3 M | 680,758 | 751,964 | no / no |
-| high | 1.0 weeks 2-4 | 380k | 103,700 | 818,094 | 1,868,109 | 11.5 M | 471,992 | 520,002 | no / no |
-| high | mid-league (month 2) | 130k | 35,476 | 306,414 | 640,077 | 4.3 M | 164,984 | 178,882 | no / no |
-| high | quiet (month 3+) | 50k | 13,645 | 142,676 | 247,106 | 2.0 M | 66,742 | 69,724 | no / yes |
+| low | 1.0 week 1 | 248k | 8,443 | 103,664 | 157,069 | 1.2 M | 43,336 | 47,314 | no / yes |
+| low | 1.0 weeks 2-4 | 171k | 5,833 | 84,093 | 110,097 | 0.9 M | 31,593 | 34,266 | no / yes |
+| low | mid-league (month 2) | 58k | 1,996 | 55,311 | 41,020 | 0.5 M | 14,324 | 15,078 | yes / yes |
+| low | quiet (month 3+) | 22k | 768 | 46,100 | 18,915 | 0.3 M | 8,798 | 8,938 | yes / yes |
+| mid | 1.0 week 1 | 385k | 39,399 | 335,839 | 714,288 | 4.2 M | 182,641 | 202,097 | no / no |
+| mid | 1.0 weeks 2-4 | 266k | 27,221 | 244,504 | 495,085 | 3.1 M | 127,840 | 141,207 | no / no |
+| mid | mid-league (month 2) | 91k | 9,313 | 110,188 | 172,726 | 1.3 M | 47,251 | 51,663 | no / yes |
+| mid | quiet (month 3+) | 35k | 3,582 | 67,207 | 69,572 | 0.6 M | 21,462 | 23,009 | yes / yes |
+| high | 1.0 week 1 | 550k | 150,093 | 1,166,040 | 2,706,770 | 10.7 M | 680,762 | 755,564 | no / no |
+| high | 1.0 weeks 2-4 | 380k | 103,700 | 818,098 | 1,871,709 | 8.5 M | 471,996 | 523,602 | no / no |
+| high | mid-league (month 2) | 130k | 35,476 | 306,418 | 643,677 | 3.9 M | 164,988 | 182,482 | no / no |
+| high | quiet (month 3+) | 50k | 13,645 | 142,680 | 250,706 | 1.8 M | 66,746 | 73,324 | no / yes |
 
 **Patch-day spikes** (Estimate): a big patch-notes day or a league announcement doubles that day's visits. A
 Reddit front-page or streamer moment could bring 500k visits in a day: 3.75 M calls and 9 M D1 writes with
@@ -258,7 +263,7 @@ for Workers, static assets or the CDN, so this is $0; it matters for players on 
 
 ### Monthly cost, Workers Paid
 
-| Scenario | Month | Today's code, logs full | Today's code, logs 10% | Fixes 3-6, logs 10% | +4 languages, today's code | +4 languages, fixes |
+| Scenario | Month | Today's code, logs full | Today's code, logs 10% | Fixes 3-5, logs 10% | +4 languages, today's code | +4 languages, fixes |
 |---|---|---|---|---|---|---|
 | low | Launch month | $5.00 (2.7 M calls) | $5.00 | $5.00 (1.0 M) | $5.00 (7.8 M) | $5.00 (1.2 M) |
 | low | Mid-league | $5.00 (1.7 M) | $5.00 | $5.00 (0.4 M) | $5.00 (6.6 M) | $5.00 (0.5 M) |
@@ -266,11 +271,12 @@ for Workers, static assets or the CDN, so this is $0; it matters for players on 
 | mid | Launch month | $5.00 (8.0 M) | $5.00 | $5.00 (4.2 M) | $6.51 (14.2 M) | $5.00 (5.1 M) |
 | mid | Mid-league | $5.00 (3.3 M) | $5.00 | $5.00 (1.4 M) | $5.00 (8.5 M) | $5.00 (1.7 M) |
 | mid | Quiet | $5.00 (2.0 M) | $5.00 | $5.00 (0.6 M) | $5.00 (7.0 M) | $5.00 (0.7 M) |
-| high | Launch month | **$27.19** (27.0 M) | $23.00 | **$7.02** (15.6 M) | **$39.66** (37.2 M) | $8.19 (18.9 M) |
+| high | Launch month | **$27.30** (27.0 M) | $23.11 | **$7.02** (15.6 M) | **$39.77** (37.2 M) | $8.19 (18.9 M) |
 | high | Mid-league | $5.00 (9.2 M) | $5.00 | $5.00 (4.9 M) | $7.04 (15.7 M) | $5.00 (6.0 M) |
 | high | Quiet | $5.00 (4.3 M) | $5.00 | $5.00 (2.0 M) | $5.00 (9.7 M) | $5.00 (2.4 M) |
 
-The high launch month's $27 is: requests (27 M - 10 M) × $0.30 = $5.10, D1 writes (62 M - 50 M) × $1 = $12,
+The high launch month's $27 is: requests (27 M - 10 M) × $0.30 = $5.10, D1 writes (62.0 M - 50 M) × $1 = $12
+(the rebuilds since 0.32 add $0.11 of it),
 logs (27 M - 20 M) × $0.60 = $4.20, CPU ~$0.90, plus $5. Fix 3 removes the D1 line, fix 8 the logs line.
 
 On the free plan, "$0" only holds in the rows marked "yes" above. Every "no" row is a day with prices down.
@@ -282,10 +288,10 @@ On the free plan, "$0" only holds in the rows marked "yes" above. Every "no" row
 | Traffic (visits/day, 1.0) | What breaks first | Fix |
 |---|---|---|
 | Today (~50, plus ~22k crawler calls) | Nothing. Free CPU 10 ms is already exceeded by cold isolates and cache misses (p99 59 ms, Snapshot); they mostly get through, not guaranteed | Workers Paid |
-| **~2,500-5,400** | **Free: D1 100k rows written/day** (tracking, ~18 rows/visit on top of today's crawlers and jobs). Every D1 query then fails: prices, jobs, Suggest | Paid; or fix 3 (moves it to ~12k visits) |
+| **~2,500-5,300** | **Free: D1 100k rows written/day** (tracking, ~18 rows/visit on top of today's crawlers and jobs). Every D1 query then fails: prices, jobs, Suggest | Paid; or fix 3 (moves it to ~12k visits) |
 | **~8,000-10,000** | **Free: 100k worker requests/day** (7.5 calls/visit + crawlers). Worker paths 429 until 00:00 UTC | Paid; fixes 4 and 5 |
 | Any, with 2+ languages and fix 5 | **Free: 20,000 static files per version** (7,223 crawler pages × each language, plus per-card MCP files) | Paid (100,000). At 11 languages even that is tight: 7,223 × 11 = 79k crawler pages alone. Localise crawler pages for the top 4-5 languages only; keep MCP per-card files English |
-| ~13k-19k | Free: D1 5 M reads/day (full-table scans on `market.json` misses) | Fix 6 (indexes) |
+| ~45k | Free: D1 5 M reads/day. Before 0.32 it came much sooner: full-table scans on `market.json` misses ran it out on 25 Sep. Now the Trade and Bosses price files' misses lead (1-min and 5-min caches in each data centre) | Paid; a longer cache on those files (`traffic.md` fix 7) |
 | **~44k** (today's code) / **~74k** (fixed) | Paid: 10 M requests/month included is used up | Nothing to fix: $0.30 per extra million. At 150k visits/day with fixes, ~$1.70/month |
 | ~90k (today's code) | Paid: 50 M D1 writes/month included | Fix 3 / Analytics Engine; otherwise $1/M |
 | ~90k (today's code) | Paid: 20 M log events/month | Sampling (fix 8) |
@@ -366,7 +372,7 @@ English: $0 extra. What languages *do* cost:
 - **Crawler pages × languages.** If `/item/*` stays worker-rendered, crawlers fetch every page in every language:
   40k calls/day becomes ~200k with five languages (the "+4 languages, today's code" column: $40 in the high launch
   month). With fix 5 (static crawler pages) it is $0.
-- **Static file count**: 7,223 pages × 5 languages = 36k files, over Free's 20,000 per version; inside Paid's
+- **Static file count**: 7,223 pages × 5 languages = 36k files (plus the 167 in `dist/` today), over Free's 20,000 per version; inside Paid's
   100,000. Eleven languages would not fit with per-card MCP files too.
 - Index files per language (~2 MB each) are free static requests.
 
@@ -383,7 +389,7 @@ processor still takes roughly 2.9% + $0.30: a $5 tip lands as ~$4.55; Unverified
 <https://schoolmaker.com/blog/ko-fi-pricing>); one source says new Ko-fi accounts can be charged 5% on tips until
 it is switched off (Unverified, <https://knowyourcut.com/blog/kofi-fees-2026>). Crypto: no platform fee.
 
-So the honest message is **"the costs are covered; here is where the rest goes"**, not "help keep the lights on".
+So the message is **"the costs are covered; here is where the rest goes"**, not "help keep the lights on".
 Saying the real, small number is the classy part.
 
 ### The running-costs page
@@ -409,8 +415,9 @@ worker calls. Updated once a month from the Cloudflare invoice and the Ko-fi das
 
 Shown **only** when one of these is true, and says the real numbers:
 
-1. On Free: today's worker requests or D1 writes pass 80% of the daily limit (the dashboard's `stats.plan`
-   already computes this; fix its request count first, see `traffic.md`).
+1. On Free: today's worker requests, D1 writes or D1 reads pass 80% of the daily limit (the dashboard's
+   `stats.plan` already computes this, rows read included since 0.32; fix its request count first, see
+   `traffic.md`).
 2. On Paid: the month's usage cost passes the month's donations, or a Budget alert fired.
 3. An incident: the worker returned 429s or D1 failed in the last hour.
 
@@ -447,8 +454,8 @@ Short, plain, no helper talk (passes the same rules as `tools/dev/voice.mjs`: no
 - **Now → 1 Dec 2026**: stay on Free (22% used). Add the WAF kill-switch rules and the rate-limit rule (fix 2). Fill
   `data/support.json`. Decide the rare shapes list (#94) and reserve 8 searches/hour.
 - **By 1 Dec**: Workers Paid, Budget alerts at $10 and $25, log sampling, `cpu_ms` cap. Load test on a preview.
-- **With the 1.0 front end**: fixes 3-6 (tracking lighter or in Analytics Engine, `sw.js`/`leagues.json` static,
-  crawler pages static, indexes). Running-costs page and the banner rules.
+- **With the 1.0 front end**: fixes 3-5 (tracking lighter or in Analytics Engine, `sw.js`/`leagues.json` static,
+  crawler pages static; the indexes, fix 6, are done). Running-costs page and the banner rules.
 - **After 1.0 week 1**: read the real numbers (`node tools/dev/dash.mjs --raw cloudflare`) against the table in
   section 4, re-pick the scenario, and publish the first month's costs.
 - **Languages**: Russian first, then Portuguese-BR and Korean, after fix 5.
