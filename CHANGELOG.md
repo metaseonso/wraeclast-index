@@ -45,6 +45,17 @@ The owner, 27 September 2026, on the framework plan: "A" — start now, in order
 - **Last good reads shape as well as count:** a field that falls away (on half the rows or more, losing 40% of
   its share), a field that comes back in a new shape, or raw game ids where a player reads them fails the pull
   and keeps the last good copy. The fields a player never reads (Technical details, search words) may hold ids.
+- **The index is cut** (`tools/shards.py`, the last pipeline stage): `data/manifest.json` (5.6 KB, never kept
+  long), search rows per kind (`data/search/<k>.<hash>.json`, 1.58 MB, 371 KB gzip), card bodies in files of
+  about 200 KB (`data/cards/<k>/<nn>.<hash>.json`) and the crawler's own files (`data/seo/…`). Hashed names are kept
+  a year. `worker/seo.js` reads only the cut: an item page's work goes from 62–66 ms to 11–15 ms, /passives 69 → 19
+  ms, the sitemap 72 → 28 ms, and the budget's 1 MiB parse line is back. `index.json`, `index-core.json` and
+  `index-rest.json` still ship, unchanged, for anyone building on them. The cut never carries the old anoint cost.
+- **Search runs in a worker** (`assets/searchworker.js`, the rules moved unchanged into `assets/rank.js` and
+  `assets/graph.js`): 252 of 252 searches and 1,101 of 1,101 cards' Connections match the old page, and the frame
+  counts are identical. The page holds only the cards it shows, and a card comes whole from its file when it is
+  drawn or opened. Home before a search: 2,097 → 321 KB of JSON, 8 → 2 MB heap. At 10x the cards (77,070) a search
+  costs the page 2 ms; the worker does the rest. Tabs still load the whole index; each tab loading only its kinds is next.
 - **Gems and keywords come from the game files, not the artifact.** `tools/gems.py` (RePoE `skill_gems`, `skills`,
   `gem_tags`) and `tools/keywords.py` (`keywords`, with counts from the other blocks) build the drill-down's gem
   and keyword files; `python tools/sync.py --from-game [gems,keywords]` runs them with `explore.html` as its own
