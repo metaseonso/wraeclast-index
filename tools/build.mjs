@@ -97,6 +97,8 @@ async function served(){
    data/, a file ships only when a page, a module, the worker or sw.js asks for it:
      - a file named by its content (name.<hash>.json: the drill-down page's data, tools/sync.py) by its exact path,
        so a copy the page stopped naming stays in the repo at most and never ships
+     - a file data/manifest.json names (the index cut a piece at a time, tools/shards.py): the page, the search
+       worker and the crawler pages read the manifest and ask for what it names
      - any other file by its name, or by its folder when the code builds the name ('data/craft/' + id + '.json')
    tools/dev/budget.mjs fails on a data file nothing reads at all, site or tool. */
 const PUBLIC = [
@@ -110,10 +112,22 @@ async function siteText(files){
     if(d.isFile() && d.name.endsWith('.js')) parts.push(await readFile(join(ROOT, 'worker', d.name), 'utf8'));
   return parts.join('\n');
 }
+// every file a manifest names, wherever it names one ({"file": path})
+function manifestFiles(man){
+  const out = new Set();
+  (function walk(v){
+    if(!v || typeof v !== 'object') return;
+    if(typeof v.file === 'string') out.add(v.file);
+    for(const x of Object.values(v)) walk(x);
+  })(man);
+  return out;
+}
 async function asked(files){
   const text = await siteText(files), left = [];
+  let cut = new Set();
+  try { cut = manifestFiles(JSON.parse(await readFile(join(ROOT, 'data', 'manifest.json'), 'utf8'))); } catch {}
   const keep = files.filter(f => {
-    if(!f.startsWith('data/') || PUBLIC.some(([re]) => re.test(f))) return true;
+    if(!f.startsWith('data/') || PUBLIC.some(([re]) => re.test(f)) || cut.has(f)) return true;
     const name = f.slice(f.lastIndexOf('/') + 1), dir = f.slice(0, f.lastIndexOf('/') + 1);
     const ok = HASHED.test(f) ? text.includes(f) : text.includes(name) || text.includes("'" + dir + "'") || text.includes('"' + dir + '"');
     if(!ok) left.push(f);

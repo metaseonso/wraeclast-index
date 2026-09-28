@@ -48,15 +48,17 @@ Every number is in `LIMITS` at the top, each with where it comes from. A warn pa
 | files in `dist/` | 10,000 | 18,000 | Cloudflare stops at 20,000 on the free plan |
 | a file the worker parses | 512 KiB | 1 MiB | 10 ms of CPU a request on the free plan |
 | home's JSON before a search | | 700 KiB | the owner's line, for a phone |
+| what the search reads before its first answer | 2 MiB | 4 MiB | past the warn, search rows load per kind on need |
 | a file a job sends the database | | 1.2 MB | a D1 row holds 2 MB; `worker/files.js` takes 1.5 MB |
 
-What the worker parses is read out of `worker/`: the shipped files it fetches through `env.ASSETS` and the
-files the jobs send in (`worker/files.js` NAMES). The home page's JSON is `index.html`'s own fetches and the
-reads in `assets/app.js` that do not wait for `need()`; one the worker builds (`market.json?part=live`) is
-measured on the live site, or from the shipped copy with `--offline`. A file already over a line when this
-check came in is in `HELD`, at a ceiling and with its reason: it warns until it is back under, and fails past
-the ceiling. On 27 Sep: `data/index.json` 2.66 MiB, held at 3 MiB (`worker/seo.js` parses it once per isolate,
-17 ms here).
+What the worker parses is read out of `worker/`: the shipped files it fetches through `env.ASSETS`, every file
+`data/manifest.json` names for the crawler pages (`tools/shards.py`), and the files the jobs send in
+(`worker/files.js` NAMES). The home page's JSON is `index.html`'s own fetches and the reads in `assets/app.js`
+that do not wait for `need()`; one the worker builds (`market.json?part=live`) is measured on the live site, or
+from the shipped copy with `--offline`. The search line is the manifest, the card meta and every kind's search
+rows. A file already over a line when this check came in is in `HELD`, at a ceiling and with its reason: it
+warns until it is back under, and fails past the ceiling. None is held since 27 Sep: `data/index.json` (2.66 MiB)
+was, until `worker/seo.js` moved to the cut. A file the manifest names counts as read.
 
 It also fails a data file nothing reads: a file under `data/` no page, module, worker file, `sw.js`, tool or
 workflow names. A file named by its content (`name.<hash>.json`, the drill-down's data) counts only by its

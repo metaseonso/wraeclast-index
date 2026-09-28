@@ -8,15 +8,19 @@
    node tools/build.mjs first. Every limit is in LIMITS below, with where its number comes from. A warn line is
    printed and passes; a fail line fails.
 
-   Six lines:
+   Seven lines:
      file      every file dist/ serves, one at a time
      count     how many files dist/ holds
      parse     every file the worker reads and parses while it answers a request: the shipped files it reads through
-               env.ASSETS (worker/seo.js, worker/prices.js) and the files the jobs send in, which it parses out of
-               the database (worker/files.js NAMES). Found in the worker's code, not listed here
+               env.ASSETS (worker/seo.js, worker/prices.js), every file data/manifest.json names for the crawler
+               pages ("seo", tools/shards.py) when the worker reads the manifest, and the files the jobs send in,
+               which it parses out of the database (worker/files.js NAMES). Found in the worker's code and the
+               manifest, not listed here
      paint     the JSON the home page asks for before a search: index.html's own fetches and assets/app.js's reads
                that do not wait for need(). A file the worker builds (wrangler.jsonc run_worker_first) is measured
                on the live site, since only the worker can make it; --offline measures the shipped copy instead
+     search    what the search reads before its first answer, off data/manifest.json: the manifest, the card meta
+               and every kind's search rows (assets/searchworker.js reads them off the page's thread)
      d1        every file a job sends to the database (tools/sitedata.py publish, worker/files.js NAMES), at the
                size the job last wrote it in data/
      orphan    a file under data/ that nothing reads: no page, module, worker file, sw.js, tool or workflow names it
@@ -46,6 +50,9 @@ const LIMITS = {
   parse: {warn: 512 * KiB, fail: 1 * MiB},
   // the owner's line, not Cloudflare's: what a phone downloads and parses before the search bar answers
   paint: {fail: 700 * KiB},
+  // what the search worker holds to answer: every kind's search rows. Past the warn, the rows want to load per
+  // kind on need rather than all at once (issue #96)
+  search: {warn: 2 * MiB, fail: 4 * MiB},
   // D1: a row holds at most 2,000,000 bytes (/d1/platform/limits/); worker/files.js takes 1.5e6 at most.
   // Decimal megabytes, like both of those
   d1:    {fail: 1.2e6, cap: 1.5e6},
@@ -53,9 +60,7 @@ const LIMITS = {
 /* Over a line before this check existed. Each is held at a ceiling so it cannot grow unseen, with the reason;
    it shows as a warn until it is back under the line, and fails past the ceiling. */
 const HELD = {
-  parse: {
-    'data/index.json': {max: 3 * MiB, why: 'worker/seo.js parses it for the item pages, once per isolate, and keeps it'},
-  },
+  parse: {},   // data/index.json was held at 3 MiB until 27 Sep 2026: worker/seo.js now reads the cut (tools/shards.py)
 };
 
 /* ---------- helpers ---------- */
@@ -76,6 +81,15 @@ async function walk(dir, skip = () => false){
 }
 const SKIP = new Set(['.git', 'node_modules', 'dist', 'tmp', '.wrangler', '__pycache__', 'cache']);
 const skipRepo = (p, d) => d.isDirectory() && SKIP.has(d.name);
+const readJSON = p => read(p).then(JSON.parse).catch(() => null);
+// every file a manifest names, wherever it names one ({"file": path})
+function named(v, out = []){
+  if(v && typeof v === 'object'){
+    if(typeof v.file === 'string') out.push(v.file);
+    for(const x of Object.values(v)) named(x, out);
+  }
+  return out;
+}
 
 /* ---------- dist/, fresh ---------- */
 // dist/sw-files.json is the build's last write: any file or folder in the repo newer than it and dist/ is stale
@@ -100,8 +114,14 @@ async function workerFiles(){
   const all = Object.values(src).join('\n');
   const found = new Map();
   const add = (name, how) => { const f = 'data/' + name; found.set(f, [...new Set([...(found.get(f) || []), how])]); };
-  // shipped files, fetched through env.ASSETS and parsed: asset(env, origin, 'x.json'), assetJSON(env, origin, '/data/x.json')
-  for(const m of all.matchAll(/\basset(?:JSON)?\(\s*env\s*,\s*[\w.]+\s*,\s*'(?:\/data\/)?([\w.-]+\.json)'/g)) add(m[1], 'shipped');
+  // shipped files, fetched through env.ASSETS and parsed: asset(env, origin, 'x.json'), assetJSON(env, origin, '/data/x.json'),
+  // assetGet(env, origin, '/data/x.json')
+  for(const m of all.matchAll(/\basset(?:JSON|Get)?\(\s*env\s*,\s*[\w.]+\s*,\s*'(?:\/data\/)?([\w.-]+\.json)'/g)) add(m[1], 'shipped');
+  // the crawler pages' own files, named in the manifest the worker reads
+  if(found.has('data/manifest.json')){
+    const man = await readJSON('data/manifest.json');
+    for(const f of named(man && man.seo)) found.set(f, ['shipped, named in data/manifest.json']);
+  }
   // files the jobs send in, parsed out of the database: published(env, origin, 'x.json'), and every name /api/data/put takes
   for(const m of all.matchAll(/\bpublished(?:Row)?\(\s*env\s*,\s*[\w.]+\s*,\s*'([\w.-]+\.json)'/g)) add(m[1], 'database');
   for(const n of d1Names(src['files.js'] || '')) add(n, 'database');
@@ -138,7 +158,9 @@ async function orphans(){
     .filter(f => /\.(html|m?js|py|ya?ml|jsonc)$/.test(f) && !f.startsWith('data/') && !SELF.has(f));
   const text = (await Promise.all(readers.map(read))).join('\n');
   const data = (await walk(join(ROOT, 'data'))).filter(x => !x.dir).map(x => rel(x.p));
+  const cut = new Set(named(await readJSON('data/manifest.json')));   // what the manifest names is read through it
   return data.filter(f => {
+    if(cut.has(f)) return false;
     const name = f.slice(f.lastIndexOf('/') + 1), dir = f.slice(0, f.lastIndexOf('/') + 1);
     if(HASHED.test(f)) return !text.includes(f);
     return !text.includes(name) && !text.includes("'" + dir + "'") && !text.includes('"' + dir + '"');
@@ -177,7 +199,9 @@ export async function checkBudget({offline = false} = {}){
     try { buf = await readFile(join(DIST, f)); } catch { try { buf = await readFile(join(ROOT, f)); } catch {} }
     if(!buf){ rows.parse.push({line: 'parse', what: f, n: 0, state: 'ok', note: 'not in this repo (' + via.join(', ') + ')'}); continue; }
     const text = buf.toString('utf8'), t = [];
-    for(let i = 0; i < 3; i++){ const a = performance.now(); JSON.parse(text); t.push(performance.now() - a); }
+    // a words file (worker/seo.js, llms-full.txt) is split, not parsed
+    const readIt = f.endsWith('.json') ? () => JSON.parse(text) : () => text.split('\u0001');
+    for(let i = 0; i < 3; i++){ const a = performance.now(); readIt(); t.push(performance.now() - a); }
     const r = note(judge('parse', buf.length, f, LIMITS.parse, (HELD.parse || {})[f]));
     r.ms = t.sort((a, b) => a - b)[1];
     r.via = via;
@@ -203,6 +227,17 @@ export async function checkBudget({offline = false} = {}){
   }
   const paintSum = rows.paint.reduce((a, r) => a + r.n, 0);
   rows.paintSum = note(judge('paint', paintSum, 'home, before a search', LIMITS.paint));
+
+  // search: the manifest, the card meta and every kind's search rows
+  const man = await readJSON('data/manifest.json');
+  rows.search = [];
+  if(!man) bad.push({line: 'search', what: 'data/manifest.json', state: 'FAIL', note: 'not there: run python tools/shards.py'});
+  else for(const f of ['data/manifest.json', man.meta.file, ...Object.values(man.kinds).map(k => k.search.file)]){
+    let n = 0;
+    try { n = (await stat(join(DIST, f))).size; } catch { try { n = (await stat(join(ROOT, f))).size; } catch {} }
+    rows.search.push({line: 'search', what: f, n, state: 'ok'});
+  }
+  rows.searchSum = note(judge('search', rows.search.reduce((a, r) => a + r.n, 0), 'the search, before its first answer', LIMITS.search));
 
   // d1
   const py = await readdir(join(ROOT, 'tools')).catch(() => []);
@@ -235,6 +270,7 @@ export function budgetLine(r){
     fmt(r.rows.count[0].n) + '/' + fmt(LIMITS.count.fail) + ' files',
     'parse ' + (parse ? parse.what.replace(/^data\//, '') + ' ' + size(parse.n) + (parse.state === 'held' ? ' (held)' : '/' + size(LIMITS.parse.fail)) : '-'),
     'paint ' + size(r.rows.paintSum.n) + '/' + size(LIMITS.paint.fail),
+    'search ' + size(r.rows.searchSum.n) + '/' + size(LIMITS.search.fail),
     'd1 ' + (d1 ? mb(d1.n) + '/' + mb(LIMITS.d1.fail) : '-'),
     r.rows.orphan.length + ' orphans',
   ].join(' · ');
@@ -261,6 +297,10 @@ function table(r){
   out.push('JSON the home page reads before a search (fail over ' + size(LIMITS.paint.fail) + ')');
   for(const x of r.rows.paint) row(x.what, size(x.n), '', x.note);
   row('together', size(r.rows.paintSum.n), r.rows.paintSum.state, size(LIMITS.paint.fail - r.rows.paintSum.n) + ' to the line');
+  out.push('');
+  out.push('what the search reads before its first answer (warn ' + size(LIMITS.search.warn) + ', fail ' + size(LIMITS.search.fail) + ')');
+  for(const x of r.rows.search) row(x.what, size(x.n), '', '');
+  row('together', size(r.rows.searchSum.n), r.rows.searchSum.state, size(LIMITS.search.fail - r.rows.searchSum.n) + ' to the line');
   out.push('');
   out.push('bodies the jobs send to the database (fail over ' + mb(LIMITS.d1.fail) + '; worker/files.js takes ' + mb(LIMITS.d1.cap) + ')');
   for(const x of [...r.rows.d1].sort((a, b) => b.n - a.n)) row(x.what, x.n ? mb(x.n) : '-', x.state, x.note || mb(LIMITS.d1.fail - x.n) + ' to the line');
