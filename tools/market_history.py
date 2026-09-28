@@ -31,12 +31,13 @@ import marketlib as ml
 import market_inflation
 import market_leaguedays
 import market_liquidity
+import market_sell
 import market_shocks
 import sitedata
 
 INDEX = 'data/market/index.json'
 CARDS = 'data/market/card/'
-PRODUCTS = [market_liquidity, market_leaguedays, market_inflation, market_shocks]   # in build order: each ticket's product adds itself here
+PRODUCTS = [market_liquidity, market_leaguedays, market_inflation, market_shocks, market_sell]   # in build order: each ticket's product adds itself here
 
 
 class Ctx:

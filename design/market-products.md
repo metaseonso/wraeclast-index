@@ -197,6 +197,32 @@ new field: `changed` reads `data/market/card/@did.json` beside `data/patchnotes.
 **The owner decides**: the windows (72 and 24 hours), the listing floor (24 and 8 hours, 5 divines), 5 each way, and
 the card's 25% line.
 
+## #103 Best time to sell: `data/market/sell.json` and the card's map
+
+29.8 kB (10.5 kB gzipped). `tools/market_sell.py`. The whole market's week (`market`: 168 cells, Monday 00:00 UTC
+first, 100 = an average hour) with its line, and every currency with a map: `[name, weeks, busiest first cell, its
+volume, dearest first cell, its price per mille]`. The card's part (`sell`): its 168 volume cells and 168 price cells,
+and its two plain lines.
+
+**The rule.** Every league's hours after its first 7 league days (launch week trades like no other), up to the last
+complete week, pooled; a UTC day with fewer than 20 hours read is left out. Each hour against its own day: volume as the
+hour's divines traded over that day's hourly average, price as the hour's price over that day's price. So a busy league
+and a quiet one, or a league whose exalted is worth ten times another's, weigh the same. A currency gets its map where
+it traded in 8 or more weeks and in 4 or more hours in every one of the 168 cells. Busiest and dearest: the best 3 hours
+in a row.
+
+**Today.** 654 currencies have a map. The whole market trades most Wed 13:00-16:00 UTC, 1.4x the day's average.
+Orb of Annulment: "Trades most Mon 13:00-16:00 UTC: 1.4x the day's average volume, 93 weeks." and "Sells highest Sun
+21:00-00:00 UTC: +0.8% on the day's price, 93 weeks." The price side is small for staple currencies (under 1%); the
+volume side is where the week shows.
+
+**In the frame.** A body block, popup only (the grid draws the one line): `sellmap: {type: 'heatmap', slot: 'body',
+file: 'data/market/card/@did.json', of: 'sell', label: 'When it trades'}`, 7 rows by 24, volume by default and price on
+a switch, UTC with the hours named. The line `Trades most ...` is the fact slot's, `weeks` in it every time.
+
+**The owner decides**: the 7 skipped days, 8 weeks and 4 hours a cell, the 3-hour window, and whether the map shows UTC
+or the reader's own time (the file is UTC; shifting is the page's).
+
 ## When new hours arrive
 
 The archive job in `wraeclast-data` (`.github/workflows/archive.yml`) adds the new hours every 6 hours (at :23 past 0,
