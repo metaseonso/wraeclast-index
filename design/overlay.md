@@ -3,6 +3,8 @@
 Ticket: #115. Background and the tool-by-tool evidence: [`price-check.md`](price-check.md) (#114). Phone and
 console: #117. Written 27 Sep 2026. **No overlay code exists yet**; this is the plan.
 
+Updated for main at `c123ad2` (28 Sep 2026): where the data comes from, and the patch-changes file.
+
 Labels as in `price-check.md`: **Source: X**, **Unverified**, **Estimate**, **Subject to change (depends on GGG)**.
 Code references like `EE2 main/src/proxy.ts:5-19` point at the commits listed there.
 
@@ -122,7 +124,7 @@ Plan:
 1. Take the 69 from EE2 and Sidekick (MIT; keep their notice in the fixtures folder).
 2. The texts themselves are the game's words, not XileTrade's code, but they sit in a GPL repo: **owner
    decides** whether to copy those 54. If not, fill the gap with our own copies from the current league.
-3. Add our own copies for every WI card kind with fewer than 3 items, and for every new patch (old fixtures
+3. Add our own copies for every WI card kind (`assets/kinds.js`) with fewer than 3 items, and for every new patch (old fixtures
    miss new lines). Target: 100 or more, at least one per WI kind.
 4. Each fixture gets the WI card it must open, written by hand. The test: every fixture parses without error
    and opens that card. Run it in `tools/dev/` beside the other checks.
@@ -137,7 +139,7 @@ WI's card for the item (#115), with the item's own facts on top:
 | How easy to trade | #99 | Easy / Slow / Thin, with the rule written on the card. |
 | Worth crafting | WI craft data | For bases. |
 | Where it drops | WI | |
-| What changed in the patch | WI patch notes | |
+| What changed in the patch | WI patch notes; per card, `data/changes/<build>.json` (`tools/diff.py`) once one is committed | |
 | Danger | #77 | Waystones and tablets: the mods read from the copied text. |
 | Trial modifiers | #82 | |
 | For a rare | the copied mods | Base price and tiers. One button: open the official trade site with the search filled in (in the browser). The game's own Shift+Alt+click check also works. |
@@ -149,9 +151,12 @@ the same card on a phone (#117).
 
 ## Where the data comes from
 
-- WI's public data, fetched from wraeclastindex.fyi: the search index and the price file, cached on disk,
-  refreshed at most once an hour (WI's prices change hourly). Which file(s) exactly depends on the public read
-  API decision (`price-check.md`, owner decision 3).
+- WI's public data, fetched from wraeclastindex.fyi: the search index (`data/index-core.json` and
+  `data/index-rest.json`, static files, free to serve) and today's prices (`/data/market.json?part=live`, one
+  worker call), cached on disk, refreshed at most once an hour (WI's prices change hourly). So one install
+  costs the site about 24 worker calls a day at most (Estimate). Which file(s) exactly depends on the public read
+  API decision (`price-check.md`, owner decision 3). The daily price copy (`tools/pricehistory.py`) is kept in a
+  private repo, so it is not a source for the overlay.
 - **No trade API calls** in the first version. So no `X-Rate-Limit-*` handling, no Cloudflare, no session
   cookie, and a player's IP cannot be limited because of us. If a later version adds a live search, it must
   follow the headers the way EE2 does (`EE2 renderer/src/web/price-check/trade/common.ts:59-146`) and send

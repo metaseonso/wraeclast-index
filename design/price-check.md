@@ -2,6 +2,9 @@
 
 Ticket: #114. Overlay design: [`overlay.md`](overlay.md) (#115). Written 27 Sep 2026.
 
+Updated for main at `c123ad2` (28 Sep 2026): the WI-side references re-checked (`tools/pricepull.py`, the price
+files, what `dist/` ships). The other tools' code was not read again.
+
 Every claim below points at the code that does it. Where only a web page or a forum post says it, the line
 says **Source: X**. Where nothing checked it, the line says **Unverified**. Anything that GGG can change
 without notice is marked **Subject to change (depends on GGG)**. Numbers that are guesses are marked
@@ -225,7 +228,9 @@ No tool has a plugin point for an outside price source. Each outside site is cod
 
 - **Sidekick**: the best fit. It has one module per price site (`Sidekick.Apis.Poe2Scout` shows history from
   poe2scout's public API, `ScoutHistoryProvider.cs:78`), and says it accepts most PRs after an issue. WI would
-  need a stable public read API: per item, price, age, daily history, liquidity pill. Then a
+  need a stable public read API: per item, price, age, daily history, liquidity pill. Part of it ships already:
+  every top-level `data/*.json` is published as it is (`tools/build.mjs`: "the index, open for builders"), and
+  today's prices are `/data/market.json?part=live` (a worker path, built once per price change since 0.32). Then a
   `Sidekick.Apis.WraeclastIndex` module. Their decision, not ours.
 - **EE2**: only allows hard-coded hosts (`main/src/proxy.ts:5-19`), and its `AI_POLICY.md` forbids agent-written
   code. A change there must be written by hand by the owner and accepted by its author.
