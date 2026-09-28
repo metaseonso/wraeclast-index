@@ -59,7 +59,7 @@ from phrases import Matcher  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent
 # The lines a player reads, per kind of card. A card has one or the other, never both.
-LINE_FIELDS = {'u': 'ls', 'b': 'ls', 'p': 'ls', 'g': 't', 'h': 'ls', 'q': 'ls'}
+LINE_FIELDS = {'u': 'ls', 'b': 'ls', 'p': 'ls', 'g': 't', 'h': 'ls', 'q': 'ls', 'y': 'ls'}   # y: an ascendancy's notables
 NO_LINK = {'w', 'q'}       # keywords and interactions: the page marks those itself as the card is drawn
                            # (assets/marks.js) - 9,500 more spans would push data/index-core.json past its
                            # size budget, and the browser already holds every one of those cards
@@ -70,7 +70,7 @@ FORMS = {'w', 'h'}         # kinds with other words they are reached by ("f")
 # A line that declares which kind it names. "Grants Skill: Ice Nova" is a gem, whatever else shares the name.
 PREFERS = (('Grants Skill:', 'g'),)
 KIND = {'g': 'gems', 'u': 'uniques', 'p': 'passives', 'b': 'bases', 'a': 'atlas', 'c': 'currency', 'w': 'keywords',
-        'h': 'mechanics', 'i': 'item classes', 'q': 'interactions'}
+        'h': 'mechanics', 'i': 'item classes', 'q': 'interactions', 'd': 'buffs', 'y': 'ascendancies'}
 
 
 def lines_of(it):

@@ -56,6 +56,28 @@ search, answers and training. Same page for bots and people; no cloaking.
   Grinding Gear Games. `Content-Signal: search=yes, ai-input=yes, ai-train=yes`. CORS open on `/data/*` files.
 - The dashboard counts landings on item and list pages (`assets/landing.js`, one view on hide) and groups arrivals
   as AI, Search, Social, Direct and Other.
+## Next — Boss hits: how hard things hit (#80, #126), data only
+
+- **`data/bosshits.json`** (`tools/bosshits.py`, 66.7 kB, 14 kB gzipped): per area level a normal monster's life,
+  damage, accuracy, armour and evasion; for all 104 bosses in `data/bosses.json`, life and damage multipliers,
+  attack time, resistances and four big hits with type, size at the boss's level, cooldown and the working.
+- **The formula checked:** 639 values poe2db prints for six bosses come out to the unit (without unique rarity);
+  the spell formula is Path of Building's. Boss damage on spells, unique rarity and tier bonuses are Subject to change.
+- A patch stage of `tools/pipeline.py` (`bosshits`, after `bosses`): the tables come from `gamepull.dat()`, and
+  `tools/lastgood.py` holds the file to its own `ids` list. Design for the card: `design/boss-hits.md`.
+
+## Next — GGG's patch notes, line by line, on the cards they name (#86)
+
+- **`tools/patchnotes.py`**, the `patchnotes` stage of `tools/pipeline.py` (patch cadence, after the stages that
+  write the index): the first post of every thread `data/patches.json` names (`tools/patches.py`, the registry
+  on main), split into lines under GGG's own sections and matched to the cards the index holds. The patch dates
+  are the registry's; nothing here reads the forum's listing pages or keeps a date of its own.
+- **`data/patchnotes.json`**: 259 threads, 6,175 lines, 4,067 naming a card (66%), 1,925 cards named, keyed by
+  kind and name; a patch is its registry row id. The 2,108 that name nothing are counted, and listed in
+  `tools/dev/patchgaps.txt`. 747 kB. Nothing reads it yet; `design/patch-notes.md` proposes the card's
+  **Changed in** block.
+- An ordinary run reads only threads it has no lines for and the last three days' (GGG edit their notes);
+  `--all` reads every one again (about 7 minutes) and gives the same file.
 
 ## Next — One top bar, the index in groups
 
