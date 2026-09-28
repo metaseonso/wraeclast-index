@@ -274,6 +274,14 @@ export const FIELDS = {
      name is matched to the card's name exactly, so "2 Divine Orbs" is not the Divine Orb card. A pool whose
      shape is ours and not the table's says so beside it. Never multiplied by a price (design/hidden-odds.md). */
   weight:   {type: 'odds', at: 'n', slot: 'body', file: 'data/odds.json', label: 'How often it rolls'},
+  /* A league mechanic, on the game's own keyword card for it (tools/mechanics_league.py, data/leaguemech.json,
+     found by the card's own key). `share`: its own currency's share of what the Currency Exchange traded this
+     league, with the move over 7 days and the league's days as a line. Measured from GGG's feed hour by hour,
+     never modelled. `mechlines`: what it holds that has no card — the waystone modifiers that add it, the
+     campaign bosses a rite calls up. A keyword that is no mechanic finds nothing and draws nothing. */
+  share:    {type: 'share', slot: 'body', file: 'data/leaguemech.json', label: 'Of what the Currency Exchange traded'},
+  mechlines: {type: 'mechlines', slot: 'body', file: 'data/leaguemech.json', of: ['waystone', 'campaign'],
+    say: {waystone: 'Waystone modifiers that add it', campaign: 'What its rites call up in the campaign'}},
   quote:    {type: 'quote', at: 'qt', slot: 'body', every: 1},   // the game's own flavour line
   options:  {type: 'options', at: 'o', slot: 'body', every: 1},
   flow:     {type: 'flow', at: 'fl', slot: 'body', every: 1},
@@ -527,13 +535,13 @@ export const KINDS = [
 
   {k: 'w', one: 'Keyword', tone: 'accent', many: 'Keywords', sec: 'keywords', index: true, search: true, crawl: {word: 'keyword', list: 'keywords', rank: 3, is: 'DefinedTerm'},
    kw: 'id', rank: -25, words: {n: 'own', f: 'alt', mark: 'game'},
-   fields: [...HEAD, 'uses', ...SAYS, 'weight', ...REST, ...FOOT],
+   fields: [...HEAD, 'uses', ...SAYS, 'share', 'weight', 'mechlines', ...REST, ...FOOT],
    acts: ['full', 'pin'],
    rel: [...KWUSE, 'named', 'namedby']},
 
   {k: 'h', one: 'Mechanics', tone: 'blood', many: 'Mechanics', index: true, search: true, mark: 'ls',
    words: {f: 'own', mark: 'ours', only: 'gate'},
-   fields: [...HEAD, ...BODY, ...FOOT],
+   fields: [...HEAD, ...SAYS, 'share', 'mechlines', ...REST, ...FOOT],
    acts: ['pin'],
    rel: ['namedby', 'cat']},
 
