@@ -3,6 +3,29 @@
 The full list of changes. The public patch notes (data/changelog.json, shown on the site) stay short.
 Add the details here first, then a short public line there.
 
+## Next — Crawler pages as files, the licence, and AI welcome
+
+The owner, 28 September 2026: CC BY 4.0 for the index's own compilation and prices, and AI crawlers welcome for
+search, answers and training. Same page for bots and people; no cloaking.
+
+- **The crawler pages are files.** `tools/build.mjs` renders them with `worker/seo.js` `crawl()` (one set of
+  templates): 7,214 item pages and a Markdown copy of each (`/md/item/<slug>.md`, noindex), the 7 lists, 9 sitemaps,
+  13 llms files, `404.html` and `crawl.json` — 14,458 files, 106 MB. `run_worker_first` keeps only `/search` of the
+  crawler paths; unknown paths get the site's own not-found page (`not_found_handling: "404-page"`); the 239 bare
+  unique names redirect through `_redirects`. Other spellings of an item address, which the worker used to
+  redirect, now get the not-found page. Search engines and AI cost the worker nothing.
+- **Fresh every 6 hours:** `.github/workflows/rebuild.yml` pushes one line of `.github/rebuild-stamp` to main at :41
+  every 6 hours (skipped when main moved in the last 5), so Cloudflare builds again with the current prices, then
+  pings IndexNow with the pages whose hash changed. At most 4 commits a day; they start no other workflow.
+- **Every price has its age** on every page and list; titles and descriptions carry no price. JSON-LD has no
+  `offers` (`priceCurrency: "Divine Orb"` was invalid); the price is an `additionalProperty` with its unit, source
+  and checked time, plus `isBasedOn`, `license`, `creditText` and `copyrightNotice`.
+- **Terms, the same everywhere** (robots.txt, llms.txt, every `/llms/` file; the guard checks they match): CC BY 4.0
+  for the index's own compilation and prices, credit Wraeclast Index and link the page, game text and art ©
+  Grinding Gear Games. `Content-Signal: search=yes, ai-input=yes, ai-train=yes`. CORS open on `/data/*` files.
+- The dashboard counts landings on item and list pages (`assets/landing.js`, one view on hide) and groups arrivals
+  as AI, Search, Social, Direct and Other.
+
 ## Next — One top bar, the index in groups
 
 The owner, 27 September 2026, on the first layout proposal: it was a mockup, not the site, and was set aside;
