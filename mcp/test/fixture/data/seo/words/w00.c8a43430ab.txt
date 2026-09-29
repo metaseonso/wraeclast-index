@@ -1,0 +1,4 @@
+### Freeze
+Keyword · https://wraeclastindex.fyi/item/freeze-keyword
+Used by 61 gems, 24 uniques, 68 passives
+Freeze is an Ailment that causes targets to be unable to move or act, and lasts 4 seconds by default. Cold damage from Hits Contributes to Freeze Buildup on enemies until they become Frozen.freeze-keywordfreezeFreeze
