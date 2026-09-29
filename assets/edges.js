@@ -5,10 +5,11 @@
    names another card gives "Named on this card" one way and "Named by" the other. A keyword's own nine lists
    come from data/kwuse.json (tools/kwuse.py), loaded the first time one is needed.
 
-   Four of them read a file of their own, fetched only when a card asks for one: data/kwuse.json for a
+   Five of them read a file of their own, fetched only when a card asks for one: data/kwuse.json for a
    keyword's nine lists, data/grants.json for which item grants which skill, both ways round,
-   data/clusters.json for the tree cut into clusters, and data/dropsfrom.json for where a unique drops, both
-   ways round (tools/kwuse.py, tools/grants.py, tools/clusters.py, tools/bosses.py).
+   data/clusters.json for the tree cut into clusters, data/dropsfrom.json for where a unique drops, both
+   ways round, and data/leaguemech.json for what belongs to a league mechanic, both ways round (tools/kwuse.py,
+   tools/grants.py, tools/clusters.py, tools/bosses.py, tools/mechanics_league.py).
    `categories` says which of those it still needs.
 
    Which lists a kind shows is declared in assets/kinds.js (REL), not here. This file only answers, per list:
@@ -78,6 +79,27 @@ function clusters(C){
 }
 const clusterAt = C => (C._at || (C._at = new Map(C.id.map((id, j) => [id, j]))));
 
+/* ---------- the league mechanics (data/leaguemech.json) ----------
+   One entry per mechanic, found by the card that is it (`card`), each holding lists of card names by what they
+   are to it (REL `at`). Turned round once, the first time a card asks: a name in a list finds every mechanic
+   whose list holds it, so a currency with a mechanic of its own is a lookup. A name is the card of the group's
+   kind by that name, the way those kinds key their cards (tools/mechanics_league.py names only cards). */
+let LM = null;
+function mechs(L){
+  if(LM && LM.v === L) return LM;
+  const card = new Map(), key = new Map(), by = new Map();
+  for(const e of L.mechanics || []){
+    if(e.card) card.set(e.card, e);
+    if(e.key) key.set(e.key, e);
+    for(const [at, list] of Object.entries(e)) if(Array.isArray(list)) for(const n of list)
+      if(typeof n === 'string'){ const k = at + '\u0001' + n; if(!by.has(k)) by.set(k, []); by.get(k).push(e); }
+  }
+  LM = {v: L, card, key, by};
+  return LM;
+}
+const mechOf = (it, F) => F.leaguemech ? mechs(F.leaguemech).card.get(it.k + ':' + it.id) : null;
+const mechRows = list => cardRows([...new Set(list.filter(e => e && e.card).map(e => e.card))]);
+
 /* ---------- one edge each ---------- */
 const EDGE = {
   base(it){ return cardRows(lists(it).base); },
@@ -136,6 +158,21 @@ const EDGE = {
   // the cards of one act, of the kind the group is of; and the act a card is in
   act(it, F, r){ return cardRows((lists(it).act || []).filter(key => !r.of || key.startsWith(r.of + ':'))); },
   actof(it){ return cardRows(lists(it).actof || []); },
+  /* a league mechanic's own list, and the mechanics whose list names this card; a mechanic that is part of
+     another, and the ones that are part of this one (data/leaguemech.json `partOf`) */
+  mech(it, F, r){
+    const e = mechOf(it, F);
+    return e ? cardRows((e[r.at] || []).filter(n => typeof n === 'string').map(n => r.of + ':' + n)) : [];
+  },
+  mechof(it, F, r){ return F.leaguemech ? mechRows(mechs(F.leaguemech).by.get(r.at + '\u0001' + it.n) || []) : []; },
+  mechpart(it, F){
+    const e = mechOf(it, F);
+    return e && e.partOf ? mechRows([mechs(F.leaguemech).key.get(e.partOf)]) : [];
+  },
+  partmech(it, F){
+    const e = mechOf(it, F);
+    return e && e.key ? mechRows((F.leaguemech.mechanics || []).filter(x => x.partOf === e.key)) : [];
+  },
 };
 
 /* ---------- a keyword's own nine lists (data/kwuse.json) ----------

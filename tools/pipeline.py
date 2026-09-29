@@ -193,6 +193,14 @@ STAGES = [
                 'data/market.json', 'data/exchange.json', 'data/index.json'],
          last=['data/bosses.json', 'data/market.json', 'data/exchange.json'],
          writes=['data/index.json', 'data/index-core.json', 'data/index-rest.json'], count={'data/index.json': 'items'}),
+    # the odds pools as cards of their own (#110), each naming the cards it can roll. Before nodelinks, like world
+    dict(name='pools', run=['tools/pools.py'], cadence='patch', source='game files',
+         reads=['data/odds.json', 'data/index.json', 'data/market.json', 'assets/kinds.js'], last=['data/market.json'],
+         writes=['data/index.json', 'data/index-core.json', 'data/index-rest.json'], count={'data/index.json': 'items'}),
+    # a normal monster's life and damage at the level of each Area and Waystone card (#80)
+    dict(name='monsters', run=['tools/monsterlevels.py'], cadence='patch', source='game files',
+         reads=['data/bosshits.json', 'data/areas.json', 'data/index.json'], last=['data/bosshits.json'],
+         writes=['data/index.json', 'data/index-core.json', 'data/index-rest.json'], count={'data/index.json': 'items'}),
     dict(name='nodelinks', run=['tools/nodelinks.py'], cadence='patch', source='files',
          reads=['data/index.json'],
          writes=['data/index.json', 'data/index-core.json', 'data/index-rest.json'], count={'data/index.json': 'items'}),

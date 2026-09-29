@@ -3,7 +3,7 @@
    Every item is a live card: price and 7-day trend where poe.ninja has one, the popup, and the Trade button
    (the bulk exchange for exchange items, a trade search by base type with mod rows for tablets).
    Bosses sit under this tab: the link at the top of the page opens #/bosses (assets/bosses.js). */
-import { D, $, esc, card, flow, params, onType } from './app.js';
+import { D, $, esc, card, flow, params, onType, openDetail, hrefOf } from './app.js';
 
 const SECTS = [['ways', 'Waystones'], ['tabs', 'Tablets'], ['keys', 'Keys & invitations'], ['items', 'Atlas items'], ['tree', 'Atlas tree']];
 const HINT = {ways: 'Search waystones and mods…', tabs: 'Search tablets and mods…', keys: 'Search keys…',
@@ -127,6 +127,30 @@ function treeList(q){
   return out;
 }
 
+/* ---------- the league mechanics, by trade ----------
+   Each mechanic's share of what the Currency Exchange traded this league (data/leaguemech.json popularity,
+   tools/mechanics_league.py, #104), heaviest first. A chip opens the mechanic's card. Fetched once, after the page
+   is drawn; a file that does not load leaves no strip. */
+let LM = null;
+async function mechStrip(el){
+  const box = $('#atmech', el);
+  if(!box) return;
+  try { LM = LM || await fetch('data/leaguemech.json').then(r => r.ok ? r.json() : Promise.reject(r.status)); }
+  catch { box.remove(); return; }
+  const p = LM.popularity || {}, L = (p.leagues || [])[0];
+  if(!L || EL !== el){ box.remove(); return; }
+  const by = new Map((LM.mechanics || []).map(m => [m.key, m]));
+  const rows = (p.rows || []).map((k, i) => [by.get(k), L.total[i]]).filter(([m, v]) => m && v > 0).sort((a, b) => b[1] - a[1]);
+  const pct = v => (v / 100).toFixed(v >= 1000 ? 0 : 1) + '%';
+  box.innerHTML = '<span class="at-mhd">' + esc(L.league) + ': share of what the Currency Exchange traded</span>' +
+    rows.map(([m, v]) => '<button type="button" class="chip"' + (m.card ? ' data-key="' + esc(m.card) + '"' : ' disabled') + '>' +
+      esc(m.name) + '<span class="ct">' + pct(v) + '</span></button>').join('');
+  box.addEventListener('click', e => {
+    const b = e.target.closest('[data-key]'), c = b && D.byKey.get(b.dataset.key);
+    if(c) openDetail(c, {}, hrefOf(c));
+  });
+}
+
 /* ---------- view ---------- */
 export async function mount(el){
   EL = el;
@@ -149,6 +173,7 @@ export async function mount(el){
       (D.market ? ' · prices ' + esc(D.market.league) + ', checked over the day.' : '.') + '</p></div>' +
     '<div class="at-more"><a class="btn gold" href="#/bosses">Bosses →</a>' +
       '<p class="note">Every endgame boss: what it drops, and what the way in costs.</p></div>' +
+    '<div class="at-mech kinds" id="atmech" role="group" aria-label="League mechanics"></div>' +
     '<div class="kinds at-secs" id="atsec" role="group" aria-label="Section">' + SECTS.map(([k, l]) =>
       '<button type="button" class="chip" data-v="' + k + '" aria-pressed="' + (k === S.sec) + '">' + l + '<span class="ct"></span></button>').join('') + '</div>' +
     '<div class="at-bar"><input class="field" id="atq" type="search" autocomplete="off" spellcheck="false">' +
@@ -175,6 +200,7 @@ export async function mount(el){
     const b = e.target.closest('button'); if(!b) return;
     S[{ways: 'wk', tabs: 'tb', tree: 'sub'}[S.sec]] = b.dataset.v; render();
   });
+  mechStrip(el);
   return {update};
 }
 

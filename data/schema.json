@@ -59,6 +59,7 @@
      "by": [
       "row",
       "name",
+      "gemgold",
       "changed"
      ],
      "need": 1,
@@ -420,6 +421,18 @@
      ]
     },
     "rw": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "ro": {
      "json": [
       "string",
       "number",
@@ -821,6 +834,18 @@
      "by": [
       "declaration"
      ]
+    },
+    "ro": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
     }
    }
   },
@@ -1205,6 +1230,18 @@
      "by": [
       "declaration"
      ]
+    },
+    "ro": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
     }
    }
   },
@@ -1560,6 +1597,18 @@
      ]
     },
     "rw": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "ro": {
      "json": [
       "string",
       "number",
@@ -1946,6 +1995,18 @@
      "by": [
       "declaration"
      ]
+    },
+    "ro": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
     }
    }
   },
@@ -2293,6 +2354,18 @@
      "by": [
       "declaration"
      ]
+    },
+    "ro": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
     }
    }
   },
@@ -2451,6 +2524,24 @@
      ],
      "by": [
       "implicit"
+     ],
+     "drawn": 1
+    },
+    "ml": {
+     "json": [
+      "number"
+     ],
+     "by": [
+      "monlife"
+     ],
+     "drawn": 1
+    },
+    "md": {
+     "json": [
+      "number"
+     ],
+     "by": [
+      "mondmg"
      ],
      "drawn": 1
     },
@@ -2668,6 +2759,18 @@
      "by": [
       "declaration"
      ]
+    },
+    "ro": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
     }
    }
   },
@@ -2702,6 +2805,7 @@
       "row",
       "name",
       "adds",
+      "weight",
       "exfee",
       "changed"
      ],
@@ -3034,6 +3138,18 @@
      ]
     },
     "rw": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "ro": {
      "json": [
       "string",
       "number",
@@ -3426,6 +3542,18 @@
      "by": [
       "declaration"
      ]
+    },
+    "ro": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
     }
    }
   },
@@ -3754,6 +3882,18 @@
      ]
     },
     "rw": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "ro": {
      "json": [
       "string",
       "number",
@@ -4120,6 +4260,18 @@
      "by": [
       "declaration"
      ]
+    },
+    "ro": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
     }
    }
   },
@@ -4449,6 +4601,18 @@
      ]
     },
     "rw": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "ro": {
      "json": [
       "string",
       "number",
@@ -4797,6 +4961,18 @@
      "by": [
       "declaration"
      ]
+    },
+    "ro": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
     }
    }
   },
@@ -4879,6 +5055,413 @@
       "row"
      ],
      "drawn": 1
+    }
+   }
+  },
+  "s": {
+   "one": "Pool",
+   "many": "Odds",
+   "rows": "index.json",
+   "fields": {
+    "k": {
+     "json": [
+      "string"
+     ],
+     "by": [
+      "row"
+     ],
+     "need": 1
+    },
+    "id": {
+     "json": [
+      "string"
+     ],
+     "by": [
+      "row"
+     ],
+     "need": 1
+    },
+    "n": {
+     "json": [
+      "string"
+     ],
+     "by": [
+      "row",
+      "name",
+      "changed"
+     ],
+     "need": 1,
+     "drawn": 1
+    },
+    "s": {
+     "json": [
+      "string"
+     ],
+     "by": [
+      "row",
+      "sub"
+     ],
+     "need": 1,
+     "drawn": 1
+    },
+    "img": {
+     "json": [
+      "string"
+     ],
+     "by": [
+      "row",
+      "art"
+     ]
+    },
+    "ic": {
+     "json": [
+      "array"
+     ],
+     "by": [
+      "row",
+      "art"
+     ]
+    },
+    "lx": {
+     "json": [
+      "array"
+     ],
+     "by": [
+      "row"
+     ]
+    },
+    "q": {
+     "json": [
+      "string"
+     ],
+     "by": [
+      "row"
+     ]
+    },
+    "lo": {
+     "json": [
+      "number"
+     ],
+     "by": [
+      "row"
+     ]
+    },
+    "f": {
+     "json": [
+      "array"
+     ],
+     "by": [
+      "row"
+     ]
+    },
+    "fg": {
+     "json": [
+      "string"
+     ],
+     "by": [
+      "row"
+     ]
+    },
+    "ac": {
+     "json": [
+      "number"
+     ],
+     "by": [
+      "row",
+      "anoint"
+     ]
+    },
+    "did": {
+     "json": [
+      "string"
+     ],
+     "by": [
+      "row"
+     ]
+    },
+    "un": {
+     "json": [
+      "number",
+      "boolean",
+      "string"
+     ],
+     "by": [
+      "unsure"
+     ],
+     "drawn": 1
+    },
+    "nn": {
+     "json": [
+      "number"
+     ],
+     "by": [
+      "outcount"
+     ],
+     "drawn": 1
+    },
+    "tw": {
+     "json": [
+      "number"
+     ],
+     "by": [
+      "pooltotal"
+     ],
+     "drawn": 1
+    },
+    "tp": {
+     "json": [
+      "number"
+     ],
+     "by": [
+      "likely"
+     ],
+     "drawn": 1
+    },
+    "ls": {
+     "json": [
+      "array",
+      "string"
+     ],
+     "by": [
+      "lines"
+     ],
+     "drawn": 1
+    },
+    "t": {
+     "json": [
+      "array",
+      "string"
+     ],
+     "by": [
+      "text"
+     ],
+     "drawn": 1
+    },
+    "oc": {
+     "json": [
+      "array"
+     ],
+     "by": [
+      "outcomes"
+     ],
+     "drawn": 1
+    },
+    "uw": {
+     "json": [
+      "array",
+      "string"
+     ],
+     "by": [
+      "why"
+     ],
+     "drawn": 1
+    },
+    "qt": {
+     "json": [
+      "string"
+     ],
+     "by": [
+      "quote"
+     ],
+     "drawn": 1
+    },
+    "o": {
+     "json": [
+      "array"
+     ],
+     "by": [
+      "options"
+     ],
+     "drawn": 1
+    },
+    "fl": {
+     "json": [
+      "array"
+     ],
+     "by": [
+      "flow"
+     ],
+     "drawn": 1
+    },
+    "src": {
+     "json": [
+      "string"
+     ],
+     "by": [
+      "source"
+     ],
+     "drawn": 1
+    },
+    "tags": {
+     "json": [
+      "array"
+     ],
+     "by": [
+      "tags"
+     ],
+     "drawn": 1
+    },
+    "rec": {
+     "json": [
+      "array"
+     ],
+     "by": [
+      "anoint"
+     ],
+     "drawn": 1
+    },
+    "kw": {
+     "json": [
+      "array"
+     ],
+     "by": [
+      "keywords"
+     ],
+     "ids": 1
+    },
+    "base": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "cr": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "at": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "job": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "act": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "go": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "bx": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "wx": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "ox": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "mx": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "rw": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "ro": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
     }
    }
   },
@@ -5053,6 +5636,24 @@
      ],
      "by": [
       "respen"
+     ],
+     "drawn": 1
+    },
+    "ml": {
+     "json": [
+      "number"
+     ],
+     "by": [
+      "monlife"
+     ],
+     "drawn": 1
+    },
+    "md": {
+     "json": [
+      "number"
+     ],
+     "by": [
+      "mondmg"
      ],
      "drawn": 1
     },
@@ -5299,6 +5900,18 @@
      ]
     },
     "rw": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "ro": {
      "json": [
       "string",
       "number",
@@ -5735,6 +6348,18 @@
      "by": [
       "declaration"
      ]
+    },
+    "ro": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
     }
    }
   },
@@ -6103,6 +6728,18 @@
      "by": [
       "declaration"
      ]
+    },
+    "ro": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
     }
    }
   }
@@ -6124,6 +6761,7 @@
     "p",
     "q",
     "r",
+    "s",
     "t",
     "u",
     "v",
@@ -6172,6 +6810,7 @@
     "p",
     "q",
     "r",
+    "s",
     "t",
     "u",
     "v",
@@ -6236,6 +6875,7 @@
     "p",
     "q",
     "r",
+    "s",
     "t",
     "u",
     "v",
@@ -6268,6 +6908,7 @@
     "p",
     "q",
     "r",
+    "s",
     "t",
     "u",
     "v",
@@ -6315,6 +6956,7 @@
     "p",
     "q",
     "r",
+    "s",
     "t",
     "u",
     "v",
@@ -6394,6 +7036,7 @@
     "p",
     "q",
     "r",
+    "s",
     "t",
     "u",
     "v",
@@ -6471,6 +7114,7 @@
     "p",
     "q",
     "r",
+    "s",
     "t",
     "u",
     "v",
@@ -6529,6 +7173,7 @@
     "p",
     "q",
     "r",
+    "s",
     "t",
     "u",
     "v",
@@ -6557,6 +7202,7 @@
     "p",
     "q",
     "r",
+    "s",
     "t",
     "u",
     "v",
@@ -6585,6 +7231,7 @@
     "p",
     "q",
     "r",
+    "s",
     "t",
     "u",
     "v",
@@ -6604,6 +7251,7 @@
     "p",
     "q",
     "r",
+    "s",
     "t",
     "u",
     "v",
@@ -6679,6 +7327,7 @@
     "p",
     "q",
     "r",
+    "s",
     "t",
     "u",
     "v",
@@ -6739,6 +7388,7 @@
     "p",
     "q",
     "r",
+    "s",
     "t",
     "u",
     "v",
@@ -6768,6 +7418,7 @@
     "p",
     "q",
     "r",
+    "s",
     "t",
     "u",
     "v",
@@ -6786,6 +7437,7 @@
     "p",
     "q",
     "r",
+    "s",
     "t",
     "u",
     "v",
@@ -6813,6 +7465,7 @@
     "p",
     "q",
     "r",
+    "s",
     "t",
     "u",
     "v",
@@ -6846,6 +7499,7 @@
     "p",
     "q",
     "r",
+    "s",
     "t",
     "u",
     "v",
@@ -6874,6 +7528,7 @@
     "p",
     "q",
     "r",
+    "s",
     "t",
     "u",
     "v",
@@ -6892,6 +7547,7 @@
     "p",
     "q",
     "r",
+    "s",
     "t",
     "u",
     "v",
@@ -6937,6 +7593,7 @@
     "p",
     "q",
     "r",
+    "s",
     "t",
     "u",
     "v",
@@ -6956,6 +7613,7 @@
     "p",
     "q",
     "r",
+    "s",
     "t",
     "u",
     "v",
@@ -7014,6 +7672,7 @@
     "p",
     "q",
     "r",
+    "s",
     "t",
     "u",
     "v",
@@ -7043,6 +7702,7 @@
     "p",
     "q",
     "r",
+    "s",
     "t",
     "u",
     "v",
@@ -7062,6 +7722,7 @@
     "p",
     "q",
     "r",
+    "s",
     "t",
     "u",
     "v",
@@ -7088,6 +7749,7 @@
     "p",
     "q",
     "r",
+    "s",
     "t",
     "u",
     "v",
@@ -7132,6 +7794,40 @@
     "content"
    ]
   },
+  "md": {
+   "json": [
+    "number"
+   ],
+   "kinds": [
+    "a",
+    "r"
+   ],
+   "need": [],
+   "drawn": [
+    "a",
+    "r"
+   ],
+   "by": [
+    "mondmg"
+   ]
+  },
+  "ml": {
+   "json": [
+    "number"
+   ],
+   "kinds": [
+    "a",
+    "r"
+   ],
+   "need": [],
+   "drawn": [
+    "a",
+    "r"
+   ],
+   "by": [
+    "monlife"
+   ]
+  },
   "mx": {
    "json": [
     "string",
@@ -7152,6 +7848,7 @@
     "p",
     "q",
     "r",
+    "s",
     "t",
     "u",
     "v",
@@ -7180,6 +7877,7 @@
     "p",
     "q",
     "r",
+    "s",
     "t",
     "u",
     "v",
@@ -7198,6 +7896,7 @@
     "p",
     "q",
     "r",
+    "s",
     "t",
     "u",
     "v",
@@ -7216,6 +7915,7 @@
     "p",
     "q",
     "r",
+    "s",
     "t",
     "u",
     "v",
@@ -7229,6 +7929,7 @@
     "changed",
     "drop",
     "exfee",
+    "gemgold",
     "goldv",
     "mapdanger",
     "mondanger",
@@ -7272,6 +7973,21 @@
    ],
    "by": [
     "implicit"
+   ]
+  },
+  "nn": {
+   "json": [
+    "number"
+   ],
+   "kinds": [
+    "s"
+   ],
+   "need": [],
+   "drawn": [
+    "s"
+   ],
+   "by": [
+    "outcount"
    ]
   },
   "nodrops": {
@@ -7337,6 +8053,7 @@
     "p",
     "q",
     "r",
+    "s",
     "t",
     "u",
     "v",
@@ -7356,6 +8073,7 @@
     "p",
     "q",
     "r",
+    "s",
     "t",
     "u",
     "v",
@@ -7364,6 +8082,21 @@
    ],
    "by": [
     "options"
+   ]
+  },
+  "oc": {
+   "json": [
+    "array"
+   ],
+   "kinds": [
+    "s"
+   ],
+   "need": [],
+   "drawn": [
+    "s"
+   ],
+   "by": [
+    "outcomes"
    ]
   },
   "ox": {
@@ -7386,6 +8119,7 @@
     "p",
     "q",
     "r",
+    "s",
     "t",
     "u",
     "v",
@@ -7529,6 +8263,7 @@
     "p",
     "q",
     "r",
+    "s",
     "t",
     "u",
     "v",
@@ -7560,6 +8295,7 @@
     "p",
     "q",
     "r",
+    "s",
     "t",
     "u",
     "v",
@@ -7579,6 +8315,7 @@
     "p",
     "q",
     "r",
+    "s",
     "t",
     "u",
     "v",
@@ -7620,6 +8357,7 @@
     "p",
     "q",
     "r",
+    "s",
     "t",
     "u",
     "v",
@@ -7639,6 +8377,7 @@
     "p",
     "q",
     "r",
+    "s",
     "t",
     "u",
     "v",
@@ -7679,6 +8418,39 @@
    ],
    "by": [
     "rewardfrom"
+   ]
+  },
+  "ro": {
+   "json": [
+    "string",
+    "number",
+    "boolean",
+    "array",
+    "object"
+   ],
+   "kinds": [
+    "a",
+    "b",
+    "c",
+    "d",
+    "g",
+    "h",
+    "i",
+    "j",
+    "p",
+    "q",
+    "r",
+    "s",
+    "t",
+    "u",
+    "v",
+    "w",
+    "y"
+   ],
+   "need": [],
+   "drawn": [],
+   "by": [
+    "declaration"
    ]
   },
   "rq": {
@@ -7733,6 +8505,7 @@
     "p",
     "q",
     "r",
+    "s",
     "t",
     "u",
     "v",
@@ -7761,6 +8534,7 @@
     "p",
     "q",
     "r",
+    "s",
     "t",
     "u",
     "v",
@@ -7779,6 +8553,7 @@
     "p",
     "q",
     "r",
+    "s",
     "t",
     "u",
     "v",
@@ -7797,6 +8572,7 @@
     "p",
     "q",
     "r",
+    "s",
     "t",
     "u",
     "v",
@@ -7854,6 +8630,7 @@
     "p",
     "q",
     "r",
+    "s",
     "t",
     "u",
     "v",
@@ -7873,6 +8650,7 @@
     "p",
     "q",
     "r",
+    "s",
     "t",
     "u",
     "v",
@@ -7900,6 +8678,7 @@
     "p",
     "q",
     "r",
+    "s",
     "t",
     "u",
     "v",
@@ -7919,6 +8698,7 @@
     "p",
     "q",
     "r",
+    "s",
     "t",
     "u",
     "v",
@@ -7945,6 +8725,7 @@
     "p",
     "q",
     "r",
+    "s",
     "t",
     "u",
     "v",
@@ -7964,6 +8745,7 @@
     "p",
     "q",
     "r",
+    "s",
     "t",
     "u",
     "v",
@@ -8023,6 +8805,36 @@
     "town"
    ]
   },
+  "tp": {
+   "json": [
+    "number"
+   ],
+   "kinds": [
+    "s"
+   ],
+   "need": [],
+   "drawn": [
+    "s"
+   ],
+   "by": [
+    "likely"
+   ]
+  },
+  "tw": {
+   "json": [
+    "number"
+   ],
+   "kinds": [
+    "s"
+   ],
+   "need": [],
+   "drawn": [
+    "s"
+   ],
+   "by": [
+    "pooltotal"
+   ]
+  },
   "ty": {
    "json": [
     "string"
@@ -8062,12 +8874,14 @@
    "kinds": [
     "j",
     "r",
+    "s",
     "v"
    ],
    "need": [],
    "drawn": [
     "j",
     "r",
+    "s",
     "v"
    ],
    "by": [
@@ -8102,6 +8916,22 @@
    ],
    "by": [
     "uses"
+   ]
+  },
+  "uw": {
+   "json": [
+    "array",
+    "string"
+   ],
+   "kinds": [
+    "s"
+   ],
+   "need": [],
+   "drawn": [
+    "s"
+   ],
+   "by": [
+    "why"
    ]
   },
   "w": {
@@ -8204,6 +9034,7 @@
     "p",
     "q",
     "r",
+    "s",
     "t",
     "u",
     "v",

@@ -36,10 +36,11 @@ const SHOW = 3;            // problems printed per kind
 const TYPE_JSON = {
   text: ['string'], enum: ['string'], quote: ['string'], source: ['string'], note: ['string'],
   adds: ['string'], pool: ['string'], danger: ['string'], odds: ['string'], drop: ['string'], rules: ['string'], gold: ['string'],
+  gemgold: ['string'],
   changed: ['string'],
   number: ['number'], duration: ['number'],
   flag: ['number', 'boolean', 'string'], weighted: ['number', 'boolean', 'string'],
-  choice: ['array'],
+  choice: ['array'], outcomes: ['array'],
   rich: ['array', 'string'],
   gemreq: ['array'], reqs: ['array'], cost: ['array'], lines: ['array'], weights: ['array'], perslot: ['array'],
   ladder: ['array'], options: ['array'], flow: ['array'], tags: ['array'], anoint: ['array'], chips: ['array'],

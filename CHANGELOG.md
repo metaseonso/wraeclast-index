@@ -3,6 +3,28 @@
 The full list of changes. The public patch notes (data/changelog.json, shown on the site) stay short.
 Add the details here first, then a short public line there.
 
+## 0.45 — 29 Sep 2026: the odds, the campaign, the leagues
+
+- **#183** (odds, mechanics, monsters, gem gold): Odds pool `s` (14 cards, tools/pools.py stage `pools`, before
+  nodelinks; "Can roll" / "Rolls in" through the `ro` key list; 12 of 14 flagged Subject to change); currency cards
+  carry `weight`; league mechanic groups from data/leaguemech.json (#81), both ends; "Normal monsters here" on 189
+  areas and 16 waystones (tools/monsterlevels.py stage `monsters`, from bosshits.json `levels`); field type
+  `gemgold` (#88): level 1-23 and quality grids, Subject to change, "The game files give this price and do not say
+  where it is paid."
+- **#104:** the Atlas page ranks the league mechanics by their share of the Currency Exchange this league
+  (data/leaguemech.json popularity); a chip opens the mechanic's card.
+- **#118:** the Campaign page (#/campaign, assets/campaign.js): per act the kept rewards with where and who, the
+  choices, the areas by level with their bosses, the quests with their rewards; ticks in localStorage `wi-campaign`.
+  Vendor bases by level and uncut gem tiers are not on it yet.
+- **#128:** docs/budget.md (measured 22-28 Sep: busiest 12,348 worker requests, 5.04 M D1 rows read; Workers Paid
+  $5 at 10x, $7.55 at 50x); a cap of 120 requests a minute per hashed address on the worker paths (wrangler
+  `ratelimits` LIMIT, worker/index.js `flooding`; the jobs' keyed paths are free of it); privacy.html section 6.
+- **#122:** a priced card's og:description reads its price and the time checked first (worker/seo.js `share`); the
+  meta description stays price-free. The Divine Orb reads in exalted; the Exalted Orb carries none.
+- **#123:** the Data page's Build on it block lists the open files, CORS, the 5-minute cache, the User-Agent ask and
+  the cap.
+- **#85** closed: covered by the market files (archive, league days, ratio range, stock).
+
 ## 0.44 — 29 Sep 2026: the world, the market, the patches
 
 - **#180** (patch notes and tree changes): field `changed` on every card (data/patchnotes.json, 8 patches then "See
