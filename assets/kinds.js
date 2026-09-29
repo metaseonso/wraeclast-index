@@ -81,7 +81,7 @@
    tools/dev/frame.mjs fails a build where a second copy of this list has drifted from it. */
 export const ROUTES = {home: 'Search', build: 'Build', trade: 'Trade', farms: 'Farms', craft: 'Craft',
   currency: 'Currency', market: 'Market', atlas: 'Atlas', bosses: 'Bosses', map: 'Map', data: 'Data', patches: 'Patches',
-  campaign: 'Campaign', start: 'Start here'};
+  campaign: 'Campaign', runes: 'Rune recipes', start: 'Start here'};
 export const SECTIONS = {gems: 'Gems', uniques: 'Uniques', tree: 'Passive tree'};
 /* every page that is counted, in one list: the tabs, then the sections under the names the count gives them */
 export const PAGES = {...ROUTES,
@@ -99,7 +99,7 @@ export const SHUT = {
 /* ---------- the index ----------
    The site as the index it is: its sections, and the pages under each, in the order they are offered. The top
    bar, the home page's contents, the index down the side of a list and the phone's menu are all drawn from this
-   one table (navHTML below, assets/app.js sideIndex, assets/app.js homeContents), so a new page is one line
+   one table (navHTML below, assets/app.js homeContents), so a new page is one line
    here. A section with one page is a plain link; the rest open under their name.
    A page is one of:
      route    a tab of the app (ROUTES)            #/atlas
@@ -115,6 +115,8 @@ export const INDEX = [
     {sec: 'gems', k: 'g', icon: 'gems', about: 'every skill, spirit and support gem, with its numbers at any level, as a table'},
     {list: 'b', icon: 'bases', about: 'every base item, with requirements, properties and implicits'},
     {list: 'i', icon: 'classes', about: 'every item class, and what can roll on it'},
+    {list: 'o', icon: 'runes', about: 'every Runes of Aldur rune: what its recipes make, and the area levels it is highlighted at'},
+    {route: 'runes', icon: 'recipes', about: 'every Runes of Aldur recipe both ways: what runes make, and the runes that make a thing'},
   ]},
   {id: 'passives', name: 'Passives', pages: [
     {sec: 'tree', icon: 'tree', about: 'the passive tree, searchable'},
@@ -127,6 +129,7 @@ export const INDEX = [
     {route: 'campaign', icon: 'campaign', about: 'act by act: the areas, the quests and every reward kept for good, with ticks'},
     {list: 'r', icon: 'areas', about: 'every area: its level, waypoint, where it leads and who is fought there'},
     {list: 'j', icon: 'quests', about: 'every quest: where it goes, what it gives, and what it gives for good'},
+    {list: 'z', icon: 'achievements', about: 'every achievement and league challenge: its steps, and where each one is'},
   ]},
   {id: 'mechanics', name: 'Mechanics', pages: [
     {list: 'w', icon: 'keywords', about: "every game keyword, in the game's own words"},
@@ -357,6 +360,8 @@ export const MAPS = {
   mx:    {at: 'mx', keys: 1},     // the content a map is kept to
   rw:    {at: 'rw', keys: 1},     // the items a quest's reward windows offer
   ro:    {at: 'ro', keys: 1},     // the cards an odds pool can roll (tools/pools.py)
+  mk:    {at: 'mk', keys: 1},     // the cards a rune's recipes make (tools/joincards.py)
+  ax:    {at: 'ax', keys: 1},     // the areas, bosses, items and keywords an achievement's steps need
 };
 /* Every declaration a kind may carry. A key that is not here is a rule that reaches one kind, which is the
    shape the frame does not have: it belongs in FIELDS, FRAME, MAPS or REL. */
@@ -407,6 +412,19 @@ export const FIELDS = {
   /* An odds pool (tools/pools.py, off data/odds.json): how many outcomes it has, its total weight and the most
      likely outcome's 1 in N, each the file's own number. */
   outcount: {type: 'number', at: 'nn', slot: 'pill', post: ' outcome', many: ' outcomes'},
+  /* A rune and an achievement (tools/joincards.py, design/runes.md and design/achievements.md): how many recipes
+     a rune is in; an achievement kept to Softcore or Hardcore, how many of its steps count where not all of
+     them do, and how many times where the game's own text does not say it. */
+  recipes:  {type: 'number', at: 'nr', slot: 'pill', pre: 'In ', post: ' recipe', many: ' recipes'},
+  only:     {type: 'text', at: 'ho', slot: 'pill'},
+  anyof:    {type: 'text', at: 'an', slot: 'pill'},
+  needed:   {type: 'number', at: 'cn', slot: 'pill', post: ' needed', from: 2},
+  /* The tier NeverSink's loot filter gives it: NeverSink's own hand-sorted tier, never the game's word and never
+     ours, so the pill names NeverSink and links to the release it is read from (tools/filtertiers.py writes
+     data/filtertiers.json, keyed "kind:name", with the release's name and address). One word off a table of its
+     own, on an opened card only, the table fetched the first time one asks: nothing of it is in the index or in
+     first paint. */
+  filtertier: {type: 'keyed', at: 'n', slot: 'pill', file: 'data/filtertiers.json', of: 'tiers', pre: 'NeverSink tier: '},
 
   usetime:  {type: 'duration', at: 'ct', slot: 'fact', post: ' use time'},
   cost:     {type: 'cost', at: 'cost', slot: 'fact'},
@@ -446,6 +464,14 @@ export const FIELDS = {
      shape is our reading of the table, the file's own reason under the flag's own words. */
   outcomes: {type: 'outcomes', at: 'oc', slot: 'body', label: 'Outcomes'},
   why:      {type: 'rich', at: 'uw', slot: 'body', label: 'Subject to change', plain: 1},
+  /* Runes of Aldur (tools/joincards.py, data/runes.json): the recipe lengths and area-level bands a rune is
+     highlighted in, and on a base the Verisium Anvil takes, what it makes there and what that costs. An
+     achievement's steps, each with the areas it is in, and the one line the files give on how. Lines put
+     together from the files' columns, so they carry no marks. */
+  bands:    {type: 'rich', at: 'hb', slot: 'body', label: 'Highlighted', plain: 1},
+  anvil:    {type: 'rich', at: 'av', slot: 'body', label: 'Verisium Anvil', plain: 1},
+  goals:    {type: 'rich', at: 'gl', slot: 'body', label: 'Steps', plain: 1},
+  how:      {type: 'rich', at: 'hw', slot: 'body', plain: 1},
   /* What a weighted pool in a table of its own can add, each line with its share of the pool: here, what
      corrupting or cleansing a map on the Atlas adds (data/atlascontent.json). A pool the file flags carries
      the flag and its reason. Drawn on an opened card only. */
@@ -506,7 +532,7 @@ export const FIELDS = {
   gemgold:  {type: 'gemgold', at: 'n', slot: 'body', file: 'data/gold.json', of: 'gem', label: 'Gold price',
     flat: [{at: 'li', then: 'lineage'}, {at: 's', starts: 'Support', then: 'support'}],
     lists: [{at: 'levels', is: 'By gem level', from: 1}, {at: 'quality', is: 'By quality', from: 0, post: '%'}],
-    why: 'The game files give this price and do not say where it is paid.'},
+    why: 'Where it is paid: not in the game files.'},
   /* A league mechanic, on the game's own keyword card for it (tools/mechanics_league.py, data/leaguemech.json,
      found by the card's own key). `share`: its own currency's share of what the Currency Exchange traded this
      league, with the move over 7 days and the league's days as a line. Measured from GGG's feed hour by hour,
@@ -742,6 +768,12 @@ export const REL = {
   inact:    {label: 'In this act', of: 'r', edge: 'act', map: 'act'},
   questsin: {label: 'Quests in this act', of: 'j', edge: 'act', map: 'act'},
   actof:    {label: 'Act', of: 'v', edge: 'actof', map: 'act'},
+  /* Runes of Aldur and the achievements (tools/joincards.py): what a rune's recipes make, and the runes a card
+     is made from; the cards an achievement's steps need, and the achievements that ask for a card. */
+  inrecipe: {label: 'Makes', edge: 'own', at: 'mk'},
+  runemade: {label: 'Made from runes', of: 'o', edge: 'back', map: 'mk'},
+  asks:     {label: 'Needs', edge: 'own', at: 'ax'},
+  askedby:  {label: 'Asked by achievements', of: 'z', edge: 'back', map: 'ax'},
   cat:      {label: 'Listed with', edge: 'cat', map: 'cat'},
   job:      {label: 'Others that do this', edge: 'job', map: 'job'},
   named:    {label: 'Names', edge: 'named'},
@@ -792,7 +824,7 @@ export const KINDS = [
    builds: [{at: 'w', key: 'skills'}, {key: 'allskills'}],
    fields: [...HEAD, 'gemreq', 'lineage', 'cutfrom', 'usetime', 'cost', 'spirit', ...SAYS, 'quality', 'gemgold', ...REST, ...FOOT],
    acts: ['trade', 'pool', 'full', 'pin', 'open'],
-   rel: ['granted', 'grants', 'named', 'namedby', 'cat']},
+   rel: ['granted', 'grants', 'named', 'namedby', 'runemade', 'cat']},
 
   {k: 'u', one: 'Unique', tone: 'c-unique', many: 'Uniques', place: 'Uniques', sec: 'uniques', link: 'explore#uniques=@n', mark: 'ls',
    index: true, search: true, item: true, crawl: {word: 'unique', list: 'uniques', rank: 0, is: 'Thing'},
@@ -824,7 +856,7 @@ export const KINDS = [
   {k: 'b', one: 'Base', tone: 'muted', many: 'Bases', place: 'Craft', link: 'craft', mark: 'ls',
    index: true, search: true, item: true, crawl: {word: 'base', list: 'bases', rank: 5, is: 'Thing'},
    make: {base: 'name', ni: 'lines'},
-   fields: [...HEAD, 'reqs', 'props', 'implicit', 'weights', ...SAYS, 'canroll', 'cancorrupt', ...REST, ...FOOT],
+   fields: [...HEAD, 'reqs', 'filtertier', 'props', 'implicit', 'weights', ...SAYS, 'canroll', 'cancorrupt', 'anvil', ...REST, ...FOOT],
    acts: ['trade', 'pool', 'bench', 'pin', 'craft'],
    rel: ['uniques', 'grants', 'klassof', 'klass', 'named', 'namedby', 'rewardin']},
 
@@ -834,6 +866,18 @@ export const KINDS = [
    fields: [...HEAD, 'props', ...BODY, ...FOOT],
    acts: ['bench', 'pin', 'craft'],
    rel: ['inclass', 'cat']},
+
+  /* A rune of Runes of Aldur (tools/joincards.py, design/runes.md): what it does to monsters, in the game's own
+     lines, how many recipes it is in, the recipe lengths and area levels it is highlighted at, and what its
+     recipes make. Its gold button opens the recipe finder on it. It stands for the keyword of its name, the way a
+     keystone does (kw), and the keyword card is folded into it: its name is the game's word wherever a line says
+     it, and it claims the address the keyword page had, before a currency of the same name. */
+  {k: 'o', one: 'Rune', many: 'Runes', place: 'Rune recipes', link: './#/runes?rune=@n', index: true, search: true,
+   crawl: {word: 'rune', list: 'runes', rank: 3, is: 'DefinedTerm'},
+   kw: 'name', words: {n: 'own', mark: 'game'},
+   fields: [...HEAD, 'recipes', ...SAYS, 'bands', ...REST, ...FOOT],
+   acts: ['pin', 'open'],
+   rel: ['inrecipe', 'named', 'namedby']},
 
   {k: 'a', one: 'Atlas', tone: 'int', many: 'Atlas', place: 'Atlas', link: './#/atlas?s=@at&q=@n',
    index: true, search: true, item: true, crawl: {word: 'atlas', list: 'atlas', rank: 6, is: 'Thing', unless: {at: 'at', is: 'tree', then: 'DefinedTerm'}},
@@ -845,15 +889,15 @@ export const KINDS = [
   {k: 'c', one: 'Currency', tone: 'c-currency', many: 'Currency', place: 'Currency', link: './#/currency?c=@id',
    index: true, search: true, item: true, crawl: {word: 'currency', list: 'currency', rank: 4, is: 'Thing'},
    px: {as: 'c'}, make: {nx: 'yes'}, gone: {at: 'nx'},
-   fields: [...HEAD, 'droplv', 'liquid', 'stock', ...SAYS, 'perslot', 'ladder', 'adds', 'weight', 'exfee', 'leaguedays', 'gap', 'sellmap', ...REST, ...FOOT],
+   fields: [...HEAD, 'droplv', 'liquid', 'stock', 'filtertier', ...SAYS, 'perslot', 'ladder', 'adds', 'weight', 'exfee', 'leaguedays', 'gap', 'sellmap', ...REST, ...FOOT],
    acts: ['trade', 'pool', 'bench', 'pin', 'open'],
-   rel: ['named', 'namedby', 'job', 'curmech', 'rollsin', 'rewardin', 'cat']},
+   rel: ['named', 'namedby', 'job', 'curmech', 'rollsin', 'rewardin', 'runemade', 'askedby', 'cat']},
 
   {k: 'w', one: 'Keyword', tone: 'accent', many: 'Keywords', sec: 'keywords', index: true, search: true, crawl: {word: 'keyword', list: 'keywords', rank: 3, is: 'DefinedTerm'},
    kw: 'id', rank: -25, words: {n: 'own', f: 'alt', mark: 'game'},
    fields: [...HEAD, 'stacks', 'uses', ...SAYS, 'mondanger', 'rules', 'share', 'weight', 'mechlines', 'corruption', ...REST, ...FOOT],
    acts: ['full', 'pin'],
-   rel: [...KWUSE, 'granted', 'onlyon', ...MECH, 'rollsin', 'named', 'namedby']},
+   rel: [...KWUSE, 'granted', 'onlyon', ...MECH, 'rollsin', 'askedby', 'named', 'namedby']},
 
   /* An ascendancy: its class, the flavour text the game shows for it, its notables by name (each line a door to
      the notable's card, and the notable "Named by" it, tools/nodelinks.py) and where its eight points come from
@@ -893,7 +937,7 @@ export const KINDS = [
    search: true,
    fields: [...HEAD, ...BODY, 'gothere', ...FOOT],
    acts: ['pin', 'open'],
-   rel: ['drops', 'foughtin', 'bossmech', 'namedby', 'cat']},
+   rel: ['drops', 'foughtin', 'bossmech', 'askedby', 'namedby', 'cat']},
 
   /* An odds pool: one of the weight tables the game rolls unseen — a Forbidden Rite, a strongbox, an Azmeri spirit
      (tools/pools.py, off data/odds.json; design/hidden-odds.md). Its outcomes, heaviest first, with 1 in N; the
@@ -915,7 +959,7 @@ export const KINDS = [
    fields: [...HEAD, 'waypoint', 'town', 'waystone', 'unsure', 'respen', 'monlife', 'mondmg', 'biome', 'content',
             ...SAYS, 'hidden', 'corruption', ...REST, 'gothere', ...FOOT],
    acts: ['pin'],
-   rel: ['leadsto', 'leadsfrom', 'bosshere', 'questhere', 'openedwith', 'onlyholds', 'actof', 'inact']},
+   rel: ['leadsto', 'leadsfrom', 'bosshere', 'questhere', 'openedwith', 'onlyholds', 'askedby', 'actof', 'inact']},
 
   {k: 'j', one: 'Quest', tone: 'muted', many: 'Quests', index: true, search: true,
    crawl: {word: 'quest', list: 'quests', rank: 8, is: 'DefinedTerm'},
@@ -928,6 +972,14 @@ export const KINDS = [
    fields: [...HEAD, 'unsure', ...SAYS, 'keeps', 'take', ...REST, ...FOOT],
    acts: ['pin'],
    rel: ['inact', 'questsin']},
+
+  /* An achievement or a league challenge (tools/joincards.py, design/achievements.md): the game's own title and
+     words, its set and where it is played, its steps each with the areas they are in, and the cards they need. */
+  {k: 'z', one: 'Achievement', many: 'Achievements', index: true, search: true,
+   crawl: {word: 'achievement', list: 'achievements', rank: 10, is: 'DefinedTerm'},
+   fields: [...HEAD, 'only', 'anyof', 'needed', ...SAYS, 'goals', 'how', ...REST, ...FOOT],
+   acts: ['pin'],
+   rel: ['asks']},
 
   /* The bench: one card, holding an item and the currency and omens picked for it before anything runs. It
      has no rows in the index — you reach it from a base, from the currency it crafts with, or from the Craft

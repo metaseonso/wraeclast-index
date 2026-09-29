@@ -28,7 +28,12 @@ html:not(#_) .navgrp > .applinks, html:not(#_) .navgrp > .nav{border:0; backgrou
 .applinks + .navgrp{margin-left:8px}
 /* the respec calculator under the passive tree (explore.html respec) */
 .respec{margin:16px 0 0; padding:14px 16px; max-width:640px; border:1px solid var(--line); border-radius:10px; background:var(--surface)}
-.respec h3{font-family:var(--disp); font-size:15px; margin:0 0 10px}
+.respec h3{display:inline; font-family:var(--disp); font-size:15px; margin:0}
+.respec summary{cursor:pointer; display:flex; align-items:center; gap:10px; list-style:none}
+.respec summary::-webkit-details-marker{display:none}
+.respec summary::before{content:"\25B8"; color:var(--accent); font-size:12px; transition:transform .15s}
+.respec[open] summary::before{transform:rotate(90deg)}
+.respec[open] summary{margin-bottom:10px}
 .respec-in{display:flex; flex-wrap:wrap; gap:10px 18px; font-size:13px; color:var(--muted)}
 .respec-in label{display:flex; align-items:center; gap:8px}
 .respec-in input{width:78px; padding:5px 8px; border:1px solid var(--line); border-radius:6px; background:var(--sunken); color:var(--text); font:inherit}

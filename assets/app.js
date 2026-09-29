@@ -143,6 +143,8 @@ const GO = new Promise(r => { go = r; });      // the meta, the bosses, the cata
 const SEEK = new Promise(r => { seek = r; });  // the search worker
 const ALL = new Promise(r => { all = r; });    // every card
 export function wake(){ go(); seek(); return searching; }
+// a first visit that opens on a search (#/?q=...): the meta and the search worker start now, not once the page is drawn
+if(document.getElementById('view-home') && /^#\/\?(.*&)?q=[^&]/.test(location.hash)){ go(); seek(); }
 export function need(){ go(); all(); return ready; }
 const META = GO.then(() => MAN).then(m => getJSON(m.meta.file));
 const BOSS = GO.then(() => getJSON('data/bosses.json', {priority: 'low'}).catch(() => null));
@@ -460,6 +462,8 @@ export const first = (async () => {
 })();
 /* The search: the worker has every kind's rows, the bosses have joined, and the cards whose words mark other
    cards' lines are held (keywords, mechanics, interactions, and the keystones a keyword stands for). */
+// the search rows start downloading in the worker the moment the manifest is in, not after the prices and the meta
+SEEK.then(() => MAN).then(man => ask('fetch', {man, base: new URL('.', document.baseURI).href})).catch(() => {});
 export const searching = SEEK.then(() => first).then(async () => {
   await ask('init', {man: D.man, base: new URL('.', document.baseURI).href,
     market: Object.keys((D.market && D.market.items) || {}), runtime: D.rt.map(rtRow), seen: seenKeys()});
@@ -1014,6 +1018,20 @@ function gemGoldHTML(it, t, f){
       '<li><span>' + esc(at + (l.post || '')) + '</span><b>' + n(v) + '</b></li>').join('') + '</ul>';
   }
   return out && '<p class="card-facts">' + esc(f.label || '') + flag + '</p>' + out + src;
+}
+/* One word off a table of its own, found by the card's kind and the field's `at` ("c:Divine Orb" in its `of`
+   part), as a pill that links to where the table is from: the file names its source (`src`) and its address
+   (`url`), so a word that is not the game's says whose it is. A name the table does not hold draws nothing. */
+function keyedFill(host, it, f){
+  if(!host) return;
+  tableOf(f.file).then(t => {
+    const v = t && (t[f.of] || {})[it.k + ':' + it[f.at]];
+    if(!v || !host.isConnected) return;
+    host.textContent = (f.pre || '') + v + (t.url ? ' ↗' : '');
+    if(t.url) host.href = t.url;
+    if(t.src) host.title = t.src;
+    host.hidden = false;
+  });
 }
 const tableFill = draw => (host, it, f) => {
   if(!host) return;
@@ -1796,6 +1814,8 @@ export const TYPE = {
   market: {raw: 1, fill: mkFill, v: (it, f, o, name) => !o.full || !it[f.at] ? ''
     : f.slot === 'pill' ? '<span class="pill mk-pill" data-fill="' + esc(name) + '" hidden></span>'
     : '<div class="card-addsbox" data-fill="' + esc(name) + '" hidden></div>'},
+  keyed:  {raw: 1, fill: keyedFill, v: (it, f, o, name) => o.full && it[f.at]
+    ? '<a class="pill pill-src" data-fill="' + esc(name) + '" target="_blank" rel="noopener" hidden></a>' : ''},
   changed: {raw: 1, fill: changedFill, v: (it, f, o, name) => o.full && it[f.at]
     ? '<div class="card-addsbox card-chg" data-fill="' + esc(name) + '" hidden></div>' : ''},
   patchdiff: {raw: 1, fill: diffFill, v: (it, f, o, name) => o.full && it[f.at]
@@ -3074,7 +3094,6 @@ function homeRender(){
   const hero = $('#hero'), status = $('#status'), more = $('#more');
   // words typed, or a kind picked with none: a kind's own list (assets/kinds.js INDEX, the list pages)
   const listing = !H.q.trim() && H.kind !== 'all' && !!KIND[H.kind];
-  sideShow();
   const has = H.q.trim().length > 0 || listing;
   hero.classList.toggle('docked', has);
   let list, label;
@@ -3195,13 +3214,21 @@ export function mountTopSearch(host){
 }
 // every keyboard shortcut lives in keys.js; "Search everything" jumps into the big box on home, the top box everywhere else
 initKeys(() => (IS_APP && route() === 'home' && document.getElementById('q')) || TOPQ);
-lazy('./suggest.js').then(m => { m.mountSuggest(); m.mountFlag(); }).catch(() => {});   // the Suggest button, and the owner's own flag
-lazy('./notes.js').then(m => m.mountNotes()).catch(() => {});       // Patch notes, on every page
-lazy('./pins.js').then(m => m.mountPins()).catch(() => {});         // the Pins button, and the list it opens
-lazy('./runs.js').then(m => m.mountRuns()).catch(() => {});         // the run counter, and the key that counts one
-lazy('./support.js').then(m => m.mountSupport()).catch(() => {});   // Support link, once data/support.json is filled in
-lazy('./track.js').then(m => { TRACKER = m; m.mountTrack(); }).catch(() => {});       // page views and clicks for the owner's dashboard
-mountGuide();                                                       // the community guide under the hero
+/* The page's extras. A first visit that opens on a search (#/?q=...) takes the answer first: on a phone on 4G these
+   few files share the line with the search rows, so they wait until the search has answered (tools/dev/speed.mjs
+   phone, #117). Any other page loads them at once. */
+function extras(){
+  lazy('./suggest.js').then(m => { m.mountSuggest(); m.mountFlag(); }).catch(() => {});   // the Suggest button, and the owner's own flag
+  lazy('./notes.js').then(m => m.mountNotes()).catch(() => {});       // Patch notes, on every page
+  lazy('./pins.js').then(m => m.mountPins()).catch(() => {});         // the Pins button, and the list it opens
+  lazy('./runs.js').then(m => m.mountRuns()).catch(() => {});         // the run counter, and the key that counts one
+  lazy('./support.js').then(m => m.mountSupport()).catch(() => {});   // Support link, once data/support.json is filled in
+  lazy('./track.js').then(m => { TRACKER = m; m.mountTrack(); }).catch(() => {});       // page views and clicks for the owner's dashboard
+  mountGuide();                                                       // the community guide under the hero
+}
+if(document.getElementById('view-home') && /^#\/\?(.*&)?q=[^&]/.test(location.hash))
+  Promise.race([searching, new Promise(r => setTimeout(r, 8000))]).then(() => setTimeout(extras, 300), () => extras());
+else extras();
 
 /* A guide somebody else wrote, for a player who has not got to any of this yet. Linked where it helps,
    named where it is shown, never ours. The list is data/guides.json (tools/guides.py), which reads every
@@ -3219,27 +3246,6 @@ async function mountGuide(){
   box.hidden = false;
 }
 
-/* The index down the side of a page that is a list: a search, a kind's list, and the tabs that list (assets/kinds.js
-   INDEX draws it, assets/app.css shows it from 1280 px). Drawn once, its counts filled from the manifest; the page
-   on show is marked each time. */
-const LISTS = new Set(['currency', 'atlas', 'bosses']);
-function sideShow(){
-  const side = $('#side');
-  if(!side) return;
-  const r = document.body.dataset.route || 'home';
-  const on = LISTS.has(r) || (r === 'home' && (H.q.trim().length > 0 || H.kind !== 'all'));
-  document.body.classList.toggle('withside', on);
-  side.hidden = !on;
-  if(!on) return;
-  if(!side.firstChild){
-    side.innerHTML = contentsHTML(null, '', {cls: 'toc side-toc', id: ''});
-    MAN.then(man => fillCounts(man, side), () => {});
-  }
-  for(const a of side.querySelectorAll('a')){
-    const here = r === 'home' ? a.dataset.list === H.kind : a.dataset.route === r;
-    if(here) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current');
-  }
-}
 /* the counts in the index's contents (index.html #toc, the Data page): each kind's own, from the manifest */
 export function fillCounts(man, host = document){
   const K = (man && man.kinds) || {};
@@ -3299,7 +3305,6 @@ async function show(e){
   const back = ON !== r && LEFT[r] && LEFT[r].at === location.hash ? LEFT[r].y : null;
   ON = r;
   document.body.dataset.route = r;
-  sideShow();
   document.querySelectorAll('.view').forEach(v => v.hidden = v.dataset.view !== r);
   document.querySelectorAll('.tabs a[data-route]').forEach(a => { if(a.dataset.route === r) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current'); });
   if(r !== 'home') document.querySelectorAll('a[data-list]').forEach(a => a.removeAttribute('aria-current'));
@@ -3390,7 +3395,10 @@ searching.then(() => {
 function idle(f){ (window.requestIdleCallback || (g => setTimeout(g, 1200)))(f, {timeout: 4000}); }
 export function later(){
   const lite = document.documentElement.classList.contains('lite');
-  requestAnimationFrame(() => setTimeout(() => {
+  // a first visit to a search: the answer before the fog (the search rows share the line on a phone, #117)
+  const wait = document.getElementById('view-home') && /^#\/\?(.*&)?q=[^&]/.test(location.hash)
+    ? Promise.race([searching, new Promise(r => setTimeout(r, 8000))]).catch(() => {}) : Promise.resolve();
+  wait.then(() => requestAnimationFrame(() => setTimeout(() => {
     for(const img of document.querySelectorAll('img[data-src]')){
       const box = img.closest('.fog') || img;
       if(lite && box !== img) continue;
@@ -3403,7 +3411,7 @@ export function later(){
     }
     const hero = document.getElementById('hero'), crest = hero && hero.querySelector('.emblem');
     if(crest && !lite) new IntersectionObserver(es => hero.classList.toggle('away', !es[es.length - 1].isIntersecting)).observe(crest);
-  }, 0));
+  }, 0)));
 }
 /* The service worker (sw.js): not on the backup site (GitHub Pages serves sw.js unstamped) or inside a frame. */
 export function registerSW(){

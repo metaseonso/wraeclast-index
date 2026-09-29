@@ -78,6 +78,7 @@ NINJA = 'https://poe.ninja/poe2/'
 FEED = 'https://web.poecdn.com/ (the Currency Exchange feed)'
 CDN = 'https://patch-poe2.poecdn.com/'
 DATSCHEMA = 'https://github.com/poe-tool-dev/dat-schema'
+NEVERSINK = 'https://github.com/NeverSinkDev/NeverSink-Filter-for-PoE2 (the latest release)'
 CXARCHIVE = 'wraeclast-data/cx (the Currency Exchange feed, archived every hour; private, WI_CX)'
 
 """The stages, in the order the data needs them: a stage reads what the ones above it wrote. Per stage:
@@ -201,6 +202,23 @@ STAGES = [
     dict(name='monsters', run=['tools/monsterlevels.py'], cadence='patch', source='game files',
          reads=['data/bosshits.json', 'data/areas.json', 'data/index.json'], last=['data/bosshits.json'],
          writes=['data/index.json', 'data/index-core.json', 'data/index-rest.json'], count={'data/index.json': 'items'}),
+    # Runes of Aldur: the recipes both ways, the highlight bands, the Verisium Anvil (#113)
+    dict(name='runes', run=['tools/runes.py'], cadence='patch', source='game files',
+         reads=['data/game/rune_recipes.json', 'data/game/rune_highlights.json', 'data/game/verisium_crafts.json',
+                'data/index.json', 'data/exchange.json'],
+         writes=['data/runes.json'], count={'data/runes.json': 'recipes'}),
+    # the game's achievements, joined by name to the cards (#91); data/areas.json is #72's, on main
+    dict(name='achievements', run=['tools/achievements.py'], cadence='patch', source='game files',
+         reads=['data/game/achievements.json', 'data/game/achievement_sets.json', 'data/index.json',
+                'data/exchange.json', 'data/bosses.json', 'data/areas.json'],
+         writes=['data/achievements.json'], count={'data/achievements.json': 'achievements'}),
+    # the runes and the achievements as cards of their own (#113, #91), and the Verisium Anvil on the bases it
+    # takes. Before nodelinks, like the world: every run links the same cards
+    dict(name='joincards', run=['tools/joincards.py'], cadence='patch', source='game files',
+         reads=['data/runes.json', 'data/achievements.json', 'data/bosses.json', 'data/market.json',
+                'data/exchange.json', 'data/index.json'],
+         last=['data/bosses.json', 'data/market.json', 'data/exchange.json'],
+         writes=['data/index.json', 'data/index-core.json', 'data/index-rest.json'], count={'data/index.json': 'items'}),
     dict(name='nodelinks', run=['tools/nodelinks.py'], cadence='patch', source='files',
          reads=['data/index.json'],
          writes=['data/index.json', 'data/index-core.json', 'data/index-rest.json'], count={'data/index.json': 'items'}),
@@ -221,11 +239,6 @@ STAGES = [
          writes=['data/gold.json'], count={'data/gold.json': 'exchange'}),
     dict(name='gemlines', run=['tools/gemlines.py'], cadence='patch', source='files',
          reads=['data/explore/gems.*.json'], writes=['data/gemlines.json']),
-    # Runes of Aldur: the recipes both ways, the highlight bands, the Verisium Anvil (#113)
-    dict(name='runes', run=['tools/runes.py'], cadence='patch', source='game files',
-         reads=['data/game/rune_recipes.json', 'data/game/rune_highlights.json', 'data/game/verisium_crafts.json',
-                'data/index.json', 'data/exchange.json'],
-         writes=['data/runes.json'], count={'data/runes.json': 'recipes'}),
     dict(name='treelines', run=['tools/treelines.py'], cadence='patch', source='files',
          reads=['data/explore/tree.*.json'], writes=['data/treelines.json']),
     dict(name='treechanges', run=['tools/treeexport.py'], cadence='patch', source="GGG's passive tree export",
@@ -250,11 +263,6 @@ STAGES = [
                 'data/explore/tree.*.json', 'data/craft/*.json', 'data/treechanges/*.json', 'data/patches.json',
                 'data/patchnotes.json', 'tools/dev/patchgaps.txt', 'data/snapshots/*.json.gz'],
          writes=['data/snapshots/*.json.gz', 'data/patchdiff/*.json'], count={'data/patchdiff/index.json': 'steps'}),
-    # the game's achievements, joined by name to the cards (#91); data/areas.json is #72's, on main
-    dict(name='achievements', run=['tools/achievements.py'], cadence='patch', source='game files',
-         reads=['data/game/achievements.json', 'data/game/achievement_sets.json', 'data/index.json',
-                'data/exchange.json', 'data/bosses.json', 'data/areas.json'],
-         writes=['data/achievements.json'], count={'data/achievements.json': 'achievements'}),
     dict(name='map', run=['tools/map.py'], cadence='patch', source='files, and the live market list',
          reads=['data/index.json', 'data/kwuse.json', 'data/grants.json', 'data/gamedata.json', 'assets/kinds.js',
                 'assets/theme.css', 'data/bosses.json', 'data/dropsfrom.json', 'data/market.json',
@@ -283,6 +291,12 @@ STAGES = [
     dict(name='bosshits', run=['tools/bosshits.py'], cadence='patch', source='game files',
          reads=[CDN, DATSCHEMA, 'data/bosses.json'], writes=['data/bosshits.json'],
          count={'data/bosshits.json': 'bosses'}),
+    # the tells on those hits (#126), by hand in tools/bosstells-src.json; fails on a boss or hit bosshits lacks
+    dict(name='bosstells', run=['tools/bosstells.py'], cadence='patch',
+         source='the boss guides (PoE2 Wiki, Maxroll, Mobalytics)',
+         reads=['https://www.poe2wiki.net/', 'https://maxroll.gg/poe2', 'https://mobalytics.gg/poe-2',
+                'tools/bosstells-src.json', 'data/bosses.json', 'data/bosshits.json'],
+         writes=['data/bosstells.json'], count={'data/bosstells.json': 'bosses'}),
     dict(name='farms', run=['tools/farms.py'], cadence='hand', source='BawLoch\'s tier list sheet',
          reads=['https://docs.google.com/ (the tier list sheet)', 'data/trade.json', 'data/market.json',
                 'data/index-core.json', 'data/leagues.json'],
@@ -292,6 +306,11 @@ STAGES = [
          count={'data/index.json': 'items'}),
     dict(name='ninjapast', run=['tools/ninjapast.py'], cadence='hand', source='poe.ninja',
          reads=[NINJA, 'data/leagues.json'], writes=['data/pastprices.json']),
+    # NeverSink's loot filter tiers, for the base and currency cards (#93). A table the card reads when it is
+    # opened (assets/kinds.js FIELDS.filtertier), so it changes no card and the index cut does not carry it
+    dict(name='filtertiers', run=['tools/filtertiers.py'], cadence='daily', source="NeverSink's loot filter",
+         reads=[NEVERSINK, 'data/index.json', 'data/market.json'], writes=['data/filtertiers.json'],
+         count={'data/filtertiers.json': 'tiers'}),
     # last, once the index is final: the cut the site reads a piece at a time (the search, the cards, the crawler
     # pages). After a hand stage that edits the index, run it on its own (--only shards); --check says when it is due
     dict(name='shards', run=['tools/shards.py'], cadence='patch', source='files',

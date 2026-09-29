@@ -1,0 +1,193 @@
+### Adaptive Rune
+Runes of Aldur · https://wraeclastindex.fyi/item/adaptive-rune
+In 48 recipes
+Monsters gain:
+Adaptation
+Highlighted: 2 runes, slot 1 · area level 5 to 64 / 2 runes, slot 2 · area level 18 to 64 / 3 runes, slot 1 · area level 12 and up / 3 runes, slot 2 · area level 17 to 74 / 3 runes, slot 2 · area level 75 and up / 4 runes, slot 1 · area level 24 and up / 5 runes, slot 1 · area level 70 and up / 6 runes, slot 1 · area level 70 and up / 7 runes, slot 4 · area level 70 and up / 8 runes, slot 1 · area level 70 and up / 9 runes, slot 1 · area level 70 and upadaptive-runeadaptive-runeAdaptive Rune### Arcane Rune
+Runes of Aldur · https://wraeclastindex.fyi/item/arcane-rune
+In 48 recipes
+Monsters gain:
+Extra Energy Shield
+Trigger a Stunning nova when Energy Shield is depleted
+Highlighted: 2 runes, slot 1 · area level 5 to 16 / 3 runes, slot 2 · area level 8 and up / 4 runes, slot 1 · area level 15 to 74 / 4 runes, slot 1 · area level 75 and up / 5 runes, slot 2 · area level 70 and up / 5 runes, slot 4 · area level 55 and up / 6 runes, slot 3 · area level 70 and uparcane-runearcane-runeArcane Rune### Bait Rune
+Runes of Aldur · https://wraeclastindex.fyi/item/bait-rune
+In 1 recipebait-runebait-runeBait Rune### Bloodletting Rune
+Runes of Aldur · https://wraeclastindex.fyi/item/bloodletting-rune
+In 29 recipes
+Monsters gain:
+Life Leech
+Cannot have Life Leeched from
+Inflicts Corrupted Blood on Hit
+Highlighted: 3 runes, slot 3 · area level 24 and up / 5 runes, slot 2 · area level 65 and up / 5 runes, slot 4 · area level 70 and up / 8 runes, slot 7 · area level 70 and upbloodletting-runebloodletting-runeBloodletting Rune### Bond Rune
+Runes of Aldur · https://wraeclastindex.fyi/item/bond-rune
+In 33 recipes
+Monsters gain:
+Rare Monsters may transfer a Mod on death
+Remnant gains:
+Increased chance to spawn Rare Monsters
+Rare Monsters have more Monster Modifiers
+Highlighted: 5 runes, slot 2 · area level 65 and up / 5 runes, slot 5 · area level 44 and up / 6 runes, slot 3 · area level 70 and up / 8 runes, slot 2 · area level 70 and upbond-runebond-runeBond Rune### Celestial Rune
+Runes of Aldur · https://wraeclastindex.fyi/item/celestial-rune
+In 53 recipes
+Monsters gain:
+Chance for a Fire Explosion on Death
+Chance for a Cold Explosion on Death
+Chance for a Lightning Explosion on Death
+Highlighted: 2 runes, slot 2 · area level 25 to 75 / 3 runes, slot 1 · area level 8 to 77 / 5 runes, slot 1 · area level 65 and up / 6 runes, slot 1 · area level 65 and up / 9 runes, slot 1 · area level 70 and upcelestial-runecelestial-runeCelestial Rune### Cold Rune
+Runes of Aldur · https://wraeclastindex.fyi/item/cold-rune
+In 40 recipes
+Monsters gain:
+Extra Cold Damage
+Highlighted: 2 runes, slot 1 · area level 4 to 16 / 2 runes, slot 2 · area level 5 to 16 / 5 runes, slot 2 · area level 65 and up / 6 runes, slot 1 · area level 70 and up / 7 runes, slot 2 · area level 70 and up / 8 runes, slot 8 · area level 70 and upcold-runecold-runeCold Rune### Cyclonic Rune
+Runes of Aldur · https://wraeclastindex.fyi/item/cyclonic-rune
+In 50 recipes
+Monsters gain:
+Chance to inflict Exposure on Hit
+Armour Break on Hit
+Wither on Hit
+Highlighted: 2 runes, slot 1 · area level 100 / 2 runes, slot 2 · area level 15 to 35 / 3 runes, slot 1 · area level 13 to 77 / 3 runes, slot 2 · area level 30 to 77 / 4 runes, slot 4 · area level 45 and up / 5 runes, slot 1 · area level 70 and up / 6 runes, slot 1 · area level 70 and up / 6 runes, slot 3 · area level 70 and up / 7 runes, slot 1 · area level 70 and up / 9 runes, slot 1 · area level 70 and upcyclonic-runecyclonic-runeCyclonic Rune### Death Rune
+Runes of Aldur · https://wraeclastindex.fyi/item/death-rune
+In 28 recipes
+Monsters gain:
+Slain Monsters may merge into stronger Monsters
+Highlighted: 5 runes, slot 3 · area level 70 and updeath-runedeath-runeDeath Rune### Earth Rune
+Runes of Aldur · https://wraeclastindex.fyi/item/earth-rune
+In 45 recipes
+Remnant gains:
+Conjures Earthly Spires
+Highlighted: 3 runes, slot 1 · area level 44 to 77 / 4 runes, slot 1 · area level 15 to 74 / 4 runes, slot 1 · area level 75 and upearth-runeearth-runeEarth Rune### Electrocuting Rune
+Runes of Aldur · https://wraeclastindex.fyi/item/electrocuting-rune
+In 36 recipes
+Monsters gain:
+Extra Lightning Damage
+Lightning Damage Electrocutes
+Shocked Ground Trails
+Highlighted: 2 runes, slot 2 · area level 8 to 16 / 3 runes, slot 3 · area level 15 to 74 / 3 runes, slot 3 · area level 75 and up / 5 runes, slot 3 · area level 65 and upelectrocuting-runeelectrocuting-runeElectrocuting Rune### Fire Rune
+Runes of Aldur · https://wraeclastindex.fyi/item/fire-rune
+In 32 recipes
+Monsters gain:
+Extra Fire Damage
+Highlighted: 2 runes, slot 1 · area level 4 to 16 / 2 runes, slot 2 · area level 15 to 40 / 5 runes, slot 2 · area level 70 and up / 6 runes, slot 1 · area level 70 and up / 7 runes, slot 2 · area level 70 and up / 8 runes, slot 4 · area level 70 and upfire-runefire-runeFire Rune### Gasp Rune
+Runes of Aldur · https://wraeclastindex.fyi/item/gasp-rune
+In 37 recipes
+Volcanic Rune
+Monsters gain:
+Extra Fire Damage
+All Damage can Ignite
+Ignited Ground Trails
+Highlighted: 2 runes, slot 1 · area level 15 to 35 / 4 runes, slot 1 · area level 50 to 74 / 4 runes, slot 1 · area level 75 and upgasp-runegasp-runeGasp Rune### Life Rune
+Runes of Aldur · https://wraeclastindex.fyi/item/life-rune
+In 34 recipes
+Monsters gain:
+Shared Life
+Highlighted: 8 runes, slot 6 · area level 70 and uplife-runelife-runeLife Rune### Lightning Rune
+Runes of Aldur · https://wraeclastindex.fyi/item/lightning-rune
+In 33 recipes
+Monsters gain:
+Extra Lightning Damage
+Highlighted: 2 runes, slot 1 · area level 4 to 16 / 6 runes, slot 1 · area level 70 and up / 7 runes, slot 2 · area level 70 and up / 8 runes, slot 8 · area level 70 and uplightning-runelightning-runeLightning Rune### Momentum Rune
+Runes of Aldur · https://wraeclastindex.fyi/item/momentum-rune
+In 36 recipes
+Monsters gain:
+Increased Movement Speed
+Movement Speed Cannot be Slowed below base
+Highlighted: 2 runes, slot 1 · area level 1 to 45 / 2 runes, slot 2 · area level 4 to 16 / 3 runes, slot 1 · area level 44 to 77 / 3 runes, slot 1 · area level 78 and up / 4 runes, slot 4 · area level 12 to 74 / 6 runes, slot 1 · area level 70 and up / 7 runes, slot 3 · area level 70 and upmomentum-runemomentum-runeMomentum Rune### Moon Rune
+Runes of Aldur · https://wraeclastindex.fyi/item/moon-rune
+In 38 recipes
+Remnant gains:
+Conjures moon beams
+Highlighted: 2 runes, slot 1 · area level 15 to 35 / 2 runes, slot 2 · area level 5 to 30 / 3 runes, slot 1 · area level 30 to 74 / 4 runes, slot 1 · area level 15 to 74 / 4 runes, slot 1 · area level 75 and up / 4 runes, slot 2 · area level 15 and up / 6 runes, slot 4 · area level 70 and up / 8 runes, slot 4 · area level 70 and up / 8 runes, slot 7 · area level 70 and upmoon-runemoon-runeMoon Rune### Oath Rune
+Runes of Aldur · https://wraeclastindex.fyi/item/oath-rune
+In 30 recipes
+Monsters gain:
+A Monster summons Allies
+Highlighted: 4 runes, slot 1 · area level 65 and up / 4 runes, slot 2 · area level 45 and up / 6 runes, slot 1 · area level 70 and upoath-runeoath-runeOath Rune### Opulent Rune
+Runes of Aldur · https://wraeclastindex.fyi/item/opulent-rune
+In 33 recipes
+Monsters gain:
+Increased Monster Rarityopulent-runeopulent-runeOpulent Rune### Power Rune
+Runes of Aldur · https://wraeclastindex.fyi/item/power-rune
+In 42 recipes
+Runes gain:
+Empowered
+Highlighted: 4 runes, slot 3 · area level 35 and up / 5 runes, slot 3 · area level 55 and up / 6 runes, slot 3 · area level 65 and up / 6 runes, slot 4 · area level 70 and up / 6 runes, slot 5 · area level 70 and up / 6 runes, slot 6 · area level 70 and up / 8 runes, slot 8 · area level 70 and up / 9 runes, slot 1 · area level 70 and up / 9 runes, slot 2 · area level 70 and up / 9 runes, slot 3 · area level 70 and up / 9 runes, slot 4 · area level 70 and up / 9 runes, slot 6 · area level 70 and up / 9 runes, slot 7 · area level 70 and up / 9 runes, slot 9 · area level 70 and up / 10 runes, slot 3 · area level 78 and uppower-runepower-runePower Rune### Prismatic Rune
+Runes of Aldur · https://wraeclastindex.fyi/item/prismatic-rune
+In 50 recipes
+Monsters gain:
+All Damage can Shock
+All Damage can Chill
+All Damage can Ignite
+Increased Elemental Resistances
+Highlighted: 2 runes, slot 1 · area level 12 to 40 / 3 runes, slot 1 · area level 25 and up / 3 runes, slot 3 · area level 55 to 77 / 4 runes, slot 1 · area level 45 and up / 5 runes, slot 1 · area level 65 and up / 6 runes, slot 3 · area level 70 and upprismatic-runeprismatic-runePrismatic Rune### Protective Rune
+Runes of Aldur · https://wraeclastindex.fyi/item/protective-rune
+In 48 recipes
+Monsters gain:
+Periodically gain Verisium Proximity Shields
+Highlighted: 2 runes, slot 1 · area level 15 to 30 / 2 runes, slot 2 · area level 15 to 40 / 3 runes, slot 1 · area level 30 to 77 / 3 runes, slot 2 · area level 30 to 77 / 4 runes, slot 2 · area level 12 to 74protective-runeprotective-runeProtective Rune### Rage Rune
+Runes of Aldur · https://wraeclastindex.fyi/item/rage-rune
+In 43 recipes
+Monsters gain:
+Periodically Enrage
+Highlighted: 2 runes, slot 1 · area level 15 to 35 / 3 runes, slot 1 · area level 30 to 74 / 4 runes, slot 2 · area level 12 to 74 / 5 runes, slot 2 · area level 65 and uprage-runerage-runeRage Rune### Rebirth Rune
+Runes of Aldur · https://wraeclastindex.fyi/item/rebirth-rune
+In 54 recipes
+Monsters gain:
+Chance to Rebirth on death
+Highlighted: 2 runes, slot 1 · area level 12 to 35 / 3 runes, slot 2 · area level 28 to 77 / 3 runes, slot 3 · area level 30 to 77 / 4 runes, slot 2 · area level 38 and up / 5 runes, slot 2 · area level 44 and up / 6 runes, slot 2 · area level 70 and up / 7 runes, slot 2 · area level 70 and up / 8 runes, slot 2 · area level 70 and up / 8 runes, slot 8 · area level 70 and uprebirth-runerebirth-runeRebirth Rune### Sky Rune
+Runes of Aldur · https://wraeclastindex.fyi/item/sky-rune
+In 43 recipes
+Remnant gains:
+Conjures Elemental Tornados
+Highlighted: 3 runes, slot 2 · area level 33 to 77 / 4 runes, slot 1 · area level 15 to 74 / 4 runes, slot 1 · area level 75 and up / 5 runes, slot 2 · area level 65 and up / 5 runes, slot 3 · area level 70 and up / 6 runes, slot 2 · area level 70 and up / 6 runes, slot 3 · area level 70 and upsky-runesky-runeSky Rune### Soul Rune
+Runes of Aldur · https://wraeclastindex.fyi/item/soul-rune
+In 33 recipes
+Monsters gain:
+Union of Souls
+Highlighted: 4 runes, slot 3 · area level 24 and up / 7 runes, slot 1 · area level 70 and up / 7 runes, slot 6 · area level 70 and upsoul-runesoul-runeSoul Rune### Stone Rune
+Runes of Aldur · https://wraeclastindex.fyi/item/stone-rune
+In 50 recipes
+Monsters gain:
+Armoured
+Increased Stun Threshold
+Earthly Prison
+Highlighted: 2 runes, slot 1 · area level 5 to 16 / 2 runes, slot 2 · area level 5 to 64 / 3 runes, slot 1 · area level 100 / 3 runes, slot 2 · area level 15 to 70 / 3 runes, slot 3 · area level 30 to 64 / 4 runes, slot 4 · area level 100 / 5 runes, slot 4 · area level 45 and upstone-runestone-runeStone Rune### Tempest Rune
+Runes of Aldur · https://wraeclastindex.fyi/item/tempest-rune
+In 36 recipes
+Monsters gain:
+Cannot be Shocked or Chilled
+All Damage contributes to chance to Shock and Chill Magnitude
+Highlighted: 2 runes, slot 1 · area level 1 to 16 / 2 runes, slot 2 · area level 4 to 16 / 8 runes, slot 4 · area level 70 and uptempest-runetempest-runeTempest Rune### Tidal Rune
+Runes of Aldur · https://wraeclastindex.fyi/item/tidal-rune
+In 38 recipes
+Remnant gains:
+Conjures Tidal Waves
+Highlighted: 2 runes, slot 1 · area level 15 to 35 / 3 runes, slot 1 · area level 30 to 74 / 3 runes, slot 3 · area level 17 and up / 4 runes, slot 3 · area level 24 and up / 5 runes, slot 2 · area level 65 and up / 5 runes, slot 5 · area level 70 and uptidal-runetidal-runeTidal Rune### Time Rune
+Runes of Aldur · https://wraeclastindex.fyi/item/time-rune
+In 45 recipes
+Monsters gain:
+Slain Monsters may respawn as a higher Rarity
+Highlighted: 6 runes, slot 1 · area level 70 and up / 6 runes, slot 6 · area level 70 and uptime-runetime-runeTime Rune### Toxic Rune
+Runes of Aldur · https://wraeclastindex.fyi/item/toxic-rune
+In 27 recipes
+Monsters gain:
+Chance to Poison on Hit
+Chance for Toxic Volatiles on death
+All Damage from Hits Contributes to Poison Magnitude
+Highlighted: 4 runes, slot 1 · area level 50 to 74 / 4 runes, slot 1 · area level 75 and up / 5 runes, slot 2 · area level 65 and up / 6 runes, slot 1 · area level 70 and up / 7 runes, slot 2 · area level 70 and uptoxic-runetoxic-runeToxic Rune### Vision Rune
+Runes of Aldur · https://wraeclastindex.fyi/item/vision-rune
+In 42 recipes
+Monsters gain:
+Reflect Curses
+Chance to Reflect Shock
+Chance to Reflect Chill
+Highlighted: 2 runes, slot 2 · area level 15 to 35 / 3 runes, slot 2 · area level 30 to 77 / 6 runes, slot 2 · area level 70 and up / 7 runes, slot 2 · area level 78 and up / 8 runes, slot 6 · area level 70 and upvision-runevision-runeVision Rune### Ward Rune
+Runes of Aldur · https://wraeclastindex.fyi/item/ward-rune
+In 77 recipes
+Monsters gain:
+Protected by Runic Ward
+Highlighted: 3 runes, slot 2 · area level 30 to 74 / 3 runes, slot 2 · area level 75 and up / 3 runes, slot 3 · area level 23 to 77 / 4 runes, slot 2 · area level 30 to 74 / 4 runes, slot 2 · area level 75 and up / 4 runes, slot 4 · area level 44 to 78 / 5 runes, slot 3 · area level 70 and up / 6 runes, slot 4 · area level 70 and upward-runeward-runeWard Rune### Wisdom Rune
+Runes of Aldur · https://wraeclastindex.fyi/item/wisdom-rune
+In 56 recipes
+Monsters gain:
+Increased Experience
+Highlighted: 4 runes, slot 4 · area level 15 and up / 7 runes, slot 1 · area level 78 and upwisdom-runewisdom-runeWisdom Rune

@@ -37,7 +37,7 @@ const TYPE_JSON = {
   text: ['string'], enum: ['string'], quote: ['string'], source: ['string'], note: ['string'],
   adds: ['string'], pool: ['string'], danger: ['string'], odds: ['string'], drop: ['string'], rules: ['string'], gold: ['string'],
   gemgold: ['string'],
-  changed: ['string'], patchdiff: ['string'],
+  changed: ['string'], patchdiff: ['string'], keyed: ['string'],
   number: ['number'], duration: ['number'],
   flag: ['number', 'boolean', 'string'], weighted: ['number', 'boolean', 'string'],
   choice: ['array'], outcomes: ['array'],

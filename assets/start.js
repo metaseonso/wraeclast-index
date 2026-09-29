@@ -28,9 +28,9 @@ export async function mount(el){
   const words = WORDS.map(w => byName.get(w)).filter(Boolean);
   const how = [...byName.values()].filter(it => it.k === 'h');
   el.innerHTML =
-    '<div class="pagehd"><h2>Start here</h2><p>Path of Exile 2, from the first act. Every word opens the game’s own card.</p></div>' +
-    '<section class="dt-block"><div class="sect"><h3>Search anything</h3></div><p class="dt-sub">A gem, a unique, a keyword, a boss, an area. ' +
-      'Each result is a card with its price and what it connects to. <a href="#/">Search</a></p></section>' +
+    '<div class="pagehd"><h2>Start here</h2><p>Path of Exile 2, from the first act.</p></div>' +
+    '<section class="dt-block"><div class="sect"><h3>Search anything</h3></div><p class="dt-sub"><a href="#/">Search</a>: ' +
+      'gems, uniques, keywords, bosses, areas.</p></section>' +
     (words.length ? '<section class="dt-block"><div class="sect"><h3>Words to know first</h3></div><div class="kinds st-words">' +
       words.map(chip).join('') + '</div><p class="dt-sub"><a href="#/?k=w">Every keyword</a>' + n('w') + '</p></section>' : '') +
     (how.length ? '<section class="dt-block"><div class="sect"><h3>How it works</h3></div><div class="kinds st-words">' +

@@ -58,6 +58,10 @@ html:root:not([data-theme="none"]){
   --disp:'Title digits', 'Cinzel', 'Cinzel fallback', Georgia, serif;
   --sans:'IBM Plex Sans', 'Plex fallback', system-ui, -apple-system, 'Segoe UI', sans-serif;
 }
+/* an open dropdown's list: the browser draws it, so it is told the dark scheme and the site's colours outright */
+html:root:not([data-theme="none"]) select{color-scheme:dark}
+html:root:not([data-theme="none"]) select option{background:var(--raised); color:var(--text)}
+html:root:not([data-theme="none"]) select option:checked{background:var(--accent-soft, #2a3a1c); color:var(--text)}
 
 /* miasma: a faint green haze pooled at the top of every page. It scrolls with the page: pinned to the screen, it
    was repainted on every frame of a scroll. */
