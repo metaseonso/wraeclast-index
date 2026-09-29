@@ -143,6 +143,8 @@ const GO = new Promise(r => { go = r; });      // the meta, the bosses, the cata
 const SEEK = new Promise(r => { seek = r; });  // the search worker
 const ALL = new Promise(r => { all = r; });    // every card
 export function wake(){ go(); seek(); return searching; }
+// a first visit that opens on a search (#/?q=...): the meta and the search worker start now, not once the page is drawn
+if(document.getElementById('view-home') && /^#\/\?(.*&)?q=[^&]/.test(location.hash)){ go(); seek(); }
 export function need(){ go(); all(); return ready; }
 const META = GO.then(() => MAN).then(m => getJSON(m.meta.file));
 const BOSS = GO.then(() => getJSON('data/bosses.json', {priority: 'low'}).catch(() => null));
@@ -3369,7 +3371,10 @@ searching.then(() => {
 function idle(f){ (window.requestIdleCallback || (g => setTimeout(g, 1200)))(f, {timeout: 4000}); }
 export function later(){
   const lite = document.documentElement.classList.contains('lite');
-  requestAnimationFrame(() => setTimeout(() => {
+  // a first visit to a search: the answer before the fog (the search rows share the line on a phone, #117)
+  const wait = document.getElementById('view-home') && /^#\/\?(.*&)?q=[^&]/.test(location.hash)
+    ? Promise.race([searching, new Promise(r => setTimeout(r, 8000))]).catch(() => {}) : Promise.resolve();
+  wait.then(() => requestAnimationFrame(() => setTimeout(() => {
     for(const img of document.querySelectorAll('img[data-src]')){
       const box = img.closest('.fog') || img;
       if(lite && box !== img) continue;
@@ -3382,7 +3387,7 @@ export function later(){
     }
     const hero = document.getElementById('hero'), crest = hero && hero.querySelector('.emblem');
     if(crest && !lite) new IntersectionObserver(es => hero.classList.toggle('away', !es[es.length - 1].isIntersecting)).observe(crest);
-  }, 0));
+  }, 0)));
 }
 /* The service worker (sw.js): not on the backup site (GitHub Pages serves sw.js unstamped) or inside a frame. */
 export function registerSW(){
