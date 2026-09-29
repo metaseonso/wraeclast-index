@@ -418,35 +418,41 @@ function query(){
 
 /* ---------- the search in one plain sentence ---------- */
 const modText = id => (MOD.get(id) || {t: id}).t;
+/* one mod line with its number in it: "at least +80 to maximum Life". A line with two numbers keeps both
+   blanks and says the bound after it */
+function modWords(g, m){
+  const t = modText(m.id);
+  if(g.t === 'weight') return t + (+m.w > 1 ? ' ×' + m.w : '');
+  if(g.t === 'not' || m.v === '' || m.v === undefined) return t;
+  const op = m.op || 'min';
+  if((t.match(/#/g) || []).length === 1) return ({min: 'at least ', max: 'at most ', eq: ''}[op]) + t.replace('#', m.v);
+  return t + ' ' + ({min: '≥', max: '≤', eq: '='}[op]) + ' ' + m.v;
+}
+/* the search as a short line, one piece per thing asked for: "Rare Boots · at least 25% increased Movement
+   Speed · up to 5 Divine Orb · online sellers only" */
 function summary(){
   const bits = [];
   const rar = S.rarity ? (T.options.rarity.find(o => o[0] === S.rarity) || [, ''])[1] : '';
-  bits.push((rar ? rar + ' ' : '') + (S.item ? S.item.n : 'item'));
+  bits.push(S.item ? (rar ? rar + ' ' : '') + S.item.n : rar ? rar + ' item' : 'Any item');
   if(typesFor() && S.types && S.types.length) bits.push(S.types.map(typeName).join(' or '));
   for(const g of S.groups.filter(g => g.mods.length)){
-    const names = g.mods.map(m => {
-      const t = modText(m.id).replace(/#/g, '#');
-      if(g.t === 'weight') return t + (+m.w > 1 ? ' ×' + m.w : '');
-      if(g.t === 'not' || m.v === '' || m.v === undefined) return t;
-      return t + ' ' + ({min: '≥', max: '≤', eq: '='}[m.op || 'min']) + ' ' + m.v;
-    });
-    if(g.t === 'and') bits.push('with ' + names.join(', '));
-    if(g.t === 'count') bits.push('with at least ' + (g.n || 1) + ' of: ' + names.join(', '));
-    if(g.t === 'or') bits.push('with ' + names.join(' or '));
-    if(g.t === 'weight') bits.push('score of ' + names.join(' + ') + (g.min !== '' && g.min !== undefined ? ' ≥ ' + g.min : ''));
+    const names = g.mods.map(m => modWords(g, m));
+    if(g.t === 'and') bits.push(names.join(', '));
+    if(g.t === 'count') bits.push('any ' + (g.n || 1) + ' of: ' + names.join(', '));
+    if(g.t === 'or') bits.push(names.join(' or '));
+    if(g.t === 'weight') bits.push((g.min !== '' && g.min !== undefined ? g.min + '+ total' : 'total') + ' from: ' + names.join(', '));
     if(g.t === 'not') bits.push('without ' + names.join(', '));
   }
-  const extra = [];
-  if(S.ilvl !== '') extra.push('item level ' + S.ilvl + '+');
-  if(S.quality !== '') extra.push('quality ' + S.quality + '%+');
-  if(S.lvl !== '') extra.push('wearable at level ' + S.lvl);
-  if(S.sockets !== '') extra.push(S.sockets + '+ augment sockets');
+  if(S.ilvl !== '') bits.push('item level ' + S.ilvl + '+');
+  if(S.quality !== '') bits.push(S.quality + '%+ quality');
+  if(S.lvl !== '') bits.push('usable at level ' + S.lvl);
+  if(S.sockets !== '') bits.push(S.sockets + '+ augment sockets');
   for(const [k, v] of Object.entries(S.states)) if(v === 'yes' || v === 'no')
-    extra.push((v === 'no' ? 'not ' : '') + ((T.states.find(s => s[0] === k) || [, k])[1]).toLowerCase());
-  if(S.price !== '') extra.push('up to ' + S.price + ' ' + (T.options.price.find(o => o[0] === S.cur) || [, S.cur])[1]);
-  if(S.indexed) extra.push('listed ' + (T.options.indexed.find(o => o[0] === S.indexed) || [, ''])[1].toLowerCase());
-  extra.push(S.online ? 'online sellers' : 'any seller');
-  return bits.join(', ') + '. ' + extra.join(', ') + '.';
+    bits.push((v === 'no' ? 'not ' : '') + ((T.states.find(s => s[0] === k) || [, k])[1]).toLowerCase());
+  if(S.price !== '') bits.push('up to ' + S.price + ' ' + (T.options.price.find(o => o[0] === S.cur) || [, S.cur])[1]);
+  if(S.indexed) bits.push('listed ' + (T.options.indexed.find(o => o[0] === S.indexed) || [, ''])[1].toLowerCase());
+  bits.push(S.online ? 'online sellers only' : 'any seller');
+  return bits.join(' · ');
 }
 
 /* ---------- popular searches (everyone's, from the site's database) ----------
