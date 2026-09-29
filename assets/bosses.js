@@ -507,12 +507,9 @@ export async function mount(el){
     '<div class="bo-list" id="bolist"></div>' +
     '<p class="note bo-foot">Prices: the in-game Currency Exchange every hour, live trade site listings over the day.' +
       (BP && BP.updated ? ' Last check ' + esc(ago(BP.updated)) + '.' : '') + '</p>' +
-    '<p class="note">Only the bosses a drop feed covers have a way in and a drop list. Pinnacle is the game’s own ' +
-      'marking, so a few fights players call pinnacle are not marked. Drop rates are community samples from the ' +
-      '<a href="' + esc(srcURL('PoE2 Wiki')) + '" target="_blank" rel="noopener">PoE2 Wiki</a> (CC BY-NC-SA), not game data. ' +
-      'Worth it: ' + ROWS.filter(drawsMeter).length + ' of ' + ROWS.length + ' bosses have a sampled rate and a real price on the same drop.</p>' +
-    ((B.notes || []).length ? '<div class="sect"><h3>Gaps in the lists</h3></div><ul class="note bo-gaps">' +
-      B.notes.map(n => '<li>' + esc(n) + '</li>').join('') + '</ul>' : '');
+    // the sources' disagreements (B.notes, tools/bosses.py) are the data report's, never the page's
+    '<p class="note">Drop rates: <a href="' + esc(srcURL('PoE2 Wiki')) + '" target="_blank" rel="noopener">PoE2 Wiki</a> ' +
+      '(CC BY-NC-SA), community samples. Pinnacle: the game’s own marking.</p>';
 
   const bq = $('#boq', el);
   onType(bq, () => { S.q = bq.value; render(); sync(); });
