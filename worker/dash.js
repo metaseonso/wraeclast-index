@@ -352,9 +352,13 @@ export async function stats(env, url){
   for(let t = Date.parse(since); t <= Date.parse(today); t += 86400e3) dayList.push(dayOf(t));
 
   // clicks: overall and per page
-  const all = new Map(), byRoute = {};
-  let clicks = 0;
+  const all = new Map(), byRoute = {}, opened = new Map();
+  let clicks = 0, none = 0;
   for(const r of c){
+    // which cards are opened (assets/track.js note: "opened:<kind>:<name>"), and searches that found nothing
+    // (a count only, never the words): their own lists, so they neither crowd nor drown in the top 50
+    if(r.label.startsWith('opened:')){ add(opened, r.label.slice(7), r.n); continue; }
+    if(r.label === 'search:none'){ none += r.n; continue; }
     clicks += r.n; add(all, r.label, r.n);
     add(byRoute[r.route] = byRoute[r.route] || new Map(), r.label, r.n);
   }
@@ -396,7 +400,7 @@ export async function stats(env, url){
     landings: landings(v),
     countries: top(countries, 20, 'country'),
     devices: top(devices, 3, 'device'),
-    clicks: {total: clicks, all: top(all, 50, 'label'),
+    clicks: {total: clicks, all: top(all, 50, 'label'), opened: top(opened, 30, 'label'), none,
       byRoute: Object.fromEntries(Object.entries(byRoute).map(([k, m]) => [k, top(m, 50, 'label')]))},
     suggestions: {count: status, list: sg.map(note)},
     load: {hours, perHour, today: todayLoad, tradeLimitPerHour: 100},

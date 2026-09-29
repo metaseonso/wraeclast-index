@@ -734,7 +734,22 @@
           "n": 1
         }
       ]
-    }
+    },
+    "opened": [
+      {
+        "label": "c:Divine Orb",
+        "n": 14
+      },
+      {
+        "label": "u:Kaom's Heart",
+        "n": 9
+      },
+      {
+        "label": "g:Leap Slam",
+        "n": 4
+      }
+    ],
+    "none": 6
   },
   "suggestions": {
     "count": {

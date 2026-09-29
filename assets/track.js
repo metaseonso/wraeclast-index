@@ -1,7 +1,8 @@
 /* Page views and clicks for the owner's dashboard (worker/dash.js, admin.html).
    Counted by the site's own worker only (Cloudflare's Analytics Engine): no cookies, no address, nothing anyone types.
    What is sent: the page, how the visit arrived (the other site's name, or "direct"), phone/tablet/desktop,
-   what was clicked (a tab, a button's words, "card:gem", the host of a link out) and where on the page.
+   what was clicked (a tab, a button's words, "card:gem", the host of a link out) and where on the page, which
+   card was opened (its kind and name), and how many searches found nothing (a count, no words).
    Sent once, as the page is hidden (sendBeacon): one worker call a visit, where a send every 30 seconds made
    several. Coming back to the page and leaving again sends what was added since; a batch that fills (CAP) goes
    early. CAP keeps a batch within the 250 points the worker may write in one request.
@@ -133,6 +134,13 @@ function click(e){
     if(y >= 0 && y < 6000) bump(Q.h, [r, device(), Math.min(49, Math.max(0, Math.floor(e.clientX / innerWidth * 50))), Math.floor(y / 20)].join(SEP));
   }
   setTimeout(() => view('site'), 60);   // the drill-down's section buttons change the address without a hashchange
+}
+
+/* A count the page gives itself rather than a click: a card opened ("opened:<kind>:<name>", the card's own name,
+   never anything typed) and a search that found nothing ("search:none", with no words). */
+export function note(label){
+  if(window.__wiTrack !== true) return;
+  bump(Q.c, routeOf() + SEP + label);
 }
 
 export function mountTrack(){

@@ -107,7 +107,7 @@ $('#notrack').addEventListener('change', e => { try { localStorage.setItem('wi-n
 const PART = {
   stats: {say: 'Counting page views', wait: 'Our own count took too long.', path: () => 'stats?days=' + S.days,
     take: j => { S.data = j; }, draw: () => drawStats(),
-    boxes: ['#tiles', '#chart', '#routes', '#kinds', '#sources', '#countries', '#devices', '#clicks', '#load', '#jobs', '#plan', '#searches']},
+    boxes: ['#tiles', '#chart', '#routes', '#kinds', '#sources', '#countries', '#devices', '#clicks', '#load', '#jobs', '#plan', '#searches', '#opened']},
   cf: {say: 'Reading Cloudflare', wait: 'Cloudflare is slow.', path: () => 'cloudflare?days=' + S.days,
     take: j => { S.cf = j; }, draw: () => drawCloud(),
     boxes: ['#cfnotes', '#cftiles', '#cfchart', '#cfrumchart', '#cfhour', '#cfreal', '#cfwho', '#cftraffic',
@@ -209,7 +209,7 @@ const TAB_BOX = {
   overview: ['#tiles', '#chart', '#routes', '#kinds', '#sources', '#cfnotes', '#cftiles', '#cfchart', '#cfrumchart'],
   visitors: ['#cfreal', '#cfwho', '#countries', '#devices'],
   traffic: ['#cfhour', '#cftraffic'],
-  clicks: ['#clickpick', '#clicks', '#heatpage', '#heatdev', '#heatbox', '#searches'],
+  clicks: ['#clickpick', '#clicks', '#heatpage', '#heatdev', '#heatbox', '#searches', '#opened'],
   speed: ['#cfsplit', '#cfspeed', '#cfparts'],
   notes: ['#notepick', '#notes'],
   jobs: ['#jobs', '#load'],
@@ -423,6 +423,15 @@ function drawStats(){
       .map(([k, l]) => '<button type="button" class="chip" data-k="' + k + '" aria-pressed="' + (k === S.clickRoute) + '">' + esc(l) + '</button>').join('');
   });
   safe('#clicks', () => clicksTable());
+  // which cards are opened, and how many searches found nothing (a count; the words are never sent)
+  safe('#opened', () => {
+    const c = obj(obj(d).clicks), none = +c.none || 0;
+    const rows = arr(c.opened).map(obj).map(x => {
+      const [k, ...n] = String(x.label || '').split(':');
+      return {n: x.n, html: esc(n.join(':')) + ' <span class="dv-sub">' + esc(((KIND[k] || {}).one || '').toLowerCase()) + '</span>'};
+    });
+    return table(rows, 'Card', 0, 30) + '<p class="note">' + none.toLocaleString() + (none === 1 ? ' search' : ' searches') + ' found nothing.</p>';
+  });
   safe('#plan', () => planBox());
   safe('#jobs', () => jobsBox());
   safe('#datastate', el => { dataLine(el); });

@@ -1925,7 +1925,9 @@ export function openBox(node, label = 'Details'){
 }
 /* opts.nested: opened from inside the popup (a keyword, or something that uses it).
    opts.onFull: the drill-down page's own full-stats panel, offered as a button. */
+let TRACKER = null;   // assets/track.js once it is in: the owner's counts
 export function openDetail(it, opts = {}, href){
+  if(TRACKER && it && it.k && it.n) TRACKER.note('opened:' + it.k + ':' + it.n);
   const key = it.k + ':' + it.id;
   it = D.byKey.get(key) || it;
   if(!((D.search || D.full) && D.past && !it._head) && !D.failed){
@@ -2690,6 +2692,7 @@ function homeRender(){
     find(q, {kind, n: H.shown, take: H.shown, seen}).then(r => {
       if(ask !== H.asked || q !== H.q || kind !== H.kind) return;
       H.res = {q, kind, seen, total: r.total, counts: r.counts};
+      if(!r.total && q.trim() && TRACKER) TRACKER.note('search:none');   // a count for the owner; the words stay here
       H.list = r.keys;
       homeRender();
     }, () => {});
@@ -2797,7 +2800,7 @@ lazy('./notes.js').then(m => m.mountNotes()).catch(() => {});       // Patch not
 lazy('./pins.js').then(m => m.mountPins()).catch(() => {});         // the Pins button, and the list it opens
 lazy('./runs.js').then(m => m.mountRuns()).catch(() => {});         // the run counter, and the key that counts one
 lazy('./support.js').then(m => m.mountSupport()).catch(() => {});   // Support link, once data/support.json is filled in
-lazy('./track.js').then(m => m.mountTrack()).catch(() => {});       // page views and clicks for the owner's dashboard
+lazy('./track.js').then(m => { TRACKER = m; m.mountTrack(); }).catch(() => {});       // page views and clicks for the owner's dashboard
 mountGuide();                                                       // the community guide under the hero
 
 /* A guide somebody else wrote, for a player who has not got to any of this yet. Linked where it helps,
