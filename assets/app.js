@@ -654,7 +654,9 @@ export function gemReq(w, gemLevel = 20){
   return [lv, attr(w[0]), attr(w[1]), attr(w[2])];
 }
 const ATTR = [['Str','r'], ['Dex','g'], ['Int','b']];
-const pill = (text, tone) => '<span class="pill' + (tone ? ' ' + tone : '') + '">' + esc(text) + '</span>';
+// `note`: the words on hover, where the pill needs a reason beside it (FIELDS note: "Subject to change")
+const pill = (text, tone, note) => '<span class="pill' + (tone ? ' ' + tone : '') + '"' +
+  (note ? ' title="' + esc(note) + '"' : '') + '>' + esc(text) + '</span>';
 function reqPills(rq, note){
   if(!rq) return '';
   const out = [];
@@ -1036,6 +1038,28 @@ function mechlinesHTML(it, t, f){
   }
   return out;
 }
+/* A weighted pool out of a table of its own (FIELDS `from` and `of`): per pool its lines, each with its share
+   of the pool, a line of weight 0 left out because it never rolls. A line that adds nothing says so in the
+   declaration's own words (`none`); a line the file could not word is counted, never guessed. A pool the file
+   flags carries the flag and its reason on hover (the file's own `flags`). The file's source closes it. */
+function weightedHTML(it, t, f){
+  const root = f.from ? t[f.from] : t, tips = t.flags || {};
+  const pct = x => { const p = x * 100; return (p >= 10 ? Math.round(p) : +p.toFixed(1)) + '%'; };
+  let out = '';
+  for(const k of f.of || []){
+    const p = root && root[k];
+    const all = ((p && p.lines) || []).filter(x => x.weight > 0);
+    const rows = all.filter(x => (x.text || []).length || (x.nothing && f.none));
+    if(!rows.length) continue;
+    const flag = p.flag ? ' <span class="pill" title="' + esc((tips[p.flag] || '') + (p.why ? ' ' + p.why : '')) + '">' +
+      esc(p.flag) + '</span>' : '';
+    out += '<p class="card-facts">' + esc((f.say || {})[k] || '') + flag + '</p><ul class="card-pool">' + rows.map(x =>
+      '<li><span class="pool-ml">' + ((x.text || []).length ? x.text.map(esc).join('<br>') : esc(f.none)) + '</span>' +
+      '<span class="pool-rs">' + (x.share ? pct(x.share) : '') + '</span></li>').join('') +
+      (all.length > rows.length ? '<li class="more-n">' + esc(FRAME.more(all.length - rows.length)) + '</li>' : '') + '</ul>';
+  }
+  return out && out + (t.source ? '<p class="card-src">Source: ' + esc(t.source) + '</p>' : '');
+}
 const mechFill = draw => (host, it, f) => {
   if(!host) return;
   tableOf(f.file).then(t => {
@@ -1351,7 +1375,31 @@ export const TYPE = {
     return reqPills(r20, '<span title="' + esc(one) + '">at gem level 20</span>');
   }},
   reqs:   {raw: 1, v: (it, f) => reqPills(it[f.at])},
-  rich:   {raw: 1, v: (it, f, o) => richHTML(it, f.at, o.full ? Infinity : (f.lines || FRAME.lines))},
+  rich:   {raw: 1, v: (it, f, o) => {
+    const html = richHTML(it, f.at, o.full ? Infinity : (f.lines || FRAME.lines));
+    // `label`: the words above the lines, where the lines are one block of several on the card
+    return html && f.label ? '<div class="card-blk"><p class="card-facts">' + esc(f.label) + '</p>' + html + '</div>' : html;
+  }},
+  /* Rows of options: each row a choice of one where it offers more than one, drawn side by side, and one
+     thing given where it offers one. A row may name where it is, ahead of its options ({w, o}). The grid draws
+     FRAME.lines rows and counts the rest; the popup draws all of them. */
+  choice: {raw: 1, v: (it, f, o) => {
+    const rows = it[f.at];
+    if(!Array.isArray(rows) || !rows.length) return '';
+    const cap = o.full ? rows.length : FRAME.lines;
+    const over = rows.length - cap > FRAME.slack ? rows.length - cap : 0;
+    const row = r => {
+      const opts = Array.isArray(r) ? r : (r.o || []), w = Array.isArray(r) ? '' : (r.w || '');
+      const lead = [opts.length > 1 ? f.pick : '', w].filter(Boolean).join(' · ');
+      return '<li>' + (lead ? '<span class="tk-lead">' + esc(lead) + '</span>' : '') +
+        opts.map(x => '<span class="tk-o">' + esc(x) + '</span>').join('') + '</li>';
+    };
+    return '<div class="card-blk">' + (f.label ? '<p class="card-facts">' + esc(f.label) + '</p>' : '') +
+      '<ul class="card-take">' + rows.slice(0, over ? cap : rows.length).map(row).join('') +
+      (over ? '<li class="more-n">' + esc(FRAME.more(over)) + '</li>' : '') + '</ul></div>';
+  }},
+  weighted: {raw: 1, fill: mechFill(weightedHTML), v: (it, f, o, name) => o.full && it[f.at]
+    ? '<div class="card-addsbox" data-fill="' + esc(name) + '" hidden></div>' : ''},
   /* the same words where the game wrote them as a table: the slot on the left, what it gives there on the
      right. The grid draws four rows the way any list in a slot does, the popup draws all of them, and what
      is not drawn is a count. The right-hand side keeps the game's own middot where a slot gives two things. */
@@ -1552,7 +1600,7 @@ export function card(it, opts = {}){
     headHTML(head) +
     (o.why ? '<p class="card-why">' + esc(o.why) + '</p>' : '') +
     (pills.length ? '<div class="card-req">' + pills.map(x =>
-      TYPE[x.f.type].raw ? x.html : pill(x.text, x.f.tone)).join('') + overHTML(pills, 'pill') + '</div>' : '') +
+      TYPE[x.f.type].raw ? x.html : pill(x.text, x.f.tone, x.f.note)).join('') + overHTML(pills, 'pill') + '</div>' : '') +
     (facts.length ? '<p class="card-facts">' + [...facts.map(x => x.html), overHTML(facts, 'fact')]
       .filter(Boolean).join(' · ') + '</p>' : '') +
     body.map(x => x.html).join('') + overHTML(body, 'body') +

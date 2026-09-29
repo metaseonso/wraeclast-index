@@ -10,7 +10,9 @@
    on the site is its own connection. */
 import {MAPS} from './kinds.js';
 
-const MAPLIST = Object.entries(MAPS);
+const MAPLIST = Object.entries(MAPS).filter(([, g]) => !g.keys);
+// the maps whose field is a list of card keys: each is turned round, so a card finds every card that names it
+const KEYLIST = Object.entries(MAPS).filter(([, g]) => g.keys);
 export function turn(items, has){
   const maps = {};
   for(const m of Object.keys(MAPS)) maps[m] = new Map();
@@ -28,6 +30,7 @@ export function turn(items, has){
       push(maps[m], g.per === 'kind' ? it.k + '/' + v : v, key);
     }
     for(const target of it.rx || []) push(namedby, target, key);   // a line of this card names that one
+    for(const [m, g] of KEYLIST) for(const target of it[g.at] || []) if(target !== key) push(maps[m], target, key);
   }
   return {...maps, namedby};
 }
@@ -83,5 +86,9 @@ export function lists(IX, it, has){
     job: others(IX.job.get(it.k + '/' + it.job), key),
     named: (it.rx || []).filter(has),
     namedby: others(IX.namedby.get(key), key),
+    act: others(IX.act.get(it.act), key),
+    actof: to('act'),
+    // every card whose own list of keys names this one, per map
+    back: Object.fromEntries(KEYLIST.map(([m]) => [m, others(IX[m].get(key), key)])),
   };
 }

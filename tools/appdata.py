@@ -71,9 +71,12 @@ WORTH = 1000                # bytes a field must save before it is put in the di
 def pack(part, kinds, extra=None):
     """Put each field worth it into the part's dict (see above). extra: {field: [values]} held elsewhere in the
     part (the core cards' keyword chips, in the rest) that share the field's list and are numbered with it."""
+    # a kind's rows are a list under its letter; the part's own fields are not ("v", the version, is also the
+    # Act kind's letter, whose rows sit in the other part)
+    rows = lambda k: part.get(k) if isinstance(part.get(k), list) else []
     vals = {}
     for k in kinds:
-        for it in part.get(k) or []:
+        for it in rows(k):
             for f, v in it.items():
                 vals.setdefault(f, []).append(v)
     for f, more in (extra or {}).items():
@@ -96,7 +99,7 @@ def pack(part, kinds, extra=None):
             table[f] = (order, at)
     code = lambda f, v: table[f][1][v] if isinstance(v, str) else [table[f][1][w] for w in v]
     for k in kinds:
-        for it in part.get(k) or []:
+        for it in rows(k):
             for f in it:
                 if f in table:
                     it[f] = code(f, it[f])

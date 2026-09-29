@@ -36,7 +36,8 @@ function local(){
   return IX;
 }
 let collecting = false;   // keysOf below: every key is taken as there, so nothing worked out now may be kept
-const NONE = {base: [], variants: [], uniques: [], klass: [], klassof: [], inclass: [], section: [], cat: [], job: [], named: [], namedby: []};
+const NONE = {base: [], variants: [], uniques: [], klass: [], klassof: [], inclass: [], section: [], cat: [], job: [], named: [], namedby: [],
+  act: [], actof: [], back: {}};
 const lists = it => it._g || (collecting ? NONE : it._gl && it._glv === X.D.index ? it._gl
   : (it._glv = X.D.index, it._gl = graph.lists(local().ix, it, has)));
 /* Which groups a card sits in, and how many cards each holds: what the search weighs the cards you opened by
@@ -128,6 +129,13 @@ const EDGE = {
   },
   named(it){ return cardRows(lists(it).named); },
   namedby(it){ return cardRows(lists(it).namedby); },
+  /* A card's own list of keys (REL `at`), and the cards whose list names this one (REL `map`, turned round in
+     assets/graph.js). One pair of edges for every list of keys a row carries, so a new one is a REL entry. */
+  own(it, F, r){ return cardRows((it[r.at] || []).filter(key => key !== it.k + ':' + it.id)); },
+  back(it, F, r){ return cardRows((lists(it).back || {})[r.map] || []); },
+  // the cards of one act, of the kind the group is of; and the act a card is in
+  act(it, F, r){ return cardRows((lists(it).act || []).filter(key => !r.of || key.startsWith(r.of + ':'))); },
+  actof(it){ return cardRows(lists(it).actof || []); },
 };
 
 /* ---------- a keyword's own nine lists (data/kwuse.json) ----------
@@ -199,7 +207,7 @@ export function categories(it, F = {}){
       rows = kwRows(F.kwuse, F.kwuse.k[kwId] || {}, r);
     } else {
       if(r.needs && !F[r.needs]){ need.add(r.needs); continue; }
-      rows = (EDGE[r.edge] || (() => []))(it, F);
+      rows = (EDGE[r.edge] || (() => []))(it, F, r);
     }
     if(!rows.length) continue;
     const onTree = rows.reduce((a, x) => a + (x.x || 1), 0);
