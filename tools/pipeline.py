@@ -181,22 +181,23 @@ STAGES = [
                 'data/market.json', 'data/index.json', 'data/treechanges/*.json'],
          last=['data/treechanges/*.json'],   # the tree changes join onto passive cards (#87); treechanges writes them later
          writes=['data/index.json', 'data/index-core.json', 'data/index-rest.json'], count={'data/index.json': 'items'}),
-    dict(name='nodelinks', run=['tools/nodelinks.py'], cadence='patch', source='files',
-         reads=['data/index.json'],
-         writes=['data/index.json', 'data/index-core.json', 'data/index-rest.json'], count={'data/index.json': 'items'}),
-    dict(name='essences', run=['tools/essences.py'], cadence='patch', source='files',
-         reads=['data/craft.json', 'data/craft/*.json', 'data/index.json'], writes=['data/essences.json']),
     # what each Atlas map can hold, and what corrupting it adds (#92). data/areas.json as for achievements
     dict(name='atlascontent', run=['tools/atlascontent.py'], cadence='patch', source='game files',
          reads=['data/game/endgame_maps.json', 'data/game/map_content.json', 'data/game/atlas_corruption.json',
                 'data/index.json', 'data/bosses.json', 'data/areas.json'],
          writes=['data/atlascontent.json'], count={'data/atlascontent.json': 'maps'}),
-    # the areas, quests and acts as cards of their own (#72, #76), with what an Atlas map can hold (#92)
+    # the areas, quests and acts as cards of their own (#72, #76), with what an Atlas map can hold (#92). Before
+    # nodelinks, so every run links the same cards: a name an area shares with another card is never a link
     dict(name='world', run=['tools/world.py'], cadence='patch', source='game files',
          reads=['data/areas.json', 'data/quests.json', 'data/atlascontent.json', 'data/bosses.json',
                 'data/market.json', 'data/exchange.json', 'data/index.json'],
          last=['data/bosses.json', 'data/market.json', 'data/exchange.json'],
          writes=['data/index.json', 'data/index-core.json', 'data/index-rest.json'], count={'data/index.json': 'items'}),
+    dict(name='nodelinks', run=['tools/nodelinks.py'], cadence='patch', source='files',
+         reads=['data/index.json'],
+         writes=['data/index.json', 'data/index-core.json', 'data/index-rest.json'], count={'data/index.json': 'items'}),
+    dict(name='essences', run=['tools/essences.py'], cadence='patch', source='files',
+         reads=['data/craft.json', 'data/craft/*.json', 'data/index.json'], writes=['data/essences.json']),
     dict(name='kwuse', run=['tools/kwuse.py'], cadence='patch', source='files',
          reads=['explore.html', 'data/explore/*.json', 'data/index.json', 'data/atlas.json', 'data/info.json',
                 'data/market.json', 'data/craft.json', 'data/craft/*.json'],
@@ -469,7 +470,8 @@ def lost_links(new, old):
     """The links the last good index had that this one lost while nothing explains it: both cards are still
     there and the card's lines still say the words. Links are the graph, so one of those is a fault. A link whose
     card went, or whose line no longer says the words, went with them. So did one whose words a longer link on
-    the same card now covers: "Shroud" (the Shroud gem) inside "Ghost Shroud" (the buff card of that name)."""
+    the same card now covers: "Shroud" (the Shroud gem) inside "Ghost Shroud" (the buff card of that name). And
+    so did one whose words now name two cards ("Decay": a buff and a map), which nodelinks never guesses between."""
     import nodelinks
     fresh = links(new)
     now = {(a, b) for a, b, _ in fresh}
@@ -478,8 +480,13 @@ def lost_links(new, old):
         longer.setdefault(a, set()).add(words)
     cards = {it['k'] + ':' + it['id']: it for it in new.get('items') or []}
     lost = []
+    names = {}
+    for key, it in cards.items():
+        names.setdefault(it['n'].lower(), set()).add(key)
     for a, b, words in links(old):
         if (a, b) in now or a not in cards or b not in cards:
+            continue
+        if len(names.get(words.lower(), ())) > 1:   # the words now name two cards: a link would be a guess
             continue
         if any(words in w and words != w for w in longer.get(a, ())):
             continue
