@@ -412,7 +412,6 @@ export function mount(el){
     '<div class="cards" id="cxcards"></div><div class="more cx-more" id="cxmore" hidden>' +
       '<button type="button" class="btn cx-next">Show more</button><button type="button" class="btn cx-all">Show all</button></div>' +
     '<p class="note" style="margin-top:18px">Rising or falling: 10%+ this week. Swinging: 12%+ in one day. Low volume: under ' + MIN_VOL + ' div a day. ' +
-      '“Add to watch list” searches every currency, busy or not. ' +
       'Source: the in-game Currency Exchange (GGG’s hourly feed of real trades).</p>' +
     '<div class="sect"><h3>Busiest exchange markets</h3><p>Last 24 hours. What one buys, and how much traded.</p></div>' +
     '<div class="cxm" id="cxmarkets"></div>';

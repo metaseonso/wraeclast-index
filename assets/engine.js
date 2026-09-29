@@ -467,7 +467,7 @@ const DECISION = {
       says: 'Whether the game needs a minimum item level for this essence tier is not published. The bench lets it run at any item level. This is the one place it may be more generous than the game.'},
   4: {what: 'The bench does not simulate corrupting an essence; corrupted essences are offered as inputs',
       why: 'Both halves of it are unpublished numbers — which tier goes in, and with what odds',
-      says: 'How a corrupted essence is made, and how often, is not published. Pick one here and the bench will run its craft; it does not roll the corruption that makes one.'},
+      says: 'How a corrupted essence is made, and how often, is not published. The bench runs the craft from one; it does not roll the corruption that makes one.'},
   5: {what: '"Same type" is the modifier’s tag; one tag is taken evenly from the item, then the draw runs inside it',
       why: 'The tag set is the only "type" a modifier and an existing modifier can share that the game files carry, and the catalysts use the same word for the same field',
       says: '"Same type" is not defined in the game’s words. The bench reads it as the modifier’s tag — the same tags the catalysts name — takes one evenly from the tags already on the item, then rolls inside it. If the game instead favours a tag the item has more of, this will not match.'},
@@ -525,8 +525,8 @@ function omenOpts(names){
    Desecrated modifier is offered, so neither is rolled: the bench shows the choice and the player takes one.
    docs/craft-sim.md, "Steps that will not roll". */
 const WONT_ROLL = {
-  vaal: 'What a Vaal Orb does is not a number anyone publishes — pick the outcome to practise',
-  desecrate: 'How often each Desecrated modifier is offered is not measured — pick from the ones the bench reveals',
+  vaal: 'What a Vaal Orb does is not published; the outcome is chosen',
+  desecrate: 'How often each Desecrated modifier is offered is not measured; the modifier is chosen from those the bench reveals',
 };
 STEP.vaal = () => ({ok: false, why: WONT_ROLL.vaal});
 STEP.desecrate = () => ({ok: false, why: WONT_ROLL.desecrate});

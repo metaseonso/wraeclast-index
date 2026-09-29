@@ -12,9 +12,9 @@ const rules = async () => ENG || (ENG = await import('./engine.js').catch(() => 
 const GROUPS = {
   and:    {label: 'Must have', hint: 'Every mod here must be on the item.'},
   or:     {label: 'Any of these', hint: 'At least one of these must be on the item.'},
-  count:  {label: 'At least some of these', hint: 'The item needs this many of the mods below.'},
-  weight: {label: 'Add these up', hint: 'Each mod adds to a score (a mod set to 2 counts double). Ask for a total.'},
-  not:    {label: 'Must not have', hint: 'Skip items with any of these.'},
+  count:  {label: 'At least some of these', hint: 'The item needs this many of these mods.'},
+  weight: {label: 'Add these up', hint: 'Each mod adds to a score (a mod set to 2 counts double).'},
+  not:    {label: 'Must not have', hint: 'Items with any of these are left out.'},
 };
 const OPS = [['min', 'At least'], ['max', 'At most'], ['eq', 'Exactly']];
 const STATES = ['corrupted', 'twice_corrupted', 'mutated', 'sanctified', 'desecrated', 'fractured_item', 'mirrored'];
@@ -552,7 +552,7 @@ export async function mount(el){
   EL = el;
   // the trade site's lists are read once: coming back to the tab only draws the page again
   if(!T){
-    el.innerHTML = '<div class="pagehd"><h2>Trade</h2><p>Build any trade search in plain words, then open it on the official site.</p></div><p class="note">Loading…</p>';
+    el.innerHTML = '<div class="pagehd"><h2>Trade</h2><p>Search the official trade site.</p></div><p class="note">Loading…</p>';
     T = await tradeData();
     for(const [id, t, lo, hi, tk] of T.mods){   // lo/hi: the slider's ends; tk: its tiers
       const k = id.split('.')[0];
@@ -612,7 +612,7 @@ function groupHTML(g, gi){
 function draw(){
   const url = searchURL(D.market ? D.market.league : 'Standard', query());
   EL.innerHTML =
-    '<div class="pagehd"><h2>Trade</h2><p>Build any trade search in plain words, then open it on the official site.</p></div>' +
+    '<div class="pagehd"><h2>Trade</h2><p>Search the official trade site.</p></div>' +
     '<div class="tp-pop">' + popHTML() + '</div>' +
     '<div class="tp-ex">' + EXAMPLES.map(([l], i) => '<button type="button" class="chip" data-ex="' + i + '">' + esc(l) + '</button>').join('') +
       '<button type="button" class="linkbtn" data-act="reset">Start over</button></div>' +
@@ -655,7 +655,7 @@ function draw(){
   if(ip) picker(ip, 'An item, a unique or a kind (e.g. ring, Headhunter, boots)', itemMatches, it => { S.item = it; S.types = []; S.narrow = true; commit(); });
   EL.querySelectorAll('[data-picker="mod"]').forEach(h => {
     const gi = +h.closest('.tp-group').dataset.g;
-    picker(h, 'Add a mod: type any words (e.g. life, fire res, total)', modMatches, m => {
+    picker(h, 'Add a mod: life, fire res, total', modMatches, m => {
       const g = S.groups[gi];
       g.mods.push(g.t === 'weight' ? {id: m.id, w: 1} : g.t === 'not' ? {id: m.id} : {id: m.id, op: 'min', v: ''});
       commit(true);

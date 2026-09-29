@@ -105,7 +105,7 @@ $('#notrack').addEventListener('change', e => { try { localStorage.setItem('wi-n
 
 /* ---------- the three parts of the page, each on its own ---------- */
 const PART = {
-  stats: {say: 'Counting page views', wait: 'Our own count took too long.', path: () => 'stats?days=' + S.days,
+  stats: {say: 'Counting page views', wait: 'The site count took too long.', path: () => 'stats?days=' + S.days,
     take: j => { S.data = j; }, draw: () => drawStats(),
     boxes: ['#tiles', '#chart', '#routes', '#kinds', '#sources', '#countries', '#devices', '#clicks', '#load', '#jobs', '#plan', '#searches', '#opened']},
   cf: {say: 'Reading Cloudflare', wait: 'Cloudflare is slow.', path: () => 'cloudflare?days=' + S.days,
@@ -631,10 +631,10 @@ const noteCard = n => { const w = cardName(n.card); return w ? '<span class="dv-
    the note's own words are only ever here. `shown` is what the card does with it: 1 is marked as ours, -1 is
    off the card altogether. */
 const LEAN = {works: 'It works', no: 'It does not', unclear: 'Still unclear'};
-const SHOWN = {'1': [[0, 'As sent'], [-1, 'Take down']], '-1': [[0, 'Put back']], '0': [[1, 'Checked by us'], [-1, 'Take down']]};
+const SHOWN = {'1': [[0, 'As sent'], [-1, 'Take down']], '-1': [[0, 'Put back']], '0': [[1, 'Checked'], [-1, 'Take down']]};
 const leanLine = n => n.lean ? '<p class="dv-note-l">' + esc(LEAN[n.lean] || n.lean) +
   (n.who ? ' · ' + esc(n.who) : '') + (n.src ? ' · ' + esc(n.src) : '') +
-  (n.shown === 1 ? ' · marked as ours' : n.shown === -1 ? ' · off the card' : '') + '</p>' : '';
+  (n.shown === 1 ? ' · checked' : n.shown === -1 ? ' · off the card' : '') + '</p>' : '';
 const leanButtons = n => !n.lean ? '' : (SHOWN[String(n.shown || 0)] || SHOWN['0']).map(([v, l]) =>
   '<button type="button" class="btn" data-id="' + esc(n.id) + '" data-w="' + v + '">' + l + '</button>').join('');
 const noteBox = () => obj(S.sg || obj(obj(S.data).suggestions));
@@ -744,7 +744,7 @@ function meter(label, used, limit, sub){
 function planBox(){
   const p = obj(obj(S.data).plan), f = obj(p.free), t = obj(p.today), links = obj(p.links);
   const verdict = {fine: 'Free plan is fine.', watch: 'Free plan is fine for now. Past half of the daily limit.',
-    upgrade: 'Close to the free limit: upgrade to Workers Paid ($5/month).'}[p.verdict] || 'Free plan.';
+    upgrade: 'Close to the free limit. Workers Paid is $5/month.'}[p.verdict] || 'Free plan.';
   const link = (href, text) => href ? '<a href="' + esc(href) + '" target="_blank" rel="noopener">' + text + '</a>' : text;
   return '<p class="dv-verdict v-' + esc(p.verdict || 'fine') + '">' + verdict + '</p>' +
     (t.rowsRead === null || t.rowsRead === undefined
@@ -824,13 +824,13 @@ const BREAK = [
   {box: 'cftraffic', k: 'paths', t: 'Most asked for', p: 'Paths, people and bots.', name: PATH, sub: BYTES, show: 20},
   {box: 'cftraffic', k: 'hosts', t: 'Hosts'},
   {box: 'cftraffic', k: 'methods', t: 'Methods'},
-  {box: 'cftraffic', k: 'status', t: 'Status codes', p: 'What we answered.', name: x => 'Status ' + x.k},
+  {box: 'cftraffic', k: 'status', t: 'Status codes', p: 'What the site answered.', name: x => 'Status ' + x.k},
   {box: 'cftraffic', k: 'originStatus', t: 'Server status codes', p: 'What the worker answered before the cache.', name: x => 'Status ' + x.k},
   {box: 'cftraffic', k: 'cache', t: 'Cache', p: 'A hit never reached the worker.', sub: BYTES},
   {box: 'cftraffic', k: 'types', t: 'Content types'},
   {box: 'cftraffic', k: 'protocols', t: 'HTTP versions'},
   {box: 'cftraffic', k: 'tls', t: 'TLS versions'},
-  {box: 'cftraffic', k: 'rum.refs', t: 'Referring sites', p: 'Real visitors only: this plan gives us no referrer per request.', name: REF, show: 15},
+  {box: 'cftraffic', k: 'rum.refs', t: 'Referring sites', p: 'Real visitors only: this plan gives no referrer per request.', name: REF, show: 15},
   {box: 'cftraffic', k: 'threatKinds', t: 'Threats stopped', p: 'What Cloudflare blocked, and why.'},
 ];
 const rowList = (list, b) => table(arr(list).map(obj).filter(x => fin(x.n)).map(x => ({n: x.n,
@@ -889,7 +889,7 @@ function drawCloud(){
 
 /* page speed: the good / needs work / poor split, then every page, then where the time goes */
 const CWV = [['lcp', 'Main content shown'], ['inp', 'Reaction to a click'], ['cls', 'Things jumping around'],
-  ['fcp', 'First paint'], ['ttfb', 'First byte from us']];
+  ['fcp', 'First paint'], ['ttfb', 'First byte from the site']];
 function drawSpeed(c){
   const R = obj(obj(c).rum), sp = obj(R.split);
   safe('#cfsplit', () => {
@@ -914,7 +914,7 @@ function drawSpeed(c){
     return '<div class="tablewrap dv-tw"><table class="dv-t"><thead><tr><th>Page</th><th class="n">Loads</th>' +
       '<th class="n" title="Biggest thing on screen shown">Main content</th><th class="n" title="Reaction to a click or key">Reaction</th>' +
       '<th class="n" title="Things jumping around while loading">Jumpiness</th><th class="n" title="First thing on screen">First paint</th>' +
-      '<th class="n" title="First byte back from us">First byte</th><th class="n">Full load (half / 90%)</th></tr></thead><tbody>' +
+      '<th class="n" title="First byte back from the site">First byte</th><th class="n">Full load (half / 90%)</th></tr></thead><tbody>' +
       rows.map(v => '<tr><td>' + esc(v.path === '/' ? 'Home (/)' : v.path) + '</td><td class="n">' + num(v.n) + '</td>' +
         cell(v.lcp, 's', 2500, 4000) + cell(v.inp, 'ms', 200, 500) + cell(v.cls, '', 0.1, 0.25) + cell(v.fcp, 's', 1800, 3000) +
         cell(v.ttfb, 'ms', 800, 1800) + '<td class="n">' +

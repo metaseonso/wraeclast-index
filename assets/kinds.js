@@ -109,7 +109,7 @@ export const SHUT = {
    its kind's. `icon` names the mask in assets/cards.css (.ti-<icon>). tools/dev/frame.mjs holds the three
    pages whose top bar is written out (index.html, explore.html, privacy.html) to navHTML(). */
 export const INDEX = [
-  {id: 'search', pages: [{route: 'home', name: 'Search', icon: 'search', about: 'search everything at once; each result is a live card with its price'}]},
+  {id: 'search', pages: [{route: 'home', name: 'Search', icon: 'search', about: 'search everything at once, with live prices'}]},
   {id: 'items', name: 'Items', pages: [
     {sec: 'uniques', k: 'u', icon: 'uniques', about: 'every unique: official mod lines, requirements and prices, as a table'},
     {sec: 'gems', k: 'g', icon: 'gems', about: 'every skill, spirit and support gem, with its numbers at any level, as a table'},
@@ -513,9 +513,9 @@ export const FIELDS = {
      thing no words, says Estimate beside it; a tag with the game's own line behind it shows that line on hover.
      tools/mapdanger.py stops when its words and tools/monstermods.py's part, in word or in order. */
   mondanger: {type: 'danger', at: 'n', slot: 'body', file: 'data/monstermods.json',
-    label: 'On a rare monster, what it does to you'},
+    label: 'On a rare monster'},
   mapdanger: {type: 'danger', at: 'n', slot: 'body', file: 'data/mapdanger.json',
-    label: 'On your maps, what it does to you'},
+    label: 'On your maps'},
   /* the real weight a thing rolls at where the game rolls for it unseen — a Forbidden Rite, a strongbox, an
      Azmeri spirit — and its share of each pool it is in (tools/odds.py, off the game's own tables). The outcome's
      name is matched to the card's name exactly, so "2 Divine Orbs" is not the Divine Orb card. A pool whose

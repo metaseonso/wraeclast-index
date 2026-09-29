@@ -16,7 +16,7 @@ async function decode(code){
     try { r = await fetch('api/pob?url=' + encodeURIComponent(s)); } catch {}
     if(!r || !r.ok || !/text\/plain/.test(r.headers.get('content-type') || '')){
       const msg = r && r.ok === false && /text\/plain/.test(r.headers.get('content-type') || '') ? await r.text() : '';
-      throw new Error(msg || "Couldn't open that link. Open it and copy the build code instead.");
+      throw new Error(msg || 'Could not open that link.');
     }
     s = (await r.text()).trim();
   }
@@ -29,11 +29,11 @@ async function decode(code){
   const fmt = bytes[0] === 0x1f && bytes[1] === 0x8b ? 'gzip' : 'deflate';
   let xml;
   try { xml = await new Response(new Blob([bytes]).stream().pipeThrough(new DecompressionStream(fmt))).text(); }
-  catch { throw new Error("Couldn't read that code. Copy it again from Path of Building."); }
+  catch { throw new Error('Could not read that code.'); }
   if(xml.length > 5e6) throw new Error('That build is too big to read.');
   const doc = new DOMParser().parseFromString(xml, 'application/xml');
   if(doc.querySelector('parsererror') || !doc.querySelector('Build')) throw new Error("That code isn't a Path of Building build.");
-  if(doc.documentElement.nodeName !== 'PathOfBuilding2') throw new Error("That's a Path of Exile 1 build. This page is for Path of Exile 2.");
+  if(doc.documentElement.nodeName !== 'PathOfBuilding2') throw new Error('That is a Path of Exile 1 build.');
   return doc;
 }
 
@@ -173,11 +173,11 @@ function assess(b){
   if(p.ChaosResist !== null && p.ChaosResist !== undefined && p.ChaosResist < (b.level >= 80 ? 20 : 0)){
     const goal = b.level >= 80 ? 20 : 0;
     out.issues.push({side: 'def', kind: 'res', el: 'Chaos', gap: goal - p.ChaosResist, sev: 70 + (goal - p.ChaosResist) / 2,
-      text: 'Chaos resistance is ' + p.ChaosResist + '%' + (goal ? '. Aim for ' + goal + '%+' : '')});
+      text: 'Chaos resistance is ' + p.ChaosResist + '%' + (goal ? '. Goal ' + goal + '%+' : '')});
   }
   for(const [a, r, name] of [['Str', 'ReqStr', 'Strength'], ['Dex', 'ReqDex', 'Dexterity'], ['Int', 'ReqInt', 'Intelligence']]){
     if(p[a] !== undefined && p[r] !== undefined && p[a] !== null && p[r] !== null && p[a] < p[r])
-      out.issues.push({side: 'def', kind: 'attr', sev: 96, text: 'You need ' + (p[r] - p[a]) + ' more ' + name + ' for your gear and gems'});
+      out.issues.push({side: 'def', kind: 'attr', sev: 96, text: 'Short ' + (p[r] - p[a]) + ' ' + name + ' for your gear and gems'});
   }
   const hits = ['Physical', 'Fire', 'Cold', 'Lightning'].map(e => [e, p[e + 'MaximumHitTaken']]).filter(x => x[1] !== null && x[1] !== undefined && isFinite(x[1]));
   if(hits.length){
@@ -185,7 +185,7 @@ function assess(b){
     out.hit = {el, v: hit};
     out.defRatio = hit / t.hit;
     if(out.defRatio < 1) out.issues.push({side: 'def', kind: 'hit', el, sev: 40 + 70 * (1 - out.defRatio),
-      text: 'Biggest ' + el.toLowerCase() + ' hit you can take: ' + Math.round(hit).toLocaleString() + '. Aim for ' + t.hit.toLocaleString() + '+'});
+      text: 'Biggest ' + el.toLowerCase() + ' hit you can take: ' + Math.round(hit).toLocaleString() + '. Goal ' + t.hit.toLocaleString() + '+'});
   }
   const pool = (p.Life || 0) + (p.EnergyShield || 0);
   out.pool = pool;
@@ -193,14 +193,14 @@ function assess(b){
   if(!hits.length && pool){
     out.defRatio = pool / t.pool;
     if(out.defRatio < 1) out.issues.push({side: 'def', kind: 'hit', el: 'Physical', sev: 40 + 70 * (1 - out.defRatio),
-      text: 'Life plus Energy Shield: ' + pool.toLocaleString() + '. Aim for ' + t.pool.toLocaleString() + '+'});
+      text: 'Life plus Energy Shield: ' + pool.toLocaleString() + '. Goal ' + t.pool.toLocaleString() + '+'});
   }
   const d = dpsOf(b);
   out.dps = d.dps; out.minionDps = d.minion;
   if(d.dps > 0){
     out.offRatio = d.dps / t.dps;
     if(out.offRatio < 1) out.issues.push({side: 'off', kind: 'dps', sev: 40 + 70 * (1 - out.offRatio),
-      text: 'Damage: ' + short(d.dps) + ' per second. Aim for ' + short(t.dps) + '+'});
+      text: 'Damage: ' + short(d.dps) + ' per second. Goal ' + short(t.dps) + '+'});
   }
   const resGap = out.issues.some(x => x.kind === 'res' && x.el !== 'Chaos');
   const dr = out.defRatio ?? 1, or = out.offRatio ?? 1;
@@ -365,7 +365,7 @@ function mathsHTML(b, A, level){
       (m ? row('Hits from it you stand', stands(A, m)) : '') +
       (A.dps ? row('Damage a second into it', intoIt(A, m), 'with ' + (A.one.dps.weapon || 'the weapon')) : '') +
     '</dl>' +
-    (A.dps ? '' : '<p class="note">The damage comes off the skill gem, and a gem’s own base damage is not in this page’s data. The defences above are.</p>') +
+    (A.dps ? '' : '<p class="note">Damage comes off the skill gem, and a gem’s own base damage is not in the data.</p>') +
     (widened.length ? '<p class="mx-wide">Widened by: ' + esc(widened.join('; ')) + '</p>' : '') +
     (switches ? '<div class="mx-uns">' + switches + '</div>' : '') +
     '<p class="note">' + A.unread + ' lines are not in these numbers. ' + A.named +
@@ -550,8 +550,8 @@ function recommend(b, A){
   const moves = CRAFT.map(c).filter(x => x && (x.m.vol ?? 0) >= 50 && Math.abs(x.m.ch ?? 0) >= 10)
     .sort((p, q) => Math.abs(q.m.ch) - Math.abs(p.m.ch)).slice(0, 2);
   for(const x of moves) recs.push({sev: 15, it: x.it, timing: true,
-    why: x.m.ch < 0 ? 'Down ' + Math.round(-x.m.ch) + '% this week. Good time to stock up for crafting.'
-                    : 'Up ' + Math.round(x.m.ch) + '% this week. Buy soon, or sell spares.',
+    why: x.m.ch < 0 ? 'Down ' + Math.round(-x.m.ch) + '% this week.'
+                    : 'Up ' + Math.round(x.m.ch) + '% this week.',
     invest: {label: 'Price now', div: x.m.v}});
   recs.sort((p, q) => q.sev - p.sev);
   return recs;
@@ -640,7 +640,7 @@ function buildIt(b, host){
   const list = pieces(b);
   BILL = new Map(list.map(p => [p.key, p]));
   if(!list.length){
-    host.innerHTML = '<div class="panel" style="margin-top:14px"><p class="note">No gear in this build. There is nothing to price.</p></div>';
+    host.innerHTML = '<div class="panel" style="margin-top:14px"><p class="note">No gear in this build.</p></div>';
     return;
   }
   host.innerHTML = billHTML(list);
@@ -660,9 +660,9 @@ let EL, LAST = null;
 export function mount(el){
   EL = el;
   el.innerHTML =
-    '<div class="pagehd"><h2>Build</h2><p>Paste your Path of Building code. See what to fix first and what to buy next, at today\'s prices.</p></div>' +
+    '<div class="pagehd"><h2>Build</h2><p>What to fix first and what to buy next, from a Path of Building code, at today\'s prices.</p></div>' +
     '<div class="panel"><label class="lbl" for="pob">Path of Building code</label>' +
-      '<textarea class="field" id="pob" spellcheck="false" placeholder="Paste a Path of Building code or a build link"></textarea>' +
+      '<textarea class="field" id="pob" spellcheck="false" placeholder="Path of Building code or build link"></textarea>' +
       '<div class="row" style="margin-top:10px"><button type="button" class="btn primary" id="pobgo">Read build</button>' +
       '<span class="note" id="pobmsg">A code, or a pobb.in / poe.ninja / maxroll / mobalytics link.</span></div></div>' +
     '<div id="pobout"></div>';
@@ -707,7 +707,7 @@ async function run(code){
   const rg = $('#recs', out);
   flow(rg, recCards, x => card(x.r.it, {rank: recCards.indexOf(x) + 1, why: x.r.why, invest: x.r.invest, href: hrefFor(x.r.it), builds: false}));
   info.forEach(r => rg.insertAdjacentHTML('afterbegin', '<article class="card k-b"><span class="card-rank">!</span><p class="card-why">' + esc(r.info) +
-    '</p><p class="note">Fix it with passives or gear.</p></article>'));
+    '</p></article>'));
   if(!recs.length) rg.innerHTML = '<p class="note">Nothing stands out. This build meets every target for its level.</p>';
 
   flow($('#gear', out), b.items.map((x, i) => ({key: 'gear:' + i, x})), g => gearCard(g.x));
@@ -741,8 +741,8 @@ function hrefFor(it){ return it.k === 'c' ? '#/currency?c=' + encodeURIComponent
 function summaryHTML(b, A){
   const p = b.player, fmt = v => v === null || v === undefined ? '—' : Math.round(v).toLocaleString();
   const res = ELEM.map(([k, n]) => [n, p[k]]).concat([['Chaos', p.ChaosResist]]);
-  const verdict = A.noStats ? 'No stats in this code. Open it in Path of Building, then export it again.'
-    : A.onTrack ? 'Looking good for level ' + b.level + '. Spend on damage next.'
+  const verdict = A.noStats ? 'No stats in this code.'
+    : A.onTrack ? 'On track for level ' + b.level + '. Damage next.'
     : (A.priority === 'def' ? 'Defense first.' : 'Offense first.') + ' ' + A.issues.filter(x => x.side === A.priority).slice(0, 2).map(x => x.text).join('. ') + '.';
   return '<div class="panel buildsum">' +
     '<div class="bs-hd"><h3>' + esc(b.asc || b.cls || 'Build') + '</h3><span class="card-sub">' + esc(b.cls) + ' · level ' + b.level +
@@ -777,7 +777,7 @@ function gearCard(x){
     const it = uniqueEntry(x);
     if(it){
       const px = D.market && (D.market.items['u:' + it.id] || D.market.items['u:' + x.name + ' | ' + x.base] || D.market.items['u:' + it.n]);
-      const why = !px ? 'No price right now.' : (px.ch ?? 0) <= -15 ? 'Down ' + Math.round(-px.ch) + '% this week. Sell soon if you\'re swapping it.'
+      const why = !px ? 'No price right now.' : (px.ch ?? 0) <= -15 ? 'Down ' + Math.round(-px.ch) + '% this week.'
         : (px.ch ?? 0) >= 15 ? 'Up ' + Math.round(px.ch) + '% this week.' : 'Steady this week.';
       return card(it, {price: px || null, why, kind: x.slot, invest: px ? {label: 'Worth now', div: px.v} : undefined});
     }

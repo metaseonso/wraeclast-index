@@ -103,7 +103,7 @@ function whoRow(w){
   const said = [w.src ? w.src : '', w.at ? ago(w.at) : ''].filter(Boolean).join(' · ');
   return '<li><b>' + esc(w.who || 'No name') + '</b><span class="clar-said">' + esc(WORD[w.lean] || '') +
     (said ? ' · ' + esc(said) : '') + '</span>' +
-    (w.ours ? '<span class="clar-ours">Checked by us</span>' : '') + '</li>';
+    (w.ours ? '<span class="clar-ours">Checked by Wraeclast Index</span>' : '') + '</li>';
 }
 
 function playersHTML(key, r){
@@ -112,7 +112,7 @@ function playersHTML(key, r){
     (n ? bars(lean, n) : '') +   // no answers: the way to weigh in, and nothing drawn empty
     (who.length ? '<ul class="clar-who">' + who.map(whoRow).join('') + '</ul>' +
       '<p class="clar-mine">Players’ own words, not the game’s.</p>'
-      : n ? '<p class="clar-mine">Names go up once we have read them.</p>' : '') +
+      : n ? '<p class="clar-mine">Names go up once read.</p>' : '') +
     (OPENED.has(key) ? formHTML() : '<div class="clar-go"><button type="button" class="btn clar-say">' +
       'Weigh in</button></div>') +
     asIfHTML(key);

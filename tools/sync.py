@@ -960,11 +960,11 @@ JLEDE_OLD = """'Seven factions sit in the mod files as <code>UniqueJewelAlternat
     '<b>Undying Hate</b> carries the Abyssal one. <b>Vaal, Karui, Maraketh, Templar and Eternal Empire are in the files with full '+
     'conqueror tables and seed ranges, but no Path of Exile 2 jewel carries them yet</b> — nothing in the unique list or on poe.ninja uses those versions. '+
     'Abyssal is the odd one out twice over: five conquerors instead of three, and a seed range of 79–30,977 against everyone else’s few thousand.'"""
-JLEDE_NEW = """'Seven factions are in the game files, and each jewel rolls three numbers: a <b>version</b> set by which jewel it is, a '+
-    '<b>seed</b> from the range below, and a roll that picks the <b>conqueror</b>. '+
-    'Only two are real items — <b>Heroic Tragedy</b> is Kalguur, <b>Undying Hate</b> is Abyssal; <b>Vaal, Karui, Maraketh, '+
+JLEDE_NEW = """'Seven factions are in the game files. Each jewel rolls three numbers: a <b>version</b> set by which jewel it is, a '+
+    '<b>seed</b> from its seed range, and a roll that picks the <b>conqueror</b>. '+
+    'Only two are real items: <b>Heroic Tragedy</b> is Kalguur, <b>Undying Hate</b> is Abyssal. <b>Vaal, Karui, Maraketh, '+
     'Templar and Eternal Empire have full conqueror tables and seed ranges but no jewel in the game yet</b>. '+
-    'Abyssal is the odd one out twice over: five conquerors instead of three, and seeds 79–30,977 against everyone else’s few thousand.'"""
+    'Abyssal has five conquerors instead of three, and seeds 79–30,977 against a few thousand for the rest.'"""
 GEMFLAG_OLD = ("'The Gemling notable <i>Advanced Thaumaturgy</i> sets a flag called "
                "<code>ascendancy_gemling_enable_thaumaturgy_quality_stats</code> that nothing else in the dump refers to, "
                "so whatever extra quality it unlocks is not modelled here. '")
@@ -1008,6 +1008,13 @@ TEXT = [
     (ART_OLD, ART_NEW),
     (STATID_OLD, STATID_NEW),
     (KWHEAD_OLD, KWHEAD_NEW),
+    # copy fixes made in the drill-down page itself (CDA sweep): the same words if the artifact ever brings the old ones back
+    ('Nothing in the section you are looking at uses it.', 'Nothing in this section uses it.'),
+    ('Pick one to compare gems that share it', 'No quality bonus selected.'),
+    ('The files give this as a bare number with no unit attached, so it is printed as-is rather than converted to metres.', 'Raw value from the game files, no unit given.'),
+    ('Copy blocked — select the table instead', 'Copy blocked'),
+    ('An anoint-only notable. It exists only as an anoint and is not something you path to with points.', 'An anoint-only notable. It cannot be reached with passive points.'),
+    ("'Duplicates are merged; <b>Copies</b> counts them. <b>Anoint</b> is what the three emotions cost on the Currency Exchange. '+\n    ", ''),
     ('Prices are divine, from poe.ninja, Forbidden Rites', 'Prices in divine, from live trade listings'),
     ('Modifier text and prices come from poe.ninja\u2019s Forbidden Rites stash snapshot; the item list itself comes from the ',
      'Modifier text comes from the official game data and prices from live trade listings; the item list itself comes from the '),
