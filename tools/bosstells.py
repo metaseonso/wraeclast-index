@@ -98,7 +98,7 @@ def build(src, bosses, hits):
         'ids': [],
         'source': 'boss guides, read by hand: ' + ', '.join(used),
         'sources': [dict(name=n, **known[n]) for n in used],
-        'note': 'Tells are in our own words from the named sources, each on the hit it belongs to. A hit with no '
+        'note': 'Tells are from the named sources, each on the hit it belongs to. A hit with no '
                 'source for its tell has none.',
         'bosses': sorted(out, key=lambda b: b['name']),
         'none': src.get('none', {}),

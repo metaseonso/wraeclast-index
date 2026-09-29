@@ -31,7 +31,7 @@ const ROOT = join(HERE, '..', '..');
    a file left off it is copy nobody checks. Everything the browser runs, every page, everything the worker
    answers with (its crawler pages and the lines it writes onto a card), and the tools that write card text.
    A tool that starts writing copy is caught by being a .py in here, not by anyone remembering. */
-const READS = [['', /\.html$/], ['assets', /\.js$/], ['worker', /\.js$/], ['tools', /^(?:(mechanics|mechanics_league|interactions|rules|gold|achievements|atlascontent|runes|joincards|world|pools|monsterlevels|market_\w+)\.py|bosstells-src\.json)$/],
+const READS = [['', /\.html$/], ['assets', /\.js$/], ['worker', /\.js$/], ['tools', /^(?:(mechanics|mechanics_league|interactions|rules|gold|achievements|atlascontent|runes|joincards|world|pools|monsterlevels|odds|trials|quests|areas|monstermods|bosses|bosshits|bosstells|guides|market_\w+)\.py|bosstells-src\.json)$/],
                ['data', /^changelog\.json$/]];   // the patch notes: copy a player reads, written by hand every time
 export async function files(){
   const out = [];
@@ -60,6 +60,42 @@ export const SHAPES = [
   [/\bevery (word|name|line|row|result) (opens|links|leads|is a)\b/i, 'narrates the interface'],
   [/\bstays? in this browser\b/i, 'says where the reader’s own data is kept'],
   [/\bthe game files [^.!?<]{0,60}\bdo(es)? not (say|give|show|state|hold)\b/i, 'explains ourselves'],
+  /* The 29 September 2026 sweep: the shapes still left in shipped copy after the first ones went. */
+  [/\b(reload|refresh) (the|this) page\b/i,                 'tells the reader what to do about a fault'],
+  [/\b(?:once|if|when|what|that|so) we['’]?(?:ve)? \w+/i,     'speaks as the author'],
+  [/\bwe (?:read|have|added|checked|hold|keep|answered)\b/i, 'speaks as the author'],
+  [/\b(?:checked|written|made) by us\b/i,                   'speaks as the author'],
+  [/\bour own (?:note|words|data|copy|list|count|jobs|scripts|answer|click)\b/i, 'speaks as the author'],
+  [/\b(?:asking us|from us|gives us|our answer)\b/i,        'speaks as the author'],
+  [/\b(?:nothing|files?|data) we (?:read|carry|hold)\b/i,   'speaks as the author'],
+  [/\bkeep it (?:short|brief|simple|clear)\b/i,             'coaches the reader'],
+  [/(?:^|[>'"`.]\s*)write (?:a little )?more\b/i,           'coaches the reader'],
+  [/\b(?:tick|type|ask for) (?:the|any|a) (?:mods?|words?|total)\b/i, 'coaches the reader on their own search'],
+  [/\b(?:open it in|export it again|copy it again|copy the build code instead)\b/i, 'coaches the reader'],
+  [/\baim for\b/i,                                          'coaches the reader'],
+  [/\b(?:good time to|buy soon|sell soon|stock up)\b/i,     'advises the reader on what to buy'],
+  [/\bfix it with\b/i,                                      'advises the reader'],
+  [/(?:^|[.!?"'>]\s+)see (?:where|how|what|who|which)\b/i,  'coaches the reader'],
+  [/(?:^|[.!?"]\s+)point at\b|\bpress it for\b/i,           'coaches the reader'],
+  [/\btry (?:another|a different)\b/i,                      'coaches the reader'],
+  [/\b(?:hover|click) (?:for|a|on)\b/i,                     'coaches the reader'],
+  [/\bstill \w+ing\?/i,                                     'a question put to the reader'],
+  [/\b(?:raise the item level|clear the orb|remove (?:a rune|it|one) to add)\b/i, 'a remedy tacked onto a state'],
+  [/\bwhat is measured is\b/i,                              'explains ourselves'],
+  [/,\s+so an? (?:share|price|number|figure|odds?) (?:may|might|could) be off\b/i, 'explains ourselves'],
+  [/\bcommitted (?:copy|copies|file|notes)\b/i,             'our own git word for the saved copy'],
+  [/\bthe odd one out\b/i,                                  'essay glue'],
+  [/\bthis page (?:is|shows|lists|has|says|does)\b/i,       'narrates the interface'],
+  [/\b(?:you are|you're) looking at\b/i,                    'narrates the interface'],
+  [/\bmark them (?:read|done)\b/i,                          'narrates the interface'],
+  [/\bevery \w+ has an? [\w ]+ button\b/i,                  'narrates the interface'],
+  [/\bin this (?:bar|panel|window)\b/i,                     'narrates the interface'],
+  [/\b(?:is|are) not (?:read|shown|worked out|taken out|used|counted) here\b/i, 'points at the page instead of the fact'],
+  [/\b(?:pick|choose|select)\b[^.!?<]{0,40}, then (?:use|add|take)\b/i, 'walks the reader through steps'],
+  [/\b(?:pick|choose|select)\b[^.!?<]{0,30}\bto (?:compare|see|view|filter|find|read)\b/i, 'pick a thing to do a thing'],
+  [/[—-] (?:select|copy|click|tap|press)\b[^.!?<]{0,30}\binstead\b/i, 'coaches after a fault'],
+  [/\b(?:mods?|items?|entries|prices|lines|rows|list|links?|buttons?|menu)\b[^.!?<'"]{0,20}\b(?:above|below)\b/i, 'points at the page instead of the fact'],
+  [/\b(?:a|the) (?:meter|slider|dot|button|chip|panel|box|picture) (?:is drawn|opens|shows|lists|searches)\b/i, 'narrates what a part of the page does'],
   [/\bsimply\b/i,               'coaches the reader'],
   [/\bjust (click|pick|tap|choose|select)\b/i, 'coaches the reader'],
   [/\bfeel free\b/i,            'coaches the reader'],
@@ -108,6 +144,14 @@ export function strip(src){
     .replace(/(^|[^:"'`\w])\/\/[^\n]*/g, (m, p) => p + ' '.repeat(m.length - p.length));
 }
 
+/* A Python tool's docstrings and full-line # comments explain the code to its next reader; what it writes into a
+   data file is in its strings. A docstring is a triple-quoted block that opens its own line. */
+export function pystrip(src){
+  return src
+    .replace(/^[ \t]*[rR]?(?:"""|''')[\s\S]*?(?:"""|''')/gm, m => m.replace(/[^\n]/g, ' '))
+    .replace(/^[ \t]*#[^\n]*/gm, m => ' '.repeat(m.length));
+}
+
 export async function checkVoice(){
   const bad = [];
   let read = 0, lines = 0;
@@ -117,7 +161,7 @@ export async function checkVoice(){
     let src = null;
     try { src = await readFile(join(ROOT, f), 'utf8'); } catch { continue; }
     read++;
-    const rows = strip(src).split('\n');
+    const rows = strip(f.endsWith('.py') ? pystrip(src) : src).split('\n');
     lines += rows.length;
     rows.forEach((row, i) => {
       for(const [re, why] of SHAPES){

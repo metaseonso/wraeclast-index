@@ -631,10 +631,10 @@ const noteCard = n => { const w = cardName(n.card); return w ? '<span class="dv-
    the note's own words are only ever here. `shown` is what the card does with it: 1 is marked as ours, -1 is
    off the card altogether. */
 const LEAN = {works: 'It works', no: 'It does not', unclear: 'Still unclear'};
-const SHOWN = {'1': [[0, 'As sent'], [-1, 'Take down']], '-1': [[0, 'Put back']], '0': [[1, 'Checked by us'], [-1, 'Take down']]};
+const SHOWN = {'1': [[0, 'As sent'], [-1, 'Take down']], '-1': [[0, 'Put back']], '0': [[1, 'Checked'], [-1, 'Take down']]};
 const leanLine = n => n.lean ? '<p class="dv-note-l">' + esc(LEAN[n.lean] || n.lean) +
   (n.who ? ' · ' + esc(n.who) : '') + (n.src ? ' · ' + esc(n.src) : '') +
-  (n.shown === 1 ? ' · marked as ours' : n.shown === -1 ? ' · off the card' : '') + '</p>' : '';
+  (n.shown === 1 ? ' · checked' : n.shown === -1 ? ' · off the card' : '') + '</p>' : '';
 const leanButtons = n => !n.lean ? '' : (SHOWN[String(n.shown || 0)] || SHOWN['0']).map(([v, l]) =>
   '<button type="button" class="btn" data-id="' + esc(n.id) + '" data-w="' + v + '">' + l + '</button>').join('');
 const noteBox = () => obj(S.sg || obj(obj(S.data).suggestions));
