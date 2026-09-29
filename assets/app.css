@@ -988,3 +988,11 @@ small.at-bonus{display:block}
   .side-toc a[aria-current] .ti{opacity:1}
 }
 
+/* a boss's big hits (assets/bosses.js hitsHTML) */
+.bo-hits{list-style:none; margin:6px 0; padding:0}
+.bo-hits li{display:grid; grid-template-columns:minmax(0,1fr) auto auto 72px; gap:4px 12px; align-items:baseline;
+  padding:4px 0; border-bottom:1px solid var(--line-soft); font-size:13px}
+.bo-hk{color:var(--faint); font-size:12px; white-space:nowrap}
+.bo-hn{font-variant-numeric:tabular-nums; white-space:nowrap}
+.bo-how summary{cursor:pointer; color:var(--muted); font-size:12.5px; margin:4px 0}
+@media (max-width:640px){ .bo-hits li{grid-template-columns:minmax(0,1fr) auto} .bo-hits li .bo-hk{grid-column:1} }

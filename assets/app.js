@@ -971,6 +971,32 @@ function dangerFill(host, it, f){
   });
 }
 
+/* ---------- the game's own rules, and gold ----------
+   data/rules.json (tools/rules.py): the game's constants a player meets, each worded, on the card it lands on by
+   name. data/gold.json (tools/gold.py): a thing's gold number, by name, off one of the file's tables (f.of: the
+   Currency Exchange's fee, a unique's gold value). Each with the table it was read from. */
+function rulesHTML(it, t, f){
+  const rows = (t.rows || []).filter(r => r.card === it[f.at] && r.text);
+  if(!rows.length) return '';
+  return '<p class="card-facts">' + esc(f.label || '') + '</p><ul class="card-rules">' +
+    rows.map(r => '<li>' + esc(r.text) + (r.src ? '<span class="card-src">' + esc(r.src) + '</span>' : '') + '</li>').join('') + '</ul>';
+}
+function goldHTML(it, t, f){
+  const tab = t[f.of] || {}, v = tab[it[f.at]], n = v && typeof v === 'object' ? v.fee : v;
+  if(!(n > 0)) return '';
+  return '<p class="card-facts">' + esc(f.label || '') + ' · <b>' + (+n).toLocaleString('en') + '</b> gold</p>' +
+    (t[f.of + 'Src'] ? '<p class="card-src">' + esc(t[f.of + 'Src']) + '</p>' : '');
+}
+const tableFill = draw => (host, it, f) => {
+  if(!host) return;
+  tableOf(f.file).then(t => {
+    const html = t && draw(it, t, f);
+    if(!html || !host.isConnected) return;
+    host.innerHTML = html;
+    host.hidden = false;
+  });
+};
+
 /* ---------- how often it rolls, where the game rolls unseen ----------
    data/odds.json (tools/odds.py): one pool per weight table in the game's own files, each outcome with its weight
    and 1 in how many. The card's name is matched to an outcome's name exactly. One line per pool it is in, a
@@ -1471,6 +1497,10 @@ export const TYPE = {
   adds:   {raw: 1, fill: addsFill, v: (it, f, o, name) => o.full && it[f.at]
     ? '<div class="card-addsbox" data-fill="' + esc(name) + '" hidden></div>' : ''},
   danger: {raw: 1, fill: dangerFill, v: (it, f, o, name) => o.full && it[f.at]
+    ? '<div class="card-addsbox" data-fill="' + esc(name) + '" hidden></div>' : ''},
+  rules:  {raw: 1, fill: tableFill(rulesHTML), v: (it, f, o, name) => o.full && it[f.at]
+    ? '<div class="card-addsbox" data-fill="' + esc(name) + '" hidden></div>' : ''},
+  gold:   {raw: 1, fill: tableFill(goldHTML), v: (it, f, o, name) => o.full && it[f.at]
     ? '<div class="card-addsbox" data-fill="' + esc(name) + '" hidden></div>' : ''},
   odds:   {raw: 1, fill: oddsFill, v: (it, f, o, name) => o.full && it[f.at]
     ? '<div class="card-addsbox" data-fill="' + esc(name) + '" hidden></div>' : ''},

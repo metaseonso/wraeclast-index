@@ -374,7 +374,8 @@
       "mapdanger",
       "weight",
       "changed",
-      "drop"
+      "drop",
+      "goldv"
      ],
      "need": 1,
      "drawn": 1
@@ -2057,6 +2058,7 @@
       "row",
       "name",
       "adds",
+      "exfee",
       "changed"
      ],
      "need": 1,
@@ -2352,6 +2354,7 @@
       "row",
       "name",
       "mondanger",
+      "rules",
       "weight",
       "changed"
      ],
@@ -3127,6 +3130,7 @@
      "by": [
       "row",
       "name",
+      "rules",
       "changed"
      ],
      "need": 1,
@@ -4452,10 +4456,13 @@
     "canroll",
     "changed",
     "drop",
+    "exfee",
+    "goldv",
     "mapdanger",
     "mondanger",
     "name",
     "row",
+    "rules",
     "weight"
    ]
   },
