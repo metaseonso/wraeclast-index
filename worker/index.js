@@ -19,11 +19,12 @@
      /api/trade/searches popular Trade page searches (GET), and counting one (POST): worker/community.js
      /api/suggest        notes from the Suggest button, and what players report about an interaction the
                          game leaves open (GET: the lean and who weighed in): worker/community.js
+     /api/drops          player drop reports: sending one (POST), and one card's counts (GET): worker/community.js
      /api/t, /api/admin/* page views and clicks, and the owner's dashboard (admin.html): worker/dash.js */
 import * as seo from './seo.js';
 import { servePrices, ingest, state, serveMarket, serveBossPrices, rollLeagues, buildMarket } from './prices.js';
 import { fileRow, putFile, MARKET } from './files.js';
-import { tradeSearches, suggest } from './community.js';
+import { tradeSearches, suggest, drops } from './community.js';
 import { track, admin } from './dash.js';
 import { serveHealth } from './health.js';
 
@@ -39,6 +40,7 @@ export default {
     if(url.pathname === '/api/pob') return pob(url);
     if(url.pathname === '/api/trade/searches') return tradeSearches(request, env, ctx, url);
     if(url.pathname === '/api/suggest') return suggest(request, env, url, ctx);
+    if(url.pathname === '/api/drops') return drops(request, env, url, ctx);
     if(url.pathname === '/api/health') return serveHealth(request, env, url, ctx);
     if(url.pathname === '/api/t') return track(request, env, url);
     if(url.pathname.startsWith('/api/admin/')) return admin(request, env, url);

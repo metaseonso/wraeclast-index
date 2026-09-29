@@ -771,6 +771,27 @@ header.top .notesbtn ~ .suggestbtn{margin-left:0}
 .clar-cell.here{border-color:var(--accent); box-shadow:inset 0 0 0 1px var(--accent)}
 .clar-cell span{min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
 .clar-cell b{flex:none; font:600 11px var(--mono); color:var(--muted); font-variant-numeric:tabular-nums}
+/* ---------- player drop reports (assets/drops.js, the "gotfrom" and "gothere" fields) ----------
+   A count per row, each end a way to its own card, the source line under them; the form is two lines of
+   "I got ... from ...", then the area level and the day side by side. Theme tokens only, wraps at 375px. */
+.card-got{display:flex; flex-direction:column; gap:6px}
+.got-rows{margin:0; padding:0; list-style:none; display:flex; flex-direction:column; gap:2px; font-size:12.5px;
+  line-height:1.45; color:var(--muted)}
+.got-rows li{min-width:0; overflow-wrap:anywhere}
+.got-rows b{font:600 12px var(--mono); color:var(--text); font-variant-numeric:tabular-nums}
+.got-open{font:inherit; color:var(--accent); background:none; border:0; padding:0; cursor:pointer; text-align:left}
+.got-open:hover, .got-open:focus-visible{text-decoration:underline}
+.got-n{margin-left:6px}
+.card-got .card-src{margin:0}
+.got-form{display:flex; flex-direction:column; gap:6px}
+.got-line{margin:0; display:flex; align-items:center; gap:8px; font-size:12.5px; color:var(--text)}
+.got-line > span{flex:none; min-width:40px; font:11.5px var(--mono); color:var(--muted)}
+.got-line b{min-width:0; overflow-wrap:anywhere}
+.got-line .field{flex:1; min-width:0; font-size:12.5px}
+.got-two{display:flex; flex-wrap:wrap; gap:8px}
+.got-two label{flex:1 1 130px; display:flex; flex-direction:column; gap:2px; min-width:0}
+.got-two label span{font:11.5px var(--mono); color:var(--muted)}
+.got-two .field{width:100%; font-size:12.5px}
 /* the game's own numbers on a card (assets/app.js rulesHTML) */
 .card-rules{margin:4px 0 0; padding-left:18px; font-size:13px; line-height:1.5}
 .card-rules li{margin:2px 0}
