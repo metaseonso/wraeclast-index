@@ -3,6 +3,19 @@
 The full list of changes. The public patch notes (data/changelog.json, shown on the site) stay short.
 Add the details here first, then a short public line there.
 
+## 0.38 — 29 Sep 2026: the data PRs merged (public: "What's on your bar")
+
+40 PRs from the data session, merged in order through the concert flow (docs/concert.md), each rebuilt on main.
+On the site: buff and debuff cards (kind d, #89; a buff named with a keyword's own word is that keyword card),
+Ascendancy cards (kind y, #90), "Drops from" on uniques (#74), gem quality and the uncut gem (#75), `mondanger`
+on keyword cards (#112), `mapdanger` on tablets (#77), `weight` odds (#110), `share` and `mechlines` on league
+mechanic keywords (#81, #104), passive lines in GGG's own words and "@N%" blocked (#133, #140), the gap report
+closed (#79). Data only, no page yet: areas (#72), quests (#76), boss hits (#80), trials (#82), patch notes per
+card (#86), tree changes (#87), gold and rules (#88, #111), achievements (#91), atlas content (#92), runes (#113),
+the market products (#99–#108, sent daily by the data repo's Market job to /data/market/). Pipeline: the cut is
+compared whole, not piece by piece; a longer link over the same words is not a lost link; a second run on the
+same data writes the same bytes (line endings pinned, buff givers sorted) — #170 closed.
+
 ## Next — Holding up under load
 
 The owner, 27 September 2026: run lean, with resilience layers that keep the site up under traffic it struggles
