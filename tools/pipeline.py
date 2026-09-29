@@ -267,6 +267,12 @@ STAGES = [
     dict(name='bosshits', run=['tools/bosshits.py'], cadence='patch', source='game files',
          reads=[CDN, DATSCHEMA, 'data/bosses.json'], writes=['data/bosshits.json'],
          count={'data/bosshits.json': 'bosses'}),
+    # the tells on those hits (#126), by hand in tools/bosstells-src.json; fails on a boss or hit bosshits lacks
+    dict(name='bosstells', run=['tools/bosstells.py'], cadence='patch',
+         source='the boss guides (PoE2 Wiki, Maxroll, Mobalytics)',
+         reads=['https://www.poe2wiki.net/', 'https://maxroll.gg/poe2', 'https://mobalytics.gg/poe-2',
+                'tools/bosstells-src.json', 'data/bosses.json', 'data/bosshits.json'],
+         writes=['data/bosstells.json'], count={'data/bosstells.json': 'bosses'}),
     dict(name='farms', run=['tools/farms.py'], cadence='hand', source='BawLoch\'s tier list sheet',
          reads=['https://docs.google.com/ (the tier list sheet)', 'data/trade.json', 'data/market.json',
                 'data/index-core.json', 'data/leagues.json'],
