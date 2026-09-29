@@ -49,6 +49,11 @@ read/write, WI's card drawn with WI's own HTML/CSS/JS, auto-update, and low memo
 
 Versions checked on npm and crates.io on 27 Sep 2026: Electron 44.4.5, Tauri 2.12.0.
 
+**29 Sep 2026: measured numbers replace the memory guesses above.** PoE2 Oracle's author measured four overlays
+in play: Electron apps 41–107 MB, native Rust 34–50 MB, PoE Overlay II with Overwolf 285–373 MB. Electron is
+about 2× native, not 3–5×. Tauri was not measured; WebView2 is Chromium too. Numbers, links and the budget the
+overlay must meet: [`price-check.md`](price-check.md), option (c).
+
 **Choice: Tauri 2.** Reasons:
 
 1. **Weak PCs.** The game already uses most of the memory. Tauri uses the webview Windows already has
@@ -61,7 +66,7 @@ Versions checked on npm and crates.io on 27 Sep 2026: Electron 44.4.5, Tauri 2.1
 
 What Tauri costs: Rust in the build; WebView2 differs slightly from Chrome (test the card there); WebKitGTK on
 Linux is slower than Chromium (**Estimate**). If Rust is not wanted, Electron is the fallback: it works (EE2
-proves it on three OSes) but costs 3–5 times the memory (**Estimate**).
+proves it on three OSes) and measures about 2× a native app's memory (see the note above).
 
 **Fullscreen.** No stack draws over exclusive Fullscreen. The game must be in Windowed or Windowed Fullscreen,
 same as EE2 (`EE2 docs/download.md:32-33`). The overlay says so on first run and when the hotkey finds no game
@@ -203,7 +208,7 @@ card on a phone. Nothing in this design blocks it; the public read API serves bo
 ## What the owner must decide
 
 1. **Build it?** (see `price-check.md`: (a) first, then this as a thin shell.)
-2. **Stack:** Tauri 2 (recommended; needs Rust in the build) or Electron (no Rust, 3–5× the memory, **Estimate**).
+2. **Stack:** Tauri 2 (recommended; needs Rust in the build) or Electron (no Rust, about 2× a native app's memory, measured by PoE2 Oracle's author).
 3. **Hotkey default**, and whether the overlay sends Ctrl+Alt+C itself (one action per press, as EE2 and
    Sidekick do) or asks the player to press Ctrl+Alt+C first and then the overlay key (zero key sending,
    two presses).
