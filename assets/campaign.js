@@ -1,6 +1,7 @@
-/* The Campaign page (#/campaign, #118): act by act, the areas in level order, the quests, and every reward kept
-   for good, with the choices beside them. Read off data/quests.json (tools/quests.py: the acts' totals, where each
-   kept reward is, the choices) and data/areas.json (tools/areas.py), both from the game files. A name opens its
+/* The Campaign page (#/campaign, #118, #184): act by act, the areas in level order, the quests, every reward kept
+   for good with the choices beside them, and the base types that start dropping in the act. Read off
+   data/quests.json (tools/quests.py: the acts' totals, where each kept reward is, the choices), data/areas.json
+   (tools/areas.py) and the base cards' own drop levels, all from the game files. A name opens its
    card. The ticks are kept in this browser only (wi-campaign), one set for every act. */
 import { D, esc, openDetail, hrefOf } from './app.js';
 
@@ -54,7 +55,44 @@ function draw(){
       return '<button type="button" class="chip" data-act="' + esc(a.act) + '" aria-pressed="' + (a === act) + '">' + esc(a.act) +
         '<span class="ct">' + n + '/' + ids.length + '</span></button>';
     }).join('') + '</div>' +
-    keptHTML(act, got) + pickHTML(act) + areasHTML(act) + questsHTML(act);
+    keptHTML(act, got) + pickHTML(act) + areasHTML(act) + questsHTML(act) + basesHTML(act);
+}
+
+/* An act's area levels: from the level after the last act's town to its own town's (Act 1: 1 to 15). An area off
+   that run (a temple, a hub) is left out of the range. */
+function span(act){
+  if(!A) return null;
+  let lo = 1;
+  for(const a of Q.acts){
+    const town = A.areas.find(x => x.act === a.act && x.id.some(i => /town/i.test(i)));
+    if(!town) return null;
+    if(a.act === act.act) return [lo, town.lv];
+    lo = town.lv + 1;
+  }
+  return null;
+}
+/* The base types that start dropping inside the act's levels (each base card's own drop level), by item class,
+   each class folded. */
+function basesHTML(act){
+  const r = act.act === 'Endgame' ? null : span(act);
+  if(!r || !D.index) return '';
+  const by = new Map();
+  for(const it of D.index.items){
+    if(it.k !== 'b') continue;
+    const m = /drops from level (\d+)/.exec(it.s || '');
+    if(!m || +m[1] < r[0] || +m[1] > r[1]) continue;
+    const cls = String(it.s).split(' · ')[0];
+    if(!by.has(cls)) by.set(cls, []);
+    by.get(cls).push([+m[1], it]);
+  }
+  if(!by.size) return '';
+  const n = [...by.values()].reduce((a, x) => a + x.length, 0);
+  return '<section class="dt-block"><div class="sect"><h3>New bases</h3><p>' + n + ' start dropping at area level ' + r[0] + ' to ' + r[1] +
+    '</p></div>' + [...by].sort((a, b) => b[1].length - a[1].length).map(([cls, xs]) =>
+      '<details class="cp-bases"><summary>' + esc(cls) + ' <span class="dt-sub">' + xs.length + '</span></summary><ul class="cp-areas">' +
+      xs.sort((a, b) => a[0] - b[0] || a[1].n.localeCompare(b[1].n)).map(([lv, it]) =>
+        '<li><span class="cp-lv">' + lv + '</span>' + open('b:' + it.id, it.n) + '</li>').join('') + '</ul></details>').join('') +
+    '</section>';
 }
 
 function keptHTML(act, got){
