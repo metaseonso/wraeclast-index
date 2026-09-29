@@ -905,6 +905,7 @@ small.at-bonus{display:block}
 @media (prefers-reduced-motion: reduce){
   .cheat{animation-duration:.4s; animation-delay:1.7s}
   .cheat-said{animation:none}
+}
 /* Build: the numbers worked out on this page, as a range, with what widened it underneath
    (assets/build.js, assets/maths.js) */
 .mx{border-left:3px solid var(--accent)}
@@ -921,3 +922,19 @@ small.at-bonus{display:block}
   .mx-lvl{align-items:flex-start}
   .mx-un .row{flex-wrap:wrap}
 }
+
+/* ---------- the Data page (assets/data.js) ---------- */
+.dt-sub{color:var(--faint); font-size:12.5px}
+.dt-block{margin:0 0 8px}
+.dt-grid{display:grid; grid-template-columns:repeat(auto-fill, minmax(210px, 1fr)); gap:14px 22px}
+.dt-sec h3{font-family:var(--disp); font-size:15px; font-weight:600; margin:0 0 6px; color:var(--bronze)}
+.dt-sec ul{list-style:none; margin:0; padding:0}
+.dt-sec li{display:flex; align-items:baseline; gap:8px; padding:3px 0; border-bottom:1px solid var(--line)}
+.dt-sec li a{flex:1; color:var(--text); text-decoration:none; display:inline-flex; align-items:center}
+.dt-sec li a:hover, .dt-sec li a:focus-visible{color:var(--accent)}
+.dt-n{font-family:var(--mono); font-size:12px; color:var(--faint)}
+.dt-list{margin:0; padding-left:18px; line-height:1.7}
+.dt-scroll{overflow-x:auto}
+.dt-jobs{border-collapse:collapse; font-size:13px; min-width:420px}
+.dt-jobs th{text-align:left; font-weight:600; color:var(--faint); font-size:11.5px; text-transform:uppercase; letter-spacing:.04em}
+.dt-jobs th, .dt-jobs td{padding:5px 14px 5px 0; border-bottom:1px solid var(--line); white-space:nowrap}

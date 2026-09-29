@@ -25,6 +25,7 @@
              (tools/dev/schema.mjs, data/schema.json)
      dash    the owner's dashboard: all eight tabs fill, no block is left empty (tools/dev/dash-fixture)
      phone   a real phone-sized Chrome: cards stay open, nothing scrolls sideways, no console errors
+     css     every stylesheet closes each block it opens (tools/dev/cssbraces.mjs)
      budget  dist/ against the free plan: each file, the file count, what the worker parses per request, the
              home page's first-paint JSON, what the jobs send to the database, and no data file nothing reads
              (tools/dev/budget.mjs; it builds dist/ first when dist/ is missing or stale)
@@ -52,6 +53,7 @@ import { checkVoice } from './voice.mjs';
 import { checkMarket } from './marketcheck.mjs';
 // the budget: what the free plan lets dist/ be, and no data file nothing reads
 import { checkBudget, budgetLine, fresh } from './budget.mjs';
+import { checkBraces } from './cssbraces.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(HERE, '..', '..');
@@ -806,6 +808,8 @@ try {
   checkMods();
   try { const m = await checkMarket(); say('market', !m.bad.length, m.bad.length ? m.bad.length + ' broken: ' + clip(m.bad.slice(0, 2).join(' | '), 200) : m.said); }
   catch(e){ say('market', false, 'could not run: ' + clip(e && e.message || e, 160)); }
+  try { const c = await checkBraces(); say('css', !c.bad.length, c.bad.length ? c.bad.slice(0, 3).join(' | ') : c.said); }
+  catch(e){ say('css', false, 'could not run: ' + clip(e && e.message || e, 160)); }
   try { const b = await checkBudget({offline}); say('budget', !b.bad.length, budgetLine(b)); }
   catch(e){ say('budget', false, 'could not run: ' + clip(e && e.message || e, 160)); }
   if(!noPhone){

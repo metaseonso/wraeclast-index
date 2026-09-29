@@ -173,7 +173,13 @@ export function ranker(X){
     out.sort((a, b) => (a.it.lo ? 1 : 0) - (b.it.lo ? 1 : 0) || b.s - a.s);
     return out.map(x => x.it);
   }
-  return {words, hits, search, vocab, vocabLater};
+  /* Every card of one kind, with no words typed: the kind's own list (assets/kinds.js INDEX, a list page), by
+     name, the tree's own wordings for a stat last as they are in a search */
+  function list(kind){
+    return X.items().filter(it => it.k === kind && !it.dup)
+      .sort((a, b) => (a.lo ? 1 : 0) - (b.lo ? 1 : 0) || a.n.localeCompare(b.n));
+  }
+  return {words, hits, search, list, vocab, vocabLater};
 }
 
 /* Damerau–Levenshtein, given up on as soon as the whole row is already further than max. */

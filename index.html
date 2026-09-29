@@ -49,7 +49,7 @@ for(var k in WI_FIRST) WI_FIRST[k].catch(function(){});</script>
 </head>
 <body>
 <script>/* the tab first, so the top bar never changes shape on the first paint (assets/app.js show() keeps it) */
-document.body.dataset.route = (function(r){ return ['build','currency','trade','farms','atlas','bosses','craft','map'].indexOf(r) >= 0 ? r : 'home'; })((location.hash.match(/^#\/(\w+)/) || [])[1]);</script>
+document.body.dataset.route = (function(r){ return ['build','currency','trade','farms','atlas','bosses','craft','map','data'].indexOf(r) >= 0 ? r : 'home'; })((location.hash.match(/^#\/(\w+)/) || [])[1]);</script>
 
 <header class="top">
   <div class="top-in">
@@ -61,16 +61,35 @@ document.body.dataset.route = (function(r){ return ['build','currency','trade','
           <div class="navdrop-m" id="nd-items">
             <a href="explore#uniques"><i class="ti ti-uniques" aria-hidden="true"></i>Uniques</a>
             <a href="explore#gems"><i class="ti ti-gems" aria-hidden="true"></i>Gems</a>
-            <a href="#/currency" data-route="currency"><i class="ti ti-currency" aria-hidden="true"></i>Currency</a>
+            <a href="#/?k=b" data-list="b"><i class="ti ti-bases" aria-hidden="true"></i>Bases</a>
+            <a href="#/?k=i" data-list="i"><i class="ti ti-classes" aria-hidden="true"></i>Item classes</a>
           </div></div>
-        <a href="explore#tree"><i class="ti ti-tree" aria-hidden="true"></i>Passive tree</a>
+        <div class="navdrop"><button type="button" class="navdrop-b" aria-expanded="false" aria-controls="nd-passives">Passives<svg class="caret" viewBox="0 0 10 10" aria-hidden="true"><path d="M2 3.5 5 6.5 8 3.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          <div class="navdrop-m" id="nd-passives">
+            <a href="explore#tree"><i class="ti ti-tree" aria-hidden="true"></i>Passive tree</a>
+            <a href="#/?k=p" data-list="p"><i class="ti ti-passives" aria-hidden="true"></i>Passives</a>
+            <a href="#/?k=t" data-list="t"><i class="ti ti-clusters" aria-hidden="true"></i>Clusters</a>
+            <a href="#/?k=y" data-list="y"><i class="ti ti-ascendancy" aria-hidden="true"></i>Ascendancies</a>
+          </div></div>
+        <div class="navdrop"><button type="button" class="navdrop-b" aria-expanded="false" aria-controls="nd-mechanics">Mechanics<svg class="caret" viewBox="0 0 10 10" aria-hidden="true"><path d="M2 3.5 5 6.5 8 3.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          <div class="navdrop-m" id="nd-mechanics">
+            <a href="#/?k=w" data-list="w"><i class="ti ti-keywords" aria-hidden="true"></i>Keywords</a>
+            <a href="#/?k=h" data-list="h"><i class="ti ti-mechanics" aria-hidden="true"></i>How it works</a>
+            <a href="#/?k=d" data-list="d"><i class="ti ti-buffs" aria-hidden="true"></i>Buffs and debuffs</a>
+            <a href="#/?k=q" data-list="q"><i class="ti ti-interactions" aria-hidden="true"></i>Interactions</a>
+          </div></div>
         <div class="navdrop"><button type="button" class="navdrop-b" aria-expanded="false" aria-controls="nd-endgame">Endgame<svg class="caret" viewBox="0 0 10 10" aria-hidden="true"><path d="M2 3.5 5 6.5 8 3.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
           <div class="navdrop-m" id="nd-endgame">
             <a href="#/atlas" data-route="atlas"><i class="ti ti-atlas" aria-hidden="true"></i>Atlas</a>
             <a href="#/bosses" data-route="bosses"><i class="ti ti-bosses" aria-hidden="true"></i>Bosses</a>
           </div></div>
-        <a href="#/trade" data-route="trade"><i class="ti ti-trade" aria-hidden="true"></i>Trade</a>
+        <div class="navdrop"><button type="button" class="navdrop-b" aria-expanded="false" aria-controls="nd-economy">Economy<svg class="caret" viewBox="0 0 10 10" aria-hidden="true"><path d="M2 3.5 5 6.5 8 3.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          <div class="navdrop-m" id="nd-economy">
+            <a href="#/currency" data-route="currency"><i class="ti ti-currency" aria-hidden="true"></i>Currency</a>
+            <a href="#/trade" data-route="trade"><i class="ti ti-trade" aria-hidden="true"></i>Trade</a>
+          </div></div>
         <a href="#/craft" data-route="craft"><i class="ti ti-craft" aria-hidden="true"></i>Craft</a>
+        <a href="#/data" data-route="data"><i class="ti ti-data" aria-hidden="true"></i>Data</a>
       </nav>
       <div class="topmore" id="topmore">
         <button id="notesbtn" type="button" class="notesbtn">Patch notes <span class="ct wait">v0.00</span></button>
@@ -147,6 +166,7 @@ document.body.dataset.route = (function(r){ return ['build','currency','trade','
   <section class="view" id="view-bosses" data-view="bosses" hidden></section>
   <section class="view" id="view-craft" data-view="craft" hidden></section>
   <section class="view" id="view-map" data-view="map" hidden></section>
+  <section class="view" id="view-data" data-view="data" hidden></section>
 </main>
 
 <footer class="foot">

@@ -26,6 +26,7 @@ import hashlib
 import json
 import os
 import re
+import subprocess
 import sys
 import time
 import urllib.parse
@@ -128,6 +129,13 @@ TOP_NOW = re.compile(r'<header class="top">\n.*?\n</header>\n<script src="assets
 SUB = re.compile(r'<span class="sub"(?: hidden)?>Patch <b id="patch">[^\n]*')
 
 
+def top_nav():
+    """The top bar's index, from the one table (assets/kinds.js INDEX, written by tools/dev/nav.mjs)."""
+    out = subprocess.run(['node', str(ROOT / 'tools' / 'dev' / 'nav.mjs'), '--print', './'], capture_output=True,
+                         text=True, encoding='utf-8', check=True).stdout.rstrip('\n')
+    return '\n'.join('      ' + line for line in out.split('\n'))
+
+
 def topbar(sub):
     """The app's top bar, for the drill-down page; sub is the page's own patch and count line."""
     return ('<header class="top">\n'
@@ -135,23 +143,7 @@ def topbar(sub):
             '    <h1><a class="brand" href="./"><span class="mark" aria-hidden="true">' + WISP +
             '<img class="mark-logo" src="assets/brand/logo-64.webp" alt="" width="51" height="64"></span>Wraeclast <em>Index</em></a></h1>\n'
             '    <div class="topmenu" id="topmenu">\n'
-            '      <nav class="tabs topnav" aria-label="Index">\n'
-            '        <a href="./#/"><i class="ti ti-search" aria-hidden="true"></i>Search</a>\n'
-            '        <div class="navdrop"><button type="button" class="navdrop-b" aria-expanded="false" aria-controls="nd-items">Items' + CARET + '</button>\n'
-            '          <div class="navdrop-m" id="nd-items">\n'
-            '            <a href="explore#uniques"><i class="ti ti-uniques" aria-hidden="true"></i>Uniques</a>\n'
-            '            <a href="explore#gems"><i class="ti ti-gems" aria-hidden="true"></i>Gems</a>\n'
-            '            <a href="./#/currency"><i class="ti ti-currency" aria-hidden="true"></i>Currency</a>\n'
-            '          </div></div>\n'
-            '        <a href="explore#tree"><i class="ti ti-tree" aria-hidden="true"></i>Passive tree</a>\n'
-            '        <div class="navdrop"><button type="button" class="navdrop-b" aria-expanded="false" aria-controls="nd-endgame">Endgame' + CARET + '</button>\n'
-            '          <div class="navdrop-m" id="nd-endgame">\n'
-            '            <a href="./#/atlas"><i class="ti ti-atlas" aria-hidden="true"></i>Atlas</a>\n'
-            '            <a href="./#/bosses"><i class="ti ti-bosses" aria-hidden="true"></i>Bosses</a>\n'
-            '          </div></div>\n'
-            '        <a href="./#/trade"><i class="ti ti-trade" aria-hidden="true"></i>Trade</a>\n'
-            '        <a href="./#/craft"><i class="ti ti-craft" aria-hidden="true"></i>Craft</a>\n'
-            '      </nav>\n'
+            + top_nav() + '\n'
             '      <div class="topmore" id="topmore">\n'
             '        <button id="notesbtn" type="button" class="notesbtn">Patch notes <span class="ct wait">v0.00</span></button>\n'
             '        ' + KEYS_BTN.replace('</svg></button>', '</svg><span class="keys-lbl">Keybindings</span></button>') + '\n'

@@ -34,7 +34,7 @@ import { readFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { checkSchema } from './schema.mjs';
-import { KINDS, KIND, DEFAULT, FIELDS, FRAME, SLOTS, BOXES, DECL, REL, MAPS, ROUTES, SECTIONS, PAGES, SHUT, ASKS, ASK } from '../../assets/kinds.js';
+import { KINDS, KIND, DEFAULT, FIELDS, FRAME, SLOTS, BOXES, DECL, REL, MAPS, ROUTES, SECTIONS, PAGES, SHUT, ASKS, ASK, INDEX, pageName } from '../../assets/kinds.js';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(HERE, '..', '..');
@@ -200,6 +200,19 @@ export async function checkOneTable(){
     const got = m ? [...m[1].matchAll(/\('([^']+)', '([^']+)'/g)].map(x => x[1] + ' “' + x[2] + '”').join(', ') : '';
     if(got !== want) bad.push('tools/sync.py writes the sections ' + (got || '(none found)') + ', and the table says ' + want);
   }
+
+  // the top bar the pages write out is the index table's (tools/dev/nav.mjs), and every page it offers is a tab,
+  // a section or a kind that is there
+  const { drift } = await import('./nav.mjs');
+  bad.push(...await drift());
+  for(const s of INDEX) for(const p of s.pages){
+    if(p.route && !(p.route in ROUTES)) bad.push('the index offers ' + p.route + ', which is not a tab');
+    if(p.sec && !(p.sec in SECTIONS)) bad.push('the index offers the section ' + p.sec + ', which the drill-down page does not have');
+    if(p.list && !(KIND[p.list] && KIND[p.list].search)) bad.push('the index lists the kind ' + p.list + ', which search does not hold');
+    if(!p.icon) bad.push('the index page ' + pageName(p) + ' has no icon');
+  }
+  const offered = new Set(INDEX.flatMap(s => s.pages.map(p => p.route)).filter(Boolean));
+  for(const r of Object.keys(ROUTES)) if(!offered.has(r) && !(r in SHUT) && r !== 'map') bad.push('the tab ' + r + ' is in no section of the index');
 
   /* a page the table has shut: still a tab, so an old link lands on it; still a view, so it has somewhere to
      say its line; and offered nowhere. A link left behind in one of these files is a door onto a closed room,

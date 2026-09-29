@@ -1225,10 +1225,12 @@ async function bench(withName){
     await m.openBench({k: 'b', cr: CL.id, n: B.n, ilvl: S.l}, also);
   } catch {}
 }
-/* the top bar is sticky and wraps on a phone: the head of the table has to know how tall it is to sit under it */
+/* the top bar is sticky on a wide screen and scrolls away on a phone: the head of the table sits under it where
+   it stays, and at the top of the screen where it does not */
 function topOffset(){
   const t = document.querySelector('.top');
-  EL.style.setProperty('--crtop', Math.round(t ? t.getBoundingClientRect().height : 0) + 'px');
+  const stays = t && getComputedStyle(t).position === 'sticky';
+  EL.style.setProperty('--crtop', Math.round(stays ? t.getBoundingClientRect().height : 0) + 'px');
 }
 // a window being dragged wider fires this on every pixel: the bar is measured once a frame, at most
 let sized = 0;

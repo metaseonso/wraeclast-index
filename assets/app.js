@@ -135,6 +135,9 @@ async function lastPrices(){
 const NOW = Promise.race([livePrices(), new Promise((_, no) => setTimeout(() => no(new Error('live prices slow')), LIVE_WAIT))])
   .catch(() => lastPrices()).then(m => (D.market = live(m)), () => null);
 const MAN = getJSON('data/manifest.json', {cache: 'no-cache'}, EARLY.man);
+/* for the tabs that say what the index holds and how fresh it is (assets/data.js) */
+export const manifest = () => MAN;
+export const prices = () => NOW;
 let go, seek, all;
 const GO = new Promise(r => { go = r; });      // the meta, the bosses, the catalogue's words
 const SEEK = new Promise(r => { seek = r; });  // the search worker
@@ -2514,13 +2517,14 @@ export function onType(box, run, wait = TYPE_WAIT){
 export async function find(q, {kind = 'all', n = 0, take, from = 0, seen = seenKeys()} = {}){
   if(D.full){   // the page answers itself: the last answer kept, as the worker keeps it
     const trail = seen.join(' ');
-    if(!LAST || LAST.q !== q || LAST.seen !== trail || LAST.v !== D.index){
+    const list = !q.trim() && kind !== 'all' ? kind : '';   // no words, a kind picked: its own list (a list page)
+    if(!LAST || LAST.q !== q || LAST.list !== list || LAST.seen !== trail || LAST.v !== D.index){
       const was = TRAIL_NOW;
       TRAIL_NOW = seen;
-      const all = PR.search(q, 'all').map(it => it.k + ':' + it.id), counts = {all: all.length};
+      const all = (list ? PR.list(list) : PR.search(q, 'all')).map(it => it.k + ':' + it.id), counts = {all: all.length};
       TRAIL_NOW = was;
       for(const key of all){ const k = key.slice(0, key.indexOf(':')); counts[k] = (counts[k] || 0) + 1; }
-      LAST = {q, seen: trail, v: D.index, all, counts};
+      LAST = {q, list, seen: trail, v: D.index, all, counts};
     }
     const keys = kind === 'all' ? LAST.all : LAST.all.filter(key => key.startsWith(kind + ':'));
     return {keys: keys.slice(from, take === undefined ? keys.length : take), total: keys.length, counts: LAST.counts};
@@ -2541,8 +2545,22 @@ const ENDLESS = 150;   // cards the list adds by itself; past this, one more pag
    already answered and never a second search (find). H.asked and H.draw count the questions and the draws, so an
    answer that comes after a newer one is dropped. */
 const H = {q:'', kind:'all', shown:PAGE, res:null, list:[], asked:0, draw:0};
+/* the chip of the kind on show pressed, the links to its list marked where the index is drawn, and the box
+   saying what it searches */
+function pickKind(){
+  for(const c of $('#kinds').children) c.setAttribute('aria-pressed', String(c.dataset.k === H.kind));
+  const K = H.kind !== 'all' && KIND[H.kind];
+  $('#q').placeholder = K ? 'Search ' + K.many.toLowerCase() + '…' : Q_WORDS;
+  for(const a of document.querySelectorAll('a[data-list]')){
+    if(a.dataset.list === H.kind && route() === 'home') a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current');
+  }
+  const home = document.querySelector('.tabs a[data-route="home"]');
+  if(home && route() === 'home' && K) home.removeAttribute('aria-current');
+}
+let Q_WORDS = '';
 function homeInit(){
   const q = $('#q'), kinds = $('#kinds');
+  Q_WORDS = q.placeholder;
   // index.html draws these chips itself, so the bar never changes shape on the first paint; the table is the
   // one in assets/kinds.js, and a kind that is in the table but not in the page puts them all back in order
   if([...kinds.children].map(c => c.dataset.k).join(' ') !== CHIPS.map(([k]) => k).join(' '))
@@ -2550,8 +2568,8 @@ function homeInit(){
   kinds.addEventListener('click', e => {
     const b = e.target.closest('button'); if(!b) return;
     H.kind = b.dataset.k; H.shown = PAGE;
-    [...kinds.children].forEach(c => c.setAttribute('aria-pressed', String(c === b)));
-    homeRender(); q.focus();
+    pickKind();
+    homeRender(); syncHash(); q.focus();
   });
   onType(q, () => { H.q = q.value; H.shown = PAGE; homeRender(); syncHash(); });
   q.addEventListener('keydown', e => {
@@ -2600,7 +2618,10 @@ function paintMore(){
   more.innerHTML = auto ? '<span class="note">Loading more…</span>' : '<button type="button" class="btn">Show more</button>';
 }
 function syncHash(){
-  const h = H.q ? '#/?q=' + encodeURIComponent(H.q) : '#/';
+  const ps = [];
+  if(H.q) ps.push('q=' + encodeURIComponent(H.q));
+  if(H.kind !== 'all') ps.push('k=' + H.kind);
+  const h = ps.length ? '#/?' + ps.join('&') : '#/';
   if(location.hash !== h) history.replaceState(null, '', h);
 }
 /* The answer is counts and card keys (find); the cards on show come whole before they are drawn, and a moment is
@@ -2608,7 +2629,9 @@ function syncHash(){
 const HEAD_WAIT = 150;
 function homeRender(){
   const hero = $('#hero'), status = $('#status'), more = $('#more');
-  const has = H.q.trim().length > 0;
+  // words typed, or a kind picked with none: a kind's own list (assets/kinds.js INDEX, the list pages)
+  const listing = !H.q.trim() && H.kind !== 'all' && !!KIND[H.kind];
+  const has = H.q.trim().length > 0 || listing;
   hero.classList.toggle('docked', has);
   let list, label;
   if(has && !D.search && !D.full && !D.failed){   // the search is on its way, a moment
@@ -2632,9 +2655,14 @@ function homeRender(){
   }
   if(has){
     const counts = H.res.counts, total = H.res.total;
-    for(const b of $('#kinds').children) b.querySelector('.ct').textContent = counts[b.dataset.k] || 0;
+    // a list: each chip is that kind's own list, so it counts the whole kind (the manifest's count)
+    const kinds = listing && D.man && D.man.kinds;
+    for(const b of $('#kinds').children) b.querySelector('.ct').textContent = kinds
+      ? (b.dataset.k === 'all' ? '' : kinds[b.dataset.k] ? (+kinds[b.dataset.k].n).toLocaleString() : '')
+      : counts[b.dataset.k] || 0;
     list = H.list;
-    label = total ? '<b>' + total.toLocaleString() + '</b> match' + (total === 1 ? '' : 'es') : '';
+    label = !total ? '' : listing ? '<b>' + total.toLocaleString() + '</b> ' + esc(KIND[H.kind].many) :
+      '<b>' + total.toLocaleString() + '</b> match' + (total === 1 ? '' : 'es');
   } else {
     for(const b of $('#kinds').children) b.querySelector('.ct').textContent = '';
     list = []; label = ''; H.res = null; H.list = []; H.asked++;
@@ -2783,6 +2811,7 @@ async function show(e){
   document.body.dataset.route = r;
   document.querySelectorAll('.view').forEach(v => v.hidden = v.dataset.view !== r);
   document.querySelectorAll('.tabs a[data-route]').forEach(a => { if(a.dataset.route === r) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current'); });
+  if(r !== 'home') document.querySelectorAll('a[data-list]').forEach(a => a.removeAttribute('aria-current'));
   // a page shut in the table (assets/kinds.js SHUT) says so where it stands, and loads nothing
   if(r in SHUT){
     $('#view-' + r).innerHTML = '<div class="empty"><h3>' + esc(ROUTES[r]) + '</h3><p>' + esc(SHUT[r]) +
@@ -2790,15 +2819,17 @@ async function show(e){
     return;
   }
   if(r === 'home'){
-    const q = params().get('q') || '';
-    if(q) wake();   // a search in the address (the search waits for its worker itself)
+    const q = params().get('q') || '', k = params().get('k') || 'all';
+    if(q || k !== 'all') wake();   // a search or a list in the address (the search waits for its worker itself)
     if(q !== H.q){ H.q = q; $('#q').value = q; }
+    if(k !== H.kind){ H.kind = k in KIND || k === 'all' ? k : 'all'; H.shown = PAGE; }
+    pickKind();
     homeRender();
     if(!matchMedia('(pointer:coarse)').matches) $('#q').focus({preventScroll:true});
   } else {
-    need();
+    if(r !== 'data') need();   // the Data page reads the manifest only
     // every other tab draws cards out of the index, with their charts; the map is a finished picture
-    if(r !== 'map') await Promise.all([ready, hist()]);
+    if(r !== 'map' && r !== 'data') await Promise.all([ready, hist()]);
     if(ON !== r) return;           // left again while the index came in: nothing to draw
     const view = $('#view-' + r);
     if(!LIVE[r]) LIVE[r] = modOf(r).then(m => m.mount(view));

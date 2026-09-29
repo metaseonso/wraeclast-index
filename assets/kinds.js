@@ -77,7 +77,7 @@
    worker/dash.js) and the owner's dashboard (assets/admin.js). A new tab is one line here.
    tools/dev/frame.mjs fails a build where a second copy of this list has drifted from it. */
 export const ROUTES = {home: 'Search', build: 'Build', trade: 'Trade', farms: 'Farms', craft: 'Craft',
-  currency: 'Currency', atlas: 'Atlas', bosses: 'Bosses', map: 'Map'};
+  currency: 'Currency', atlas: 'Atlas', bosses: 'Bosses', map: 'Map', data: 'Data'};
 export const SECTIONS = {gems: 'Gems', uniques: 'Uniques', tree: 'Passive tree'};
 /* every page that is counted, in one list: the tabs, then the sections under the names the count gives them */
 export const PAGES = {...ROUTES,
@@ -92,6 +92,88 @@ export const SHUT = {
   build: 'Closed for rebuilding.',
   farms: 'Closed for rebuilding.',
 };
+
+/* ---------- the index ----------
+   The site as the index it is: its sections, and the pages under each, in the order they are offered. The top
+   bar, the home page's contents, the index down the side of a list and the phone's menu are all drawn from this
+   one table (navHTML below, assets/app.js sideIndex, assets/app.js homeContents), so a new page is one line
+   here. A section with one page is a plain link; the rest open under their name.
+   A page is one of:
+     route    a tab of the app (ROUTES)            #/atlas
+     sec      a section of the drill-down page      explore#gems
+     list     every card of one kind (KINDS)        #/?k=w — the search page, with the kind picked and no words
+   `about` says what it holds, in a line (llms.txt, and the Data page). `k` names the kind whose count the page shows, where a page is one kind's (a route or a section); a list is
+   its kind's. `icon` names the mask in assets/cards.css (.ti-<icon>). tools/dev/frame.mjs holds the three
+   pages whose top bar is written out (index.html, explore.html, privacy.html) to navHTML(). */
+export const INDEX = [
+  {id: 'search', pages: [{route: 'home', name: 'Search', icon: 'search', about: 'search everything at once; each result is a live card with its price'}]},
+  {id: 'items', name: 'Items', pages: [
+    {sec: 'uniques', k: 'u', icon: 'uniques', about: 'every unique: official mod lines, requirements and prices, as a table'},
+    {sec: 'gems', k: 'g', icon: 'gems', about: 'every skill, spirit and support gem, with its numbers at any level, as a table'},
+    {list: 'b', icon: 'bases', about: 'every base item, with requirements, properties and implicits'},
+    {list: 'i', icon: 'classes', about: 'every item class, and what can roll on it'},
+  ]},
+  {id: 'passives', name: 'Passives', pages: [
+    {sec: 'tree', icon: 'tree', about: 'the passive tree, searchable'},
+    {list: 'p', icon: 'passives', about: 'every keystone, notable and ascendancy passive'},
+    {list: 't', icon: 'clusters', about: 'every cluster of the passive tree, and what it costs to take'},
+    {list: 'y', icon: 'ascendancy', about: 'every ascendancy and its notables'},
+  ]},
+  {id: 'mechanics', name: 'Mechanics', pages: [
+    {list: 'w', icon: 'keywords', about: "every game keyword, in the game's own words"},
+    {list: 'h', name: 'How it works', icon: 'mechanics', about: 'how damage, defences and scaling work'},
+    {list: 'd', name: 'Buffs and debuffs', icon: 'buffs', about: 'every buff and debuff a player can see, and what gives it'},
+    {list: 'q', icon: 'interactions', about: 'how two mechanics work together'},
+  ]},
+  {id: 'endgame', name: 'Endgame', pages: [
+    {route: 'atlas', k: 'a', icon: 'atlas', about: 'atlas passives, waystones, tablets and keys'},
+    {route: 'bosses', k: 'x', icon: 'bosses', about: 'every endgame boss, what it drops and what it costs to get in'},
+  ]},
+  {id: 'economy', name: 'Economy', pages: [
+    {route: 'currency', k: 'c', icon: 'currency', about: 'every currency price and trend, hour by hour'},
+    {route: 'trade', icon: 'trade', about: 'any trade search in plain words, opened on the official trade site'},
+  ]},
+  {id: 'craft', pages: [{route: 'craft', icon: 'craft', about: 'the crafting bench, with the real weights'}]},
+  {id: 'data', pages: [{route: 'data', icon: 'data', about: 'what the index holds, where it comes from, and how fresh it is'}]},
+];
+/* a page's name: its own, else its tab's, its section's, or its kind's */
+export function pageName(p){
+  return p.name || (p.route ? ROUTES[p.route] : p.sec ? SECTIONS[p.sec] : KIND[p.list].many);
+}
+/* where a page is, from a page at `base`: '' on the app itself, './' beside it (the drill-down page, /privacy),
+   '/' anywhere else on the site (the crawler pages) */
+export function pageHref(p, base = ''){
+  const app = base === '' ? '' : base === '/' ? '/' : './';
+  if(p.sec) return (base === '/' ? '/' : '') + 'explore#' + p.sec;
+  if(p.list) return app + '#/?k=' + p.list;
+  return app + (p.route === 'home' ? '#/' : '#/' + p.route);
+}
+/* the kind whose cards a page counts */
+export const pageKind = p => p.list || p.k || null;
+const CARET = '<svg class="caret" viewBox="0 0 10 10" aria-hidden="true"><path d="M2 3.5 5 6.5 8 3.5" fill="none" ' +
+  'stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+function linkHTML(p, base, pad){
+  const route = p.route && base === '' ? ' data-route="' + p.route + '"' : '';
+  return pad + '<a href="' + pageHref(p, base) + '"' + route + (p.list ? ' data-list="' + p.list + '"' : '') +
+    '><i class="ti ti-' + p.icon + '" aria-hidden="true"></i>' + pageName(p) + '</a>';
+}
+/* The top bar's index, as the pages write it out (no module is there to draw it on the first paint). Pages the
+   table has shut are left out. */
+export function navHTML(base = ''){
+  const open = p => !(p.route in SHUT);
+  const out = ['<nav class="tabs topnav" aria-label="Index">'];
+  for(const s of INDEX){
+    const pages = s.pages.filter(open);
+    if(!pages.length) continue;
+    if(!s.name){ out.push(linkHTML(pages[0], base, '  ')); continue; }
+    out.push('  <div class="navdrop"><button type="button" class="navdrop-b" aria-expanded="false" aria-controls="nd-' +
+      s.id + '">' + s.name + CARET + '</button>', '    <div class="navdrop-m" id="nd-' + s.id + '">');
+    for(const p of pages) out.push(linkHTML(p, base, '      '));
+    out.push('    </div></div>');
+  }
+  out.push('</nav>');
+  return out.join('\n');
+}
 
 /* ---------- the frame ----------
    The slots a card has, in the order they are drawn, and the boxes the head is divided into. A field lands in

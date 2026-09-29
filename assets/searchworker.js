@@ -133,9 +133,10 @@ async function bodies(keys){
 
 /* An answer as the page takes it: the page never holds a list of every match, only the part it draws. */
 function answer(m, S){
-  const sig = m.q + '\u0001' + S.seen.join(' ') + '\u0001' + S.v;
+  const list = !m.q.trim() && m.kind && m.kind !== 'all' ? m.kind : '';   // no words, a kind picked: its own list
+  const sig = m.q + '\u0001' + list + '\u0001' + S.seen.join(' ') + '\u0001' + S.v;
   if(!S.last || S.last.sig !== sig){
-    const all = R.search(m.q, 'all').map(it => it.k + ':' + it.id), counts = {all: all.length};
+    const all = (list ? R.list(list) : R.search(m.q, 'all')).map(it => it.k + ':' + it.id), counts = {all: all.length};
     for(const key of all){ const k = key.slice(0, key.indexOf(':')); counts[k] = (counts[k] || 0) + 1; }
     S.last = {sig, all, counts, by: {}};
   }

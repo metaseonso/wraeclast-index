@@ -3,6 +3,26 @@
 The full list of changes. The public patch notes (data/changelog.json, shown on the site) stay short.
 Add the details here first, then a short public line there.
 
+## 0.39 — 29 Sep 2026: the index, in sections (layout v2, part 1)
+
+- **One table of the index** (`assets/kinds.js` INDEX): sections Items, Passives, Mechanics, Endgame, Economy, then
+  Craft and Data; each page a tab (`route`), a drill-down section (`sec`) or a kind's list (`list`). The top bar
+  (`navHTML`), llms.txt's App list, the Data page and the phone menu read it. `tools/dev/nav.mjs` writes the bar
+  into index.html, explore.html and privacy.html; `tools/sync.py` and `worker/seo.js` draw it from the same table;
+  `tools/dev/frame.mjs` fails a page whose bar drifts, an index page that points at nothing, a tab in no section.
+- **Kind lists:** `#/?k=<kind>` is the search page with the kind picked and no words: every card of the kind by
+  name (`rank.js` list(); the search worker and the page answer it the same way). The box reads "Search buffs…",
+  the chips count each whole kind, the list link is marked in the bar.
+- **Data page** (`#/data`, `assets/data.js`): the index by section with counts, the sources, every data job's cycle
+  and last run from /api/health, and how to build on it (CC BY 4.0, llms.txt, the manifest, the Markdown pages).
+  Reads the manifest only; the index is not loaded for it.
+- **Top bar from 1280 px:** the row's own icons go (they stay in the menus), items pad 8 px, the crest's words
+  17 px, the search box from 120 px, the price stamp drops the league (tooltip) and shortens with "…".
+- **Phone:** the bar scrolls away with the page (Craft's table head sits at the top of the screen instead).
+- **Fix:** app.css had an `@media (prefers-reduced-motion)` block left open since the Build tab's styles; every
+  rule after it held only with reduced motion on. Closed, and `tools/dev/cssbraces.mjs` (guard check "css") fails
+  any stylesheet that leaves a block open.
+
 ## 0.38 — 29 Sep 2026: the data PRs merged (public: "What's on your bar")
 
 40 PRs from the data session, merged in order through the concert flow (docs/concert.md), each rebuilt on main.

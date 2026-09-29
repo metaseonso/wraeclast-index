@@ -20,7 +20,7 @@
    redirects to the plain base). A name used by two kinds goes to the first of unique, gem, passive,
    keyword, currency, base, atlas; the others add their kind ("fulmination-passive"). Same name, same kind: "-2". */
 
-import { KINDS } from '../assets/kinds.js';
+import { KINDS, navHTML, INDEX, SHUT, pageName, pageHref } from '../assets/kinds.js';
 
 const SITE = 'https://wraeclastindex.fyi';
 const AGE = 3600;                 // pages and files: an hour (currency refreshes hourly, listings daily)
@@ -896,23 +896,7 @@ const TOPBAR = `<header class="top">
   <div class="top-in">
     <a class="brand" href="/"><span class="mark" aria-hidden="true"><img class="mark-wisp on" src="/assets/brand/wisp-b.webp" alt="" decoding="async" fetchpriority="low"><img class="mark-logo" src="/assets/brand/logo-64.webp" alt="" width="51" height="64"></span>Wraeclast <em>Index</em></a>
     <div class="topmenu" id="topmenu">
-      <nav class="tabs topnav" aria-label="Index">
-        <a href="/#/"><i class="ti ti-search" aria-hidden="true"></i>Search</a>
-        <div class="navdrop"><button type="button" class="navdrop-b" aria-expanded="false" aria-controls="nd-items">Items<svg class="caret" viewBox="0 0 10 10" aria-hidden="true"><path d="M2 3.5 5 6.5 8 3.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
-          <div class="navdrop-m" id="nd-items">
-            <a href="/explore#uniques"><i class="ti ti-uniques" aria-hidden="true"></i>Uniques</a>
-            <a href="/explore#gems"><i class="ti ti-gems" aria-hidden="true"></i>Gems</a>
-            <a href="/#/currency"><i class="ti ti-currency" aria-hidden="true"></i>Currency</a>
-          </div></div>
-        <a href="/explore#tree"><i class="ti ti-tree" aria-hidden="true"></i>Passive tree</a>
-        <div class="navdrop"><button type="button" class="navdrop-b" aria-expanded="false" aria-controls="nd-endgame">Endgame<svg class="caret" viewBox="0 0 10 10" aria-hidden="true"><path d="M2 3.5 5 6.5 8 3.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
-          <div class="navdrop-m" id="nd-endgame">
-            <a href="/#/atlas"><i class="ti ti-atlas" aria-hidden="true"></i>Atlas</a>
-            <a href="/#/bosses"><i class="ti ti-bosses" aria-hidden="true"></i>Bosses</a>
-          </div></div>
-        <a href="/#/trade"><i class="ti ti-trade" aria-hidden="true"></i>Trade</a>
-        <a href="/#/craft"><i class="ti ti-craft" aria-hidden="true"></i>Craft</a>
-      </nav>
+${navHTML('/').split('\n').map(l => '      ' + l).join('\n')}
     </div>
     <span class="grow"></span>
     <a class="topbtn topfind" id="topfind" href="/#/" aria-label="Search the index"><svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="8.5" cy="8.5" r="5.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M13 13l4.5 4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></a>
@@ -1097,10 +1081,8 @@ ${files.join('\n')}
 
 ## App
 
-- [Search](${SITE}/): search everything at once; each result is a live card with price and trend
-- [Currency](${SITE}/#/currency): every currency price, trend, and flips between divine, exalted and chaos
-- [Trade](${SITE}/#/trade): build any trade search in plain words, then open it on the official trade site
-- [Gems, uniques and passive tree](${SITE}/explore): the full tables and the passive tree
+${INDEX.flatMap(s => s.pages.filter(p => !(p.route in SHUT)).map(p => '- [' + (s.name && s.pages.length > 1 ? s.name + ': ' : '') +
+  pageName(p) + '](' + SITE + pageHref(p, '/').replace(/^\/(?=#)/, '/') + '): ' + p.about)).join('\n')}
 
 ## Contact
 
