@@ -1056,23 +1056,6 @@ a.rn-rune:hover, a.rn-rune:focus-visible, .rn-out a:hover, .rn-out a:focus-visib
 .mk-line{font-size:13.5px; line-height:1.55; margin:6px 0 0; max-width:100ch}
 @media (max-width:640px){ .mk-t td:first-child{min-width:124px} .mk-big b{font-size:26px} }
 
-/* ---------- the index down the side of a list (assets/app.js sideShow) ----------
-   From 1280 px, on a page that is a list (a search, a kind's list, Currency, Atlas, Bosses): the whole index in one
-   column beside it, the page on show marked. Narrower, the index is in the menu instead. */
-.side{display:none}
-@media (min-width:1280px){
-  body.withside main{display:flex; justify-content:center; align-items:flex-start; gap:26px; padding:0 16px}
-  body.withside .side{display:block; flex:0 0 184px; position:sticky; top:64px; max-height:calc(100vh - 72px); overflow:auto;
-    padding:22px 2px 24px 0; scrollbar-width:thin}
-  body.withside main > .view{flex:1 1 auto; min-width:0; max-width:1190px; margin:0; padding-left:0; padding-right:0}
-  .side-toc{grid-template-columns:1fr; gap:14px}
-  .side-toc .toc-sec h3{font-size:13px; margin-bottom:3px}
-  .side-toc .toc-sec a{font-size:12.5px; padding:3px 0}
-  .side-toc .toc-sec li{border-bottom-color:var(--line-soft)}
-  .side-toc a[aria-current]{color:var(--accent)}
-  .side-toc a[aria-current] .ti{opacity:1}
-}
-
 /* a boss's big hits (assets/bosses.js hitsHTML) */
 .bo-hits{list-style:none; margin:6px 0; padding:0}
 .bo-hits li{display:grid; grid-template-columns:minmax(0,1fr) auto auto 72px; gap:4px 12px; align-items:baseline;

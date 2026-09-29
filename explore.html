@@ -521,8 +521,8 @@ details.tech>summary{color:var(--faint)}
   </div>
   <p class="foot" id="tfoot"></p>
   <!-- what a respec costs, off the game's own table (data/gold.json respec, tools/gold.py) -->
-  <div class="panel respec" id="respec" hidden>
-    <h3>Respec <span class="card-pxa" title="Depends on GGG. May change without notice.">Subject to change</span></h3>
+  <details class="respec" id="respec" hidden>
+    <summary><h3>Respec cost</h3> <span class="card-pxa" title="Depends on GGG. May change without notice.">Subject to change</span></summary>
     <div class="respec-in">
       <label>Character level <input class="field sm" id="rs-lv" type="number" min="1" max="100" value="80"></label>
       <label>Passive points <input class="field sm" id="rs-pp" type="number" min="0" max="999" placeholder="0"></label>
@@ -530,7 +530,7 @@ details.tech>summary{color:var(--faint)}
     </div>
     <p class="respec-out" id="rs-out" aria-live="polite"></p>
     <p class="card-src" id="rs-src"></p>
-  </div>
+  </details>
 </section>
 
 </div>

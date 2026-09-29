@@ -99,7 +99,7 @@ export const SHUT = {
 /* ---------- the index ----------
    The site as the index it is: its sections, and the pages under each, in the order they are offered. The top
    bar, the home page's contents, the index down the side of a list and the phone's menu are all drawn from this
-   one table (navHTML below, assets/app.js sideIndex, assets/app.js homeContents), so a new page is one line
+   one table (navHTML below, assets/app.js homeContents), so a new page is one line
    here. A section with one page is a plain link; the rest open under their name.
    A page is one of:
      route    a tab of the app (ROUTES)            #/atlas

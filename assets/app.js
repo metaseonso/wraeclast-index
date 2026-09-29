@@ -3047,7 +3047,6 @@ function homeRender(){
   const hero = $('#hero'), status = $('#status'), more = $('#more');
   // words typed, or a kind picked with none: a kind's own list (assets/kinds.js INDEX, the list pages)
   const listing = !H.q.trim() && H.kind !== 'all' && !!KIND[H.kind];
-  sideShow();
   const has = H.q.trim().length > 0 || listing;
   hero.classList.toggle('docked', has);
   let list, label;
@@ -3200,27 +3199,6 @@ async function mountGuide(){
   box.hidden = false;
 }
 
-/* The index down the side of a page that is a list: a search, a kind's list, and the tabs that list (assets/kinds.js
-   INDEX draws it, assets/app.css shows it from 1280 px). Drawn once, its counts filled from the manifest; the page
-   on show is marked each time. */
-const LISTS = new Set(['currency', 'atlas', 'bosses']);
-function sideShow(){
-  const side = $('#side');
-  if(!side) return;
-  const r = document.body.dataset.route || 'home';
-  const on = LISTS.has(r) || (r === 'home' && (H.q.trim().length > 0 || H.kind !== 'all'));
-  document.body.classList.toggle('withside', on);
-  side.hidden = !on;
-  if(!on) return;
-  if(!side.firstChild){
-    side.innerHTML = contentsHTML(null, '', {cls: 'toc side-toc', id: ''});
-    MAN.then(man => fillCounts(man, side), () => {});
-  }
-  for(const a of side.querySelectorAll('a')){
-    const here = r === 'home' ? a.dataset.list === H.kind : a.dataset.route === r;
-    if(here) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current');
-  }
-}
 /* the counts in the index's contents (index.html #toc, the Data page): each kind's own, from the manifest */
 export function fillCounts(man, host = document){
   const K = (man && man.kinds) || {};
@@ -3280,7 +3258,6 @@ async function show(e){
   const back = ON !== r && LEFT[r] && LEFT[r].at === location.hash ? LEFT[r].y : null;
   ON = r;
   document.body.dataset.route = r;
-  sideShow();
   document.querySelectorAll('.view').forEach(v => v.hidden = v.dataset.view !== r);
   document.querySelectorAll('.tabs a[data-route]').forEach(a => { if(a.dataset.route === r) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current'); });
   if(r !== 'home') document.querySelectorAll('a[data-list]').forEach(a => a.removeAttribute('aria-current'));
