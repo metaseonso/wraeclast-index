@@ -80,7 +80,8 @@
    worker/dash.js) and the owner's dashboard (assets/admin.js). A new tab is one line here.
    tools/dev/frame.mjs fails a build where a second copy of this list has drifted from it. */
 export const ROUTES = {home: 'Search', build: 'Build', trade: 'Trade', farms: 'Farms', craft: 'Craft',
-  currency: 'Currency', market: 'Market', atlas: 'Atlas', bosses: 'Bosses', map: 'Map', data: 'Data', patches: 'Patches'};
+  currency: 'Currency', market: 'Market', atlas: 'Atlas', bosses: 'Bosses', map: 'Map', data: 'Data', patches: 'Patches',
+  campaign: 'Campaign'};
 export const SECTIONS = {gems: 'Gems', uniques: 'Uniques', tree: 'Passive tree'};
 /* every page that is counted, in one list: the tabs, then the sections under the names the count gives them */
 export const PAGES = {...ROUTES,
@@ -122,6 +123,7 @@ export const INDEX = [
     {list: 'y', icon: 'ascendancy', about: 'every ascendancy and its notables'},
   ]},
   {id: 'world', name: 'World', pages: [
+    {route: 'campaign', icon: 'campaign', about: 'act by act: the areas, the quests and every reward kept for good, with ticks'},
     {list: 'r', icon: 'areas', about: 'every area: its level, waypoint, where it leads and who is fought there'},
     {list: 'j', icon: 'quests', about: 'every quest: where it goes, what it gives, and what it gives for good'},
   ]},
