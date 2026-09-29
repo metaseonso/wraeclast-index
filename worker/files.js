@@ -33,7 +33,7 @@ import { same } from './dash.js';
 const NAMES = new Set(['exchange.json', 'market.json', 'leagues.json', 'faults.json']);
 // the market products (design/market-products.md), one file each, the currency cards' parts in up to 16 bundles, and
 // the Market job's own fault record (tools/lastgood.py SENT): faults.json itself is the Publish site workflow's alone
-export const MARKET = /^market\/(?:index|liquidity|playbook|inflation|shocks|sell|crafting|rising|gap|digest|faults|cards-(?:[1-9]|1[0-6]))\.json$/;
+export const MARKET = /^market\/(?:index|liquidity|playbook|inflation|shocks|sell|crafting|rising|gap|digest|faults|cards-(?:[1-9]|[12]\d|3[0-2]))\.json$/;
 const MAX = 1.5e6;                // bytes
 const TTL = 300;                  // seconds a data centre keeps its copy
 const PAGES = 'https://metaseonso.github.io/wraeclast-index/data/';

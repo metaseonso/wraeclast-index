@@ -32,6 +32,7 @@ WI_NO_TICKET=1 python tools/pipeline.py --from sync patch > "$LOG/pipe-$PR.txt" 
 git checkout -q -- data/faults.json 2>/dev/null
 grep -qE "files? into data/ in one step" "$LOG/pipe-$PR.txt" && ! grep -q "^FAILED" "$LOG/pipe-$PR.txt" \
   || stop "pipeline: $(grep -E '^FAILED|DATA FAULT' "$LOG/pipe-$PR.txt" | head -2 | tr '\n' ' ')"
+node tools/dev/nav.mjs >/dev/null   # the pages' top bar and contents, from the index table as it now stands
 if [ -n "${GAPS:-}" ]; then WI_NO_TICKET=1 python tools/pipeline.py --only gamepull > "$LOG/gaps-$PR.txt" 2>&1 || stop "gamepull"; git checkout -q -- data/faults.json 2>/dev/null; fi
 git add -A && git commit -q -m "Data rebuilt on main from #$PR's code (pipeline --from sync)
 

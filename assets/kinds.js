@@ -66,6 +66,7 @@
      ids      its values are ids a renderer turns into words (a keyword chip), never words a player reads as
               they stand
      row      'price' where `at` reads the price row rather than the index entry
+     plain    its lines are drawn with no marks: words that are partly ours, where a game word would read as a door
    A field draws nothing when the entry carries nothing for it, so one declaration covers a full entry and a
    bare one. Fields a player must never read (the search words, internal ids) are in no declaration.
 
@@ -422,7 +423,7 @@ export const FIELDS = {
   // ...and a passive's lines before the newest patch that reworded them (tools/carddata.py, the tree export)
   was:      {type: 'rich', at: 'wa', slot: 'body', label: 'Was:'},
   /* an area's lines the game never shows, under their own heading (tools/areas.py, tools/atlascontent.py) */
-  hidden:   {type: 'rich', at: 'hm', slot: 'body', label: 'Not shown in game'},
+  hidden:   {type: 'rich', at: 'hm', slot: 'body', label: 'Not shown in game', plain: 1},   // partly our words: no marks
   /* the reward windows: a row each, a choice where the row offers more than one (tools/quests.py) */
   take:     {type: 'choice', at: 'tk', slot: 'body', label: 'Rewards', pick: 'Take one'},
   keeps:    {type: 'rich', at: 'kp', slot: 'body', label: 'Permanent'},

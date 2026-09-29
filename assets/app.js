@@ -710,7 +710,10 @@ const mechSpans = (spans, lxk) => (spans || [])
    lines for good. The oldest to be drawn lets go first, and draws them fresh if it is ever drawn again. */
 const MK_KEPT = 600;
 const MK = new Set();   // the cards holding their lines, oldest first
+/* the fields whose lines carry no marks (FIELDS plain): partly our own words */
+const PLAIN = new Set(Object.values(FIELDS).filter(f => f.plain && f.at).map(f => f.at));
 function lineHTML(it, at, i, text, marked){
+  if(PLAIN.has(at)) return esc(text);
   const v = marks.version();
   if(it._mkv !== v){
     it._mkv = v; it._mk = {}; it._mkSeen = new Set();   // the keywords this card has marked so far, in line order

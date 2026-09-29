@@ -41,6 +41,13 @@ KINDS = ('v', 'r', 'j')   # the kinds this tool writes, and takes off again befo
 ITEM_KINDS = ('c', 'b', 'u', 'a', 'g')   # the cards a reward can be, in the order a name is claimed
 
 
+# The quest gold poe2db agrees with (checked 29 Sep 2026, patch 0.5.5): shown plain while the files still say the
+# same. Gold is read from a column dat-schema does not name, so any other amount, and any amount that moves on a
+# patch, keeps the Subject to change pill. Dark Mists' 7,500 is not in this list: poe2db gives another number.
+GOLD_AGREES = {'Treacherous Ground': 100, 'Cracks in the Earth': 100, 'Earning Passage': 200,
+               'The City of Seven Waters': 400, 'A Theft of Ivory': 400, 'A Crown of Stone': 400,
+               'Treasures of Utzaal': 1000}
+
 def load(name, default=None):
     try:
         return json.loads((DATA / name).read_text(encoding='utf-8'))
@@ -234,7 +241,7 @@ def main():
             row['pm'] = 1
         if any(k.get('pick') for k in keep):
             row['pk'] = 1
-        if q.get('gold') or any(k.get('undo') for k in keep):
+        if (q.get('gold') and GOLD_AGREES.get(q['n']) != q['gold']) or any(k.get('undo') for k in keep):
             row['un'] = 1
         if q.get('do'):
             row['t'] = clean(q['do'])

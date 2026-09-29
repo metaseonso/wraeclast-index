@@ -34,8 +34,9 @@ import sitedata
 SRC = sitedata.DATA / 'market'
 OUT = ml.ROOT / 'build' / 'market-send'
 LIMIT = 1_400_000          # bytes a file may be here: the worker takes 1.5e6 (worker/files.js MAX)
-PER_BUNDLE = 1_000_000     # the card bytes a bundle starts out with, so each day's growth has room
-MOST = 16                  # bundles the worker takes (cards-1 .. cards-16)
+PER_BUNDLE = 220_000       # the card bytes a bundle starts out with: small, so opening one currency card on a weak
+                           # machine fetches about 50 kB gzipped, not a megabyte; each day's growth still has room
+MOST = 32                  # bundles the worker takes (cards-1 .. cards-32)
 
 
 def dump(obj):

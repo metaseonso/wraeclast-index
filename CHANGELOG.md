@@ -3,6 +3,26 @@
 The full list of changes. The public patch notes (data/changelog.json, shown on the site) stay short.
 Add the details here first, then a short public line there.
 
+## 0.44 — 29 Sep 2026: the world, the market, the patches
+
+- **#180** (patch notes and tree changes): field `changed` on every card (data/patchnotes.json, 8 patches then "See
+  all"; a card named with a game word counts a line only where the word stands on its own); passive pills New in /
+  Changed in / Was named and a "Was:" block (tools/carddata.py tree_changes); the Patches page (#/patches, 260 rows).
+- **#181** (World): Area `r` (288), Quest `j` (103), Act `v` (6) from tools/world.py; the World section; `respen`,
+  `hidden`, content and corruption on areas; Connections both ways; `rich` takes `label`, a pill takes `note`, new
+  types `choice` and `weighted`; crawler pages for areas and quests.
+- **#182** (Market): fields `liquid`, `stock`, `leaguedays`, `gap`, `sellmap` (type `market`) on currency cards; the
+  Market page (#/market); /api/health watches market/index.json; `did` on the index's currency (carddata).
+- **Pipeline:** atlascontent and world run before nodelinks, so every run links the same cards; lost_links() accepts
+  a link whose words now name two cards ("Decay": a buff and a map).
+- **Smaller market card files:** tools/market_send.py PER_BUNDLE 220 kB, MOST 32 (worker/files.js takes cards-1..32):
+  a currency card's popup fetches about 50 kB gzipped, not a megabyte. From the next Market run.
+- **Quest gold:** plain where poe2db agrees and the files still say the same (tools/world.py GOLD_AGREES); Dark
+  Mists keeps Subject to change.
+- **Plain lines:** a field declared `plain` draws no marks (an area's "Not shown in game" lines are partly ours).
+- **#127 / #123:** every popup's foot names the data patch; /data/market/* sends Access-Control-Allow-Origin.
+- **Concert:** tools/dev/concert/rebuild.sh rewrites the pages' top bars from the index table after a rebuild.
+
 ## 0.43 — 29 Sep 2026: know the fight
 
 - **Boss hits (#80, #126):** assets/bosses.js reads data/bosshits.json with the tab's own files: level, life, armour,
