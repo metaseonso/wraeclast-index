@@ -22,7 +22,7 @@
      crawl    the crawler publishes a page for it (worker/seo.js): `word` the word its address takes where two
               kinds share a name, `list` the list page it sits in, `rank` the order it claims a shared name in,
               and `is` what it is in schema.org's words, with `unless` the one test where its rows are not all
-              the same thing (an atlas node is a term, a waystone is a product)
+              the same thing (an atlas node is a term, a waystone is a game item)
      own      a module that draws its card instead of us
      fields   the fields its card draws, in order (FIELDS)
      acts     the buttons under it (ACTS)
@@ -597,7 +597,7 @@ const KWUSE = ['kwu', 'kwg', 'kwp', 'kwb', 'kwe', 'kwa', 'kwm', 'kwc', 'kww'];
 
 export const KINDS = [
   {k: 'g', one: 'Gem', tone: 'c-gem', many: 'Gems', place: 'Gems', sec: 'gems', link: 'explore#gems=@n', mark: 't',
-   index: true, search: true, item: true, crawl: {word: 'gem', list: 'gems', rank: 1, is: 'Product'},
+   index: true, search: true, item: true, crawl: {word: 'gem', list: 'gems', rank: 1, is: 'Thing'},
    sprite: 'gems', px: {as: 'c', at: 'li'},
    builds: [{at: 'w', key: 'skills'}, {key: 'allskills'}],
    fields: [...HEAD, 'gemreq', 'lineage', 'cutfrom', 'usetime', 'cost', 'spirit', ...SAYS, 'quality', ...REST, ...FOOT],
@@ -605,7 +605,7 @@ export const KINDS = [
    rel: ['granted', 'grants', 'named', 'namedby', 'cat']},
 
   {k: 'u', one: 'Unique', tone: 'c-unique', many: 'Uniques', place: 'Uniques', sec: 'uniques', link: 'explore#uniques=@n', mark: 'ls',
-   index: true, search: true, item: true, crawl: {word: 'unique', list: 'uniques', rank: 0, is: 'Product'},
+   index: true, search: true, item: true, crawl: {word: 'unique', list: 'uniques', rank: 0, is: 'Thing'},
    sprite: 'uniques', make: {base: 'sub1'},
    builds: [{key: 'items'}],
    fields: [...HEAD, 'reqs', 'corrupt', 'limit', 'group', 'props', 'implicit', ...SAYS, 'mapdanger', 'weight', ...REST, 'drop', ...FOOT],
@@ -632,7 +632,7 @@ export const KINDS = [
    rel: ['incluster', 'clusterof', ...KWUSE, 'cat']},
 
   {k: 'b', one: 'Base', tone: 'muted', many: 'Bases', place: 'Craft', link: 'craft', mark: 'ls',
-   index: true, search: true, item: true, crawl: {word: 'base', list: 'bases', rank: 5, is: 'Product'},
+   index: true, search: true, item: true, crawl: {word: 'base', list: 'bases', rank: 5, is: 'Thing'},
    make: {base: 'name', ni: 'lines'},
    fields: [...HEAD, 'reqs', 'props', 'implicit', 'weights', ...SAYS, 'canroll', 'cancorrupt', ...REST, ...FOOT],
    acts: ['trade', 'pool', 'bench', 'pin', 'craft'],
@@ -646,14 +646,14 @@ export const KINDS = [
    rel: ['inclass', 'cat']},
 
   {k: 'a', one: 'Atlas', tone: 'int', many: 'Atlas', place: 'Atlas', link: './#/atlas?s=@at&q=@n',
-   index: true, search: true, item: true, crawl: {word: 'atlas', list: 'atlas', rank: 6, is: 'Product', unless: {at: 'at', is: 'tree', then: 'DefinedTerm'}},
+   index: true, search: true, item: true, crawl: {word: 'atlas', list: 'atlas', rank: 6, is: 'Thing', unless: {at: 'at', is: 'tree', then: 'DefinedTerm'}},
    px: {as: 'c'}, notitem: {at: 'at', is: 'tree'},
    fields: [...HEAD, 'nodety', 'ontree', 'warn', 'implicit', ...SAYS, 'mapdanger', ...REST, ...FOOT],
    acts: ['trade', 'pin', 'open'],
    rel: ['section', 'named', 'namedby']},
 
   {k: 'c', one: 'Currency', tone: 'c-currency', many: 'Currency', place: 'Currency', link: './#/currency?c=@id',
-   index: true, search: true, item: true, crawl: {word: 'currency', list: 'currency', rank: 4, is: 'Product'},
+   index: true, search: true, item: true, crawl: {word: 'currency', list: 'currency', rank: 4, is: 'Thing'},
    px: {as: 'c'}, make: {nx: 'yes'}, gone: {at: 'nx'},
    fields: [...HEAD, 'droplv', ...SAYS, 'perslot', 'ladder', 'adds', ...REST, ...FOOT],
    acts: ['trade', 'pool', 'bench', 'pin', 'open'],

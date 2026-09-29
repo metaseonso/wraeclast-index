@@ -49,8 +49,10 @@ export const TERMS = [
    What one of a kind is called, the word for it, the list it sits in, the order it claims a name in, and what
    it is in schema.org's words — `is` the type a search engine reads the thing as, and `unless` the one test a
    kind needs where its rows are not all the same thing. A kind that can be held, dropped and traded is a
-   Product; a kind that is a name with a meaning behind it is a DefinedTerm, and its list is the set it belongs
-   to. The Atlas is both: a waystone is an item, a node on the atlas tree is not.
+   Thing, the game's own item (the game names it as its gameItem); a kind that is a name with a meaning behind it
+   is a DefinedTerm, and its list is the set it belongs to. The Atlas is both: a waystone is an item, a node on
+   the atlas tree is not. Never a Product: a Product wants an Offer, an Offer wants a real-world currency, and
+   nothing here is sold for one.
    Declared once, in assets/kinds.js (`crawl` on each kind the crawler publishes): this reads that table and
    keeps no list of its own, so a kind the site cards and the crawler's pages never disagree. */
 const KIND = Object.fromEntries(KINDS.filter(d => d.crawl && typeof d.crawl === 'object')
@@ -108,7 +110,10 @@ export async function* crawl(env, origin, loadMarket){
   for(const s of m.base.taken.keys()){
     if(listed.has(s)) continue;
     const e = await entryAt(m, S, s);
-    if(e && e.alias) yield {from: '/item/' + s, to: '/item/' + e.alias};
+    if(e && e.alias){
+      yield {from: '/item/' + s, to: '/item/' + e.alias};
+      yield {from: '/md/item/' + s + '.md', to: '/md/item/' + e.alias + '.md'};   // its Markdown copy goes the same way
+    }
   }
   yield one('/404');
   yield one('/sitemap.xml');
@@ -136,7 +141,8 @@ async function render(url, m, S){
   const md = path.match(/^\/md\/item\/([^/]+)\.md$/);
   if(md){
     const e = await entryAt(m, S, md[1]);
-    if(!e || e.alias) return text('', 'text/markdown', 404);
+    if(!e) return text('', 'text/markdown', 404);
+    if(e.alias) return new Response(null, {status: 301, headers: {Location: url.origin + '/md/item/' + e.alias + '.md', 'Cache-Control': 'public, max-age=' + AGE}});
     return text(itemMarkdown(m, e), 'text/markdown');
   }
   const seg = path.slice('/item/'.length);
@@ -240,16 +246,22 @@ function indexModel(index){
     entries.push(e);
   }
   const bySlug = new Map(), kindAt = s => (bySlug.get(s) || {}).k;
-  for(const list of variants.values()){   // variants first: "name-base" is always theirs
+  // a unique the game names once with no base (Ab Aeterno) and again with a Runemastered or Runeforged base: the
+  // plain one is a version too, so each lists the other under "Other versions", and the bare name is its own page
+  const plain = new Map();
+  for(const e of entries) if(e.k === 'u' && !e.base && variants.has(e.it.n) && !plain.has(e.it.n)) plain.set(e.it.n, e);
+  for(const [n, list] of variants){   // variants first: "name-base" is always theirs
+    const group = plain.has(n) ? [plain.get(n), ...list] : list;
     for(const e of list){
       e.slug = claim(kindAt, slugify(e.it.n + ' ' + e.base), 'u');
-      e.group = list;
+      e.group = group;
       bySlug.set(e.slug, e);
     }
+    if(plain.has(n)) plain.get(n).group = group;
   }
   // then every bare name, the higher kind first; the shortest id wins among equals (the plain version of a skill)
   const claims = entries.filter(e => !e.slug).map(e => ({k: e.k, id: e.it.id, s: e.sort, e}));
-  for(const [n, list] of variants) claims.push({k: 'u', id: n, s: list[0].sort, list});
+  for(const [n, list] of variants) if(!plain.has(n)) claims.push({k: 'u', id: n, s: list[0].sort, list});
   claims.sort((a, b) => KIND[a.k].rank - KIND[b.k].rank || a.id.length - b.id.length);
   for(const c of claims){
     const s = claim(kindAt, c.s, c.k);
@@ -404,6 +416,7 @@ function withMarket(base, market){
   m.count = k => (base.counts[k] || 0) + (k === 'c' ? m.currency.length : 0);
   m.patch = (m.v || '').replace(/^4\.(\d+)\.(\d+).*$/, '0.$1.$2');
   m.day = (m.updated || '').slice(0, 10) || m.gen;
+  m.now = Date.now();   // the moment the files are built: every age on a page is counted to it
   return m;
 }
 
@@ -446,6 +459,24 @@ function clip(s, n = 158){
 const sentence = s => s ? s.replace(/\s*[.!?]?\s*$/, m => m.trim() || '.') : '';
 const singular = s => s === 'Currency' ? 'Currency' : s.replace(/ies$/, 'y').replace(/(?<!s)s$/, '');
 const when = iso => iso ? iso.slice(0, 16).replace('T', ' ') + ' UTC' : '';
+/* A price's age on a page: "10 h ago", counted to the moment the files were built (m.now). The pages are built
+   again every REBUILD_HOURS, so the age is at most that much short; the exact time stays in the <time> element. */
+function ago(m, iso){
+  const t = Date.parse(iso || '');
+  if(!isFinite(t)) return '';
+  const s = Math.max(0, (m.now - t) / 1000);
+  if(s < 90) return 'just now';
+  if(s < 3600) return Math.round(s / 60) + ' min ago';
+  if(s < 48 * 3600) return Math.round(s / 3600) + ' h ago';
+  return Math.round(s / 86400) + ' d ago';
+}
+// the age as HTML: the words a player reads, the exact time in datetime and on hover. `bare` drops the " ago"
+function ageHTML(m, iso, bare){
+  const t = isoTime(iso || '');
+  const words = ago(m, t);
+  if(!words) return '';
+  return '<time datetime="' + esc(t) + '" title="' + esc(when(t)) + '">' + esc(bare ? words.replace(/ ago$/, '') : words) + '</time>';
+}
 
 /* The same rules as the app (assets/app.js). */
 const SECTION = {g: 'gems', u: 'uniques', p: 'tree'};
@@ -669,8 +700,8 @@ function thingOf(m, e, px){
   const t = {'@type': type, name: it.n, url, description: clip(words || lead(m, e), 500)};
   const art = artOf(it);
   if(art) t.image = art;
-  if(type === 'Product'){
-    if(it.s) t.category = it.s;
+  if(type === 'Thing'){
+    if(it.s) t.disambiguatingDescription = it.s;
     const props = [...propsOf(e), ...pricePropsOf(m, px)];
     if(props.length) t.additionalProperty = props;
   } else t.inDefinedTermSet = {'@type': 'DefinedTermSet', '@id': SITE + '/' + K.list + '#terms',
@@ -721,15 +752,15 @@ function itemPage(m, e){
       const vals = px.h.map(x => x[1]);
       price += chart(vals, 'Since ' + px.h[0][0] + ' · low ' + moneyText(m, Math.min(...vals)) + ', high ' + moneyText(m, Math.max(...vals)));
     } else if(px.sp) price += chart(px.sp, 'Last 7 days');
-    const pf = [];
+    const pf = [], lg = m.league ? m.league + ': ' : '';
     if(px.src === 'cx'){
-      if(px.vol) pf.push(fmt(Math.round(px.vol)) + ' div traded in 24 h');
-      pf.push((m.league ? m.league + ': ' : '') + 'what it traded for on the in-game Currency Exchange, ' + when(px.at || m.updated));
+      if(px.vol) pf.push(esc(fmt(Math.round(px.vol)) + ' div traded in 24 h'));
+      pf.push(esc(lg + 'what it traded for on the in-game Currency Exchange, ') + ageHTML(m, checkedAt(m, px)));
     } else {
-      if(px.ls !== undefined) pf.push(fmt(px.ls) + ' listed');
-      pf.push((m.league ? m.league + ': ' : '') + 'live trade site listings, checked ' + when(px.at || m.updated));
+      if(px.ls !== undefined) pf.push(esc(fmt(px.ls) + ' listed'));
+      pf.push(esc(lg + 'live trade site listings, checked ') + ageHTML(m, checkedAt(m, px)));
     }
-    price += '<p class="card-facts">' + pf.map(esc).join(' · ') + '</p>';
+    price += '<p class="card-facts">' + pf.join(' · ') + '</p>';
   }
   const bh = buildsHref(m, it);
   const card =
@@ -744,7 +775,7 @@ function itemPage(m, e){
       (it.tags ? '<p class="card-tags">' + it.tags.map(esc).join(' · ') + '</p>' : '') +
       (an ? '<div class="card-inv"><span>Anoint with ' + an.parts.map(p => p.e ? link(p.e) : esc(p.n)).join(' + ') + '</span><b>' +
         (an.div !== null ? moneyHTML(m, an.div) : '') + '</b></div>' +
-        (an.div !== null ? '<p class="card-facts">' + esc(anointAge(m, an)) + '</p>' : '') : '') +
+        (an.div !== null ? '<p class="card-facts">' + esc(anointFrom(m)) + ageHTML(m, anointAt(m, an)) + '</p>' : '') : '') +
       price +
       '<div class="card-ft">' + (px ? spark(px.sp, px.ch) : '') +
         (px && px.ls !== undefined && px.ls < 3 ? '<span class="use">few listed</span>' : '') +
@@ -776,25 +807,25 @@ function itemPage(m, e){
 /* ---------- the age of every price ----------
    A price is never shown without the time it was checked. The card says its own; a list of neighbours, or a
    whole list page, says the span its prices were checked in, once under them. */
-const anointAge = (m, an) => (m.league ? m.league + ': ' : '') + 'oils on the in-game Currency Exchange, ' +
-  when(isoTime(an.parts.map(p => p.x && p.x.at).filter(Boolean).map(isoTime).sort().pop() || m.updated || ''));
+const anointFrom = m => (m.league ? m.league + ': ' : '') + 'oils on the in-game Currency Exchange, ';
+const anointAt = (m, an) => isoTime(an.parts.map(p => p.x && p.x.at).filter(Boolean).map(isoTime).sort().pop() || m.updated || '');
+const anointAge = (m, an) => anointFrom(m) + when(anointAt(m, an));
 function agesHTML(m, list){
   let cx = '', lo = '', hi = '';
   for(const x of list){
     const px = priceOf(m, x);
     if(!px || px.v === undefined) continue;
-    const at = checkedAt(m, px);
-    if(px.src === 'cx'){ if(at > cx) cx = at; continue; }
-    const t = isoTime(at);
+    const t = isoTime(checkedAt(m, px));
+    if(px.src === 'cx'){ if(t > cx) cx = t; continue; }
     if(!lo || t < lo) lo = t;
     if(!hi || t > hi) hi = t;
   }
   const out = [];
-  if(cx) out.push('Currency Exchange prices: ' + when(isoTime(cx)));
-  if(lo) out.push('trade site listings checked ' + (lo.slice(0, 16) === hi.slice(0, 16) ? when(lo) : when(lo) + ' to ' + when(hi)));
+  if(cx) out.push('Currency Exchange prices: ' + ageHTML(m, cx));
+  // the newest to the oldest: "checked 2 h to 20 h ago"
+  if(lo) out.push((cx ? 'trade' : 'Trade') + ' site listings checked ' + (ago(m, lo) === ago(m, hi) ? ageHTML(m, lo) : ageHTML(m, hi, true) + ' to ' + ageHTML(m, lo)));
   if(!out.length) return '';
-  const s = out.join(' · ');
-  return '<p class="card-facts ages">' + esc(s.charAt(0).toUpperCase() + s.slice(1)) + '</p>';
+  return '<p class="card-facts ages">' + out.join(' · ') + '</p>';
 }
 
 function entryHTML(m, x, withKind){
@@ -867,7 +898,7 @@ const CSS = `.seo{max-width:960px; width:100%; margin:0 auto; padding:10px 16px 
 .crumbs a:hover, .card-inv a:hover{color:var(--accent)}
 .seo .card{cursor:default}
 .seo .card:hover{translate:none; box-shadow:var(--shadow); border-color:var(--line)}
-.card-id h1{margin:0; font:700 22px/1.25 var(--disp); letter-spacing:.03em; overflow-wrap:anywhere}
+.card-id h1{margin:0; font:700 22px/1.25 var(--disp); letter-spacing:.03em; overflow-wrap:break-word}
 .card.k-u h1{color:var(--c-unique)} .card.k-g h1{color:var(--c-gem)} .card.k-c h1{color:var(--c-currency)} .card.k-p h1{color:var(--c-keystone)}
 .card-ls.imp{padding-bottom:8px; border-bottom:1px dashed var(--line)}
 .card-inv a{color:var(--text)}
@@ -881,7 +912,7 @@ const CSS = `.seo{max-width:960px; width:100%; margin:0 auto; padding:10px 16px 
 .jump .chip, .browse .chip{text-decoration:none}
 .ilist{list-style:none; margin:0; padding:0; columns:3 250px; column-gap:28px}
 .ilist li{break-inside:avoid; display:flex; gap:8px; align-items:baseline; padding:4px 0; border-bottom:1px solid var(--line-soft); font-size:13px}
-.ilist a{color:var(--text); text-decoration:none; font-weight:500; overflow-wrap:anywhere}
+.ilist a{color:var(--text); text-decoration:none; font-weight:500; overflow-wrap:break-word}
 .ilist li.k-u a{color:var(--c-unique)} .ilist li.k-g a{color:var(--c-gem)} .ilist li.k-c a{color:var(--c-currency)} .ilist li.k-p a{color:var(--c-keystone)}
 .ilist a:hover{color:var(--accent)}
 .ilist .sub{min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:11.5px; color:var(--faint)}
@@ -982,7 +1013,8 @@ function ld(m, {path, title, desc, crumbs, thing, day, art, nodes = [], px, sour
       logo: {'@type': 'ImageObject', url: SITE + '/assets/brand/logo-320.webp', width: 253, height: 320}},
     GGG,
     {'@type': 'VideoGame', '@id': SITE + '/#game', name: 'Path of Exile 2', url: 'https://pathofexile2.com/',
-      sameAs: ['https://pathofexile2.com/', 'https://en.wikipedia.org/wiki/Path_of_Exile_2'], publisher: {'@id': GGG['@id']}},
+      sameAs: ['https://pathofexile2.com/', 'https://en.wikipedia.org/wiki/Path_of_Exile_2'], publisher: {'@id': GGG['@id']},
+      gameItem: thing && thing['@type'] === 'Thing' ? {'@id': url + '#item'} : undefined},   // an item of the game: this page's thing
     self,
     {'@type': 'BreadcrumbList', '@id': url + '#breadcrumb', itemListElement: crumbs.map((c, i) => ({'@type': 'ListItem', position: i + 1, name: c[0], item: SITE + c[1]}))},
   ];
