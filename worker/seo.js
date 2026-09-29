@@ -71,8 +71,10 @@ const LISTS = {
   keywords: {k: 'w', h1: 'Keywords', title: 'PoE2 Keywords', app: '/#/'},
   areas: {k: 'r', h1: 'Areas', title: 'PoE2 Areas: every campaign and Atlas area', app: '/#/?k=r'},
   quests: {k: 'j', h1: 'Quests', title: 'PoE2 Quests: rewards and permanent bonuses', app: '/#/?k=j'},
+  runes: {k: 'o', h1: 'Runes', title: 'PoE2 Runes of Aldur: every rune and what its recipes make', app: '/#/runes'},
+  achievements: {k: 'z', h1: 'Achievements', title: 'PoE2 Achievements: every achievement and league challenge', app: '/#/?k=z'},
 };
-const ORDER = ['gems', 'uniques', 'passives', 'bases', 'atlas', 'currency', 'keywords', 'areas', 'quests'];
+const ORDER = ['gems', 'uniques', 'passives', 'bases', 'atlas', 'currency', 'keywords', 'areas', 'quests', 'runes', 'achievements'];
 
 /* What the worker still answers here: /search, a redirect it cannot know before the request. Everything else is a
    file (crawl() below, through tools/build.mjs). */
@@ -524,6 +526,10 @@ function costWords([v, res]){   // "ManaPerMinute" and the like, in words
   return v + (pct ? '%' : '') + ' ' + words.map((w, i) => i ? w.toLowerCase() : w).join(' ');
 }
 const costText = c => costWords(c) + ' at gem level 20';
+/* The lists a card draws under a label of its own, the way the card draws them (assets/kinds.js FIELDS): what
+   a quest gives for good, an achievement's steps and the one line on how, the bands a rune is highlighted in,
+   and what the Verisium Anvil makes of a base. */
+const BLOCKS = [['kp', 'Permanent'], ['gl', 'Steps'], ['hw', ''], ['hb', 'Highlighted'], ['av', 'Verisium Anvil']];
 function factsOf(it){
   const f = [];
   if(it.k === 'g'){
@@ -541,6 +547,12 @@ function factsOf(it){
   if(it.k === 'j'){
     if(it.gb) f.push('Given by ' + it.gb);
     if(it.rf) f.push('Reward from ' + it.rf);
+  }
+  if(it.k === 'o' && it.nr) f.push('In ' + it.nr + (it.nr === 1 ? ' recipe' : ' recipes'));
+  if(it.k === 'z'){
+    if(it.ho) f.push(it.ho);
+    if(it.an) f.push(it.an);
+    if(it.cn > 1) f.push(fmt(it.cn) + ' needed');
   }
   if(it.k === 'w' && it.use){
     const parts = [];
@@ -773,7 +785,8 @@ function itemPage(m, e){
     if(lines.length > ni) body += '<ul class="card-ls">' + lines.slice(ni).map(x => '<li>' + esc(x) + '</li>').join('') + '</ul>';
   } else if(it.t) body = '<p class="card-tx">' + esc(it.t) + '</p>';
   if(it.o && it.o.length) body += '<p class="card-facts">Choose one:</p><ul class="card-ls">' + it.o.map(x => '<li>' + esc(x) + '</li>').join('') + '</ul>';
-  if(it.kp && it.kp.length) body += '<p class="card-facts">Permanent</p><ul class="card-ls">' + it.kp.map(x => '<li>' + esc(x) + '</li>').join('') + '</ul>';
+  for(const [f, label] of BLOCKS) if(it[f] && it[f].length)
+    body += (label ? '<p class="card-facts">' + label + '</p>' : '') + '<ul class="card-ls">' + it[f].map(x => '<li>' + esc(x) + '</li>').join('') + '</ul>';
   let price = '';
   if(px){
     if(px.h && px.h.length > 3){
@@ -887,6 +900,8 @@ function intro(m, name){
     keywords: 'All ' + n + ' Path of Exile 2 keywords, in the game\'s own words.',
     areas: 'All ' + n + ' areas in Path of Exile 2' + patch + ', the campaign and the Atlas: area levels, waypoints and what each area always carries, from the game files.',
     quests: 'All ' + n + ' quests in Path of Exile 2' + patch + ': where each one goes, what it gives, and what it gives for good, from the game files.',
+    runes: 'All ' + n + ' Runes of Aldur runes in Path of Exile 2' + patch + ': what their recipes make, and the area levels each one is highlighted at, from the game files.',
+    achievements: 'All ' + n + ' achievements and league challenges in Path of Exile 2' + patch + ': their steps, and where each one is, from the game files.',
   }[name];
 }
 function listPage(m, name, all){
@@ -1168,7 +1183,7 @@ function itemWords(e){
   if(it.ls) out.push(...it.ls);
   else if(it.t) out.push(it.t);
   if(it.o) out.push('Choose one: ' + it.o.join(' / '));
-  if(it.kp) out.push('Permanent: ' + it.kp.join(' / '));
+  for(const [f, label] of BLOCKS) if(it[f] && it[f].length) out.push((label ? label + ': ' : '') + it[f].join(' / '));
   if(it.tags) out.push('Tags: ' + it.tags.join(', '));
   return out.join('\n');
 }

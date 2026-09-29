@@ -54,7 +54,8 @@ FLOOR = 240         # threads with notes: 259 at 0.5.5c, and the forum keeps eve
 REREAD = 3          # days a thread is read again after it is posted: GGG fix their notes in the first days
 OUT = 'patchnotes.json'
 GAPS = lastgood.ROOT / 'tools' / 'dev' / 'patchgaps.txt'
-SKIP = {'h', 'q'}   # the site's own explainer cards: GGG never names them
+SKIP = {'h', 'q', 'z'}   # the site's own explainer cards: GGG never names them; an achievement's title is words
+                         # of its own ("Legend", "The Master"), never the thing a line of notes names
 UPDATES = re.compile(r'^updat', re.I)   # "Updates to Patch Notes", "Updated Patch Notes"
 CONTENTS = 'Table of Contents'   # a big patch's own index: lines that only point further down the post
 CACHE = None        # --cache DIR: keep each thread as read, for repeated runs by hand
