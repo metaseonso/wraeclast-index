@@ -174,7 +174,8 @@ STAGES = [
          reads=[REPOE, 'data/index.json', 'data/buffs.json'], writes=['data/grants.json']),
     dict(name='carddata', run=['tools/carddata.py'], cadence='patch', source='game files',
          reads=[REPOE, 'data/explore/*.json', 'data/atlas.json', 'data/info.json', 'data/craft.json', 'data/craft/*.json',
-                'data/market.json', 'data/index.json'],
+                'data/market.json', 'data/index.json', 'data/treechanges/*.json'],
+         last=['data/treechanges/*.json'],   # the tree changes join onto passive cards (#87); treechanges writes them later
          writes=['data/index.json', 'data/index-core.json', 'data/index-rest.json'], count={'data/index.json': 'items'}),
     dict(name='nodelinks', run=['tools/nodelinks.py'], cadence='patch', source='files',
          reads=['data/index.json'],

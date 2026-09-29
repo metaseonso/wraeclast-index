@@ -123,6 +123,24 @@
 .card-fl{margin:0; font-size:12.5px; line-height:1.45; font-style:italic; color:var(--faint)}
 .card.detail .card-fl{font-size:13px}
 .card-src{margin:0; font-size:11px; line-height:1.45; color:var(--faint); border-left:2px solid var(--line); padding-left:8px}
+/* GGG's patch notes on a card (the "changed" field, data/patchnotes.json): one group per patch, newest first, its
+   name as the link to the thread and the hour it went up, then GGG's section and lines. The rest of a long list
+   sits behind "See all N", which opens in place and goes once it is open. */
+.card-chg{gap:8px}
+.chg-p{display:grid; gap:3px}
+.chg-hd{margin:0; display:flex; flex-wrap:wrap; align-items:baseline; gap:2px 10px; font:12px/1.4 var(--mono)}
+.chg-hd a{color:var(--accent); text-decoration:none; font-weight:600}
+.chg-hd a:hover, .chg-hd a:focus-visible{text-decoration:underline}
+.chg-hd span{color:var(--faint); font-size:11px}
+.chg-sec{margin:2px 0 0; font-size:11px; line-height:1.4; color:var(--muted); text-transform:uppercase; letter-spacing:.04em}
+.chg-l{margin:0; padding-left:10px; position:relative; font-size:12.5px; line-height:1.45; color:var(--text); overflow-wrap:anywhere}
+.chg-l::before{content:''; position:absolute; left:0; top:.62em; width:4px; height:4px; border-radius:50%; background:var(--accent); opacity:.7}
+.chg-more{display:grid; gap:8px}
+.chg-more > summary{cursor:pointer; list-style:none; width:max-content; font-size:12px; color:var(--accent); padding:2px 0}
+.chg-more > summary::-webkit-details-marker{display:none}
+.chg-more > summary:hover, .chg-more > summary:focus-visible{text-decoration:underline}
+.chg-more[open]{display:grid}
+.chg-more[open] > summary{display:none}
 /* The flowchart on the damage card ("fl", tools/mechanics.py; flowHTML in assets/app.js): one box a step,
    an arrow drawn in the gap between them, two runs. No fixed widths and no SVG text, so a long step wraps
    and still reads at 375px, and every colour is a theme token, so it draws in either theme. */
@@ -668,6 +686,7 @@ header.top .notesbtn ~ .suggestbtn{margin-left:0}
 .ti-buffs{--ti:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='black' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='2.5' y='2.5' width='11' height='11' rx='2'/%3E%3Cpath d='M8 5v6M5 8h6'/%3E%3C/svg%3E")}
 .ti-interactions{--ti:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='black' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='5.5' cy='8' r='3'/%3E%3Ccircle cx='10.5' cy='8' r='3'/%3E%3C/svg%3E")}
 .ti-data{--ti:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='black' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cellipse cx='8' cy='4' rx='5' ry='1.8'/%3E%3Cpath d='M3 4v8c0 1 2.2 1.8 5 1.8s5-.8 5-1.8V4M3 8c0 1 2.2 1.8 5 1.8s5-.8 5-1.8'/%3E%3C/svg%3E")}
+.ti-patches{--ti:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='black' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 1.8h5.4L12.4 4.8v9.4H4z'/%3E%3Cpath d='M9.2 1.8v3.2h3.2M6.2 8h4M6.2 10.8h4'/%3E%3C/svg%3E")}
 #nav button[data-k="gems"]::before{--ti:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='black' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4.6 2.5h6.8L14.5 6 8 13.6 1.5 6zM1.5 6h13M6.2 2.5 5.1 6 8 13.6 10.9 6 9.8 2.5'/%3E%3C/svg%3E")}
 #nav button[data-k="uniques"]::before{--ti:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='black' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M2 13h12M2.6 11.2 1.6 4.6 5.1 7.1 8 2.6l2.9 4.5 3.5-2.5-1 6.6z'/%3E%3C/svg%3E")}
 #nav button[data-k="tree"]::before{--ti:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='black' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='4' cy='4' r='1.8'/%3E%3Ccircle cx='12' cy='4' r='1.8'/%3E%3Ccircle cx='8' cy='12' r='1.8'/%3E%3Cpath d='M5.4 5.3 7.2 10.3M10.6 5.3 8.8 10.3M5.8 4h4.4'/%3E%3C/svg%3E")}
