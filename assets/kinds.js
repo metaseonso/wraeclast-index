@@ -67,6 +67,7 @@
               they stand
      row      'price' where `at` reads the price row rather than the index entry
      plain    its lines are drawn with no marks: words that are partly ours, where a game word would read as a door
+     popup    drawn on the opened card only: a block the same on many cards, too tall for the grid
    A field draws nothing when the entry carries nothing for it, so one declaration covers a full entry and a
    bare one. Fields a player must never read (the search words, internal ids) are in no declaration.
 
@@ -136,11 +137,13 @@ export const INDEX = [
     {list: 'h', name: 'How it works', icon: 'mechanics', about: 'how damage, defences and scaling work'},
     {list: 'd', name: 'Buffs and debuffs', icon: 'buffs', about: 'every buff and debuff a player can see, and what gives it'},
     {list: 'q', icon: 'interactions', about: 'how two mechanics work together'},
+    {list: 'm', name: 'Monster modifiers', icon: 'monstermods', about: 'every rare monster modifier: what it does, and what it does to you'},
   ]},
   {id: 'endgame', name: 'Endgame', pages: [
     {route: 'atlas', k: 'a', icon: 'atlas', about: 'atlas passives, waystones, tablets and keys'},
     {route: 'bosses', k: 'x', icon: 'bosses', about: 'every endgame boss, what it drops and what it costs to get in'},
     {list: 's', icon: 'odds', about: 'every weight table the game rolls unseen: what each can roll, and how often'},
+    {list: 'l', icon: 'trials', about: 'every Trial of Chaos and Trial of the Sekhemas modifier: what it does to you, and what it pays'},
   ]},
   {id: 'economy', name: 'Economy', pages: [
     {route: 'currency', k: 'c', icon: 'currency', about: 'every currency price and trend, hour by hour'},
@@ -362,6 +365,11 @@ export const MAPS = {
   ro:    {at: 'ro', keys: 1},     // the cards an odds pool can roll (tools/pools.py)
   mk:    {at: 'mk', keys: 1},     // the cards a rune's recipes make (tools/joincards.py)
   ax:    {at: 'ax', keys: 1},     // the areas, bosses, items and keywords an achievement's steps need
+  rb:    {at: 'rb', keys: 1},     // the relic bases a relic modifier rolls on
+  kx:    {at: 'kx', keys: 1},     // the Barya a floor of the Trial of the Sekhemas takes
+  /* `each`: the field is a list of words, and every word is a group of its own. A card sits in the group of each
+     of its words, and its row lists every card that shares one of them, in the order of its own words. */
+  danger: {at: 'dg', each: 1},    // what it does to you: rare monster and trial modifiers, in #77's words
 };
 /* Every declaration a kind may carry. A key that is not here is a rule that reaches one kind, which is the
    shape the frame does not have: it belongs in FIELDS, FRAME, MAPS or REL. */
@@ -425,6 +433,14 @@ export const FIELDS = {
      own, on an opened card only, the table fetched the first time one asks: nothing of it is in the index or in
      first paint. */
   filtertier: {type: 'keyed', at: 'n', slot: 'pill', file: 'data/filtertiers.json', of: 'tiers', pre: 'NeverSink tier: '},
+  /* A trial modifier and a rare monster modifier (tools/modcards.py, design/trials.md, design/monster-mods.md).
+     The mark is given only where the modifier's own words decide it (tools/trials.py says which rule). */
+  trialmark: {type: 'enum', at: 'mark', slot: 'pill', of: {danger: 'Dangerous for most builds', safe: 'Safe to take'}},
+  onwho:    {type: 'enum', at: 'on', slot: 'pill', of: {'On you': 'On you', 'On monsters': 'On monsters', 'In the room': 'In the room'}},
+  steps:    {type: 'number', at: 'steps', slot: 'pill', post: ' step', many: ' steps', from: 2},
+  rooms:    {type: 'number', at: 'rooms', slot: 'pill', post: ' room', many: ' rooms'},
+  floorlv:  {type: 'number', at: 'level', slot: 'pill', pre: 'From level ', from: 2},
+  relicgen: {type: 'enum', at: 'gen', slot: 'pill', of: {Prefix: 'Prefix', Suffix: 'Suffix', Corrupted: 'Corrupted'}},
 
   usetime:  {type: 'duration', at: 'ct', slot: 'fact', post: ' use time'},
   cost:     {type: 'cost', at: 'cost', slot: 'fact'},
@@ -472,6 +488,24 @@ export const FIELDS = {
   anvil:    {type: 'rich', at: 'av', slot: 'body', label: 'Verisium Anvil', plain: 1},
   goals:    {type: 'rich', at: 'gl', slot: 'body', label: 'Steps', plain: 1},
   how:      {type: 'rich', at: 'hw', slot: 'body', plain: 1},
+  /* Where an ascendancy's eight points come from: a row per Ascension, each trial that gives it (tools/ascendancies.py,
+     off data/trials.json). A way the game files do not tie to its set says Subject to change. */
+  ascend:   {type: 'choice', at: 'ap', slot: 'body', label: 'Ascendancy points', pick: 'Either', popup: 1},
+  /* A choice in a trial: what it costs and what it pays, two statements and never one sentence (docs/frame.md).
+     Partly our words: no marks. */
+  risk:     {type: 'rich', at: 'risk', slot: 'body', label: 'Risk', plain: 1},
+  reward:   {type: 'rich', at: 'reward', slot: 'body', label: 'Reward', plain: 1},
+  /* A modifier's tiers: per tier, which one (`lead`: the first of these the tier carries), its lines, and the
+     number beside them (`num`: the first it carries). The grid draws FRAME.lines tiers and counts the rest. */
+  tiers:    {type: 'tiers', at: 'tiers', slot: 'body', label: 'Tiers', lead: ['step', 'n'],
+             num: [{at: 'rarity', post: '% more Rarity'}, {at: 'level', pre: 'Item level '}]},
+  others:   {type: 'rich', at: 'alt', slot: 'body', label: 'Other steps'},   // the lines the other steps differ by
+  floornames: {type: 'rich', at: 'names', slot: 'body', label: 'By floor', plain: 1},
+  markwhy:  {type: 'rich', at: 'why', slot: 'body', label: 'Why', plain: 1},    // which rule gave the mark
+  /* What it does to you, in one list of words shared by every file that tags a danger (tools/monstermods.py,
+     tools/trials.py, and the map modifiers), so one word means one thing wherever it is read. A word read off the
+     name alone, because the game gives the thing no words, is in `est` and says Estimate beside it. */
+  harms:    {type: 'tags', at: 'dg', slot: 'body', label: 'What it does to you', est: 'est'},
   /* What a weighted pool in a table of its own can add, each line with its share of the pool: here, what
      corrupting or cleansing a map on the Atlas adds (data/atlascontent.json). A pool the file flags carries
      the flag and its reason. Drawn on an opened card only. */
@@ -507,13 +541,10 @@ export const FIELDS = {
   drop:     {type: 'drop', at: 'n', slot: 'body', file: 'data/dropsfrom.json'},
   canroll:  {type: 'pool', at: 'n', slot: 'body', file: 'data/craft/@cr.json', of: 'm', label: 'Modifiers it can roll'},
   cancorrupt: {type: 'pool', at: 'n', slot: 'body', file: 'data/craft/@cr.json', of: 'c', label: 'A corruption can add'},
-  /* What it does to you, in one list of words shared by every file that tags a danger (tools/monstermods.py,
-     and the map modifiers that use the same words), so one word means one thing wherever it is read. The row is
-     found by the card's own name in the field's table. A tag read off the name alone, because the game gives the
-     thing no words, says Estimate beside it; a tag with the game's own line behind it shows that line on hover.
-     tools/mapdanger.py stops when its words and tools/monstermods.py's part, in word or in order. */
-  mondanger: {type: 'danger', at: 'n', slot: 'body', file: 'data/monstermods.json',
-    label: 'On a rare monster'},
+  /* The same words on a map modifier, out of a table of its own found by the card's name: a tag read off the name
+     alone says Estimate beside it, and a tag with the game's own line behind it shows that line on hover.
+     tools/mapdanger.py stops when its words and tools/monstermods.py's part, in word or in order. A rare monster
+     modifier carries its own words (`harms`, on its own card): its keyword card is that card now. */
   mapdanger: {type: 'danger', at: 'n', slot: 'body', file: 'data/mapdanger.json',
     label: 'On your maps'},
   /* the real weight a thing rolls at where the game rolls for it unseen — a Forbidden Rite, a strongbox, an
@@ -750,6 +781,13 @@ export const REL = {
   grants:   {label: 'Grants', edge: 'grants', needs: 'grants'},
   granted:  {label: 'Granted by', edge: 'granted', needs: 'grants'},
   section:  {label: 'Listed with', of: 'a', edge: 'section', map: 'place', filter: 'atlas'},
+  /* Trial and rare monster modifiers (tools/modcards.py): what does the same to you, across both kinds; the relic
+     bases a relic modifier rolls on; the Barya a Sekhemas floor takes. */
+  danger:   {label: 'Does the same to you', edge: 'each', map: 'danger'},
+  rollson:  {label: 'Rolls on', of: 'b', edge: 'own', at: 'rb'},
+  relicmods: {label: 'Relic modifiers', of: 'l', edge: 'back', map: 'rb'},
+  takes:    {label: 'Opened with', of: 'c', edge: 'own', at: 'kx'},
+  opensfloor: {label: 'Opens', of: 'l', edge: 'back', map: 'kx'},
   /* The world (tools/world.py). `own` reads the card's own list of keys at `at`; `back` the cards whose list
      names this one, off the map of the same name. */
   leadsto:  {label: 'Leads to', of: 'r', edge: 'own', at: 'go'},
@@ -858,7 +896,7 @@ export const KINDS = [
    make: {base: 'name', ni: 'lines'},
    fields: [...HEAD, 'reqs', 'filtertier', 'props', 'implicit', 'weights', ...SAYS, 'canroll', 'cancorrupt', 'anvil', ...REST, ...FOOT],
    acts: ['trade', 'pool', 'bench', 'pin', 'craft'],
-   rel: ['uniques', 'grants', 'klassof', 'klass', 'named', 'namedby', 'rewardin']},
+   rel: ['uniques', 'grants', 'klassof', 'klass', 'relicmods', 'named', 'namedby', 'rewardin']},
 
   {k: 'i', one: 'Item class', tone: 'bronze', many: 'Item classes', place: 'Craft', link: 'craft',
    index: true, search: true,
@@ -891,11 +929,11 @@ export const KINDS = [
    px: {as: 'c'}, make: {nx: 'yes'}, gone: {at: 'nx'},
    fields: [...HEAD, 'droplv', 'liquid', 'stock', 'filtertier', ...SAYS, 'perslot', 'ladder', 'adds', 'weight', 'exfee', 'leaguedays', 'gap', 'sellmap', ...REST, ...FOOT],
    acts: ['trade', 'pool', 'bench', 'pin', 'open'],
-   rel: ['named', 'namedby', 'job', 'curmech', 'rollsin', 'rewardin', 'runemade', 'askedby', 'cat']},
+   rel: ['named', 'namedby', 'job', 'curmech', 'rollsin', 'rewardin', 'runemade', 'askedby', 'opensfloor', 'cat']},
 
   {k: 'w', one: 'Keyword', tone: 'accent', many: 'Keywords', sec: 'keywords', index: true, search: true, crawl: {word: 'keyword', list: 'keywords', rank: 3, is: 'DefinedTerm'},
    kw: 'id', rank: -25, words: {n: 'own', f: 'alt', mark: 'game'},
-   fields: [...HEAD, 'stacks', 'uses', ...SAYS, 'mondanger', 'rules', 'share', 'weight', 'mechlines', 'corruption', ...REST, ...FOOT],
+   fields: [...HEAD, 'stacks', 'uses', ...SAYS, 'rules', 'share', 'weight', 'mechlines', 'corruption', ...REST, ...FOOT],
    acts: ['full', 'pin'],
    rel: [...KWUSE, 'granted', 'onlyon', ...MECH, 'rollsin', 'askedby', 'named', 'namedby']},
 
@@ -903,7 +941,7 @@ export const KINDS = [
      the notable's card, and the notable "Named by" it, tools/nodelinks.py) and where its eight points come from
      (tools/ascendancies.py; which trial gives which set is in data/ascendancies.json). */
   {k: 'y', one: 'Ascendancy', many: 'Ascendancies', index: true, search: true, mark: 'ls',
-   fields: [...HEAD, ...BODY, ...FOOT],
+   fields: [...HEAD, ...SAYS, 'ascend', ...REST, ...FOOT],
    acts: ['pin'],
    rel: ['named', 'cat']},
 
@@ -967,6 +1005,25 @@ export const KINDS = [
             ...SAYS, 'take', 'keeps', ...REST, ...FOOT],
    acts: ['pin'],
    rel: ['questwhere', 'rewards', 'actof']},
+
+  /* A Trial of Ascendancy modifier: what a player chooses or is given in the Trial of Chaos and the Trial of the
+     Sekhemas, what it does, what it does to you and what it pays (tools/modcards.py, off tools/trials.py;
+     design/trials.md). The four Ascensions are the Ascendancy cards' own (`ascend`). */
+  {k: 'l', one: 'Trial modifier', many: 'Trial modifiers', index: true, search: true,
+   crawl: {word: 'trial', list: 'trials', rank: 11, is: 'DefinedTerm'},
+   fields: [...HEAD, 'trialmark', 'onwho', 'steps', 'rooms', 'floorlv', 'relicgen', 'unsure',
+            ...SAYS, 'risk', 'reward', 'tiers', 'others', 'floornames', 'markwhy', 'harms', ...REST, ...FOOT],
+   acts: ['pin'],
+   rel: ['danger', 'rollson', 'takes', 'bosshere', 'cat']},
+
+  /* A rare monster modifier: the name over the monster's life bar, what it does in the game's own words, and what
+     it does to you (tools/modcards.py, off tools/monstermods.py; design/monster-mods.md). It stands for the
+     keyword card the game's help text made of the same name, which is no card of its own any more. */
+  {k: 'm', one: 'Rare monster modifier', tone: 'c-rare', many: 'Rare monster modifiers', index: true, search: true,
+   crawl: {word: 'monster', list: 'monsters', rank: 9, is: 'DefinedTerm'},
+   fields: [...HEAD, 'steps', 'unsure', ...SAYS, 'others', 'harms', ...REST, ...FOOT],
+   acts: ['pin'],
+   rel: ['danger', 'cat']},
 
   {k: 'v', one: 'Act', tone: 'muted', many: 'Acts', index: true,
    fields: [...HEAD, 'unsure', ...SAYS, 'keeps', 'take', ...REST, ...FOOT],

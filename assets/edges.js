@@ -38,7 +38,7 @@ function local(){
 }
 let collecting = false;   // keysOf below: every key is taken as there, so nothing worked out now may be kept
 const NONE = {base: [], variants: [], uniques: [], klass: [], klassof: [], inclass: [], section: [], cat: [], job: [], named: [], namedby: [],
-  act: [], actof: [], back: {}};
+  act: [], actof: [], back: {}, each: {}};
 const lists = it => it._g || (collecting ? NONE : it._gl && it._glv === X.D.index ? it._gl
   : (it._glv = X.D.index, it._gl = graph.lists(local().ix, it, has)));
 /* Which groups a card sits in, and how many cards each holds: what the search weighs the cards you opened by
@@ -158,6 +158,8 @@ const EDGE = {
   // the cards of one act, of the kind the group is of; and the act a card is in
   act(it, F, r){ return cardRows((lists(it).act || []).filter(key => !r.of || key.startsWith(r.of + ':'))); },
   actof(it){ return cardRows(lists(it).actof || []); },
+  // every card that shares one of this card's words (MAPS `each`): what does the same to you
+  each(it, F, r){ return cardRows((lists(it).each || {})[r.map] || []); },
   /* a league mechanic's own list, and the mechanics whose list names this card; a mechanic that is part of
      another, and the ones that are part of this one (data/leaguemech.json `partOf`) */
   mech(it, F, r){

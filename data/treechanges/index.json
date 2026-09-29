@@ -3,7 +3,7 @@
  "src": "Source: GGG's passive tree export",
  "url": "https://github.com/grindinggear/poe2-skilltree-export",
  "latest": "0.5.5",
- "updated": "2026-09-29",
+ "updated": "2026-09-30",
  "steps": [
   {
    "from": "0.4.0",

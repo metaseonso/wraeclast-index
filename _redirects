@@ -2,3 +2,8 @@
 # "Minion Life | 3" differed only by a "+0% to Chaos Resistance" line, which GGG's own tree does not have (#133).
 /item/minion-life-3 /item/minion-life 301
 /md/item/minion-life-3.md /md/item/minion-life.md 301
+
+# A keyword card that folded into a Rare monster modifier (#112): the other 54 keep their address, this one
+# took the keyword word to share its name with the Magma Barrier gem.
+/item/magma-barrier-keyword /item/magma-barrier-monster 301
+/md/item/magma-barrier-keyword.md /md/item/magma-barrier-monster.md 301

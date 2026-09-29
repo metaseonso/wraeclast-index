@@ -40,7 +40,7 @@ const TYPE_JSON = {
   changed: ['string'], patchdiff: ['string'], keyed: ['string'],
   number: ['number'], duration: ['number'],
   flag: ['number', 'boolean', 'string'], weighted: ['number', 'boolean', 'string'],
-  choice: ['array'], outcomes: ['array'],
+  choice: ['array'], outcomes: ['array'], tiers: ['array'],
   rich: ['array', 'string'],
   gemreq: ['array'], reqs: ['array'], cost: ['array'], lines: ['array'], weights: ['array'], perslot: ['array'],
   ladder: ['array'], options: ['array'], flow: ['array'], tags: ['array'], anoint: ['array'], chips: ['array'],
@@ -123,6 +123,7 @@ export function makeSchema(){
       if(!F.at || !json) continue;
       put(F.at, json, {drawn: 1, ids: F.ids, by: name});
       if(F.beside) put(F.beside, ['array'], {drawn: 1, by: name});
+      if(F.est) put(F.est, ['array'], {by: name});   // the words of the list read off the name alone
     }
     for(const at of declared(d)) if(!kind.fields[at]) put(at, ['string', 'number', 'boolean', 'array', 'object'], {by: 'declaration'});
     // a drawn field that also carries ids (a keyword chip) is never held to the raw-id rule

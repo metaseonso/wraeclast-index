@@ -961,13 +961,14 @@ function rowByName(t, n){
   if(!BYNAME.has(t)) BYNAME.set(t, new Map((t.rows || []).map(r => [r.n, r])));
   return BYNAME.get(t).get(n);
 }
+// beside a tag read off a name alone, because the game gives the thing no words
+const ESTIMATE = ' <span class="card-pxa" title="Read off its name: the game gives it no words">Estimate</span>';
 function dangerHTML(it, t, f){
   const r = rowByName(t, it[f.at]);
   if(!r || !(r.tags || []).length) return '';
   const est = new Set(r.est || []), why = r.why || {};
   return '<p class="card-facts">' + esc(f.label || '') + '</p><p class="card-tags">' + r.tags.map(g =>
-    '<span' + (why[g] ? ' title="' + esc(why[g]) + '"' : '') + '>' + esc(g) + '</span>' +
-    (est.has(g) ? ' <span class="card-pxa" title="Read off its name: the game gives it no words">Estimate</span>' : ''))
+    '<span' + (why[g] ? ' title="' + esc(why[g]) + '"' : '') + '>' + esc(g) + '</span>' + (est.has(g) ? ESTIMATE : ''))
     .join(' · ') + '</p>' + (r.src ? '<p class="card-src">' + esc(r.src) + '</p>' : '');
 }
 function dangerFill(host, it, f){
@@ -1729,6 +1730,22 @@ export const TYPE = {
       '<ul class="card-take">' + rows.slice(0, over ? cap : rows.length).map(row).join('') +
       (over ? '<li class="more-n">' + esc(FRAME.more(over)) + '</li>' : '') + '</ul></div>';
   }},
+  /* Rows of tiers: each which one it is (the first of `lead` the row carries), its lines, and a number beside them
+     (the first of `num`). The grid draws FRAME.lines rows and counts the rest; the popup draws all of them. */
+  tiers:  {raw: 1, v: (it, f, o) => {
+    const rows = it[f.at];
+    if(!Array.isArray(rows) || !rows.length) return '';
+    const cap = o.full ? rows.length : FRAME.lines;
+    const over = rows.length - cap > FRAME.slack ? rows.length - cap : 0;
+    const lead = r => { for(const a of f.lead || []) if(r[a] !== undefined && r[a] !== '') return String(r[a]); return ''; };
+    const num = r => { for(const x of f.num || []) if(typeof r[x.at] === 'number') return (x.pre || '') + r[x.at].toLocaleString() + (x.post || ''); return ''; };
+    return '<div class="card-blk">' + (f.label ? '<p class="card-facts">' + esc(f.label) + '</p>' : '') +
+      '<ul class="card-tiers">' + rows.slice(0, over ? cap : rows.length).map((r, j) =>
+        '<li><span class="tr-at">' + esc(lead(r)) + '</span><span class="tr-ls">' +
+        (r.ls || []).map((x, i) => lineHTML(it, f.at + j + '.', i, x, false)).join('<br>') + '</span>' +
+        '<span class="tr-n">' + esc(num(r)) + '</span></li>').join('') +
+      (over ? '<li class="more-n">' + esc(FRAME.more(over)) + '</li>' : '') + '</ul></div>';
+  }},
   weighted: {raw: 1, fill: mechFill(weightedHTML), v: (it, f, o, name) => o.full && it[f.at]
     ? '<div class="card-addsbox" data-fill="' + esc(name) + '" hidden></div>' : ''},
   /* the same words where the game wrote them as a table: the slot on the left, what it gives there on the
@@ -1835,8 +1852,15 @@ export const TYPE = {
   source: {raw: 1, v: (it, f) => it[f.at] ? '<p class="card-src">' + esc(it[f.at]) + '</p>' : ''},
   offer:  {raw: 1, v: (it, f, o) => offerHTML(it, f, o.full)},
   ask:    {raw: 1, v: (it, f, o) => askHTML(it, o.full)},
-  tags:   {raw: 1, v: (it, f) => (it[f.at] || []).length
-    ? '<p class="card-tags">' + it[f.at].map(esc).join(' · ') + '</p>' : ''},
+  /* a list of short words. `label`: the words above them, where they are one block of several; `est`: the field
+     of the entry naming the ones read off its name alone, which say Estimate beside them */
+  tags:   {raw: 1, v: (it, f) => {
+    const tags = it[f.at] || [];
+    if(!tags.length) return '';
+    const est = new Set(f.est ? it[f.est] || [] : []);
+    const html = '<p class="card-tags">' + tags.map(g => esc(g) + (est.has(g) ? ESTIMATE : '')).join(' · ') + '</p>';
+    return f.label ? '<div class="card-blk"><p class="card-facts">' + esc(f.label) + '</p>' + html + '</div>' : html;
+  }},
   anoint: {raw: 1, v: it => anointHTML(it)},
   chips:  {raw: 1, v: (it, f, o) => o.full ? kwChips(it) : ''},
   /* the kind's own module fills this one: the currency tab on the bench, the simulator on a run */
@@ -1887,7 +1911,7 @@ function slotHTML(it, slot, o){
   for(const name of fieldsOf(it.k, slot)){
     if(o.without && o.without.includes(name)) continue;   // a page that already draws this field in full
     const f = FIELDS[name], t = TYPE[f.type];
-    if(!t) continue;
+    if(!t || (f.popup && !o.full)) continue;   // a field its declaration keeps to the opened card
     const v = t.v(it, f, o, name);
     if(v === null || v === undefined || v === '') continue;
     out.push({name, f, html: t.raw ? v : esc(v), text: t.raw ? '' : v});
@@ -2375,7 +2399,8 @@ export function openDetail(it, opts = {}, href){
 function refsOf(it){
   const out = [];
   for(const name of (KIND[it.k] || {}).fields || []){
-    for(const x of (FIELDS[name] || {}).of || []) if(x && x.card && holds(it, x.on)) out.push(x.card);
+    const of = (FIELDS[name] || {}).of;   // a list of switches; an enum's `of` is a table of words, not a list
+    if(Array.isArray(of)) for(const x of of) if(x && x.card && holds(it, x.on)) out.push(x.card);
   }
   return out;
 }

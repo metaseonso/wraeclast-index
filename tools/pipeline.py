@@ -187,6 +187,12 @@ STAGES = [
          reads=['data/game/endgame_maps.json', 'data/game/map_content.json', 'data/game/atlas_corruption.json',
                 'data/index.json', 'data/bosses.json', 'data/areas.json'],
          writes=['data/atlascontent.json'], count={'data/atlascontent.json': 'maps'}),
+    # the trial modifiers and the rare monster modifiers as cards of their own (#82, #112), the monster modifiers
+    # taking the place of the keyword cards gamelib made of their help text. Before nodelinks, as world below
+    dict(name='modcards', run=['tools/modcards.py'], cadence='patch', source='game files',
+         reads=['data/trials.json', 'data/monstermods.json', 'data/bosses.json', 'data/index.json'],
+         last=['data/bosses.json'],
+         writes=['data/index.json', 'data/index-core.json', 'data/index-rest.json'], count={'data/index.json': 'items'}),
     # the areas, quests and acts as cards of their own (#72, #76), with what an Atlas map can hold (#92). Before
     # nodelinks, so every run links the same cards: a name an area shares with another card is never a link
     dict(name='world', run=['tools/world.py'], cadence='patch', source='game files',
