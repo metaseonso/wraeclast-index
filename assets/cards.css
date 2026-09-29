@@ -720,3 +720,7 @@ header.top .notesbtn ~ .suggestbtn{margin-left:0}
 .clar-cell.here{border-color:var(--accent); box-shadow:inset 0 0 0 1px var(--accent)}
 .clar-cell span{min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
 .clar-cell b{flex:none; font:600 11px var(--mono); color:var(--muted); font-variant-numeric:tabular-nums}
+/* the game's own numbers on a card (assets/app.js rulesHTML) */
+.card-rules{margin:4px 0 0; padding-left:18px; font-size:13px; line-height:1.5}
+.card-rules li{margin:2px 0}
+.card-rules .card-src{display:block}

@@ -394,6 +394,10 @@ export const FIELDS = {
      name is matched to the card's name exactly, so "2 Divine Orbs" is not the Divine Orb card. A pool whose
      shape is ours and not the table's says so beside it. Never multiplied by a price (design/hidden-odds.md). */
   weight:   {type: 'odds', at: 'n', slot: 'body', file: 'data/odds.json', label: 'How often it rolls'},
+  /* the game's own constants on the card they land on (tools/rules.py), and a thing's gold number (tools/gold.py) */
+  rules:    {type: 'rules', at: 'n', slot: 'body', file: 'data/rules.json', label: 'The game’s own numbers'},
+  exfee:    {type: 'gold', at: 'n', slot: 'body', file: 'data/gold.json', of: 'exchange', label: 'Currency Exchange fee'},
+  goldv:    {type: 'gold', at: 'n', slot: 'body', file: 'data/gold.json', of: 'unique', label: 'Gold value'},
   /* A league mechanic, on the game's own keyword card for it (tools/mechanics_league.py, data/leaguemech.json,
      found by the card's own key). `share`: its own currency's share of what the Currency Exchange traded this
      league, with the move over 7 days and the league's days as a line. Measured from GGG's feed hour by hour,
@@ -607,7 +611,7 @@ export const KINDS = [
    index: true, search: true, item: true, crawl: {word: 'unique', list: 'uniques', rank: 0, is: 'Thing'},
    sprite: 'uniques', make: {base: 'sub1'},
    builds: [{key: 'items'}],
-   fields: [...HEAD, 'reqs', 'corrupt', 'limit', 'group', 'props', 'implicit', ...SAYS, 'mapdanger', 'weight', ...REST, 'drop', ...FOOT],
+   fields: [...HEAD, 'reqs', 'corrupt', 'limit', 'group', 'props', 'implicit', ...SAYS, 'mapdanger', 'weight', ...REST, 'drop', 'goldv', ...FOOT],
    acts: ['trade', 'pool', 'full', 'pin', 'open'],
    rel: ['base', 'variants', 'grants', 'dropsfrom', 'named', 'namedby', 'cat']},
 
@@ -654,13 +658,13 @@ export const KINDS = [
   {k: 'c', one: 'Currency', tone: 'c-currency', many: 'Currency', place: 'Currency', link: './#/currency?c=@id',
    index: true, search: true, item: true, crawl: {word: 'currency', list: 'currency', rank: 4, is: 'Thing'},
    px: {as: 'c'}, make: {nx: 'yes'}, gone: {at: 'nx'},
-   fields: [...HEAD, 'droplv', ...SAYS, 'perslot', 'ladder', 'adds', ...REST, ...FOOT],
+   fields: [...HEAD, 'droplv', ...SAYS, 'perslot', 'ladder', 'adds', 'exfee', ...REST, ...FOOT],
    acts: ['trade', 'pool', 'bench', 'pin', 'open'],
    rel: ['named', 'namedby', 'job', 'cat']},
 
   {k: 'w', one: 'Keyword', tone: 'accent', many: 'Keywords', sec: 'keywords', index: true, search: true, crawl: {word: 'keyword', list: 'keywords', rank: 3, is: 'DefinedTerm'},
    kw: 'id', rank: -25, words: {n: 'own', f: 'alt', mark: 'game'},
-   fields: [...HEAD, 'stacks', 'uses', ...SAYS, 'mondanger', 'share', 'weight', 'mechlines', ...REST, ...FOOT],
+   fields: [...HEAD, 'stacks', 'uses', ...SAYS, 'mondanger', 'rules', 'share', 'weight', 'mechlines', ...REST, ...FOOT],
    acts: ['full', 'pin'],
    rel: [...KWUSE, 'granted', 'named', 'namedby']},
 
@@ -684,7 +688,7 @@ export const KINDS = [
 
   {k: 'h', one: 'Mechanics', tone: 'blood', many: 'Mechanics', index: true, search: true, mark: 'ls',
    words: {f: 'own', mark: 'ours', only: 'gate'},
-   fields: [...HEAD, ...SAYS, 'share', 'mechlines', ...REST, ...FOOT],
+   fields: [...HEAD, ...SAYS, 'rules', 'share', 'mechlines', ...REST, ...FOOT],
    acts: ['pin'],
    rel: ['namedby', 'cat']},
 

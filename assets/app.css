@@ -980,4 +980,3 @@ small.at-bonus{display:block}
 .bo-hn{font-variant-numeric:tabular-nums; white-space:nowrap}
 .bo-how summary{cursor:pointer; color:var(--muted); font-size:12.5px; margin:4px 0}
 @media (max-width:640px){ .bo-hits li{grid-template-columns:minmax(0,1fr) auto} .bo-hits li .bo-hk{grid-column:1} }
-
