@@ -2560,6 +2560,7 @@
      "by": [
       "row",
       "name",
+      "patchdiff",
       "changed"
      ],
      "need": 1,
@@ -7603,6 +7604,7 @@
      "by": [
       "row",
       "name",
+      "patchdiff",
       "changed"
      ],
      "need": 1,
