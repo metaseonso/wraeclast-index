@@ -71,8 +71,11 @@ const LISTS = {
   keywords: {k: 'w', h1: 'Keywords', title: 'PoE2 Keywords', app: '/#/'},
   areas: {k: 'r', h1: 'Areas', title: 'PoE2 Areas: every campaign and Atlas area', app: '/#/?k=r'},
   quests: {k: 'j', h1: 'Quests', title: 'PoE2 Quests: rewards and permanent bonuses', app: '/#/?k=j'},
+  trials: {k: 'l', h1: 'Trial modifiers', title: 'PoE2 Trial Modifiers: Trial of Chaos and Trial of the Sekhemas', app: '/#/?k=l'},
+  monsters: {k: 'm', h1: 'Rare monster modifiers', title: 'PoE2 Rare Monster Modifiers', app: '/#/?k=m'},
 };
-const ORDER = ['gems', 'uniques', 'passives', 'bases', 'atlas', 'currency', 'keywords', 'areas', 'quests'];
+const ORDER = ['gems', 'uniques', 'passives', 'bases', 'atlas', 'currency', 'keywords', 'areas', 'quests', 'trials',
+  'monsters'];
 
 /* What the worker still answers here: /search, a redirect it cannot know before the request. Everything else is a
    file (crawl() below, through tools/build.mjs). */
@@ -542,6 +545,15 @@ function factsOf(it){
     if(it.gb) f.push('Given by ' + it.gb);
     if(it.rf) f.push('Reward from ' + it.rf);
   }
+  if(it.k === 'l' || it.k === 'm'){
+    if(it.mark === 'danger') f.push('Dangerous for most builds');
+    if(it.mark === 'safe') f.push('Safe to take');
+    if(it.on) f.push(it.on);
+    if(it.steps > 1) f.push(it.steps + ' steps');
+    if(it.level > 1) f.push('From level ' + it.level);
+    if(it.gen) f.push(it.gen);
+    if(it.un) f.push('Subject to change');
+  }
   if(it.k === 'w' && it.use){
     const parts = [];
     for(const [k, one, many] of [['gems', 'gem', 'gems'], ['uniques', 'unique', 'uniques'], ['passives', 'passive', 'passives']])
@@ -561,6 +573,7 @@ function groupOf(e){
   if(e.k === 'b') return parts[0];
   if(e.k === 'a') return it.at === 'tree' ? 'Atlas passives' + (parts[1] ? ' · ' + parts[1] : '') : parts[0];
   if(e.k === 'r' || e.k === 'j') return parts[0];   // the act
+  if(e.k === 'l') return it.s;                        // Minor affliction, Relic modifier...
   const c = e.sort.charAt(0).toUpperCase();
   return /[A-Z]/.test(c) ? c : '#';
 }
@@ -590,6 +603,8 @@ function otherTitle(e, g){
   if(e.k === 'a') return 'More from the Atlas';
   if(e.k === 'r') return 'Other areas in ' + g;
   if(e.k === 'j') return 'Other quests in ' + g;
+  if(e.k === 'l') return 'Other: ' + g;
+  if(e.k === 'm') return 'Other rare monster modifiers';
   return 'Other keywords';
 }
 
@@ -641,6 +656,8 @@ function lead(m, e){
   if(e.k === 'a') return it.n + ': ' + parts[0].toLowerCase() + ' in Path of Exile 2.';
   if(e.k === 'r') return it.n + ': ' + parts[0] + ' area in Path of Exile 2' + (parts[1] ? ', ' + parts[1].toLowerCase() : '') + '.';
   if(e.k === 'j') return it.n + ': ' + parts[0] + (parts[1] ? ' ' + parts[1].toLowerCase() : '') + ' quest in Path of Exile 2.';
+  if(e.k === 'l') return it.n + ': ' + parts[0] + ' in Path of Exile 2.';
+  if(e.k === 'm') return it.n + ': rare monster modifier in Path of Exile 2.';
   return it.n + ': Path of Exile 2 keyword.';
 }
 function titleOf(e, px){
@@ -653,6 +670,8 @@ function titleOf(e, px){
   if(e.k === 'a') return it.n + ' – PoE2 ' + parts[0].replace(/\b\w/g, c => c.toUpperCase());
   if(e.k === 'r') return it.n + ' – PoE2 ' + parts[0] + ' Area';
   if(e.k === 'j') return it.n + ' – PoE2 ' + parts[0] + ' Quest';
+  if(e.k === 'l') return it.n + ' – PoE2 ' + parts[0].replace(/\b\w/g, c => c.toUpperCase());
+  if(e.k === 'm') return it.n + ' – PoE2 Rare Monster Modifier';
   return it.n + ' – PoE2 Keyword';
 }
 
@@ -729,6 +748,21 @@ function thingOf(m, e, px){
   return t;
 }
 
+/* A trial or rare monster modifier's blocks as the card draws them (assets/kinds.js): the help text beside its
+   lines, what it costs and pays, its tiers, its other steps, and what it does to you. */
+function modBlocks(it){
+  if(it.k !== 'l' && it.k !== 'm') return [];
+  const est = new Set(it.est || []), out = [];
+  if(it.t && it.ls && it.ls.length) out.push(['What it does', [it.t]]);
+  if(it.risk) out.push(['Risk', [it.risk]]);
+  if(it.reward) out.push(['Reward', [it.reward]]);
+  if(it.tiers && it.tiers.length) out.push(['Tiers', it.tiers.map(t => [t.step || t.n, (t.ls || []).join(' / '),
+    typeof t.rarity === 'number' ? t.rarity + '% more Rarity' : t.level ? 'Item level ' + t.level : ''].filter(Boolean).join(' · '))]);
+  if(it.alt && it.alt.length) out.push(['Other steps', it.alt]);
+  if(it.why) out.push(['Why', [it.why]]);
+  if(it.dg && it.dg.length) out.push(['What it does to you', [it.dg.map(g => g + (est.has(g) ? ' (Estimate)' : '')).join(' · ')]]);
+  return out;
+}
 function itemPage(m, e){
   const it = e.it, K = KIND[e.k], px = priceOf(m, e), path = '/item/' + e.slug, g = groupOf(e);
   const lines = it.ls || [], ni = it.ni || 0;
@@ -767,6 +801,8 @@ function itemPage(m, e){
   } else if(it.t) body = '<p class="card-tx">' + esc(it.t) + '</p>';
   if(it.o && it.o.length) body += '<p class="card-facts">Choose one:</p><ul class="card-ls">' + it.o.map(x => '<li>' + esc(x) + '</li>').join('') + '</ul>';
   if(it.kp && it.kp.length) body += '<p class="card-facts">Permanent</p><ul class="card-ls">' + it.kp.map(x => '<li>' + esc(x) + '</li>').join('') + '</ul>';
+  for(const [label, rows] of modBlocks(it))
+    body += '<p class="card-facts">' + esc(label) + '</p><ul class="card-ls">' + rows.map(x => '<li>' + esc(x) + '</li>').join('') + '</ul>';
   let price = '';
   if(px){
     if(px.h && px.h.length > 3){
@@ -880,6 +916,8 @@ function intro(m, name){
     keywords: 'All ' + n + ' Path of Exile 2 keywords, in the game\'s own words.',
     areas: 'All ' + n + ' areas in Path of Exile 2' + patch + ', the campaign and the Atlas: area levels, waypoints and what each area always carries, from the game files.',
     quests: 'All ' + n + ' quests in Path of Exile 2' + patch + ': where each one goes, what it gives, and what it gives for good, from the game files.',
+    trials: 'All ' + n + ' Trial of Chaos and Trial of the Sekhemas modifiers in Path of Exile 2' + patch + ': what each does to you and what it pays, from the game files.',
+    monsters: 'All ' + n + ' rare monster modifiers in Path of Exile 2' + patch + ': what each does, in the game\'s own words, and what it does to you.',
   }[name];
 }
 function listPage(m, name, all){
@@ -1162,6 +1200,7 @@ function itemWords(e){
   else if(it.t) out.push(it.t);
   if(it.o) out.push('Choose one: ' + it.o.join(' / '));
   if(it.kp) out.push('Permanent: ' + it.kp.join(' / '));
+  for(const [label, rows] of modBlocks(it)) out.push(label + ': ' + rows.join(' / '));
   if(it.tags) out.push('Tags: ' + it.tags.join(', '));
   return out.join('\n');
 }

@@ -10,9 +10,11 @@
    on the site is its own connection. */
 import {MAPS} from './kinds.js';
 
-const MAPLIST = Object.entries(MAPS).filter(([, g]) => !g.keys);
+const MAPLIST = Object.entries(MAPS).filter(([, g]) => !g.keys && !g.each);
 // the maps whose field is a list of card keys: each is turned round, so a card finds every card that names it
 const KEYLIST = Object.entries(MAPS).filter(([, g]) => g.keys);
+// the maps whose field is a list of words: a card sits in the group of each of its words
+const EACHLIST = Object.entries(MAPS).filter(([, g]) => g.each);
 export function turn(items, has){
   const maps = {};
   for(const m of Object.keys(MAPS)) maps[m] = new Map();
@@ -31,6 +33,7 @@ export function turn(items, has){
     }
     for(const target of it.rx || []) push(namedby, target, key);   // a line of this card names that one
     for(const [m, g] of KEYLIST) for(const target of it[g.at] || []) if(target !== key) push(maps[m], target, key);
+    for(const [m, g] of EACHLIST) for(const w of it[g.at] || []) push(maps[m], w, key);
   }
   return {...maps, namedby};
 }
@@ -57,6 +60,10 @@ export function groupsOf(IX, it, has){
     // on a base item is still two cards that belong together
     const n = list ? list.length + (g.of ? 1 : 0) : 0;
     if(n > 1) out.push([m + ':' + gk, n]);
+  }
+  for(const [m, g] of EACHLIST) for(const w of it[g.at] || []){
+    const list = IX[m].get(w);
+    if(list && list.length > 1) out.push([m + ':' + w, list.length]);
   }
   // the group named after this card: the uniques that sit on this base item, the items of this item class
   for(const [m, g] of MAPLIST){
@@ -90,5 +97,8 @@ export function lists(IX, it, has){
     actof: to('act'),
     // every card whose own list of keys names this one, per map
     back: Object.fromEntries(KEYLIST.map(([m]) => [m, others(IX[m].get(key), key)])),
+    // every card that shares one of this card's words, per map, in the order of its own words
+    each: Object.fromEntries(EACHLIST.map(([m, g]) =>
+      [m, [...new Set((it[g.at] || []).flatMap(w => others(IX[m].get(w), key)))]])),
   };
 }

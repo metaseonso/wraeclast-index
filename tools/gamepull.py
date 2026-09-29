@@ -336,8 +336,10 @@ def rows():
     out.append(('small passives', small, p, False))
 
     kw = real(v.get('term') for v in official('keywords.min.json').values() if (v.get('definition') or '').strip())
-    # a keystone is its own keyword: its card stands for both (tools/sync.py, index "kwx")
-    out.append(('keywords', kw, ours.get('w', set()) | set((index.get('kwx') or {}).values()), True))
+    # a keystone is its own keyword: its card stands for both (tools/sync.py, index "kwx"); and a rare monster
+    # modifier is the keyword its help text makes of the same name (tools/modcards.py)
+    out.append(('keywords', kw, ours.get('w', set()) | ours.get('m', set()) | set((index.get('kwx') or {}).values()),
+                True))
 
     trade = (site('trade.json') or {}).get('bases') or {}
     if trade:

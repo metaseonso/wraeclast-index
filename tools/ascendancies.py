@@ -139,13 +139,33 @@ def build(index):
     return out, {'why': why, 'own': own}
 
 
-def cards_into(index, rows):
+def ways_of(points):
+    """The Ascensions as the card draws them (assets/kinds.js `ascend`): a row per set of points, each trial that
+    gives it with its area level. A way the game files do not tie to its set says Subject to change."""
+    rows = []
+    for p in points:
+        opts = []
+        for w in p.get('ways') or []:
+            said = w.get('level') and re.search(r'\blevel %d\b' % w['level'], w['how'])   # the way says it already
+            bits = [w['trial'] + ': ' + w['how']] + (['Area level %d' % w['level']] if w.get('level') and not said else [])
+            opts.append(' · '.join(bits + ([LATER] if w.get('later') else [])))
+        if opts:
+            rows.append({'w': '%s · %d points' % (p['n'], p.get('points') or 2), 'o': opts})
+    return rows
+
+
+def cards_into(index, rows, points=()):
     """The Ascendancy cards (kind y), after the passive cards they name."""
     index['items'] = [it for it in index['items'] if it['k'] != 'y']
+    ap = ways_of(points)
+    src = SRC + ('; poe2db for which set of points a trial gives' if any(
+        w.get('src') == SRC_POE2DB for p in points for w in p.get('ways') or []) else '')
     new = []
     for r in rows:
         it = {'k': 'y', 'id': r['id'], 'n': r['n'], 's': 'Ascendancy · ' + r['class'], 't': POINTS,
-              'ls': r['notables'], 'src': SRC, 'q': 'ascendancy ' + r['class'].lower()}
+              'ls': r['notables'], 'src': src, 'q': 'ascendancy ' + r['class'].lower()}
+        if ap:
+            it['ap'] = ap
         if r.get('qt'):
             it['qt'] = r['qt']
         if r.get('img'):
@@ -189,7 +209,7 @@ def main():
     body = json.dumps(out, ensure_ascii=False, separators=(',', ':'))
     lastgood.save(OUT, body)
     print('\n-> data/ascendancies.json, %d bytes' % len(body.encode('utf-8')))
-    n = cards_into(index, out['rows'])
+    n = cards_into(index, out['rows'], out.get('points') or [])
     import nodelinks   # each notable's name on the card, a door to its card
     rep = nodelinks.attach(index)
     lastgood.save(INDEX, json.dumps(index, ensure_ascii=False, separators=(',', ':')))

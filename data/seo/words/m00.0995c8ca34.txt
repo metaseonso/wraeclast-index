@@ -1,0 +1,384 @@
+### Accurate
+Rare monster modifier · https://wraeclastindex.fyi/item/accurate
+2 steps
+200% increased Accuracy Rating
+What it does: Monster has 200% increased Accuracy Rating.
+What it does to you: more accuracyaccurateaccurateAccurate### Additional Projectiles
+Rare monster modifier · https://wraeclastindex.fyi/item/additional-projectiles
+2 steps
+Skills fire 4 additional Projectiles
+What it does: Monster fires 4 additional Projectiles.
+What it does to you: more areaadditional-projectilesadditional-projectilesAdditional Projectiles### All Damage Chills
+Rare monster modifier · https://wraeclastindex.fyi/item/all-damage-chills
+2 steps
+All Damage from Hits Contributes to Chill Magnitude
+Chills from your Hits always reduce Action Speed by at least 10%
+What it does to you: slows you · ailment on hitall-damage-chillsall-damage-chillsAll Damage Chills### All Damage Ignites
+Rare monster modifier · https://wraeclastindex.fyi/item/all-damage-ignites
+2 steps
+All Damage from Hits Contributes to Flammability and Ignite Magnitudes
+Hits always Ignite
+What it does to you: ailment on hitall-damage-ignitesall-damage-ignitesAll Damage Ignites### All Damage Shocks
+Rare monster modifier · https://wraeclastindex.fyi/item/all-damage-shocks
+2 steps
+All Damage from Hits Contributes to Shock Chance
+Hits always Shock
+What it does to you: ailment on hitall-damage-shocksall-damage-shocksAll Damage Shocks### Always Bleeds
+Rare monster modifier · https://wraeclastindex.fyi/item/always-bleeds
+2 steps
+Inflict Bleeding on Hit
+What it does to you: ailment on hitalways-bleedsalways-bleedsAlways Bleeds### Always Poisons
+Rare monster modifier · https://wraeclastindex.fyi/item/always-poisons
+2 steps
+Poison on Hit
+What it does to you: ailment on hitalways-poisonsalways-poisonsAlways Poisons### Amanamu's Void
+Rare monster modifier · https://wraeclastindex.fyi/item/amanamus-void
+2 stepsamanamus-voidamanamus-voidAmanamu's Void### Armoured
+Rare monster modifier · https://wraeclastindex.fyi/item/armoured
+2 steps
+Monster gains extra Armour based off of their Strength.
+What it does to you: harder to killarmouredarmouredArmoured### Bombardier
+Rare monster modifier · https://wraeclastindex.fyi/item/bombardier
+Monster periodically unleashes barrages of Fire projectiles.
+What it does to you: damage burstsbombardierbombardierBombardier### Breaks Armour
+Rare monster modifier · https://wraeclastindex.fyi/item/breaks-armour
+2 steps
+Break Armour equal to 1000% of Physical Damage dealt
+What it does: Monster Breaks Armour equal to 1000% of Physical Damage dealt.
+What it does to you: breaks armourbreaks-armourbreaks-armourBreaks Armour### Bubonic Trail
+Rare monster modifier · https://wraeclastindex.fyi/item/bubonic-trail
+2 steps
+What it does to you: ground effect (Estimate)bubonic-trailbubonic-trailBubonic Trail### Burning Ground on Death
+Rare monster modifier · https://wraeclastindex.fyi/item/burning-ground-on-death
+2 steps
+What it does to you: ground effect (Estimate) · on death (Estimate)burning-ground-on-deathburning-ground-on-deathBurning Ground on Death### Chaos Resistant
+Rare monster modifier · https://wraeclastindex.fyi/item/chaos-resistant
+2 steps
++50% to Chaos Resistance
+What it does: Monster has +50% to Chaos Resistance.
+What it does to you: resists chaoschaos-resistantchaos-resistantChaos Resistant### Chilled Ground on Death
+Rare monster modifier · https://wraeclastindex.fyi/item/chilled-ground-on-death
+What it does to you: ground effect (Estimate) · on death (Estimate)chilled-ground-on-deathchilled-ground-on-deathChilled Ground on Death### Cold Explosion on Death
+Rare monster modifier · https://wraeclastindex.fyi/item/cold-explosion-on-death
+What it does to you: damage bursts (Estimate) · on death (Estimate)cold-explosion-on-deathcold-explosion-on-deathCold Explosion on Death### Cold Resistant
+Rare monster modifier · https://wraeclastindex.fyi/item/cold-resistant
+2 steps
++50% to Cold Resistance
++10% to Maximum Cold Resistance
+What it does: Monster has +50% to Cold Resistance and +10% to Maximum Cold Resistance.
+What it does to you: resists coldcold-resistantcold-resistantCold Resistant### Conjures Elemental Hazards
+Rare monster modifier · https://wraeclastindex.fyi/item/conjures-elemental-hazards
+2 steps
+What it does to you: ground effect (Estimate)conjures-elemental-hazardsconjures-elemental-hazardsConjures Elemental Hazards### Conjures Flamewalls
+Rare monster modifier · https://wraeclastindex.fyi/item/conjures-flamewalls
+2 steps
+Monster creates circular walls of Fire that deal damage to enemies standing in them.
+What it does to you: ground effectconjures-flamewallsconjures-flamewallsConjures Flamewalls### Conjures Ice Prisons
+Rare monster modifier · https://wraeclastindex.fyi/item/conjures-ice-prisons
+2 steps
+Monster creates circular walls of Ice around enemies.
+What it does to you: ground effectconjures-ice-prisonsconjures-ice-prisonsConjures Ice Prisons### Conjures Lightning Storms
+Rare monster modifier · https://wraeclastindex.fyi/item/conjures-lightning-storms
+2 steps
+What it does to you: ground effect (Estimate)conjures-lightning-stormsconjures-lightning-stormsConjures Lightning Storms### Corrupted
+Rare monster modifier · https://wraeclastindex.fyi/item/corrupted
+6 steps
+Corrupted Monsters have an additional Corrupted Modifier. These modifiers may increase the difficulty and reward of the Monster, or may make it easier to defeat.
+What it does to you: on deathcorruptedcorruptedCorrupted### Crit Resistant
+Rare monster modifier · https://wraeclastindex.fyi/item/crit-resistant
+2 steps
+Hits against you have 80% reduced Critical Damage Bonus
+What it does: Hits against this Monster have 80% reduced Critical Damage Bonus.
+What it does to you: harder to killcrit-resistantcrit-resistantCrit Resistant### Crystalline Barrier
+Rare monster modifier · https://wraeclastindex.fyi/item/crystalline-barrier
+2 steps
+What it does to you: reflect-like (Estimate)crystalline-barriercrystalline-barrierCrystalline Barrier### Damage Taken From Minions First
+Rare monster modifier · https://wraeclastindex.fyi/item/damage-taken-from-minions-first
+2 steps
+50% of damage taken from Monster is taken from Monster's Pack Minions instead
+What it does to you: cannot be damaged · stronger packdamage-taken-from-minions-firstdamage-taken-from-minions-firstDamage Taken From Minions First### Elemental Resistance Aura
+Rare monster modifier · https://wraeclastindex.fyi/item/elemental-resistance-aura
+2 steps
++35% to all Elemental Resistances
+What it does: Monster creates an Aura that grants +35% to all Elemental Resistances to Allies within 5 metres.
+What it does to you: stronger pack · resists fire · resists cold · resists lightningelemental-resistance-auraelemental-resistance-auraElemental Resistance Aura### Empowered
+Rare monster modifier · https://wraeclastindex.fyi/item/empowered
+25% increased Damage
+50% increased maximum Life
+What it does: Monster has 25% increased Damage and 50% increased Life
+What it does to you: harder to killempoweredempoweredEmpowered### Empowered Periodic Invulnerability Aura
+Rare monster modifier · https://wraeclastindex.fyi/item/empowered-periodic-invulnerability-aura
+2 steps
+Monster releases a nova that makes Allies invulnerable for 5 seconds while the monster is alive within 5 metres every 12 seconds.
+What it does to you: cannot be damaged · stronger packempowered-periodic-invulnerability-auraempowered-periodic-invulnerability-auraEmpowered Periodic Invulnerability Aura### Empowered Reviving Minions
+Rare monster modifier · https://wraeclastindex.fyi/item/empowered-reviving-minions
+2 steps
+Monster periodically revives Pack Minions with increased Life and Damage.
+What it does to you: stronger pack · harder to killempowered-reviving-minionsempowered-reviving-minionsEmpowered Reviving Minions### Empowering Volatile Crag
+Rare monster modifier · https://wraeclastindex.fyi/item/empowering-volatile-crag
+2 steps
+Monster periodically creates Powerful Volatile Crag that moves towards enemies; exploding when they get close enough; dealing Fire Damage.
+What it does to you: damage burstsempowering-volatile-cragempowering-volatile-cragEmpowering Volatile Crag### Empowering Volatile Plants
+Rare monster modifier · https://wraeclastindex.fyi/item/empowering-volatile-plants
+2 steps
+Monster periodically creates Powerful Volatile Plants, releasing orbs that move towards enemies; exploding when they get close enough; dealing Chaos Damage.
+What it does to you: damage burstsempowering-volatile-plantsempowering-volatile-plantsEmpowering Volatile Plants### Energy Shield Aura
+Rare monster modifier · https://wraeclastindex.fyi/item/energy-shield-aura
+3 steps
+Monster creates an Aura that grants 20% of Maximum life as added Energy Shield to Allies within 5 metres.
+What it does to you: stronger pack · harder to killenergy-shield-auraenergy-shield-auraEnergy Shield Aura### Enraged
+Rare monster modifier · https://wraeclastindex.fyi/item/enraged-monster
+3 steps
+Monster is Enraged; gaining 30% increased Damage, 25% increased Skill and Movement Speed and 33% less damage taken.
+What it does to you: faster · harder to killenraged-monsterenragedEnraged### Eruption of Souls
+Rare monster modifier · https://wraeclastindex.fyi/item/eruption-of-souls
+2 steps
+What it does to you: damage bursts (Estimate) · on death (Estimate)eruption-of-soulseruption-of-soulsEruption of Souls### Evasive
+Rare monster modifier · https://wraeclastindex.fyi/item/evasive
+2 steps
+Monster gains extra Evasion based off of their Dexterity.
+What it does to you: harder to killevasiveevasiveEvasive### Explodes Nearby Corpses
+Rare monster modifier · https://wraeclastindex.fyi/item/explodes-nearby-corpses
+2 steps
+What it does to you: damage bursts (Estimate)explodes-nearby-corpsesexplodes-nearby-corpsesExplodes Nearby Corpses### Extra Chaos Damage
+Rare monster modifier · https://wraeclastindex.fyi/item/extra-chaos-damage
+2 steps
+Gain 40% of Damage as Extra Chaos Damage
+What it does: Monster Gains 40% of damage as extra Chaos damage.
+What it does to you: extra elementextra-chaos-damageextra-chaos-damageExtra Chaos Damage### Extra Cold Damage
+Rare monster modifier · https://wraeclastindex.fyi/item/extra-cold-damage
+2 steps
+Gain 40% of Damage as Extra Cold Damage
+What it does: Monster Gains 40% of damage as extra Cold damage.
+What it does to you: extra elementextra-cold-damageextra-cold-damageExtra Cold Damage### Extra Crits
+Rare monster modifier · https://wraeclastindex.fyi/item/extra-crits
+2 steps
+300% increased Critical Hit Chance
+What it does: Monster has 300% increased chance to Critically Hit.
+What it does to you: more critsextra-critsextra-critsExtra Crits### Extra Energy Shield
+Rare monster modifier · https://wraeclastindex.fyi/item/extra-energy-shield
+2 steps
+Monster gains 25% of Maximum life as added Energy Shield.
+What it does to you: harder to killextra-energy-shieldextra-energy-shieldExtra Energy Shield### Extra Fire Damage
+Rare monster modifier · https://wraeclastindex.fyi/item/extra-fire-damage
+2 steps
+Gain 40% of Damage as Extra Fire Damage
+What it does: Monster Gains 40% of damage as extra Fire damage.
+What it does to you: extra elementextra-fire-damageextra-fire-damageExtra Fire Damage### Extra Lightning Damage
+Rare monster modifier · https://wraeclastindex.fyi/item/extra-lightning-damage
+2 steps
+Gain 40% of Damage as Extra Lightning Damage
+What it does: Monster Gains 40% of damage as extra Lightning damage.
+What it does to you: extra elementextra-lightning-damageextra-lightning-damageExtra Lightning Damage### Extra Physical Damage Aura
+Rare monster modifier · https://wraeclastindex.fyi/item/extra-physical-damage-aura
+2 steps
+40% increased Global Physical Damage
+What it does: Monster creates an Aura that grants 40% increased Physical Damage to Allies within 5 metres.
+What it does to you: stronger packextra-physical-damage-auraextra-physical-damage-auraExtra Physical Damage Aura### Fire Explosion on Death
+Rare monster modifier · https://wraeclastindex.fyi/item/fire-explosion-on-death
+What it does to you: damage bursts (Estimate) · on death (Estimate)fire-explosion-on-deathfire-explosion-on-deathFire Explosion on Death### Fire Resistant
+Rare monster modifier · https://wraeclastindex.fyi/item/fire-resistant
+2 steps
++50% to Fire Resistance
++10% to Maximum Fire Resistance
+What it does: Monster has +50% to Fire Resistance and +10% to Maximum Fire Resistance.
+What it does to you: resists firefire-resistantfire-resistantFire Resistant### Haste Aura
+Rare monster modifier · https://wraeclastindex.fyi/item/haste-aura
+3 steps · Subject to change
+25% increased Attack and Cast Speed
+25% increased Movement Speed
+What it does: Monster creates an Aura that grants 20% increased Attack and Cast speed and 10% increased Movement speed to Allies within 5 metres.
+Other steps: 20% increased Attack and Cast Speed / 10% increased Movement Speed
+What it does to you: faster · stronger packhaste-aurahaste-auraHaste Aura### Hasted
+Rare monster modifier · https://wraeclastindex.fyi/item/hasted
+2 steps
+30% increased Attack and Cast Speed
+30% increased Movement Speed
+What it does: Monster has 30% increased Attack, Cast and Movement speed.
+What it does to you: fasterhastedhastedHasted### Heals Allies and Suppresses Foe Recovery
+Rare monster modifier · https://wraeclastindex.fyi/item/heals-allies-and-suppresses-foe-recovery
+2 steps
+Monster releases a nova that reduces Enemy Life and Energy Shield Recovery Rate by 60% and causes Allies to Regenerate 5.5% of Maximum Life per second for 4 seconds within 5 metres every 8 seconds.
+What it does to you: less recovery · stronger pack · harder to killheals-allies-and-suppresses-foe-recoveryheals-allies-and-suppresses-foe-recoveryHeals Allies and Suppresses Foe Recovery### Hinder Aura
+Rare monster modifier · https://wraeclastindex.fyi/item/hinder-aura
+2 steps
+Monster creates an Aura that Hinders enemies within 3.6 metres.
+What it does to you: slows youhinder-aurahinder-auraHinder Aura### Increased Area of Effect
+Rare monster modifier · https://wraeclastindex.fyi/item/increased-area-of-effect
+2 steps
+100% more Area of Effect
+What it does: Monster has 100% Increased Area of Effect.
+What it does to you: more areaincreased-area-of-effectincreased-area-of-effectIncreased Area of Effect### Increased Life
+Rare monster modifier · https://wraeclastindex.fyi/item/increased-life
+50% increased maximum Life
+What it does: Monster has 50% increased Life.
+What it does to you: harder to killincreased-lifeincreased-lifeIncreased Life### Increased Stun Threshold
+Rare monster modifier · https://wraeclastindex.fyi/item/increased-stun-threshold
+2 steps
+Cannot be Stunned
+What it does: Monster cannot be Stunned.
+What it does to you: harder to killincreased-stun-thresholdincreased-stun-thresholdIncreased Stun Threshold### Kulemak's Desecration
+Rare monster modifier · https://wraeclastindex.fyi/item/kulemaks-desecration
+2 steps
+What it does to you: ground effect (Estimate)kulemaks-desecrationkulemaks-desecrationKulemak's Desecration### Kurgal's Last Gasp
+Rare monster modifier · https://wraeclastindex.fyi/item/kurgals-last-gasp
+2 steps
+What it does to you: on death (Estimate)kurgals-last-gaspkurgals-last-gaspKurgal's Last Gasp### Lifestealer Aura
+Rare monster modifier · https://wraeclastindex.fyi/item/lifestealer-aura
+What it does to you: stronger pack (Estimate)lifestealer-auralifestealer-auraLifestealer Aura### Lightning Explosion on Death
+Rare monster modifier · https://wraeclastindex.fyi/item/lightning-explosion-on-death
+What it does to you: damage bursts (Estimate) · on death (Estimate)lightning-explosion-on-deathlightning-explosion-on-deathLightning Explosion on Death### Lightning Mirage When Hit
+Rare monster modifier · https://wraeclastindex.fyi/item/lightning-mirage-when-hit
+2 steps
+Monster creates a Mirage when Hit that moves towards enemies and explodes when it gets close enough, dealing Lightning Damage.
+What it does to you: reflect-like · damage burstslightning-mirage-when-hitlightning-mirage-when-hitLightning Mirage When Hit### Lightning Mirages When Hit
+Rare monster modifier · https://wraeclastindex.fyi/item/lightning-mirages-when-hit
+2 steps
+Monster creates Mirages when Hit that move towards enemies and explode when they get close enough, dealing Lightning Damage.
+What it does to you: reflect-like · damage burstslightning-mirages-when-hitlightning-mirages-when-hitLightning Mirages When Hit### Lightning Resistant
+Rare monster modifier · https://wraeclastindex.fyi/item/lightning-resistant
+2 steps
++50% to Lightning Resistance
++10% to Maximum Lightning Resistance
+What it does: Monster has +50% to Lightning Resistance and +10% to Maximum Lightning Resistance.
+What it does to you: resists lightninglightning-resistantlightning-resistantLightning Resistant### Lithomantic Runes
+Rare monster modifier · https://wraeclastindex.fyi/item/lithomantic-runes
+2 steps
+What it does to you: ground effect (Estimate)lithomantic-runeslithomantic-runesLithomantic Runes### Magma Barrier
+Rare monster modifier · https://wraeclastindex.fyi/item/magma-barrier-monster
+2 steps
+Monster creates a 90% damage absorption barrier that explodes after taking a certain amount of damage, dealing Fire Damage.
+What it does to you: reflect-like · damage bursts · cannot be damagedmagma-barrier-monstermagma-barrierMagma Barrier### Meteoric Demise
+Rare monster modifier · https://wraeclastindex.fyi/item/meteoric-demise
+2 steps
+What it does to you: damage bursts (Estimate) · on death (Estimate)meteoric-demisemeteoric-demiseMeteoric Demise### Periodic Cold Explosions
+Rare monster modifier · https://wraeclastindex.fyi/item/periodic-cold-explosions
+2 steps
+What it does to you: damage bursts (Estimate)periodic-cold-explosionsperiodic-cold-explosionsPeriodic Cold Explosions### Periodic Fire Explosions
+Rare monster modifier · https://wraeclastindex.fyi/item/periodic-fire-explosions
+2 steps
+What it does to you: damage bursts (Estimate)periodic-fire-explosionsperiodic-fire-explosionsPeriodic Fire Explosions### Periodic Invulnerability Aura
+Rare monster modifier · https://wraeclastindex.fyi/item/periodic-invulnerability-aura
+2 steps
+Monster releases a nova that makes Allies invulnerable for 5 seconds while the monster is alive within 5 metres every 12 seconds.
+What it does to you: cannot be damaged · stronger packperiodic-invulnerability-auraperiodic-invulnerability-auraPeriodic Invulnerability Aura### Periodic Lightning Explosions
+Rare monster modifier · https://wraeclastindex.fyi/item/periodic-lightning-explosions
+2 steps
+What it does to you: damage bursts (Estimate)periodic-lightning-explosionsperiodic-lightning-explosionsPeriodic Lightning Explosions### Periodically Enrages
+Rare monster modifier · https://wraeclastindex.fyi/item/periodically-enrages
+2 steps
+Monster periodically Enrages; gaining 30% increased Damage, 25% increased Skill and Movement Speed and 33% less damage taken for 5 seconds every 10 seconds.
+What it does to you: faster · harder to killperiodically-enragesperiodically-enragesPeriodically Enrages### Periodically unleashes Fire
+Rare monster modifier · https://wraeclastindex.fyi/item/periodically-unleashes-fire
+2 steps
+What it does to you: damage bursts (Estimate)periodically-unleashes-fireperiodically-unleashes-firePeriodically unleashes Fire### Periodically unleashes Ice
+Rare monster modifier · https://wraeclastindex.fyi/item/periodically-unleashes-ice
+2 steps
+What it does to you: damage bursts (Estimate)periodically-unleashes-iceperiodically-unleashes-icePeriodically unleashes Ice### Periodically unleashes Lightning
+Rare monster modifier · https://wraeclastindex.fyi/item/periodically-unleashes-lightning
+2 steps
+What it does to you: damage bursts (Estimate)periodically-unleashes-lightningperiodically-unleashes-lightningPeriodically unleashes Lightning### Powerful Minions
+Rare monster modifier · https://wraeclastindex.fyi/item/powerful-minions
+2 steps
+Monster's Pack Minions have 25% increased Damage and 50% increased Life.
+What it does to you: stronger pack · harder to killpowerful-minionspowerful-minionsPowerful Minions### Prevents Recovery Above 50%
+Rare monster modifier · https://wraeclastindex.fyi/item/prevents-recovery-above-50
+2 steps
+Cannot Recover Life or Energy Shield to above 50%
+What it does: Monster creates an Aura that Debuffs enemies within 4.2 metres, causing their Life and Energy Shield to not be able to recover past 50%.
+What it does to you: less recoveryprevents-recovery-above-50prevents-recovery-above-50Prevents Recovery Above 50%### Proximal Tangibility
+Rare monster modifier · https://wraeclastindex.fyi/item/proximal-tangibility
+2 steps
+Monster cannot be damaged by enemies any further than 3 metres from them.
+What it does to you: cannot be damagedproximal-tangibilityproximal-tangibilityProximal Tangibility### Regenerates Life
+Rare monster modifier · https://wraeclastindex.fyi/item/regenerates-life
+2 steps
+Regenerate 2% of maximum Life per second
+What it does: Monster Regenerates 2% of Maximum Life per second.
+What it does to you: harder to killregenerates-liferegenerates-lifeRegenerates Life### Reviving Minions
+Rare monster modifier · https://wraeclastindex.fyi/item/reviving-minions-monster
+2 steps
+Monster periodically revives Pack Minions.
+What it does to you: stronger packreviving-minions-monsterreviving-minionsReviving Minions### Shade Walker
+Rare monster modifier · https://wraeclastindex.fyi/item/shade-walker
+2 steps
+What it does to you: teleports (Estimate)shade-walkershade-walkerShade Walker### Shocked Ground on Death
+Rare monster modifier · https://wraeclastindex.fyi/item/shocked-ground-on-death
+What it does to you: ground effect (Estimate) · on death (Estimate)shocked-ground-on-deathshocked-ground-on-deathShocked Ground on Death### Shroud Walker
+Rare monster modifier · https://wraeclastindex.fyi/item/shroud-walker
+4 steps
+Monster periodically teleports to an enemy they can see, creating a Smoke Cloud where they leave and where they teleport to.
+What it does to you: teleportsshroud-walkershroud-walkerShroud Walker### Siphons Flask Charges
+Rare monster modifier · https://wraeclastindex.fyi/item/siphons-flask-charges
+2 steps · Subject to change
+Flasks gain -0.05 charges per Second
+What it does: Monster creates an Aura that removes 3 Flask and Charm charges from enemies every 3 seconds within 3.6 metres.
+What it does to you: fewer flask chargessiphons-flask-chargessiphons-flask-chargesSiphons Flask Charges### Siphons Mana and Deals Lightning Damage
+Rare monster modifier · https://wraeclastindex.fyi/item/siphons-mana-and-deals-lightning-damage
+4 steps
+Monster creates a circular effect that drains Mana and deals Lightning Damage over time to enemies near the edge of the circle. Additionally, Monster will periodically create separate circles that drain Mana and deal Lightning Damage over time to enemies standing in them.
+What it does to you: less recovery · ground effectsiphons-mana-and-deals-lightning-damagesiphons-mana-and-deals-lightning-damageSiphons Mana and Deals Lightning Damage### Slow Resistant
+Rare monster modifier · https://wraeclastindex.fyi/item/slow-resistant
+2 steps
+50% less Slowing Potency of Debuffs on me
+What it does: Monster has 50% reduced Slowing Potency of Debuffs on them.
+What it does to you: harder to killslow-resistantslow-resistantSlow Resistant### Soul Eater
+Rare monster modifier · https://wraeclastindex.fyi/item/soul-eater-monster
+2 steps
+What it does to you: on deathsoul-eater-monstersoul-eaterSoul Eater### Soul Siphoner
+Rare monster modifier · https://wraeclastindex.fyi/item/soul-siphoner
+2 stepssoul-siphonersoul-siphonerSoul Siphoner### Soulflame Geysers
+Rare monster modifier · https://wraeclastindex.fyi/item/soulflame-geysers
+2 steps
+What it does to you: damage bursts (Estimate) · ground effect (Estimate)soulflame-geyserssoulflame-geysersSoulflame Geysers### Stun Resistant
+Rare monster modifier · https://wraeclastindex.fyi/item/stun-resistant
+2 steps
+250% increased Stun Threshold
+What it does: Monster has 250% increased Stun Threshold.
+What it does to you: harder to killstun-resistantstun-resistantStun Resistant### Stuns
+Rare monster modifier · https://wraeclastindex.fyi/item/stuns
+2 steps
+100% increased Stun Buildup
+What it does: Monster has 100% increased Stun buildup.
+What it does to you: stuns youstunsstunsStuns### Temporal Bubble
+Rare monster modifier · https://wraeclastindex.fyi/item/temporal-bubble
+3 steps
+25% reduced Action Speed
+Debuffs on you expire 40% slower
+60% reduced Cooldown Recovery Rate
+What it does: Monster creates an Aura that Debuffs Enemies within 3.2 metres; Slowing by 25%, making effects expire 40% slower and reducing Cooldown Recovery Rate by 60%.
+Other steps: 12% reduced Action Speed / Debuffs on you expire 40% slower / 20% reduced Cooldown Recovery Rate
+What it does to you: slows youtemporal-bubbletemporal-bubbleTemporal Bubble### Trail of Fire
+Rare monster modifier · https://wraeclastindex.fyi/item/trail-of-fire
+2 steps
+What it does to you: ground effect (Estimate)trail-of-firetrail-of-fireTrail of Fire### Trail of Ice
+Rare monster modifier · https://wraeclastindex.fyi/item/trail-of-ice
+2 steps
+What it does to you: ground effect (Estimate)trail-of-icetrail-of-iceTrail of Ice### Trail of Lightning
+Rare monster modifier · https://wraeclastindex.fyi/item/trail-of-lightning
+2 steps
+Monster leaves a trail of Shocked Ground as they move.
+What it does to you: ground effecttrail-of-lightningtrail-of-lightningTrail of Lightning### Ulaman's Legion
+Rare monster modifier · https://wraeclastindex.fyi/item/ulamans-legion
+2 steps
+What it does to you: stronger pack (Estimate)ulamans-legionulamans-legionUlaman's Legion### Undying Will
+Rare monster modifier · https://wraeclastindex.fyi/item/undying-will
+2 steps
+What it does to you: cannot be damaged (Estimate) · harder to kill (Estimate)undying-willundying-willUndying Will### Unstable Revenants
+Rare monster modifier · https://wraeclastindex.fyi/item/unstable-revenants
+What it does to you: on death (Estimate)unstable-revenantsunstable-revenantsUnstable Revenants### Volatile Crag
+Rare monster modifier · https://wraeclastindex.fyi/item/volatile-crag
+2 steps
+Monster periodically creates Volatile Crag that moves towards enemies; exploding when they get close enough; dealing Fire Damage.
+What it does to you: damage burstsvolatile-cragvolatile-cragVolatile Crag### Volatile Crystals
+Rare monster modifier · https://wraeclastindex.fyi/item/volatile-crystals
+2 steps
+Monster creates Volatile Crystals when Hit, which explode upon the Monster's death, dealing Chaos damage.
+What it does to you: reflect-like · damage bursts · on deathvolatile-crystalsvolatile-crystalsVolatile Crystals### Volatile Plants
+Rare monster modifier · https://wraeclastindex.fyi/item/volatile-plants
+2 steps
+Monster periodically creates Volatile Plants, releasing orbs that move towards enemies; exploding when they get close enough; dealing Chaos Damage.
+What it does to you: damage burstsvolatile-plantsvolatile-plantsVolatile Plants### Volatile Souls
+Rare monster modifier · https://wraeclastindex.fyi/item/volatile-souls
+2 steps
+What it does to you: damage bursts (Estimate)volatile-soulsvolatile-soulsVolatile Souls
