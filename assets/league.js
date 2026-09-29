@@ -6,9 +6,9 @@ import { D, esc, leagues } from './app.js';
 const when = iso => Date.parse(iso + 'T00:00:00Z');
 const nice = iso => new Date(when(iso)).toLocaleDateString('en-GB', {day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC'});
 const two = n => String(n).padStart(2, '0');
-function span(ms){
-  const s = Math.max(0, Math.floor(ms / 1000));
-  return Math.floor(s / 86400) + 'd ' + two(Math.floor(s / 3600) % 24) + 'h ' + two(Math.floor(s / 60) % 60) + 'm ' + two(s % 60) + 's';
+function span(ms){   // to the minute: a clock that ticks seconds pulls the eye from the search box
+  const m = Math.max(0, Math.floor(ms / 60000));
+  return Math.floor(m / 1440) + 'd ' + two(Math.floor(m / 60) % 24) + 'h ' + two(m % 60) + 'm';
 }
 
 export async function mountLeague(el){
@@ -32,11 +32,11 @@ export async function mountLeague(el){
     if(down) down.textContent = span(when(next.start) - t);
   };
   /* The clocks sit on the home page, so they tick only while it is the page on screen: a hidden browser tab or
-     any other page of the site stops them, and they catch up to the second the moment they are seen again. */
+     any other page of the site stops them, and they catch up the moment they are seen again. */
   let timer = 0;
   const run = () => {
     const on = !document.hidden && (document.body.dataset.route || 'home') === 'home';
-    if(on && !timer){ tick(); timer = setInterval(tick, 1000); }
+    if(on && !timer){ tick(); timer = setInterval(tick, 20000); }
     else if(!on && timer){ clearInterval(timer); timer = 0; }
   };
   document.addEventListener('visibilitychange', run);

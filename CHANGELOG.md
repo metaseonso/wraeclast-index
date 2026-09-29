@@ -3,6 +3,19 @@
 The full list of changes. The public patch notes (data/changelog.json, shown on the site) stay short.
 Add the details here first, then a short public line there.
 
+## 0.40 — 29 Sep 2026: find your way (layout v2, parts 2 and 3)
+
+- **Home contents:** `contentsHTML()` (assets/kinds.js) draws every section's pages with counts under the search
+  box; `tools/dev/nav.mjs` writes it into index.html (#toc) so the first paint has it, and app.js `fillCounts()`
+  fills the counts from the manifest. The kind chips show only once a search or a list is on (`.hero.docked`); the
+  first-paint line docks the hero for `?k=` too. The Data page draws the same block.
+- **The index down the side** (`#side`, app.js `sideShow()`): from 1280 px, on a search, a kind's list, Currency,
+  Atlas and Bosses; sticky, the page on show marked. Not on the drill-down tables, which need the width.
+- **Home:** the crest's top space `clamp(20px, 5vh, 56px)` (was up to 150 px); the league clock to the minute,
+  ticking every 20 s.
+- **Bosses** opens on "With drops"; a boss asked for by name (`#/bosses?q=`) opens on All.
+- **Top bar:** the price stamp gives way last (`flex-shrink:.01`), the search box first.
+
 ## 0.39 — 29 Sep 2026: the index, in sections (layout v2, part 1)
 
 - **One table of the index** (`assets/kinds.js` INDEX): sections Items, Passives, Mechanics, Endgame, Economy, then

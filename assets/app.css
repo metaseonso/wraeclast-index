@@ -53,7 +53,7 @@ h1,h2,h3{margin:0; text-wrap:balance}
 /* ---------- home ---------- */
 .view{max-width:1400px; margin:0 auto; padding:0 16px 40px}
 .hero{display:flex; flex-direction:column; align-items:center; text-align:center;
-  padding-top:clamp(40px, 16vh, 150px); padding-bottom:18px}
+  padding-top:clamp(20px, 5vh, 56px); padding-bottom:18px}   /* the crest near the top: the contents sit under the box */
 .hero.docked{padding-top:22px}
 .hero-title{font-family:var(--disp); font-weight:600; font-size:clamp(34px, 6vw, 54px); letter-spacing:-.02em;
   transition:opacity .3s, transform .45s cubic-bezier(.2,.8,.2,1); max-height:80px; overflow:hidden}
@@ -926,15 +926,40 @@ small.at-bonus{display:block}
 /* ---------- the Data page (assets/data.js) ---------- */
 .dt-sub{color:var(--faint); font-size:12.5px}
 .dt-block{margin:0 0 8px}
-.dt-grid{display:grid; grid-template-columns:repeat(auto-fill, minmax(210px, 1fr)); gap:14px 22px}
-.dt-sec h3{font-family:var(--disp); font-size:15px; font-weight:600; margin:0 0 6px; color:var(--bronze)}
-.dt-sec ul{list-style:none; margin:0; padding:0}
-.dt-sec li{display:flex; align-items:baseline; gap:8px; padding:3px 0; border-bottom:1px solid var(--line)}
-.dt-sec li a{flex:1; color:var(--text); text-decoration:none; display:inline-flex; align-items:center}
-.dt-sec li a:hover, .dt-sec li a:focus-visible{color:var(--accent)}
-.dt-n{font-family:var(--mono); font-size:12px; color:var(--faint)}
+/* the index's contents (assets/kinds.js contentsHTML): under the home page's search box, and on the Data page */
+.toc{display:grid; grid-template-columns:repeat(auto-fill, minmax(168px, 1fr)); gap:14px 22px; text-align:left}
+.toc-sec h3{font-family:var(--disp); font-size:15px; font-weight:600; margin:0 0 6px; color:var(--bronze)}
+.toc-sec ul{list-style:none; margin:0; padding:0}
+.toc-sec li{border-bottom:1px solid var(--line)}
+.toc-sec a{display:flex; align-items:center; gap:0; padding:4px 0; color:var(--text); text-decoration:none; font-size:13.5px}
+.toc-sec a span:first-of-type{flex:1}
+.toc-sec a:hover, .toc-sec a:focus-visible{color:var(--accent)}
+.toc-n{font-family:var(--mono); font-size:12px; color:var(--faint); min-width:3.5em; text-align:right}
+/* home: the contents until a search or a list is on; the kind chips after */
+.hero .toc{width:min(980px, 100%); margin:22px auto 0}
+.hero.docked .toc{display:none}
+.hero:not(.docked) .kinds{display:none}
+@media (max-width:640px){ .toc{grid-template-columns:1fr 1fr; gap:12px 14px} .toc-sec a{font-size:13px} .toc-n{min-width:3em} }
 .dt-list{margin:0; padding-left:18px; line-height:1.7}
 .dt-scroll{overflow-x:auto}
 .dt-jobs{border-collapse:collapse; font-size:13px; min-width:420px}
 .dt-jobs th{text-align:left; font-weight:600; color:var(--faint); font-size:11.5px; text-transform:uppercase; letter-spacing:.04em}
 .dt-jobs th, .dt-jobs td{padding:5px 14px 5px 0; border-bottom:1px solid var(--line); white-space:nowrap}
+
+/* ---------- the index down the side of a list (assets/app.js sideShow) ----------
+   From 1280 px, on a page that is a list (a search, a kind's list, Currency, Atlas, Bosses): the whole index in one
+   column beside it, the page on show marked. Narrower, the index is in the menu instead. */
+.side{display:none}
+@media (min-width:1280px){
+  body.withside main{display:flex; justify-content:center; align-items:flex-start; gap:26px; padding:0 16px}
+  body.withside .side{display:block; flex:0 0 184px; position:sticky; top:64px; max-height:calc(100vh - 72px); overflow:auto;
+    padding:22px 2px 24px 0; scrollbar-width:thin}
+  body.withside main > .view{flex:1 1 auto; min-width:0; max-width:1190px; margin:0; padding-left:0; padding-right:0}
+  .side-toc{grid-template-columns:1fr; gap:14px}
+  .side-toc .toc-sec h3{font-size:13px; margin-bottom:3px}
+  .side-toc .toc-sec a{font-size:12.5px; padding:3px 0}
+  .side-toc .toc-sec li{border-bottom-color:var(--line-soft)}
+  .side-toc a[aria-current]{color:var(--accent)}
+  .side-toc a[aria-current] .ti{opacity:1}
+}
+

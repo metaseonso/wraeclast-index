@@ -365,7 +365,7 @@ header.top .top-in > .suggestbtn{order:0; margin:0}
    and the search box takes what is left */
 @media (min-width:1280px){ .topnav > a > .ti{display:none} .top .topsearch{min-width:120px}
   .tabs.topnav > a, .tabs.topnav .navdrop-b{padding-left:8px; padding-right:8px} .top .brand{font-size:17px}
-  .top .stamp{flex:0 1 auto; min-width:0; overflow:hidden; text-overflow:ellipsis} }
+  .top .stamp{flex:0 0.01 auto; min-width:0; overflow:hidden; text-overflow:ellipsis} }   /* the search box gives way first */
 @media (max-width:899px){ .stamp{display:none} }
 /* narrower than the row: the index goes into ☰ too, as a sheet under the bar */
 @media (max-width:1279px){

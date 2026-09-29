@@ -157,6 +157,25 @@ function linkHTML(p, base, pad){
   return pad + '<a href="' + pageHref(p, base) + '"' + route + (p.list ? ' data-list="' + p.list + '"' : '') +
     '><i class="ti ti-' + p.icon + '" aria-hidden="true"></i>' + pageName(p) + '</a>';
 }
+/* The index's contents: every section with its pages, each page with a count once one is given ({kind: n}).
+   The home page writes it out under its search box (tools/dev/nav.mjs, so the first paint has it) and fills
+   the counts from the manifest; the Data page draws it with them. */
+export function contentsHTML(counts = null, base = '', {cls = 'toc', id = 'toc'} = {}){
+  const n = p => { const k = pageKind(p); return counts && k && counts[k] ? (+counts[k]).toLocaleString('en') : ''; };
+  const out = ['<div class="' + cls + '"' + (id ? ' id="' + id + '"' : '') + '>'];
+  for(const s of INDEX){
+    if(!s.name) continue;
+    const pages = s.pages.filter(p => !(p.route in SHUT));
+    out.push('  <div class="toc-sec"><h3>' + s.name + '</h3><ul>');
+    for(const p of pages) out.push('    <li><a href="' + pageHref(p, base) + '"' + (p.list ? ' data-list="' + p.list + '"' : '') +
+      (p.route && base === '' ? ' data-route="' + p.route + '"' : '') + (p.sec ? ' data-sec="' + p.sec + '"' : '') +
+      '><i class="ti ti-' + p.icon + '" aria-hidden="true"></i><span>' + pageName(p) + '</span><span class="toc-n"' +
+      (pageKind(p) ? ' data-k="' + pageKind(p) + '"' : '') + '>' + n(p) + '</span></a></li>');
+    out.push('  </ul></div>');
+  }
+  out.push('</div>');
+  return out.join('\n');
+}
 /* The top bar's index, as the pages write it out (no module is there to draw it on the first paint). Pages the
    table has shut are left out. */
 export function navHTML(base = ''){

@@ -5,8 +5,8 @@
    data job's cycle and last run from the worker's own health answer (/api/health, worker/health.js). A job the
    site does not run is not on the page, and one that has stopped says so in the same words the owner's
    dashboard uses. The page is its own tab, so none of it is fetched until somebody opens it. */
-import { $, esc, ago, manifest, prices } from './app.js';
-import { INDEX, KIND, pageName, pageHref, pageKind, SHUT } from './kinds.js';
+import { esc, ago, manifest, prices } from './app.js';
+import { contentsHTML } from './kinds.js';
 
 let EL = null;
 const num = n => (+n || 0).toLocaleString('en');
@@ -37,18 +37,10 @@ function head(man, game){
     (bits.length ? '<p class="dt-sub">' + bits.join(' · ') + '</p>' : '') + '</div>';
 }
 
-/* the index, section by section, each page with its count: the same table the top bar is drawn from */
+/* the index, section by section, each page with its count: the same contents the home page shows */
 function held(man){
-  const K = (man && man.kinds) || {};
-  const rows = INDEX.filter(s => s.name).map(s => {
-    const pages = s.pages.filter(p => !(p.route in SHUT)).map(p => {
-      const k = pageKind(p), n = k && K[k] ? K[k].n : null;
-      return '<li><a href="' + pageHref(p) + '"><i class="ti ti-' + p.icon + '" aria-hidden="true"></i>' + esc(pageName(p)) +
-        '</a>' + (n ? '<span class="dt-n">' + num(n) + '</span>' : '') + '</li>';
-    }).join('');
-    return '<div class="dt-sec"><h3>' + esc(s.name) + '</h3><ul>' + pages + '</ul></div>';
-  }).join('');
-  return '<section class="dt-block"><div class="sect"><h3>The index</h3></div><div class="dt-grid">' + rows + '</div>' +
+  const counts = Object.fromEntries(Object.entries((man && man.kinds) || {}).map(([k, K]) => [k, K.n]));
+  return '<section class="dt-block"><div class="sect"><h3>The index</h3></div>' + contentsHTML(counts).replace(' id="toc"', '') +
     '<p class="note"><a href="#/map">The whole index as a map</a></p></section>';
 }
 

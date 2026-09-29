@@ -106,6 +106,8 @@ document.body.dataset.route = (function(r){ return ['build','currency','trade','
 </header>
 
 <main>
+  <!-- the index down the side of a list, from the table in assets/kinds.js (assets/app.js sideShow) -->
+  <aside class="side" id="side" aria-label="The index" hidden></aside>
   <!-- Home: one search bar, front and center -->
   <section class="view" id="view-home" data-view="home">
     <p class="leagueclock" id="leagueclock"></p>
@@ -133,12 +135,41 @@ document.body.dataset.route = (function(r){ return ['build','currency','trade','
       <!-- the kinds in assets/kinds.js, drawn here so the bar never changes shape on the first paint;
            assets/app.js puts them back in order if the table has moved on -->
       <div class="kinds" id="kinds" role="group" aria-label="Show only"><button type="button" class="chip" data-k="all" aria-pressed="true">All<span class="ct"></span></button><button type="button" class="chip" data-k="g" aria-pressed="false">Gems<span class="ct"></span></button><button type="button" class="chip" data-k="u" aria-pressed="false">Uniques<span class="ct"></span></button><button type="button" class="chip" data-k="p" aria-pressed="false">Passives<span class="ct"></span></button><button type="button" class="chip" data-k="b" aria-pressed="false">Bases<span class="ct"></span></button><button type="button" class="chip" data-k="a" aria-pressed="false">Atlas<span class="ct"></span></button><button type="button" class="chip" data-k="c" aria-pressed="false">Currency<span class="ct"></span></button><button type="button" class="chip" data-k="w" aria-pressed="false">Keywords<span class="ct"></span></button><button type="button" class="chip" data-k="h" aria-pressed="false">Mechanics<span class="ct"></span></button><button type="button" class="chip" data-k="x" aria-pressed="false">Bosses<span class="ct"></span></button></div>
+      <!-- the index's contents, from the table in assets/kinds.js (tools/dev/nav.mjs writes it; assets/app.js fills the counts) -->
+      <div class="toc" id="toc">
+        <div class="toc-sec"><h3>Items</h3><ul>
+          <li><a href="explore#uniques" data-sec="uniques"><i class="ti ti-uniques" aria-hidden="true"></i><span>Uniques</span><span class="toc-n" data-k="u"></span></a></li>
+          <li><a href="explore#gems" data-sec="gems"><i class="ti ti-gems" aria-hidden="true"></i><span>Gems</span><span class="toc-n" data-k="g"></span></a></li>
+          <li><a href="#/?k=b" data-list="b"><i class="ti ti-bases" aria-hidden="true"></i><span>Bases</span><span class="toc-n" data-k="b"></span></a></li>
+          <li><a href="#/?k=i" data-list="i"><i class="ti ti-classes" aria-hidden="true"></i><span>Item classes</span><span class="toc-n" data-k="i"></span></a></li>
+        </ul></div>
+        <div class="toc-sec"><h3>Passives</h3><ul>
+          <li><a href="explore#tree" data-sec="tree"><i class="ti ti-tree" aria-hidden="true"></i><span>Passive tree</span><span class="toc-n"></span></a></li>
+          <li><a href="#/?k=p" data-list="p"><i class="ti ti-passives" aria-hidden="true"></i><span>Passives</span><span class="toc-n" data-k="p"></span></a></li>
+          <li><a href="#/?k=t" data-list="t"><i class="ti ti-clusters" aria-hidden="true"></i><span>Clusters</span><span class="toc-n" data-k="t"></span></a></li>
+          <li><a href="#/?k=y" data-list="y"><i class="ti ti-ascendancy" aria-hidden="true"></i><span>Ascendancies</span><span class="toc-n" data-k="y"></span></a></li>
+        </ul></div>
+        <div class="toc-sec"><h3>Mechanics</h3><ul>
+          <li><a href="#/?k=w" data-list="w"><i class="ti ti-keywords" aria-hidden="true"></i><span>Keywords</span><span class="toc-n" data-k="w"></span></a></li>
+          <li><a href="#/?k=h" data-list="h"><i class="ti ti-mechanics" aria-hidden="true"></i><span>How it works</span><span class="toc-n" data-k="h"></span></a></li>
+          <li><a href="#/?k=d" data-list="d"><i class="ti ti-buffs" aria-hidden="true"></i><span>Buffs and debuffs</span><span class="toc-n" data-k="d"></span></a></li>
+          <li><a href="#/?k=q" data-list="q"><i class="ti ti-interactions" aria-hidden="true"></i><span>Interactions</span><span class="toc-n" data-k="q"></span></a></li>
+        </ul></div>
+        <div class="toc-sec"><h3>Endgame</h3><ul>
+          <li><a href="#/atlas" data-route="atlas"><i class="ti ti-atlas" aria-hidden="true"></i><span>Atlas</span><span class="toc-n" data-k="a"></span></a></li>
+          <li><a href="#/bosses" data-route="bosses"><i class="ti ti-bosses" aria-hidden="true"></i><span>Bosses</span><span class="toc-n" data-k="x"></span></a></li>
+        </ul></div>
+        <div class="toc-sec"><h3>Economy</h3><ul>
+          <li><a href="#/currency" data-route="currency"><i class="ti ti-currency" aria-hidden="true"></i><span>Currency</span><span class="toc-n" data-k="c"></span></a></li>
+          <li><a href="#/trade" data-route="trade"><i class="ti ti-trade" aria-hidden="true"></i><span>Trade</span><span class="toc-n"></span></a></li>
+        </ul></div>
+      </div>
       <!-- a community guide for a player who has not got to any of this yet (data/guides.json, tools/guides.py) -->
       <div class="guide" id="guide" hidden></div>
     </div>
     <figure class="quote" id="quote"><blockquote>Make Leapslam Great again.</blockquote><figcaption>Seonso</figcaption></figure>
-    <script>/* a search in the address (#/?q=...): the hero starts docked and the quote hidden, as assets/app.js leaves them */
-    if(/^#\/\?(.*&)?q=[^&]/.test(location.hash)){ document.getElementById('hero').classList.add('docked'); document.getElementById('quote').hidden = true; }</script>
+    <script>/* a search or a list in the address (#/?q=... or #/?k=...): the hero starts docked and the quote hidden, as assets/app.js leaves them */
+    if(/^#\/\?(.*&)?(q|k)=[^&]/.test(location.hash)){ document.getElementById('hero').classList.add('docked'); document.getElementById('quote').hidden = true; }</script>
     <p class="status" id="status" aria-live="polite"></p>
     <div class="cards wait" id="cards"></div>
     <div class="more" id="more" hidden><span class="note">Loading more…</span></div>

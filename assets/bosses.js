@@ -11,7 +11,7 @@ import { D, $, esc, card, openDetail, priceOf, hrefOf, money as coin, moneyHTML,
 
 const SHOW = [['all', 'All'], ['pin', 'Pinnacle'], ['drops', 'With drops']];
 const SORTS = [['name', 'Name'], ['way', 'Way in']];
-const S = {q: '', show: 'all', sort: 'name'};
+const S = {q: '', show: 'drops', sort: 'name'};   // opens on the bosses with drops: most of the rest have none listed yet
 let EL, B = null, BP = null, ROWS = [], WIRED = false;
 
 async function getJSON(url){
@@ -513,6 +513,10 @@ function update(){
   if(!ROWS.length) return;
   S.q = params().get('q') || '';
   $('#boq', EL).value = S.q;
+  if(S.q){   // a boss asked for by name is shown, drops or not
+    S.show = 'all';
+    for(const c of EL.querySelectorAll('.chip[data-v]')) c.setAttribute('aria-pressed', String(c.dataset.v === 'all'));
+  }
   render();
 }
 

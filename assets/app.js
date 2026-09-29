@@ -5,7 +5,7 @@
                        trade site listings (worker/prices.js); trends from the site's own daily prices
    Build usage links to poe.ninja's own builds page: their builds API is not open to other sites. */
 import {initKeys, setCardKeys, keyLabel} from './keys.js';
-import {KIND, DEFAULT, FIELDS, ACTS, CHIPS, NAMES, ROUTES, SHUT, fieldsOf, FRAME, SLOTS, BOXES, MAKE, KW, holds, markOf, ours, slotList, jobOf} from './kinds.js';
+import {KIND, DEFAULT, FIELDS, ACTS, CHIPS, NAMES, ROUTES, SHUT, contentsHTML, fieldsOf, FRAME, SLOTS, BOXES, MAKE, KW, holds, markOf, ours, slotList, jobOf} from './kinds.js';
 import * as edges from './edges.js';
 import * as marks from './marks.js';
 import {ranker, hits, SEEN_MAX} from './rank.js';
@@ -2631,6 +2631,7 @@ function homeRender(){
   const hero = $('#hero'), status = $('#status'), more = $('#more');
   // words typed, or a kind picked with none: a kind's own list (assets/kinds.js INDEX, the list pages)
   const listing = !H.q.trim() && H.kind !== 'all' && !!KIND[H.kind];
+  sideShow();
   const has = H.q.trim().length > 0 || listing;
   hero.classList.toggle('docked', has);
   let list, label;
@@ -2772,6 +2773,36 @@ async function mountGuide(){
   box.hidden = false;
 }
 
+/* The index down the side of a page that is a list: a search, a kind's list, and the tabs that list (assets/kinds.js
+   INDEX draws it, assets/app.css shows it from 1280 px). Drawn once, its counts filled from the manifest; the page
+   on show is marked each time. */
+const LISTS = new Set(['currency', 'atlas', 'bosses']);
+function sideShow(){
+  const side = $('#side');
+  if(!side) return;
+  const r = document.body.dataset.route || 'home';
+  const on = LISTS.has(r) || (r === 'home' && (H.q.trim().length > 0 || H.kind !== 'all'));
+  document.body.classList.toggle('withside', on);
+  side.hidden = !on;
+  if(!on) return;
+  if(!side.firstChild){
+    side.innerHTML = contentsHTML(null, '', {cls: 'toc side-toc', id: ''});
+    MAN.then(man => fillCounts(man, side), () => {});
+  }
+  for(const a of side.querySelectorAll('a')){
+    const here = r === 'home' ? a.dataset.list === H.kind : a.dataset.route === r;
+    if(here) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current');
+  }
+}
+/* the counts in the index's contents (index.html #toc, the Data page): each kind's own, from the manifest */
+export function fillCounts(man, host = document){
+  const K = (man && man.kinds) || {};
+  for(const el of host.querySelectorAll('.toc-n[data-k]')){
+    const n = K[el.dataset.k] && +K[el.dataset.k].n;
+    if(n) el.textContent = n.toLocaleString('en');
+  }
+}
+
 /* ---------- router ---------- */
 function route(){ const m = location.hash.match(/^#\/(\w+)/); return m ? m[1] : 'home'; }
 export function params(){ const i = location.hash.indexOf('?'); return new URLSearchParams(i >= 0 ? location.hash.slice(i + 1) : ''); }
@@ -2809,6 +2840,7 @@ async function show(e){
   const back = ON !== r && LEFT[r] && LEFT[r].at === location.hash ? LEFT[r].y : null;
   ON = r;
   document.body.dataset.route = r;
+  sideShow();
   document.querySelectorAll('.view').forEach(v => v.hidden = v.dataset.view !== r);
   document.querySelectorAll('.tabs a[data-route]').forEach(a => { if(a.dataset.route === r) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current'); });
   if(r !== 'home') document.querySelectorAll('a[data-list]').forEach(a => a.removeAttribute('aria-current'));
@@ -2883,6 +2915,7 @@ NOW.then(M => {
 });
 MAN.then(man => {
   // the client build (4.5.5.2) as players know it: patch 0.5.5
+  fillCounts(man);
   $('#gamever').textContent = (man.v || '').replace(/^4\.(\d+)\.(\d+).*$/, '0.$1.$2');
 }).catch(failed);
 searching.then(() => {
