@@ -77,6 +77,8 @@ async function marketFile(env, url, ctx){
   return new Response(row.body, {headers: {
     'Content-Type': 'application/json; charset=utf-8',
     'Cache-Control': 'public, max-age=300, stale-while-revalidate=600',
+    'Access-Control-Allow-Origin': '*',   // open data (#123), like the rest of data/
+    'Access-Control-Expose-Headers': 'X-Data-At, X-Data-Age',
     'Last-Modified': new Date(row.at * 1000).toUTCString(),
     'X-Data-At': String(row.at),
     'X-Data-Age': String(Math.max(0, Math.floor(Date.now() / 1000) - row.at)),

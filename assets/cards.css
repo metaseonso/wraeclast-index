@@ -295,6 +295,7 @@ body.ov-open{overflow:hidden}
 }
 /* the card's own buttons (Trade, Pin, Open): the foot of the box, always in reach however long the card is */
 .ov-go{display:flex; justify-content:flex-end; gap:8px; flex-wrap:wrap; margin-top:10px}
+.ov-fresh{margin-right:auto; align-self:center; font-size:11.5px; color:var(--faint)}   /* the card's patch, left of its buttons */
 @media (min-width:641px){ .ov-box .ov-go{position:sticky; bottom:0; z-index:2; margin:0; padding:10px 14px;
   background:var(--surface); border-top:1px solid var(--line); border-radius:0 0 14px 14px} }
 .btn.gold{display:inline-flex; align-items:center; gap:6px; padding:6px 13px; border-radius:8px; text-decoration:none;
