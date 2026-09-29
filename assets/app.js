@@ -2322,7 +2322,8 @@ export function openDetail(it, opts = {}, href){
 function refsOf(it){
   const out = [];
   for(const name of (KIND[it.k] || {}).fields || []){
-    for(const x of (FIELDS[name] || {}).of || []) if(x && x.card && holds(it, x.on)) out.push(x.card);
+    const of = (FIELDS[name] || {}).of;   // a list of switches; an enum's `of` is a table of words, not a list
+    if(Array.isArray(of)) for(const x of of) if(x && x.card && holds(it, x.on)) out.push(x.card);
   }
   return out;
 }

@@ -443,6 +443,42 @@
      "by": [
       "declaration"
      ]
+    },
+    "rb": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "kx": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "dg": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
     }
    }
   },
@@ -836,6 +872,42 @@
      ]
     },
     "ro": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "rb": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "kx": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "dg": {
      "json": [
       "string",
       "number",
@@ -1242,6 +1314,42 @@
      "by": [
       "declaration"
      ]
+    },
+    "rb": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "kx": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "dg": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
     }
    }
   },
@@ -1609,6 +1717,42 @@
      ]
     },
     "ro": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "rb": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "kx": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "dg": {
      "json": [
       "string",
       "number",
@@ -2007,6 +2151,42 @@
      "by": [
       "declaration"
      ]
+    },
+    "rb": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "kx": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "dg": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
     }
    }
   },
@@ -2356,6 +2536,42 @@
      ]
     },
     "ro": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "rb": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "kx": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "dg": {
      "json": [
       "string",
       "number",
@@ -2771,6 +2987,42 @@
      "by": [
       "declaration"
      ]
+    },
+    "rb": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "kx": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "dg": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
     }
    }
   },
@@ -3161,6 +3413,42 @@
       "declaration"
      ]
     },
+    "rb": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "kx": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "dg": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
     "nx": {
      "json": [
       "string",
@@ -3205,7 +3493,6 @@
      "by": [
       "row",
       "name",
-      "mondanger",
       "rules",
       "weight",
       "changed"
@@ -3554,6 +3841,42 @@
      "by": [
       "declaration"
      ]
+    },
+    "rb": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "kx": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "dg": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
     }
    }
   },
@@ -3695,6 +4018,15 @@
      ],
      "by": [
       "text"
+     ],
+     "drawn": 1
+    },
+    "ap": {
+     "json": [
+      "array"
+     ],
+     "by": [
+      "ascend"
      ],
      "drawn": 1
     },
@@ -3894,6 +4226,42 @@
      ]
     },
     "ro": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "rb": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "kx": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "dg": {
      "json": [
       "string",
       "number",
@@ -4272,6 +4640,42 @@
      "by": [
       "declaration"
      ]
+    },
+    "rb": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "kx": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "dg": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
     }
    }
   },
@@ -4623,6 +5027,42 @@
      "by": [
       "declaration"
      ]
+    },
+    "rb": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "kx": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "dg": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
     }
    }
   },
@@ -4963,6 +5403,42 @@
      ]
     },
     "ro": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "rb": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "kx": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "dg": {
      "json": [
       "string",
       "number",
@@ -5462,6 +5938,42 @@
      "by": [
       "declaration"
      ]
+    },
+    "rb": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "kx": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "dg": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
     }
    }
   },
@@ -5922,6 +6434,42 @@
      "by": [
       "declaration"
      ]
+    },
+    "rb": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "kx": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "dg": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
     }
    }
   },
@@ -6360,6 +6908,978 @@
      "by": [
       "declaration"
      ]
+    },
+    "rb": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "kx": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "dg": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    }
+   }
+  },
+  "l": {
+   "one": "Trial modifier",
+   "many": "Trial modifiers",
+   "rows": "index.json",
+   "fields": {
+    "k": {
+     "json": [
+      "string"
+     ],
+     "by": [
+      "row"
+     ],
+     "need": 1
+    },
+    "id": {
+     "json": [
+      "string"
+     ],
+     "by": [
+      "row"
+     ],
+     "need": 1
+    },
+    "n": {
+     "json": [
+      "string"
+     ],
+     "by": [
+      "row",
+      "name",
+      "changed"
+     ],
+     "need": 1,
+     "drawn": 1
+    },
+    "s": {
+     "json": [
+      "string"
+     ],
+     "by": [
+      "row",
+      "sub"
+     ],
+     "need": 1,
+     "drawn": 1
+    },
+    "img": {
+     "json": [
+      "string"
+     ],
+     "by": [
+      "row",
+      "art"
+     ]
+    },
+    "ic": {
+     "json": [
+      "array"
+     ],
+     "by": [
+      "row",
+      "art"
+     ]
+    },
+    "lx": {
+     "json": [
+      "array"
+     ],
+     "by": [
+      "row"
+     ]
+    },
+    "q": {
+     "json": [
+      "string"
+     ],
+     "by": [
+      "row"
+     ]
+    },
+    "lo": {
+     "json": [
+      "number"
+     ],
+     "by": [
+      "row"
+     ]
+    },
+    "f": {
+     "json": [
+      "array"
+     ],
+     "by": [
+      "row"
+     ]
+    },
+    "fg": {
+     "json": [
+      "string"
+     ],
+     "by": [
+      "row"
+     ]
+    },
+    "ac": {
+     "json": [
+      "number"
+     ],
+     "by": [
+      "row",
+      "anoint"
+     ]
+    },
+    "did": {
+     "json": [
+      "string"
+     ],
+     "by": [
+      "row"
+     ]
+    },
+    "mark": {
+     "json": [
+      "string"
+     ],
+     "by": [
+      "trialmark"
+     ],
+     "drawn": 1
+    },
+    "on": {
+     "json": [
+      "string"
+     ],
+     "by": [
+      "onwho"
+     ],
+     "drawn": 1
+    },
+    "steps": {
+     "json": [
+      "number"
+     ],
+     "by": [
+      "steps"
+     ],
+     "drawn": 1
+    },
+    "rooms": {
+     "json": [
+      "number"
+     ],
+     "by": [
+      "rooms"
+     ],
+     "drawn": 1
+    },
+    "level": {
+     "json": [
+      "number"
+     ],
+     "by": [
+      "floorlv"
+     ],
+     "drawn": 1
+    },
+    "gen": {
+     "json": [
+      "string"
+     ],
+     "by": [
+      "relicgen"
+     ],
+     "drawn": 1
+    },
+    "un": {
+     "json": [
+      "number",
+      "boolean",
+      "string"
+     ],
+     "by": [
+      "unsure"
+     ],
+     "drawn": 1
+    },
+    "ls": {
+     "json": [
+      "array",
+      "string"
+     ],
+     "by": [
+      "lines"
+     ],
+     "drawn": 1
+    },
+    "t": {
+     "json": [
+      "array",
+      "string"
+     ],
+     "by": [
+      "text"
+     ],
+     "drawn": 1
+    },
+    "risk": {
+     "json": [
+      "array",
+      "string"
+     ],
+     "by": [
+      "risk"
+     ],
+     "drawn": 1
+    },
+    "reward": {
+     "json": [
+      "array",
+      "string"
+     ],
+     "by": [
+      "reward"
+     ],
+     "drawn": 1
+    },
+    "tiers": {
+     "json": [
+      "array"
+     ],
+     "by": [
+      "tiers"
+     ],
+     "drawn": 1
+    },
+    "alt": {
+     "json": [
+      "array",
+      "string"
+     ],
+     "by": [
+      "others"
+     ],
+     "drawn": 1
+    },
+    "names": {
+     "json": [
+      "array",
+      "string"
+     ],
+     "by": [
+      "floornames"
+     ],
+     "drawn": 1
+    },
+    "why": {
+     "json": [
+      "array",
+      "string"
+     ],
+     "by": [
+      "markwhy"
+     ],
+     "drawn": 1
+    },
+    "dg": {
+     "json": [
+      "array"
+     ],
+     "by": [
+      "harms"
+     ],
+     "drawn": 1
+    },
+    "est": {
+     "json": [
+      "array"
+     ],
+     "by": [
+      "harms"
+     ]
+    },
+    "qt": {
+     "json": [
+      "string"
+     ],
+     "by": [
+      "quote"
+     ],
+     "drawn": 1
+    },
+    "o": {
+     "json": [
+      "array"
+     ],
+     "by": [
+      "options"
+     ],
+     "drawn": 1
+    },
+    "fl": {
+     "json": [
+      "array"
+     ],
+     "by": [
+      "flow"
+     ],
+     "drawn": 1
+    },
+    "src": {
+     "json": [
+      "string"
+     ],
+     "by": [
+      "source"
+     ],
+     "drawn": 1
+    },
+    "tags": {
+     "json": [
+      "array"
+     ],
+     "by": [
+      "tags"
+     ],
+     "drawn": 1
+    },
+    "rec": {
+     "json": [
+      "array"
+     ],
+     "by": [
+      "anoint"
+     ],
+     "drawn": 1
+    },
+    "kw": {
+     "json": [
+      "array"
+     ],
+     "by": [
+      "keywords"
+     ],
+     "ids": 1
+    },
+    "base": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "cr": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "at": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "job": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "act": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "go": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "bx": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "wx": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "ox": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "mx": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "rw": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "ro": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "rb": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "kx": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    }
+   }
+  },
+  "m": {
+   "one": "Rare monster modifier",
+   "many": "Rare monster modifiers",
+   "rows": "index.json",
+   "fields": {
+    "k": {
+     "json": [
+      "string"
+     ],
+     "by": [
+      "row"
+     ],
+     "need": 1
+    },
+    "id": {
+     "json": [
+      "string"
+     ],
+     "by": [
+      "row"
+     ],
+     "need": 1
+    },
+    "n": {
+     "json": [
+      "string"
+     ],
+     "by": [
+      "row",
+      "name",
+      "changed"
+     ],
+     "need": 1,
+     "drawn": 1
+    },
+    "s": {
+     "json": [
+      "string"
+     ],
+     "by": [
+      "row",
+      "sub"
+     ],
+     "need": 1,
+     "drawn": 1
+    },
+    "img": {
+     "json": [
+      "string"
+     ],
+     "by": [
+      "row",
+      "art"
+     ]
+    },
+    "ic": {
+     "json": [
+      "array"
+     ],
+     "by": [
+      "row",
+      "art"
+     ]
+    },
+    "lx": {
+     "json": [
+      "array"
+     ],
+     "by": [
+      "row"
+     ]
+    },
+    "q": {
+     "json": [
+      "string"
+     ],
+     "by": [
+      "row"
+     ]
+    },
+    "lo": {
+     "json": [
+      "number"
+     ],
+     "by": [
+      "row"
+     ]
+    },
+    "f": {
+     "json": [
+      "array"
+     ],
+     "by": [
+      "row"
+     ]
+    },
+    "fg": {
+     "json": [
+      "string"
+     ],
+     "by": [
+      "row"
+     ]
+    },
+    "ac": {
+     "json": [
+      "number"
+     ],
+     "by": [
+      "row",
+      "anoint"
+     ]
+    },
+    "did": {
+     "json": [
+      "string"
+     ],
+     "by": [
+      "row"
+     ]
+    },
+    "steps": {
+     "json": [
+      "number"
+     ],
+     "by": [
+      "steps"
+     ],
+     "drawn": 1
+    },
+    "un": {
+     "json": [
+      "number",
+      "boolean",
+      "string"
+     ],
+     "by": [
+      "unsure"
+     ],
+     "drawn": 1
+    },
+    "ls": {
+     "json": [
+      "array",
+      "string"
+     ],
+     "by": [
+      "lines"
+     ],
+     "drawn": 1
+    },
+    "t": {
+     "json": [
+      "array",
+      "string"
+     ],
+     "by": [
+      "text"
+     ],
+     "drawn": 1
+    },
+    "alt": {
+     "json": [
+      "array",
+      "string"
+     ],
+     "by": [
+      "others"
+     ],
+     "drawn": 1
+    },
+    "dg": {
+     "json": [
+      "array"
+     ],
+     "by": [
+      "harms"
+     ],
+     "drawn": 1
+    },
+    "est": {
+     "json": [
+      "array"
+     ],
+     "by": [
+      "harms"
+     ]
+    },
+    "qt": {
+     "json": [
+      "string"
+     ],
+     "by": [
+      "quote"
+     ],
+     "drawn": 1
+    },
+    "o": {
+     "json": [
+      "array"
+     ],
+     "by": [
+      "options"
+     ],
+     "drawn": 1
+    },
+    "fl": {
+     "json": [
+      "array"
+     ],
+     "by": [
+      "flow"
+     ],
+     "drawn": 1
+    },
+    "src": {
+     "json": [
+      "string"
+     ],
+     "by": [
+      "source"
+     ],
+     "drawn": 1
+    },
+    "tags": {
+     "json": [
+      "array"
+     ],
+     "by": [
+      "tags"
+     ],
+     "drawn": 1
+    },
+    "rec": {
+     "json": [
+      "array"
+     ],
+     "by": [
+      "anoint"
+     ],
+     "drawn": 1
+    },
+    "kw": {
+     "json": [
+      "array"
+     ],
+     "by": [
+      "keywords"
+     ],
+     "ids": 1
+    },
+    "base": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "cr": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "at": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "job": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "act": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "go": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "bx": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "wx": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "ox": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "mx": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "rw": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "ro": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "rb": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "kx": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
     }
    }
   },
@@ -6740,6 +8260,42 @@
      "by": [
       "declaration"
      ]
+    },
+    "rb": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "kx": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "dg": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
     }
    }
   }
@@ -6758,6 +8314,8 @@
     "h",
     "i",
     "j",
+    "l",
+    "m",
     "p",
     "q",
     "r",
@@ -6807,6 +8365,8 @@
     "h",
     "i",
     "j",
+    "l",
+    "m",
     "p",
     "q",
     "r",
@@ -6821,6 +8381,39 @@
    "drawn": [],
    "by": [
     "declaration"
+   ]
+  },
+  "alt": {
+   "json": [
+    "array",
+    "string"
+   ],
+   "kinds": [
+    "l",
+    "m"
+   ],
+   "need": [],
+   "drawn": [
+    "l",
+    "m"
+   ],
+   "by": [
+    "others"
+   ]
+  },
+  "ap": {
+   "json": [
+    "array"
+   ],
+   "kinds": [
+    "y"
+   ],
+   "need": [],
+   "drawn": [
+    "y"
+   ],
+   "by": [
+    "ascend"
    ]
   },
   "areas": {
@@ -6872,6 +8465,8 @@
     "h",
     "i",
     "j",
+    "l",
+    "m",
     "p",
     "q",
     "r",
@@ -6905,6 +8500,8 @@
     "h",
     "i",
     "j",
+    "l",
+    "m",
     "p",
     "q",
     "r",
@@ -6953,6 +8550,8 @@
     "h",
     "i",
     "j",
+    "l",
+    "m",
     "p",
     "q",
     "r",
@@ -7033,6 +8632,8 @@
     "h",
     "i",
     "j",
+    "l",
+    "m",
     "p",
     "q",
     "r",
@@ -7098,6 +8699,45 @@
     "corruption"
    ]
   },
+  "dg": {
+   "json": [
+    "string",
+    "number",
+    "boolean",
+    "array",
+    "object"
+   ],
+   "kinds": [
+    "a",
+    "b",
+    "c",
+    "d",
+    "g",
+    "h",
+    "i",
+    "j",
+    "l",
+    "m",
+    "p",
+    "q",
+    "r",
+    "s",
+    "t",
+    "u",
+    "v",
+    "w",
+    "y"
+   ],
+   "need": [],
+   "drawn": [
+    "l",
+    "m"
+   ],
+   "by": [
+    "declaration",
+    "harms"
+   ]
+  },
   "did": {
    "json": [
     "string"
@@ -7111,6 +8751,8 @@
     "h",
     "i",
     "j",
+    "l",
+    "m",
     "p",
     "q",
     "r",
@@ -7157,6 +8799,20 @@
     "row"
    ]
   },
+  "est": {
+   "json": [
+    "array"
+   ],
+   "kinds": [
+    "l",
+    "m"
+   ],
+   "need": [],
+   "drawn": [],
+   "by": [
+    "harms"
+   ]
+  },
   "f": {
    "json": [
     "array"
@@ -7170,6 +8826,8 @@
     "h",
     "i",
     "j",
+    "l",
+    "m",
     "p",
     "q",
     "r",
@@ -7199,6 +8857,8 @@
     "h",
     "i",
     "j",
+    "l",
+    "m",
     "p",
     "q",
     "r",
@@ -7228,6 +8888,8 @@
     "h",
     "i",
     "j",
+    "l",
+    "m",
     "p",
     "q",
     "r",
@@ -7248,6 +8910,8 @@
     "h",
     "i",
     "j",
+    "l",
+    "m",
     "p",
     "q",
     "r",
@@ -7307,6 +8971,21 @@
     "questgold"
    ]
   },
+  "gen": {
+   "json": [
+    "string"
+   ],
+   "kinds": [
+    "l"
+   ],
+   "need": [],
+   "drawn": [
+    "l"
+   ],
+   "by": [
+    "relicgen"
+   ]
+  },
   "go": {
    "json": [
     "string",
@@ -7324,6 +9003,8 @@
     "h",
     "i",
     "j",
+    "l",
+    "m",
     "p",
     "q",
     "r",
@@ -7385,6 +9066,8 @@
     "h",
     "i",
     "j",
+    "l",
+    "m",
     "p",
     "q",
     "r",
@@ -7415,6 +9098,8 @@
     "h",
     "i",
     "j",
+    "l",
+    "m",
     "p",
     "q",
     "r",
@@ -7434,6 +9119,8 @@
     "h",
     "i",
     "j",
+    "l",
+    "m",
     "p",
     "q",
     "r",
@@ -7462,6 +9149,8 @@
     "h",
     "i",
     "j",
+    "l",
+    "m",
     "p",
     "q",
     "r",
@@ -7496,6 +9185,8 @@
     "h",
     "i",
     "j",
+    "l",
+    "m",
     "p",
     "q",
     "r",
@@ -7525,6 +9216,8 @@
     "h",
     "i",
     "j",
+    "l",
+    "m",
     "p",
     "q",
     "r",
@@ -7544,6 +9237,8 @@
     "h",
     "i",
     "j",
+    "l",
+    "m",
     "p",
     "q",
     "r",
@@ -7590,6 +9285,8 @@
     "h",
     "i",
     "j",
+    "l",
+    "m",
     "p",
     "q",
     "r",
@@ -7610,6 +9307,8 @@
     "h",
     "i",
     "j",
+    "l",
+    "m",
     "p",
     "q",
     "r",
@@ -7622,6 +9321,56 @@
    ],
    "by": [
     "keywords"
+   ]
+  },
+  "kx": {
+   "json": [
+    "string",
+    "number",
+    "boolean",
+    "array",
+    "object"
+   ],
+   "kinds": [
+    "a",
+    "b",
+    "c",
+    "d",
+    "g",
+    "h",
+    "i",
+    "j",
+    "l",
+    "m",
+    "p",
+    "q",
+    "r",
+    "s",
+    "t",
+    "u",
+    "v",
+    "w",
+    "y"
+   ],
+   "need": [],
+   "drawn": [],
+   "by": [
+    "declaration"
+   ]
+  },
+  "level": {
+   "json": [
+    "number"
+   ],
+   "kinds": [
+    "l"
+   ],
+   "need": [],
+   "drawn": [
+    "l"
+   ],
+   "by": [
+    "floorlv"
    ]
   },
   "li": {
@@ -7669,6 +9418,8 @@
     "h",
     "i",
     "j",
+    "l",
+    "m",
     "p",
     "q",
     "r",
@@ -7699,6 +9450,8 @@
     "h",
     "i",
     "j",
+    "l",
+    "m",
     "p",
     "q",
     "r",
@@ -7719,6 +9472,8 @@
     "h",
     "i",
     "j",
+    "l",
+    "m",
     "p",
     "q",
     "r",
@@ -7746,6 +9501,8 @@
     "h",
     "i",
     "j",
+    "l",
+    "m",
     "p",
     "q",
     "r",
@@ -7760,6 +9517,21 @@
    "drawn": [],
    "by": [
     "row"
+   ]
+  },
+  "mark": {
+   "json": [
+    "string"
+   ],
+   "kinds": [
+    "l"
+   ],
+   "need": [],
+   "drawn": [
+    "l"
+   ],
+   "by": [
+    "trialmark"
    ]
   },
   "max": {
@@ -7845,6 +9617,8 @@
     "h",
     "i",
     "j",
+    "l",
+    "m",
     "p",
     "q",
     "r",
@@ -7874,6 +9648,8 @@
     "h",
     "i",
     "j",
+    "l",
+    "m",
     "p",
     "q",
     "r",
@@ -7893,6 +9669,8 @@
     "h",
     "i",
     "j",
+    "l",
+    "m",
     "p",
     "q",
     "r",
@@ -7912,6 +9690,8 @@
     "h",
     "i",
     "j",
+    "l",
+    "m",
     "p",
     "q",
     "r",
@@ -7932,7 +9712,6 @@
     "gemgold",
     "goldv",
     "mapdanger",
-    "mondanger",
     "name",
     "row",
     "rules",
@@ -7954,6 +9733,22 @@
    ],
    "by": [
     "row"
+   ]
+  },
+  "names": {
+   "json": [
+    "array",
+    "string"
+   ],
+   "kinds": [
+    "l"
+   ],
+   "need": [],
+   "drawn": [
+    "l"
+   ],
+   "by": [
+    "floornames"
    ]
   },
   "ni": {
@@ -8050,6 +9845,8 @@
     "h",
     "i",
     "j",
+    "l",
+    "m",
     "p",
     "q",
     "r",
@@ -8070,6 +9867,8 @@
     "h",
     "i",
     "j",
+    "l",
+    "m",
     "p",
     "q",
     "r",
@@ -8099,6 +9898,21 @@
     "outcomes"
    ]
   },
+  "on": {
+   "json": [
+    "string"
+   ],
+   "kinds": [
+    "l"
+   ],
+   "need": [],
+   "drawn": [
+    "l"
+   ],
+   "by": [
+    "onwho"
+   ]
+  },
   "ox": {
    "json": [
     "string",
@@ -8116,6 +9930,8 @@
     "h",
     "i",
     "j",
+    "l",
+    "m",
     "p",
     "q",
     "r",
@@ -8260,6 +10076,8 @@
     "h",
     "i",
     "j",
+    "l",
+    "m",
     "p",
     "q",
     "r",
@@ -8292,6 +10110,8 @@
     "h",
     "i",
     "j",
+    "l",
+    "m",
     "p",
     "q",
     "r",
@@ -8312,6 +10132,8 @@
     "h",
     "i",
     "j",
+    "l",
+    "m",
     "p",
     "q",
     "r",
@@ -8341,6 +10163,41 @@
     "row"
    ]
   },
+  "rb": {
+   "json": [
+    "string",
+    "number",
+    "boolean",
+    "array",
+    "object"
+   ],
+   "kinds": [
+    "a",
+    "b",
+    "c",
+    "d",
+    "g",
+    "h",
+    "i",
+    "j",
+    "l",
+    "m",
+    "p",
+    "q",
+    "r",
+    "s",
+    "t",
+    "u",
+    "v",
+    "w",
+    "y"
+   ],
+   "need": [],
+   "drawn": [],
+   "by": [
+    "declaration"
+   ]
+  },
   "rec": {
    "json": [
     "array"
@@ -8354,6 +10211,8 @@
     "h",
     "i",
     "j",
+    "l",
+    "m",
     "p",
     "q",
     "r",
@@ -8374,6 +10233,8 @@
     "h",
     "i",
     "j",
+    "l",
+    "m",
     "p",
     "q",
     "r",
@@ -8405,6 +10266,22 @@
     "region"
    ]
   },
+  "reward": {
+   "json": [
+    "array",
+    "string"
+   ],
+   "kinds": [
+    "l"
+   ],
+   "need": [],
+   "drawn": [
+    "l"
+   ],
+   "by": [
+    "reward"
+   ]
+  },
   "rf": {
    "json": [
     "string"
@@ -8418,6 +10295,22 @@
    ],
    "by": [
     "rewardfrom"
+   ]
+  },
+  "risk": {
+   "json": [
+    "array",
+    "string"
+   ],
+   "kinds": [
+    "l"
+   ],
+   "need": [],
+   "drawn": [
+    "l"
+   ],
+   "by": [
+    "risk"
    ]
   },
   "ro": {
@@ -8437,6 +10330,8 @@
     "h",
     "i",
     "j",
+    "l",
+    "m",
     "p",
     "q",
     "r",
@@ -8451,6 +10346,21 @@
    "drawn": [],
    "by": [
     "declaration"
+   ]
+  },
+  "rooms": {
+   "json": [
+    "number"
+   ],
+   "kinds": [
+    "l"
+   ],
+   "need": [],
+   "drawn": [
+    "l"
+   ],
+   "by": [
+    "rooms"
    ]
   },
   "rq": {
@@ -8502,6 +10412,8 @@
     "h",
     "i",
     "j",
+    "l",
+    "m",
     "p",
     "q",
     "r",
@@ -8531,6 +10443,8 @@
     "h",
     "i",
     "j",
+    "l",
+    "m",
     "p",
     "q",
     "r",
@@ -8550,6 +10464,8 @@
     "h",
     "i",
     "j",
+    "l",
+    "m",
     "p",
     "q",
     "r",
@@ -8569,6 +10485,8 @@
     "h",
     "i",
     "j",
+    "l",
+    "m",
     "p",
     "q",
     "r",
@@ -8627,6 +10545,8 @@
     "h",
     "i",
     "j",
+    "l",
+    "m",
     "p",
     "q",
     "r",
@@ -8647,6 +10567,8 @@
     "h",
     "i",
     "j",
+    "l",
+    "m",
     "p",
     "q",
     "r",
@@ -8659,6 +10581,23 @@
    ],
    "by": [
     "source"
+   ]
+  },
+  "steps": {
+   "json": [
+    "number"
+   ],
+   "kinds": [
+    "l",
+    "m"
+   ],
+   "need": [],
+   "drawn": [
+    "l",
+    "m"
+   ],
+   "by": [
+    "steps"
    ]
   },
   "t": {
@@ -8675,6 +10614,8 @@
     "h",
     "i",
     "j",
+    "l",
+    "m",
     "p",
     "q",
     "r",
@@ -8695,6 +10636,8 @@
     "h",
     "i",
     "j",
+    "l",
+    "m",
     "p",
     "q",
     "r",
@@ -8722,6 +10665,8 @@
     "h",
     "i",
     "j",
+    "l",
+    "m",
     "p",
     "q",
     "r",
@@ -8742,6 +10687,8 @@
     "h",
     "i",
     "j",
+    "l",
+    "m",
     "p",
     "q",
     "r",
@@ -8769,6 +10716,21 @@
    ],
    "by": [
     "treechg"
+   ]
+  },
+  "tiers": {
+   "json": [
+    "array"
+   ],
+   "kinds": [
+    "l"
+   ],
+   "need": [],
+   "drawn": [
+    "l"
+   ],
+   "by": [
+    "tiers"
    ]
   },
   "tk": {
@@ -8873,6 +10835,8 @@
    ],
    "kinds": [
     "j",
+    "l",
+    "m",
     "r",
     "s",
     "v"
@@ -8880,6 +10844,8 @@
    "need": [],
    "drawn": [
     "j",
+    "l",
+    "m",
     "r",
     "s",
     "v"
@@ -8997,6 +10963,22 @@
     "where"
    ]
   },
+  "why": {
+   "json": [
+    "array",
+    "string"
+   ],
+   "kinds": [
+    "l"
+   ],
+   "need": [],
+   "drawn": [
+    "l"
+   ],
+   "by": [
+    "markwhy"
+   ]
+  },
   "wp": {
    "json": [
     "number",
@@ -9031,6 +11013,8 @@
     "h",
     "i",
     "j",
+    "l",
+    "m",
     "p",
     "q",
     "r",
