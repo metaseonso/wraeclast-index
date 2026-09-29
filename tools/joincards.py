@@ -11,14 +11,22 @@ Writes two kinds onto data/index.json, and one field onto the Base kind (assets/
 design/runes.md and design/achievements.md say what each draws), then the two parts the app loads
 (tools/appdata.py):
 
-  o  Rune         one per rune: how many recipes it is in, the bands it is highlighted in, the cards its recipes
-                  make (mk) and the keyword card of the same name (rk). Its id is its name
+  o  Rune         one per rune: how many recipes it is in, the bands it is highlighted in and the cards its
+                  recipes make (mk). Its id is its name. The keyword card of the same name (tools/gamelib.py makes
+                  one per Expedition rune, "Monsters gain: ...") is folded into it: its lines, its keyword chips
+                  and its keyword id move onto the rune card and the keyword card goes, so a rune is one card
   z  Achievement  one per achievement or challenge: the game's text, its steps each with where it is (gl), and
                   the cards it needs (ax): areas, bosses, items and keywords. Its id is the game's own and is
                   never drawn. Challenges the files repeat word for word, league after league, are one card
   b  (av)         a base the Verisium Anvil takes: what it makes, and what that costs
 
-A connection is a list of card keys on the row (mk, rk, ax); the page turns them round for the other end
+The fold, the way a keystone stands for the keyword of its name: index["kwx"] maps the keyword's id to the rune's
+name, the Rune kind declares kw 'name', and every key or chip that named the keyword opens the rune card. A run
+from this stage on finds the keyword card already gone: the rune keeps the lines it carried, and the keyword id
+stays in kwx. A full run (tools/sync.py writes kwx again) makes the keyword card afresh in the game's own words,
+and this folds it again.
+
+A connection is a list of card keys on the row (mk, ax); the page turns them round for the other end
 (assets/graph.js, MAPS): a card a recipe makes is "Made from runes", a card an achievement names is "Asked by
 achievements". A name no card answers to is never a key.
 
@@ -72,7 +80,19 @@ def main():
     market = {(v or {}).get('n') for v in (load('market.json', {'items': {}}).get('items') or {}).values()}
     market |= set((load('exchange.json', {'items': {}}).get('items') or {}))
 
-    items = [it for it in index['items'] if it['k'] not in KINDS]
+    rune_names = {r['name'] for r in runes.get('runes') or []}
+    kwx = index.setdefault('kwx', {})
+    # a fold already made: the rune rows of the last run, and the keyword ids kwx points at them
+    had = {it['n']: it for it in index['items'] if it['k'] == 'o'}
+    folded = {}   # rune name -> the keyword card folded into it, or the lines the rune already carries
+    for it in index['items']:
+        if it['k'] == 'w' and it['n'] in rune_names:
+            folded.setdefault(it['n'], it)
+            kwx[it['id']] = it['n']
+    for n, row in had.items():
+        if n not in folded and n in kwx.values():
+            folded[n] = row
+    items = [it for it in index['items'] if it['k'] not in KINDS and not (it['k'] == 'w' and it['n'] in rune_names)]
     for it in items:
         it.pop(ANVIL, None)
     by_name = {}
@@ -110,12 +130,14 @@ def main():
                   if 0 <= i < len(recipes) and recipes[i].get('card'))
         if mk:
             row['mk'] = mk
-        kw = keyword_key(name)
-        if kw:
-            row['rk'] = [kw]
+        w = folded.get(name) or {}
+        for f in ('t', 'ls', 'kw'):   # what the keyword card said, in the game's words, and the chips under it
+            if w.get(f):
+                row[f] = w[f]
         row['src'] = 'Source: the game files'
         rows_o.append(row)
     counts['runes'] = len(rows_o)
+    counts['keyword cards folded in'] = sum(1 for n in rune_names if n in folded)
     counts['recipe results with a card'] = len({k for r in rows_o for k in r.get('mk', [])})
 
     # ---------- the Verisium Anvil, on the base it takes ----------

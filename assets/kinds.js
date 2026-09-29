@@ -360,7 +360,6 @@ export const MAPS = {
   rw:    {at: 'rw', keys: 1},     // the items a quest's reward windows offer
   ro:    {at: 'ro', keys: 1},     // the cards an odds pool can roll (tools/pools.py)
   mk:    {at: 'mk', keys: 1},     // the cards a rune's recipes make (tools/joincards.py)
-  rk:    {at: 'rk', keys: 1},     // the keyword card of a rune's own name
   ax:    {at: 'ax', keys: 1},     // the areas, bosses, items and keywords an achievement's steps need
 };
 /* Every declaration a kind may carry. A key that is not here is a rule that reaches one kind, which is the
@@ -743,12 +742,9 @@ export const REL = {
   questsin: {label: 'Quests in this act', of: 'j', edge: 'act', map: 'act'},
   actof:    {label: 'Act', of: 'v', edge: 'actof', map: 'act'},
   /* Runes of Aldur and the achievements (tools/joincards.py): what a rune's recipes make, and the runes a card
-     is made from; the keyword card of a rune's name, both ways; the cards an achievement's steps need, and the
-     achievements that ask for a card. */
+     is made from; the cards an achievement's steps need, and the achievements that ask for a card. */
   inrecipe: {label: 'Makes', edge: 'own', at: 'mk'},
   runemade: {label: 'Made from runes', of: 'o', edge: 'back', map: 'mk'},
-  runekw:   {label: 'Keyword', of: 'w', edge: 'own', at: 'rk'},
-  runeof:   {label: 'Rune', of: 'o', edge: 'back', map: 'rk'},
   asks:     {label: 'Needs', edge: 'own', at: 'ax'},
   askedby:  {label: 'Asked by achievements', of: 'z', edge: 'back', map: 'ax'},
   cat:      {label: 'Listed with', edge: 'cat', map: 'cat'},
@@ -844,14 +840,17 @@ export const KINDS = [
    acts: ['bench', 'pin', 'craft'],
    rel: ['inclass', 'cat']},
 
-  /* A rune of Runes of Aldur (tools/joincards.py, design/runes.md): how many recipes it is in, the recipe
-     lengths and area levels it is highlighted at, and what its recipes make. Its gold button opens the recipe
-     finder on it. The keyword card of the same name is what it does to monsters. */
+  /* A rune of Runes of Aldur (tools/joincards.py, design/runes.md): what it does to monsters, in the game's own
+     lines, how many recipes it is in, the recipe lengths and area levels it is highlighted at, and what its
+     recipes make. Its gold button opens the recipe finder on it. It stands for the keyword of its name, the way a
+     keystone does (kw), and the keyword card is folded into it: its name is the game's word wherever a line says
+     it, and it claims the address the keyword page had, before a currency of the same name. */
   {k: 'o', one: 'Rune', many: 'Runes', place: 'Rune recipes', link: './#/runes?rune=@n', index: true, search: true,
-   crawl: {word: 'rune', list: 'runes', rank: 9, is: 'DefinedTerm'},
+   crawl: {word: 'rune', list: 'runes', rank: 3, is: 'DefinedTerm'},
+   kw: 'name', words: {n: 'own', mark: 'game'},
    fields: [...HEAD, 'recipes', ...SAYS, 'bands', ...REST, ...FOOT],
    acts: ['pin', 'open'],
-   rel: ['inrecipe', 'runekw']},
+   rel: ['inrecipe', 'named', 'namedby']},
 
   {k: 'a', one: 'Atlas', tone: 'int', many: 'Atlas', place: 'Atlas', link: './#/atlas?s=@at&q=@n',
    index: true, search: true, item: true, crawl: {word: 'atlas', list: 'atlas', rank: 6, is: 'Thing', unless: {at: 'at', is: 'tree', then: 'DefinedTerm'}},
@@ -871,7 +870,7 @@ export const KINDS = [
    kw: 'id', rank: -25, words: {n: 'own', f: 'alt', mark: 'game'},
    fields: [...HEAD, 'stacks', 'uses', ...SAYS, 'mondanger', 'rules', 'share', 'weight', 'mechlines', 'corruption', ...REST, ...FOOT],
    acts: ['full', 'pin'],
-   rel: [...KWUSE, 'granted', 'onlyon', ...MECH, 'rollsin', 'runeof', 'askedby', 'named', 'namedby']},
+   rel: [...KWUSE, 'granted', 'onlyon', ...MECH, 'rollsin', 'askedby', 'named', 'namedby']},
 
   /* An ascendancy: its class, the flavour text the game shows for it, its notables by name (each line a door to
      the notable's card, and the notable "Named by" it, tools/nodelinks.py) and where its eight points come from
