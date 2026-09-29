@@ -65,7 +65,7 @@ CACHE = ROOT / 'tools' / 'cache'
 STAMPS = CACHE / 'stamps.json'
 LEAVE = {'.git', 'node_modules', 'dist', 'build', 'tmp', '.wrangler', '__pycache__'}   # never copied into the tree
 WATCH = ('data', 'explore.html', 'tools/craftweights.json', 'tools/dev/gaps.txt')     # what a stage may change
-RECORD = 'data/faults.json'          # the last good record: merged by lastgood, never swapped in as a data file
+RECORD = 'data/' + lastgood.RECORD   # the last good record: merged by lastgood, never swapped in as a data file
 SENDS = ('WI_DATA_DIR', 'WI_INGEST_KEY', 'ACTIONS_ID_TOKEN_REQUEST_URL', 'ACTIONS_ID_TOKEN_REQUEST_TOKEN')
 CADENCES = {'patch': ('patch', 'daily'), 'daily': ('daily',), 'hourly': ('hourly',), 'hand': ('hand',)}
 

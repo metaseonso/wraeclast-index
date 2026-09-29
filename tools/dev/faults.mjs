@@ -30,11 +30,13 @@ function say(name, ok, detail){
 }
 
 /* one run of the builder that is not real; gives back what it printed and what it exited with */
-function run(dir, mode){
+function run(dir, mode, extra = {}, data = join(dir, 'data')){
+  const env = {...process.env, WI_DATA_DIR: data, WI_NO_TICKET: '1', FAULT_MODE: mode,
+    PYTHONPATH: TOOLS, PYTHONIOENCODING: 'utf-8', ...extra};
+  for(const k of ['WI_INGEST_KEY', 'ACTIONS_ID_TOKEN_REQUEST_URL', 'ACTIONS_ID_TOKEN_REQUEST_TOKEN']) delete env[k];   // nothing is sent
   return new Promise(ok => {
     execFile('python', [join(dir, 'fakebuild.py')], {
-      cwd: ROOT, env: {...process.env, WI_DATA_DIR: join(dir, 'data'), WI_NO_TICKET: '1', FAULT_MODE: mode,
-        PYTHONPATH: TOOLS, PYTHONIOENCODING: 'utf-8'},
+      cwd: ROOT, env,
     }, (err, out, errOut) => ok({code: err ? err.code || 1 : 0, out, err: errOut}));
   });
 }
@@ -142,6 +144,34 @@ const rec2 = await read(join(data, 'faults.json'));
 const cleared = !(JSON.parse(rec1 || '{}').faults || []).length;
 say('good', once !== GOOD && once === twice && rec1 === rec2 && first.code === 0 && second.code === 0 && cleared,
   'wrote 50 widgets, byte for byte the same on the second run (the record too), exit 0, and the fault cleared itself');
+
+/* ---------- the Market job in the data repo: a record of its own, which the site takes from that job ---------- */
+/* The site takes faults.json from the Publish site workflow only, so the Market job keeps data/faults.market.json
+   and sends it as market/faults.json (worker/files.js MARKET). A record already on disk stands in for the site's
+   copy, so this never reaches the network. */
+const mdata = join(dir, 'market-data');
+await mkdir(mdata, {recursive: true});
+await writeFile(join(mdata, 'widget.json'), GOOD);
+await writeFile(join(mdata, 'faults.market.json'), JSON.stringify({updated: '', note: '', faults: []}, null, 1) + '\n');
+const m = await run(dir, 'thin', {GITHUB_REPOSITORY: 'metaseonso/wraeclast-data'}, mdata);
+const mrec = await read(join(mdata, 'faults.market.json'), '{}');
+const mf = (JSON.parse(mrec).faults || []).find(x => x.section === 'Widgets');
+const shared = await read(join(mdata, 'faults.json'));
+say('market job', m.code === 1 && !!mf && shared === null,
+  mf && shared === null ? 'kept its own record (data/faults.market.json), faults.json untouched, exit ' + m.code
+    : 'record: ' + (mf ? 'written' : 'NOT WRITTEN') + ', faults.json: ' + (shared === null ? 'untouched' : 'WRITTEN'));
+const files = await import(pathToFileURL(join(ROOT, 'worker', 'files.js')).href);
+const takes = files.MARKET.test('market/faults.json') && !files.MARKET.test('faults.json');
+say('market name', takes, takes ? 'market/faults.json is a market file (Market job only), faults.json is not (Publish site only)'
+  : 'worker/files.js MARKET does not split the two records');
+/* the dashboard and /api/health read it from the site's table, beside faults.json */
+const menv = {DB: {prepare(sql){ let n = ''; return {bind(x){ n = x; return this; },
+  async first(){ return n === 'market/faults.json' ? {body: mrec.replace(/Widgets/g, 'Market widgets'), at: Math.floor(Date.now() / 1000)} : null; },
+  async all(){ return {results: JOBS.filter(j => j[0] === 'price').map(j => ({kind: j[1], at: fresh}))}; }}; }}};
+const mh = await health(menv, 'https://wraeclastindex.fyi');
+const mrow = (mh.jobs || []).find(j => j.where === 'data' && j.what === 'Market widgets');
+say('market dashboard', !!mrow && /^Market widgets: still showing the copy from 19 Sep, /.test(mrow.note || ''),
+  mrow ? 'the Data jobs block says "' + mrow.note + '" (' + mrow.state + ')' : 'the Market job fault is not on the dashboard');
 
 for(const l of lines) console.log(l);
 console.log((lines.length - failed) + ' ok, ' + failed + ' failed');

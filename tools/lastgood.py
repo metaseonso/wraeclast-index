@@ -78,7 +78,13 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 DATA = Path(os.environ['WI_DATA_DIR']) if os.environ.get('WI_DATA_DIR') else ROOT / 'data'
-RECORD = 'faults.json'
+# The daily Market job in the data repo (metaseonso/wraeclast-data, .github/workflows/market.yml) keeps a record
+# of its own. The site takes faults.json from the Publish site workflow only, and a market file from that job only
+# (worker/files.js MARKET_JOBS), so its record goes to the site as market/faults.json. On disk it is kept out of
+# data/market/, whose every file the packer sends (tools/market_send.py).
+MARKET_JOB = os.environ.get('GITHUB_REPOSITORY') == 'metaseonso/wraeclast-data'
+RECORD = 'faults.market.json' if MARKET_JOB else 'faults.json'   # under data/
+SENT = 'market/faults.json' if MARKET_JOB else RECORD             # its name on the site
 NOTE = 'Sections showing an older copy because their source failed. Written by tools/lastgood.py.'
 LABEL = 'data-fault'        # the issue label, the way held cloud work is tagged "shelved"
 TOLERANCE = 0.2             # a fifth of the rows may go before it counts as a collapse
@@ -503,10 +509,29 @@ def line(f):
     return '%s: still showing the copy from %s, %s.' % (f['section'], day(f.get('good')), f.get('why') or 'the source failed')
 
 
+_SITE_RECORD = []   # the site's copy of the record, fetched once a run
+
+
+def last_record():
+    """The record this run folds into: the one on disk. The Market job commits nothing, so it has none there
+    before its first write: it starts from the site's copy, so a section stale for days keeps its first day."""
+    rec = committed(RECORD, quiet=True)
+    if rec is None and MARKET_JOB:
+        if not _SITE_RECORD:
+            try:
+                import sitedata
+                _SITE_RECORD.append(json.loads(sitedata.get(sitedata.SITE + '/data/' + SENT, timeout=20)))
+            except Exception as e:   # none yet (404), or the site is down: start from nothing
+                print('  no earlier', SENT, 'from the site:', e, file=sys.stderr)
+                _SITE_RECORD.append(None)
+        rec = _SITE_RECORD[0]
+    return rec if isinstance(rec, dict) else {}
+
+
 def merge():
     """Every section showing an old copy right now: this run's faults folded into the ones already recorded.
     A section that came back fine this run drops out. A section nothing looked at this run stays as it was."""
-    had = {f.get('section'): f for f in (committed(RECORD, quiet=True) or {}).get('faults', []) if f.get('section')}
+    had = {f.get('section'): f for f in last_record().get('faults', []) if f.get('section')}
     out, now = {}, {f['section'] for f in FOUND}           # one entry per section, whatever went wrong
     for f in FOUND:
         before = had.get(f['section']) or {}
@@ -529,16 +554,16 @@ def write_record(faults):
     A run that changes nothing writes nothing: the file moves only when what is stale moves, so a good run
     leaves the same bytes behind it every time."""
     rows = [{**f, 'line': line(f)} for f in faults]
-    if (committed(RECORD, quiet=True) or {}).get('faults') == rows:
+    if last_record().get('faults') == rows:
         return
     out = {'updated': dt.datetime.now(dt.timezone.utc).isoformat(timespec='minutes'), 'note': NOTE, 'faults': rows}
     try:
         import sitedata
         if sitedata.sending():
-            sitedata.publish(RECORD, out)   # writes it where the jobs keep their files, and sends it on
+            sitedata.publish(RECORD, out, to=SENT)   # writes it where the jobs keep their files, and sends it on
             return
     except Exception as e:
-        print('  could not send', RECORD, 'to the site:', e, file=sys.stderr)
+        print('  could not send', SENT, 'to the site:', e, file=sys.stderr)
     save(DATA / RECORD, json.dumps(out, ensure_ascii=False, indent=1, sort_keys=True) + '\n')
 
 

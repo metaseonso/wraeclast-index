@@ -75,13 +75,17 @@ function since(m){
   return Math.round(h / 24) + ' days ago';
 }
 
-/* Sections still showing an older copy, from data/faults.json. A builder that could not trust what its source
+/* Sections still showing an older copy, from data/faults.json, and the daily Market job's own record
+   (market/faults.json: worker/files.js MARKET). A builder that could not trust what its source
    gave it kept the last good file and wrote the reason there, in plain words; this puts those words in the
    same list as the jobs. Late on the first day, stopped after that: a source that has been dead a day is dead. */
 async function stale(env, origin, now){
-  let record = null;
-  try { record = await published(env, origin, 'faults.json'); } catch {}
-  const list = Array.isArray(record && record.faults) ? record.faults : [];
+  const list = [];
+  for(const name of ['faults.json', 'market/faults.json']){
+    let record = null;
+    try { record = await published(env, origin, name); } catch {}
+    if(Array.isArray(record && record.faults)) list.push(...record.faults);
+  }
   return list.filter(f => f && f.section).map(f => {
     const t = Date.parse(f.since || f.at || '') || null;
     const minutes = t ? Math.max(0, Math.round((now - t) / 60000)) : null;

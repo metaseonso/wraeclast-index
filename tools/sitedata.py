@@ -8,7 +8,8 @@ them to the site.
                     refreshed every 6 hours.
   WI_INGEST_KEY     each finished file is also sent to the site (POST /api/data/put), signed with this key
   GitHub Actions    with no key, the same, signed with GitHub's own short-lived token for the workflow (the job
-                    needs id-token: write; the site takes it from the Publish site workflow only). Before 27 Sep
+                    needs id-token: write; the site takes it from the Publish site workflow only, and a
+                    market/<name> file from the data repo's Market job only: worker/files.js). Before 27 Sep
                     nothing was sent from there, so the site read every file off the GitHub Pages copy.
   WI_SITE           the site (default https://wraeclastindex.fyi)
 """
@@ -87,8 +88,9 @@ def github_token():
         return json.load(r)['value']
 
 
-def publish(name, data):
-    """Write a finished file, and send it to the site when there is a way to sign it (sending()).
+def publish(name, data, to=None):
+    """Write a finished file, and send it to the site when there is a way to sign it (sending()), under its
+    own name or the one given in to (the Market job's fault record, tools/lastgood.py SENT).
     With the key, a file the site would not take stops the job, as it always has. With GitHub's token it does
     not: the file is written and goes out with the GitHub Pages copy, and the site says loudly how old its own
     copy is (worker/health.js), so a failed send is never a failed source."""
@@ -96,6 +98,7 @@ def publish(name, data):
     save(DATA / name, text)
     if not sending():
         return
+    name = to or name
     try:
         token = KEY or github_token()
         req = urllib.request.Request(SITE + '/api/data/put?name=' + urllib.parse.quote(name), data=text.encode('utf-8'), method='POST',

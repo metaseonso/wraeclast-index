@@ -6,7 +6,8 @@
    The market files (MARKET: market/<name>.json, tools/market_send.py) come from one more job, the daily Market
    job in the private data repo (metaseonso/wraeclast-data, .github/workflows/market.yml), which holds the
    exchange archive they are built from. It signs with its own GitHub token too and may send only those
-   names; the Publish site workflow may not send them. Served at /data/market/<name> (worker/index.js).
+   names; the Publish site workflow may not send them. Served at /data/market/<name> (worker/index.js). Its
+   faults go in as market/faults.json, beside the Publish site workflow's faults.json (worker/health.js reads both).
      POST /api/data/put?name=<file>        the file as the body, signed: GitHub's own short-lived token from
                                            the Publish site workflow (fromGitHub), from the data repo's
                                            Market job for a market file, or a key of its own for a run by
@@ -30,8 +31,9 @@
 import { same } from './dash.js';
 
 const NAMES = new Set(['exchange.json', 'market.json', 'leagues.json', 'faults.json']);
-// the market products (design/market-products.md), one file each, and the currency cards' parts in up to 16 bundles
-export const MARKET = /^market\/(?:index|liquidity|playbook|inflation|shocks|sell|crafting|rising|gap|digest|cards-(?:[1-9]|1[0-6]))\.json$/;
+// the market products (design/market-products.md), one file each, the currency cards' parts in up to 16 bundles, and
+// the Market job's own fault record (tools/lastgood.py SENT): faults.json itself is the Publish site workflow's alone
+export const MARKET = /^market\/(?:index|liquidity|playbook|inflation|shocks|sell|crafting|rising|gap|digest|faults|cards-(?:[1-9]|1[0-6]))\.json$/;
 const MAX = 1.5e6;                // bytes
 const TTL = 300;                  // seconds a data centre keeps its copy
 const PAGES = 'https://metaseonso.github.io/wraeclast-index/data/';
