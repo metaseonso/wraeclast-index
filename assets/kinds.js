@@ -406,6 +406,12 @@ export const FIELDS = {
   /* An odds pool (tools/pools.py, off data/odds.json): how many outcomes it has, its total weight and the most
      likely outcome's 1 in N, each the file's own number. */
   outcount: {type: 'number', at: 'nn', slot: 'pill', post: ' outcome', many: ' outcomes'},
+  /* The tier NeverSink's loot filter gives it: NeverSink's own hand-sorted tier, never the game's word and never
+     ours, so the pill names NeverSink and links to the release it is read from (tools/filtertiers.py writes
+     data/filtertiers.json, keyed "kind:name", with the release's name and address). One word off a table of its
+     own, on an opened card only, the table fetched the first time one asks: nothing of it is in the index or in
+     first paint. */
+  filtertier: {type: 'keyed', at: 'n', slot: 'pill', file: 'data/filtertiers.json', of: 'tiers', pre: 'NeverSink tier: '},
 
   usetime:  {type: 'duration', at: 'ct', slot: 'fact', post: ' use time'},
   cost:     {type: 'cost', at: 'cost', slot: 'fact'},
@@ -803,7 +809,7 @@ export const KINDS = [
   {k: 'b', one: 'Base', tone: 'muted', many: 'Bases', place: 'Craft', link: 'craft', mark: 'ls',
    index: true, search: true, item: true, crawl: {word: 'base', list: 'bases', rank: 5, is: 'Thing'},
    make: {base: 'name', ni: 'lines'},
-   fields: [...HEAD, 'reqs', 'props', 'implicit', 'weights', ...SAYS, 'canroll', 'cancorrupt', ...REST, ...FOOT],
+   fields: [...HEAD, 'reqs', 'filtertier', 'props', 'implicit', 'weights', ...SAYS, 'canroll', 'cancorrupt', ...REST, ...FOOT],
    acts: ['trade', 'pool', 'bench', 'pin', 'craft'],
    rel: ['uniques', 'grants', 'klassof', 'klass', 'named', 'namedby', 'rewardin']},
 
@@ -824,7 +830,7 @@ export const KINDS = [
   {k: 'c', one: 'Currency', tone: 'c-currency', many: 'Currency', place: 'Currency', link: './#/currency?c=@id',
    index: true, search: true, item: true, crawl: {word: 'currency', list: 'currency', rank: 4, is: 'Thing'},
    px: {as: 'c'}, make: {nx: 'yes'}, gone: {at: 'nx'},
-   fields: [...HEAD, 'droplv', 'liquid', 'stock', ...SAYS, 'perslot', 'ladder', 'adds', 'weight', 'exfee', 'leaguedays', 'gap', 'sellmap', ...REST, ...FOOT],
+   fields: [...HEAD, 'droplv', 'liquid', 'stock', 'filtertier', ...SAYS, 'perslot', 'ladder', 'adds', 'weight', 'exfee', 'leaguedays', 'gap', 'sellmap', ...REST, ...FOOT],
    acts: ['trade', 'pool', 'bench', 'pin', 'open'],
    rel: ['named', 'namedby', 'job', 'curmech', 'rollsin', 'rewardin', 'cat']},
 
