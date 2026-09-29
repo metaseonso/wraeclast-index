@@ -33,6 +33,7 @@ const EMPTY_N = 20, EMPTY_SHARE = 0.10;   // a field emptied on at least this ma
 const SHRINK = 0.5;             // a file that loses this share of its bytes
 // name.<hash>.json: the drill-down page's data and the index's cut (tools/shards.py, its words files .txt), named by content
 const HASHED = /\.[0-9a-f]{8,}\.(?:json|txt)$/;
+const RUN = /\d+\.[0-9a-f]{8,}\.(?:json|txt)$/;   // a numbered part of a run: its number and hash
 const FIRST = 5;                // names shown per list
 const MAX_MD = 60000;           // a GitHub comment holds 65,536 characters
 
@@ -161,6 +162,15 @@ async function report(){
     const block = f.state === 'removed' && HASHED.test(p) ? p.replace(HASHED, '.') : null;
     const heir = block && after.find(q => q !== p && q.replace(HASHED, '.') === block);
     if(heir){ f.state = 'replaced'; f.by = heir; }
+    /* one part of a numbered run (seo/words/w00, w01: tools/shards.py cuts a list by size) goes when the run fits
+       in fewer parts. That is the run getting shorter, not a file lost: the run is held to the byte rule as one */
+    const run = f.state === 'removed' && RUN.test(p) ? p.replace(RUN, '') : null;
+    if(run && after.some(q => q.replace(RUN, '') === run)){
+      const sum = async (S, list) => (await Promise.all(list.filter(q => RUN.test(q) && q.replace(RUN, '') === run)
+        .map(q => S.bytes(q)))).reduce((n, x) => n + (x ? x.length : 0), 0);
+      const was = await sum(A, paths), now = await sum(B, after);
+      if(now >= was * (1 - SHRINK)){ f.state = 'folded into its run'; f.by = run + '*'; }
+    }
     out.files.push(f);
     if(f.state === 'removed' && ignored.has(p)) f.state = 'no longer committed';
     if(f.state === 'removed') flag(p, 'the file went away');
