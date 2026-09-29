@@ -3,6 +3,29 @@
 The full list of changes. The public patch notes (data/changelog.json, shown on the site) stay short.
 Add the details here first, then a short public line there.
 
+## 0.41 — 29 Sep 2026: sharper edges (the 1.0 polish list)
+
+App (commit 551b346):
+- Cards with no art wear their kind's mark (the index page's icon), not a letter.
+- Interaction cards: no "No answers yet" and no grid of zeros until someone answers.
+- Shut tabs (#/build, #/farms): old links land on Search with the table's line.
+- Pills in the text face with tabular digits; chips a search found nothing in are dimmed; "1 prefix";
+  a base says "modifier tiers", its pool "N kinds, M tiers in all".
+- Title digits from IBM Plex through a digits-only @font-face ('Title digits', U+0030-0039) ahead of Cinzel.
+- A keyword is marked once per card (marks.scan `seen`, per card in line order).
+- Pins, Patch notes and Runs share the Keybindings title; Clear all keybinds is inside its box.
+- Pins in localStorage (a tab's old sessionStorage list joins once); the privacy page names them.
+- Popup: top-anchored (5vh), arrows hidden without a card behind or ahead, the card's buttons a sticky foot.
+- Divine Orb card priced in exalted off the market's rate, with no line; `lone()` leaves a single day over 4× the
+  line's middle (both neighbours under half of it) off the line, and the caption counts it.
+- /explore: prices under 1 divine in exalted (window.WI_EX from the market file); the gems, uniques and tree notes
+  are one line each with the source.
+- Map fills the page width; Craft's kind rows are a two-column grid (wrapped chips keep their indent).
+
+Crawler pages (PR #177): price ages as "22 h ago" with the exact time in `<time>`; names break only between words;
+/md/item/<bare unique>.md redirects like /item/<bare unique>; 24 uniques whose plain version has no base now join
+their version group; JSON-LD is `Thing` (game item) with no empty Product offers.
+
 ## 0.40 — 29 Sep 2026: find your way (layout v2, parts 2 and 3)
 
 - **Home contents:** `contentsHTML()` (assets/kinds.js) draws every section's pages with counts under the search
