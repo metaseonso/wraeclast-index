@@ -1,0 +1,106 @@
+{
+  "about": "The tells on a pinnacle boss's big hits (#126), kept by hand. tools/bosstells.py writes data/bosstells.json from it and fails on a boss or hit name data/bosses.json and data/bosshits.json do not have. `hit` is the hit's name in data/bosshits.json; `name` is what the source calls the move; `tell` is our own words for what the source says shows before it lands; `src` names every source the line stands on. `why` says how the hit was matched to the source's move and is not shipped. A hit no source gives a tell for has no row. A cooldown (`cd`, seconds) only where a source states one.",
+  "read": "2026-09-29",
+  "sources": {
+    "PoE2 Wiki": {"url": "https://www.poe2wiki.net/", "licence": "CC BY-NC-SA"},
+    "Maxroll": {"url": "https://maxroll.gg/poe2"},
+    "Mobalytics": {"url": "https://mobalytics.gg/poe-2"}
+  },
+  "bosses": {
+    "The Arbiter of Ash": [
+      {
+        "hit": "Flame seed donut nuke",
+        "name": "Falling Flame Seed",
+        "tell": "Flame seeds drop, each with a ring of fire around it. Everything outside the ring blows up a moment later: get inside. Before a chain of seeds he fires one flare up per seed.",
+        "src": [["PoE2 Wiki", "https://www.poe2wiki.net/wiki/The_Arbiter_of_Ash"],
+                ["Mobalytics", "https://mobalytics.gg/poe-2/guides/arbiter-of-ash"]],
+        "why": "Mobalytics: the explosion is called Donut Nuke on the Arbiter's skill card; the wiki's Falling Flame Seed is the same ring and blast."
+      },
+      {
+        "hit": "Bullet hell damage high",
+        "name": "Bullet Hell",
+        "tell": "Slow fire orbs float out and spray small fireballs in every direction. Run past them to the far side of the arena.",
+        "src": [["PoE2 Wiki", "https://www.poe2wiki.net/wiki/The_Arbiter_of_Ash"],
+                ["Mobalytics", "https://mobalytics.gg/poe-2/guides/arbiter-of-ash"]],
+        "why": "Both name the move Bullet Hell; the hit is one of the game file's three Bullet Hell skills."
+      },
+      {
+        "hit": "Chasm slam",
+        "name": "Combo Slam",
+        "tell": "Flies up and cuts a line of fire across the arena, then slams down three times, each one wider.",
+        "src": [["PoE2 Wiki", "https://www.poe2wiki.net/wiki/The_Arbiter_of_Ash"]],
+        "why": "The game file's chasm slams come short, mid and long: the wiki's three slams, each bigger, after the line of fire."
+      },
+      {
+        "hit": "Sword slam",
+        "name": "Sword Slam",
+        "tell": "Leaps into the air, often with a voice line, then drives the sword down. Keep moving once he jumps; a roll on the way down is late.",
+        "src": [["Mobalytics", "https://mobalytics.gg/poe-2/guides/arbiter-of-ash"]],
+        "why": "Same name as the game file's skill."
+      }
+    ],
+    "Xesht, We That Are One": [
+      {
+        "hit": "Head fireball impact",
+        "name": "Xoph Sun Orb",
+        "tell": "An orange fire orb forms over his head and is thrown at the ground in front of him. Walk away from where he faces.",
+        "src": [["PoE2 Wiki", "https://www.poe2wiki.net/wiki/Xesht,_We_That_Are_One"],
+                ["Maxroll", "https://maxroll.gg/poe2/bosses/xesht"]],
+        "why": "His only fire move: Xoph's orb over his head, thrown at the ground."
+      },
+      {
+        "hit": "Pistol flick sonic wave",
+        "name": "Finger Gun",
+        "tell": "Raises a hand like a pistol, with a sound cue, then flicks out a slow wave of air. Circle him, roll it, or break line of sight behind a wall. Frost Wall does not block it.",
+        "src": [["Maxroll", "https://maxroll.gg/poe2/bosses/xesht"]],
+        "why": "Pistol and flick: Maxroll's Finger Gun, a flicked shot of air."
+      },
+      {
+        "hit": "Hand clap blast",
+        "name": "Clap Cleave",
+        "tell": "Dives underground and chases you, then comes up and claps, slicing the ground to both sides. Run wide circles at the arena edge until the slices are done.",
+        "src": [["PoE2 Wiki", "https://www.poe2wiki.net/wiki/Xesht,_We_That_Are_One"],
+                ["Maxroll", "https://maxroll.gg/poe2/bosses/xesht"]],
+        "why": "The wiki's Clap Cleave and Maxroll's Burrow: the one move that ends in a clap."
+      },
+      {
+        "hit": "Hand slam",
+        "name": "Hand Slam",
+        "tell": "A giant hand hovers after you. A pink and purple hand shape marks the ground, then it slams. Roll to its side, not past the fingers; its shadow shows where it is. His hardest hit.",
+        "src": [["PoE2 Wiki", "https://www.poe2wiki.net/wiki/Xesht,_We_That_Are_One"],
+                ["Maxroll", "https://maxroll.gg/poe2/bosses/xesht"]],
+        "why": "Same name on the wiki; Maxroll calls it Hand Smash."
+      }
+    ],
+    "Vessel of Kulemak": [
+      {
+        "hit": "Teleport slam",
+        "name": "Teleport Slam",
+        "tell": "Last phase: digs into the ground, then drops out of the sky onto an area. Since 0.3.0b it cannot be avoided.",
+        "src": [["PoE2 Wiki", "https://www.poe2wiki.net/wiki/Vessel_of_Kulemak"]],
+        "why": "Same name as the game file's skill."
+      },
+      {
+        "hit": "Cleave",
+        "name": "Arena-wide Cleave",
+        "tell": "A wide strip of the arena is marked and swept by wind. A cold wave runs the way the wind and its neck point, then comes back the other way.",
+        "src": [["PoE2 Wiki", "https://www.poe2wiki.net/wiki/Vessel_of_Kulemak"]],
+        "why": "The game file's Cleave, cold damage: the wiki's cold wave across the arena."
+      }
+    ],
+    "The Bodach": [
+      {
+        "hit": "Ritual wendigo slam meteor impact",
+        "name": "Slam",
+        "tell": "Second phase: channels and draws a circle on the ground, then teleports into it and slams. Leave the circle as soon as it shows.",
+        "src": [["Maxroll", "https://maxroll.gg/poe2/resources/ritual"]],
+        "why": "The game file marks this slam as the second phase's leap slam; Maxroll's only second-phase slam."
+      }
+    ]
+  },
+  "none": {
+    "The Aberration": "The PoE2 Wiki page has no skills yet; no Maxroll or Mobalytics guide for it.",
+    "The Arbiter of Divinity": "The PoE2 Wiki page has no skills yet; no Maxroll or Mobalytics guide for it.",
+    "The Raven Trickster": "The PoE2 Wiki page has no skills yet; Maxroll and Mobalytics only say how to get in."
+  }
+}

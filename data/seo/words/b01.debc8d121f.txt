@@ -1,4 +1,383 @@
-### Runeforged Wrapped Sandals
+### Runeforged Seer Crest Shield
+Shield · drops from level 50 · https://wraeclastindex.fyi/item/runeforged-seer-crest-shield
+Requires: level 50, 39 Str, 39 Int
+Armour: 88 · Energy Shield: 25 · Block chance: 25% · Grants Skill: Raise Shieldruneforged-seer-crest-shieldruneforged-seer-crest-shieldRuneforged Seer Crest Shield### Runeforged Sekhema Sandals
+Boots · drops from level 80 · https://wraeclastindex.fyi/item/runeforged-sekhema-sandals
+Requires: level 80, 108 Int
+Energy Shield: 34runeforged-sekhema-sandalsruneforged-sekhema-sandalsRuneforged Sekhema Sandals### Runeforged Sekheman Crest Shield
+Shield · drops from level 70 · https://wraeclastindex.fyi/item/runeforged-sekheman-crest-shield
+Requires: level 70, 54 Str, 54 Int
+Armour: 86 · Energy Shield: 24 · Block chance: 25% · Grants Skill: Raise Shieldruneforged-sekheman-crest-shieldruneforged-sekheman-crest-shieldRuneforged Sekheman Crest Shield### Runeforged Serpentscale Boots
+Boots · drops from level 59 · https://wraeclastindex.fyi/item/runeforged-serpentscale-boots
+Requires: level 59, 78 Dex
+Evasion Rating: 170runeforged-serpentscale-bootsruneforged-serpentscale-bootsRuneforged Serpentscale Boots### Runeforged Serpentscale Coat
+Body Armour · drops from level 36 · https://wraeclastindex.fyi/item/runeforged-serpentscale-coat
+Requires: level 36, 59 Dex
+Evasion Rating: 260runeforged-serpentscale-coatruneforged-serpentscale-coatRuneforged Serpentscale Coat### Runeforged Shabby Hood
+Helmet · drops from level 1 · https://wraeclastindex.fyi/item/runeforged-shabby-hood
+Requires: none
+Evasion Rating: 19runeforged-shabby-hoodruneforged-shabby-hoodRuneforged Shabby Hood### Runeforged Shaman Mantle
+Body Armour · drops from level 28 · https://wraeclastindex.fyi/item/runeforged-shaman-mantle
+Requires: level 28, 26 Str, 26 Int
+Armour: 129 · Energy Shield: 41runeforged-shaman-mantleruneforged-shaman-mantleRuneforged Shaman Mantle### Runeforged Shamanistic Leggings
+Boots · drops from level 59 · https://wraeclastindex.fyi/item/runeforged-shamanistic-leggings
+Requires: level 59, 44 Str, 44 Int
+Armour: 113 · Energy Shield: 32runeforged-shamanistic-leggingsruneforged-shamanistic-leggingsRuneforged Shamanistic Leggings### Runeforged Shielded Helm
+Helmet · drops from level 33 · https://wraeclastindex.fyi/item/runeforged-shielded-helm
+Requires: level 33, 27 Str, 27 Dex
+Armour: 97 · Evasion Rating: 87runeforged-shielded-helmruneforged-shielded-helmRuneforged Shielded Helm### Runeforged Shortbow
+Bow · drops from level 38 · https://wraeclastindex.fyi/item/runeforged-shortbow
+Requires: level 38, 68 Dex
+Physical Damage: 30-56 · Critical Hit Chance: 5% · Attacks per Second: 1.25
+Verisium Anvil: Quill Rain: Runeforged Shortbow · 5 Exceptional Verisium, Uhtred's Crest of the Chaliceruneforged-shortbowruneforged-shortbowRuneforged Shortbow### Runeforged Shrouded Mail
+Body Armour · drops from level 70 · https://wraeclastindex.fyi/item/runeforged-shrouded-mail
+Requires: level 70, 67 Str, 67 Dex
+Armour: 245 · Evasion Rating: 223
++(20-25)% to Fire Resistance
+or +(20-25)% to Cold Resistance
+or +(20-25)% to Lightning Resistanceruneforged-shrouded-mailruneforged-shrouded-mailRuneforged Shrouded Mail### Runeforged Shrouded Vest
+Body Armour · drops from level 16 · https://wraeclastindex.fyi/item/runeforged-shrouded-vest
+Requires: level 16, 28 Dex
+Evasion Rating: 128runeforged-shrouded-vestruneforged-shrouded-vestRuneforged Shrouded Vest### Runeforged Sigil Crest Shield
+Shield · drops from level 7 · https://wraeclastindex.fyi/item/runeforged-sigil-crest-shield
+Requires: level 7, 8 Str, 8 Int
+Armour: 20 · Energy Shield: 9 · Block chance: 25% · Grants Skill: Raise Shieldruneforged-sigil-crest-shieldruneforged-sigil-crest-shieldRuneforged Sigil Crest Shield### Runeforged Silk Robe
+Body Armour · drops from level 22 · https://wraeclastindex.fyi/item/runeforged-silk-robe
+Requires: level 22, 37 Int
+Energy Shield: 64runeforged-silk-roberuneforged-silk-robeRuneforged Silk Robe### Runeforged Silk Slippers
+Boots · drops from level 27 · https://wraeclastindex.fyi/item/runeforged-silk-slippers
+Requires: level 27, 38 Int
+Energy Shield: 36runeforged-silk-slippersruneforged-silk-slippersRuneforged Silk Slippers### Runeforged Sirenscale Gloves
+Gloves · drops from level 80 · https://wraeclastindex.fyi/item/runeforged-sirenscale-gloves
+Requires: level 80, 101 Int
+Energy Shield: 21runeforged-sirenscale-glovesruneforged-sirenscale-glovesRuneforged Sirenscale Gloves### Runeforged Skycrown Tiara
+Helmet · drops from level 65 · https://wraeclastindex.fyi/item/runeforged-skycrown-tiara
+Requires: level 65, 91 Int
+Energy Shield: 85runeforged-skycrown-tiararuneforged-skycrown-tiaraRuneforged Skycrown Tiara### Runeforged Sleek Jacket
+Body Armour · drops from level 65 · https://wraeclastindex.fyi/item/runeforged-sleek-jacket
+Requires: level 65, 67 Dex, 67 Int
+Evasion Rating: 114 · Energy Shield: 35runeforged-sleek-jacketruneforged-sleek-jacketRuneforged Sleek Jacket### Runeforged Slim Mace
+One-Handed Mace · drops from level 38 · https://wraeclastindex.fyi/item/runeforged-slim-mace
+Requires: level 38, 68 Str
+Physical Damage: 96-145 · Critical Hit Chance: 5% · Attacks per Second: 1.55runeforged-slim-maceruneforged-slim-maceRuneforged Slim Mace### Runeforged Slipstrike Vest
+Body Armour · drops from level 70 · https://wraeclastindex.fyi/item/runeforged-slipstrike-vest
+Requires: level 70, 121 Dex
+Evasion Rating: 226runeforged-slipstrike-vestruneforged-slipstrike-vestRuneforged Slipstrike Vest### Runeforged Smuggler Coat
+Body Armour · drops from level 51 · https://wraeclastindex.fyi/item/runeforged-smuggler-coat
+Requires: level 51, 82 Dex
+Evasion Rating: 359runeforged-smuggler-coatruneforged-smuggler-coatRuneforged Smuggler Coat### Runeforged Soaring Mask
+Helmet · drops from level 75 · https://wraeclastindex.fyi/item/runeforged-soaring-mask
+Requires: level 75, 59 Dex, 59 Int
+Evasion Rating: 169 · Energy Shield: 52runeforged-soaring-maskruneforged-soaring-maskRuneforged Soaring Mask### Runeforged Soaring Targe
+Shield · drops from level 75 · https://wraeclastindex.fyi/item/runeforged-soaring-targe
+Requires: level 75, 59 Str, 59 Dex
+Armour: 113 · Evasion Rating: 103 · Block chance: 25% · Grants Skill: Raise Shieldruneforged-soaring-targeruneforged-soaring-targeRuneforged Soaring Targe### Runeforged Soldier Cuirass
+Body Armour · drops from level 65 · https://wraeclastindex.fyi/item/runeforged-soldier-cuirass
+Requires: level 65, 121 Str
+Armour: 258runeforged-soldier-cuirassruneforged-soldier-cuirassRuneforged Soldier Cuirass### Runeforged Soldier Greathelm
+Helmet · drops from level 12 · https://wraeclastindex.fyi/item/runeforged-soldier-greathelm
+Requires: level 12, 19 Str
+Armour: 80runeforged-soldier-greathelmruneforged-soldier-greathelmRuneforged Soldier Greathelm### Runeforged Solid Mask
+Helmet · drops from level 45 · https://wraeclastindex.fyi/item/runeforged-solid-mask
+Requires: level 45, 36 Dex, 36 Int
+Evasion Rating: 115 · Energy Shield: 37runeforged-solid-maskruneforged-solid-maskRuneforged Solid Mask### Runeforged Sombre Gloves
+Gloves · drops from level 12 · https://wraeclastindex.fyi/item/runeforged-sombre-gloves
+Requires: level 12, 17 Int
+Energy Shield: 15runeforged-sombre-glovesruneforged-sombre-glovesRuneforged Sombre Gloves### Runeforged Sorcerous Tiara
+Helmet · drops from level 70 · https://wraeclastindex.fyi/item/runeforged-sorcerous-tiara
+Requires: level 70, 99 Int
+Energy Shield: 70runeforged-sorcerous-tiararuneforged-sorcerous-tiaraRuneforged Sorcerous Tiara### Runeforged Spiked Bracers
+Gloves · drops from level 59 · https://wraeclastindex.fyi/item/runeforged-spiked-bracers
+Requires: level 59, 73 Dex
+Evasion Rating: 113runeforged-spiked-bracersruneforged-spiked-bracersRuneforged Spiked Bracers### Runeforged Spiked Buckler
+Buckler · drops from level 26 · https://wraeclastindex.fyi/item/runeforged-spiked-buckler
+Requires: level 26, 38 Dex
+Evasion Rating: 64 · Block chance: 20% · Grants Skill: Parryruneforged-spiked-bucklerruneforged-spiked-bucklerRuneforged Spiked Buckler### Runeforged Spiked Club
+One-Handed Mace · drops from level 40 · https://wraeclastindex.fyi/item/runeforged-spiked-club
+Requires: level 40, 72 Str
+Physical Damage: 56-93 · Critical Hit Chance: 5% · Attacks per Second: 1.50runeforged-spiked-clubruneforged-spiked-clubRuneforged Spiked Club### Runeforged Spikeward Buckler
+Buckler · drops from level 54 · https://wraeclastindex.fyi/item/runeforged-spikeward-buckler
+Requires: level 54, 77 Dex
+Evasion Rating: 104 · Block chance: 20% · Grants Skill: Parryruneforged-spikeward-bucklerruneforged-spikeward-bucklerRuneforged Spikeward Buckler### Runeforged Spined Bracers
+Gloves · drops from level 33 · https://wraeclastindex.fyi/item/runeforged-spined-bracers
+Requires: level 33, 42 Dex
+Evasion Rating: 79runeforged-spined-bracersruneforged-spined-bracersRuneforged Spined Bracers### Runeforged Spiral Wraps
+Gloves · drops from level 33 · https://wraeclastindex.fyi/item/runeforged-spiral-wraps
+Requires: level 33, 24 Dex, 24 Int
+Evasion Rating: 43 · Energy Shield: 15runeforged-spiral-wrapsruneforged-spiral-wrapsRuneforged Spiral Wraps### Runeforged Spired Greathelm
+Helmet · drops from level 27 · https://wraeclastindex.fyi/item/runeforged-spired-greathelm
+Requires: level 27, 40 Str
+Armour: 149runeforged-spired-greathelmruneforged-spired-greathelmRuneforged Spired Greathelm### Runeforged Spiritbone Crown
+Helmet · drops from level 45 · https://wraeclastindex.fyi/item/runeforged-spiritbone-crown
+Requires: level 45, 36 Str, 36 Int
+Armour: 128 · Energy Shield: 37runeforged-spiritbone-crownruneforged-spiritbone-crownRuneforged Spiritbone Crown### Runeforged Splintered Tower Shield
+Shield · drops from level 1 · https://wraeclastindex.fyi/item/runeforged-splintered-tower-shield
+Requires: none
+Armour: 18 · Block chance: 26% · Grants Skill: Raise Shieldruneforged-splintered-tower-shieldruneforged-splintered-tower-shieldRuneforged Splintered Tower Shield### Runeforged Stacked Sabatons
+Boots · drops from level 33 · https://wraeclastindex.fyi/item/runeforged-stacked-sabatons
+Requires: level 33, 26 Str, 26 Dex
+Armour: 73 · Evasion Rating: 65runeforged-stacked-sabatonsruneforged-stacked-sabatonsRuneforged Stacked Sabatons### Runeforged Stalking Bracers
+Gloves · drops from level 65 · https://wraeclastindex.fyi/item/runeforged-stalking-bracers
+Requires: level 65, 80 Dex
+Evasion Rating: 139runeforged-stalking-bracersruneforged-stalking-bracersRuneforged Stalking Bracers### Runeforged Steel Plate
+Body Armour · drops from level 27 · https://wraeclastindex.fyi/item/runeforged-steel-plate
+Requires: level 27, 45 Str
+Armour: 228runeforged-steel-plateruneforged-steel-plateRuneforged Steel Plate### Runeforged Steelmail Gauntlets
+Gloves · drops from level 65 · https://wraeclastindex.fyi/item/runeforged-steelmail-gauntlets
+Requires: level 65, 44 Str, 44 Dex
+Armour: 84 · Evasion Rating: 76runeforged-steelmail-gauntletsruneforged-steelmail-gauntletsRuneforged Steelmail Gauntlets### Runeforged Steelpoint Quarterstaff
+Quarterstaff · drops from level 40 · https://wraeclastindex.fyi/item/runeforged-steelpoint-quarterstaff
+Requires: level 40, 56 Dex, 23 Int
+Physical Damage: 90-167 · Critical Hit Chance: 10% · Attacks per Second: 1.40runeforged-steelpoint-quarterstaffruneforged-steelpoint-quarterstaffRuneforged Steelpoint Quarterstaff### Runeforged Steelpoint Shoes
+Boots · drops from level 45 · https://wraeclastindex.fyi/item/runeforged-steelpoint-shoes
+Requires: level 45, 34 Dex, 34 Int
+Evasion Rating: 86 · Energy Shield: 28runeforged-steelpoint-shoesruneforged-steelpoint-shoesRuneforged Steelpoint Shoes### Runeforged Steeltoe Boots
+Boots · drops from level 28 · https://wraeclastindex.fyi/item/runeforged-steeltoe-boots
+Requires: level 28, 39 Dex
+Evasion Rating: 102runeforged-steeltoe-bootsruneforged-steeltoe-bootsRuneforged Steeltoe Boots### Runeforged Stitched Gloves
+Gloves · drops from level 16 · https://wraeclastindex.fyi/item/runeforged-stitched-gloves
+Requires: level 16, 22 Int
+Energy Shield: 18runeforged-stitched-glovesruneforged-stitched-glovesRuneforged Stitched Gloves### Runeforged Stocky Mitts
+Gloves · drops from level 1 · https://wraeclastindex.fyi/item/runeforged-stocky-mitts
+Requires: none
+Armour: 15runeforged-stocky-mittsruneforged-stocky-mittsRuneforged Stocky Mitts### Runeforged Stone Cuirass
+Body Armour · drops from level 62 · https://wraeclastindex.fyi/item/runeforged-stone-cuirass
+Requires: level 62, 98 Str
+Armour: 417runeforged-stone-cuirassruneforged-stone-cuirassRuneforged Stone Cuirass### Runeforged Stone Greaves
+Boots · drops from level 33 · https://wraeclastindex.fyi/item/runeforged-stone-greaves
+Requires: level 33, 45 Str
+Armour: 133runeforged-stone-greavesruneforged-stone-greavesRuneforged Stone Greaves### Runeforged Stone Targe
+Shield · drops from level 59 · https://wraeclastindex.fyi/item/runeforged-stone-targe
+Requires: level 59, 46 Str, 46 Dex
+Armour: 94 · Evasion Rating: 85 · Block chance: 25% · Grants Skill: Raise Shieldruneforged-stone-targeruneforged-stone-targeRuneforged Stone Targe### Runeforged Stone Tower Shield
+Shield · drops from level 36 · https://wraeclastindex.fyi/item/runeforged-stone-tower-shield
+Requires: level 36, 52 Str
+Armour: 119 · Block chance: 26% · Grants Skill: Raise Shieldruneforged-stone-tower-shieldruneforged-stone-tower-shieldRuneforged Stone Tower Shield### Runeforged Stratified Targe
+Shield · drops from level 46 · https://wraeclastindex.fyi/item/runeforged-stratified-targe
+Requires: level 46, 37 Str, 37 Dex
+Armour: 82 · Evasion Rating: 74 · Block chance: 25% · Grants Skill: Raise Shieldruneforged-stratified-targeruneforged-stratified-targeRuneforged Stratified Targe### Runeforged Straw Sandals
+Boots · drops from level 1 · https://wraeclastindex.fyi/item/runeforged-straw-sandals
+Requires: none
+Energy Shield: 14runeforged-straw-sandalsruneforged-straw-sandalsRuneforged Straw Sandals### Runeforged Studded Boots
+Boots · drops from level 54 · https://wraeclastindex.fyi/item/runeforged-studded-boots
+Requires: level 54, 72 Dex
+Evasion Rating: 179runeforged-studded-bootsruneforged-studded-bootsRuneforged Studded Boots### Runeforged Studded Greatclub
+Two-Handed Mace · drops from level 38 · https://wraeclastindex.fyi/item/runeforged-studded-greatclub
+Requires: level 38, 68 Str
+Physical Damage: 94-249 · Critical Hit Chance: 5% · Attacks per Second: 1.10
+Verisium Anvil: Brain Rattler: Runemastered Studded Greatclub · 1,835 Verisium, Vorana's Crest of the Scytheruneforged-studded-greatclubruneforged-studded-greatclubRuneforged Studded Greatclub### Runeforged Studded Targe
+Shield · drops from level 16 · https://wraeclastindex.fyi/item/runeforged-studded-targe
+Requires: level 16, 15 Str, 15 Dex
+Armour: 34 · Evasion Rating: 29 · Block chance: 25% · Grants Skill: Raise Shieldruneforged-studded-targeruneforged-studded-targeRuneforged Studded Targe### Runeforged Studded Vest
+Body Armour · drops from level 26 · https://wraeclastindex.fyi/item/runeforged-studded-vest
+Requires: level 26, 43 Dex
+Evasion Rating: 194runeforged-studded-vestruneforged-studded-vestRuneforged Studded Vest### Runeforged Suede Bracers
+Gloves · drops from level 1 · https://wraeclastindex.fyi/item/runeforged-suede-bracers
+Requires: none
+Evasion Rating: 10runeforged-suede-bracersruneforged-suede-bracersRuneforged Suede Bracers### Runeforged Swathed Cap
+Helmet · drops from level 26 · https://wraeclastindex.fyi/item/runeforged-swathed-cap
+Requires: level 26, 38 Dex
+Evasion Rating: 127runeforged-swathed-capruneforged-swathed-capRuneforged Swathed Cap### Runeforged Swiftstalker Coat
+Body Armour · drops from level 65 · https://wraeclastindex.fyi/item/runeforged-swiftstalker-coat
+Requires: level 65, 121 Dex
+Evasion Rating: 442
+(30-20)% reduced Slowing Potency of Debuffs on Youruneforged-swiftstalker-coatruneforged-swiftstalker-coatRuneforged Swiftstalker Coat### Runeforged Tasalian Focus
+Focus · drops from level 80 · https://wraeclastindex.fyi/item/runeforged-tasalian-focus
+Requires: level 80, 115 Int
+Energy Shield: 36runeforged-tasalian-focusruneforged-tasalian-focusRuneforged Tasalian Focus### Runeforged Tasalian Greaves
+Boots · drops from level 80 · https://wraeclastindex.fyi/item/runeforged-tasalian-greaves
+Requires: level 80, 108 Str
+Armour: 127runeforged-tasalian-greavesruneforged-tasalian-greavesRuneforged Tasalian Greaves### Runeforged Tattered Robe
+Body Armour · drops from level 1 · https://wraeclastindex.fyi/item/runeforged-tattered-robe
+Requires: none
+Energy Shield: 28runeforged-tattered-roberuneforged-tattered-robeRuneforged Tattered Robe### Runeforged Tawhoan Tower Shield
+Shield · drops from level 80 · https://wraeclastindex.fyi/item/runeforged-tawhoan-tower-shield
+Requires: level 80, 115 Str
+Armour: 112 · Block chance: 26% · Grants Skill: Raise Shieldruneforged-tawhoan-tower-shieldruneforged-tawhoan-tower-shieldRuneforged Tawhoan Tower Shield### Runeforged Tempered Mitts
+Gloves · drops from level 16 · https://wraeclastindex.fyi/item/runeforged-tempered-mitts
+Requires: level 16, 22 Str
+Armour: 49runeforged-tempered-mittsruneforged-tempered-mittsRuneforged Tempered Mitts### Runeforged Temple Maul
+Two-Handed Mace · drops from level 55 · https://wraeclastindex.fyi/item/runeforged-temple-maul
+Requires: level 55, 76 Str, 40 Dex
+Physical Damage: 64-134 · Critical Hit Chance: 5% · Attacks per Second: 1.30runeforged-temple-maulruneforged-temple-maulRuneforged Temple Maul### Runeforged Tense Crossbow
+Crossbow · drops from level 38 · https://wraeclastindex.fyi/item/runeforged-tense-crossbow
+Requires: level 38, 39 Str, 39 Dex
+Physical Damage: 44-83 · Critical Hit Chance: 5% · Attacks per Second: 1.60
+Verisium Anvil: Rampart Raptor: Runemastered Tense Crossbow · 1,845 Verisium, 5 Exceptional Verisium, Uhtred's Crest of the Chaliceruneforged-tense-crossbowruneforged-tense-crossbowRuneforged Tense Crossbow### Runeforged Thane Mail
+Body Armour · drops from level 80 · https://wraeclastindex.fyi/item/runeforged-thane-mail
+Requires: level 80, 67 Str, 67 Dex
+Armour: 267 · Evasion Rating: 243
+Hits against you have (15-25)% reduced Critical Damage Bonusruneforged-thane-mailruneforged-thane-mailRuneforged Thane Mail### Runeforged Threaded Shoes
+Boots · drops from level 16 · https://wraeclastindex.fyi/item/runeforged-threaded-shoes
+Requires: level 16, 14 Dex, 14 Int
+Evasion Rating: 35 · Energy Shield: 15runeforged-threaded-shoesruneforged-threaded-shoesRuneforged Threaded Shoes### Runeforged Tideseer Mantle
+Body Armour · drops from level 51 · https://wraeclastindex.fyi/item/runeforged-tideseer-mantle
+Requires: level 51, 45 Str, 45 Int
+Armour: 218 · Energy Shield: 63runeforged-tideseer-mantleruneforged-tideseer-mantleRuneforged Tideseer Mantle### Runeforged Tonal Focus
+Focus · drops from level 22 · https://wraeclastindex.fyi/item/runeforged-tonal-focus
+Requires: level 22, 33 Int
+Energy Shield: 26runeforged-tonal-focusruneforged-tonal-focusRuneforged Tonal Focus### Runeforged Torn Gloves
+Gloves · drops from level 1 · https://wraeclastindex.fyi/item/runeforged-torn-gloves
+Requires: none
+Energy Shield: 9runeforged-torn-glovesruneforged-torn-glovesRuneforged Torn Gloves### Runeforged Trailblazer Armour
+Body Armour · drops from level 59 · https://wraeclastindex.fyi/item/runeforged-trailblazer-armour
+Requires: level 59, 52 Str, 52 Dex
+Armour: 199 · Evasion Rating: 181runeforged-trailblazer-armourruneforged-trailblazer-armourRuneforged Trailblazer Armour### Runeforged Trapper Hood
+Helmet · drops from level 75 · https://wraeclastindex.fyi/item/runeforged-trapper-hood
+Requires: level 75, 107 Dex
+Evasion Rating: 320runeforged-trapper-hoodruneforged-trapper-hoodRuneforged Trapper Hood### Runeforged Treerunner Shoes
+Boots · drops from level 59 · https://wraeclastindex.fyi/item/runeforged-treerunner-shoes
+Requires: level 59, 44 Dex, 44 Int
+Evasion Rating: 98 · Energy Shield: 30runeforged-treerunner-shoesruneforged-treerunner-shoesRuneforged Treerunner Shoes### Runeforged Tribal Mask
+Helmet · drops from level 33 · https://wraeclastindex.fyi/item/runeforged-tribal-mask
+Requires: level 33, 27 Dex, 27 Int
+Evasion Rating: 87 · Energy Shield: 30runeforged-tribal-maskruneforged-tribal-maskRuneforged Tribal Mask### Runeforged Trimmed Greaves
+Boots · drops from level 27 · https://wraeclastindex.fyi/item/runeforged-trimmed-greaves
+Requires: level 27, 38 Str
+Armour: 112runeforged-trimmed-greavesruneforged-trimmed-greavesRuneforged Trimmed Greaves### Runeforged Twig Circlet
+Helmet · drops from level 1 · https://wraeclastindex.fyi/item/runeforged-twig-circlet
+Requires: none
+Energy Shield: 19runeforged-twig-circletruneforged-twig-circletRuneforged Twig Circlet### Runeforged Twig Focus
+Focus · drops from level 1 · https://wraeclastindex.fyi/item/runeforged-twig-focus
+Requires: none
+Energy Shield: 12runeforged-twig-focusruneforged-twig-focusRuneforged Twig Focus### Runeforged Utzaal Cuirass
+Body Armour · drops from level 75 · https://wraeclastindex.fyi/item/runeforged-utzaal-cuirass
+Requires: level 75, 121 Str
+Armour: 446
+(30-40)% increased Stun Thresholdruneforged-utzaal-cuirassruneforged-utzaal-cuirassRuneforged Utzaal Cuirass### Runeforged Vaal Crest Shield
+Shield · drops from level 75 · https://wraeclastindex.fyi/item/runeforged-vaal-crest-shield
+Requires: level 75, 59 Str, 59 Int
+Armour: 126 · Energy Shield: 35 · Block chance: 25% · Grants Skill: Raise Shieldruneforged-vaal-crest-shieldruneforged-vaal-crest-shieldRuneforged Vaal Crest Shield### Runeforged Vaal Cuirass
+Body Armour · drops from level 37 · https://wraeclastindex.fyi/item/runeforged-vaal-cuirass
+Requires: level 37, 60 Str
+Armour: 298runeforged-vaal-cuirassruneforged-vaal-cuirassRuneforged Vaal Cuirass### Runeforged Vaal Gloves
+Gloves · drops from level 75 · https://wraeclastindex.fyi/item/runeforged-vaal-gloves
+Requires: level 75, 94 Int
+Energy Shield: 49runeforged-vaal-glovesruneforged-vaal-glovesRuneforged Vaal Gloves### Runeforged Vaal Greaves
+Boots · drops from level 75 · https://wraeclastindex.fyi/item/runeforged-vaal-greaves
+Requires: level 75, 101 Str
+Armour: 253runeforged-vaal-greavesruneforged-vaal-greavesRuneforged Vaal Greaves### Runeforged Vaal Mitts
+Gloves · drops from level 75 · https://wraeclastindex.fyi/item/runeforged-vaal-mitts
+Requires: level 75, 94 Str
+Armour: 169runeforged-vaal-mittsruneforged-vaal-mittsRuneforged Vaal Mitts### Runeforged Vaal Tower Shield
+Shield · drops from level 75 · https://wraeclastindex.fyi/item/runeforged-vaal-tower-shield
+Requires: level 75, 107 Str
+Armour: 221 · Block chance: 26% · Grants Skill: Raise Shieldruneforged-vaal-tower-shieldruneforged-vaal-tower-shieldRuneforged Vaal Tower Shield### Runeforged Vaal Wraps
+Gloves · drops from level 75 · https://wraeclastindex.fyi/item/runeforged-vaal-wraps
+Requires: level 75, 52 Dex, 52 Int
+Evasion Rating: 85 · Energy Shield: 26runeforged-vaal-wrapsruneforged-vaal-wrapsRuneforged Vaal Wraps### Runeforged Vagabond Armour
+Body Armour · drops from level 16 · https://wraeclastindex.fyi/item/runeforged-vagabond-armour
+Requires: level 16, 17 Str, 17 Dex
+Armour: 83 · Evasion Rating: 71runeforged-vagabond-armourruneforged-vagabond-armourRuneforged Vagabond Armour### Runeforged Veiled Mask
+Helmet · drops from level 28 · https://wraeclastindex.fyi/item/runeforged-veiled-mask
+Requires: level 28, 23 Dex, 23 Int
+Evasion Rating: 75 · Energy Shield: 27runeforged-veiled-maskruneforged-veiled-maskRuneforged Veiled Mask### Runeforged Vermeil Circlet
+Helmet · drops from level 45 · https://wraeclastindex.fyi/item/runeforged-vermeil-circlet
+Requires: level 45, 64 Int
+Energy Shield: 68runeforged-vermeil-circletruneforged-vermeil-circletRuneforged Vermeil Circlet### Runeforged Veteran Sabatons
+Boots · drops from level 65 · https://wraeclastindex.fyi/item/runeforged-veteran-sabatons
+Requires: level 65, 47 Str, 47 Dex
+Armour: 133 · Evasion Rating: 121runeforged-veteran-sabatonsruneforged-veteran-sabatonsRuneforged Veteran Sabatons### Runeforged Vicious Talisman
+Talisman · drops from level 65 · https://wraeclastindex.fyi/item/runeforged-vicious-talisman
+Requires: level 65, 74 Str, 52 Int
+Physical Damage: 123-205 · Critical Hit Chance: 8% · Attacks per Second: 1.25runeforged-vicious-talismanruneforged-vicious-talismanRuneforged Vicious Talisman### Runeforged Vile Robe
+Body Armour · drops from level 65 · https://wraeclastindex.fyi/item/runeforged-vile-robe
+Requires: level 65, 121 Int
+Energy Shield: 66runeforged-vile-roberuneforged-vile-robeRuneforged Vile Robe### Runeforged Viper Cap
+Helmet · drops from level 38 · https://wraeclastindex.fyi/item/runeforged-viper-cap
+Requires: level 38, 54 Dex
+Evasion Rating: 179runeforged-viper-capruneforged-viper-capRuneforged Viper Cap### Runeforged Visored Helm
+Helmet · drops from level 16 · https://wraeclastindex.fyi/item/runeforged-visored-helm
+Requires: level 16, 15 Str, 15 Dex
+Armour: 54 · Evasion Rating: 46runeforged-visored-helmruneforged-visored-helmRuneforged Visored Helm### Runeforged Voodoo Focus
+Focus · drops from level 33 · https://wraeclastindex.fyi/item/runeforged-voodoo-focus
+Requires: level 33, 48 Int
+Energy Shield: 34runeforged-voodoo-focusruneforged-voodoo-focusRuneforged Voodoo Focus### Runeforged Votive Raiment
+Body Armour · drops from level 33 · https://wraeclastindex.fyi/item/runeforged-votive-raiment
+Requires: level 33, 54 Int
+Energy Shield: 83runeforged-votive-raimentruneforged-votive-raimentRuneforged Votive Raiment### Runeforged Wanderer Shoes
+Boots · drops from level 65 · https://wraeclastindex.fyi/item/runeforged-wanderer-shoes
+Requires: level 65, 47 Dex, 47 Int
+Evasion Rating: 115 · Energy Shield: 35runeforged-wanderer-shoesruneforged-wanderer-shoesRuneforged Wanderer Shoes### Runeforged War Spear
+Spear · drops from level 40 · https://wraeclastindex.fyi/item/runeforged-war-spear
+Requires: level 40, 23 Str, 56 Dex
+Physical Damage: 59-98 · Critical Hit Chance: 5% · Attacks per Second: 1.60
+(25-35)% increased Projectile Speed with this Weaponruneforged-war-spearruneforged-war-spearRuneforged War Spear### Runeforged War Wraps
+Gloves · drops from level 65 · https://wraeclastindex.fyi/item/runeforged-war-wraps
+Requires: level 65, 44 Dex, 44 Int
+Evasion Rating: 76 · Energy Shield: 23runeforged-war-wrapsruneforged-war-wrapsRuneforged War Wraps### Runeforged Warded Helm
+Helmet · drops from level 65 · https://wraeclastindex.fyi/item/runeforged-warded-helm
+Requires: level 65, 50 Str, 50 Dex
+Armour: 172 · Evasion Rating: 156runeforged-warded-helmruneforged-warded-helmRuneforged Warded Helm### Runeforged Warden Bow
+Bow · drops from level 40 · https://wraeclastindex.fyi/item/runeforged-warden-bow
+Requires: level 40, 72 Dex
+Physical Damage: 38-63 · Critical Hit Chance: 5% · Attacks per Second: 1.15
+(25-35)% chance to Chain an additional timeruneforged-warden-bowruneforged-warden-bowRuneforged Warden Bow### Runeforged Warlock Leggings
+Boots · drops from level 75 · https://wraeclastindex.fyi/item/runeforged-warlock-leggings
+Requires: level 75, 56 Str, 56 Int
+Armour: 139 · Energy Shield: 39runeforged-warlock-leggingsruneforged-warlock-leggingsRuneforged Warlock Leggings### Runeforged Warlord Cuirass
+Body Armour · drops from level 80 · https://wraeclastindex.fyi/item/runeforged-warlord-cuirass
+Requires: level 80, 121 Str
+Armour: 466
++(15-25)% of Armour also applies to Elemental Damageruneforged-warlord-cuirassruneforged-warlord-cuirassRuneforged Warlord Cuirass### Runeforged Warmonger Greathelm
+Helmet · drops from level 65 · https://wraeclastindex.fyi/item/runeforged-warmonger-greathelm
+Requires: level 65, 91 Str
+Armour: 305runeforged-warmonger-greathelmruneforged-warmonger-greathelmRuneforged Warmonger Greathelm### Runeforged Warpick
+One-Handed Mace · drops from level 38 · https://wraeclastindex.fyi/item/runeforged-warpick
+Requires: level 38, 68 Str
+Physical Damage: 75-102 · Critical Hit Chance: 7% · Attacks per Second: 1.45
+(30-40)% increased effect of Fully Broken Armourruneforged-warpickruneforged-warpickRuneforged Warpick### Runeforged Warrior Greathelm
+Helmet · drops from level 36 · https://wraeclastindex.fyi/item/runeforged-warrior-greathelm
+Requires: level 36, 52 Str
+Armour: 191runeforged-warrior-greathelmruneforged-warrior-greathelmRuneforged Warrior Greathelm### Runeforged Waxed Jacket
+Body Armour · drops from level 11 · https://wraeclastindex.fyi/item/runeforged-waxed-jacket
+Requires: level 11, 13 Dex, 13 Int
+Evasion Rating: 53 · Energy Shield: 25runeforged-waxed-jacketruneforged-waxed-jacketRuneforged Waxed Jacket### Runeforged Wayfarer Jacket
+Body Armour · drops from level 28 · https://wraeclastindex.fyi/item/runeforged-wayfarer-jacket
+Requires: level 28, 26 Dex, 26 Int
+Evasion Rating: 114 · Energy Shield: 41runeforged-wayfarer-jacketruneforged-wayfarer-jacketRuneforged Wayfarer Jacket### Runeforged Wayward Crest Shield
+Shield · drops from level 45 · https://wraeclastindex.fyi/item/runeforged-wayward-crest-shield
+Requires: level 45, 36 Str, 36 Int
+Armour: 80 · Energy Shield: 23 · Block chance: 25% · Grants Skill: Raise Shieldruneforged-wayward-crest-shieldruneforged-wayward-crest-shieldRuneforged Wayward Crest Shield### Runeforged Weaver Leggings
+Boots · drops from level 45 · https://wraeclastindex.fyi/item/runeforged-weaver-leggings
+Requires: level 45, 34 Str, 34 Int
+Armour: 96 · Energy Shield: 28runeforged-weaver-leggingsruneforged-weaver-leggingsRuneforged Weaver Leggings### Runeforged Whorl Focus
+Focus · drops from level 51 · https://wraeclastindex.fyi/item/runeforged-whorl-focus
+Requires: level 51, 73 Int
+Energy Shield: 47runeforged-whorl-focusruneforged-whorl-focusRuneforged Whorl Focus### Runeforged Wicker Tiara
+Helmet · drops from level 10 · https://wraeclastindex.fyi/item/runeforged-wicker-tiara
+Requires: level 10, 17 Int
+Energy Shield: 29runeforged-wicker-tiararuneforged-wicker-tiaraRuneforged Wicker Tiara### Runeforged Winged Spear
+Spear · drops from level 40 · https://wraeclastindex.fyi/item/runeforged-winged-spear
+Requires: level 40, 23 Str, 56 Dex
+Physical Damage: 0-125 · Critical Hit Chance: 5% · Attacks per Second: 1.70runeforged-winged-spearruneforged-winged-spearRuneforged Winged Spear### Runeforged Wolfskin Mantle
+Body Armour · drops from level 65 · https://wraeclastindex.fyi/item/runeforged-wolfskin-mantle
+Requires: level 65, 67 Str, 67 Int
+Armour: 114 · Energy Shield: 32runeforged-wolfskin-mantleruneforged-wolfskin-mantleRuneforged Wolfskin Mantle### Runeforged Wooden Buckler
+Buckler · drops from level 5 · https://wraeclastindex.fyi/item/runeforged-wooden-buckler
+Requires: level 5, 10 Dex
+Evasion Rating: 18 · Block chance: 20% · Grants Skill: Parryruneforged-wooden-bucklerruneforged-wooden-bucklerRuneforged Wooden Buckler### Runeforged Wooden Club
+One-Handed Mace · drops from level 38 · https://wraeclastindex.fyi/item/runeforged-wooden-club
+Requires: level 38, 68 Str
+Physical Damage: 83-138 · Critical Hit Chance: 5% · Attacks per Second: 1.45
+(20-30)% increased Area of Effect for Attacks
+Verisium Anvil: Brynhand's Mark: Runemastered Wooden Club · 460 Verisium, Medved's Crest of the Circleruneforged-wooden-clubruneforged-wooden-clubRuneforged Wooden Club### Runeforged Woven Cap
+Helmet · drops from level 65 · https://wraeclastindex.fyi/item/runeforged-woven-cap
+Requires: level 65, 91 Dex
+Evasion Rating: 290runeforged-woven-capruneforged-woven-capRuneforged Woven Cap### Runeforged Woven Focus
+Focus · drops from level 6 · https://wraeclastindex.fyi/item/runeforged-woven-focus
+Requires: level 6, 11 Int
+Energy Shield: 15runeforged-woven-focusruneforged-woven-focusRuneforged Woven Focus### Runeforged Wrapped Cap
+Helmet · drops from level 54 · https://wraeclastindex.fyi/item/runeforged-wrapped-cap
+Requires: level 54, 77 Dex
+Evasion Rating: 219runeforged-wrapped-capruneforged-wrapped-capRuneforged Wrapped Cap### Runeforged Wrapped Greathelm
+Helmet · drops from level 16 · https://wraeclastindex.fyi/item/runeforged-wrapped-greathelm
+Requires: level 16, 25 Str
+Armour: 99runeforged-wrapped-greathelmruneforged-wrapped-greathelmRuneforged Wrapped Greathelm### Runeforged Wrapped Quarterstaff
+Quarterstaff · drops from level 38 · https://wraeclastindex.fyi/item/runeforged-wrapped-quarterstaff
+Requires: level 38, 54 Dex, 23 Int
+Physical Damage: 93-155 · Critical Hit Chance: 10% · Attacks per Second: 1.40
+50% increased Magnitude of Bleeding you inflictruneforged-wrapped-quarterstaffruneforged-wrapped-quarterstaffRuneforged Wrapped Quarterstaff### Runeforged Wrapped Sandals
 Boots · drops from level 11 · https://wraeclastindex.fyi/item/runeforged-wrapped-sandals
 Requires: level 11, 17 Int
 Energy Shield: 22runeforged-wrapped-sandalsruneforged-wrapped-sandalsRuneforged Wrapped Sandals### Runeforged Wyrmscale Coat
@@ -243,7 +622,8 @@ Body Armour · drops from level 65 · https://wraeclastindex.fyi/item/runemaster
 Requires: level 65, 112 Str
 Armour: 421
 Can roll Ring Modifiers
-Catalysts can be applied to this itemrunemastered-grasping-mailrunemastered-grasping-mailRunemastered Grasping Mail### Runemastered Guarded Helm
+Catalysts can be applied to this item
+Verisium Anvil: Runefather's Grasping Mail · 20 Exceptional Verisiumrunemastered-grasping-mailrunemastered-grasping-mailRunemastered Grasping Mail### Runemastered Guarded Helm
 Helmet · drops from level 38 · https://wraeclastindex.fyi/item/runemastered-guarded-helm
 Requires: level 38, 31 Str, 31 Dex
 Armour: 275 · Evasion Rating: 247runemastered-guarded-helmrunemastered-guarded-helmRunemastered Guarded Helm### Runemastered Hardwood Targe
@@ -432,7 +812,8 @@ Body Armour · drops from level 70 · https://wraeclastindex.fyi/item/runemaster
 Requires: level 70, 67 Str, 67 Int
 Armour: 232 · Energy Shield: 64
 +1% to all Maximum Elemental Resistances
-(30-50)% increased effect of Arcane Surge on yourunemastered-revered-vestmentsrunemastered-revered-vestmentsRunemastered Revered Vestments### Runemastered Rhoahide Coat
+(30-50)% increased effect of Arcane Surge on you
+Verisium Anvil: Geofri's Sanctuary: Runemastered Revered Vestments · 7,150 Verisium, Uhtred's Crest of the Chalicerunemastered-revered-vestmentsrunemastered-revered-vestmentsRunemastered Revered Vestments### Runemastered Rhoahide Coat
 Body Armour · drops from level 38 · https://wraeclastindex.fyi/item/runemastered-rhoahide-coat
 Requires: level 38, 61 Dex
 Evasion Rating: 219runemastered-rhoahide-coatrunemastered-rhoahide-coatRunemastered Rhoahide Coat### Runemastered Ridged Buckler
@@ -694,29 +1075,35 @@ Requires: level 38, 51 Int
 Energy Shield: 41
 5% increased Movement Speedrunemastered-wrapped-sandalsrunemastered-wrapped-sandalsRunemastered Wrapped Sandals### Runic Fork
 Wand · drops from level 65 · https://wraeclastindex.fyi/item/runic-fork
-Requires: level 65, 114 Intrunic-forkrunic-forkRunic Fork### Runic Shortsword
+Requires: level 65, 114 Int
+Verisium Anvil: Runeseeker's Call: Runemastered Runic Fork · 50 Exceptional Verisium, Olroth's Crest of the Sunrunic-forkrunic-forkRunic Fork### Runic Shortsword
 One-Handed Sword · drops from level 50 · https://wraeclastindex.fyi/item/runic-shortsword
 Requires: level 50, 49 Str, 49 Dex
 Physical Damage: 26-55 · Critical Hit Chance: 5% · Attacks per Second: 1.65runic-shortswordrunic-shortswordRunic Shortsword### Runner Vest
 Body Armour · drops from level 59 · https://wraeclastindex.fyi/item/runner-vest
 Requires: level 59, 94 Dex
-Evasion Rating: 412runner-vestrunner-vestRunner Vest### Rusted Cuirass
+Evasion Rating: 412
+Verisium Anvil: Runeforged Runner Vest · 300 Verisiumrunner-vestrunner-vestRunner Vest### Rusted Cuirass
 Body Armour · drops from level 1 · https://wraeclastindex.fyi/item/rusted-cuirass
 Requires: none
-Armour: 45rusted-cuirassrusted-cuirassRusted Cuirass### Rusted Greathelm
+Armour: 45
+Verisium Anvil: Runeforged Rusted Cuirass · 20 Verisium / Bramblejack: Runemastered Rusted Cuirass · 230 Verisium, Medved's Crest of the Circlerusted-cuirassrusted-cuirassRusted Cuirass### Rusted Greathelm
 Helmet · drops from level 1 · https://wraeclastindex.fyi/item/rusted-greathelm
 Requires: none
-Armour: 29rusted-greathelmrusted-greathelmRusted Greathelm### Sacral Quiver
+Armour: 29
+Verisium Anvil: Runeforged Rusted Greathelm · 15 Verisium / Horns of Bynden: Runemastered Rusted Greathelm · 160 Verisium, Medved's Crest of the Circle / Wings of Caelyn: Runemastered Rusted Greathelm · 170 Verisium, Medved's Crest of the Circlerusted-greathelmrusted-greathelmRusted Greathelm### Sacral Quiver
 Quiver · drops from level 16 · https://wraeclastindex.fyi/item/sacral-quiver
 Requires: level 16
 Gain (2-3) Life per Enemy Hit with Attackssacral-quiversacral-quiverSacral Quiver### Sacramental Robe
 Body Armour · drops from level 75 · https://wraeclastindex.fyi/item/sacramental-robe
 Requires: level 75, 121 Int
 Energy Shield: 153
-(20-25)% increased Energy Shield Recharge Ratesacramental-robesacramental-robeSacramental Robe### Sacred Focus
+(20-25)% increased Energy Shield Recharge Rate
+Verisium Anvil: Runeforged Sacramental Robe · 485 Verisiumsacramental-robesacramental-robeSacramental Robe### Sacred Focus
 Focus · drops from level 75 · https://wraeclastindex.fyi/item/sacred-focus
 Requires: level 75, 107 Int
-Energy Shield: 81sacred-focussacred-focusSacred Focus### Sacred Maul
+Energy Shield: 81
+Verisium Anvil: Runeforged Sacred Focus · 410 Verisium / Rathpith Globe: Runemastered Plumed Focus · 2,500 Verisium, 10 Exceptional Verisium, Uhtred's Crest of the Chalicesacred-focussacred-focusSacred Focus### Sacred Maul
 Two-Handed Mace · drops from level 72 · https://wraeclastindex.fyi/item/sacred-maul
 Requires: level 72, 149 Str
 Physical Damage: 76-158 · Critical Hit Chance: 5% · Attacks per Second: 1.20sacred-maulsacred-maulSacred Maul### Sacrificial Axe
@@ -726,14 +1113,17 @@ Physical Damage: 20-42 · Critical Hit Chance: 5% · Attacks per Second: 1.50
 Gain (28-35) Mana per enemy killedsacrificial-axesacrificial-axeSacrificial Axe### Sacrificial Mantle
 Body Armour · drops from level 36 · https://wraeclastindex.fyi/item/sacrificial-mantle
 Requires: level 36, 33 Str, 33 Int
-Armour: 160 · Energy Shield: 48sacrificial-mantlesacrificial-mantleSacrificial Mantle### Sacrificial Regalia
+Armour: 160 · Energy Shield: 48
+Verisium Anvil: Runeforged Sacrificial Mantle · 120 Verisium / Soul Mantle: Runemastered Sacrificial Mantle · 460 Verisium, Medved's Crest of the Circlesacrificial-mantlesacrificial-mantleSacrificial Mantle### Sacrificial Regalia
 Body Armour · drops from level 65 · https://wraeclastindex.fyi/item/sacrificial-regalia
 Requires: level 65, 72 Str, 72 Dex, 72 Int
 Armour: 273 · Evasion Rating: 248 · Energy Shield: 76
-+1 to Level of all Corrupted Skill Gemssacrificial-regaliasacrificial-regaliaSacrificial Regalia### Saintly Crown
++1 to Level of all Corrupted Skill Gems
+Verisium Anvil: Runeforged Sacrificial Regalia · 20 Exceptional Verisium / Atziri's Splendour: Runemastered Sacrificial Regalia · 560 Verisium, 2 Exceptional Verisium, Vorana's Crest of the Scythesacrificial-regaliasacrificial-regaliaSacrificial Regalia### Saintly Crown
 Helmet · drops from level 70 · https://wraeclastindex.fyi/item/saintly-crown
 Requires: level 70, 54 Str, 54 Int
-Armour: 188 · Energy Shield: 52saintly-crownsaintly-crownSaintly Crown### Sanctified Staff
+Armour: 188 · Energy Shield: 52
+Verisium Anvil: Runeforged Saintly Crown · 380 Verisiumsaintly-crownsaintly-crownSaintly Crown### Sanctified Staff
 Staff · drops from level 56 · https://wraeclastindex.fyi/item/sanctified-staff
 Requires: level 56, 99 Int
 Grants Skill: Consecratesanctified-staffsanctified-staffSanctified Staff### Sandsworn Cuirass
@@ -742,10 +1132,12 @@ Requires: level 51, 82 Str
 Armour: 397sandsworn-cuirasssandsworn-cuirassSandsworn Cuirass### Sandsworn Sandals
 Boots · drops from level 75 · https://wraeclastindex.fyi/item/sandsworn-sandals
 Requires: level 75, 101 Int
-Energy Shield: 78sandsworn-sandalssandsworn-sandalsSandsworn Sandals### Sandsworn Tiara
+Energy Shield: 78
+Verisium Anvil: Runeforged Sandsworn Sandals · 390 Verisiumsandsworn-sandalssandsworn-sandalsSandsworn Sandals### Sandsworn Tiara
 Helmet · drops from level 54 · https://wraeclastindex.fyi/item/sandsworn-tiara
 Requires: level 54, 77 Int
-Energy Shield: 78sandsworn-tiarasandsworn-tiaraSandsworn Tiara### Sapphire
+Energy Shield: 78
+Verisium Anvil: Runeforged Sandsworn Tiara · 215 Verisiumsandsworn-tiarasandsworn-tiaraSandsworn Tiara### Sapphire
 Jewel · drops from level 20 · https://wraeclastindex.fyi/item/sapphiresapphiresapphireSapphire### Sapphire Charm
 Charm · drops from level 5 · https://wraeclastindex.fyi/item/sapphire-charm
 Requires: level 5
@@ -760,10 +1152,12 @@ Physical Damage: 23-70 · Critical Hit Chance: 5% · Attacks per Second: 1.20
 Gain (34-43) Life per enemy killedsavage-greataxesavage-greataxeSavage Greataxe### Scale Mail
 Body Armour · drops from level 37 · https://wraeclastindex.fyi/item/scale-mail
 Requires: level 37, 34 Str, 34 Dex
-Armour: 164 · Evasion Rating: 147scale-mailscale-mailScale Mail### Scalper's Jacket
+Armour: 164 · Evasion Rating: 147
+Verisium Anvil: Runeforged Scale Mail · 130 Verisium / Doryani's Prototype: Runemastered Scale Mail · 830 Verisium, Vorana's Crest of the Scythescale-mailscale-mailScale Mail### Scalper's Jacket
 Body Armour · drops from level 39 · https://wraeclastindex.fyi/item/scalpers-jacket
 Requires: level 39, 35 Dex, 35 Int
-Evasion Rating: 154 · Energy Shield: 51scalpers-jacketscalpers-jacketScalper's Jacket### Scimitar
+Evasion Rating: 154 · Energy Shield: 51
+Verisium Anvil: Runeforged Scalper's Jacket · 140 Verisium / Zerphi's Serape: Runemastered Scalper's Jacket · 3,770 Verisium, Uhtred's Crest of the Chalicescalpers-jacketscalpers-jacketScalper's Jacket### Scimitar
 One-Handed Sword · drops from level 16 · https://wraeclastindex.fyi/item/scimitar
 Requires: level 16, 19 Str, 19 Dex
 Physical Damage: 14-23 · Critical Hit Chance: 5% · Attacks per Second: 1.55scimitarscimitarScimitar### Scoundrel Armour
@@ -772,10 +1166,12 @@ Requires: level 48, 43 Str, 43 Dex
 Armour: 207 · Evasion Rating: 187scoundrel-armourscoundrel-armourScoundrel Armour### Scoundrel Jacket
 Body Armour · drops from level 45 · https://wraeclastindex.fyi/item/scoundrel-jacket
 Requires: level 45, 41 Dex, 41 Int
-Evasion Rating: 176 · Energy Shield: 57scoundrel-jacketscoundrel-jacketScoundrel Jacket### Scout's Vest
+Evasion Rating: 176 · Energy Shield: 57
+Verisium Anvil: Runeforged Scoundrel Jacket · 180 Verisiumscoundrel-jacketscoundrel-jacketScoundrel Jacket### Scout's Vest
 Body Armour · drops from level 33 · https://wraeclastindex.fyi/item/scouts-vest
 Requires: level 33, 54 Dex
-Evasion Rating: 240scouts-vestscouts-vestScout's Vest### Seaglass Spear
+Evasion Rating: 240
+Verisium Anvil: Runeforged Scout's Vest · 105 Verisium / The Rat Cage: Runemastered Scout's Vest · 460 Verisium, Medved's Crest of the Circlescouts-vestscouts-vestScout's Vest### Seaglass Spear
 Spear · drops from level 51 · https://wraeclastindex.fyi/item/seaglass-spear
 Requires: level 51, 29 Str, 71 Dex, 50 Int
 Physical Damage: 29-53 · Critical Hit Chance: 7% · Attacks per Second: 1.60seaglass-spearseaglass-spearSeaglass Spear### Seal Relic
@@ -783,52 +1179,67 @@ Relic · drops from level 1 · https://wraeclastindex.fyi/item/seal-relicseal-r
 Body Armour · drops from level 80 · https://wraeclastindex.fyi/item/seastorm-mantle
 Requires: level 80, 67 Str, 67 Int
 Armour: 273 · Energy Shield: 76
-(8-14)% of Damage taken Recouped as Lifeseastorm-mantleseastorm-mantleSeastorm Mantle### Sectarian Crest Shield
+(8-14)% of Damage taken Recouped as Life
+Verisium Anvil: Runeforged Seastorm Mantle · 470 Verisiumseastorm-mantleseastorm-mantleSeastorm Mantle### Sectarian Crest Shield
 Shield · drops from level 33 · https://wraeclastindex.fyi/item/sectarian-crest-shield
 Requires: level 33, 27 Str, 27 Int
-Armour: 61 · Energy Shield: 19 · Block chance: 25% · Grants Skill: Raise Shieldsectarian-crest-shieldsectarian-crest-shieldSectarian Crest Shield### Sectioned Bracers
+Armour: 61 · Energy Shield: 19 · Block chance: 25% · Grants Skill: Raise Shield
+Verisium Anvil: Runeforged Sectarian Crest Shield · 95 Verisiumsectarian-crest-shieldsectarian-crest-shieldSectarian Crest Shield### Sectioned Bracers
 Gloves · drops from level 28 · https://wraeclastindex.fyi/item/sectioned-bracers
 Requires: level 28, 36 Dex
-Evasion Rating: 68sectioned-bracerssectioned-bracersSectioned Bracers### Secured Leggings
+Evasion Rating: 68
+Verisium Anvil: Runeforged Sectioned Bracers · 40 Verisium / Idle Hands: Runemastered Sectioned Bracers · 150 Verisium, Medved's Crest of the Circlesectioned-bracerssectioned-bracersSectioned Bracers### Secured Leggings
 Boots · drops from level 16 · https://wraeclastindex.fyi/item/secured-leggings
 Requires: level 16, 14 Str, 14 Int
-Armour: 41 · Energy Shield: 15secured-leggingssecured-leggingsSecured Leggings### Secured Wraps
+Armour: 41 · Energy Shield: 15
+Verisium Anvil: Runeforged Secured Leggings · 30 Verisium / Wake of Destruction: Runemastered Secured Leggings · 1,680 Verisium, Vorana's Crest of the Scythesecured-leggingssecured-leggingsSecured Leggings### Secured Wraps
 Gloves · drops from level 80 · https://wraeclastindex.fyi/item/secured-wraps
 Requires: level 80, 55 Dex, 55 Int
-Evasion Rating: 94 · Energy Shield: 29secured-wrapssecured-wrapsSecured Wraps### Seer Crest Shield
+Evasion Rating: 94 · Energy Shield: 29
+Verisium Anvil: Runeforged Secured Wraps · 330 Verisiumsecured-wrapssecured-wrapsSecured Wraps### Seer Crest Shield
 Shield · drops from level 50 · https://wraeclastindex.fyi/item/seer-crest-shield
 Requires: level 50, 39 Str, 39 Int
-Armour: 88 · Energy Shield: 25 · Block chance: 25% · Grants Skill: Raise Shieldseer-crest-shieldseer-crest-shieldSeer Crest Shield### Sekhema Sandals
+Armour: 88 · Energy Shield: 25 · Block chance: 25% · Grants Skill: Raise Shield
+Verisium Anvil: Runeforged Seer Crest Shield · 190 Verisiumseer-crest-shieldseer-crest-shieldSeer Crest Shield### Sekhema Sandals
 Boots · drops from level 80 · https://wraeclastindex.fyi/item/sekhema-sandals
 Requires: level 80, 108 Int
-Energy Shield: 83sekhema-sandalssekhema-sandalsSekhema Sandals### Sekheman Crest Shield
+Energy Shield: 83
+Verisium Anvil: Runeforged Sekhema Sandals · 430 Verisiumsekhema-sandalssekhema-sandalsSekhema Sandals### Sekheman Crest Shield
 Shield · drops from level 70 · https://wraeclastindex.fyi/item/sekheman-crest-shield
 Requires: level 70, 54 Str, 54 Int
-Armour: 123 · Energy Shield: 34 · Block chance: 25% · Grants Skill: Raise Shieldsekheman-crest-shieldsekheman-crest-shieldSekheman Crest Shield### Serpentscale Boots
+Armour: 123 · Energy Shield: 34 · Block chance: 25% · Grants Skill: Raise Shield
+Verisium Anvil: Runeforged Sekheman Crest Shield · 355 Verisiumsekheman-crest-shieldsekheman-crest-shieldSekheman Crest Shield### Serpentscale Boots
 Boots · drops from level 59 · https://wraeclastindex.fyi/item/serpentscale-boots
 Requires: level 59, 78 Dex
-Evasion Rating: 203serpentscale-bootsserpentscale-bootsSerpentscale Boots### Serpentscale Coat
+Evasion Rating: 203
+Verisium Anvil: Runeforged Serpentscale Boots · 200 Verisiumserpentscale-bootsserpentscale-bootsSerpentscale Boots### Serpentscale Coat
 Body Armour · drops from level 36 · https://wraeclastindex.fyi/item/serpentscale-coat
 Requires: level 36, 59 Dex
-Evasion Rating: 260serpentscale-coatserpentscale-coatSerpentscale Coat### Serrated Quiver
+Evasion Rating: 260
+Verisium Anvil: Runeforged Serpentscale Coat · 120 Verisium / Quatl's Molt: Runemastered Serpentscale Coat · 3,730 Verisium, Uhtred's Crest of the Chaliceserpentscale-coatserpentscale-coatSerpentscale Coat### Serrated Quiver
 Quiver · drops from level 44 · https://wraeclastindex.fyi/item/serrated-quiver
 Requires: level 44
 Attacks have (20-30)% chance to cause Bleedingserrated-quiverserrated-quiverSerrated Quiver### Shabby Hood
 Helmet · drops from level 1 · https://wraeclastindex.fyi/item/shabby-hood
 Requires: none
-Evasion Rating: 19shabby-hoodshabby-hoodShabby Hood### Shaman Mantle
+Evasion Rating: 19
+Verisium Anvil: Runeforged Shabby Hood · 15 Verisium / Innsmouth: Runemastered Shabby Hood · 180 Verisium, Medved's Crest of the Circleshabby-hoodshabby-hoodShabby Hood### Shaman Mantle
 Body Armour · drops from level 28 · https://wraeclastindex.fyi/item/shaman-mantle
 Requires: level 28, 26 Str, 26 Int
-Armour: 129 · Energy Shield: 41shaman-mantleshaman-mantleShaman Mantle### Shamanistic Leggings
+Armour: 129 · Energy Shield: 41
+Verisium Anvil: Runeforged Shaman Mantle · 80 Verisium / Husk of Dreams: Runemastered Shaman Mantle · 440 Verisium, Vorana's Crest of the Scytheshaman-mantleshaman-mantleShaman Mantle### Shamanistic Leggings
 Boots · drops from level 59 · https://wraeclastindex.fyi/item/shamanistic-leggings
 Requires: level 59, 44 Str, 44 Int
-Armour: 123 · Energy Shield: 34shamanistic-leggingsshamanistic-leggingsShamanistic Leggings### Shielded Helm
+Armour: 123 · Energy Shield: 34
+Verisium Anvil: Runeforged Shamanistic Leggings · 200 Verisiumshamanistic-leggingsshamanistic-leggingsShamanistic Leggings### Shielded Helm
 Helmet · drops from level 33 · https://wraeclastindex.fyi/item/shielded-helm
 Requires: level 33, 27 Str, 27 Dex
-Armour: 97 · Evasion Rating: 87shielded-helmshielded-helmShielded Helm### Shortbow
+Armour: 97 · Evasion Rating: 87
+Verisium Anvil: Runeforged Shielded Helm · 90 Verisium / The Vile Knight: Runemastered Shielded Helm · 450 Verisium, Medved's Crest of the Circleshielded-helmshielded-helmShielded Helm### Shortbow
 Bow · drops from level 5 · https://wraeclastindex.fyi/item/shortbow
 Requires: level 5, 12 Dex
-Physical Damage: 7-14 · Critical Hit Chance: 5% · Attacks per Second: 1.25shortbowshortbowShortbow### Shortsword
+Physical Damage: 7-14 · Critical Hit Chance: 5% · Attacks per Second: 1.25
+Verisium Anvil: Quill Rain: Runeforged Shortbow · 200 Verisium, Medved's Crest of the CircleshortbowshortbowShortbow### Shortsword
 One-Handed Sword · drops from level 1 · https://wraeclastindex.fyi/item/shortsword
 Requires: none
 Physical Damage: 6-9 · Critical Hit Chance: 5% · Attacks per Second: 1.55shortswordshortswordShortsword### Shrine Sceptre
@@ -840,10 +1251,12 @@ Requires: level 70, 67 Str, 67 Dex
 Armour: 273 · Evasion Rating: 248
 +(20-25)% to Fire Resistance
 or +(20-25)% to Cold Resistance
-or +(20-25)% to Lightning Resistanceshrouded-mailshrouded-mailShrouded Mail### Shrouded Vest
+or +(20-25)% to Lightning Resistance
+Verisium Anvil: Runeforged Shrouded Mail · 465 Verisium / Runeforged Shrouded Mail · 480 Verisium / Runeforged Shrouded Mail · 475 Verisiumshrouded-mailshrouded-mailShrouded Mail### Shrouded Vest
 Body Armour · drops from level 16 · https://wraeclastindex.fyi/item/shrouded-vest
 Requires: level 16, 28 Dex
-Evasion Rating: 128shrouded-vestshrouded-vestShrouded Vest### Sickle Sword
+Evasion Rating: 128
+Verisium Anvil: Runeforged Shrouded Vest · 45 Verisium / Sands of Silk: Runemastered Shrouded Vest · 450 Verisium, Vorana's Crest of the Scytheshrouded-vestshrouded-vestShrouded Vest### Sickle Sword
 One-Handed Sword · drops from level 28 · https://wraeclastindex.fyi/item/sickle-sword
 Requires: level 28, 29 Str, 29 Dex
 Physical Damage: 18-38 · Critical Hit Chance: 5% · Attacks per Second: 1.50sickle-swordsickle-swordSickle Sword### Siege Crossbow
@@ -853,14 +1266,17 @@ Physical Damage: 29-115 · Critical Hit Chance: 5% · Attacks per Second: 1.65
 Grenade Skills Fire an additional Projectilesiege-crossbowsiege-crossbowSiege Crossbow### Sigil Crest Shield
 Shield · drops from level 7 · https://wraeclastindex.fyi/item/sigil-crest-shield
 Requires: level 7, 8 Str, 8 Int
-Armour: 20 · Energy Shield: 9 · Block chance: 25% · Grants Skill: Raise Shieldsigil-crest-shieldsigil-crest-shieldSigil Crest Shield### Signet Wombgift
+Armour: 20 · Energy Shield: 9 · Block chance: 25% · Grants Skill: Raise Shield
+Verisium Anvil: Runeforged Sigil Crest Shield · 25 Verisium / Oaksworn: Runemastered Sigil Crest Shield · 230 Verisium, Medved's Crest of the Circlesigil-crest-shieldsigil-crest-shieldSigil Crest Shield### Signet Wombgift
 Wombgift · drops from level 1 · https://wraeclastindex.fyi/item/signet-wombgiftsignet-wombgiftsignet-wombgiftSignet Wombgift### Silk Robe
 Body Armour · drops from level 22 · https://wraeclastindex.fyi/item/silk-robe
 Requires: level 22, 37 Int
-Energy Shield: 64silk-robesilk-robeSilk Robe### Silk Slippers
+Energy Shield: 64
+Verisium Anvil: Runeforged Silk Robe · 50 Verisium / Cloak of Flame: Runemastered Silk Robe · 1,820 Verisium, Exceptional Verisium, Uhtred's Crest of the Chalice / Temporalis: Runemastered Silk Robe · 2,500 Verisium, Exceptional Verisium, Uhtred's Crest of the Chalicesilk-robesilk-robeSilk Robe### Silk Slippers
 Boots · drops from level 27 · https://wraeclastindex.fyi/item/silk-slippers
 Requires: level 27, 38 Int
-Energy Shield: 36silk-slipperssilk-slippersSilk Slippers### Silver Charm
+Energy Shield: 36
+Verisium Anvil: Runeforged Silk Slippers · 50 Verisium / Wondertrap: Runemastered Silk Slippers · 220 Verisium, Medved's Crest of the Circlesilk-slipperssilk-slippersSilk Slippers### Silver Charm
 Charm · drops from level 10 · https://wraeclastindex.fyi/item/silver-charm
 Requires: level 10
 Lasts 3 Seconds · Consumes 20 of 40 Charges on use
@@ -883,7 +1299,8 @@ Requires: level 11, 23 Int
 Grants Skill: Power Siphonsiphoning-wandsiphoning-wandSiphoning Wand### Sirenscale Gloves
 Gloves · drops from level 80 · https://wraeclastindex.fyi/item/sirenscale-gloves
 Requires: level 80, 101 Int
-Energy Shield: 54sirenscale-glovessirenscale-glovesSirenscale Gloves### Skinning Knife
+Energy Shield: 54
+Verisium Anvil: Runeforged Sirenscale Gloves · 335 Verisiumsirenscale-glovessirenscale-glovesSirenscale Gloves### Skinning Knife
 Dagger · drops from level 16 · https://wraeclastindex.fyi/item/skinning-knife
 Requires: level 16, 19 Dex, 19 Int
 Physical Damage: 8-22 · Critical Hit Chance: 13.5% · Attacks per Second: 1.65skinning-knifeskinning-knifeSkinning Knife### Skulking Mask
@@ -896,13 +1313,15 @@ Physical Damage: 59-122 · Critical Hit Chance: 10% · Attacks per Second: 1.30
 (20-50)% chance to Daze on Hitskullcrusher-quarterstaffskullcrusher-quarterstaffSkullcrusher Quarterstaff### Skycrown Tiara
 Helmet · drops from level 65 · https://wraeclastindex.fyi/item/skycrown-tiara
 Requires: level 65, 91 Int
-Energy Shield: 90skycrown-tiaraskycrown-tiaraSkycrown Tiara### Sleek Boots
+Energy Shield: 90
+Verisium Anvil: Runeforged Skycrown Tiara · 300 Verisiumskycrown-tiaraskycrown-tiaraSkycrown Tiara### Sleek Boots
 Boots · drops from level 51 · https://wraeclastindex.fyi/item/sleek-boots
 Requires: level 51, 68 Dex
 Evasion Rating: 177sleek-bootssleek-bootsSleek Boots### Sleek Jacket
 Body Armour · drops from level 65 · https://wraeclastindex.fyi/item/sleek-jacket
 Requires: level 65, 67 Dex, 67 Int
-Evasion Rating: 285 · Energy Shield: 87sleek-jacketsleek-jacketSleek Jacket### Slender Flail
+Evasion Rating: 285 · Energy Shield: 87
+Verisium Anvil: Runeforged Sleek Jacket · 390 Verisiumsleek-jacketsleek-jacketSleek Jacket### Slender Flail
 Flail · drops from level 26 · https://wraeclastindex.fyi/item/slender-flail
 Requires: level 26, 38 Str, 17 Int
 Physical Damage: 19-32 · Critical Hit Chance: 8% · Attacks per Second: 1.50slender-flailslender-flailSlender Flail### Slicing Quarterstaff
@@ -911,10 +1330,12 @@ Requires: level 33, 47 Dex, 20 Int
 Physical Damage: 29-60 · Critical Hit Chance: 10% · Attacks per Second: 1.40slicing-quarterstaffslicing-quarterstaffSlicing Quarterstaff### Slim Mace
 One-Handed Mace · drops from level 10 · https://wraeclastindex.fyi/item/slim-mace
 Requires: level 10, 21 Str
-Physical Damage: 11-17 · Critical Hit Chance: 5% · Attacks per Second: 1.55slim-maceslim-maceSlim Mace### Slipstrike Vest
+Physical Damage: 11-17 · Critical Hit Chance: 5% · Attacks per Second: 1.55
+Verisium Anvil: Frostbreath: Runeforged Slim Mace · 430 Verisium, Vorana's Crest of the Scytheslim-maceslim-maceSlim Mace### Slipstrike Vest
 Body Armour · drops from level 70 · https://wraeclastindex.fyi/item/slipstrike-vest
 Requires: level 70, 121 Dex
-Evasion Rating: 519slipstrike-vestslipstrike-vestSlipstrike Vest### Smithing Hammer
+Evasion Rating: 519
+Verisium Anvil: Runeforged Slipstrike Vest · 475 Verisiumslipstrike-vestslipstrike-vestSlipstrike Vest### Smithing Hammer
 One-Handed Mace · drops from level 4 · https://wraeclastindex.fyi/item/smithing-hammer
 Requires: level 4, 11 Str
 Physical Damage: 11-18 · Critical Hit Chance: 5% · Attacks per Second: 1.45smithing-hammersmithing-hammerSmithing Hammer### Smooth Quarterstaff
@@ -923,7 +1344,8 @@ Requires: level 49, 68 Dex, 28 Int
 Physical Damage: 59-79 · Attacks per Second: 1.50smooth-quarterstaffsmooth-quarterstaffSmooth Quarterstaff### Smuggler Coat
 Body Armour · drops from level 51 · https://wraeclastindex.fyi/item/smuggler-coat
 Requires: level 51, 82 Dex
-Evasion Rating: 359smuggler-coatsmuggler-coatSmuggler Coat### Snakewood Greathammer
+Evasion Rating: 359
+Verisium Anvil: Runeforged Smuggler Coat · 230 Verisium / Queen of the Forest: Runemastered Smuggler Coat · 5,000 Verisium, Uhtred's Crest of the Chalicesmuggler-coatsmuggler-coatSmuggler Coat### Snakewood Greathammer
 Two-Handed Mace · drops from level 45 · https://wraeclastindex.fyi/item/snakewood-greathammer
 Requires: level 45, 80 Str
 Physical Damage: 62-115 · Critical Hit Chance: 5% · Attacks per Second: 1.05
@@ -933,22 +1355,26 @@ Requires: level 45, 80 Dex
 Physical Damage: 29-54 · Critical Hit Chance: 5% · Attacks per Second: 1.25snakewood-shortbowsnakewood-shortbowSnakewood Shortbow### Soaring Mask
 Helmet · drops from level 75 · https://wraeclastindex.fyi/item/soaring-mask
 Requires: level 75, 59 Dex, 59 Int
-Evasion Rating: 179 · Energy Shield: 55soaring-masksoaring-maskSoaring Mask### Soaring Spear
+Evasion Rating: 179 · Energy Shield: 55
+Verisium Anvil: Runeforged Soaring Mask · 425 Verisiumsoaring-masksoaring-maskSoaring Mask### Soaring Spear
 Spear · drops from level 70 · https://wraeclastindex.fyi/item/soaring-spear
 Requires: level 70, 41 Str, 115 Dex
 Physical Damage: 35-65 · Critical Hit Chance: 5% · Attacks per Second: 1.70soaring-spearsoaring-spearSoaring Spear### Soaring Targe
 Shield · drops from level 75 · https://wraeclastindex.fyi/item/soaring-targe
 Requires: level 75, 59 Str, 59 Dex
-Armour: 134 · Evasion Rating: 122 · Block chance: 25% · Grants Skill: Raise Shieldsoaring-targesoaring-targeSoaring Targe### Solar Amulet
+Armour: 134 · Evasion Rating: 122 · Block chance: 25% · Grants Skill: Raise Shield
+Verisium Anvil: Runeforged Soaring Targe · 425 Verisiumsoaring-targesoaring-targeSoaring Targe### Solar Amulet
 Amulet · drops from level 30 · https://wraeclastindex.fyi/item/solar-amulet
 Requires: level 30
 +(10-15) to Spiritsolar-amuletsolar-amuletSolar Amulet### Soldier Cuirass
 Body Armour · drops from level 65 · https://wraeclastindex.fyi/item/soldier-cuirass
 Requires: level 65, 121 Str
-Armour: 570soldier-cuirasssoldier-cuirassSoldier Cuirass### Soldier Greathelm
+Armour: 570
+Verisium Anvil: Runeforged Soldier Cuirass · 405 Verisiumsoldier-cuirasssoldier-cuirassSoldier Cuirass### Soldier Greathelm
 Helmet · drops from level 12 · https://wraeclastindex.fyi/item/soldier-greathelm
 Requires: level 12, 19 Str
-Armour: 80soldier-greathelmsoldier-greathelmSoldier Greathelm### Soldier Helm
+Armour: 80
+Verisium Anvil: Runeforged Soldier Greathelm · 30 Verisium / Ezomyte Peak: Runemastered Soldier Greathelm · 180 Verisium, Medved's Crest of the Circlesoldier-greathelmsoldier-greathelmSoldier Greathelm### Soldier Helm
 Helmet · drops from level 51 · https://wraeclastindex.fyi/item/soldier-helm
 Requires: level 51, 40 Str, 40 Dex
 Armour: 143 · Evasion Rating: 129soldier-helmsoldier-helmSoldier Helm### Soldiering Sabatons
@@ -960,56 +1386,69 @@ Requires: level 54, 96 Str
 Physical Damage: 59-123 · Critical Hit Chance: 5% · Attacks per Second: 1.20solemn-maulsolemn-maulSolemn Maul### Solid Mask
 Helmet · drops from level 45 · https://wraeclastindex.fyi/item/solid-mask
 Requires: level 45, 36 Dex, 36 Int
-Evasion Rating: 115 · Energy Shield: 37solid-masksolid-maskSolid Mask### Sombre Gloves
+Evasion Rating: 115 · Energy Shield: 37
+Verisium Anvil: Runeforged Solid Mask · 160 Verisium / The Three Dragons: Runemastered Solid Mask · 590 Verisium, Vorana's Crest of the Scythesolid-masksolid-maskSolid Mask### Sombre Gloves
 Gloves · drops from level 12 · https://wraeclastindex.fyi/item/sombre-gloves
 Requires: level 12, 17 Int
-Energy Shield: 15sombre-glovessombre-glovesSombre Gloves### Sorcerous Tiara
+Energy Shield: 15
+Verisium Anvil: Runeforged Sombre Gloves · 20 Verisium / Candlemaker: Runemastered Sombre Gloves · 140 Verisium, Medved's Crest of the Circlesombre-glovessombre-glovesSombre Gloves### Sorcerous Tiara
 Helmet · drops from level 70 · https://wraeclastindex.fyi/item/sorcerous-tiara
 Requires: level 70, 99 Int
-Energy Shield: 97sorcerous-tiarasorcerous-tiaraSorcerous Tiara### Spiked Bracers
+Energy Shield: 97
+Verisium Anvil: Runeforged Sorcerous Tiara · 375 Verisiumsorcerous-tiarasorcerous-tiaraSorcerous Tiara### Spiked Bracers
 Gloves · drops from level 59 · https://wraeclastindex.fyi/item/spiked-bracers
 Requires: level 59, 73 Dex
-Evasion Rating: 135spiked-bracersspiked-bracersSpiked Bracers### Spiked Buckler
+Evasion Rating: 135
+Verisium Anvil: Runeforged Spiked Bracers · 155 Verisiumspiked-bracersspiked-bracersSpiked Bracers### Spiked Buckler
 Buckler · drops from level 26 · https://wraeclastindex.fyi/item/spiked-buckler
 Requires: level 26, 38 Dex
-Evasion Rating: 64 · Block chance: 20% · Grants Skill: Parryspiked-bucklerspiked-bucklerSpiked Buckler### Spiked Club
+Evasion Rating: 64 · Block chance: 20% · Grants Skill: Parry
+Verisium Anvil: Runeforged Spiked Buckler · 65 Verisium / Silverthorne: Runemastered Spiked Buckler · 430 Verisium, Medved's Crest of the Circlespiked-bucklerspiked-bucklerSpiked Buckler### Spiked Club
 One-Handed Mace · drops from level 16 · https://wraeclastindex.fyi/item/spiked-club
 Requires: level 16, 31 Str
-Physical Damage: 15-24 · Critical Hit Chance: 5% · Attacks per Second: 1.45spiked-clubspiked-clubSpiked Club### Spiked Spear
+Physical Damage: 15-24 · Critical Hit Chance: 5% · Attacks per Second: 1.45
+Verisium Anvil: Trenchtimbre: Runeforged Spiked Club · 550 Verisium, Vorana's Crest of the Scythespiked-clubspiked-clubSpiked Club### Spiked Spear
 Spear · drops from level 77 · https://wraeclastindex.fyi/item/spiked-spear
 Requires: level 77, 50 Str, 127 Dex
 Physical Damage: 41-76 · Critical Hit Chance: 6% · Attacks per Second: 1.50
 Bleeding you inflict deals Damage (10-20)% fasterspiked-spearspiked-spearSpiked Spear### Spikeward Buckler
 Buckler · drops from level 54 · https://wraeclastindex.fyi/item/spikeward-buckler
 Requires: level 54, 77 Dex
-Evasion Rating: 124 · Block chance: 20% · Grants Skill: Parryspikeward-bucklerspikeward-bucklerSpikeward Buckler### Spined Bracers
+Evasion Rating: 124 · Block chance: 20% · Grants Skill: Parry
+Verisium Anvil: Runeforged Spikeward Buckler · 230 Verisiumspikeward-bucklerspikeward-bucklerSpikeward Buckler### Spined Bracers
 Gloves · drops from level 33 · https://wraeclastindex.fyi/item/spined-bracers
 Requires: level 33, 42 Dex
-Evasion Rating: 79spined-bracersspined-bracersSpined Bracers### Spiny Talisman
+Evasion Rating: 79
+Verisium Anvil: Runeforged Spined Bracers · 60 Verisium / Snakebite: Runemastered Spined Bracers · 490 Verisium, Vorana's Crest of the Scythespined-bracersspined-bracersSpined Bracers### Spiny Talisman
 Talisman · drops from level 67 · https://wraeclastindex.fyi/item/spiny-talisman
 Requires: level 67, 86 Str, 65 Int
 Physical Damage: 60-99 · Critical Hit Chance: 11% · Attacks per Second: 1.25spiny-talismanspiny-talismanSpiny Talisman### Spiral Wraps
 Gloves · drops from level 33 · https://wraeclastindex.fyi/item/spiral-wraps
 Requires: level 33, 24 Dex, 24 Int
-Evasion Rating: 43 · Energy Shield: 15spiral-wrapsspiral-wrapsSpiral Wraps### Spired Greathelm
+Evasion Rating: 43 · Energy Shield: 15
+Verisium Anvil: Runeforged Spiral Wraps · 60 Verisium / Hand of Wisdom and Action: Runemastered Spiral Wraps · 500 Verisium, Vorana's Crest of the Scythespiral-wrapsspiral-wrapsSpiral Wraps### Spired Greathelm
 Helmet · drops from level 27 · https://wraeclastindex.fyi/item/spired-greathelm
 Requires: level 27, 40 Str
-Armour: 149spired-greathelmspired-greathelmSpired Greathelm### Spiritbone Crown
+Armour: 149
+Verisium Anvil: Runeforged Spired Greathelm · 65 Verisium / Thrillsteel: Runemastered Spired Greathelm · 1,110 Verisium, Vorana's Crest of the Scythespired-greathelmspired-greathelmSpired Greathelm### Spiritbone Crown
 Helmet · drops from level 45 · https://wraeclastindex.fyi/item/spiritbone-crown
 Requires: level 45, 36 Str, 36 Int
-Armour: 128 · Energy Shield: 37spiritbone-crownspiritbone-crownSpiritbone Crown### Splintered Flail
+Armour: 128 · Energy Shield: 37
+Verisium Anvil: Runeforged Spiritbone Crown · 160 Verisium / Keeper of the Arc: Runemastered Spiritbone Crown · 25 Exceptional Verisium, Olroth's Crest of the Sunspiritbone-crownspiritbone-crownSpiritbone Crown### Splintered Flail
 Flail · drops from level 1 · https://wraeclastindex.fyi/item/splintered-flail
 Requires: none
 Physical Damage: 6-9 · Critical Hit Chance: 10% · Attacks per Second: 1.45splintered-flailsplintered-flailSplintered Flail### Splintered Tower Shield
 Shield · drops from level 1 · https://wraeclastindex.fyi/item/splintered-tower-shield
 Requires: none
-Armour: 18 · Block chance: 26% · Grants Skill: Raise Shieldsplintered-tower-shieldsplintered-tower-shieldSplintered Tower Shield### Splitting Greataxe
+Armour: 18 · Block chance: 26% · Grants Skill: Raise Shield
+Verisium Anvil: Runeforged Splintered Tower Shield · 15 Verisium / Dionadair: Runemastered Splintered Tower Shield · 220 Verisium, Medved's Crest of the Circlesplintered-tower-shieldsplintered-tower-shieldSplintered Tower Shield### Splitting Greataxe
 Two-Handed Axe · drops from level 1 · https://wraeclastindex.fyi/item/splitting-greataxe
 Requires: none
 Physical Damage: 8-20 · Critical Hit Chance: 5% · Attacks per Second: 1.20splitting-greataxesplitting-greataxeSplitting Greataxe### Stacked Sabatons
 Boots · drops from level 33 · https://wraeclastindex.fyi/item/stacked-sabatons
 Requires: level 33, 26 Str, 26 Dex
-Armour: 73 · Evasion Rating: 65stacked-sabatonsstacked-sabatonsStacked Sabatons### Staghorn Focus
+Armour: 73 · Evasion Rating: 65
+Verisium Anvil: Runeforged Stacked Sabatons · 70 Verisium / Obern's Bastion: Runemastered Stacked Sabatons · 390 Verisium, Vorana's Crest of the Scythestacked-sabatonsstacked-sabatonsStacked Sabatons### Staghorn Focus
 Focus · drops from level 48 · https://wraeclastindex.fyi/item/staghorn-focus
 Requires: level 48, 69 Int
 Energy Shield: 45staghorn-focusstaghorn-focusStaghorn Focus### Stalking Belt
@@ -1019,7 +1458,8 @@ Has 1 Charm Slot
 This item gains bonuses from Socketed Items as though it was Bootsstalking-beltstalking-beltStalking Belt### Stalking Bracers
 Gloves · drops from level 65 · https://wraeclastindex.fyi/item/stalking-bracers
 Requires: level 65, 80 Dex
-Evasion Rating: 148stalking-bracersstalking-bracersStalking Bracers### Stalking Spear
+Evasion Rating: 148
+Verisium Anvil: Runeforged Stalking Bracers · 220 Verisiumstalking-bracersstalking-bracersStalking Bracers### Stalking Spear
 Spear · drops from level 77 · https://wraeclastindex.fyi/item/stalking-spear
 Requires: level 77, 50 Str, 127 Dex
 Physical Damage: 47-79 · Critical Hit Chance: 5% · Attacks per Second: 1.55
@@ -1030,31 +1470,38 @@ Lasts 3 Seconds · Consumes 30 of 40 Charges on use
 Used when you start Bleedingstaunching-charmstaunching-charmStaunching Charm### Steel Plate
 Body Armour · drops from level 27 · https://wraeclastindex.fyi/item/steel-plate
 Requires: level 27, 45 Str
-Armour: 228steel-platesteel-plateSteel Plate### Steelhead Spear
+Armour: 228
+Verisium Anvil: Runeforged Steel Plate · 75 Verisium / Wandering Reliquary: Runemastered Steel Plate · 260 Verisium, Medved's Crest of the Circlesteel-platesteel-plateSteel Plate### Steelhead Spear
 Spear · drops from level 45 · https://wraeclastindex.fyi/item/steelhead-spear
 Requires: level 45, 26 Str, 63 Dex
 Physical Damage: 33-44 · Critical Hit Chance: 5% · Attacks per Second: 1.60steelhead-spearsteelhead-spearSteelhead Spear### Steelmail Gauntlets
 Gloves · drops from level 65 · https://wraeclastindex.fyi/item/steelmail-gauntlets
 Requires: level 65, 44 Str, 44 Dex
-Armour: 89 · Evasion Rating: 81steelmail-gauntletssteelmail-gauntletsSteelmail Gauntlets### Steelpoint Quarterstaff
+Armour: 89 · Evasion Rating: 81
+Verisium Anvil: Runeforged Steelmail Gauntlets · 205 Verisiumsteelmail-gauntletssteelmail-gauntletsSteelmail Gauntlets### Steelpoint Quarterstaff
 Quarterstaff · drops from level 28 · https://wraeclastindex.fyi/item/steelpoint-quarterstaff
 Requires: level 28, 41 Dex, 18 Int
-Physical Damage: 28-51 · Critical Hit Chance: 10% · Attacks per Second: 1.40steelpoint-quarterstaffsteelpoint-quarterstaffSteelpoint Quarterstaff### Steelpoint Shoes
+Physical Damage: 28-51 · Critical Hit Chance: 10% · Attacks per Second: 1.40
+Verisium Anvil: Nazir's Judgement: Runeforged Steelpoint Quarterstaff · 320 Verisium, Medved's Crest of the Circlesteelpoint-quarterstaffsteelpoint-quarterstaffSteelpoint Quarterstaff### Steelpoint Shoes
 Boots · drops from level 45 · https://wraeclastindex.fyi/item/steelpoint-shoes
 Requires: level 45, 34 Dex, 34 Int
-Evasion Rating: 86 · Energy Shield: 28steelpoint-shoessteelpoint-shoesSteelpoint Shoes### Steeltoe Boots
+Evasion Rating: 86 · Energy Shield: 28
+Verisium Anvil: Runeforged Steelpoint Shoes · 130 Verisiumsteelpoint-shoessteelpoint-shoesSteelpoint Shoes### Steeltoe Boots
 Boots · drops from level 28 · https://wraeclastindex.fyi/item/steeltoe-boots
 Requires: level 28, 39 Dex
-Evasion Rating: 102steeltoe-bootssteeltoe-bootsSteeltoe Boots### Stellar Amulet
+Evasion Rating: 102
+Verisium Anvil: Runeforged Steeltoe Boots · 55 Verisiumsteeltoe-bootssteeltoe-bootsSteeltoe Boots### Stellar Amulet
 Amulet · drops from level 25 · https://wraeclastindex.fyi/item/stellar-amulet
 Requires: level 25
 +(5-7) to all Attributesstellar-amuletstellar-amuletStellar Amulet### Stitched Gloves
 Gloves · drops from level 16 · https://wraeclastindex.fyi/item/stitched-gloves
 Requires: level 16, 22 Int
-Energy Shield: 18stitched-glovesstitched-glovesStitched Gloves### Stocky Mitts
+Energy Shield: 18
+Verisium Anvil: Runeforged Stitched Gloves · 25 Verisium / Doedre's Tenure: Runemastered Stitched Gloves · 150 Verisium, Medved's Crest of the Circlestitched-glovesstitched-glovesStitched Gloves### Stocky Mitts
 Gloves · drops from level 1 · https://wraeclastindex.fyi/item/stocky-mitts
 Requires: none
-Armour: 15stocky-mittsstocky-mittsStocky Mitts### Stoic Sceptre
+Armour: 15
+Verisium Anvil: Runeforged Stocky Mitts · 10 Verisium / Facebreaker: Runemastered Stocky Mitts · 240 Verisium, Vorana's Crest of the Scythestocky-mittsstocky-mittsStocky Mitts### Stoic Sceptre
 Sceptre · drops from level 6 · https://wraeclastindex.fyi/item/stoic-sceptre
 Requires: level 6, 12 Int
 Spirit: 100 · Grants Skill: Disciplinestoic-sceptrestoic-sceptreStoic Sceptre### Stone Charm
@@ -1064,7 +1511,8 @@ Lasts 3 Seconds · Consumes 20 of 40 Charges on use
 Used when you become Stunnedstone-charmstone-charmStone Charm### Stone Cuirass
 Body Armour · drops from level 62 · https://wraeclastindex.fyi/item/stone-cuirass
 Requires: level 62, 98 Str
-Armour: 474stone-cuirassstone-cuirassStone Cuirass### Stone Flail
+Armour: 474
+Verisium Anvil: Runeforged Stone Cuirass · 330 Verisiumstone-cuirassstone-cuirassStone Cuirass### Stone Flail
 Flail · drops from level 33 · https://wraeclastindex.fyi/item/stone-flail
 Requires: level 33, 47 Str, 20 Int
 Physical Damage: 23-38 · Critical Hit Chance: 10% · Attacks per Second: 1.45
@@ -1074,25 +1522,31 @@ Requires: level 33, 34 Str, 34 Dex
 Physical Damage: 40-67 · Critical Hit Chance: 5% · Attacks per Second: 1.30stone-greatswordstone-greatswordStone Greatsword### Stone Greaves
 Boots · drops from level 33 · https://wraeclastindex.fyi/item/stone-greaves
 Requires: level 33, 45 Str
-Armour: 133stone-greavesstone-greavesStone Greaves### Stone Targe
+Armour: 133
+Verisium Anvil: Runeforged Stone Greaves · 70 Verisium / Birth of Fury: Runemastered Stone Greaves · 400 Verisium, Medved's Crest of the Circlestone-greavesstone-greavesStone Greaves### Stone Targe
 Shield · drops from level 59 · https://wraeclastindex.fyi/item/stone-targe
 Requires: level 59, 46 Str, 46 Dex
-Armour: 102 · Evasion Rating: 93 · Block chance: 25% · Grants Skill: Raise Shieldstone-targestone-targeStone Targe### Stone Tower Shield
+Armour: 102 · Evasion Rating: 93 · Block chance: 25% · Grants Skill: Raise Shield
+Verisium Anvil: Runeforged Stone Targe · 265 Verisiumstone-targestone-targeStone Targe### Stone Tower Shield
 Shield · drops from level 36 · https://wraeclastindex.fyi/item/stone-tower-shield
 Requires: level 36, 52 Str
-Armour: 119 · Block chance: 26% · Grants Skill: Raise Shieldstone-tower-shieldstone-tower-shieldStone Tower Shield### Stout Crossbow
+Armour: 119 · Block chance: 26% · Grants Skill: Raise Shield
+Verisium Anvil: Runeforged Stone Tower Shield · 110 Verisiumstone-tower-shieldstone-tower-shieldStone Tower Shield### Stout Crossbow
 Crossbow · drops from level 67 · https://wraeclastindex.fyi/item/stout-crossbow
 Requires: level 67, 74 Str, 74 Dex
 Physical Damage: 30-119 · Critical Hit Chance: 5% · Attacks per Second: 1.55stout-crossbowstout-crossbowStout Crossbow### Stratified Targe
 Shield · drops from level 46 · https://wraeclastindex.fyi/item/stratified-targe
 Requires: level 46, 37 Str, 37 Dex
-Armour: 82 · Evasion Rating: 74 · Block chance: 25% · Grants Skill: Raise Shieldstratified-targestratified-targeStratified Targe### Straw Sandals
+Armour: 82 · Evasion Rating: 74 · Block chance: 25% · Grants Skill: Raise Shield
+Verisium Anvil: Runeforged Stratified Targe · 170 Verisiumstratified-targestratified-targeStratified Targe### Straw Sandals
 Boots · drops from level 1 · https://wraeclastindex.fyi/item/straw-sandals
 Requires: none
-Energy Shield: 14straw-sandalsstraw-sandalsStraw Sandals### Strider Vest
+Energy Shield: 14
+Verisium Anvil: Runeforged Straw Sandals · 15 Verisium / Luminous Pace: Runemastered Straw Sandals · 200 Verisium, Medved's Crest of the Circlestraw-sandalsstraw-sandalsStraw Sandals### Strider Vest
 Body Armour · drops from level 52 · https://wraeclastindex.fyi/item/strider-vest
 Requires: level 52, 83 Dex
-Evasion Rating: 366strider-veststrider-vestStrider Vest### Strife Pick
+Evasion Rating: 366
+Verisium Anvil: Yriel's Fostering: Runemastered Strider Vest · 9,200 Verisium, 12 Exceptional Verisium, Uhtred's Crest of the Chalicestrider-veststrider-vestStrider Vest### Strife Pick
 One-Handed Mace · drops from level 78 · https://wraeclastindex.fyi/item/strife-pick
 Requires: level 78, 163 Str
 Physical Damage: 49-66 · Critical Hit Chance: 7% · Attacks per Second: 1.45
@@ -1110,25 +1564,32 @@ Physical Damage: 49-60 · Critical Hit Chance: 5% · Attacks per Second: 1.40
 40% chance to Daze on Hitstructured-hammerstructured-hammerStructured Hammer### Studded Boots
 Boots · drops from level 54 · https://wraeclastindex.fyi/item/studded-boots
 Requires: level 54, 72 Dex
-Evasion Rating: 186studded-bootsstudded-bootsStudded Boots### Studded Greatclub
+Evasion Rating: 186
+Verisium Anvil: Runeforged Studded Boots · 175 Verisiumstudded-bootsstudded-bootsStudded Boots### Studded Greatclub
 Two-Handed Mace · drops from level 16 · https://wraeclastindex.fyi/item/studded-greatclub
 Requires: level 16, 31 Str
-Physical Damage: 32-48 · Critical Hit Chance: 5% · Attacks per Second: 1.10studded-greatclubstudded-greatclubStudded Greatclub### Studded Targe
+Physical Damage: 32-48 · Critical Hit Chance: 5% · Attacks per Second: 1.10
+Verisium Anvil: Brain Rattler: Runeforged Studded Greatclub · 245 Verisium, Medved's Crest of the Circlestudded-greatclubstudded-greatclubStudded Greatclub### Studded Targe
 Shield · drops from level 16 · https://wraeclastindex.fyi/item/studded-targe
 Requires: level 16, 15 Str, 15 Dex
-Armour: 34 · Evasion Rating: 29 · Block chance: 25% · Grants Skill: Raise Shieldstudded-targestudded-targeStudded Targe### Studded Vest
+Armour: 34 · Evasion Rating: 29 · Block chance: 25% · Grants Skill: Raise Shield
+Verisium Anvil: Runeforged Studded Targe · 40 Verisiumstudded-targestudded-targeStudded Targe### Studded Vest
 Body Armour · drops from level 26 · https://wraeclastindex.fyi/item/studded-vest
 Requires: level 26, 43 Dex
-Evasion Rating: 194studded-veststudded-vestStudded Vest### Sturdy Crossbow
+Evasion Rating: 194
+Verisium Anvil: Runeforged Studded Vest · 70 Verisium / Dustbloom: Runemastered Studded Vest · 260 Verisium, Medved's Crest of the Circlestudded-veststudded-vestStudded Vest### Sturdy Crossbow
 Crossbow · drops from level 10 · https://wraeclastindex.fyi/item/sturdy-crossbow
 Requires: level 10, 13 Str, 13 Dex
-Physical Damage: 11-26 · Critical Hit Chance: 5% · Attacks per Second: 1.55sturdy-crossbowsturdy-crossbowSturdy Crossbow### Suede Bracers
+Physical Damage: 11-26 · Critical Hit Chance: 5% · Attacks per Second: 1.55
+Verisium Anvil: Gatecrasher: Runeforged Sturdy Crossbow · 360 Verisium, Vorana's Crest of the Scythesturdy-crossbowsturdy-crossbowSturdy Crossbow### Suede Bracers
 Gloves · drops from level 1 · https://wraeclastindex.fyi/item/suede-bracers
 Requires: none
-Evasion Rating: 10suede-bracerssuede-bracersSuede Bracers### Swathed Cap
+Evasion Rating: 10
+Verisium Anvil: Runeforged Suede Bracers · 10 Verisium / Northpaw: Runemastered Suede Bracers · 420 Verisium, Vorana's Crest of the Scythesuede-bracerssuede-bracersSuede Bracers### Swathed Cap
 Helmet · drops from level 26 · https://wraeclastindex.fyi/item/swathed-cap
 Requires: level 26, 38 Dex
-Evasion Rating: 127swathed-capswathed-capSwathed Cap### Swift Bracers
+Evasion Rating: 127
+Verisium Anvil: Runeforged Swathed Cap · 60 Verisiumswathed-capswathed-capSwathed Cap### Swift Bracers
 Gloves · drops from level 51 · https://wraeclastindex.fyi/item/swift-bracers
 Requires: level 51, 64 Dex
 Evasion Rating: 118swift-bracersswift-bracersSwift Bracers### Swift Spear
@@ -1139,20 +1600,24 @@ Physical Damage: 32-53 · Critical Hit Chance: 5% · Attacks per Second: 1.60
 Body Armour · drops from level 65 · https://wraeclastindex.fyi/item/swiftstalker-coat
 Requires: level 65, 121 Dex
 Evasion Rating: 451
-(30-20)% reduced Slowing Potency of Debuffs on Youswiftstalker-coatswiftstalker-coatSwiftstalker Coat### Sword Spear
+(30-20)% reduced Slowing Potency of Debuffs on You
+Verisium Anvil: Runeforged Swiftstalker Coat · 405 Verisiumswiftstalker-coatswiftstalker-coatSwiftstalker Coat### Sword Spear
 Spear · drops from level 52 · https://wraeclastindex.fyi/item/sword-spear
 Requires: level 52, 29 Str, 72 Dex
 Physical Damage: 30-56 · Critical Hit Chance: 5% · Attacks per Second: 1.60sword-spearsword-spearSword Spear### Tapestry Relic
 Relic · drops from level 1 · https://wraeclastindex.fyi/item/tapestry-relictapestry-relictapestry-relicTapestry Relic### Tasalian Focus
 Focus · drops from level 80 · https://wraeclastindex.fyi/item/tasalian-focus
 Requires: level 80, 115 Int
-Energy Shield: 91tasalian-focustasalian-focusTasalian Focus### Tasalian Greaves
+Energy Shield: 91
+Verisium Anvil: Runeforged Tasalian Focus · 475 Verisiumtasalian-focustasalian-focusTasalian Focus### Tasalian Greaves
 Boots · drops from level 80 · https://wraeclastindex.fyi/item/tasalian-greaves
 Requires: level 80, 108 Str
-Armour: 280tasalian-greavestasalian-greavesTasalian Greaves### Tattered Robe
+Armour: 280
+Verisium Anvil: Runeforged Tasalian Greaves · 430 Verisiumtasalian-greavestasalian-greavesTasalian Greaves### Tattered Robe
 Body Armour · drops from level 1 · https://wraeclastindex.fyi/item/tattered-robe
 Requires: none
-Energy Shield: 28tattered-robetattered-robeTattered Robe### Taut Crossbow
+Energy Shield: 28
+Verisium Anvil: Runeforged Tattered Robe · 20 Verisium / Ghostwrithe: Runemastered Tattered Robe · 1,810 Verisium, Uhtred's Crest of the Chalicetattered-robetattered-robeTattered Robe### Taut Crossbow
 Crossbow · drops from level 45 · https://wraeclastindex.fyi/item/taut-crossbow
 Requires: level 45, 45 Str, 45 Dex
 Physical Damage: 20-79 · Critical Hit Chance: 5% · Attacks per Second: 1.60
@@ -1163,53 +1628,61 @@ Physical Damage: 113-153 · Critical Hit Chance: 5% · Attacks per Second: 1.10
 Warcries Empower an additional Attacktawhoan-greatclubtawhoan-greatclubTawhoan Greatclub### Tawhoan Tower Shield
 Shield · drops from level 80 · https://wraeclastindex.fyi/item/tawhoan-tower-shield
 Requires: level 80, 115 Str
-Armour: 264 · Block chance: 26% · Grants Skill: Raise Shieldtawhoan-tower-shieldtawhoan-tower-shieldTawhoan Tower Shield### Tearing Flail
+Armour: 264 · Block chance: 26% · Grants Skill: Raise Shield
+Verisium Anvil: Runeforged Tawhoan Tower Shield · 465 Verisiumtawhoan-tower-shieldtawhoan-tower-shieldTawhoan Tower Shield### Tearing Flail
 Flail · drops from level 52 · https://wraeclastindex.fyi/item/tearing-flail
 Requires: level 52, 72 Str, 29 Int
 Physical Damage: 27-56 · Critical Hit Chance: 12.5% · Attacks per Second: 1.40tearing-flailtearing-flailTearing Flail### Tempered Mitts
 Gloves · drops from level 16 · https://wraeclastindex.fyi/item/tempered-mitts
 Requires: level 16, 22 Str
-Armour: 49tempered-mittstempered-mittsTempered Mitts### Templar Vestments
+Armour: 49
+Verisium Anvil: Runeforged Tempered Mitts · 20 Verisium / Lochtonial Caress: Runemastered Tempered Mitts · 150 Verisium, Medved's Crest of the Circletempered-mittstempered-mittsTempered Mitts### Templar Vestments
 Body Armour · drops from level 45 · https://wraeclastindex.fyi/item/templar-vestments
 Requires: level 45, 41 Str, 41 Int
 Armour: 195 · Energy Shield: 57templar-vestmentstemplar-vestmentsTemplar Vestments### Temple Maul
 Two-Handed Mace · drops from level 28 · https://wraeclastindex.fyi/item/temple-maul
 Requires: level 28, 52 Str
-Physical Damage: 35-72 · Critical Hit Chance: 5% · Attacks per Second: 1.20temple-maultemple-maulTemple Maul### Tenebrous Amulet
+Physical Damage: 35-72 · Critical Hit Chance: 5% · Attacks per Second: 1.20
+Verisium Anvil: Shyaba: Runeforged Temple Maul · 1,600 Verisium, Vorana's Crest of the Scythetemple-maultemple-maulTemple Maul### Tenebrous Amulet
 Amulet · drops from level 1 · https://wraeclastindex.fyi/item/tenebrous-amulet
 -2 Prefix Modifiers allowed
 +2 Suffix Modifiers allowedtenebrous-amulettenebrous-amuletTenebrous Amulet### Tenebrous Crown
 Helmet · drops from level 65 · https://wraeclastindex.fyi/item/tenebrous-crown
 Requires: level 65, 59 Str, 59 Int
-Armour: 179 · Energy Shield: 50tenebrous-crowntenebrous-crownTenebrous Crown### Tenebrous Ring
+Armour: 179 · Energy Shield: 50
+Verisium Anvil: Vestige of Darkness: Runemastered Tenebrous Crown · 300 Verisium, Medved's Crest of the Circletenebrous-crowntenebrous-crownTenebrous Crown### Tenebrous Ring
 Ring · drops from level 1 · https://wraeclastindex.fyi/item/tenebrous-ring
 -2 Prefix Modifiers allowed
 +2 Suffix Modifiers allowedtenebrous-ringtenebrous-ringTenebrous Ring### Tense Crossbow
 Crossbow · drops from level 4 · https://wraeclastindex.fyi/item/tense-crossbow
 Requires: level 4, 8 Str, 8 Dex
 Physical Damage: 8-15 · Critical Hit Chance: 5% · Attacks per Second: 1.60
-(20-30)% increased Bolt Speedtense-crossbowtense-crossbowTense Crossbow### Tethering Bands
+(20-30)% increased Bolt Speed
+Verisium Anvil: Rampart Raptor: Runeforged Tense Crossbow · 285 Verisium, Medved's Crest of the Circletense-crossbowtense-crossbowTense Crossbow### Tethering Bands
 Gloves · drops from level 65 · https://wraeclastindex.fyi/item/tethering-bands
 Requires: level 65, 55 Str, 55 Int
 Armour: 98 · Energy Shield: 27tethering-bandstethering-bandsTethering Bands### Thane Mail
 Body Armour · drops from level 80 · https://wraeclastindex.fyi/item/thane-mail
 Requires: level 80, 67 Str, 67 Dex
 Armour: 273 · Evasion Rating: 248
-Hits against you have (15-25)% reduced Critical Damage Bonusthane-mailthane-mailThane Mail### Thawing Charm
+Hits against you have (15-25)% reduced Critical Damage Bonus
+Verisium Anvil: Runeforged Thane Mail · 475 Verisiumthane-mailthane-mailThane Mail### Thawing Charm
 Charm · drops from level 12 · https://wraeclastindex.fyi/item/thawing-charm
 Requires: level 12
 Lasts 3 Seconds · Consumes 40 of 40 Charges on use
 Used when you become Frozenthawing-charmthawing-charmThawing Charm### Threaded Shoes
 Boots · drops from level 16 · https://wraeclastindex.fyi/item/threaded-shoes
 Requires: level 16, 14 Dex, 14 Int
-Evasion Rating: 35 · Energy Shield: 15threaded-shoesthreaded-shoesThreaded Shoes### Thunder Talisman
+Evasion Rating: 35 · Energy Shield: 15
+Verisium Anvil: Runeforged Threaded Shoes · 30 Verisium / Ghostmarch: Runemastered Threaded Shoes · 220 Verisium, Vorana's Crest of the Scythethreaded-shoesthreaded-shoesThreaded Shoes### Thunder Talisman
 Talisman · drops from level 77 · https://wraeclastindex.fyi/item/thunder-talisman
 Requires: level 77, 102 Str, 72 Int
 Physical Damage: 33-187 · Critical Hit Chance: 8% · Attacks per Second: 1.30
 (20-30)% increased Magnitude of Shock you inflictthunder-talismanthunder-talismanThunder Talisman### Tideseer Mantle
 Body Armour · drops from level 51 · https://wraeclastindex.fyi/item/tideseer-mantle
 Requires: level 51, 45 Str, 45 Int
-Armour: 218 · Energy Shield: 63tideseer-mantletideseer-mantleTideseer Mantle### Time-Lost Diamond
+Armour: 218 · Energy Shield: 63
+Verisium Anvil: Runeforged Tideseer Mantle · 230 Verisium / Waveshaper: Runemastered Tideseer Mantle · 1,160 Verisium, Vorana's Crest of the Scythetideseer-mantletideseer-mantleTideseer Mantle### Time-Lost Diamond
 Jewel · drops from level 20 · https://wraeclastindex.fyi/item/time-lost-diamondtime-lost-diamondtime-lost-diamondTime-Lost Diamond### Time-Lost Emerald
 Jewel · drops from level 20 · https://wraeclastindex.fyi/item/time-lost-emeraldtime-lost-emeraldtime-lost-emeraldTime-Lost Emerald### Time-Lost Ruby
 Jewel · drops from level 20 · https://wraeclastindex.fyi/item/time-lost-rubytime-lost-rubytime-lost-rubyTime-Lost Ruby### Time-Lost Sapphire
@@ -1217,10 +1690,12 @@ Jewel · drops from level 20 · https://wraeclastindex.fyi/item/time-lost-sapphi
 Jewel · drops from level 20 · https://wraeclastindex.fyi/item/timeless-jeweltimeless-jeweltimeless-jewelTimeless Jewel### Titan Mitts
 Gloves · drops from level 52 · https://wraeclastindex.fyi/item/titan-mitts
 Requires: level 52, 64 Str
-Armour: 132titan-mittstitan-mittsTitan Mitts### Tonal Focus
+Armour: 132
+Verisium Anvil: Empire's Grasp: Runemastered Titan Mitts · 400 Verisium, Vorana's Crest of the Scythetitan-mittstitan-mittsTitan Mitts### Tonal Focus
 Focus · drops from level 22 · https://wraeclastindex.fyi/item/tonal-focus
 Requires: level 22, 33 Int
-Energy Shield: 26tonal-focustonal-focusTonal Focus### Topaz Charm
+Energy Shield: 26
+Verisium Anvil: Runeforged Tonal Focus · 45 Verisium / Serpent's Lesson: Runemastered Tonal Focus · 250 Verisium, Medved's Crest of the Circletonal-focustonal-focusTonal Focus### Topaz Charm
 Charm · drops from level 5 · https://wraeclastindex.fyi/item/topaz-charm
 Requires: level 5
 Lasts 4 Seconds · Consumes 20 of 40 Charges on use
@@ -1230,10 +1705,12 @@ Requires: level 16
 +(20-30)% to Lightning Resistancetopaz-ringtopaz-ringTopaz Ring### Torment Club
 One-Handed Mace · drops from level 65 · https://wraeclastindex.fyi/item/torment-club
 Requires: level 65, 114 Str
-Physical Damage: 44-73 · Critical Hit Chance: 5% · Attacks per Second: 1.45torment-clubtorment-clubTorment Club### Torn Gloves
+Physical Damage: 44-73 · Critical Hit Chance: 5% · Attacks per Second: 1.45
+Verisium Anvil: Mjölner: Runemastered Torment Club · 30 Exceptional Verisium, Olroth's Crest of the Sun / Olrovasara: Runemastered Torment Club · 15 Exceptional Verisium, Olroth's Crest of the Suntorment-clubtorment-clubTorment Club### Torn Gloves
 Gloves · drops from level 1 · https://wraeclastindex.fyi/item/torn-gloves
 Requires: none
-Energy Shield: 9torn-glovestorn-glovesTorn Gloves### Totemic Greatclub
+Energy Shield: 9
+Verisium Anvil: Runeforged Torn Gloves · 10 Verisium / Painter's Servant: Runemastered Torn Gloves · 240 Verisium, Vorana's Crest of the Scythetorn-glovestorn-glovesTorn Gloves### Totemic Greatclub
 Two-Handed Mace · drops from level 50 · https://wraeclastindex.fyi/item/totemic-greatclub
 Requires: level 50, 89 Str
 Physical Damage: 77-105 · Critical Hit Chance: 5% · Attacks per Second: 1.10
@@ -1243,7 +1720,8 @@ Requires: level 39
 (20-30)% chance to Poison on Hit with Attackstoxic-quivertoxic-quiverToxic Quiver### Trailblazer Armour
 Body Armour · drops from level 59 · https://wraeclastindex.fyi/item/trailblazer-armour
 Requires: level 59, 52 Str, 52 Dex
-Armour: 249 · Evasion Rating: 226trailblazer-armourtrailblazer-armourTrailblazer Armour### Transcendent Life Flask
+Armour: 249 · Evasion Rating: 226
+Verisium Anvil: Runeforged Trailblazer Armour · 300 Verisiumtrailblazer-armourtrailblazer-armourTrailblazer Armour### Transcendent Life Flask
 Life Flask · drops from level 50 · https://wraeclastindex.fyi/item/transcendent-life-flask
 Requires: level 50
 Recovers 840 Life over 4 Seconds · Consumes 10 of 75 Charges on usetranscendent-life-flasktranscendent-life-flaskTranscendent Life Flask### Transcendent Mana Flask
@@ -1252,7 +1730,8 @@ Requires: level 50
 Recovers 285 Mana over 3.5 Seconds · Consumes 10 of 75 Charges on usetranscendent-mana-flasktranscendent-mana-flaskTranscendent Mana Flask### Trapper Hood
 Helmet · drops from level 75 · https://wraeclastindex.fyi/item/trapper-hood
 Requires: level 75, 107 Dex
-Evasion Rating: 326trapper-hoodtrapper-hoodTrapper Hood### Trarthan Cannon
+Evasion Rating: 326
+Verisium Anvil: Runeforged Trapper Hood · 410 Verisiumtrapper-hoodtrapper-hoodTrapper Hood### Trarthan Cannon
 Crossbow · drops from level 65 · https://wraeclastindex.fyi/item/trarthan-cannon
 Requires: level 65, 114 Str, 63 Dex
 Physical Damage: 58-134 · Critical Hit Chance: 5% · Attacks per Second: 1.40
@@ -1262,22 +1741,27 @@ Requires: level 40, 40 Str, 40 Dex
 Physical Damage: 27-45 · Critical Hit Chance: 5% · Attacks per Second: 1.55treasured-bladetreasured-bladeTreasured Blade### Treerunner Shoes
 Boots · drops from level 59 · https://wraeclastindex.fyi/item/treerunner-shoes
 Requires: level 59, 44 Dex, 44 Int
-Evasion Rating: 111 · Energy Shield: 34treerunner-shoestreerunner-shoesTreerunner Shoes### Tribal Bow
+Evasion Rating: 111 · Energy Shield: 34
+Verisium Anvil: Runeforged Treerunner Shoes · 205 Verisiumtreerunner-shoestreerunner-shoesTreerunner Shoes### Tribal Bow
 Bow · drops from level 50 · https://wraeclastindex.fyi/item/tribal-bow
 Requires: level 50, 89 Dex
 Physical Damage: 38-57 · Critical Hit Chance: 5% · Attacks per Second: 1.20tribal-bowtribal-bowTribal Bow### Tribal Mask
 Helmet · drops from level 33 · https://wraeclastindex.fyi/item/tribal-mask
 Requires: level 33, 27 Dex, 27 Int
-Evasion Rating: 87 · Energy Shield: 30tribal-masktribal-maskTribal Mask### Trimmed Greaves
+Evasion Rating: 87 · Energy Shield: 30
+Verisium Anvil: Runeforged Tribal Mask · 90 Verisium / Glimpse of Chaos: Runemastered Tribal Mask · 590 Verisium, Vorana's Crest of the Scythe / The Vertex: Runemastered Tribal Mask · 590 Verisium, Vorana's Crest of the Scythetribal-masktribal-maskTribal Mask### Trimmed Greaves
 Boots · drops from level 27 · https://wraeclastindex.fyi/item/trimmed-greaves
 Requires: level 27, 38 Str
-Armour: 112trimmed-greavestrimmed-greavesTrimmed Greaves### Twig Circlet
+Armour: 112
+Verisium Anvil: Runeforged Trimmed Greaves · 50 Verisium / Trampletoe: Runemastered Trimmed Greaves · 5,600 Verisium, 20 Exceptional Verisium, Olroth's Crest of the Suntrimmed-greavestrimmed-greavesTrimmed Greaves### Twig Circlet
 Helmet · drops from level 1 · https://wraeclastindex.fyi/item/twig-circlet
 Requires: none
-Energy Shield: 19twig-circlettwig-circletTwig Circlet### Twig Focus
+Energy Shield: 19
+Verisium Anvil: Runeforged Twig Circlet · 15 Verisium / Crown of Thorns: Runemastered Twig Circlet · 190 Verisium, Medved's Crest of the Circletwig-circlettwig-circletTwig Circlet### Twig Focus
 Focus · drops from level 1 · https://wraeclastindex.fyi/item/twig-focus
 Requires: none
-Energy Shield: 12twig-focustwig-focusTwig Focus### Twin Bow
+Energy Shield: 12
+Verisium Anvil: Runeforged Twig Focus · 20 Verisium / Deathrattle: Runemastered Twig Focus · 220 Verisium, Medved's Crest of the Circletwig-focustwig-focusTwig Focus### Twin Bow
 Bow · drops from level 54 · https://wraeclastindex.fyi/item/twin-bow
 Requires: level 54, 96 Dex
 Physical Damage: 32-60 · Critical Hit Chance: 5% · Attacks per Second: 1.15
@@ -1321,35 +1805,45 @@ Requires: level 55
 20% of Flask Recovery applied Instantlyutility-beltutility-beltUtility Belt### Utility Wraps
 Gloves · drops from level 65 · https://wraeclastindex.fyi/item/utility-wraps
 Requires: level 65, 44 Dex, 44 Int
-Evasion Rating: 81 · Energy Shield: 25utility-wrapsutility-wrapsUtility Wraps### Utzaal Cuirass
+Evasion Rating: 81 · Energy Shield: 25
+Verisium Anvil: Thunderfist: Runemastered Utility Wraps · 2,750 Verisium, Exceptional Verisium, Uhtred's Crest of the Chaliceutility-wrapsutility-wrapsUtility Wraps### Utzaal Cuirass
 Body Armour · drops from level 75 · https://wraeclastindex.fyi/item/utzaal-cuirass
 Requires: level 75, 121 Str
 Armour: 496
-(30-40)% increased Stun Thresholdutzaal-cuirassutzaal-cuirassUtzaal Cuirass### Vaal Crest Shield
+(30-40)% increased Stun Threshold
+Verisium Anvil: Runeforged Utzaal Cuirass · 460 Verisiumutzaal-cuirassutzaal-cuirassUtzaal Cuirass### Vaal Crest Shield
 Shield · drops from level 75 · https://wraeclastindex.fyi/item/vaal-crest-shield
 Requires: level 75, 59 Str, 59 Int
-Armour: 134 · Energy Shield: 37 · Block chance: 25% · Grants Skill: Raise Shieldvaal-crest-shieldvaal-crest-shieldVaal Crest Shield### Vaal Cuirass
+Armour: 134 · Energy Shield: 37 · Block chance: 25% · Grants Skill: Raise Shield
+Verisium Anvil: Runeforged Vaal Crest Shield · 420 Verisiumvaal-crest-shieldvaal-crest-shieldVaal Crest Shield### Vaal Cuirass
 Body Armour · drops from level 37 · https://wraeclastindex.fyi/item/vaal-cuirass
 Requires: level 37, 60 Str
-Armour: 298vaal-cuirassvaal-cuirassVaal Cuirass### Vaal Gloves
+Armour: 298
+Verisium Anvil: Runeforged Vaal Cuirass · 130 Verisium / Greed's Embrace: Runemastered Vaal Cuirass · 820 Verisium, Vorana's Crest of the Scythevaal-cuirassvaal-cuirassVaal Cuirass### Vaal Gloves
 Gloves · drops from level 75 · https://wraeclastindex.fyi/item/vaal-gloves
 Requires: level 75, 94 Int
-Energy Shield: 51vaal-glovesvaal-glovesVaal Gloves### Vaal Greaves
+Energy Shield: 51
+Verisium Anvil: Runeforged Vaal Gloves · 305 Verisiumvaal-glovesvaal-glovesVaal Gloves### Vaal Greaves
 Boots · drops from level 75 · https://wraeclastindex.fyi/item/vaal-greaves
 Requires: level 75, 101 Str
-Armour: 268vaal-greavesvaal-greavesVaal Greaves### Vaal Mitts
+Armour: 268
+Verisium Anvil: Runeforged Vaal Greaves · 365 Verisiumvaal-greavesvaal-greavesVaal Greaves### Vaal Mitts
 Gloves · drops from level 75 · https://wraeclastindex.fyi/item/vaal-mitts
 Requires: level 75, 94 Str
-Armour: 179vaal-mittsvaal-mittsVaal Mitts### Vaal Tower Shield
+Armour: 179
+Verisium Anvil: Runeforged Vaal Mitts · 290 Verisiumvaal-mittsvaal-mittsVaal Mitts### Vaal Tower Shield
 Shield · drops from level 75 · https://wraeclastindex.fyi/item/vaal-tower-shield
 Requires: level 75, 107 Str
-Armour: 244 · Block chance: 26% · Grants Skill: Raise Shieldvaal-tower-shieldvaal-tower-shieldVaal Tower Shield### Vaal Wraps
+Armour: 244 · Block chance: 26% · Grants Skill: Raise Shield
+Verisium Anvil: Runeforged Vaal Tower Shield · 435 Verisium / The Surrender: Runemastered Vaal Tower Shield · 6,500 Verisium, Uhtred's Crest of the Chalicevaal-tower-shieldvaal-tower-shieldVaal Tower Shield### Vaal Wraps
 Gloves · drops from level 75 · https://wraeclastindex.fyi/item/vaal-wraps
 Requires: level 75, 52 Dex, 52 Int
-Evasion Rating: 90 · Energy Shield: 27vaal-wrapsvaal-wrapsVaal Wraps### Vagabond Armour
+Evasion Rating: 90 · Energy Shield: 27
+Verisium Anvil: Runeforged Vaal Wraps · 310 Verisiumvaal-wrapsvaal-wrapsVaal Wraps### Vagabond Armour
 Body Armour · drops from level 16 · https://wraeclastindex.fyi/item/vagabond-armour
 Requires: level 16, 17 Str, 17 Dex
-Armour: 83 · Evasion Rating: 71vagabond-armourvagabond-armourVagabond Armour### Vampiric Blade
+Armour: 83 · Evasion Rating: 71
+Verisium Anvil: Runeforged Vagabond Armour · 45 Verisium / Irongrasp: Runemastered Vagabond Armour · 260 Verisium, Medved's Crest of the Circlevagabond-armourvagabond-armourVagabond Armour### Vampiric Blade
 One-Handed Sword · drops from level 11 · https://wraeclastindex.fyi/item/vampiric-blade
 Requires: level 11, 14 Str, 14 Dex
 Physical Damage: 11-20 · Critical Hit Chance: 5% · Attacks per Second: 1.50vampiric-bladevampiric-bladeVampiric Blade### Varnished Crossbow
@@ -1359,43 +1853,54 @@ Physical Damage: 12-36 · Critical Hit Chance: 5% · Attacks per Second: 1.60va
 Relic · drops from level 65 · https://wraeclastindex.fyi/item/vase-relicvase-relicvase-relicVase Relic### Veiled Mask
 Helmet · drops from level 28 · https://wraeclastindex.fyi/item/veiled-mask
 Requires: level 28, 23 Dex, 23 Int
-Evasion Rating: 75 · Energy Shield: 27veiled-maskveiled-maskVeiled Mask### Velour Shoes
+Evasion Rating: 75 · Energy Shield: 27
+Verisium Anvil: Runeforged Veiled Mask · 65 Verisium / Atsak's Sight: Runemastered Veiled Mask · 180 Verisium, Medved's Crest of the Circleveiled-maskveiled-maskVeiled Mask### Velour Shoes
 Boots · drops from level 52 · https://wraeclastindex.fyi/item/velour-shoes
 Requires: level 52, 38 Dex, 38 Int
-Evasion Rating: 99 · Energy Shield: 31velour-shoesvelour-shoesVelour Shoes### Velvet Cap
+Evasion Rating: 99 · Energy Shield: 31
+Verisium Anvil: Beetlebite: Runemastered Velour Shoes · 520 Verisium, Medved's Crest of the Circlevelour-shoesvelour-shoesVelour Shoes### Velvet Cap
 Helmet · drops from level 52 · https://wraeclastindex.fyi/item/velvet-cap
 Requires: level 52, 74 Dex
-Evasion Rating: 240velvet-capvelvet-capVelvet Cap### Venerable Defender
+Evasion Rating: 240
+Verisium Anvil: Heatshiver: Runemastered Velvet Cap · 3,860 Verisium, Uhtred's Crest of the Chalicevelvet-capvelvet-capVelvet Cap### Venerable Defender
 Shield · drops from level 62 · https://wraeclastindex.fyi/item/venerable-defender
 Requires: level 62, 64 Str, 64 Dex
-Armour: 107 · Evasion Rating: 97 · Block chance: 28% · Grants Skill: Raise Shieldvenerable-defendervenerable-defenderVenerable Defender### Veridical Chain
+Armour: 107 · Evasion Rating: 97 · Block chance: 28% · Grants Skill: Raise Shield
+Verisium Anvil: Eyes of the Runefather: Runemastered Venerable Defender · 1,800 Verisium, Exceptional Verisium, Uhtred's Crest of the Chalicevenerable-defendervenerable-defenderVenerable Defender### Veridical Chain
 Amulet · drops from level 52 · https://wraeclastindex.fyi/item/veridical-chain
 Requires: level 52
-+(30-40) to maximum Runic Wardveridical-chainveridical-chainVeridical Chain### Vermeil Circlet
++(30-40) to maximum Runic Ward
+Verisium Anvil: Eventide Petals: Runemastered Veridical Chain · 40 Exceptional Verisium, Olroth's Crest of the Sunveridical-chainveridical-chainVeridical Chain### Vermeil Circlet
 Helmet · drops from level 45 · https://wraeclastindex.fyi/item/vermeil-circlet
 Requires: level 45, 64 Int
-Energy Shield: 68vermeil-circletvermeil-circletVermeil Circlet### Veteran Sabatons
+Energy Shield: 68
+Verisium Anvil: Runeforged Vermeil Circlet · 155 Verisium / Crown of Eyes: Runemastered Vermeil Circlet · 840 Verisium, Vorana's Crest of the Scythevermeil-circletvermeil-circletVermeil Circlet### Veteran Sabatons
 Boots · drops from level 65 · https://wraeclastindex.fyi/item/veteran-sabatons
 Requires: level 65, 47 Str, 47 Dex
-Armour: 134 · Evasion Rating: 122veteran-sabatonsveteran-sabatonsVeteran Sabatons### Vicious Talisman
+Armour: 134 · Evasion Rating: 122
+Verisium Anvil: Runeforged Veteran Sabatons · 265 Verisiumveteran-sabatonsveteran-sabatonsVeteran Sabatons### Vicious Talisman
 Talisman · drops from level 40 · https://wraeclastindex.fyi/item/vicious-talisman
 Requires: level 40, 47 Str, 34 Int
-Physical Damage: 43-71 · Critical Hit Chance: 8% · Attacks per Second: 1.25vicious-talismanvicious-talismanVicious Talisman### Vile Greataxe
+Physical Damage: 43-71 · Critical Hit Chance: 8% · Attacks per Second: 1.25
+Verisium Anvil: The Flesh Poppet: Runeforged Vicious Talisman · 25 Exceptional Verisium, Olroth's Crest of the Sunvicious-talismanvicious-talismanVicious Talisman### Vile Greataxe
 Two-Handed Axe · drops from level 65 · https://wraeclastindex.fyi/item/vile-greataxe
 Requires: level 65, 89 Str, 36 Dex
 Physical Damage: 59-155 · Critical Hit Chance: 5% · Attacks per Second: 1.20vile-greataxevile-greataxeVile Greataxe### Vile Robe
 Body Armour · drops from level 65 · https://wraeclastindex.fyi/item/vile-robe
 Requires: level 65, 121 Int
-Energy Shield: 171vile-robevile-robeVile Robe### Viper Cap
+Energy Shield: 171
+Verisium Anvil: Runeforged Vile Robe · 390 Verisiumvile-robevile-robeVile Robe### Viper Cap
 Helmet · drops from level 38 · https://wraeclastindex.fyi/item/viper-cap
 Requires: level 38, 54 Dex
-Evasion Rating: 179viper-capviper-capViper Cap### Visceral Quiver
+Evasion Rating: 179
+Verisium Anvil: Runeforged Viper Cap · 115 Verisium / Constricting Command: Runemastered Viper Cap · 3,710 Verisium, Uhtred's Crest of the Chaliceviper-capviper-capViper Cap### Visceral Quiver
 Quiver · drops from level 65 · https://wraeclastindex.fyi/item/visceral-quiver
 Requires: level 65
 (20-30)% increased Critical Hit Chance for Attacksvisceral-quivervisceral-quiverVisceral Quiver### Visored Helm
 Helmet · drops from level 16 · https://wraeclastindex.fyi/item/visored-helm
 Requires: level 16, 15 Str, 15 Dex
-Armour: 54 · Evasion Rating: 46visored-helmvisored-helmVisored Helm### Vitalic Ring
+Armour: 54 · Evasion Rating: 46
+Verisium Anvil: Runeforged Visored Helm · 35 Verisium / Ironride: Runemastered Visored Helm · 320 Verisium, Medved's Crest of the Circlevisored-helmvisored-helmVisored Helm### Vitalic Ring
 Ring · drops from level 40 · https://wraeclastindex.fyi/item/vitalic-ring
 Requires: level 40
 (4-6)% increased maximum Lifevitalic-ringvitalic-ringVitalic Ring### Volant Quiver
@@ -1414,78 +1919,97 @@ Physical Damage: 23-130 · Critical Hit Chance: 8% · Attacks per Second: 1.30
 (20-30)% increased Magnitude of Shock you inflictvoltfang-talismanvoltfang-talismanVoltfang Talisman### Voodoo Focus
 Focus · drops from level 33 · https://wraeclastindex.fyi/item/voodoo-focus
 Requires: level 33, 48 Int
-Energy Shield: 34voodoo-focusvoodoo-focusVoodoo Focus### Votive Raiment
+Energy Shield: 34
+Verisium Anvil: Runeforged Voodoo Focus · 95 Verisium / Apep's Supremacy: Runemastered Voodoo Focus · 420 Verisium, Medved's Crest of the Circlevoodoo-focusvoodoo-focusVoodoo Focus### Votive Raiment
 Body Armour · drops from level 33 · https://wraeclastindex.fyi/item/votive-raiment
 Requires: level 33, 54 Int
-Energy Shield: 83votive-raimentvotive-raimentVotive Raiment### Wanderer Armour
+Energy Shield: 83
+Verisium Anvil: Runeforged Votive Raiment · 105 Verisium / Tetzlapokal's Desire: Runemastered Votive Raiment · 460 Verisium, Medved's Crest of the Circlevotive-raimentvotive-raimentVotive Raiment### Wanderer Armour
 Body Armour · drops from level 51 · https://wraeclastindex.fyi/item/wanderer-armour
 Requires: level 51, 45 Str, 45 Dex
 Armour: 218 · Evasion Rating: 197wanderer-armourwanderer-armourWanderer Armour### Wanderer Shoes
 Boots · drops from level 65 · https://wraeclastindex.fyi/item/wanderer-shoes
 Requires: level 65, 47 Dex, 47 Int
-Evasion Rating: 122 · Energy Shield: 37wanderer-shoeswanderer-shoesWanderer Shoes### War Spear
+Evasion Rating: 122 · Energy Shield: 37
+Verisium Anvil: Runeforged Wanderer Shoes · 255 Verisiumwanderer-shoeswanderer-shoesWanderer Shoes### War Spear
 Spear · drops from level 21 · https://wraeclastindex.fyi/item/war-spear
 Requires: level 21, 14 Str, 31 Dex
 Physical Damage: 16-27 · Critical Hit Chance: 5% · Attacks per Second: 1.60
-(25-35)% increased Projectile Speed with this Weaponwar-spearwar-spearWar Spear### War Wraps
+(25-35)% increased Projectile Speed with this Weapon
+Verisium Anvil: Daevata's Wind: Runeforged War Spear · 295 Verisium, Medved's Crest of the Circlewar-spearwar-spearWar Spear### War Wraps
 Gloves · drops from level 65 · https://wraeclastindex.fyi/item/war-wraps
 Requires: level 65, 44 Dex, 44 Int
-Evasion Rating: 94 · Energy Shield: 29war-wrapswar-wrapsWar Wraps### Warded Helm
+Evasion Rating: 94 · Energy Shield: 29
+Verisium Anvil: Runeforged War Wraps · 210 Verisiumwar-wrapswar-wrapsWar Wraps### Warded Helm
 Helmet · drops from level 65 · https://wraeclastindex.fyi/item/warded-helm
 Requires: level 65, 50 Str, 50 Dex
-Armour: 179 · Evasion Rating: 163warded-helmwarded-helmWarded Helm### Warden Bow
+Armour: 179 · Evasion Rating: 163
+Verisium Anvil: Runeforged Warded Helm · 295 Verisiumwarded-helmwarded-helmWarded Helm### Warden Bow
 Bow · drops from level 11 · https://wraeclastindex.fyi/item/warden-bow
 Requires: level 11, 23 Dex
 Physical Damage: 12-20 · Critical Hit Chance: 5% · Attacks per Second: 1.15
-(25-35)% chance to Chain an additional timewarden-bowwarden-bowWarden Bow### Warding Quarterstaff
+(25-35)% chance to Chain an additional time
+Verisium Anvil: Ironbound: Runeforged Warden Bow · 245 Verisium, Vorana's Crest of the Scythewarden-bowwarden-bowWarden Bow### Warding Quarterstaff
 Quarterstaff · drops from level 65 · https://wraeclastindex.fyi/item/warding-quarterstaff
 Requires: level 65, 127 Dex, 50 Int
 Physical Damage: 51-85 · Critical Hit Chance: 10% · Attacks per Second: 1.40
-+(30-50) to maximum Runic Wardwarding-quarterstaffwarding-quarterstaffWarding Quarterstaff### Warlock Leggings
++(30-50) to maximum Runic Ward
+Verisium Anvil: Duality: Runemastered Warding Quarterstaff · 20 Exceptional Verisium, Olroth's Crest of the Sunwarding-quarterstaffwarding-quarterstaffWarding Quarterstaff### Warlock Leggings
 Boots · drops from level 75 · https://wraeclastindex.fyi/item/warlock-leggings
 Requires: level 75, 56 Str, 56 Int
-Armour: 134 · Energy Shield: 37warlock-leggingswarlock-leggingsWarlock Leggings### Warlord Cuirass
+Armour: 134 · Energy Shield: 37
+Verisium Anvil: Runeforged Warlock Leggings · 385 Verisiumwarlock-leggingswarlock-leggingsWarlock Leggings### Warlord Cuirass
 Body Armour · drops from level 80 · https://wraeclastindex.fyi/item/warlord-cuirass
 Requires: level 80, 121 Str
 Armour: 496
-+(15-25)% of Armour also applies to Elemental Damagewarlord-cuirasswarlord-cuirassWarlord Cuirass### Warmonger Bow
++(15-25)% of Armour also applies to Elemental Damage
+Verisium Anvil: Runeforged Warlord Cuirass · 465 Verisiumwarlord-cuirasswarlord-cuirassWarlord Cuirass### Warmonger Bow
 Bow · drops from level 77 · https://wraeclastindex.fyi/item/warmonger-bow
 Requires: level 77, 163 Dex
 Physical Damage: 56-84 · Critical Hit Chance: 5% · Attacks per Second: 1.20warmonger-bowwarmonger-bowWarmonger Bow### Warmonger Greathelm
 Helmet · drops from level 65 · https://wraeclastindex.fyi/item/warmonger-greathelm
 Requires: level 65, 91 Str
-Armour: 325warmonger-greathelmwarmonger-greathelmWarmonger Greathelm### Warpick
+Armour: 325
+Verisium Anvil: Runeforged Warmonger Greathelm · 315 Verisiumwarmonger-greathelmwarmonger-greathelmWarmonger Greathelm### Warpick
 One-Handed Mace · drops from level 22 · https://wraeclastindex.fyi/item/warpick
 Requires: level 22, 41 Str
 Physical Damage: 18-24 · Critical Hit Chance: 7% · Attacks per Second: 1.45
-+(5-10)% to Critical Damage BonuswarpickwarpickWarpick### Warrior Greathelm
++(5-10)% to Critical Damage Bonus
+Verisium Anvil: Sculpted Suffering: Runeforged Warpick · 250 Verisium, Medved's Crest of the CirclewarpickwarpickWarpick### Warrior Greathelm
 Helmet · drops from level 36 · https://wraeclastindex.fyi/item/warrior-greathelm
 Requires: level 36, 52 Str
-Armour: 191warrior-greathelmwarrior-greathelmWarrior Greathelm### Waxed Jacket
+Armour: 191
+Verisium Anvil: Runeforged Warrior Greathelm · 100 Verisium / Corona of the Red Sun: Runemastered Warrior Greathelm · 320 Verisium, Medved's Crest of the Circlewarrior-greathelmwarrior-greathelmWarrior Greathelm### Waxed Jacket
 Body Armour · drops from level 11 · https://wraeclastindex.fyi/item/waxed-jacket
 Requires: level 11, 13 Dex, 13 Int
-Evasion Rating: 53 · Energy Shield: 25waxed-jacketwaxed-jacketWaxed Jacket### Waxing Quarterstaff
+Evasion Rating: 53 · Energy Shield: 25
+Verisium Anvil: Runeforged Waxed Jacket · 30 Verisium / Gloomform: Runemastered Waxed Jacket · 240 Verisium, Medved's Crest of the Circlewaxed-jacketwaxed-jacketWaxed Jacket### Waxing Quarterstaff
 Quarterstaff · drops from level 54 · https://wraeclastindex.fyi/item/waxing-quarterstaff
 Requires: level 54, 75 Dex, 30 Int
 Physical Damage: 39-82 · Critical Hit Chance: 10% · Attacks per Second: 1.50waxing-quarterstaffwaxing-quarterstaffWaxing Quarterstaff### Wayfarer Jacket
 Body Armour · drops from level 28 · https://wraeclastindex.fyi/item/wayfarer-jacket
 Requires: level 28, 26 Dex, 26 Int
-Evasion Rating: 114 · Energy Shield: 41wayfarer-jacketwayfarer-jacketWayfarer Jacket### Wayfarer Shoes
+Evasion Rating: 114 · Energy Shield: 41
+Verisium Anvil: Runeforged Wayfarer Jacket · 80 Verisium / The Dancing Mirage: Runemastered Wayfarer Jacket · 260 Verisium, Medved's Crest of the Circlewayfarer-jacketwayfarer-jacketWayfarer Jacket### Wayfarer Shoes
 Boots · drops from level 45 · https://wraeclastindex.fyi/item/wayfarer-shoes
 Requires: level 45, 34 Dex, 34 Int
 Evasion Rating: 86 · Energy Shield: 28wayfarer-shoeswayfarer-shoesWayfarer Shoes### Wayward Crest Shield
 Shield · drops from level 45 · https://wraeclastindex.fyi/item/wayward-crest-shield
 Requires: level 45, 36 Str, 36 Int
-Armour: 80 · Energy Shield: 23 · Block chance: 25% · Grants Skill: Raise Shieldwayward-crest-shieldwayward-crest-shieldWayward Crest Shield### Weaver Leggings
+Armour: 80 · Energy Shield: 23 · Block chance: 25% · Grants Skill: Raise Shield
+Verisium Anvil: Runeforged Wayward Crest Shield · 155 Verisiumwayward-crest-shieldwayward-crest-shieldWayward Crest Shield### Weaver Leggings
 Boots · drops from level 45 · https://wraeclastindex.fyi/item/weaver-leggings
 Requires: level 45, 34 Str, 34 Int
-Armour: 96 · Energy Shield: 28weaver-leggingsweaver-leggingsWeaver Leggings### Whorl Focus
+Armour: 96 · Energy Shield: 28
+Verisium Anvil: Runeforged Weaver Leggings · 125 Verisiumweaver-leggingsweaver-leggingsWeaver Leggings### Whorl Focus
 Focus · drops from level 51 · https://wraeclastindex.fyi/item/whorl-focus
 Requires: level 51, 73 Int
-Energy Shield: 47whorl-focuswhorl-focusWhorl Focus### Wicker Tiara
+Energy Shield: 47
+Verisium Anvil: Runeforged Whorl Focus · 210 Verisiumwhorl-focuswhorl-focusWhorl Focus### Wicker Tiara
 Helmet · drops from level 10 · https://wraeclastindex.fyi/item/wicker-tiara
 Requires: level 10, 17 Int
-Energy Shield: 29wicker-tiarawicker-tiaraWicker Tiara### Wide Belt
+Energy Shield: 29
+Verisium Anvil: Runeforged Wicker Tiara · 30 Verisium / The Devouring Diadem: Runemastered Wicker Tiara · 180 Verisium, Medved's Crest of the Circlewicker-tiarawicker-tiaraWicker Tiara### Wide Belt
 Belt · drops from level 14 · https://wraeclastindex.fyi/item/wide-belt
 Requires: level 14
 (20-30)% increased Flask Charges gainedwide-beltwide-beltWide Belt### Wildwood Talisman
@@ -1494,40 +2018,50 @@ Requires: level 70, 98 Str, 72 Int
 Physical Damage: 67-112 · Critical Hit Chance: 8% · Attacks per Second: 1.25wildwood-talismanwildwood-talismanWildwood Talisman### Winged Spear
 Spear · drops from level 16 · https://wraeclastindex.fyi/item/winged-spear
 Requires: level 16, 12 Str, 25 Dex
-Physical Damage: 12-22 · Critical Hit Chance: 5% · Attacks per Second: 1.70winged-spearwinged-spearWinged Spear### Withered Wand
+Physical Damage: 12-22 · Critical Hit Chance: 5% · Attacks per Second: 1.70
+Verisium Anvil: Skysliver: Runeforged Winged Spear · 395 Verisium, Vorana's Crest of the Scythewinged-spearwinged-spearWinged Spear### Withered Wand
 Wand · drops from level 1 · https://wraeclastindex.fyi/item/withered-wand
 Requires: none
 Grants Skill: Chaos Boltwithered-wandwithered-wandWithered Wand### Wolfskin Mantle
 Body Armour · drops from level 65 · https://wraeclastindex.fyi/item/wolfskin-mantle
 Requires: level 65, 67 Str, 67 Int
-Armour: 313 · Energy Shield: 87wolfskin-mantlewolfskin-mantleWolfskin Mantle### Wooden Buckler
+Armour: 313 · Energy Shield: 87
+Verisium Anvil: Runeforged Wolfskin Mantle · 390 Verisiumwolfskin-mantlewolfskin-mantleWolfskin Mantle### Wooden Buckler
 Buckler · drops from level 5 · https://wraeclastindex.fyi/item/wooden-buckler
 Requires: level 5, 10 Dex
-Evasion Rating: 18 · Block chance: 20% · Grants Skill: Parrywooden-bucklerwooden-bucklerWooden Buckler### Wooden Club
+Evasion Rating: 18 · Block chance: 20% · Grants Skill: Parry
+Verisium Anvil: Runeforged Wooden Buckler · 25 Verisium / Nocturne: Runemastered Wooden Buckler · 240 Verisium, Medved's Crest of the Circlewooden-bucklerwooden-bucklerWooden Buckler### Wooden Club
 One-Handed Mace · drops from level 1 · https://wraeclastindex.fyi/item/wooden-club
 Requires: none
-Physical Damage: 6-10 · Critical Hit Chance: 5% · Attacks per Second: 1.45wooden-clubwooden-clubWooden Club### Wool Cap
+Physical Damage: 6-10 · Critical Hit Chance: 5% · Attacks per Second: 1.45
+Verisium Anvil: Brynhand's Mark: Runeforged Wooden Club · 205 Verisium, Medved's Crest of the Circlewooden-clubwooden-clubWooden Club### Wool Cap
 Helmet · drops from level 48 · https://wraeclastindex.fyi/item/wool-cap
 Requires: level 48, 69 Dex
 Evasion Rating: 222wool-capwool-capWool Cap### Woven Cap
 Helmet · drops from level 65 · https://wraeclastindex.fyi/item/woven-cap
 Requires: level 65, 91 Dex
-Evasion Rating: 296woven-capwoven-capWoven Cap### Woven Focus
+Evasion Rating: 296
+Verisium Anvil: Runeforged Woven Cap · 290 Verisiumwoven-capwoven-capWoven Cap### Woven Focus
 Focus · drops from level 6 · https://wraeclastindex.fyi/item/woven-focus
 Requires: level 6, 11 Int
-Energy Shield: 15woven-focuswoven-focusWoven Focus### Wrapped Cap
+Energy Shield: 15
+Verisium Anvil: Runeforged Woven Focus · 25 Verisium / Threaded Light: Runemastered Woven Focus · 400 Verisium, Vorana's Crest of the Scythewoven-focuswoven-focusWoven Focus### Wrapped Cap
 Helmet · drops from level 54 · https://wraeclastindex.fyi/item/wrapped-cap
 Requires: level 54, 77 Dex
-Evasion Rating: 248wrapped-capwrapped-capWrapped Cap### Wrapped Greathelm
+Evasion Rating: 248
+Verisium Anvil: Runeforged Wrapped Cap · 215 Verisiumwrapped-capwrapped-capWrapped Cap### Wrapped Greathelm
 Helmet · drops from level 16 · https://wraeclastindex.fyi/item/wrapped-greathelm
 Requires: level 16, 25 Str
-Armour: 99wrapped-greathelmwrapped-greathelmWrapped Greathelm### Wrapped Quarterstaff
+Armour: 99
+Verisium Anvil: Runeforged Wrapped Greathelm · 35 Verisium / Black Sun Crest: Runemastered Wrapped Greathelm · 180 Verisium, Medved's Crest of the Circlewrapped-greathelmwrapped-greathelmWrapped Greathelm### Wrapped Quarterstaff
 Quarterstaff · drops from level 1 · https://wraeclastindex.fyi/item/wrapped-quarterstaff
 Requires: none
-Physical Damage: 7-12 · Critical Hit Chance: 10% · Attacks per Second: 1.40wrapped-quarterstaffwrapped-quarterstaffWrapped Quarterstaff### Wrapped Sandals
+Physical Damage: 7-12 · Critical Hit Chance: 10% · Attacks per Second: 1.40
+Verisium Anvil: The Blood Thorn: Runeforged Wrapped Quarterstaff · 225 Verisium, Medved's Crest of the Circlewrapped-quarterstaffwrapped-quarterstaffWrapped Quarterstaff### Wrapped Sandals
 Boots · drops from level 11 · https://wraeclastindex.fyi/item/wrapped-sandals
 Requires: level 11, 17 Int
-Energy Shield: 22wrapped-sandalswrapped-sandalsWrapped Sandals### Wrath Sceptre
+Energy Shield: 22
+Verisium Anvil: Runeforged Wrapped Sandals · 25 Verisium / Wanderlust: Runemastered Wrapped Sandals · 370 Verisium, Vorana's Crest of the Scythewrapped-sandalswrapped-sandalsWrapped Sandals### Wrath Sceptre
 Sceptre · drops from level 49 · https://wraeclastindex.fyi/item/wrath-sceptre
 Requires: level 49, 87 Int
 Spirit: 100 · Grants Skill: Fulminationwrath-sceptrewrath-sceptreWrath Sceptre### Wreath Focus
@@ -1540,16 +2074,19 @@ Physical Damage: 57-94 · Critical Hit Chance: 10% · Attacks per Second: 1.40w
 Body Armour · drops from level 75 · https://wraeclastindex.fyi/item/wyrmscale-coat
 Requires: level 75, 121 Dex
 Evasion Rating: 451
-(30-40)% increased Elemental Ailment Thresholdwyrmscale-coatwyrmscale-coatWyrmscale Coat### Zealot Bow
+(30-40)% increased Elemental Ailment Threshold
+Verisium Anvil: Runeforged Wyrmscale Coat · 485 Verisiumwyrmscale-coatwyrmscale-coatWyrmscale Coat### Zealot Bow
 Bow · drops from level 39 · https://wraeclastindex.fyi/item/zealot-bow
 Requires: level 39, 70 Dex
-Physical Damage: 31-47 · Critical Hit Chance: 5% · Attacks per Second: 1.20zealot-bowzealot-bowZealot Bow### Zealot Crown
+Physical Damage: 31-47 · Critical Hit Chance: 5% · Attacks per Second: 1.20
+Verisium Anvil: Slivertongue: Runeforged Zealot Bow · 775 Verisium, Uhtred's Crest of the Chalicezealot-bowzealot-bowZealot Bow### Zealot Crown
 Helmet · drops from level 51 · https://wraeclastindex.fyi/item/zealot-crown
 Requires: level 51, 40 Str, 40 Int
 Armour: 143 · Energy Shield: 41zealot-crownzealot-crownZealot Crown### Zealot Gauntlets
 Gloves · drops from level 59 · https://wraeclastindex.fyi/item/zealot-gauntlets
 Requires: level 59, 41 Str, 41 Dex
-Armour: 82 · Evasion Rating: 74zealot-gauntletszealot-gauntletsZealot Gauntlets### Zealot Greathammer
+Armour: 82 · Evasion Rating: 74
+Verisium Anvil: Runeforged Zealot Gauntlets · 160 Verisiumzealot-gauntletszealot-gauntletsZealot Gauntlets### Zealot Greathammer
 Two-Handed Mace · drops from level 51 · https://wraeclastindex.fyi/item/zealot-greathammer
 Requires: level 51, 91 Str
 Physical Damage: 70-95 · Critical Hit Chance: 5% · Attacks per Second: 1.05

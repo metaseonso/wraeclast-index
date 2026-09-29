@@ -835,6 +835,18 @@ small.at-bonus{display:block}
   .cxp-chips::-webkit-scrollbar{display:none}
   .cxp-list{max-height:none; overflow:visible}
 }
+/* Currency tab: the loot filter block (assets/currency.js). The rules keep their own lines and scroll inside
+   their box sideways, so a long BaseType line never widens the page */
+.sect-btns{display:flex; flex-wrap:wrap; gap:6px; align-self:center}
+.cxfilt h3{font-family:var(--disp); font-size:19px; margin:0 0 10px}
+.cxf-mode{display:flex; flex-wrap:wrap; align-items:center; gap:6px; margin-bottom:10px}
+.cxf-mode .chip{padding:3px 10px; font-size:12px}
+.cxf-over{display:inline-flex; align-items:center; gap:5px; font-size:12px; color:var(--muted); margin-right:6px}
+.cxf-over .field{width:84px; padding:4px 8px}
+.cxf-out{margin:0; max-height:46vh; overflow:auto; overscroll-behavior:contain; padding:10px 12px; border:1px solid var(--line);
+  border-radius:8px; background:var(--sunken, var(--surface)); font:12px/1.5 var(--mono); color:var(--text); white-space:pre; tab-size:4}
+.cxf-out:focus-visible{outline:none; border-color:var(--accent)}
+.cxf-ft{display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap; margin-top:10px}
 /* Admin: Cloudflare section */
 .dv-sect{margin:26px 0 6px; font-family:var(--disp); font-size:20px}
 .dv-g{display:inline-block; padding:1px 7px; border-radius:6px; font-family:var(--mono); font-size:12px; border:1px solid var(--line)}
@@ -965,6 +977,10 @@ small.at-bonus{display:block}
 .cp-areas small{display:block; padding-left:2.2em}
 .cp-open{background:none; border:0; padding:0; font:inherit; color:var(--accent); cursor:pointer; text-align:left}
 .cp-open:hover{text-decoration:underline}
+.cp-bases{border-bottom:1px solid var(--line); padding:6px 0}
+.cp-bases summary{cursor:pointer}
+.cp-bases ul{margin:6px 0 4px}
+.st-words{justify-content:flex-start; margin:0 0 8px}
 .dt-scroll{overflow-x:auto}
 .dt-jobs{border-collapse:collapse; font-size:13px; min-width:420px}
 .dt-jobs th{text-align:left; font-weight:600; color:var(--faint); font-size:11.5px; text-transform:uppercase; letter-spacing:.04em}
@@ -985,6 +1001,25 @@ small.at-bonus{display:block}
   .pt-list td.pt-t{white-space:nowrap; font-size:11.5px}
   .pt-lg{display:block; font-family:var(--sans, inherit); font-size:11px; color:var(--faint)}
 }
+/* the Rune recipes page (assets/runes.js): the rune chips, then a recipe a row */
+.rn-ctl{display:flex; flex-direction:column; gap:10px; margin-bottom:12px}
+.rn-picks{display:flex; flex-wrap:wrap; gap:6px}
+.rn-make{flex:1 1 220px}
+.rn-list{display:flex; flex-direction:column}
+.rn-row{border-bottom:1px solid var(--line); padding:9px 0; display:flex; flex-direction:column; gap:4px}
+.rn-in{display:flex; flex-wrap:wrap; align-items:center; gap:4px 6px; font-size:13px}
+.rn-rune{color:var(--text); text-decoration:none}
+a.rn-rune:hover, a.rn-rune:focus-visible, .rn-out a:hover, .rn-out a:focus-visible, .rn-bands a:hover{color:var(--accent)}
+.rn-plus{color:var(--faint)}
+.rn-out{display:flex; flex-wrap:wrap; align-items:baseline; gap:4px 8px; font-size:13.5px}
+.rn-out a, .rn-bands a{color:var(--accent); text-decoration:none; font-weight:500}
+.rn-arrow{color:var(--faint)}
+.rn-meta{color:var(--faint); font-size:12px}
+.rn-off summary{cursor:pointer; font-size:12px; color:var(--muted)}
+.rn-off summary .pill{margin-left:6px}
+.rn-off ul{margin:4px 0 0; padding-left:18px; font-size:12px; color:var(--muted); line-height:1.6}
+.rn-lenrow{margin-bottom:8px}
+.rn-bands{min-width:0}
 
 /* ---------- the Market tab (assets/market.js) ---------- */
 .mk-block{margin:0 0 6px}
@@ -1021,23 +1056,6 @@ small.at-bonus{display:block}
 .mk-line{font-size:13.5px; line-height:1.55; margin:6px 0 0; max-width:100ch}
 @media (max-width:640px){ .mk-t td:first-child{min-width:124px} .mk-big b{font-size:26px} }
 
-/* ---------- the index down the side of a list (assets/app.js sideShow) ----------
-   From 1280 px, on a page that is a list (a search, a kind's list, Currency, Atlas, Bosses): the whole index in one
-   column beside it, the page on show marked. Narrower, the index is in the menu instead. */
-.side{display:none}
-@media (min-width:1280px){
-  body.withside main{display:flex; justify-content:center; align-items:flex-start; gap:26px; padding:0 16px}
-  body.withside .side{display:block; flex:0 0 184px; position:sticky; top:64px; max-height:calc(100vh - 72px); overflow:auto;
-    padding:22px 2px 24px 0; scrollbar-width:thin}
-  body.withside main > .view{flex:1 1 auto; min-width:0; max-width:1190px; margin:0; padding-left:0; padding-right:0}
-  .side-toc{grid-template-columns:1fr; gap:14px}
-  .side-toc .toc-sec h3{font-size:13px; margin-bottom:3px}
-  .side-toc .toc-sec a{font-size:12.5px; padding:3px 0}
-  .side-toc .toc-sec li{border-bottom-color:var(--line-soft)}
-  .side-toc a[aria-current]{color:var(--accent)}
-  .side-toc a[aria-current] .ti{opacity:1}
-}
-
 /* a boss's big hits (assets/bosses.js hitsHTML) */
 .bo-hits{list-style:none; margin:6px 0; padding:0}
 .bo-hits li{display:grid; grid-template-columns:minmax(0,1fr) auto auto 72px; gap:4px 12px; align-items:baseline;
@@ -1045,4 +1063,7 @@ small.at-bonus{display:block}
 .bo-hk{color:var(--faint); font-size:12px; white-space:nowrap}
 .bo-hn{font-variant-numeric:tabular-nums; white-space:nowrap}
 .bo-how summary{cursor:pointer; color:var(--muted); font-size:12.5px; margin:4px 0}
-@media (max-width:640px){ .bo-hits li{grid-template-columns:minmax(0,1fr) auto} .bo-hits li .bo-hk{grid-column:1} }
+.bo-hits .bo-tell{grid-column:1 / -1; color:var(--muted); font-size:12.5px; line-height:1.45}
+.bo-tsrc{color:var(--faint); font-size:12px; white-space:nowrap}
+@media (max-width:640px){ .bo-hits li{grid-template-columns:minmax(0,1fr) auto} .bo-hits li .bo-hk{grid-column:1}
+  .bo-hits li .bo-tell{grid-column:1 / -1} .bo-tsrc{white-space:normal} }

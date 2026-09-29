@@ -404,6 +404,8 @@ function drawStats(){
     [t.arrivals, 'Arrivals', 'from outside the site'],
     [t.clicks, 'Clicks', range],
     [t.newNotes, 'New notes', 'from players'],
+    // drop reports held back: area level under the item's drop level (worker/community.js drops)
+    [t.heldDrops, 'Drops held', 'area level under the drop level'],
   ].map(([n, l, sub]) => '<div class="panel dv-tile"><b>' + num(n) + '</b><span>' + esc(l) + '</span><small>' + esc(sub) + '</small></div>').join(''));
   safe('#chart', () => { viewChart(); });
   safe('#load', () => { loadPanel(); });

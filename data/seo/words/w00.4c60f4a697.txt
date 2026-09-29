@@ -19,7 +19,10 @@ Keyword · https://wraeclastindex.fyi/item/account-bound
 Account Bound items cannot be traded to other players, but can be shared between other characters on your account.account-boundaccount-boundAccountBoundAccount Bound### Accuracy
 Keyword · https://wraeclastindex.fyi/item/accuracy-keyword
 Used by 8 gems, 47 uniques, 90 passives
-Accuracy is used to hit a target with an Attack, and is checked against the targets Evasion to determine that chance. Player Attacks incur an Accuracy penalty based on distance from the origin of the damage to the target, with no penalty for targets within 2 metres and up to 90% less Accuracy for targets further than 9 metres away.accuracy-keywordaccuracyAccuracy### Acrobatics
+Accuracy is used to hit a target with an Attack, and is checked against the targets Evasion to determine that chance. Player Attacks incur an Accuracy penalty based on distance from the origin of the damage to the target, with no penalty for targets within 2 metres and up to 90% less Accuracy for targets further than 9 metres away.accuracy-keywordaccuracyAccuracy### Accurate
+Keyword · https://wraeclastindex.fyi/item/accurate
+Used by 1 gem
+Monster has 200% increased Accuracy Rating.accurateaccurateMonsterIncreasedAccuracy1Accurate### Acrobatics
 Keyword · https://wraeclastindex.fyi/item/acrobatics
 Can Evade all Hits 75% less Evasion RatingacrobaticsacrobaticsAcrobatics### Activating Marks
 Keyword · https://wraeclastindex.fyi/item/activating-marks
@@ -27,15 +30,15 @@ Used by 7 gems
 Marks all have a condition that makes them Activate. When a Mark Activates, it will cause an extra effect and then be Consumed.activating-marksactivating-marksMarkActivateActivating Marks### Adaptation
 Keyword · https://wraeclastindex.fyi/item/adaptation
 Used by 2 passives
-Adaptations are gained by taking Elemental Damage from Hits and cause you to take less damage of that Type from subsequent Hits. Unless otherwise specified, you can have 3 Adaptations at a time, and Adaptations do not have a duration.adaptationadaptationAdaptation### Adaptive Rune
-Keyword · https://wraeclastindex.fyi/item/adaptive-rune
-Monsters gain:
-Adaptationadaptive-runeadaptive-runeAdaptiveRuneAdaptive Rune### Added Skill Use Time
+Adaptations are gained by taking Elemental Damage from Hits and cause you to take less damage of that Type from subsequent Hits. Unless otherwise specified, you can have 3 Adaptations at a time, and Adaptations do not have a duration.adaptationadaptationAdaptation### Added Skill Use Time
 Keyword · https://wraeclastindex.fyi/item/added-skill-use-time
 This additional use time is fixed and will not be modified by skill use speed stats.added-skill-use-timeadded-skill-use-timeAddedAttackCastTimeAdded Skill Use Time### Adding to Stat Totals
 Keyword · https://wraeclastindex.fyi/item/adding-to-stat-totals
 Used by 26 gems
-Adding to the Total value of a stat occurs after all other calculations have been performed. This means that the added value does not benefit from percentage modifiers to the stat.adding-to-stat-totalsadding-to-stat-totalsTotalPlusAdding to Stat Totals### Additional Rare Monsters
+Adding to the Total value of a stat occurs after all other calculations have been performed. This means that the added value does not benefit from percentage modifiers to the stat.adding-to-stat-totalsadding-to-stat-totalsTotalPlusAdding to Stat Totals### Additional Projectiles
+Keyword · https://wraeclastindex.fyi/item/additional-projectiles
+Used by 1 gem
+Monster fires 4 additional Projectiles.additional-projectilesadditional-projectilesMonsterAdditionalProjectiles1Additional Projectiles### Additional Rare Monsters
 Keyword · https://wraeclastindex.fyi/item/additional-rare-monsters
 Additional Rare Monsters can spawn in Rare Monster Packs with larger pack sizes. Each Rare Monster in the Pack provides one modifier to the Pack's Minions. Additional Rare Monsters in Essence Packs also carry Essences.additional-rare-monstersadditional-rare-monstersAdditionalRareMonsterAdditional Rare Monsters### Affinity
 Keyword · https://wraeclastindex.fyi/item/affinity
@@ -91,11 +94,7 @@ Ancient Modifiers are fragments of Precursor power, adding many varied bonus eff
 Keyword · https://wraeclastindex.fyi/item/anomaly-map
 Anomaly Maps have added requirements to access on the World Map. Bosses of these maps are Deadly and may drop an additional lineage support.anomaly-mapanomaly-mapHiddenMapsAnomaly Map### Apex Predators
 Keyword · https://wraeclastindex.fyi/item/apex-predators
-Adds an additional Boss to the encounter. Additional bosses will be summoned into all remaining waves in the Simulacrum.apex-predatorsapex-predatorsDeliriumApexPredatorsApex Predators### Arcane Rune
-Keyword · https://wraeclastindex.fyi/item/arcane-rune
-Monsters gain:
-Extra Energy Shield
-Trigger a Stunning nova when Energy Shield is depletedarcane-runearcane-runeArcaneRuneArcane Rune### Arcane Surge
+Adds an additional Boss to the encounter. Additional bosses will be summoned into all remaining waves in the Simulacrum.apex-predatorsapex-predatorsDeliriumApexPredatorsApex Predators### Arcane Surge
 Keyword · https://wraeclastindex.fyi/item/arcane-surge-keyword
 Used by 1 gem, 1 unique, 18 passives
 Arcane Surge grants 15% increased Cast Speed and 20% more Mana Regeneration Rate.arcane-surge-keywordarcane-surgeArcaneSurgeArcane Surge### Arcane Surge
@@ -121,7 +120,9 @@ Used by 1 passive
 Enemies with Armour Broken below 0 have negative Armour. This means they take more Physical damage from Hits. Armour broken below 0 is capped by the enemy's base Armour.armour-break-below-0armour-break-below-0ArmourOverbreakArmour Break below 0### Armour Movement Penalties
 Keyword · https://wraeclastindex.fyi/item/armour-movement-penalties
 Used by 1 passive
-Depending on the type of Armour equipped, Players will have a less Movement Speed penalty applied depending on what Attribute the Armour requires. These penalties only apply to equipped Body Armours and Shields. For Body Armour, pure Strength has a 5% penalty, hybrid Strength and Dexterity or Intelligence has a 4% penalty and pure Dexterity or Intelligence has a 3% penalty. For Shields, pure Strength has a 3% penalty, hybrid Strength and Dexterity or Intelligence has a 1.5% penalty and pure Dexterity or Intelligence has no penalty.armour-movement-penaltiesarmour-movement-penaltiesArmourPenaltiesArmour Movement Penalties### Armoured Shields
+Depending on the type of Armour equipped, Players will have a less Movement Speed penalty applied depending on what Attribute the Armour requires. These penalties only apply to equipped Body Armours and Shields. For Body Armour, pure Strength has a 5% penalty, hybrid Strength and Dexterity or Intelligence has a 4% penalty and pure Dexterity or Intelligence has a 3% penalty. For Shields, pure Strength has a 3% penalty, hybrid Strength and Dexterity or Intelligence has a 1.5% penalty and pure Dexterity or Intelligence has no penalty.armour-movement-penaltiesarmour-movement-penaltiesArmourPenaltiesArmour Movement Penalties### Armoured
+Keyword · https://wraeclastindex.fyi/item/armoured
+Monster gains extra Armour based off of their Strength.armouredarmouredMonsterExtraArmour1Armoured### Armoured Shields
 Keyword · https://wraeclastindex.fyi/item/armoured-shields
 Armoured Shields are any Shields that grant the player Armour — that is, any type of Shield other than Bucklers.armoured-shieldsarmoured-shieldsArmouredShieldArmoured Shields### Artificer's Orb
 Keyword · https://wraeclastindex.fyi/item/artificers-orb
@@ -190,12 +191,7 @@ Used by 13 gems, 65 uniques, 67 passives
 Blocking completely prevents the damage of an incoming Hit. You will still take any Stun from the Blocked hit. You can't Block while Stunned or Frozen. Some Skills used by Bosses cannot be blocked. These are indicated by a red glow and audio cue during the windup of the Skill.block-keywordblockBlock### Blood Loss
 Keyword · https://wraeclastindex.fyi/item/blood-loss
 Used by 4 gems, 2 uniques
-All Physical damage over time taken by a target (including Bleeding) is accumulated as Blood Loss.blood-lossblood-lossBloodLossBlood Loss### Bloodletting Rune
-Keyword · https://wraeclastindex.fyi/item/bloodletting-rune
-Monsters gain:
-Life Leech
-Cannot have Life Leeched from
-Inflicts Corrupted Blood on Hitbloodletting-runebloodletting-runeBloodlettingRuneBloodletting Rune### Bloodstained
+All Physical damage over time taken by a target (including Bleeding) is accumulated as Blood Loss.blood-lossblood-lossBloodLossBlood Loss### Bloodstained
 Keyword · https://wraeclastindex.fyi/item/bloodstained
 While Bleeding enemies build up Bloodstained, gaining the Bloodstained Debuff after Bleeding for a total of 6 seconds. Bloodstained builds up 100% faster if the Bleeding enemy is moving or the Bleeding is Aggravated. Certain skills allow you to view the Bloodstained Debuff on enemies and can consume the Debuff for powerful effects.bloodstainedbloodstainedBloodstained### Blue Flames of Chayula
 Keyword · https://wraeclastindex.fyi/item/blue-flames-of-chayula
@@ -203,13 +199,9 @@ Used by 1 passive
 Blue Flames of Chayula Leech 20% of your maximum Mana to you when collected.blue-flames-of-chayulablue-flames-of-chayulaBlueFlamesOfChayulaBlue Flames of Chayula### Blunt Arrows
 Keyword · https://wraeclastindex.fyi/item/blunt-arrows
 Used by 1 unique
-Blunt Arrows cause 600% increased Stun Buildup.blunt-arrowsblunt-arrowsUniqueArrowModifierStunBlunt Arrows### Bond Rune
-Keyword · https://wraeclastindex.fyi/item/bond-rune
-Monsters gain:
-Rare Monsters may transfer a Mod on death
-Remnant gains:
-Increased chance to spawn Rare Monsters
-Rare Monsters have more Monster Modifiersbond-runebond-runeBondRuneBond Rune### Bonded Modifiers
+Blunt Arrows cause 600% increased Stun Buildup.blunt-arrowsblunt-arrowsUniqueArrowModifierStunBlunt Arrows### Bombardier
+Keyword · https://wraeclastindex.fyi/item/bombardier
+Monster periodically unleashes barrages of Fire projectiles.bombardierbombardierMonsterBombardier1Bombardier### Bonded Modifiers
 Keyword · https://wraeclastindex.fyi/item/bonded-modifiers
 Used by 1 passive
 Some modifiers on Runes and Idols are available only to players who have allocated the Shaman's Wisdom of the Maji Ascendancy Notable.bonded-modifiersbonded-modifiersShamanOnlyModsBonded Modifiers### Bonus Reward
@@ -222,7 +214,10 @@ Used by 12 gems, 2 uniques, 19 passives
 Bows are Two-Handed ranged weapons that require Dexterity to equip. Equipping a Bow allows you to also equip a Quiver in the off hand slot. Bows can Attack from long range and with high mobility using a variety of skills, but generally deal less damage than other two-handed weapon types.bowsbowsBowBows### Breach
 Keyword · https://wraeclastindex.fyi/item/breach
 Used by 1 gem, 1 unique, 1 passive
-Breaches allow invaders from another world to access ours. Unstable Breaches are a small tear in the fabric that will open for a short time. Kill Breach monsters to keep them open longer. Once enough monsters have been killed, the Breach will stabalise, calling stronger monsters through the portal at the centre. Kill these monsters in the centre will complete the Unstable Breach, closing the tear. A Breach Hive is a tear that has already grown out of control. You will need the help of Ailith to close these. With a blessing from Chayula, burn your way to the centre of the Hive and help Ailith start the process of destorying the centre. As Ailith destroys the Hive, Breach monsters will pour in to try and kill her. Defend Ailith until she has completely destroyed the centre of the hive to remove it from existence. If Ailith dies during this, the Hive will remain.breachbreachContainsBreachBreach### Brittle
+Breaches allow invaders from another world to access ours. Unstable Breaches are a small tear in the fabric that will open for a short time. Kill Breach monsters to keep them open longer. Once enough monsters have been killed, the Breach will stabalise, calling stronger monsters through the portal at the centre. Kill these monsters in the centre will complete the Unstable Breach, closing the tear. A Breach Hive is a tear that has already grown out of control. You will need the help of Ailith to close these. With a blessing from Chayula, burn your way to the centre of the Hive and help Ailith start the process of destorying the centre. As Ailith destroys the Hive, Breach monsters will pour in to try and kill her. Defend Ailith until she has completely destroyed the centre of the hive to remove it from existence. If Ailith dies during this, the Hive will remain.breachbreachContainsBreachBreach### Breaks Armour
+Keyword · https://wraeclastindex.fyi/item/breaks-armour
+Used by 1 gem, 2 uniques
+Monster Breaks Armour equal to 1000% of Physical Damage dealt.breaks-armourbreaks-armourMonsterArmourPenetration1Breaks Armour### Brittle
 Keyword · https://wraeclastindex.fyi/item/brittle
 Hits have up to +6% Critical Hit Chance against Brittle enemies, based on the Cold damage of the Hit which inflicted Brittle, for 4 seconds.brittlebrittleBrittle### Broken Boss Faces
 Keyword · https://wraeclastindex.fyi/item/broken-boss-faces
@@ -254,12 +249,7 @@ Warcries, and Non-Channelling Spells that affect an area around you or a targete
 Keyword · https://wraeclastindex.fyi/item/caster-weapons
 Caster Weapons are Sceptres, Staves and Wands.caster-weaponscaster-weaponsCasterWeaponCaster Weapons### Catalysts
 Keyword · https://wraeclastindex.fyi/item/catalysts
-Catalysts are Currency items that are exclusive drops from the Breach mechanic. Catalysts add Quality that affect certain modifiers on items. There are two categories of Catalyst, one that affects Jewellery and one that affects Jewels.catalystscatalystsCatalystCatalysts### Celestial Rune
-Keyword · https://wraeclastindex.fyi/item/celestial-rune
-Monsters gain:
-Chance for a Fire Explosion on Death
-Chance for a Cold Explosion on Death
-Chance for a Lightning Explosion on Deathcelestial-runecelestial-runeCelestialRuneCelestial Rune### Chain
+Catalysts are Currency items that are exclusive drops from the Breach mechanic. Catalysts add Quality that affect certain modifiers on items. There are two categories of Catalyst, one that affects Jewellery and one that affects Jewels.catalystscatalystsCatalystCatalysts### Chain
 Keyword · https://wraeclastindex.fyi/item/chain
 Used by 32 gems, 10 uniques, 9 passives
 Effects that Chain are redirected to another target after colliding with an enemy. Projectiles Splitting, Piercing or Forking take priority over Chaining. Projectiles have a base chaining distance of 6 metres whereas other effects have a chaining distance of 4 metres. Enemies cannot be targeted more than once in the same Chain.chainchainChain### Chance can Surpass 100%
@@ -277,7 +267,9 @@ Used by 54 gems, 2 uniques, 17 passives
 Channelling Skills can be held down to gain power or continue using the Skill for a longer period of time.channellingchannellingChannelling### Chaos Damage
 Keyword · https://wraeclastindex.fyi/item/chaos-damage-keyword
 Used by 44 gems, 89 uniques, 82 passives
-Chaos damage is one of the five Damage Types. It is reduced by Chaos Resistance. Chaos damage is the least common damage type, and removes twice as much Energy Shield as the damage value when taken.chaos-damage-keywordchaos-damageChaosChaos Damage### Chaos Surge
+Chaos damage is one of the five Damage Types. It is reduced by Chaos Resistance. Chaos damage is the least common damage type, and removes twice as much Energy Shield as the damage value when taken.chaos-damage-keywordchaos-damageChaosChaos Damage### Chaos Resistant
+Keyword · https://wraeclastindex.fyi/item/chaos-resistant
+Monster has +50% to Chaos Resistance.chaos-resistantchaos-resistantMonsterChaosResistance1Chaos Resistant### Chaos Surge
 Keyword · https://wraeclastindex.fyi/item/chaos-surge
 Chaos Surge behaves identically to Elemental Surges, but causes a Chaos blast.chaos-surgechaos-surgeChaosSurgeChaos Surge### Charges
 Keyword · https://wraeclastindex.fyi/item/charges
@@ -312,10 +304,9 @@ Keyword · https://wraeclastindex.fyi/item/coalesced-corruption
 Monsters slain close together have a chance to merge together and manifest powerful Monsters.coalesced-corruptioncoalesced-corruptionCoalescedCorruptionCoalesced Corruption### Cold Damage
 Keyword · https://wraeclastindex.fyi/item/cold-damage-keyword
 Used by 72 gems, 101 uniques, 115 passives
-Cold damage is one of the five Damage Types. It is reduced by Cold Resistance. Cold hits apply Chill and build up Freeze, but cannot build up Heavy Stun.cold-damage-keywordcold-damageColdCold Damage### Cold Rune
-Keyword · https://wraeclastindex.fyi/item/cold-rune
-Monsters gain:
-Extra Cold Damagecold-runecold-runeColdRuneCold Rune### Combo
+Cold damage is one of the five Damage Types. It is reduced by Cold Resistance. Cold hits apply Chill and build up Freeze, but cannot build up Heavy Stun.cold-damage-keywordcold-damageColdCold Damage### Cold Resistant
+Keyword · https://wraeclastindex.fyi/item/cold-resistant
+Monster has +50% to Cold Resistance and +10% to Maximum Cold Resistance.cold-resistantcold-resistantMonsterColdResistance1Cold Resistant### Combo
 Keyword · https://wraeclastindex.fyi/item/combo
 Used by 11 gems, 2 uniques, 11 passives
 Combo is a counter on some Skills that can be required to use the Skill or grant extra effects. Skills gain Combo when you Strike Enemies. Combo will fall off after a short time without this happening. Combo can only be built while using the same weapon as the Combo Skill is bound to, and will be lost if you Swap Weapons.combocomboCombo### Companions
@@ -332,7 +323,11 @@ Keyword · https://wraeclastindex.fyi/item/conditional-usage
 Used by 8 gems
 Skills which are Conditional require some sort of condition to be met before they can be used. Combo is an example of this, but almost anything can be a condition, such as having to have killed a certain number of enemies Recently or having to have moved a certain distance.conditional-usageconditional-usageConditionalConditional Usage### Congealed Mist
 Keyword · https://wraeclastindex.fyi/item/congealed-mist
-A mysterious Augment that shifts and shimmers. Is that whispering you hear?congealed-mistcongealed-mistCongealedMistCongealed Mist### Connected Support Gems
+A mysterious Augment that shifts and shimmers. Is that whispering you hear?congealed-mistcongealed-mistCongealedMistCongealed Mist### Conjures Flamewalls
+Keyword · https://wraeclastindex.fyi/item/conjures-flamewalls
+Monster creates circular walls of Fire that deal damage to enemies standing in them.conjures-flamewallsconjures-flamewallsMonsterFlamewaller1Conjures Flamewalls### Conjures Ice Prisons
+Keyword · https://wraeclastindex.fyi/item/conjures-ice-prisons
+Monster creates circular walls of Ice around enemies.conjures-ice-prisonsconjures-ice-prisonsMonsterGlacialPrison1Conjures Ice Prisons### Connected Support Gems
 Keyword · https://wraeclastindex.fyi/item/connected-support-gems
 Used by 1 passive
 Two gems are considered Connected if one is socketed into the other, or if both are socketed into a third gem. A Support Gem socketed in a Meta Skill is still Connected to that Meta Skill and to all other Skills socketed in that Meta Skill, even if it cannot Support some of those skills.connected-support-gemsconnected-support-gemsConnectedGemConnected Support Gems### Consecrated Ground
@@ -371,7 +366,9 @@ Keyword · https://wraeclastindex.fyi/item/crafted-modifiers
 Some methods of item crafting guarantee that a specific Modifier will be crafted onto the item. An item can only have one Crafted Modifier, but they otherwise behave identically to other Modifiers. Crafted Modifiers are displayed in a lighter blue colour than regular Modifiers.crafted-modifierscrafted-modifiersCraftedCrafted Modifiers### Crescendo Arrows
 Keyword · https://wraeclastindex.fyi/item/crescendo-arrows
 Used by 1 unique
-Crescendo Arrows Chain 6 additional times and deal 60% increased Damage for each time they have Chained.crescendo-arrowscrescendo-arrowsUniqueArrowModifierChainCrescendo Arrows### Critical Damage Bonus
+Crescendo Arrows Chain 6 additional times and deal 60% increased Damage for each time they have Chained.crescendo-arrowscrescendo-arrowsUniqueArrowModifierChainCrescendo Arrows### Crit Resistant
+Keyword · https://wraeclastindex.fyi/item/crit-resistant
+Hits against this Monster have 80% reduced Critical Damage Bonus.crit-resistantcrit-resistantMonsterModReducedCritMulti1Crit Resistant### Critical Damage Bonus
 Keyword · https://wraeclastindex.fyi/item/critical-damage-bonus
 Used by 7 gems, 26 uniques, 106 passives
 Multiplies the damage dealt by Critical Hits. Default value is +100% (i.e. twice as much damage).critical-damage-bonuscritical-damage-bonusCriticalDamageBonusCritical Damage Bonus### Critical Hits
@@ -398,12 +395,7 @@ Used by 21 gems, 10 uniques, 11 passives
 Culling Strikes kill Normal enemies if their life is at 35% or below. Magic enemies are instead killed at 20%, Rare at 10% and Unique at 5%. These thresholds are checked before the damage of the Hit is applied.culling-strikeculling-strikeCullingStrikeCulling Strike### Curses
 Keyword · https://wraeclastindex.fyi/item/curses
 Used by 29 gems, 19 uniques, 47 passives
-Curses significantly Debuff affected targets. By default a target can have one Curse on them at a time. Higher Rarity enemies are less affected by Curses: 15% less Curse effect on Magic monsters 30% less Curse effect on Rare monsters 50% less Curse effect on Unique monsterscursescursesCurseCurses### Cyclonic Rune
-Keyword · https://wraeclastindex.fyi/item/cyclonic-rune
-Monsters gain:
-Chance to inflict Exposure on Hit
-Armour Break on Hit
-Wither on Hitcyclonic-runecyclonic-runeCyclonicRuneCyclonic Rune### Daggers
+Curses significantly Debuff affected targets. By default a target can have one Curse on them at a time. Higher Rarity enemies are less affected by Curses: 15% less Curse effect on Magic monsters 30% less Curse effect on Rare monsters 50% less Curse effect on Unique monsterscursescursesCurseCurses### Daggers
 Keyword · https://wraeclastindex.fyi/item/daggers
 Used by 1 gem, 12 passives
 Daggers are One-Handed Melee weapons that require Dexterity and Intelligence to equip. Dagger Attacks are commonly related to ambushing or debilitating enemies. Some blade-related Spells also require a Dagger.daggersdaggersDaggerDaggers### Damage Absorption
@@ -418,7 +410,9 @@ Used by 72 gems, 34 uniques, 25 passives
 Damage can be converted from one type to another. This causes it to deal the new damage type, scale with modifiers to the new damage type, and no longer scale with modifiers to the old damage type. For example, Fire damage converted to Lightning now scales with Lightning damage modifiers and causes Shock, but no longer scales with Fire damage modifiers or causes Ignite. Conversion is a two step process. Conversion inherent to Skills occurs first, then Conversion from all other sources. Damage over time cannot be converted.damage-conversiondamage-conversionConversionDamage Conversion### Damage Gained as extra X
 Keyword · https://wraeclastindex.fyi/item/damage-gained-as-extra-x
 Used by 48 gems, 38 uniques, 51 passives
-Damage gained as a specific damage type only scales with modifiers to the new type, not with modifiers to the source damage's type (unless they're the same type). For example, Lightning damage gained from Physical damage scales with Lightning damage modifiers, but not Physical damage modifiers. Damage Gain occurs in the same two step process as Damage Conversion. Damage over time cannot benefit from damage Gain.damage-gained-as-extra-xdamage-gained-as-extra-xGainDamage Gained as extra X### Damage Types
+Damage gained as a specific damage type only scales with modifiers to the new type, not with modifiers to the source damage's type (unless they're the same type). For example, Lightning damage gained from Physical damage scales with Lightning damage modifiers, but not Physical damage modifiers. Damage Gain occurs in the same two step process as Damage Conversion. Damage over time cannot benefit from damage Gain.damage-gained-as-extra-xdamage-gained-as-extra-xGainDamage Gained as extra X### Damage Taken From Minions First
+Keyword · https://wraeclastindex.fyi/item/damage-taken-from-minions-first
+50% of damage taken from Monster is taken from Monster's Pack Minions insteaddamage-taken-from-minions-firstdamage-taken-from-minions-firstMonsterMinionsTakeLifeInstead1Damage Taken From Minions First### Damage Types
 Keyword · https://wraeclastindex.fyi/item/damage-types
 Used by 8 gems, 16 uniques, 6 passives
 The damage types are Physical, Fire, Cold, Lightning and Chaos.damage-typesdamage-typesDamageTypesDamage Types### Damaging Ailments
@@ -432,10 +426,7 @@ Keyword · https://wraeclastindex.fyi/item/daze-keyword
 Used by 11 gems, 2 uniques, 23 passives
 Some skills and effects have a chance to apply Daze to enemies on Hit. Daze lasts for 8 seconds, and a Dazed enemy will take 50% more Stun Buildup. There are also a number of Skills, Effects, and other mechanics which interact with Daze for various benefits.daze-keyworddazeDaze### Deadly Map Boss
 Keyword · https://wraeclastindex.fyi/item/deadly-map-boss
-Deadly Map Bosses are specific Powerful Map Bosses that appear in specific Maps and are more difficult and drop better rewards. These rewards are often accompanied by a specific item, usually from a pool of items. For example Unique Items, or Lineage Supports. Deadly Map Bosses can also drop items that grant access to Pinnacle Bosses.deadly-map-bossdeadly-map-bossDeadlyMapBossDeadly Map Boss### Death Rune
-Keyword · https://wraeclastindex.fyi/item/death-rune
-Monsters gain:
-Slain Monsters may merge into stronger Monstersdeath-runedeath-runeDeathRuneDeath Rune### Debilitate
+Deadly Map Bosses are specific Powerful Map Bosses that appear in specific Maps and are more difficult and drop better rewards. These rewards are often accompanied by a specific item, usually from a pool of items. For example Unique Items, or Lineage Supports. Deadly Map Bosses can also drop items that grant access to Pinnacle Bosses.deadly-map-bossdeadly-map-bossDeadlyMapBossDeadly Map Boss### Debilitate
 Keyword · https://wraeclastindex.fyi/item/debilitate
 Used by 1 unique, 2 passives
 Debilitate is a Debuff that inflicts 20% reduced movement speed and 10% reduced damage dealt. Unless specified, Debilitate lasts 1 second.debilitatedebilitateDebilitate### Debuffs
@@ -504,10 +495,7 @@ Keyword · https://wraeclastindex.fyi/item/dual-wielding
 Used by 18 gems, 9 passives
 Dual Wielding refers to using two Martial Weapons, one in each hand.dual-wieldingdual-wieldingDualWieldDual Wielding### Duration Skills
 Keyword · https://wraeclastindex.fyi/item/duration-skills
-This Skill has a Duration that can be modified.duration-skillsduration-skillsDurationSkillDuration Skills### Earth Rune
-Keyword · https://wraeclastindex.fyi/item/earth-rune
-Remnant gains:
-Conjures Earthly Spiresearth-runeearth-runeEarthRuneEarth Rune### Easy Target
+This Skill has a Duration that can be modified.duration-skillsduration-skillsDurationSkillDuration Skills### Easy Target
 Keyword · https://wraeclastindex.fyi/item/easy-target-keyword
 Used by 1 gem
 Easy Target is a Debuff which causes the next Projectile Attack Hit against the affected target to deal increased Damage, at which point the Debuff is consumed.easy-target-keywordeasy-targetEasyTargetDebuffEasy Target### Eaten Souls
@@ -525,12 +513,7 @@ Efficiency modifiers act as divisors to the stat they modify. For example, 50% i
 Keyword · https://wraeclastindex.fyi/item/effigy
 Effigy Pieces can be placed on an incomplete Effigy in Caer Tarth to complete the Rite of the Nameless.effigyeffigyRitualPinnacleEffigyPieceEffigy### Electrocute Threshold
 Keyword · https://wraeclastindex.fyi/item/electrocute-threshold
-Electrocute Threshold determines how much Electrocute buildup is needed to Electrocute a target.electrocute-thresholdelectrocute-thresholdElectrocuteThresholdElectrocute Threshold### Electrocuting Rune
-Keyword · https://wraeclastindex.fyi/item/electrocuting-rune
-Monsters gain:
-Extra Lightning Damage
-Lightning Damage Electrocutes
-Shocked Ground Trailselectrocuting-runeelectrocuting-runeElectrocutingRuneElectrocuting Rune### Electrocution
+Electrocute Threshold determines how much Electrocute buildup is needed to Electrocute a target.electrocute-thresholdelectrocute-thresholdElectrocuteThresholdElectrocute Threshold### Electrocution
 Keyword · https://wraeclastindex.fyi/item/electrocution-keyword
 Used by 14 gems, 6 uniques, 15 passives
 Electrocution is an Ailment that interrupts the target's actions and prevents them performing any action, and lasts 5 seconds by default. Only Lightning damage from Hits with specific skills or effects Contributes to Electrocution Buildup on enemies until they become Electrocuted. Other sources of Lightning damage will not build up towards Electrocution.electrocution-keywordelectrocutionElectrocuteElectrocution### Elemental Ailment Threshold
@@ -551,7 +534,9 @@ Used by 4 gems, 6 uniques
 Elemental Ground Surfaces include Shocked Ground, Chilled Ground, and Ignited Ground.elemental-ground-surfaceselemental-ground-surfacesElementalGroundElemental Ground Surfaces### Elemental Infusions
 Keyword · https://wraeclastindex.fyi/item/elemental-infusions
 Used by 22 gems, 1 unique, 27 passives
-Some Skills create Elemental Infusion Remnants when specific conditions are met. Picking up the Remnant grants you the Infusion for 20 seconds or until it is Consumed by another Skill. You can have up to 3 of each Infusion by default. Skills that can Consume Infusions specifically mention the type(s) of Infusion they can Consume and the benefits for doing so. If a Skill repeats or reoccurs, each of them must Consume an Infusion separately to gain the effect.elemental-infusionselemental-infusionsElementalInfusionElemental Infusions### Elemental Surges
+Some Skills create Elemental Infusion Remnants when specific conditions are met. Picking up the Remnant grants you the Infusion for 20 seconds or until it is Consumed by another Skill. You can have up to 3 of each Infusion by default. Skills that can Consume Infusions specifically mention the type(s) of Infusion they can Consume and the benefits for doing so. If a Skill repeats or reoccurs, each of them must Consume an Infusion separately to gain the effect.elemental-infusionselemental-infusionsElementalInfusionElemental Infusions### Elemental Resistance Aura
+Keyword · https://wraeclastindex.fyi/item/elemental-resistance-aura
+Monster creates an Aura that grants +35% to all Elemental Resistances to Allies within 5 metres.elemental-resistance-auraelemental-resistance-auraMonsterResistanceAura1Elemental Resistance Aura### Elemental Surges
 Keyword · https://wraeclastindex.fyi/item/elemental-surges
 Used by 4 gems, 4 uniques, 2 passives
 Elemental Surges are consumed when you use a non-Melee Projectile Attack to suffuse the Projectiles fired by that Attack, causing them to trigger a Surging Blast when they reach the end of their flight. Your weapon can have a maximum of 6 of each type of Surge active by default. Surges last 15 seconds. Surges are specific to your current weapon, so do not affect non-weapon damage and are not carried over if you weapon swap. Projectiles which Split or Fork do not gain the benefits of Surges.elemental-surgeselemental-surgesSurgeElemental Surges### Elemental Weakness
@@ -565,12 +550,23 @@ Used by 1 passive
 Totems you place which grant Embankment Auras give a different Aura Buff to Players in range depending on the kind of Totem, as follows: Artillery Ballista grants 20% increased Skill Speed. Siege Ballista grants 25% more Damage against Immobilised Enemies. Mortar Cannon grants 25% of Damage Gained as extra Fire. Shockwave Totem grants 30% increased Area of Effect. Ancestral Warrior Totem grants 40% increased Glory Generation. Dark Effigy grants 40% increased Damage over Time. Spell Totem grants 50% increased Critical Hit Chance.embankment-aurasembankment-aurasTacticianTotemBuffEmbankment Auras### Embrace of the Wild
 Keyword · https://wraeclastindex.fyi/item/embrace-of-the-wild
 Used by 1 passive
-Protects the Bear Spirit's Allies while they are in its Presence, granting them 2% of maximum Life regenerated per second and causing 8% of the damage they would take to be taken by the Bear Spirit instead.embrace-of-the-wildembrace-of-the-wildSpiritWalkerBearAuraEmbrace of the Wild### Empowered Monster Minions
+Protects the Bear Spirit's Allies while they are in its Presence, granting them 2% of maximum Life regenerated per second and causing 8% of the damage they would take to be taken by the Bear Spirit instead.embrace-of-the-wildembrace-of-the-wildSpiritWalkerBearAuraEmbrace of the Wild### Empowered
+Keyword · https://wraeclastindex.fyi/item/empowered
+Used by 25 gems, 2 uniques, 21 passives
+Monster has 25% increased Damage and 50% increased LifeempoweredempoweredMonsterMinionStrongerMinions1Empowered### Empowered Monster Minions
 Keyword · https://wraeclastindex.fyi/item/empowered-monster-minions
-Empowered Monster Minions deal increased damage and have increased health. Empowerment does not inherently increase rewards but some effects add rewards when Empowering Minions.empowered-monster-minionsempowered-monster-minionsEmpoweredMonsterMinionsEmpowered Monster Minions### Empowered Skills
+Empowered Monster Minions deal increased damage and have increased health. Empowerment does not inherently increase rewards but some effects add rewards when Empowering Minions.empowered-monster-minionsempowered-monster-minionsEmpoweredMonsterMinionsEmpowered Monster Minions### Empowered Periodic Invulnerability Aura
+Keyword · https://wraeclastindex.fyi/item/empowered-periodic-invulnerability-aura
+Monster releases a nova that makes Allies invulnerable for 5 seconds while the monster is alive within 5 metres every 12 seconds.empowered-periodic-invulnerability-auraempowered-periodic-invulnerability-auraMonsterImmuneAura2Empowered Periodic Invulnerability Aura### Empowered Reviving Minions
+Keyword · https://wraeclastindex.fyi/item/empowered-reviving-minions
+Monster periodically revives Pack Minions with increased Life and Damage.empowered-reviving-minionsempowered-reviving-minionsMonsterRevivesMinions2Empowered Reviving Minions### Empowered Skills
 Keyword · https://wraeclastindex.fyi/item/empowered-skills
 Used by 30 gems, 7 uniques, 24 passives
-Empowered Skills do not have any inherent bonuses, but a number of stats and modifiers specifically apply to Empowered Skills.empowered-skillsempowered-skillsEmpoweredEmpowered Skills### Empowerment
+Empowered Skills do not have any inherent bonuses, but a number of stats and modifiers specifically apply to Empowered Skills.empowered-skillsempowered-skillsEmpoweredEmpowered Skills### Empowering Volatile Crag
+Keyword · https://wraeclastindex.fyi/item/empowering-volatile-crag
+Monster periodically creates Powerful Volatile Crag that moves towards enemies; exploding when they get close enough; dealing Fire Damage.empowering-volatile-cragempowering-volatile-cragMonsterVolatileRocks2Empowering Volatile Crag### Empowering Volatile Plants
+Keyword · https://wraeclastindex.fyi/item/empowering-volatile-plants
+Monster periodically creates Powerful Volatile Plants, releasing orbs that move towards enemies; exploding when they get close enough; dealing Chaos Damage.empowering-volatile-plantsempowering-volatile-plantsMonsterVolatilePlants2Empowering Volatile Plants### Empowerment
 Keyword · https://wraeclastindex.fyi/item/empowerment
 Used by 13 gems, 2 uniques, 1 passive
 Empowering a Map Boss upgrades it to a Powerful Map BossempowermentempowermentContainsMapBossEmpowerment### Enemy Stun Threshold
@@ -583,7 +579,9 @@ Used by 28 gems, 4 uniques, 20 passives
 Several Meta Skills generate and use Energy. Each Skill which generates Energy has its own Energy count particular to that Skill. Most effects which use Energy do so to Trigger other effects or Skills, based on the use time of the triggered Skill. When calculating Energy gain or consumption from the use time of a Skill, modifiers to Total use time are treated as though they were double the value. Energy cannot be gained from direct effects of Triggered Skills.energy-keywordenergyEnergy### Energy Shield
 Keyword · https://wraeclastindex.fyi/item/energy-shield-keyword
 Used by 19 gems, 227 uniques, 272 passives
-Energy Shield protects your Life by taking damage instead. Rapidly Recharges if you don't lose Energy Shield for a short time. Chaos damage removes twice as much Energy Shield. Damage from Bleeding and Poison bypasses Energy Shield to remove Life directly.energy-shield-keywordenergy-shieldEnergyShieldEnergy Shield### Energy Shield Leech
+Energy Shield protects your Life by taking damage instead. Rapidly Recharges if you don't lose Energy Shield for a short time. Chaos damage removes twice as much Energy Shield. Damage from Bleeding and Poison bypasses Energy Shield to remove Life directly.energy-shield-keywordenergy-shieldEnergyShieldEnergy Shield### Energy Shield Aura
+Keyword · https://wraeclastindex.fyi/item/energy-shield-aura
+Monster creates an Aura that grants 20% of Maximum life as added Energy Shield to Allies within 5 metres.energy-shield-auraenergy-shield-auraMonsterEnergyShieldAura1Energy Shield Aura### Energy Shield Leech
 Keyword · https://wraeclastindex.fyi/item/energy-shield-leech
 Used by 2 uniques
 When you deal damage with a Hit, Energy Shield Leech causes you to recover an amount of Energy Shield to a percentage of the damage dealt, over a period of one second. Hits that deal more than 40,000 total damage are treated as though they only dealt 40,000 damage for this calculation. If this damage is of multiple Damage Types, the ratios between them will stay the same. Monsters have Leech Resistance that increases with monster level, reducing how much you recover from Leech from Hits against them. You can only recover from a single instance of Energy Shield Leech at a time, and all Energy Shield Leech is removed when Energy Shield is filled. Modifiers specific to Life Leech will not apply to Energy Shield Leech.energy-shield-leechenergy-shield-leechEnergyShieldLeechEnergy Shield Leech### Energy Shield Protecting Mana
@@ -621,7 +619,9 @@ Keyword · https://wraeclastindex.fyi/item/estazuntis-medallion
 Estazunti's Medallion allows you to place an additional Restricted Room Card after defeating the Architectestazuntis-medallionestazuntis-medallionIncursionMedallionAddAdditionalRestrictedRoomEstazunti's Medallion### Evasion
 Keyword · https://wraeclastindex.fyi/item/evasion-keyword
 Used by 30 gems, 220 uniques, 256 passives
-Evasion Rating grants a chance to Evade enemy Hits, preventing them from Hitting you at all. Exact chance to Evade also depends on the attacker's Accuracy.evasion-keywordevasionEvasion### Everlasting Sacrifice
+Evasion Rating grants a chance to Evade enemy Hits, preventing them from Hitting you at all. Exact chance to Evade also depends on the attacker's Accuracy.evasion-keywordevasionEvasion### Evasive
+Keyword · https://wraeclastindex.fyi/item/evasive
+Monster gains extra Evasion based off of their Dexterity.evasiveevasiveMonsterExtraEvasion1Evasive### Everlasting Sacrifice
 Keyword · https://wraeclastindex.fyi/item/everlasting-sacrifice
 Used by 1 unique
 When you reach full Energy Shield, Sacrifice all Energy Shield to gain +5% to all Maximum Resistances for 4 secondseverlasting-sacrificeeverlasting-sacrificeEverlastingSacrificeEverlasting Sacrifice### Exceptional Item
@@ -640,9 +640,27 @@ Used by 1 unique
 Each Explosive Rhythm Buff grants 10% increased Cooldown Recovery Rate to your Grenade Skills.explosive-rhythmexplosive-rhythmExplosiveRhythmExplosive Rhythm### Exposure
 Keyword · https://wraeclastindex.fyi/item/exposure
 Used by 13 gems, 6 uniques, 14 passives
-Exposure is a type of Debuff that lowers the affected enemy's Total Elemental Resistances. By default it lowers Resistances by -20% and lasts for 4 seconds, though some sources of exposure can override these values. Like most sources of lowering Resistances, this can cause the enemy's Resistance to become negative. Higher Rarity enemies are less affected by Exposure: 15% less Exposure effect on Magic monsters 30% less Exposure effect on Rare monsters 50% less Exposure effect on Unique monstersexposureexposureExposure### Extra Content
+Exposure is a type of Debuff that lowers the affected enemy's Total Elemental Resistances. By default it lowers Resistances by -20% and lasts for 4 seconds, though some sources of exposure can override these values. Like most sources of lowering Resistances, this can cause the enemy's Resistance to become negative. Higher Rarity enemies are less affected by Exposure: 15% less Exposure effect on Magic monsters 30% less Exposure effect on Rare monsters 50% less Exposure effect on Unique monstersexposureexposureExposure### Extra Chaos Damage
+Keyword · https://wraeclastindex.fyi/item/extra-chaos-damage
+Used by 4 gems, 4 uniques, 7 passives
+Monster Gains 40% of damage as extra Chaos damage.extra-chaos-damageextra-chaos-damageMonsterDamageGainedAsChaos1Extra Chaos Damage### Extra Cold Damage
+Keyword · https://wraeclastindex.fyi/item/extra-cold-damage
+Used by 1 gem, 6 uniques, 10 passives
+Monster Gains 40% of damage as extra Cold damage.extra-cold-damageextra-cold-damageMonsterDamageGainedAsCold1Extra Cold Damage### Extra Content
 Keyword · https://wraeclastindex.fyi/item/extra-content
-Random Extra Content is Shrines, Strongboxes, Essences, Rogue Exiles, Azmeri Spirits and Summoning Circles.extra-contentextra-contentExtraContentExtra Content### Faerie Fire
+Random Extra Content is Shrines, Strongboxes, Essences, Rogue Exiles, Azmeri Spirits and Summoning Circles.extra-contentextra-contentExtraContentExtra Content### Extra Crits
+Keyword · https://wraeclastindex.fyi/item/extra-crits
+Monster has 300% increased chance to Critically Hit.extra-critsextra-critsMonsterCriticalStrikeChance1Extra Crits### Extra Energy Shield
+Keyword · https://wraeclastindex.fyi/item/extra-energy-shield
+Monster gains 25% of Maximum life as added Energy Shield.extra-energy-shieldextra-energy-shieldMonsterExtraEnergyShield1Extra Energy Shield### Extra Fire Damage
+Keyword · https://wraeclastindex.fyi/item/extra-fire-damage
+Used by 1 gem, 6 uniques, 10 passives
+Monster Gains 40% of damage as extra Fire damage.extra-fire-damageextra-fire-damageMonsterDamageGainedAsFire1Extra Fire Damage### Extra Lightning Damage
+Keyword · https://wraeclastindex.fyi/item/extra-lightning-damage
+Used by 1 gem, 3 uniques, 10 passives
+Monster Gains 40% of damage as extra Lightning damage.extra-lightning-damageextra-lightning-damageMonsterDamageGainedAsLightning1Extra Lightning Damage### Extra Physical Damage Aura
+Keyword · https://wraeclastindex.fyi/item/extra-physical-damage-aura
+Monster creates an Aura that grants 40% increased Physical Damage to Allies within 5 metres.extra-physical-damage-auraextra-physical-damage-auraMonsterPhysicalDamageAura1Extra Physical Damage Aura### Faerie Fire
 Keyword · https://wraeclastindex.fyi/item/faerie-fire
 Used by 1 gem
 Each Faerie Fire Debuff causes Hits against the affected target to Gain 2% of damage as Extra Damage of a random Element. The Debuff lasts 8 seconds, and up to 10 can be applied to each target.faerie-firefaerie-fireFaerieFireFaerie Fire### Faster Start of Energy Shield Recharge
@@ -662,10 +680,9 @@ Used by 2 uniques
 Finality is a Buff that grants 100% increased Critical Hit Chance with Final Strikes, and makes your Strike skills skip to their Final Strike if they have one. Skills cannot gain Combo while you have Finality.finality-keywordfinalityFinality### Fire Damage
 Keyword · https://wraeclastindex.fyi/item/fire-damage-keyword
 Used by 100 gems, 106 uniques, 123 passives
-Fire damage is one of the five Damage Types. It is reduced by Fire Resistance. Fire Hits inflict Flammability based on how much Fire damage is dealt, which provides a chance to Ignite.fire-damage-keywordfire-damageFireFire Damage### Fire Rune
-Keyword · https://wraeclastindex.fyi/item/fire-rune
-Monsters gain:
-Extra Fire Damagefire-runefire-runeFireRuneFire Rune### Flails
+Fire damage is one of the five Damage Types. It is reduced by Fire Resistance. Fire Hits inflict Flammability based on how much Fire damage is dealt, which provides a chance to Ignite.fire-damage-keywordfire-damageFireFire Damage### Fire Resistant
+Keyword · https://wraeclastindex.fyi/item/fire-resistant
+Monster has +50% to Fire Resistance and +10% to Maximum Fire Resistance.fire-resistantfire-resistantMonsterFireResistance1Fire Resistant### Flails
 Keyword · https://wraeclastindex.fyi/item/flails
 Used by 10 passives
 Flails are One-Handed Melee weapons that require Strength and Intelligence to equip. Flails cannot be Dual Wielded. Flail Attacks tend to reward careful placement and long wind-up times with devastating effects.flailsflailsFlailFlails### Flame Archon
@@ -714,13 +731,7 @@ Used by 19 gems, 10 uniques, 8 passives
 A Frozen target cannot move or act. Targets become Frozen when they reach 100% Freeze buildup.frozenfrozenFrozen### Gaining Stats from other Stats
 Keyword · https://wraeclastindex.fyi/item/gaining-stats-from-other-stats
 Used by 4 gems, 8 uniques
-Gaining a percentage of stat A as stat B is calculated from the base value of stat A. The portion gained scales with percentage modifiers to stat B, but not with percentage modifiers to stat A. For example, if you gained 50% of Evasion as Armour, the portion gained would be scaled by percentage modifiers to Armour, but not by percentage modifiers to Evasion.gaining-stats-from-other-statsgaining-stats-from-other-statsStatGainGaining Stats from other Stats### Gasp Rune
-Keyword · https://wraeclastindex.fyi/item/gasp-rune
-Volcanic Rune
-Monsters gain:
-Extra Fire Damage
-All Damage can Ignite
-Ignited Ground Trailsgasp-runegasp-runeGaspRuneGasp Rune### Gigantic
+Gaining a percentage of stat A as stat B is calculated from the base value of stat A. The portion gained scales with percentage modifiers to stat B, but not with percentage modifiers to stat A. For example, if you gained 50% of Evasion as Armour, the portion gained would be scaled by percentage modifiers to Armour, but not by percentage modifiers to Evasion.gaining-stats-from-other-statsgaining-stats-from-other-statsStatGainGaining Stats from other Stats### Gigantic
 Keyword · https://wraeclastindex.fyi/item/gigantic
 Used by 2 gems, 1 passive
 Gigantic Minions have 20% more Maximum Life, 20% more Damage and 20% increased size.giganticgiganticGigantic### Gloom Shrine
@@ -757,12 +768,18 @@ Used by 1 unique
 Meteors rain down around you when in range of enemies.guided-meteoric-shrineguided-meteoric-shrineUniqueShrineFireGuided Meteoric Shrine### Guided Tempest Shrine
 Keyword · https://wraeclastindex.fyi/item/guided-tempest-shrine
 Used by 1 unique
-Lightning bolts strike the ground around you when in range of enemies.guided-tempest-shrineguided-tempest-shrineUniqueShrineLightningGuided Tempest Shrine### Hayoxi's Medallion
+Lightning bolts strike the ground around you when in range of enemies.guided-tempest-shrineguided-tempest-shrineUniqueShrineLightningGuided Tempest Shrine### Haste Aura
+Keyword · https://wraeclastindex.fyi/item/haste-aura
+Monster creates an Aura that grants 20% increased Attack and Cast speed and 10% increased Movement speed to Allies within 5 metres.haste-aurahaste-auraMonsterIncreasedSpeedAura1Haste Aura### Hasted
+Keyword · https://wraeclastindex.fyi/item/hasted
+Monster has 30% increased Attack, Cast and Movement speed.hastedhastedMonsterIncreasedSpeed1Hasted### Hayoxi's Medallion
 Keyword · https://wraeclastindex.fyi/item/hayoxis-medallion
 Hayoxi's Medallion rerolls a Restricted Room in the Templehayoxis-medallionhayoxis-medallionIncursionMedallionRerollRestrictedRoomHayoxi's Medallion### Hazards
 Keyword · https://wraeclastindex.fyi/item/hazards
 Used by 7 gems, 19 passives
-Hazards are objects created in the world (usually by some player skill) and which are destroyed when traversed by an enemy, dealing damage and/or applying some effect to the enemy which triggered the Hazard.hazardshazardsHazardHazards### Heat
+Hazards are objects created in the world (usually by some player skill) and which are destroyed when traversed by an enemy, dealing damage and/or applying some effect to the enemy which triggered the Hazard.hazardshazardsHazardHazards### Heals Allies and Suppresses Foe Recovery
+Keyword · https://wraeclastindex.fyi/item/heals-allies-and-suppresses-foe-recovery
+Monster releases a nova that reduces Enemy Life and Energy Shield Recovery Rate by 60% and causes Allies to Regenerate 5.5% of Maximum Life per second for 4 seconds within 5 metres every 8 seconds.heals-allies-and-suppresses-foe-recoveryheals-allies-and-suppresses-foe-recoveryMonsterHealingNova1Heals Allies and Suppresses Foe Recovery### Heat
 Keyword · https://wraeclastindex.fyi/item/heat
 Used by 3 gems
 Heat is gained from using specific Crossbow Skills, and can be either beneficial or detrimental depending on the Skill.heatheatHeat### Heavy Stun
@@ -789,7 +806,9 @@ Keyword · https://wraeclastindex.fyi/item/hildas-favour
 Hilda will reward you with an Atlas Master point to spend on Atlas Keystones.hildas-favourhildas-favourHildasFavourHilda's Favour### Hinder
 Keyword · https://wraeclastindex.fyi/item/hinder-keyword
 Used by 12 gems, 3 uniques, 7 passives
-Hinder is a Debuff that Slows movement speed by 30% unless otherwise specified. Unless Specified, Hinder has a duration of 4 seconds.hinder-keywordhinderHinder### Historic Jewels
+Hinder is a Debuff that Slows movement speed by 30% unless otherwise specified. Unless Specified, Hinder has a duration of 4 seconds.hinder-keywordhinderHinder### Hinder Aura
+Keyword · https://wraeclastindex.fyi/item/hinder-aura
+Monster creates an Aura that Hinders enemies within 3.6 metres.hinder-aurahinder-auraMonsterHinderAura1Hinder Aura### Historic Jewels
 Keyword · https://wraeclastindex.fyi/item/historic-jewels
 Used by 2 uniques
 You can only have one Historic Jewel socketed.historic-jewelshistoric-jewelsHistoricHistoric Jewels### Hit Damage
@@ -838,7 +857,13 @@ Used by 5 gems, 2 uniques, 4 passives
 Impale is a Debuff inflicted by Hits, which stores 30% of the Pre-mitigation Physical Hit damage of the Impaling hit as its Magnitude. Subsequent Attack Hits against Impaled targets will Extract the Impale debuff. When this occurs, the Magnitude of the Impale is added to the Pre-mitigation Physical damage of that attack hit. A maximum of 60 Impale Debuffs can be present on a target at once. If multiple Impales are present on a target, each Attack's Hit only Extracts and benefits from the strongest one of them.impale-keywordimpaleImpale### Incision
 Keyword · https://wraeclastindex.fyi/item/incision-keyword
 Used by 2 gems, 16 passives
-Incision is a Debuff which causes the affected target to gain increasingly higher chance to be inflicted with Bleeding when Hit. All Incision stacks are removed when Bleeding is inflicted. Each stack of Incision applies 10% chance to be inflicted with Bleeding when Hit. A maximum of 10 Incision stacks can be present on a target at once.incision-keywordincisionIncision### Inevitable Critical Hits
+Incision is a Debuff which causes the affected target to gain increasingly higher chance to be inflicted with Bleeding when Hit. All Incision stacks are removed when Bleeding is inflicted. Each stack of Incision applies 10% chance to be inflicted with Bleeding when Hit. A maximum of 10 Incision stacks can be present on a target at once.incision-keywordincisionIncision### Increased Area of Effect
+Keyword · https://wraeclastindex.fyi/item/increased-area-of-effect
+Monster has 100% Increased Area of Effect.increased-area-of-effectincreased-area-of-effectMonsterAreaOfEffect1Increased Area of Effect### Increased Life
+Keyword · https://wraeclastindex.fyi/item/increased-life
+Monster has 50% increased Life.increased-lifeincreased-lifeMonsterImmuneAuraMinion2Increased Life### Increased Stun Threshold
+Keyword · https://wraeclastindex.fyi/item/increased-stun-threshold
+Monster cannot be Stunned.increased-stun-thresholdincreased-stun-thresholdMonsterImmuneToStun1Increased Stun Threshold### Inevitable Critical Hits
 Keyword · https://wraeclastindex.fyi/item/inevitable-critical-hits
 Used by 1 passive
 Hits which could potentially be a Critical Hit but do not roll a Critical Hit will re-roll Critical Hit chance until they succeed. Hits have 30% less Critical Damage Bonus for each time Critical Hit chance was re-rolled.inevitable-critical-hitsinevitable-critical-hitsInevitableCriticalHitsInevitable Critical Hits### Intelligence
@@ -966,10 +991,7 @@ Used by 3 gems, 7 uniques, 2 passives
 Life Loss is not damage, and can't be mitigated or absorbed by Energy Shield. Life Loss can still kill you.life-losslife-lossLifeLossLife Loss### Life Recharge
 Keyword · https://wraeclastindex.fyi/item/life-recharge
 Used by 2 uniques, 1 passive
-Lost Life will start Recharging at a rate of 12.5% per second after a base delay of 4 seconds. Further loss of Life resets this delay, interrupting Recharge. Modifiers to Energy Shield Recharge Rate or to how fast it starts will also apply to Life Recharge.life-rechargelife-rechargeLifeRechargeLife Recharge### Life Rune
-Keyword · https://wraeclastindex.fyi/item/life-rune
-Monsters gain:
-Shared Lifelife-runelife-runeLifeRuneLife Rune### Light Radius
+Lost Life will start Recharging at a rate of 12.5% per second after a base delay of 4 seconds. Further loss of Life resets this delay, interrupting Recharge. Modifiers to Energy Shield Recharge Rate or to how fast it starts will also apply to Life Recharge.life-rechargelife-rechargeLifeRechargeLife Recharge### Light Radius
 Keyword · https://wraeclastindex.fyi/item/light-radius
 Used by 35 uniques, 4 passives
 Your Light Radius determines the distance from your character which will be illuminated in dark areas, and the radius within which terrain and points of interest are revealed on the map.light-radiuslight-radiusLightRadiusLight Radius### Light Stun
@@ -983,10 +1005,13 @@ Keyword · https://wraeclastindex.fyi/item/lightning-archon
 Lightning Archon is a type of Archon Buff. It grants: • 25% more Lightning Damage with Spells • Convert 100% of Elemental Damage with Spells to Lightning Damage • Cannot deal Non-Lightning Damage with Spells • Hits with Spells have 100% more Shock chance Using a non-instant Attack causes Lightning Archon to be removed immediately.lightning-archonlightning-archonLightningArchonLightning Archon### Lightning Damage
 Keyword · https://wraeclastindex.fyi/item/lightning-damage-keyword
 Used by 92 gems, 101 uniques, 133 passives
-Lightning damage is one of the five Damage Types. It is reduced by Lightning Resistance. Lightning hits have a chance to Shock based on how much Lightning damage is dealt.lightning-damage-keywordlightning-damageLightningLightning Damage### Lightning Rune
-Keyword · https://wraeclastindex.fyi/item/lightning-rune
-Monsters gain:
-Extra Lightning Damagelightning-runelightning-runeLightningRuneLightning Rune### Limb Modification
+Lightning damage is one of the five Damage Types. It is reduced by Lightning Resistance. Lightning hits have a chance to Shock based on how much Lightning damage is dealt.lightning-damage-keywordlightning-damageLightningLightning Damage### Lightning Mirage When Hit
+Keyword · https://wraeclastindex.fyi/item/lightning-mirage-when-hit
+Monster creates a Mirage when Hit that moves towards enemies and explodes when it gets close enough, dealing Lightning Damage.lightning-mirage-when-hitlightning-mirage-when-hitMonsterLightningMirage1Lightning Mirage When Hit### Lightning Mirages When Hit
+Keyword · https://wraeclastindex.fyi/item/lightning-mirages-when-hit
+Monster creates Mirages when Hit that move towards enemies and explode when they get close enough, dealing Lightning Damage.lightning-mirages-when-hitlightning-mirages-when-hitMonsterLightningMirage2Lightning Mirages When Hit### Lightning Resistant
+Keyword · https://wraeclastindex.fyi/item/lightning-resistant
+Monster has +50% to Lightning Resistance and +10% to Maximum Lightning Resistance.lightning-resistantlightning-resistantMonsterLightningResistance1Lightning Resistant### Limb Modification
 Keyword · https://wraeclastindex.fyi/item/limb-modification
 Limb Modification can be performed by using a Transcension Device. Limb Modification will replace a chosen body part with a modified version, granting you an additional stat. Limb Modifications are lost when you resurrect after dying.limb-modificationlimb-modificationIncursionLimbModificationLimb Modification### Limit
 Keyword · https://wraeclastindex.fyi/item/limit
@@ -1021,7 +1046,9 @@ Used by 5 gems, 6 uniques, 10 passives
 Maces are Melee weapons that can be One-Handed or Two-Handed. Maces require Strength to equip. Mace Attacks are often Slams or slow Strikes that deal Physical or Fire damage.macesmacesMaceMaces### Mage's Legacy
 Keyword · https://wraeclastindex.fyi/item/mages-legacy
 Used by 1 unique
-There are a number of possible Mage's Legacies, each granting a different bonus: • Legacy of Amethyst • Legacy of Basalt • Legacy of Bismuth • Legacy of Diamond • Legacy of Gold • Legacy of Granite • Legacy of Jade • Legacy of Quicksilver • Legacy of Ruby • Legacy of Sapphire • Legacy of Silver • Legacy of Stibnite • Legacy of Sulphur • Legacy of Topaz Only one instance of each Mage's Legacy can apply its bonus to you at a time.mages-legacymages-legacyMagesLegacyMage's Legacy### Maim
+There are a number of possible Mage's Legacies, each granting a different bonus: • Legacy of Amethyst • Legacy of Basalt • Legacy of Bismuth • Legacy of Diamond • Legacy of Gold • Legacy of Granite • Legacy of Jade • Legacy of Quicksilver • Legacy of Ruby • Legacy of Sapphire • Legacy of Silver • Legacy of Stibnite • Legacy of Sulphur • Legacy of Topaz Only one instance of each Mage's Legacy can apply its bonus to you at a time.mages-legacymages-legacyMagesLegacyMage's Legacy### Magma Barrier
+Keyword · https://wraeclastindex.fyi/item/magma-barrier-keyword
+Monster creates a 90% damage absorption barrier that explodes after taking a certain amount of damage, dealing Fire Damage.magma-barrier-keywordmagma-barrierMonsterMagmaBarrier1Magma Barrier### Maim
 Keyword · https://wraeclastindex.fyi/item/maim-keyword
 Used by 9 gems, 5 uniques, 8 passives
 Maimed enemies suffer from 30% Slower Movement Speed and 15% reduced Evasion Rating. Maim lasts for 4 seconds unless otherwise specified.maim-keywordmaimMaim### Mana Leech
@@ -1086,11 +1113,7 @@ Keyword · https://wraeclastindex.fyi/item/mirrored-items
 Certain items can be found Mirrored or made Mirrored using a Mirror of Kalandra. Mirrored items are copies of an original item. Most methods of item crafting and modification cannot be used on Mirrored items.mirrored-itemsmirrored-itemsMirroredMirrored Items### Molten Fissures
 Keyword · https://wraeclastindex.fyi/item/molten-fissures
 Used by 6 gems
-Molten Fissures are long-lasting fissures created by some Slams that can themselves be Slammed to create Aftershocks. Hitting a Molten Fissure with a Slam other than another Molten Fissure causes an Aftershock to propagate along its length, dealing the Fissure's damage again to enemies standing on it. This Aftershock will also spread to other intersecting Molten Fissures. Each Molten Fissure can Aftershock no more than once every 0.2 seconds.molten-fissuresmolten-fissuresMoltenFissureMolten Fissures### Momentum Rune
-Keyword · https://wraeclastindex.fyi/item/momentum-rune
-Monsters gain:
-Increased Movement Speed
-Movement Speed Cannot be Slowed below basemomentum-runemomentum-runeMomentumRuneMomentum Rune### Monster Category
+Molten Fissures are long-lasting fissures created by some Slams that can themselves be Slammed to create Aftershocks. Hitting a Molten Fissure with a Slam other than another Molten Fissure causes an Aftershock to propagate along its length, dealing the Fissure's damage again to enemies standing on it. This Aftershock will also spread to other intersecting Molten Fissures. Each Molten Fissure can Aftershock no more than once every 0.2 seconds.molten-fissuresmolten-fissuresMoltenFissureMolten Fissures### Monster Category
 Keyword · https://wraeclastindex.fyi/item/monster-category
 Used by 5 gems
 Every Monster has exactly one Monster Category. These are Humanoid, Beast, Undead, Construct, Demon and Eldritch. Certain Skills interact with specific Monster Categories.monster-categorymonster-categoryMonsterCategoryMonster Category### Monster Effectiveness
@@ -1108,10 +1131,7 @@ Keyword · https://wraeclastindex.fyi/item/monster-rarity
 Monster Rarity increases the chance for monsters to be Rare and Magic. Monster Rarity also increases Monster Modifier Chance for Rare Monsters.monster-raritymonster-rarityMonsterRarityMonster Rarity### Monster Soul Eater
 Keyword · https://wraeclastindex.fyi/item/monster-soul-eater
 Used by 1 gem
-Monsters with Soul Eater gain 1% increased Skill Speed and 1% less damage taken when a monster dies in their Presence, stacking up to 50 times. An eaten Soul is lost every 0.5 seconds if none have been eaten within the past 4 seconds.monster-soul-eatermonster-soul-eaterSoulEaterMonsterMonster Soul Eater### Moon Rune
-Keyword · https://wraeclastindex.fyi/item/moon-rune
-Remnant gains:
-Conjures moon beamsmoon-runemoon-runeMoonRuneMoon Rune### Mountain's Teachings
+Monsters with Soul Eater gain 1% increased Skill Speed and 1% less damage taken when a monster dies in their Presence, stacking up to 50 times. An eaten Soul is lost every 0.5 seconds if none have been eaten within the past 4 seconds.monster-soul-eatermonster-soul-eaterSoulEaterMonsterMonster Soul Eater### Mountain's Teachings
 Keyword · https://wraeclastindex.fyi/item/mountains-teachings
 Used by 1 passive
 While you have any amount of Mountain's Teachings: • Attacks you use yourself and Attacks granted by this Ascendancy Class deal 15% more damage • Enemy Hits you take that would deal damage less than or equal to 30% of your maximum Life (after mitigation such as Armour and Resistances, but before other modifiers to damage taken) deal 40% less damage • You have 50% more Stun Threshold All Mountain's Teachings are lost if you go 20 seconds without gaining any.mountains-teachingsmountains-teachingsMountainsTeachingsMountain's Teachings### Mounting Greed
@@ -1129,10 +1149,7 @@ Used by 3 gems
 This effect does not stack. Applying it again before the first expires will refresh the duration.non-stacking-effectsnon-stacking-effectsNonStackingEffectNon-Stacking Effects### Nova Skills
 Keyword · https://wraeclastindex.fyi/item/nova-skills
 Used by 4 gems
-Nova Skills take effect in a circular area around their user.nova-skillsnova-skillsNovaNova Skills### Oath Rune
-Keyword · https://wraeclastindex.fyi/item/oath-rune
-Monsters gain:
-A Monster summons Alliesoath-runeoath-runeOathRuneOath Rune### Obelisk of Cleansing
+Nova Skills take effect in a circular area around their user.nova-skillsnova-skillsNovaNova Skills### Obelisk of Cleansing
 Keyword · https://wraeclastindex.fyi/item/obelisk-of-cleansing
 An Obelisk of Cleansing is an object that activates once a player gets close enough; granting a 10 second Buff that grants 100% Item Rarity, 50% increased Armour, Evasion and Energy Shield and makes players Gain 30% of Damage as extra Lightning Damage.obelisk-of-cleansingobelisk-of-cleansingObeliskCleansingObelisk of Cleansing### Obelisk of Corruption
 Keyword · https://wraeclastindex.fyi/item/obelisk-of-corruption
@@ -1153,10 +1170,7 @@ Used by 1 gem, 2 uniques
 Hits from a weapon or skill with this property will not roll a random value between the minimum or maximum damage value, but instead will always roll either the minimum value or the maximum value, with a 50% chance for each. Each Damage Type has its damage value rolled separately, so if the hit deals multiple types of damage, some types may roll the maximum while others roll minimum. If the damage rolls are Lucky, that will still apply, make this roll twice and picking the maximum if either roll had that result, only picking minimum damage if both rolls selected minimum. Unlucky damage rolls will prefer minimum damage in the same way.only-minimum-or-maximum-damageonly-minimum-or-maximum-damageBooleanDamageRollOnly Minimum or Maximum Damage### Onslaught
 Keyword · https://wraeclastindex.fyi/item/onslaught
 Used by 1 gem, 8 uniques, 3 passives
-Onslaught grants 20% increased Skill Speed and 10% increased movement speed. Unless specified, Onslaught lasts 4 seconds.onslaughtonslaughtOnslaught### Opulent Rune
-Keyword · https://wraeclastindex.fyi/item/opulent-rune
-Monsters gain:
-Increased Monster Rarityopulent-runeopulent-runeOpulentRuneOpulent Rune### Orb of Alteration
+Onslaught grants 20% increased Skill Speed and 10% increased movement speed. Unless specified, Onslaught lasts 4 seconds.onslaughtonslaughtOnslaught### Orb of Alteration
 Keyword · https://wraeclastindex.fyi/item/orb-of-alteration
 Reforges a Magic item with new random modifiers.orb-of-alterationorb-of-alterationOrbOfAlterationOrb of Alteration### Orb Skills
 Keyword · https://wraeclastindex.fyi/item/orb-skills
@@ -1206,7 +1220,11 @@ Used by 8 gems, 2 uniques
 Certain Channelling skills have extra effects and benefits if released within a certain timing window while using the skill. Certain support gems and items can modify the duration of that timing window.perfect-timingperfect-timingPerfectTimingPerfect Timing### Perfection Buff
 Keyword · https://wraeclastindex.fyi/item/perfection-buff
 Used by 1 gem
-Perfection lasts for 10 seconds and can stack up to 4 times, granting 5% more Damage per stack. This Damage bonus is not limited to Skills Supported by Perfection Support. Failing to successfully execute any Perfect Timing will remove all Perfection stacks on you.perfection-buffperfection-buffPerfectionBuffPerfection Buff### Persistent Skills
+Perfection lasts for 10 seconds and can stack up to 4 times, granting 5% more Damage per stack. This Damage bonus is not limited to Skills Supported by Perfection Support. Failing to successfully execute any Perfect Timing will remove all Perfection stacks on you.perfection-buffperfection-buffPerfectionBuffPerfection Buff### Periodic Invulnerability Aura
+Keyword · https://wraeclastindex.fyi/item/periodic-invulnerability-aura
+Monster releases a nova that makes Allies invulnerable for 5 seconds while the monster is alive within 5 metres every 12 seconds.periodic-invulnerability-auraperiodic-invulnerability-auraMonsterImmuneAura1Periodic Invulnerability Aura### Periodically Enrages
+Keyword · https://wraeclastindex.fyi/item/periodically-enrages
+Monster periodically Enrages; gaining 30% increased Damage, 25% increased Skill and Movement Speed and 33% less damage taken for 5 seconds every 10 seconds.periodically-enragesperiodically-enragesMonsterPeriodicEnrage1Periodically Enrages### Persistent Skills
 Keyword · https://wraeclastindex.fyi/item/persistent-skills
 Used by 37 gems, 1 unique, 4 passives
 Persistent Skills are toggled in the Skills Panel instead of being used normally and often need to Reserve Spirit in order to be activated.persistent-skillspersistent-skillsPersistentPersistent Skills### Petrify
@@ -1248,11 +1266,11 @@ Used by 1 unique, 1 passive
 A Possessed monster is a Rare or Unique monster that has had an Azmeri Spirit enter and empower them. The possessed monster is empowered by the spirit and gains bonuses depending on the type of Spirit that possessed them. Occasionally the possessed monster will summon spiritual animals depending on the type of Animal Spirit they represent. Possessed monsters are more rewarding depending on how many Spirit-Influenced monsters were defeated leading up to possession.possessed-2possessedSpiritPossessedPossessed### Power
 Keyword · https://wraeclastindex.fyi/item/power
 Used by 55 gems, 17 uniques, 45 passives
-Power is provided to connected Paths by Generator rooms. Powered Paths provide Power to adjacent rooms. The Generator rooms are Dynamo, Shrine of Empowerment, Solar Nexus and Infinite Horizon. The Smithy, Synthflesh Lab, Transcendent Barracks and Golem Works rooms can be Upgraded by receiving Power.powerpowerIncursionPowerPower### Power Rune
-Keyword · https://wraeclastindex.fyi/item/power-rune
-The Power Rune upgrades all other Runic Modifiers on the Remnant to a more powerful and rewarding variant.power-runepower-runeExpedition2PowerRunePower Rune### Powerful Map Boss
+Power is provided to connected Paths by Generator rooms. Powered Paths provide Power to adjacent rooms. The Generator rooms are Dynamo, Shrine of Empowerment, Solar Nexus and Infinite Horizon. The Smithy, Synthflesh Lab, Transcendent Barracks and Golem Works rooms can be Upgraded by receiving Power.powerpowerIncursionPowerPower### Powerful Map Boss
 Keyword · https://wraeclastindex.fyi/item/powerful-map-boss
-Powerful Map Bosses are Map Bosses that are even more difficult and drop even better rewards. Powerful Map Bosses frequently drop Waystones one Tier higher.powerful-map-bosspowerful-map-bossPowerfulMapBossPowerful Map Boss### Pre-mitigation Damage
+Powerful Map Bosses are Map Bosses that are even more difficult and drop even better rewards. Powerful Map Bosses frequently drop Waystones one Tier higher.powerful-map-bosspowerful-map-bossPowerfulMapBossPowerful Map Boss### Powerful Minions
+Keyword · https://wraeclastindex.fyi/item/powerful-minions
+Monster's Pack Minions have 25% increased Damage and 50% increased Life.powerful-minionspowerful-minionsMonsterStrongerMinions1Powerful Minions### Pre-mitigation Damage
 Keyword · https://wraeclastindex.fyi/item/pre-mitigation-damage
 Your Pre-mitigation Damage is the damage of your hits after all your modifiers to damage have been applied, but before the target's mitigation, such as Armour, Resistances or Blocking, prevents any of that damage. The target's modifiers to Damage taken apply after their mitigation, so Pre-mitigation Damage also does not include the effects of those modifiers. However, modifiers that cause the target to take damage as a different Type occur before mitigating the damage, so are included in Pre-mitigation Damage.pre-mitigation-damagepre-mitigation-damagePremitigationPre-mitigation Damage### Precursor Terraformer
 Keyword · https://wraeclastindex.fyi/item/precursor-terraformer
@@ -1262,7 +1280,9 @@ Used by 1 unique
 Precursor Towers are ancient structures that are scattered all throughout the Atlas. Precursor Tower Maps can be completed to reveal a large area around them and to obtain a Tablet. Completing a Precursor Tower requires you to activate the Precursor Beacon at the end of the Map, after defeating the Map Boss.precursor-towersprecursor-towersPrecursorTowerPrecursor Towers### Presence
 Keyword · https://wraeclastindex.fyi/item/presence
 Used by 22 gems, 63 uniques, 102 passives
-Your Presence is an area around your character within which certain effects (such as many Auras) are applied. By default this has a 4 metre radius. The size of this area can be modified by Presence Area modifiers, but not by Skill Area modifiers.presencepresencePresence### Primal Spirit
+Your Presence is an area around your character within which certain effects (such as many Auras) are applied. By default this has a 4 metre radius. The size of this area can be modified by Presence Area modifiers, but not by Skill Area modifiers.presencepresencePresence### Prevents Recovery Above 50%
+Keyword · https://wraeclastindex.fyi/item/prevents-recovery-above-50
+Monster creates an Aura that Debuffs enemies within 4.2 metres, causing their Life and Energy Shield to not be able to recover past 50%.prevents-recovery-above-50prevents-recovery-above-50MonsterPreventRecoveryAura1Prevents Recovery Above 50%### Primal Spirit
 Keyword · https://wraeclastindex.fyi/item/primal-spirit
 Primal Spirits are a type of Azmeri Spirit. Monsters Influenced or Possessed by Primal Spirits deal increased damage, in addition to any bonuses from the specific spirit type. Monsters Possessed by Primal Spirits drop Intelligence items.primal-spiritprimal-spiritAzmeriSpiritPrimalPrimal Spirit### Primed for Electrocution
 Keyword · https://wraeclastindex.fyi/item/primed-for-electrocution
@@ -1275,19 +1295,12 @@ Keyword · https://wraeclastindex.fyi/item/primed-for-pin
 Normal enemies are Primed for Pin when they have at least 40% Pin buildup. Magic enemies are instead Primed at 50% buildup, Rare at 60%, and Unique at 70%.primed-for-pinprimed-for-pinPrimedPinPrimed for Pin### Primed for Stun
 Keyword · https://wraeclastindex.fyi/item/primed-for-stun
 Used by 7 gems
-Normal enemies are Primed for Stun when they have at least 40% Heavy Stun buildup. Magic enemies are instead Primed at 50% buildup, Rare at 60%, and Unique at 70%.primed-for-stunprimed-for-stunPrimedStunPrimed for Stun### Prismatic Rune
-Keyword · https://wraeclastindex.fyi/item/prismatic-rune
-Monsters gain:
-All Damage can Shock
-All Damage can Chill
-All Damage can Ignite
-Increased Elemental Resistancesprismatic-runeprismatic-runePrismaticRunePrismatic Rune### Projectile
+Normal enemies are Primed for Stun when they have at least 40% Heavy Stun buildup. Magic enemies are instead Primed at 50% buildup, Rare at 60%, and Unique at 70%.primed-for-stunprimed-for-stunPrimedStunPrimed for Stun### Projectile
 Keyword · https://wraeclastindex.fyi/item/projectile
 Used by 116 gems, 27 uniques, 117 passives
-A Projectile is a moving Attack or Spell that usually impacts with targets when it hits them. When a group of multiple Projectiles is fired from the same source at the same time, only one Projectile in the group can hit each target unless otherwise specified.projectileprojectileProjectile### Protective Rune
-Keyword · https://wraeclastindex.fyi/item/protective-rune
-Monsters gain:
-Periodically gain Verisium Proximity Shieldsprotective-runeprotective-runeProtectiveRuneProtective Rune### Puhuarte's Medallion
+A Projectile is a moving Attack or Spell that usually impacts with targets when it hits them. When a group of multiple Projectiles is fired from the same source at the same time, only one Projectile in the group can hit each target unless otherwise specified.projectileprojectileProjectile### Proximal Tangibility
+Keyword · https://wraeclastindex.fyi/item/proximal-tangibility
+Monster cannot be damaged by enemies any further than 3 metres from them.proximal-tangibilityproximal-tangibilityMonsterProximalTangibility1Proximal Tangibility### Puhuarte's Medallion
 Keyword · https://wraeclastindex.fyi/item/puhuartes-medallion
 Puhuarte's Medallion allows you to reroll the Room Cards available for placementpuhuartes-medallionpuhuartes-medallionIncursionMedallionRerollRoomCardsPuhuarte's Medallion### Puppet Master
 Keyword · https://wraeclastindex.fyi/item/puppet-master
@@ -1316,19 +1329,13 @@ Used by 27 gems, 18 uniques, 64 passives
 Rage grants 1% more Attack damage per 1 Rage. By default, you have 30 maximum Rage and lose 1 Rage every 0.2 seconds. Rage loss is paused for 4 seconds upon gaining Rage, or after taking damage. Only one Hit every 0.5 seconds can cause you to gain Rage.ragerageRage### Rage Leech
 Keyword · https://wraeclastindex.fyi/item/rage-leech
 Used by 1 gem
-When you deal damage with a Hit, Rage Leech causes you to recover an amount of Rage to a percentage of the damage dealt, over a period of one second. Hits that deal more than 40,000 total damage are treated as though they only dealt 40,000 damage for this calculation. If this damage is of multiple Damage Types, the ratios between them will stay the same. Monsters have Leech Resistance that increases with monster level, reducing how much you recover from Leech from Hits against them. You can only recover from a single instance of Rage Leech at a time, and all Rage Leech is removed when Rage is filled.rage-leechrage-leechRageLeechRage Leech### Rage Rune
-Keyword · https://wraeclastindex.fyi/item/rage-rune
-Monsters gain:
-Periodically Enragerage-runerage-runeRageRuneRage Rune### Rarity
+When you deal damage with a Hit, Rage Leech causes you to recover an amount of Rage to a percentage of the damage dealt, over a period of one second. Hits that deal more than 40,000 total damage are treated as though they only dealt 40,000 damage for this calculation. If this damage is of multiple Damage Types, the ratios between them will stay the same. Monsters have Leech Resistance that increases with monster level, reducing how much you recover from Leech from Hits against them. You can only recover from a single instance of Rage Leech at a time, and all Rage Leech is removed when Rage is filled.rage-leechrage-leechRageLeechRage Leech### Rarity
 Keyword · https://wraeclastindex.fyi/item/rarity
 Used by 29 gems, 7 uniques, 19 passives
 Item or Monster rarity can be Normal (grey), Magic (blue), Rare (yellow) or Unique (brown). As a general rule, monsters increase in difficulty depending on their Rarity.rarityrarityRarity### Raven-Touched
 Keyword · https://wraeclastindex.fyi/item/raven-touched
 Used by 4 uniques
-Raven-Touched items have been warped by the Raven Trickster, Tangmazu. The influence of the mist allows you to instil the item with a Notable Passive Skill at the Withered Willow. Items that are already instillable will not be able to gain an additional instillment if they become Raven-Touched.raven-touchedraven-touchedRavenTouchedRaven-Touched### Rebirth Rune
-Keyword · https://wraeclastindex.fyi/item/rebirth-rune
-Monsters gain:
-Chance to Rebirth on deathrebirth-runerebirth-runeRebirthRuneRebirth Rune### Recently
+Raven-Touched items have been warped by the Raven Trickster, Tangmazu. The influence of the mist allows you to instil the item with a Notable Passive Skill at the Withered Willow. Items that are already instillable will not be able to gain an additional instillment if they become Raven-Touched.raven-touchedraven-touchedRavenTouchedRaven-Touched### Recently
 Keyword · https://wraeclastindex.fyi/item/recently
 Used by 8 gems, 18 uniques, 129 passives
 Recently refers to the past 4 seconds.recentlyrecentlyRecently### Recoup
@@ -1337,7 +1344,9 @@ Used by 4 gems, 16 uniques, 54 passives
 When you take damage from a Hit, Recoup causes you to recover an amount of the stated resource equal to a percentage of the damage you took over 8 seconds.recouprecoupRecoup### Red Flames of Chayula
 Keyword · https://wraeclastindex.fyi/item/red-flames-of-chayula
 Used by 1 passive
-Red Flames of Chayula Leech 20% of your maximum Life to you to when collected.red-flames-of-chayulared-flames-of-chayulaRedFlamesOfChayulaRed Flames of Chayula### Released Azmeri Spirits
+Red Flames of Chayula Leech 20% of your maximum Life to you to when collected.red-flames-of-chayulared-flames-of-chayulaRedFlamesOfChayulaRed Flames of Chayula### Regenerates Life
+Keyword · https://wraeclastindex.fyi/item/regenerates-life
+Monster Regenerates 2% of Maximum Life per second.regenerates-liferegenerates-lifeMonsterLifeRegenerationRatePercentage1Regenerates Life### Released Azmeri Spirits
 Keyword · https://wraeclastindex.fyi/item/released-azmeri-spirits
 Azmeri Spirits can be released from various Possessed monsters. Released Spirits have a chance to manifest into the world with a portion of the empowerment the monster was possessed with. Released Spirits have 1% chance to manifest per 2% empowerment. This empowerment is shared with each Spirit released, and the Released Spirit has half of this empowerment once released.released-azmeri-spiritsreleased-azmeri-spiritsReleaseAzmeriSpiritsReleased Azmeri Spirits### Relics
 Keyword · https://wraeclastindex.fyi/item/relics
@@ -1466,16 +1475,19 @@ Keyword · https://wraeclastindex.fyi/item/shrine
 Used by 5 uniques
 Shrines are Precursor Artifacts that empower monsters with its Presence with various effects. Defeat all the monsters Worshipping the Shrine and interact with it to temporarily gain the power for yourself.shrineshrineShrine### Shrine Worship
 Keyword · https://wraeclastindex.fyi/item/shrine-worship
-Shrines are found with multiple packs of monsters Worshipping the Shrine. Other monsters may be affected by the Shrine's Presence but do not count as Worshippers.shrine-worshipshrine-worshipShrineMonsterShrine Worship### Sinister Jewel Sockets
+Shrines are found with multiple packs of monsters Worshipping the Shrine. Other monsters may be affected by the Shrine's Presence but do not count as Worshippers.shrine-worshipshrine-worshipShrineMonsterShrine Worship### Shroud Walker
+Keyword · https://wraeclastindex.fyi/item/shroud-walker
+Monster periodically teleports to an enemy they can see, creating a Smoke Cloud where they leave and where they teleport to.shroud-walkershroud-walkerMonsterShroudWalker1Shroud Walker### Sinister Jewel Sockets
 Keyword · https://wraeclastindex.fyi/item/sinister-jewel-sockets
 Used by 1 unique, 1 passive
-Allocated Sinister Jewel Sockets are visible on the left edge of the character portrait in the centre of the passive skill tree. Unique Jewels cannot be socketed in Sinister Jewel Sockets, and modifiers to the effect of Jewel Sockets do not apply to Sinister Jewel Sockets. They are entirely disconnected from the rest of your passive skill tree - they are not considered to be within any radius of any other passive skill, and no passive skill is within any radius of a Sinister Jewel Socket. Multiple Sinister Jewel Sockets are also not within any radius of each other. Radius effects of Jewels will therefore have no effect when socketed in Sinister Sockets.sinister-jewel-socketssinister-jewel-socketsSinisterJewelSocketsSinister Jewel Sockets### Skill Speed
+Allocated Sinister Jewel Sockets are visible on the left edge of the character portrait in the centre of the passive skill tree. Unique Jewels cannot be socketed in Sinister Jewel Sockets, and modifiers to the effect of Jewel Sockets do not apply to Sinister Jewel Sockets. They are entirely disconnected from the rest of your passive skill tree - they are not considered to be within any radius of any other passive skill, and no passive skill is within any radius of a Sinister Jewel Socket. Multiple Sinister Jewel Sockets are also not within any radius of each other. Radius effects of Jewels will therefore have no effect when socketed in Sinister Sockets.sinister-jewel-socketssinister-jewel-socketsSinisterJewelSocketsSinister Jewel Sockets### Siphons Flask Charges
+Keyword · https://wraeclastindex.fyi/item/siphons-flask-charges
+Monster creates an Aura that removes 3 Flask and Charm charges from enemies every 3 seconds within 3.6 metres.siphons-flask-chargessiphons-flask-chargesMonsterFlaskRemovalAura1Siphons Flask Charges### Siphons Mana and Deals Lightning Damage
+Keyword · https://wraeclastindex.fyi/item/siphons-mana-and-deals-lightning-damage
+Monster creates a circular effect that drains Mana and deals Lightning Damage over time to enemies near the edge of the circle.siphons-mana-and-deals-lightning-damagesiphons-mana-and-deals-lightning-damageMonsterManaSiphonAura1Siphons Mana and Deals Lightning Damage### Skill Speed
 Keyword · https://wraeclastindex.fyi/item/skill-speed-keyword
 Used by 13 gems, 8 uniques, 44 passives
-Affects the speed at which all Skills are used. Increases and reductions to Skill Speed stack additively with increases and reductions to Attack Speed, Cast Speed, Warcry Speed, and similar stats.skill-speed-keywordskill-speedSkillSpeedSkill Speed### Sky Rune
-Keyword · https://wraeclastindex.fyi/item/sky-rune
-Remnant gains:
-Conjures Elemental Tornadossky-runesky-runeSkyRuneSky Rune### Slams
+Affects the speed at which all Skills are used. Increases and reductions to Skill Speed stack additively with increases and reductions to Attack Speed, Cast Speed, Warcry Speed, and similar stats.skill-speed-keywordskill-speedSkillSpeedSkill Speed### Slams
 Keyword · https://wraeclastindex.fyi/item/slams
 Used by 35 gems, 4 uniques, 12 passives
 Slams are Melee Attacks that cause damaging areas of effect, rather than Striking enemies with your weapon directly. Damage from Slams is still Melee damage.slamsslamsSlamSlams### Slow
@@ -1484,7 +1496,9 @@ Used by 10 gems, 11 uniques, 53 passives
 Slows are modifiers from Debuffs that cause actions to take longer. Slows can apply to a specific stat (such as attack speed or movement speed) — if a specific type of slow is not specified, it applies to everything the affected entity does. Slows are always multiplicative with each other. Higher Rarity enemies are less affected by Slows: 15% less Slow effect on Magic monsters 30% less Slow effect on Rare monsters 50% less Slow effect on Unique monsters Additionally, Slows have 10% less effect on all monsters for each player in the area beyond the first and monsters cannot be slowed below 25% of their base speed.slowslowSlow### Slow Magnitude Modifier
 Keyword · https://wraeclastindex.fyi/item/slow-magnitude-modifier
 Used by 1 gem, 3 uniques, 14 passives
-This modifier applies to Debuffs you inflict that Slow enemies, and scales only the specific Magnitude that slows the target. It will not affect any other Magnitudes that Debuff has if it does other things in addition to the Slow.slow-magnitude-modifierslow-magnitude-modifierSlowMagnitudeModifierSlow Magnitude Modifier### Small Passives
+This modifier applies to Debuffs you inflict that Slow enemies, and scales only the specific Magnitude that slows the target. It will not affect any other Magnitudes that Debuff has if it does other things in addition to the Slow.slow-magnitude-modifierslow-magnitude-modifierSlowMagnitudeModifierSlow Magnitude Modifier### Slow Resistant
+Keyword · https://wraeclastindex.fyi/item/slow-resistant
+Monster has 50% reduced Slowing Potency of Debuffs on them.slow-resistantslow-resistantMonsterImmuneToSlow1Slow Resistant### Small Passives
 Keyword · https://wraeclastindex.fyi/item/small-passives
 Used by 1 unique, 1 passive
 Small Passive Skills are Passives that are not Notables, Keystones, Ascendancy Passive Skills or Passive Skills where you can select an Attribute.small-passivessmall-passivesSmallPassiveSmall Passives### Smoke Clouds
@@ -1501,10 +1515,7 @@ Used by 3 uniques
 Soul Cores are artifacts of the ancient Vaal empire and function as a type of Augment.soul-coresoul-coreSoulCoreSoul Core### Soul Eater
 Keyword · https://wraeclastindex.fyi/item/soul-eater
 Used by 1 gem, 2 uniques
-Eat the Souls of enemies that die in your Presence. Each Soul grants 1% increased Skill Speed. You can have up to 50 eaten Souls, and lose a Soul every 0.5 seconds if you have not eaten one in the past 4 seconds.soul-eatersoul-eaterSoulEaterSoul Eater### Soul Rune
-Keyword · https://wraeclastindex.fyi/item/soul-rune
-Monsters gain:
-Union of Soulssoul-runesoul-runeSoulRuneSoul Rune### Spears
+Eat the Souls of enemies that die in your Presence. Each Soul grants 1% increased Skill Speed. You can have up to 50 eaten Souls, and lose a Soul every 0.5 seconds if you have not eaten one in the past 4 seconds.soul-eatersoul-eaterSoulEaterSoul Eater### Spears
 Keyword · https://wraeclastindex.fyi/item/spears
 Used by 19 gems, 18 uniques, 13 passives
 Spears are One-Handed Melee weapons that require Strength and Dexterity to equip. Spears cannot be dual wielded. Spear combat is often a mix of both ranged and Melee, as many spear skills enable you to throw your spear.spearsspearsSpearSpears### Spectral Fire
@@ -1566,12 +1577,7 @@ Keyword · https://wraeclastindex.fyi/item/staves
 Used by 1 passive
 Staves are Two-Handed Spellcasting weapons that require Intelligence to equip. Staves cannot be used to Attack. However, they grant inbuilt Spells based on the staff type and powerful bonuses to spells.stavesstavesStaffStaves### Stone Citadel
 Keyword · https://wraeclastindex.fyi/item/stone-citadel
-The Stone Citadel is an endgame area which can be accessed with a Tier 15 or above Waystone. The boss of this area will drop a Weathered Crisis Fragment. Increases to Waystone Drop Chance gives a chance for additional Crisis Fragments to drop.stone-citadelstone-citadelStoneCitadelStone Citadel### Stone Rune
-Keyword · https://wraeclastindex.fyi/item/stone-rune
-Monsters gain:
-Armoured
-Increased Stun Threshold
-Earthly Prisonstone-runestone-runeStoneRuneStone Rune### Storm Skills
+The Stone Citadel is an endgame area which can be accessed with a Tier 15 or above Waystone. The boss of this area will drop a Weathered Crisis Fragment. Increases to Waystone Drop Chance gives a chance for additional Crisis Fragments to drop.stone-citadelstone-citadelStoneCitadelStone Citadel### Storm Skills
 Keyword · https://wraeclastindex.fyi/item/storm-skills
 Used by 7 gems, 2 passives
 Storm Skills are long-duration weather-based Skills that have special interactions with other effects.storm-skillsstorm-skillsStormStorm Skills### Stormsurge
@@ -1590,7 +1596,12 @@ Used by 61 gems, 72 uniques, 193 passives
 Hits against any target can potentially cause a Stun on that target, depending on the damage dealt. Stunning a target interrupts their current action and prevents them from taking actions for a short time. There are two types of Stun: Light Stuns last a fraction of a second but can be inflicted frequently. Any Hit has a chance to cause a Light Stun. The chance is based on the damage dealt, up to 100% base chance for Hits that deal 100% of the target's maximum Life. Chances lower than 15% are treated as 0%. Heavy Stuns occur when a target's Stun bar is filled and last multiple seconds. Hits cause Heavy Stun buildup based on the damage dealt. Players and their Minions usually cannot be Heavily Stunned, but players can receive Heavy Stun buildup where specifically mentioned while taking specific actions (such as raising their Shield, Parrying with a Buckler, or riding a mount). Player Physical damage and Melee Damage each have 50% more Light Stun chance and Heavy Stun buildup. These bonuses are multiplicative with each other. Monster Physical damage and Melee Damage have 100% more and 33% more Light Stun chance and Heavy Stun buildup respectively. These bonuses are multiplicative with each other.stunstunStun### Stun Recovery
 Keyword · https://wraeclastindex.fyi/item/stun-recovery-keyword
 Used by 2 uniques, 8 passives
-Increasing your Stun Recovery causes you to recover more quickly from being Stunned.stun-recovery-keywordstun-recoveryStunRecoveryStun Recovery### Summoning Circle
+Increasing your Stun Recovery causes you to recover more quickly from being Stunned.stun-recovery-keywordstun-recoveryStunRecoveryStun Recovery### Stun Resistant
+Keyword · https://wraeclastindex.fyi/item/stun-resistant
+Monster has 250% increased Stun Threshold.stun-resistantstun-resistantMonsterStunResilience1Stun Resistant### Stuns
+Keyword · https://wraeclastindex.fyi/item/stuns
+Used by 3 gems, 1 unique
+Monster has 100% increased Stun buildup.stunsstunsMonsterStunDamageIncrease1Stuns### Summoning Circle
 Keyword · https://wraeclastindex.fyi/item/summoning-circle
 Activating a Summoning Circle will cause a Boss to be spawned. If an area contains more than one Summoning Circle it will contain runes to reactivate the Summoning Circle instead of additional Summoning Circles.summoning-circlesummoning-circleStoneSummoningCircleSummoning Circle### Sundered Armour
 Keyword · https://wraeclastindex.fyi/item/sundered-armour
@@ -1626,15 +1637,13 @@ Keyword · https://wraeclastindex.fyi/item/talismans
 Used by 1 passive
 Talismans are Two-Handed Melee weapons that require Strength and Intelligence to equip. Talismans allow you to use Shapeshifting Skills associated with the Talisman's current form, and grants a basic Attack for that form. You can change the Talisman's form at any time. While you have a Talisman in your active weapon set you will Shapeshift into its associated form. As a result, Skills that cannot be used in a Shapeshift form cannot be used with Talismans. Triggered Skills and Persistent Skills will continue to function.talismanstalismansTalismanTalismans### Taunt
 Keyword · https://wraeclastindex.fyi/item/taunt
-Enemies you Taunt can only target you, and deal 10% less damage with hits to anyone else. If not otherwise specified, Taunt lasts for 3 seconds.taunttauntTaunt### Tempest Rune
-Keyword · https://wraeclastindex.fyi/item/tempest-rune
-Monsters gain:
-Cannot be Shocked or Chilled
-All Damage contributes to chance to Shock and Chill Magnitudetempest-runetempest-runeTempestRuneTempest Rune### Temple Currency
+Enemies you Taunt can only target you, and deal 10% less damage with hits to anyone else. If not otherwise specified, Taunt lasts for 3 seconds.taunttauntTaunt### Temple Currency
 Keyword · https://wraeclastindex.fyi/item/temple-currency
 Temple Currency are currency items found primarily throughout the Temple. These currency items typically interact with Corrupted Items in a variety of ways.temple-currencytemple-currencyIncursionTempleCurrencyTemple Currency### Temple Destabilisation
 Keyword · https://wraeclastindex.fyi/item/temple-destabilisation
-Each time you enter the Temple a random selection of rooms are Destabilised, removing them permanently when you next exit. In addition to the randomly selected rooms, some rooms are Destabilised upon completion. Restricted Rooms that are accessible will always destabilise upon exiting the Temple. Defeating the Architect or Atziri causes greater Destabilisation.temple-destabilisationtemple-destabilisationIncursionDestabilizationTemple Destabilisation### Temporal Chains
+Each time you enter the Temple a random selection of rooms are Destabilised, removing them permanently when you next exit. In addition to the randomly selected rooms, some rooms are Destabilised upon completion. Restricted Rooms that are accessible will always destabilise upon exiting the Temple. Defeating the Architect or Atziri causes greater Destabilisation.temple-destabilisationtemple-destabilisationIncursionDestabilizationTemple Destabilisation### Temporal Bubble
+Keyword · https://wraeclastindex.fyi/item/temporal-bubble
+Monster creates an Aura that Debuffs Enemies within 3.2 metres; Slowing by 25%, making effects expire 40% slower and reducing Cooldown Recovery Rate by 60%.temporal-bubbletemporal-bubbleMonsterTemporalAura1Temporal Bubble### Temporal Chains
 Keyword · https://wraeclastindex.fyi/item/temporal-chains-keyword
 Used by 1 unique
 Temporal Chains is a Curse that slows those affected and makes other effects on them expire more slowly. If not otherwise specified, Temporal Chains slows by 26%.temporal-chains-keywordtemporal-chainsTemporalChainsTemporal Chains### Temporary Minion
@@ -1655,23 +1664,14 @@ Used by 10 gems, 30 uniques, 22 passives
 Thorns damage is a kind of Hit Damage you can deal. Thorns damage is not Attack damage or Spell damage and is not affected by modifiers specific to those. If you have Thorns damage, you inherently Retaliate against Melee Attack Hits, dealing your Thorns damage to the enemy that Hit you. Some skills and other effects may also deal your thorns damage to enemies at other times.thorns-keywordthornsThorns### Thorny Ground
 Keyword · https://wraeclastindex.fyi/item/thorny-ground
 Used by 1 gem
-Thorny Ground deals Spell damage to enemies upon being created, then continues to damage enemies that move over the Ground, no more than twice per second.thorny-groundthorny-groundThornyGroundThorny Ground### Tidal Rune
-Keyword · https://wraeclastindex.fyi/item/tidal-rune
-Remnant gains:
-Conjures Tidal Wavestidal-runetidal-runeTidalRuneTidal Rune### Time Rune
-Keyword · https://wraeclastindex.fyi/item/time-rune
-Monsters gain:
-Slain Monsters may respawn as a higher Raritytime-runetime-runeTimeRuneTime Rune### Totems
+Thorny Ground deals Spell damage to enemies upon being created, then continues to damage enemies that move over the Ground, no more than twice per second.thorny-groundthorny-groundThornyGroundThorny Ground### Totems
 Keyword · https://wraeclastindex.fyi/item/totems
 Used by 28 gems, 2 uniques, 74 passives
 Totems are allied constructs which use skills for you. Totems are not Minions and their skills benefit from your stats, though they have their own defensive stats and can be damaged or killed. Totem Limit is shared between different types of Totem by default.totemstotemsTotemTotems### Toughness
 Keyword · https://wraeclastindex.fyi/item/toughness
-The higher toughness a monster has, the less damage it takes. A monster with 100% increased toughness takes 50% less damage, a monster with 200% increased toughness takes 67% less damage, and so on. Negative toughness instead causes the monster to take more damage. A monster with 100% reduced toughness takes 100% more damage, a monster with 200% reduced toughness takes 200% more damage, and so on. Effectively, each 100% of toughness halves the damage a monster takes, and each -100% toughness doubles the damage a monster takes.toughnesstoughnessToughness### Toxic Rune
-Keyword · https://wraeclastindex.fyi/item/toxic-rune
-Monsters gain:
-Chance to Poison on Hit
-Chance for Toxic Volatiles on death
-All Damage from Hits Contributes to Poison Magnitudetoxic-runetoxic-runeToxicRuneToxic Rune### Traps
+The higher toughness a monster has, the less damage it takes. A monster with 100% increased toughness takes 50% less damage, a monster with 200% increased toughness takes 67% less damage, and so on. Negative toughness instead causes the monster to take more damage. A monster with 100% reduced toughness takes 100% more damage, a monster with 200% reduced toughness takes 200% more damage, and so on. Effectively, each 100% of toughness halves the damage a monster takes, and each -100% toughness doubles the damage a monster takes.toughnesstoughnessToughness### Trail of Lightning
+Keyword · https://wraeclastindex.fyi/item/trail-of-lightning
+Monster leaves a trail of Shocked Ground as they move.trail-of-lightningtrail-of-lightningMonsterShockedGroundTrail1Trail of Lightning### Traps
 Keyword · https://wraeclastindex.fyi/item/traps
 Used by 1 gem, 13 passives
 Traps are Two-Handed ranged weapons that require Dexterity and Intelligence to equip. Traps cannot be used to Attack directly. Throwing a Trap places it on the ground, where it can either be detonated manually or triggered by Close by enemies depending on the Trap type.trapstrapsTrapTraps### Travel Skills
@@ -1751,14 +1751,15 @@ A Verisium Infusion can be used instead of any of the Elemental Infusions. Skill
 Keyword · https://wraeclastindex.fyi/item/verisium-remnant
 Verisium Remnants are fragments of the stars themselves, called down by Kalguurans to harness their power. Verisium Remnants allow you to craft a variety of rewards. Each Remnant has a number of slots available for runes to be inscribed, and when you first find it, it will have one rune already inscribed. Based on the inscribed rune, you'll be able to select a reward and, based on the runes required for the recipe, you will have to fight waves of Verisium infused monsters to complete the encounter and receive your reward. These Inscriptions can be used to create Runeshapes within Verisium Remnants. Runes are the result of the Kalguurans study of these Inscriptions and the power of Runeshapes.verisium-remnantverisium-remnantContainsExpedition2Verisium Remnant### Verisium Sentry
 Keyword · https://wraeclastindex.fyi/item/verisium-sentry
-Verisium Sentries are ancient remnants of Kalguuran technology found within Expeditions. When unearthed they follow the player, adding Runic Modifiers to Monsters throughout the area.verisium-sentryverisium-sentryExpeditionSentinelVerisium Sentry### Vision Rune
-Keyword · https://wraeclastindex.fyi/item/vision-rune
-Monsters gain:
-Reflect Curses
-Chance to Reflect Shock
-Chance to Reflect Chillvision-runevision-runeVisionRuneVision Rune### Vivid Spirit
+Verisium Sentries are ancient remnants of Kalguuran technology found within Expeditions. When unearthed they follow the player, adding Runic Modifiers to Monsters throughout the area.verisium-sentryverisium-sentryExpeditionSentinelVerisium Sentry### Vivid Spirit
 Keyword · https://wraeclastindex.fyi/item/vivid-spirit
-Vivid Spirits are a type of Azmeri Spirit. Monsters Influenced or Possessed by Vivid Spirits gain increased Skill Speed, in addition to any bonuses from the specific spirit type. Monsters Possessed by Vivid Spirits drop Dexterity items.vivid-spiritvivid-spiritAzmeriSpiritVividVivid Spirit### Volatiles
+Vivid Spirits are a type of Azmeri Spirit. Monsters Influenced or Possessed by Vivid Spirits gain increased Skill Speed, in addition to any bonuses from the specific spirit type. Monsters Possessed by Vivid Spirits drop Dexterity items.vivid-spiritvivid-spiritAzmeriSpiritVividVivid Spirit### Volatile Crag
+Keyword · https://wraeclastindex.fyi/item/volatile-crag
+Monster periodically creates Volatile Crag that moves towards enemies; exploding when they get close enough; dealing Fire Damage.volatile-cragvolatile-cragMonsterVolatileRocks1Volatile Crag### Volatile Crystals
+Keyword · https://wraeclastindex.fyi/item/volatile-crystals
+Monster creates Volatile Crystals when Hit, which explode upon the Monster's death, dealing Chaos damage.volatile-crystalsvolatile-crystalsMonsterLivingCrystals1Volatile Crystals### Volatile Plants
+Keyword · https://wraeclastindex.fyi/item/volatile-plants
+Monster periodically creates Volatile Plants, releasing orbs that move towards enemies; exploding when they get close enough; dealing Chaos Damage.volatile-plantsvolatile-plantsMonsterVolatilePlants1Volatile Plants### Volatiles
 Keyword · https://wraeclastindex.fyi/item/volatiles
 Volatiles are homing orbs which move towards a target before exploding after a duration or when they get close enough, dealing damage in a larger area.volatilesvolatilesVolatiles### Volatility
 Keyword · https://wraeclastindex.fyi/item/volatility-keyword
@@ -1775,10 +1776,7 @@ Keyword · https://wraeclastindex.fyi/item/wands
 Wands are One-Handed Spellcasting weapons that require Intelligence to equip. Wands cannot be Dual Wielded and cannot be used to Attack directly. However, they grant inbuilt Spells based on the wand type and powerful bonuses to spells.wandswandsWandWands### Warcries
 Keyword · https://wraeclastindex.fyi/item/warcries
 Used by 28 gems, 5 uniques, 38 passives
-Warcries are skills which count enemy Power within their area and Empower your subsequent Melee Attacks, sometimes depending on the total Power of enemies counted.warcrieswarcriesWarcryWarcries### Ward Rune
-Keyword · https://wraeclastindex.fyi/item/ward-rune
-Monsters gain:
-Protected by Runic Wardward-runeward-runeWardRuneWard Rune### Waypoints
+Warcries are skills which count enemy Power within their area and Empower your subsequent Melee Attacks, sometimes depending on the total Power of enemies counted.warcrieswarcriesWarcryWarcries### Waypoints
 Keyword · https://wraeclastindex.fyi/item/waypoints
 Waypoints are a form of saving your progress through Wraeclast. Most areas (though not all) will have one, and they can be used to quickly travel from area to area. Reaching a Waypoint will refill your Life, Mana, Flasks and Charms.waypointswaypointsWaypointWaypoints### Waystone Tier Progression
 Keyword · https://wraeclastindex.fyi/item/waystone-tier-progression
@@ -1806,10 +1804,7 @@ Keyword · https://wraeclastindex.fyi/item/wildwood-wisp
 Wildwood Wisps grant 30% increased Tribute Gained to Players within 3 metres of it.wildwood-wispwildwood-wispWildwoodWispWildwood Wisp### Wind Skills
 Keyword · https://wraeclastindex.fyi/item/wind-skills
 Used by 5 gems, 6 uniques
-Wind Skills gain additional interactions with other specified Skills, typically Fire Skills.wind-skillswind-skillsWindWind Skills### Wisdom Rune
-Keyword · https://wraeclastindex.fyi/item/wisdom-rune
-Monsters gain:
-Increased Experiencewisdom-runewisdom-runeWisdomRuneWisdom Rune### Withered
+Wind Skills gain additional interactions with other specified Skills, typically Fire Skills.wind-skillswind-skillsWindWind Skills### Withered
 Keyword · https://wraeclastindex.fyi/item/withered
 Used by 7 gems, 7 uniques, 6 passives
 Withered applies 5% increased Chaos damage Taken, and can be inflicted up to 10 times.witheredwitheredWithered### Withering Ground

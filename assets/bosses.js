@@ -12,7 +12,7 @@ import { D, $, esc, card, openDetail, priceOf, hrefOf, money as coin, moneyHTML,
 const SHOW = [['all', 'All'], ['pin', 'Pinnacle'], ['drops', 'With drops']];
 const SORTS = [['name', 'Name'], ['way', 'Way in']];
 const S = {q: '', show: 'drops', sort: 'name'};   // opens on the bosses with drops: most of the rest have none listed yet
-let EL, B = null, BP = null, HITS = null, ROWS = [], WIRED = false;
+let EL, B = null, BP = null, HITS = null, TELLS = null, ROWS = [], WIRED = false;
 
 async function getJSON(url){
   try {
@@ -378,6 +378,15 @@ export async function openCard(it){
    numbers are worked out, not read off the game: they carry the file's own Estimate label. */
 const KINDWORD = {a: 'attack', s: 'spell', d: 'over time'};
 const fmt = n => (+n >= 100 ? Math.round(+n) : Math.round(+n * 10) / 10).toLocaleString('en');
+/* What a big hit looks like before it lands (data/bosstells.json, tools/bosstells.py): one line per hit in our own
+   words, from the boss guides, each naming its sources inline. The move's name is the one those sources use. */
+function tellsOf(name){
+  const b = TELLS && (TELLS.bosses || []).find(x => x.name === name);
+  return new Map(((b && b.hits) || []).map(t => [t.n, t]));
+}
+const tellHTML = t => '<span class="bo-tell">' + esc(t.tell) + (t.cd ? ' Cooldown ' + fmt(t.cd) + ' s.' : '') +
+  ' <span class="bo-tsrc">Source: ' + (t.src || []).map(s => '<a href="' + esc(s.url) + '" target="_blank" rel="noopener">' +
+    esc(s.name) + '</a>').join(', ') + '</span></span>';
 function hitsHTML(r){
   const h = HITS && (HITS.bosses || []).find(x => x.name === r.b.name);
   if(!h || !(h.hits || []).length) return '';
@@ -385,10 +394,14 @@ function hitsHTML(r){
   const res = Object.entries(h.res || {}).map(([t, v]) => t.toLowerCase() + ' ' + v + '%').join(', ');
   const stats = ['level ' + h.lv, h.life ? 'life ' + fmt(h.life) : '', h.armour ? 'armour ' + fmt(h.armour) : '',
     h.evasion ? 'evasion ' + fmt(h.evasion) : '', res ? 'resistances: ' + res : ''].filter(Boolean).join(' · ');
-  const rows = h.hits.map(x => '<li><b>' + esc(x.n) + '</b><span class="bo-hk">' + esc([KINDWORD[x.k] || '', (x.t || '').toLowerCase()]
+  const told = tellsOf(r.b.name);
+  const rows = h.hits.map(x => {
+    const t = told.get(x.n);
+    return '<li><b>' + esc((t && t.name) || x.n) + '</b><span class="bo-hk">' + esc([KINDWORD[x.k] || '', (x.t || '').toLowerCase()]
       .filter(Boolean).join(' · ')) + '</span><b class="bo-hn">' + (x.k === 'd' ? fmt(x.h[0]) + ' a second'
       : fmt(x.h[0]) + (x.h[1] !== x.h[0] ? '–' + fmt(x.h[1]) : '')) + '</b>' +
-    (x.cd ? '<span class="bo-hk">every ' + fmt(x.cd) + ' s</span>' : '<span></span>') + '</li>').join('');
+    (x.cd ? '<span class="bo-hk">every ' + fmt(x.cd) + ' s</span>' : '<span></span>') + (t ? tellHTML(t) : '') + '</li>';
+  }).join('');
   const kinds = [...new Set(h.hits.map(x => ({a: 'Attack', s: 'Spell', d: 'Damage over time'})[x.k]))].filter(k => HITS.calc && HITS.calc[k]);
   const how = kinds.map(k => '<p class="note"><b>' + esc(k) + ':</b> ' + esc(HITS.calc[k].says) + '</p>').join('');
   return '<div class="bo-sec"><p class="lbl">How hard it hits ' + est + '</p><p class="note">' + esc(stats) + '</p>' +
@@ -462,10 +475,10 @@ function wayHTML(r){
 let LOADING = null;
 function load(){
   return LOADING || (LOADING = (async () => {
-    const [data, px, hits] = await Promise.all([D.bosses || getJSON('data/bosses.json'), getJSON('data/bossprices.json'),
-      getJSON('data/bosshits.json').catch(() => null)]);
+    const [data, px, hits, tells] = await Promise.all([D.bosses || getJSON('data/bosses.json'), getJSON('data/bossprices.json'),
+      getJSON('data/bosshits.json').catch(() => null), getJSON('data/bosstells.json').catch(() => null)]);
     if(!data || !data.bosses) return false;
-    B = data; BP = px; HITS = hits;
+    B = data; BP = px; HITS = hits; TELLS = tells;
     ROWS = data.bosses.map(row);
     wire();
     return true;
