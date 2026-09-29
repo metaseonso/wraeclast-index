@@ -14,6 +14,9 @@ What it checks (it asks the site, GET /api/prices/state, when each was last chec
 Results go to POST /api/prices/ingest a few at a time. The site works out each price (the middle of those
 listings, in divines) and keeps one price per day for trends.
 
+Two tiers (tiers()): what trades is seen at least once inside CYCLE hours; a thing nobody listed at its last
+check waits QUIET hours (a week) before it is asked again, so the searches go where there is a market. The Data
+page (assets/data.js) says both cycles.
 What this aims at is a day, not an hour: every priced thing seen at least once inside CYCLE hours. Each kind
 takes a share of every run in proportion to how many it has waiting (share()), so every kind comes round in
 the same time and there is one cycle number for the whole site; the kinds are then spread through the run
@@ -70,6 +73,7 @@ SPAN = 55 * 60
 BUDGET = 88          # searches in one run: the trade site allows about 100 an hour from one address
 FLOOR = 1            # and every kind gets at least this many of them, so none can starve
 CYCLE = 24           # hours a full pass of everything should take
+QUIET = 168          # hours before a thing nobody listed at its last check is checked again: the weekly tier
 KINDS = ('uniq', 'bossuniq', 'base', 'roll', 'farm', 'boss')   # what a search can be spent on, in plain words:
 NAMES = {'uniq': 'uniques', 'bossuniq': 'boss uniques', 'base': 'base items', 'roll': 'mod rolls',
          'farm': 'farm inputs', 'boss': 'boss entry items', 'cur': 'currency'}
@@ -197,6 +201,26 @@ def jobs(catalogue):
         if key.startswith('c:') and name in exchange and exchange[name] != 'exalted':
             out['cur'].append(('cur:%s|%s' % (exchange[name], name), exchange[name]))
     return out
+
+
+def tiers(todo, at, n, now):
+    """Two tiers: what trades is checked every day (CYCLE), and a thing nobody listed at its last check waits
+    QUIET hours before it is asked again, so the searches go where there is a market. A thing never checked, or
+    one the site has no count for, is in the daily tier. Currency is the Exchange's, not in this budget."""
+    def waits(key):
+        if n.get(key, 1) != 0 or key not in at:
+            return False
+        try:
+            t = dt.datetime.fromisoformat(at[key].replace('Z', '+00:00')).timestamp()
+        except (ValueError, AttributeError):
+            return False
+        return now - t < QUIET * 3600
+    out, quiet = {}, 0
+    for k, items in todo.items():
+        keep = items if k == 'cur' else [kv for kv in items if not waits(kv[0])]
+        quiet += len(items) - len(keep)
+        out[k] = keep
+    return out, quiet
 
 
 def oldest(items, at, n):
@@ -419,9 +443,13 @@ def main():
     todo = jobs(catalogue)
     if state:
         with open(state, encoding='utf-8') as f:
-            at = json.load(f).get('at', {})
+            st = json.load(f)
     else:
-        at = {} if dry else site('/api/prices/state?league=' + urllib.parse.quote(league)).get('at', {})
+        st = {} if dry else site('/api/prices/state?league=' + urllib.parse.quote(league))
+    at, n = st.get('at', {}), st.get('n', {})
+    todo, quiet = tiers(todo, at, n, time.time())
+    if quiet:
+        print('  %d with nothing listed at the last check wait for the weekly tier (%d h)' % (quiet, QUIET))
     searches, planned = plan(todo, at)
     divine = [kv for kv in todo['cur'] if kv[0].startswith('cur:divine|')]
     others = oldest([kv for kv in todo['cur'] if not kv[0].startswith('cur:divine|')], at, EXCHANGE - 1)

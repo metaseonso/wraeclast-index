@@ -103,8 +103,10 @@ async function kindRows(env, cols, league, kinds){
 export async function state(request, env, url){
   if(!(await signed(request, env, url))) return json(401, {error: 'Not signed in.'});
   const league = url.searchParams.get('league') || '';
-  const rows = await env.DB.prepare('SELECT key, at FROM trade_prices WHERE league = ?').bind(league).all();
-  return json(200, {at: Object.fromEntries((rows.results || []).map(r => [r.key, r.at]))});
+  const rows = await env.DB.prepare('SELECT key, at, total FROM trade_prices WHERE league = ?').bind(league).all();
+  // n: how many were listed at the last check, so the job checks what nobody lists once a week (tools/pricepull.py QUIET)
+  const r = rows.results || [];
+  return json(200, {at: Object.fromEntries(r.map(x => [x.key, x.at])), n: Object.fromEntries(r.map(x => [x.key, x.total || 0]))});
 }
 
 /* ---------- POST /api/prices/ingest ---------- */
