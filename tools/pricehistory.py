@@ -30,7 +30,7 @@ inside the data repo, whose own token writes there: GH_TOKEN (or GITHUB_TOKEN), 
     python tools/pricehistory.py --out DIR     take it and write it to DIR only; nothing is sent
     python tools/pricehistory.py --days        the kept and missing days, from the data repo
 
-Runs once a day in the data repo's .github/workflows/wraeclast-index.yml, which checks this repo out to run it
+Runs twice a day (the first copy of a UTC day stands) in the data repo's .github/workflows/wraeclast-index.yml, which checks this repo out to run it
 (the file is kept here at tools/data-repo/). A copy that cannot be taken is a fault (tools/lastgood.py): the day
 is written as missing, the run says why, a data-fault issue goes up (in the data repo: GH_REPO), and the run
 exits non-zero.

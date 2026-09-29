@@ -3,10 +3,11 @@
 # Two jobs that keep what Wraeclast Index would otherwise lose, both writing to this repo with its own GITHUB_TOKEN,
 # so no token from anywhere else is needed. The tools live in the public wraeclast-index repo: each job checks it
 # out into wi/ and runs them from there.
-#   prices    once a day, 21:37 UTC: a copy of every price the live site shows (wi/tools/pricehistory.py), one
-#             commit through GitHub's API: prices/daily/YYYY-MM/YYYY-MM-DD.json.gz (about 25 KB) and a line in
-#             prices/days.jsonl. A day that fails is written as missing and never filled. 21:37 keeps well clear
-#             of midnight, so a late start by GitHub's timer still lands on the same day.
+#   prices    twice a day, 09:37 and 21:37 UTC: a copy of every price the live site shows (wi/tools/pricehistory.py),
+#             one commit through GitHub's API: prices/daily/YYYY-MM/YYYY-MM-DD.json.gz (about 25 KB) and a line in
+#             prices/days.jsonl. The first copy of a UTC day stands; the second run of the day then ends in seconds.
+#             Two runs, because GitHub's timer starts late: on 28 Sep 2026 the 21:37 run began at 01:12 the next
+#             day and that day had no copy. A day that fails both is written as missing and never filled.
 #   snapshot  twice a day: every card of wraeclast-index's main, frozen under its client build
 #             (wi/tools/snapshot.py), kept as the release snapshot-<build> (about 460 KB). An upload that would
 #             change nothing sends nothing, so most runs end in seconds.
@@ -17,7 +18,7 @@ name: Wraeclast Index
 on:
   schedule:
     - cron: '37 21 * * *'      # prices and snapshot
-    - cron: '37 9 * * *'       # snapshot only
+    - cron: '37 9 * * *'       # prices (a day's second chance) and snapshot
   workflow_dispatch:
     inputs:
       prices:
@@ -35,7 +36,7 @@ concurrency:
 
 jobs:
   prices:
-    if: github.event.schedule == '37 21 * * *' || (github.event_name == 'workflow_dispatch' && inputs.prices)
+    if: github.event_name == 'schedule' || inputs.prices
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
