@@ -460,6 +460,8 @@ export const first = (async () => {
 })();
 /* The search: the worker has every kind's rows, the bosses have joined, and the cards whose words mark other
    cards' lines are held (keywords, mechanics, interactions, and the keystones a keyword stands for). */
+// the search rows start downloading in the worker the moment the manifest is in, not after the prices and the meta
+SEEK.then(() => MAN).then(man => ask('fetch', {man, base: new URL('.', document.baseURI).href})).catch(() => {});
 export const searching = SEEK.then(() => first).then(async () => {
   await ask('init', {man: D.man, base: new URL('.', document.baseURI).href,
     market: Object.keys((D.market && D.market.items) || {}), runtime: D.rt.map(rtRow), seen: seenKeys()});
@@ -3164,13 +3166,21 @@ export function mountTopSearch(host){
 }
 // every keyboard shortcut lives in keys.js; "Search everything" jumps into the big box on home, the top box everywhere else
 initKeys(() => (IS_APP && route() === 'home' && document.getElementById('q')) || TOPQ);
-lazy('./suggest.js').then(m => { m.mountSuggest(); m.mountFlag(); }).catch(() => {});   // the Suggest button, and the owner's own flag
-lazy('./notes.js').then(m => m.mountNotes()).catch(() => {});       // Patch notes, on every page
-lazy('./pins.js').then(m => m.mountPins()).catch(() => {});         // the Pins button, and the list it opens
-lazy('./runs.js').then(m => m.mountRuns()).catch(() => {});         // the run counter, and the key that counts one
-lazy('./support.js').then(m => m.mountSupport()).catch(() => {});   // Support link, once data/support.json is filled in
-lazy('./track.js').then(m => { TRACKER = m; m.mountTrack(); }).catch(() => {});       // page views and clicks for the owner's dashboard
-mountGuide();                                                       // the community guide under the hero
+/* The page's extras. A first visit that opens on a search (#/?q=...) takes the answer first: on a phone on 4G these
+   few files share the line with the search rows, so they wait until the search has answered (tools/dev/speed.mjs
+   phone, #117). Any other page loads them at once. */
+function extras(){
+  lazy('./suggest.js').then(m => { m.mountSuggest(); m.mountFlag(); }).catch(() => {});   // the Suggest button, and the owner's own flag
+  lazy('./notes.js').then(m => m.mountNotes()).catch(() => {});       // Patch notes, on every page
+  lazy('./pins.js').then(m => m.mountPins()).catch(() => {});         // the Pins button, and the list it opens
+  lazy('./runs.js').then(m => m.mountRuns()).catch(() => {});         // the run counter, and the key that counts one
+  lazy('./support.js').then(m => m.mountSupport()).catch(() => {});   // Support link, once data/support.json is filled in
+  lazy('./track.js').then(m => { TRACKER = m; m.mountTrack(); }).catch(() => {});       // page views and clicks for the owner's dashboard
+  mountGuide();                                                       // the community guide under the hero
+}
+if(document.getElementById('view-home') && /^#\/\?(.*&)?q=[^&]/.test(location.hash))
+  Promise.race([searching, new Promise(r => setTimeout(r, 8000))]).then(() => setTimeout(extras, 300), () => extras());
+else extras();
 
 /* A guide somebody else wrote, for a player who has not got to any of this yet. Linked where it helps,
    named where it is shown, never ours. The list is data/guides.json (tools/guides.py), which reads every

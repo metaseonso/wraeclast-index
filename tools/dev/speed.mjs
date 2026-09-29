@@ -13,6 +13,10 @@
              then the animations still running once the search has docked the hero (should be none)
      tabs    every tab visited once, then home again: page elements and JS heap left behind
      explore /explore#tree: JSON parsed before the first row, time to the first row, elements, heap
+     phone   a mid-range phone (375x812, CPU 4x slower) on 4G (WebPageTest's 4G: 9 Mbit/s each way, 170 ms round
+             trip), a first visit to a search in the address (#/?q=mageblood): time to the first card with its
+             price, and the bytes it took (#117: under 2 seconds)
+     slow4g  the same on slow 4G (Lighthouse's mobile numbers: 1.6 Mbit/s down, 150 ms), the hard case
 
    Nothing is written anywhere; it only reads the site. Needs Chrome (CHROME=<path> if it is somewhere odd). */
 import { spawn } from 'node:child_process';
@@ -33,7 +37,11 @@ const BUDGET = {
   'typing.running': 0,         // animations left running once the hero has docked
   'tabs.elements': 3000,       // after every tab and back home
   'explore.jsonKB': 3000,      // before the tree's first row
+  'phone.pricedMs': 2000,      // a search to a priced card, first visit, 4G (#117)
 };
+const NET = {'4g': {latency: 170, down: 9e6 / 8, up: 9e6 / 8}, slow4g: {latency: 150, down: 1.6e6 / 8, up: 750e3 / 8}};
+const PHONE = {w: 375, h: 812,
+  ua: 'Mozilla/5.0 (Linux; Android 13; Pixel 6a) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Mobile Safari/537.36'};
 
 const wait = ms => new Promise(r => setTimeout(r, ms));
 function chromePaths(){
@@ -86,7 +94,7 @@ async function metrics(page){
   return Object.fromEntries(metrics.map(m => [m.name, m.value]));
 }
 // one fresh Chrome per page: nothing cached, no service worker from an earlier page
-async function withChrome(fn){
+async function withChrome(fn, phone){
   const chrome = await findChrome();
   if(!chrome) throw new Error('no Chrome found; set CHROME=<full path to chrome.exe>');
   const dir = await mkdtemp(join(tmpdir(), 'wi-speed-'));
@@ -104,7 +112,15 @@ async function withChrome(fn){
     const {targetId} = await browser.send('Target.createTarget', {url: 'about:blank'});
     const page = await open('ws://127.0.0.1:' + port + '/devtools/page/' + targetId);
     await page.send('Page.enable'); await page.send('Runtime.enable'); await page.send('Performance.enable');
-    await page.send('Emulation.setDeviceMetricsOverride', {width: 1280, height: 800, deviceScaleFactor: 1, mobile: false});
+    if(phone){
+      await page.send('Emulation.setDeviceMetricsOverride', {width: PHONE.w, height: PHONE.h, deviceScaleFactor: 2, mobile: true});
+      await page.send('Emulation.setUserAgentOverride', {userAgent: PHONE.ua});
+      await page.send('Emulation.setTouchEmulationEnabled', {enabled: true, maxTouchPoints: 5});
+      await page.send('Network.enable');
+      const n = NET[phone];
+      await page.send('Network.emulateNetworkConditions', {offline: false, latency: n.latency,
+        downloadThroughput: n.down, uploadThroughput: n.up});
+    } else await page.send('Emulation.setDeviceMetricsOverride', {width: 1280, height: 800, deviceScaleFactor: 1, mobile: false});
     await page.send('Emulation.setCPUThrottlingRate', {rate: SLOW});
     const out = await fn(page);
     page.close(); browser.close();
@@ -203,8 +219,19 @@ async function explore(){
   });
 }
 
+const phone = (net = '4g') => () => withChrome(async page => {
+    const t0 = Date.now();
+    await page.send('Page.navigate', {url: SITE + '/#/?q=mageblood'});
+    const ok = await until(page, `document.querySelector('#cards .card .card-px')`, 60000);
+    const pricedMs = ok ? Date.now() - t0 : null;
+    return {pricedMs, kB: await evalJS(page, `Math.round(performance.getEntriesByType('resource').concat(performance.getEntriesByType('navigation')).reduce((a, e) => a + (e.transferSize || 0), 0) / 1024)`),
+      requests: await evalJS(page, `performance.getEntriesByType('resource').length + 1`),
+      ...(args.includes('--list') ? {list: '\n' + (await evalJS(page, `performance.getEntriesByType('resource').map(e => [Math.round(e.startTime), Math.round(e.responseEnd), Math.round((e.transferSize || 0) / 1024), e.name.replace(location.origin, '').slice(0, 70)].join(' ')).join('\\n')`))} : {})};
+  }, net);
+
 const out = {site: SITE, cpu: SLOW + 'x slower', at: new Date().toISOString()};
-for(const [name, fn] of [['home', home], ['typing', typing], ['tabs', tabs], ['explore', explore]]){
+const ONLY = args.find(a => a.startsWith('--only='));
+for(const [name, fn] of [['home', home], ['typing', typing], ['tabs', tabs], ['explore', explore], ['phone', phone('4g')], ['slow4g', phone('slow4g')]].filter(([n]) => !ONLY || ONLY.slice(7).split(',').includes(n))){
   try { out[name] = await fn(); } catch(e){ out[name] = {error: e.message}; }
 }
 const over = [];
@@ -216,7 +243,7 @@ for(const [key, cap] of Object.entries(BUDGET)){
 if(AS_JSON) console.log(JSON.stringify(out, null, 1));
 else {
   console.log(out.site + ' · CPU ' + out.cpu);
-  for(const k of ['home', 'typing', 'tabs', 'explore'])
+  for(const k of ['home', 'typing', 'tabs', 'explore', 'phone', 'slow4g'].filter(k => out[k]))
     console.log(k.padEnd(8) + Object.entries(out[k]).map(([a, b]) => a + ' ' + b).join(' · '));
   console.log(over.length ? 'over budget: ' + over.join('; ') : 'within budget');
 }
