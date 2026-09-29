@@ -72,8 +72,7 @@ function open(){
     '<div class="row run-ctl"><button type="button" class="btn gold" data-do="add">+1 run</button>' +
       '<button type="button" class="btn" data-do="undo">Take one off</button>' +
       '<button type="button" class="btn" data-do="over">Start over</button></div>' +
-    '<p class="note">' + esc(keyLabel('run') || 'R') + ' counts a run from anywhere, card open or not. ' +
-      'Kept for this tab.</p>';
+    '<p class="note">' + esc(keyLabel('run') || 'R') + ' counts a run.</p>';
   BOX.addEventListener('click', e => {
     const b = e.target.closest('[data-do]'); if(!b) return;
     if(b.dataset.do === 'add') return void count();

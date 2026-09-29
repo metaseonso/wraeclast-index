@@ -1,0 +1,14 @@
+### Ahn's Citadel
+Lineage support gem · Intelligence · https://wraeclastindex.fyi/item/ahns-citadel
+No requirements
+Supports skills that create walls in a line, causing them to instead be created along a fissure.
+Tags: Support, Lineageahns-citadelahns-citadelSupportGemAhnsCitadelAhn's Citadel### Fireball
+Skill gem · Intelligence · https://wraeclastindex.fyi/item/fireball
+Requires at gem level 20: level 90, 157 Int
+1.2 s use time · 104 Mana at gem level 20
+Launch a large ball of Fire which explodes on impact. The explosion Consumes a Fire Infusion if possible to launch a ring of smaller firebolts.
+Tags: Spell, AoE, Projectile, Fire, RepeatablefireballfireballSkillGemFireballFireball### Freeze
+Support gem · Intelligence · https://wraeclastindex.fyi/item/freeze
+No requirements
+Supports any skill that Hits enemies, making it more effective at Freezing enemies.
+Tags: Support, ColdfreezefreezeSupportGemGlaciationFreeze

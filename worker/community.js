@@ -59,7 +59,7 @@ export async function suggest(request, env, url, ctx){
   try { body = await request.json(); } catch {}
   const note = (typeof body.text === 'string' ? body.text : '').trim().slice(0, 500);
   const lean = LEAN.has(body.lean) ? body.lean : '';
-  if(!lean && note.length < 3) return json(400, {error: 'Write a little more.'});
+  if(!lean && note.length < 3) return json(400, {error: 'Too short.'});
   if(!(await allowed(env, request, 'suggest', 5))) return json(429, {error: 'Too many notes for now.'});
   const card = text(body.card, 80), key = KEY.test(card) ? card : '';
   if(lean && !key) return json(400, {error: 'Nothing to answer.'});

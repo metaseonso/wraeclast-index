@@ -319,8 +319,8 @@ def calc(base_eff, rarity_dmg, rarity_life):
                          ['incremental', 'w.c[0] or 0.1', game + ' (skill)'], ['damage incremental', 'w.c[1] or 0.0175', game + ' (skill)'],
                          ['skill base value', 'w.b or [0.8, 1.2]', game + ' (skill)'],
                          ['unique rarity', '%d%%' % (100 + (rarity_dmg or 0)), game + ' (unique monster modifier)']],
-                  'open': 'Boss damage is not applied to spells. Path of Building leaves it out and poe2db prints spells '
-                          'without it; the game files do not say. Subject to change.'},
+                  'open': 'Boss damage on spells: not in the game files. Path of Building leaves it out and poe2db prints '
+                          'spells without it. Subject to change.'},
         'Damage over time': {'says': 'as a spell, per second', 'in': []},
         'life': {'says': 'level life × boss life × unique rarity',
                  'in': [['level life', 'levels.life', game], ['boss life', 'lifePct', game + ' (monster)'],

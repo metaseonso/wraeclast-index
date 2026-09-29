@@ -415,7 +415,7 @@ details.tech>summary{color:var(--faint)}
     <div class="row">
       <label for="qsel" class="hint" style="letter-spacing:.09em;text-transform:uppercase">Quality bonus</label>
       <select id="qsel" class="search" style="flex:1 1 320px;max-width:520px"></select>
-      <span class="hint" id="qhint">Pick one to compare gems that share it</span>
+      <span class="hint" id="qhint">No quality bonus selected.</span>
     </div>
 
     <div class="kwwrap" id="gkw"></div>
@@ -518,7 +518,7 @@ details.tech>summary{color:var(--faint)}
   <div class="tablewrap" style="margin-top:12px">
     <table id="jtbl"><thead><tr>
       <th>Faction</th><th class="num">Version</th><th class="num">Conqueror roll</th>
-      <th>Conqueror</th><th class="num">Seed range</th><th class="num" title="The files give this as a bare number with no unit attached, so it is printed as-is rather than converted to metres.">Radius (raw)</th><th>Line on the jewel</th>
+      <th>Conqueror</th><th class="num">Seed range</th><th class="num" title="Raw value from the game files, no unit given.">Radius (raw)</th><th>Line on the jewel</th>
     </tr></thead><tbody id="jtbody"></tbody></table>
   </div>
   <p class="foot" id="tfoot"></p>
@@ -709,7 +709,7 @@ function openKeyword(k){
     '<div class="sect">Where it appears</div>'+
     '<dl class="kv">'+rows.map(r=>'<dt>'+r[0]+'</dt><dd>'+r[1].toLocaleString()+'</dd>').join('')+'</dl>'+
     (canFilter ? '<button class="filtbtn" type="button" id="kwfilt">Filter '+secName+' by this keyword</button>'
-               : '<p class="hint">Nothing in the section you are looking at uses it.</p>');
+               : '<p class="hint">Nothing in this section uses it.</p>');
   p.hidden=false; document.getElementById('scrim2').hidden=false; p.scrollTop=0;
   const c=p.querySelector('.closebtn'); if(c) c.onclick=closePanel2;
   const f=document.getElementById('kwfilt');
@@ -1249,7 +1249,7 @@ qsel.innerHTML = '<option value="">Any quality bonus</option>' +
 qsel.onchange = e=>{
   S.qstat = e.target.value; S.shown=120;
   if(S.qstat){ S.sort={k:'qv', dir:-1}; buildHead(); }
-  $('#qhint').textContent = S.qstat ? 'Sorted by size of this bonus' : 'Pick one to compare gems that share it';
+  $('#qhint').textContent = S.qstat ? 'Sorted by size of this bonus' : 'No quality bonus selected.';
   render();
   // bring the quality columns into view, so the sort the user just asked for is visible
   if(S.qstat) requestAnimationFrame(()=>{
@@ -1263,7 +1263,7 @@ qsel.onchange = e=>{
 $('#q').oninput = e=>{ S.q = e.target.value.toLowerCase().trim(); S.shown=120; e.isTrusted ? soon(120) : render(); };
 $('#reset').onclick = ()=>{
   S.q=''; $('#q').value=''; S.colors.clear(); S.tags.clear(); S.lineage=false; S.tagAll=false; S.cut=false;
-  S.qstat=''; $('#qsel').value=''; $('#qhint').textContent='Pick one to compare gems that share it';
+  S.qstat=''; $('#qsel').value=''; $('#qhint').textContent='No quality bonus selected.';
   if(KWP) KWP.clear();
   S.gemling=false; S.gearQ=0; $('#gemlingchip').setAttribute('aria-pressed','false'); $('#gearseg').hidden=true;
   [...$('#gearseg').children].forEach(c=>c.setAttribute('aria-pressed', String(c.dataset.v==='0')));
@@ -1539,7 +1539,7 @@ $('#copy').onclick=async ()=>{
   }).join('\t')).join('\n');
   const txt=head+'\n'+body;
   try{ await navigator.clipboard.writeText(txt); $('#copy').textContent='Copied '+CURRENT.length+' rows'; }
-  catch(err){ $('#copy').textContent='Copy blocked — select the table instead'; }
+  catch(err){ $('#copy').textContent='Copy blocked'; }
   setTimeout(()=>{ $('#copy').textContent='Copy table as TSV'; }, 2400);
 };
 
@@ -2039,7 +2039,7 @@ async function tbuild(){
       P.push(kwBlock(p.kw, 'Keywords'));
       const tech = (p.s && Object.keys(p.s).length) ? '<div class="setname">Game stats</div>'+
         Object.keys(p.s).map(k=>'<div class="statline"><span class="setname">'+esc(k)+'</span> = <b>'+esc(p.s[k])+'</b></div>').join('') : '';
-      if(p.k==='anoint') P.push('<p class="hint" style="margin-top:12px">An anoint-only notable. It exists only as an anoint and is not something you path to with points.</p>');
+      if(p.k==='anoint') P.push('<p class="hint" style="margin-top:12px">An anoint-only notable. It cannot be reached with passive points.</p>');
       if(p.f) P.push('<div class="sect">Flavour</div><p class="blurb" style="max-width:none;font-style:italic">'+esc(p.f)+'</p>');
       P.push('<details class="tech"><summary>Technical details</summary>'+tech+'<div class="setname">Internal id: '+esc(p.id||'')+
         (p.copies>1 ? ' · '+p.copies+' nodes, hashes '+p.hashes.slice(0,6).join(', ')+(p.copies>6?'…':'')
@@ -2089,11 +2089,11 @@ async function tbuild(){
   }).join('');
 
   $('#jlede').innerHTML =
-    'Seven factions are in the game files, and each jewel rolls three numbers: a <b>version</b> set by which jewel it is, a '+
-    '<b>seed</b> from the range below, and a roll that picks the <b>conqueror</b>. '+
-    'Only two are real items — <b>Heroic Tragedy</b> is Kalguur, <b>Undying Hate</b> is Abyssal; <b>Vaal, Karui, Maraketh, '+
+    'Seven factions are in the game files. Each jewel rolls three numbers: a <b>version</b> set by which jewel it is, a '+
+    '<b>seed</b> from its seed range, and a roll that picks the <b>conqueror</b>. '+
+    'Only two are real items: <b>Heroic Tragedy</b> is Kalguur, <b>Undying Hate</b> is Abyssal. <b>Vaal, Karui, Maraketh, '+
     'Templar and Eternal Empire have full conqueror tables and seed ranges but no jewel in the game yet</b>. '+
-    'Abyssal is the odd one out twice over: five conquerors instead of three, and seeds 79–30,977 against everyone else’s few thousand.';
+    'Abyssal has five conquerors instead of three, and seeds 79–30,977 against a few thousand for the rest.';
 
   respec();
   $('#tfoot').innerHTML =
@@ -2102,7 +2102,6 @@ async function tbuild(){
     TR.passives.filter(p=>p.k==='notable').length+' notables, '+
     TR.passives.filter(p=>p.k==='anoint').length+' anoint-only notables and '+
     TR.passives.filter(p=>p.k==='small').length+' small nodes. '+
-    'Duplicates are merged; <b>Copies</b> counts them. <b>Anoint</b> is what the three emotions cost on the Currency Exchange. '+
     'Source: GGG’s own passive tree export and game files.';
 }
 

@@ -939,7 +939,7 @@ def main():
             notes.append('No drop feed covers "%s"; only the community rates name its drops.' % row['name'])
     notes += disagreements(rows)
     if wiki_down:
-        notes.append('%s did not answer (%s); its rates are the committed copy\'s.' % (PWIKI, wiki_down[:120]))
+        notes.append('%s did not answer (%s); its rates are the last copy\'s.' % (PWIKI, wiki_down[:120]))
 
     feeds = [
         {'name': PYOB, 'what': 'boss names, uniques a boss drops', 'url': 'https://pathofbuilding.community/'},

@@ -63,7 +63,7 @@ function stuck(what){
     box.setAttribute('role', 'status');
     document.body.appendChild(box);
   }
-  box.textContent = what + ' did not open. Reload the page.';
+  box.textContent = what + ' did not open.';
   clearTimeout(box._go);
   box._go = setTimeout(() => box.remove(), 6000);
 }
@@ -679,7 +679,7 @@ marks.setup({D, keywordIdOf, kindOf: k => KIND[k], kwKey: id => KW.own + ':' + i
 /* the two shapes a mark takes, by whose words they are (KINDS words.mark): one entry each, so a third kind
    of card whose words are doors is a declaration and not a branch */
 const MARK = {
-  ours: {cls: 'hlink',  data: 'h',  title: 'How it works — our own note, not the game’s', id: key => key},
+  ours: {cls: 'hlink',  data: 'h',  title: 'How it works — a Wraeclast Index note, not the game’s', id: key => key},
   game: {cls: 'kwmark', data: 'kw', title: 'Keyword — the game’s own words', id: key => key.slice(2)},
   open: {cls: 'hlink qlink', data: 'h', title: 'Not settled — what the game states, and what players report',
          id: key => key},
@@ -1595,8 +1595,8 @@ function budgetHTML(b, full){
   return '<div class="bd-budget"><p class="card-facts">Budgets</p>' +
     rows.slice(0, over ? cap : rows.length).join('') +
     (over ? '<p class="card-facts">' + esc(FRAME.more(over)) + '</p>' : '') +
-    (b.big ? '<p class="card-src">This file came to ' + b.big.toLocaleString() +
-      ' bytes, over the 16,384 a file holds, so it stands as it was.</p>' : '') +
+    (b.big ? '<p class="card-src">' + b.big.toLocaleString() +
+      ' bytes, over the 16,384 a file holds.</p>' : '') +
     '</div>';
 }
 /* A jewel in a socket, and the cluster it is socketed against. No file we read carries a jewel's radius in
@@ -2559,7 +2559,7 @@ let tipOff = false;
 try { tipOff = localStorage.getItem(TIP_KEY) === '1'; } catch {}
 function tipLine(){
   const keys = [keyLabel('cardback'), keyLabel('cardfwd')].filter(Boolean).join(' and ');
-  return 'Cards remember where you’ve been. Step back and forward with ' + (keys ? keys + ', or ' : '') + 'the arrows in this bar.';
+  return 'Back and forward through cards: ' + (keys ? keys + ', or ' : '') + 'the arrows.';
 }
 function tipSeen(){
   if(tipOff) return;
@@ -3266,7 +3266,7 @@ async function mountGuide(){
   let list = [];
   try { list = ((await (await fetch('data/guides.json')).json()) || {}).guides || []; } catch {}
   if(!list.length) return;
-  box.innerHTML = list.map(g => '<p class="note">Still levelling? <a href="' + esc(g.url) +
+  box.innerHTML = list.map(g => '<p class="note"><a href="' + esc(g.url) +
     '" target="_blank" rel="noopener">' + esc(g.what) + ' ↗</a> — ' + esc(g.name) + ', by ' + esc(g.by) + '.</p>').join('');
   box.hidden = false;
 }

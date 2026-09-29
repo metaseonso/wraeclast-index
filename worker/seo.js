@@ -968,7 +968,7 @@ function listPage(m, name, all){
 
 function notFound(m){
   return page(m, {title: 'Not found | Wraeclast Index', desc: 'Nothing here.', path: '/404', noindex: true, body:
-    '<div class="pagehd"><h1>Not found</h1><p>Nothing here. <a href="/">Wraeclast Index</a>, or a list below.</p></div>' + browse()});
+    '<div class="pagehd"><h1>Not found</h1><p>Nothing here. <a href="/">Wraeclast Index</a></p></div>' + browse()});
 }
 
 /* ---------- the page shell ---------- */
@@ -1157,7 +1157,7 @@ ${TERMS}
 
 - ${SITE}/item/<name>, for example ${SITE}/item/divine-orb: one thing per page. What it is, its requirements, the official lines, its price with the time it was checked and a 7-day chart, its neighbours on its list, and a link into the app. The same answers as structured data (schema.org JSON-LD) in the page.
 - ${SITE}/md/item/<name>.md: the same thing in Markdown, with its sources and checked times. Each page links its copy (rel="alternate", type="text/markdown").
-- The lists below: every thing of a kind on one page, in groups, with prices.
+- Each list: every thing of a kind on one page, in groups, with prices.
 - ${SITE}/search?q=<words>: the app's search, opened on those words.
 
 ## How fresh

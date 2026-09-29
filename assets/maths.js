@@ -43,7 +43,7 @@ export const STEPS = {
 export const SOURCE = {
   order: 'The order, the armour curve and the caps: the mechanics cards, which credit Path of Building for '
        + 'what the game leaves out.',
-  monster: 'One monster of the level set here, out of the game’s own table.',
+  monster: 'One monster of the set level, out of the game’s own table.',
   sockets: 'A skill gem takes up to 5 supports, and a skill gem that casts another skill gem counts to 6 in '
          + 'total: the owner’s own knowledge of the game. The export states neither.',
 };

@@ -311,7 +311,7 @@ function rateSrc(rates){
    the wiki already put here. The join is the site's, so the line says what was joined instead of handing the
    reader a source that does not carry the claim. */
 const FEEDS = [['Path of Building', 'the source lines in Path of Building'],
-  ['Exiled Exchange 2', 'the pool Exiled Exchange 2 lists behind the entry items above'],
+  ['Exiled Exchange 2', 'the pool Exiled Exchange 2 lists behind the entry items'],
   ['PoE2 Wiki', 'the PoE2 Wiki’s own rate table']];
 function dropSrc(r){
   const seen = new Set(r.drops.flatMap(x => x.src || []));
@@ -510,8 +510,7 @@ export async function mount(el){
     '<p class="note">Only the bosses a drop feed covers have a way in and a drop list. Pinnacle is the game’s own ' +
       'marking, so a few fights players call pinnacle are not marked. Drop rates are community samples from the ' +
       '<a href="' + esc(srcURL('PoE2 Wiki')) + '" target="_blank" rel="noopener">PoE2 Wiki</a> (CC BY-NC-SA), not game data. ' +
-      'A meter is drawn where a sample and a real price meet on the same drop: ' +
-      ROWS.filter(drawsMeter).length + ' of ' + ROWS.length + ' bosses.</p>' +
+      'Worth it: ' + ROWS.filter(drawsMeter).length + ' of ' + ROWS.length + ' bosses have a sampled rate and a real price on the same drop.</p>' +
     ((B.notes || []).length ? '<div class="sect"><h3>Gaps in the lists</h3></div><ul class="note bo-gaps">' +
       B.notes.map(n => '<li>' + esc(n) + '</li>').join('') + '</ul>' : '');
 

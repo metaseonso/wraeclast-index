@@ -152,7 +152,7 @@ def build(areas_arg=None):
             lines.append(x)
         return {'total': total, 'flag': FLAG,
                 'why': ('The weight is read from a column dat-schema does not name. ' if flag_weight else '') +
-                       'That these lines roll from one pool is not verified, so a share may be off.',
+                       'That these lines roll from one pool is not verified.',
                 'lines': lines}
 
     by_mech = {}
