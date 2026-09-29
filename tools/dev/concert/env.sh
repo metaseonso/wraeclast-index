@@ -14,7 +14,7 @@ FIX_WT=${CONCERT_FIX_WT:-$MAIN-concert-fix}
 LOG=${CONCERT_LOG:-${TMPDIR:-/tmp}/concert}
 mkdir -p "$LOG"
 # built data: made by the pipeline from code, never merged by hand (main's copy is taken, then rebuilt)
-GEN='^(data/(cards|seo|search|explore|treechanges)/|data/(index|index-core|index-rest|manifest|grants|clusters|essences|kwuse|interactions|treelines|gemlines|guides|gamestats|tree-shape|map|map-nodes)\.json$|data/map\.png$|explore\.html$)'
+GEN='^(data/(cards|seo|search|explore|treechanges|patchdiff)/|data/(index|index-core|index-rest|manifest|grants|clusters|essences|kwuse|interactions|treelines|gemlines|guides|gamestats|tree-shape|map|map-nodes)\.json$|data/map\.png$|explore\.html$)'
 # made again after the merge: schema.json (tools/dev/schema.mjs --write), the gap report (the gamepull stage)
 REDO='^(data/schema\.json|tools/dev/gaps\.txt)$'
 

@@ -150,7 +150,7 @@ export const INDEX = [
   {id: 'craft', pages: [{route: 'craft', icon: 'craft', about: 'the crafting bench, with the real weights'}]},
   {id: 'data', name: 'Data', pages: [
     {route: 'data', icon: 'data', about: 'what the index holds, where it comes from, and how fresh it is'},
-    {route: 'patches', icon: 'patches', about: 'every patch, hotfix and restart: its date and hour, its league, its notes, and how many cards it changed'},
+    {route: 'patches', icon: 'patches', about: 'every patch, hotfix and restart: its date and hour, its league, its notes, how many cards it changed, and what the game data changed'},
   ]},
 ];
 /* a page's name: its own, else its tab's, its section's, or its kind's */
@@ -561,6 +561,14 @@ export const FIELDS = {
   /* GGG's own patch-note lines that name this card, newest patch first, each patch its thread's link and the
      hour it went up (tools/patchnotes.py writes data/patchnotes.json, keyed "kind:name"). The popup only, the
      file fetched the first time one asks; FRAME.changed says how many patches draw and which lines count. */
+  /* What the game data itself changed on this card from one patch to the next (tools/patchdiff.py, #73): per
+     patch, newest first, each change old → new in the game's words, and "Not in the patch notes" where GGG's
+     notes for that patch never name it. data/patchdiff/index.json says which patches touched which cards; a
+     patch's own file is fetched only for a card it touched, and only when the card is opened. The popup only;
+     FRAME.changed says how many patches draw. `say` is the words the card and the Patches page both use. */
+  patchdiff: {type: 'patchdiff', at: 'n', slot: 'body', every: 1, file: 'data/patchdiff/index.json',
+              say: {changed: 'Changed in ', new: 'New in ', gone: 'Removed in ', quiet: 'Not in the patch notes',
+                    add: 'New: ', cut: 'Removed: ', tag: {new: 'New', gone: 'Removed'}}},
   changed:  {type: 'changed', at: 'n', slot: 'body', every: 1, file: 'data/patchnotes.json', label: 'Changed in',
              src: 'GGG patch notes'},
   source:   {type: 'source', at: 'src', slot: 'body', every: 1},
@@ -802,7 +810,7 @@ export const REL = {
 const HEAD = ['art', 'name', 'sub', 'offer', 'ask', 'price'];
 // the words first, then the rest of the body: a kind with more to say puts it between the two (the currency)
 const SAYS = ['lines', 'text'];
-const REST = ['quote', 'options', 'flow', 'changed', 'source', 'swaps', 'tags', 'anoint', 'keywords'];
+const REST = ['quote', 'options', 'flow', 'patchdiff', 'changed', 'source', 'swaps', 'tags', 'anoint', 'keywords'];
 const BODY = [...SAYS, ...REST];
 const FOOT = ['spark', 'usage', 'thin', 'builds'];
 const KWUSE = ['kwu', 'kwg', 'kwp', 'kwb', 'kwe', 'kwa', 'kwm', 'kwc', 'kww'];

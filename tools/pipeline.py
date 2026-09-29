@@ -255,6 +255,14 @@ STAGES = [
          reads=['https://www.pathofexile.com/forum/ (the patch notes threads data/patches.json names)',
                 'data/patches.json', 'data/index.json'],
          writes=['data/patchnotes.json'], count={'data/patchnotes.json': 'lines'}),
+    # the data diff between patches (#73): a copy of the numbers per patch, written once and never again, and what
+    # changed from each to the next, marked where GGG's notes do not name it. It changes no card (the cards read
+    # its files when opened), so it sits after the notes it reads rather than before nodelinks
+    dict(name='patchdiff', run=['tools/patchdiff.py'], cadence='patch', source="game files, GGG's tree export",
+         reads=['data/index.json', 'explore.html', 'data/explore/gems.*.json', 'data/explore/gemtext.*.json',
+                'data/explore/tree.*.json', 'data/craft/*.json', 'data/treechanges/*.json', 'data/patches.json',
+                'data/patchnotes.json', 'tools/dev/patchgaps.txt', 'data/snapshots/*.json.gz'],
+         writes=['data/snapshots/*.json.gz', 'data/patchdiff/*.json'], count={'data/patchdiff/index.json': 'steps'}),
     dict(name='map', run=['tools/map.py'], cadence='patch', source='files, and the live market list',
          reads=['data/index.json', 'data/kwuse.json', 'data/grants.json', 'data/gamedata.json', 'assets/kinds.js',
                 'assets/theme.css', 'data/bosses.json', 'data/dropsfrom.json', 'data/market.json',
