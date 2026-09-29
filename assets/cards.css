@@ -26,6 +26,7 @@
 .card-ic{flex:none; width:40px; height:40px; display:grid; place-items:center; border-radius:8px; background:var(--sunken); overflow:hidden}
 .card-ic img{width:34px; height:34px; object-fit:contain}
 .card-ic .glyph{font:600 15px var(--disp); color:var(--muted)}
+.glyph .ti{width:20px; height:20px; margin:0; opacity:.7; vertical-align:middle}   /* a kind's mark where a card has no art */
 .card-id{min-width:0; flex:1}
 .card-id h3{font-size:14.5px; font-weight:600; line-height:1.25; overflow-wrap:anywhere}
 .card-sub{margin:2px 0 0; font-size:11.5px; color:var(--faint); line-height:1.3}
@@ -39,7 +40,7 @@
   display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden}
 .card.open .card-tx{-webkit-line-clamp:unset}
 .card-req{display:flex; flex-wrap:wrap; gap:4px; align-items:center}
-.pill{font:500 11px var(--mono); border:1px solid var(--line); background:var(--raised); color:var(--muted);
+.pill{font:500 11.5px var(--sans); font-variant-numeric:tabular-nums; border:1px solid var(--line); background:var(--raised); color:var(--muted);
   border-radius:5px; padding:1px 6px; white-space:nowrap}
 .pill.a-r{color:var(--str); border-color:color-mix(in srgb, var(--str) 40%, var(--line))}
 .pill.a-g{color:var(--dex); border-color:color-mix(in srgb, var(--dex) 40%, var(--line))}
@@ -242,9 +243,9 @@
 .card .card-ft .kind{font-size:9.5px; color:var(--faint)}
 
 /* ---------- popup ---------- */
-.ov{position:fixed; inset:0; z-index:100; display:grid; place-items:center; padding:16px}
+.ov{position:fixed; inset:0; z-index:100; display:grid; place-items:start center; padding:max(16px, 5vh) 16px 16px}   /* the top edge stays put from card to card */
 .ov-scrim{position:absolute; inset:0; background:rgba(0,0,0,.75)}   /* darker instead of a blur: a full-screen blur is redrawn on every frame */
-.ov-box{position:relative; width:min(640px, 100%); max-height:calc(100vh - 32px); overflow:auto; border-radius:14px; outline:none;
+.ov-box{position:relative; width:min(640px, 100%); max-height:calc(100vh - max(16px, 5vh) - 16px); overflow:auto; border-radius:14px; outline:none;
   animation:ovpop .24s cubic-bezier(.2,.8,.2,1); overscroll-behavior:contain}
 @keyframes ovpop{from{opacity:0; transform:translateY(12px) scale(.98)} to{opacity:1; transform:none}}
 body.ov-open{overflow:hidden}
@@ -292,8 +293,10 @@ body.ov-open{overflow:hidden}
   /* one finger, one surface: the Connections list is part of the card here, not a scroll box inside it */
   .ov-box .uses-list{max-height:none; overflow:visible}
 }
-/* the one way on to the drill-down page: a small gold-on-black button that lights up on hover */
-.ov-go{display:flex; justify-content:flex-end; margin-top:10px}
+/* the card's own buttons (Trade, Pin, Open): the foot of the box, always in reach however long the card is */
+.ov-go{display:flex; justify-content:flex-end; gap:8px; flex-wrap:wrap; margin-top:10px}
+@media (min-width:641px){ .ov-box .ov-go{position:sticky; bottom:0; z-index:2; margin:0; padding:10px 14px;
+  background:var(--surface); border-top:1px solid var(--line); border-radius:0 0 14px 14px} }
 .btn.gold{display:inline-flex; align-items:center; gap:6px; padding:6px 13px; border-radius:8px; text-decoration:none;
   background:#0A0907; color:#D9B04A; border:1px solid #6E5520; font-weight:500; font-size:12.5px; letter-spacing:.02em;
   transition:color .15s, border-color .15s, box-shadow .15s}
@@ -519,7 +522,8 @@ header.top .suggestbtn ~ .keysbtn{margin-left:0}   /* ~, not +: assets/pins.js m
 header.top .notesbtn{margin-left:auto}
 header.top .notesbtn ~ .suggestbtn{margin-left:0}
 .notes{padding:18px}
-.notes h3{margin:0 0 4px}
+/* the popups under the menu share one title: the Keybindings box's */
+.notes h2, .pins h2, .runs h2{margin:0 0 8px; font:600 17px var(--disp); letter-spacing:.03em}
 .notes-v{margin-top:14px; padding-top:12px; border-top:1px solid var(--line)}
 .notes-v h4{margin:0 0 6px; font-size:14px}
 .notes-ver{font-family:var(--mono); font-size:12px; color:var(--accent); margin-right:4px}
@@ -535,7 +539,6 @@ header.top .notesbtn ~ .suggestbtn{margin-left:0}
 .pinsbtn .ct{font-family:var(--mono); font-size:10.5px; color:var(--faint); margin-left:4px}
 @media (max-width:640px){ .pinsbtn .ct{display:none} }
 .pins{padding:18px}
-.pins h3{margin:0 0 4px}
 .pins-list{display:grid; gap:4px; margin-top:10px; max-height:60vh; overflow:auto; overscroll-behavior:contain}
 .pin-row{display:flex; align-items:center; gap:8px; padding:8px 10px; border:1px solid var(--line); border-radius:8px}
 .pin-row .star{font-size:16px}
@@ -551,7 +554,6 @@ header.top .notesbtn ~ .suggestbtn{margin-left:0}
 @keyframes runhit{0%{border-color:var(--accent); color:var(--text)} 100%{}}
 @media (prefers-reduced-motion:reduce){ .runsbtn.hit{animation:none} }
 .runs{padding:18px}
-.runs h3{margin:0 0 4px}
 .run-n{font:600 40px/1 var(--disp); color:var(--text); margin:10px 0 0; font-variant-numeric:tabular-nums}
 .run-rate{margin:6px 0 0; font:13px var(--sans); color:var(--muted)}
 .run-rate b{font:600 17px var(--sans); color:var(--accent); font-variant-numeric:tabular-nums; margin-right:5px}

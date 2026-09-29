@@ -5,7 +5,7 @@
                        trade site listings (worker/prices.js); trends from the site's own daily prices
    Build usage links to poe.ninja's own builds page: their builds API is not open to other sites. */
 import {initKeys, setCardKeys, keyLabel} from './keys.js';
-import {KIND, DEFAULT, FIELDS, ACTS, CHIPS, NAMES, ROUTES, SHUT, contentsHTML, fieldsOf, FRAME, SLOTS, BOXES, MAKE, KW, holds, markOf, ours, slotList, jobOf} from './kinds.js';
+import {KIND, DEFAULT, FIELDS, ACTS, CHIPS, NAMES, ROUTES, SHUT, INDEX, pageKind, contentsHTML, fieldsOf, FRAME, SLOTS, BOXES, MAKE, KW, holds, markOf, ours, slotList, jobOf} from './kinds.js';
 import * as edges from './edges.js';
 import * as marks from './marks.js';
 import {ranker, hits, SEEN_MAX} from './rank.js';
@@ -543,6 +543,13 @@ export function money(div){
   return {v: e >= 100 ? Math.round(e).toLocaleString() : trim(e, e >= 10 ? 0 : 1), u: 'ex'};
 }
 function trim(v, dp){ return (+v.toFixed(dp)).toString(); }
+/* The Divine Orb is what every price is counted in, so its own price is always 1 and its line always flat: its
+   card says what one is worth in exalted instead, off the same rate the prices are converted with */
+export const isUnit = it => it.k === 'c' && it.id === 'Divine Orb';
+function unitHTML(){
+  const ex = D.market && D.market.rates && D.market.rates.exalted;
+  return ex ? '<b>' + (ex >= 100 ? Math.round(ex).toLocaleString() : trim(ex, 1)) + '<small>ex</small></b>' : '';
+}
 export function moneyHTML(div){
   const m = money(div);
   return m ? m.v + '<small>' + m.u + '</small>' : '';
@@ -587,8 +594,13 @@ export function iconHTML(it){
         ';background-size:' + (sp.w * sc) + 'px ' + (sp.h * sc) + 'px;background-position:' + (-it.ic[0] * w) + 'px ' + (-it.ic[1] * h) + 'px"></span>';
     }
   }
-  return '<span class="glyph">' + esc((it.n || '?').replace(/^[^A-Za-z]+/, '').charAt(0)) + '</span>';
+  // no art of its own: its kind's mark from the index (assets/kinds.js INDEX), never a letter
+  const ic = KIND_ICON[it.k];
+  return ic ? '<span class="glyph"><i class="ti ti-' + ic + '" aria-hidden="true"></i></span>'
+    : '<span class="glyph">' + esc((it.n || '?').replace(/^[^A-Za-z]+/, '').charAt(0)) + '</span>';
 }
+/* each kind's mark: the icon of the index page that lists it */
+const KIND_ICON = Object.fromEntries(INDEX.flatMap(s => s.pages).filter(p => pageKind(p)).map(p => [pageKind(p), p.icon]));
 
 /* ---------- the live card ----------
    One layout for everything on the site. The kind says which fields its cards carry, which buttons they
@@ -683,7 +695,7 @@ function spansHTML(text, spans){
    marked and this draws; `block` is all the ground the build's marks hold, whether or not they are drawn, so
    a keyword is never marked inside a name the build already read. */
 function drawLine(it, text, fixed, block){
-  const found = marks.scan(it, text, block);
+  const found = marks.scan(it, text, block, it._mkSeen);
   return spansHTML(text, fixed && fixed.length ? [...fixed, ...found].sort((a, b) => a[0] - b[0]) : found);
 }
 /* A line marked in a file of its own, the way the index marks its own cards' lines (tools/nodelinks.py): the
@@ -699,9 +711,9 @@ const MK = new Set();   // the cards holding their lines, oldest first
 function lineHTML(it, at, i, text, marked){
   const v = marks.version();
   if(it._mkv !== v){
-    it._mkv = v; it._mk = {};
+    it._mkv = v; it._mk = {}; it._mkSeen = new Set();   // the keywords this card has marked so far, in line order
     MK.delete(it); MK.add(it);
-    if(MK.size > MK_KEPT){ const old = MK.values().next().value; MK.delete(old); old._mk = null; old._mkv = undefined; }
+    if(MK.size > MK_KEPT){ const old = MK.values().next().value; MK.delete(old); old._mk = null; old._mkSeen = null; old._mkv = undefined; }
   }
   const key = at + i;
   let html = it._mk[key];
@@ -908,7 +920,8 @@ function dropFill(host, it, f){
    table is asked for the first time a card is opened on it. One row per modifier, in the order the game data
    ships them, with how many tiers it has here and the item level the first of them needs. */
 function poolHTML(rows, f){
-  return '<p class="card-facts">' + esc(f.label || '') + ' · ' + rows.length + '</p>' +
+  const tiers = rows.reduce((t, r) => t + (r.tiers.length || 1), 0);
+  return '<p class="card-facts">' + esc(f.label || '') + ' · ' + rows.length + (tiers > rows.length ? ', ' + tiers + ' tiers in all' : '') + '</p>' +
     '<ul class="card-pool">' + rows.map(r => {
       const meta = [SIDE[r.side] || '', r.tiers.length > 1 ? r.tiers.length + ' tiers' : '',
         r.lvl > 1 ? 'item level ' + r.lvl + '+' : ''].filter(Boolean).join(' · ');
@@ -1311,7 +1324,7 @@ export const TYPE = {
   /* px.as: what was really priced, where that is not the item as the card names it — a base item is priced
      white, and a rare of that name is another item at another price. The word goes under the number, so the
      price is never read as the wrong thing. It comes off the price row, so no kind is named here. */
-  money:  {raw: 1, v: (it, f, o) => o.px && o.px.v !== undefined
+  money:  {raw: 1, v: (it, f, o) => isUnit(it) ? unitHTML() : o.px && o.px.v !== undefined
     ? '<b>' + moneyHTML(o.px.v) + '</b>' + change(o.px.ch) +
       (o.px.as ? '<span class="card-pxa">' + esc(o.px.as) + '</span>' : '') : ''},
   uses:   {v: (it, f) => {   // a keyword: how much of the game it touches, from the index's own count
@@ -1327,7 +1340,7 @@ export const TYPE = {
     if(!w) return '';
     const n = (w[0] || 0) + (w[1] || 0);
     if(!n) return '';
-    return n.toLocaleString() + ' mods can roll here' + (w[0] && w[1] ? ' (' + w[0] + ' prefix, ' + w[1] + ' suffix)' : '') +
+    return n.toLocaleString() + ' modifier tiers can roll here' + (w[0] && w[1] ? ' (' + w[0] + ' prefix, ' + w[1] + ' suffix)' : '') +
       (w[2] && D.index.ws ? ' · how often each one rolls: ' + D.index.ws : '');
   }},
   gemreq: {raw: 1, v: (it, f) => {
@@ -1435,7 +1448,7 @@ export const TYPE = {
       '>Roll it →</button>' +
       (p.ready ? '' : '<span class="bn-why">' + esc(p.why || '') + '</span>') + '</div>';
   }},
-  spark:  {raw: 1, v: (it, f, o) => o.px ? spark(o.px.sp, o.px.ch) : ''},
+  spark:  {raw: 1, v: (it, f, o) => o.px && !isUnit(it) ? spark(o.px.sp, o.px.ch) : ''},
   thin:   {raw: 1, v: (it, f, o) => o.px && o.px[f.at] !== undefined && o.px[f.at] < f.under
     ? '<span class="use" title="' + esc(f.note) + '">' + esc(f.is) + '</span>' : ''},
   usage:  {raw: 1, v: it => {
@@ -1708,6 +1721,23 @@ function bigLine(vals, label, lh){
     '" preserveAspectRatio="none" aria-hidden="true">' + paths + '</svg><ul class="chart-key">' + key + '</ul>' +
     (said ? '<figcaption class="chart-said">' + esc(said) + '</figcaption>' : '') + '</figure>';
 }
+/* A lone day far off its neighbours — one listing at twenty times the rest — draws a spike that flattens the
+   whole line under it. It is left off the line (a gap), never off the price: over 4 times the middle of the line
+   with both days beside it under half of it, or under a quarter of the middle with both beside it over twice it.
+   The line says how many it left off. */
+function lone(pts){
+  const vals = pts.filter(x => x !== null && isFinite(x)).sort((a, b) => a - b);
+  if(vals.length < 5) return {pts, cut: 0};
+  const mid = vals[vals.length >> 1];
+  let cut = 0;
+  const out = pts.map((v, i) => {
+    const a = pts[i - 1], b = pts[i + 1];
+    if(v === null || a == null || b == null) return v;
+    if((v > mid * 4 && a < v / 2 && b < v / 2) || (v < mid / 4 && a > v * 2 && b > v * 2)){ cut++; return null; }
+    return v;
+  });
+  return {pts: out, cut};
+}
 /* The price action under a card: this league's line with the leagues before it behind it, and where the
    price came from. Exported because the Build tab's bill is a shopping list of cards and each one carries
    the same chart — one drawing of a price, wherever a price is drawn. */
@@ -1716,10 +1746,13 @@ export function detailExtras(it, px){
   let out = '';
   // px.lh carries the leagues before this one (worker/prices.js). sp is only reached with three days or fewer,
   // where it is the whole of h, so lh.d0 still says which day of the league the line starts on.
-  if(px.h && px.h.length > 3){
-    const lo = money(Math.min(...px.h.map(x => x[1]))), hi = money(Math.max(...px.h.map(x => x[1])));
-    out += bigLine(px.h.map(x => x[1]), 'Since ' + px.h[0][0] + ' \u00b7 low ' + lo.v + ' ' + lo.u + ', high ' + hi.v + ' ' + hi.u, px.lh);
-  } else if(px.sp) out += bigLine(px.sp, 'Last 7 days', px.lh);
+  if(isUnit(it)){}   // the Divine Orb: always 1 divine, a flat line says nothing
+  else if(px.h && px.h.length > 3){
+    const {pts, cut} = lone(px.h.map(x => x[1])), kept = pts.filter(x => x !== null);
+    const lo = money(Math.min(...kept)), hi = money(Math.max(...kept));
+    out += bigLine(pts, 'Since ' + px.h[0][0] + ' \u00b7 low ' + lo.v + ' ' + lo.u + ', high ' + hi.v + ' ' + hi.u +
+      (cut ? ' \u00b7 ' + cut + (cut === 1 ? ' lone day' : ' lone days') + ' left off the line' : ''), px.lh);
+  } else if(px.sp) out += bigLine(lone(px.sp).pts, 'Last 7 days', px.lh);
   else if(px.lh && px.lh.past) out += bigLine([], 'Past leagues', px.lh);
   // nothing to draw and something to say: one day is a price, not price action, so the card says that instead
   if(!out && px.lh && px.lh.note) out += '<p class="chart-said">' + esc(px.lh.note) + '</p>';
@@ -1932,15 +1965,22 @@ function refsOf(it){
 }
 /* ---------- pins: a personal watch list ----------
    Any card whose kind names 'pin' in its acts (assets/kinds.js) can be kept here, from the one button under
-   it — no kind writes its own star. Session only, the way the bench keeps its craft (assets/craftsim.js):
-   sessionStorage, so the list dies with the tab. This is the seam for a signed-in account (issue #7): swap
+   it — no kind writes its own star. Kept in this browser (localStorage) across visits; a tab's older list
+   (sessionStorage, before 29 Sep 2026) joins it once. This is the seam for a signed-in account (issue #7): swap
    loadPins/savePins for a read and write of the same list from the account, keyed the same way ("kind:id"),
    and nothing below needs to change — isPinned, togglePin and pinnedKeys stay the same functions.
    assets/pins.js is the other half: the top-bar button and the box that reads the list back, both built on
-   these exports alone (it does not touch sessionStorage itself). */
+   these exports alone (it does not touch the storage itself). */
 const PINS_KEY = 'wi.pins';
-function loadPins(){ try { return new Set(JSON.parse(sessionStorage.getItem(PINS_KEY) || '[]')); } catch { return new Set(); } }
-function savePins(){ try { sessionStorage.setItem(PINS_KEY, JSON.stringify([...PINS])); } catch {} }
+function loadPins(){
+  const read = st => { try { return JSON.parse(st.getItem(PINS_KEY) || '[]'); } catch { return []; } };
+  let tab = [];
+  try { tab = read(sessionStorage); if(tab.length) sessionStorage.removeItem(PINS_KEY); } catch {}
+  const set = new Set([...(() => { try { return read(localStorage); } catch { return []; } })(), ...tab]);
+  if(tab.length) try { localStorage.setItem(PINS_KEY, JSON.stringify([...set])); } catch {}
+  return set;
+}
+function savePins(){ try { localStorage.setItem(PINS_KEY, JSON.stringify([...PINS])); } catch {} }
 let PINS = loadPins();
 const PIN_SUBS = new Set();
 const pinKey = it => it.k + ':' + it.id;
@@ -2057,7 +2097,8 @@ function paintNav(){
   if(nav.hidden) return;
   const back = nav.querySelector('.ov-back'), fwd = nav.querySelector('.ov-fwd'), at = nav.querySelector('.ov-at');
   const prev = TRAIL[AT - 1], next = TRAIL[AT + 1];
-  back.disabled = !prev;
+  back.disabled = !prev; back.hidden = !prev;   // an arrow only where there is a card to go to
+  fwd.hidden = !next;
   back.querySelector('.ov-nm').textContent = prev ? prev.it.n : 'Back';
   back.setAttribute('aria-label', prev ? 'Back to ' + prev.it.n : 'Back');
   fwd.disabled = !next;
@@ -2661,6 +2702,8 @@ function homeRender(){
     for(const b of $('#kinds').children) b.querySelector('.ct').textContent = kinds
       ? (b.dataset.k === 'all' ? '' : kinds[b.dataset.k] ? (+kinds[b.dataset.k].n).toLocaleString() : '')
       : counts[b.dataset.k] || 0;
+    // a kind the words found nothing in: dimmed, still there to press
+    for(const b of $('#kinds').children) b.classList.toggle('zero', !kinds && b.dataset.k !== 'all' && !counts[b.dataset.k]);
     list = H.list;
     label = !total ? '' : listing ? '<b>' + total.toLocaleString() + '</b> ' + esc(KIND[H.kind].many) :
       '<b>' + total.toLocaleString() + '</b> match' + (total === 1 ? '' : 'es');
@@ -2833,6 +2876,15 @@ function leave(r, at){
   }, () => { if(LIVE[r] === live) delete LIVE[r]; });
 }
 async function show(e){
+  // a page the table has shut (assets/kinds.js SHUT): its old links land on Search, with its one line
+  if(route() in SHUT){
+    const shut = route();
+    history.replaceState(null, '', '#/');
+    await show(e);
+    const st = $('#status');
+    if(st && !H.q) st.textContent = ROUTES[shut] + ': ' + SHUT[shut];
+    return;
+  }
   const r = route() in ROUTES ? route() : 'home';
   // the address the tab was left at is the one before this change: the tab may have written its own since
   const was = e && e.oldURL ? new URL(e.oldURL).hash : '';
@@ -2844,12 +2896,6 @@ async function show(e){
   document.querySelectorAll('.view').forEach(v => v.hidden = v.dataset.view !== r);
   document.querySelectorAll('.tabs a[data-route]').forEach(a => { if(a.dataset.route === r) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current'); });
   if(r !== 'home') document.querySelectorAll('a[data-list]').forEach(a => a.removeAttribute('aria-current'));
-  // a page shut in the table (assets/kinds.js SHUT) says so where it stands, and loads nothing
-  if(r in SHUT){
-    $('#view-' + r).innerHTML = '<div class="empty"><h3>' + esc(ROUTES[r]) + '</h3><p>' + esc(SHUT[r]) +
-      '</p><p><a href="#/">Search everything</a></p></div>';
-    return;
-  }
   if(r === 'home'){
     const q = params().get('q') || '', k = params().get('k') || 'all';
     if(q || k !== 'all') wake();   // a search or a list in the address (the search waits for its worker itself)

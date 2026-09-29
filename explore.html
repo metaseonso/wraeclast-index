@@ -1,7 +1,7 @@
 <!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover,interactive-widget=resizes-content"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style><title>PoE2 gems, uniques and passive tree · Wraeclast Index</title><meta name="description" content="Full tables of every Path of Exile 2 gem, unique and passive: requirements, official mod lines, tags and the passive tree."><link rel="canonical" href="https://wraeclastindex.fyi/explore"><meta name="theme-color" content="#070807"><meta property="og:type" content="website"><meta property="og:site_name" content="Wraeclast Index"><meta property="og:title" content="PoE2 gems, uniques and passive tree · Wraeclast Index"><meta property="og:description" content="Full tables of every Path of Exile 2 gem, unique and passive, from the game files."><meta property="og:url" content="https://wraeclastindex.fyi/explore"><meta property="og:image" content="https://wraeclastindex.fyi/assets/brand/social.png"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta property="og:image:alt" content="Wraeclast Index"><meta name="twitter:card" content="summary_large_image"><script type="application/ld+json">{"@context":"https://schema.org","@type":"WebPage","@id":"https://wraeclastindex.fyi/explore","url":"https://wraeclastindex.fyi/explore","name":"PoE2 gems, uniques and passive tree","inLanguage":"en","isPartOf":{"@type":"WebSite","@id":"https://wraeclastindex.fyi/#website","name":"Wraeclast Index","url":"https://wraeclastindex.fyi/"},"about":{"@type":"VideoGame","@id":"https://wraeclastindex.fyi/#game","name":"Path of Exile 2"}}</script><link rel="icon" type="image/png" sizes="64x64" href="assets/brand/favicon-64.png"><link rel="preload" href="assets/fonts/ibmplexsans-latin.woff2" as="font" type="font/woff2" crossorigin><link rel="preload" href="assets/fonts/cinzel-latin.woff2" as="font" type="font/woff2" crossorigin><link rel="stylesheet" href="assets/cards.css"><link rel="stylesheet" href="assets/theme.css"><link rel="stylesheet" href="assets/bridge.css"><link rel="stylesheet" href="assets/look.css"><script id="wi-data">/* the page's data (tools/sync.py): the tab in the address first, every other file when a script asks for it */
 if(navigator.deviceMemory<=4||navigator.hardwareConcurrency<=4||matchMedia("(prefers-reduced-motion: reduce)").matches||(navigator.connection&&navigator.connection.saveData))document.documentElement.classList.add("lite");
 (function(){var F={"gemtext":"data/explore/gemtext.9456ce8c54.json","gemdata":"data/explore/gems.97476eac3e.json","uqdata":"data/explore/uniques.8a3e9718c9.json","trdata":"data/explore/tree.4026c10e28.json","jwdata":"data/explore/jewels.6eb97e6f0b.json","kwdata":"data/explore/keywords.9f5d469f07.json"},W={"gems":["kwdata","gemdata"],"uniques":["kwdata","uqdata"],"tree":["kwdata","trdata","jwdata"]};var D=window.WI_DATA={files:F},q=Promise.resolve(),got={};document.documentElement.classList.add("wi-wait");function load(b,n){return fetch(F[b]).then(function(r){if(r.status==404||r.status==410||(r.headers.get("content-type")||"").indexOf("text/html")>=0)return moved(F[b]).then(function(){throw Error(F[b]+" "+r.status)});if(!r.ok)throw Error(F[b]+" "+r.status);return r.json()}).catch(function(e){if(n)throw e;return load(b,1)})}var mv;function moved(f){return mv||(mv=fetch("explore?at="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){var s;if(!t||t.indexOf(f)>=0)return;try{s=JSON.parse(sessionStorage.getItem("wi.moved")||"[]");if(s.indexOf(f)>=0||s.length>=4)return;s.push(f);sessionStorage.setItem("wi.moved",JSON.stringify(s))}catch(e){return}return fresh().then(function(){location.reload();return new Promise(function(){})})}).catch(function(){}))}function fresh(){if(!window.caches)return Promise.resolve();return Promise.all([fetch("sw-files.json?at="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""},function(){return""}),caches.keys()]).then(function(x){return Promise.all(x[1].filter(function(k){return k.indexOf("wi-v-")==0}).map(function(k){return caches.open(k).then(function(c){return c.match("sw-files.json").then(function(m){return m?m.text():""}).then(function(t){if(x[0]&&t===x[0])return;return Promise.all(["./","explore","privacy"].map(function(u){return c.delete(new URL(u,document.baseURI).href)}))})})}))}).catch(function(){})}function get(b){return got[b]||(got[b]=load(b,0).then(function(o){return D[b]=o}))}D.get=get;D.tab=(/^#(gems|uniques|tree)/.exec(location.hash)||[0,"gems"])[1];(W[D.tab]||[]).forEach(function(b){if(F[b])get(b).catch(function(){})});D.run=function(need,fn){return D.q=q=q.then(function(){return Promise.all(need.map(get))}).then(fn).catch(function(e){console.error(e)})};D.show=function(){document.documentElement.classList.remove("wi-wait")};addEventListener("DOMContentLoaded",function(){q.then(function(){setTimeout(D.show,1500)})});})();
-window.WI_MARKET=fetch("data/market.json?part=now",{priority:WI_DATA.tab==="gems"?"low":"auto"}).then(function(r){return r.ok?r.json():null}).catch(function(){return null});window.wiLive=function(UQ,TR,ms){return(ms===0?WI_MARKET:Promise.race([WI_MARKET,new Promise(function(r){setTimeout(r,ms||3000,null)})])).then(function(m){if(!m||!m.items)return false;var I=m.items;((UQ&&UQ.items)||[]).forEach(function(u){var p=I["u:"+u.n+" | "+u.b]||I["u:"+u.n];if(p&&p.v!=null){u.v=p.v;u.ls=p.ls;if(p.ch!=null)u.ch=p.ch;}});var E=(TR&&TR.emotions)||{};Object.keys(E).forEach(function(k){var p=I["c:"+E[k].name];if(p&&p.v!=null){E[k].v=p.v;E[k].at=p.at||(m.times&&m.times.currency)||m.updated;if(p.ch!=null)E[k].ch=p.ch;}});return true})};</script></head><body>
+window.WI_MARKET=fetch("data/market.json?part=now",{priority:WI_DATA.tab==="gems"?"low":"auto"}).then(function(r){return r.ok?r.json():null}).catch(function(){return null});window.wiLive=function(UQ,TR,ms){return(ms===0?WI_MARKET:Promise.race([WI_MARKET,new Promise(function(r){setTimeout(r,ms||3000,null)})])).then(function(m){if(!m||!m.items)return false;window.WI_EX=m.rates&&m.rates.exalted;var I=m.items;((UQ&&UQ.items)||[]).forEach(function(u){var p=I["u:"+u.n+" | "+u.b]||I["u:"+u.n];if(p&&p.v!=null){u.v=p.v;u.ls=p.ls;if(p.ch!=null)u.ch=p.ch;}});var E=(TR&&TR.emotions)||{};Object.keys(E).forEach(function(k){var p=I["c:"+E[k].name];if(p&&p.v!=null){E[k].v=p.v;E[k].at=p.at||(m.times&&m.times.currency)||m.updated;if(p.ch!=null)E[k].ch=p.ch;}});return true})};</script></head><body>
 
 <style>
 :root{
@@ -1516,25 +1516,8 @@ $('#copy').onclick=async ()=>{
 
 $('#foot').innerHTML = 'Every gem in the game data for patch <b>0.5.5</b> — '+
   GEMS.filter(g=>g.t==='active').length+' active, '+GEMS.filter(g=>g.t==='spirit').length+' spirit and '+
-  GEMS.filter(g=>g.t==='support').length+' support gems, with each one’s own level table from 1 to 40. '+
-  'Support gems have no levels in Path of Exile 2 — they come in numbered tiers instead, so the level slider does nothing to them. '+
-  '<b>Attack dmg %</b> is the skill’s own multiplier on weapon damage and only attacks have one; spells carry flat base damage instead, '+
-  'which is why the two never both appear on one gem. <b>Damage mult %</b> on a support is the largest more/less multiplier it carries, and '+
-  'most of those are conditional — open the row to read the actual wording before trusting the number. '+
-  'Crit is the skill’s own chance and applies to spells; attacks use the weapon’s. '+
-  '<b>Max lvl</b> is how far the gem\u2019s own table runs; cutting an uncut gem caps you at 20, and everything above that comes from + to gem level on gear or the tree. '+
-  'A <span class="vb">+n</span> beside a damage number means the skill has that many more damaging parts \u2014 a strike and its shockwave, a projectile and its explosion, an infused form \u2014 and the table shows only the first; open the row for the rest. '+
-  '<b>Quality</b> runs 0\u201320% and scales every quality line linearly \u2014 the files store the bonus per 1% quality, so 20% is the cap and the full value. '+
-  'Only 357 gems have a quality line at all, and <b>no support gem in the game has one</b>. Because each gem\u2019s quality bonus is a different stat in different units, '+
-  'sorting the quality column across all gems compares nothing \u2014 pick a quality bonus from the list first, then sort. '+
-  '<b>Gemling view</b> reads the Gemling Legionnaire ascendancy off the passive tree: three separate <i>Skill Gem Quality</i> nodes at +2% each, '+
-  'which is +6% to every skill gem if you take all three, and <i>Bolstering</i> / <i>Motoric</i> / <i>Neurological Implants</i> at +2 levels each to Strength, Dexterity and Intelligence skill gems \u2014 '+
-  'so a white gem, belonging to no attribute, gets none of the level bonus. The gear options are the two real ceilings in the mod files: the desecrated amulet suffix '+
-  '<i>of Kurgal</i> at +3\u20135% quality to all skill gems, and a +10% unique/corruption mod. '+
-  'Quality past 20% is scaled straight on, because the files store each quality line per 1% quality \u2014 that is arithmetic from the storage, not a rule quoted from the game. '+
-  'The Gemling notable <i>Advanced Thaumaturgy</i> sets a flag nothing else in the game data uses, so whatever extra quality it unlocks is not counted here. '+
-  'Cut and unused skills still sitting in the game files are hidden by default. '+
-  'Numbers come straight from the game files, not from a build engine: they are the gem in isolation, before your tree, gear or other supports touch it.';
+  GEMS.filter(g=>g.t==='support').length+' support gems, each at any level from 1 to 40, alone: before your tree, gear or supports. '+
+  'Source: GGG’s own game files.';
 
 buildHead(); render();
 };
@@ -1553,6 +1536,8 @@ function titleize(t){ return String(t).replace(/_/g,' ').replace(/\b\w/g,c=>c.to
 const nil = '<span class="nil">—</span>';
 function nnum(v){ return (v===null||v===undefined) ? nil : Number(v).toLocaleString(); }
 function unit(n, u){ return n+' <span class="elem">'+u+'</span>'; }
+// a price as the app writes one: divine from 1 up, exalted under it (the rate the market file gives, window.WI_EX)
+function money(v){ if(v===undefined||v===null) return null; var ex=window.WI_EX; if(v<1&&ex){ var e=v*ex; return unit(e>=100?Math.round(e).toLocaleString():+e.toFixed(e>=10?0:1),'ex'); } return unit(v>=100?Math.round(v).toLocaleString():+v.toFixed(v>=10?1:2),'div'); }
 
 let SPU = null;   // the uniques' sprite sheet, once their file is in (ubuild)
 function uicon(ic, sc){
@@ -1759,9 +1744,9 @@ async function ubuild(){
         get:i=>(i.ex||[]).length, cell:i=>(i.ex||[]).length||nil},
       {k:'nk', label:'Keys', num:true, title:'How many distinct game keywords this item’s text references.',
         get:i=>(i.kw||[]).length, cell:i=>(i.kw||[]).length||nil},
-      {k:'v', label:'Price', num:true, title:'The middle of the 5 cheapest online trade listings, in divine.',
+      {k:'v', label:'Price', num:true, title:'The middle of the 5 cheapest online trade listings, in divine, or exalted under 1 divine.',
         get:i=>i.v===undefined?null:i.v,
-        cell:i=>i.v===undefined?nil:unit(i.v>=100?Math.round(i.v).toLocaleString():i.v,'div')},
+        cell:i=>i.v===undefined?nil:money(i.v)},
       {k:'ls', label:'Listed', num:true, title:'How many are listed on the trade site right now. One or two means the price is one person’s asking price, not a market.',
         get:i=>i.ls===undefined?null:i.ls,
         cell:i=>i.ls===undefined?nil:'<span class="'+(i.ls<3?'thin':'')+'">'+i.ls.toLocaleString()+'</span>'},
@@ -1835,14 +1820,9 @@ async function ubuild(){
     if(UKW) UKW.clear();
     U.reset();
   };
-  $('#ufoot').innerHTML = 'Modifier text comes from the official game data and prices from live trade listings; the item list itself comes from the '+
-    'game data for patch <b>0.5.5</b>, with each unique’s base from poe2db and the trade site’s own item list. '+
-    '<b>Unlisted</b>: not shown in the Unique Collection, or base unknown. '+
-    'Prices are in divine: the middle of the 5 cheapest online listings on the trade site, checked through the day. <b>A listing count under three is greyed out</b>, because that is one person’s asking '+
-    'price rather than a market — the <i>min listed</i> slider exists to push those out of the way. '+
-    'Variants of the same unique are separate rows, because that is how they are priced. '+
-    'Item art is the game’s own, from the RePoE mirror of the game files, packed into one sprite sheet; '+
-    UQ.items.filter(i=>i.ic).length+' of the '+UQ.items.length+' rows have art.';
+  $('#ufoot').innerHTML = 'Every unique in the game data for patch <b>0.5.5</b>, each variant its own row. '+
+    'Price: the middle of the 5 cheapest online trade listings, in divine, or exalted under 1 divine; fewer than three listed is greyed out. '+
+    'Sources: GGG’s own game files, bases from poe2db, prices from the official trade site.';
   U.buildHead(); U.render();
 }
 
@@ -1958,7 +1938,7 @@ async function tbuild(){
         get:p=>(p.kw||[]).length, cell:p=>(p.kw||[]).length||nil},
       {k:'ac', label:'Anoint', num:true, title:'What the three Liquid emotions for this anointment cost together, in divine, at the Currency Exchange’s latest prices. — means one of the three has no price right now. Blank means the node cannot be anointed.',
         get:p=>{ const c=acost(p); return c==null?null:c; },
-        cell:p=>{ const c=acost(p); return c===undefined?'':c===null?nil:unit(div(c),'div'); }}
+        cell:p=>{ const c=acost(p); return c===undefined?'':c===null?nil:money(c); }}
     ],
     match:(p,S)=>{
       if(S.filters.k && p.k!==S.filters.k) return false;
@@ -1994,12 +1974,12 @@ async function tbuild(){
       if(p.rec){
         const lines = p.rec.map(x=>{
           const e=EM[x]||{};
-          return '<div class="statline"><b>'+div(e.v)+'</b> <span class="elem">div</span> · '+esc(e.name||x)+
+          return '<div class="statline"><b>'+money(e.v)+'</b> · '+esc(e.name||x)+
             (e.ch!==undefined&&e.ch!==null ? ' <span class="'+(e.ch>0?'pos':(e.ch<0?'neg':''))+'">'+
               (e.ch>0?'+':'')+Math.round(e.ch)+'% 7d</span>' : '')+'</div>';
         }).join('');
         const c=acost(p), at=acAt(p);
-        P.push('<div class="sect">Anointment · '+(c==null?'—':div(c)+' divine')+'</div>'+lines+
+        P.push('<div class="sect">Anointment · '+(c==null?'—':money(c))+'</div>'+lines+
           '<p class="hint" style="margin:6px 0 0">Three Liquid emotions on an amulet. '+
           (c==null ? 'Prices: Currency Exchange; one of the three has no price right now.'
                    : 'Prices: Currency Exchange'+(at?', checked '+ago(at):'')+'.')+'</p>');
@@ -2069,27 +2049,8 @@ async function tbuild(){
     TR.passives.filter(p=>p.k==='notable').length+' notables, '+
     TR.passives.filter(p=>p.k==='anoint').length+' anoint-only notables and '+
     TR.passives.filter(p=>p.k==='small').length+' small nodes. '+
-    '<b>Duplicates are merged by default.</b> The tree repeats itself hard — 293 separate nodes all called Attribute, and 3,760 small nodes that are only '+
-    '1,035 distinct effects — so an unmerged list is mostly the same handful of rows over and over. The <b>Copies</b> column counts how many '+
-    'times each one appears, and the toggle above puts every node back if you need the individual hashes. '+
-    'Effects are worded from the game’s own description files, so every line here reads as it does in game. '+
-    '<b>Anointing</b> is much wider than this page first said: <b>874 notables carry an anointment recipe</b> of three Liquid emotions, and the <b>Anoint</b> column totals what those three cost in divine at the Currency Exchange’s latest prices, so the column sorts straight into cheap power. Thirteen emotions appear across every recipe; three of them — Potent Contempt, Ferocity and Melancholy — are used by only 19 nodes between them and are what makes the dear end dear. The 17 Delirium anoints are a separate thing: notables that exist only as anoints and sit nowhere on the tree, and one of them, Thaumaturgic Generator, is also a Gemling ascendancy notable. '+
-    'Every node in this export is placed somewhere on the tree, so there is no separate pool of hidden passives to list — the closest thing is the '+
-    TR.passives.filter(p=>p.io).length+' icon-only nodes, which carry no name plate, and the anoint set above. '+
-    '<b>What is not here:</b> the table that maps a timeless jewel’s seed to the passives it rewrites is not in this dump, and neither is the keystone each conqueror grants. '+
-    'That is the piece a seed calculator would need, so there is no calculator on this page rather than a guessed one. '+
-    '<b>No icons on this section:</b> the extracted art folder holds only 54 passive icons, nearly all of them Path of Exile 1 leftovers, '+
-    'and GGG’s own tree export ships no sprite sheet — so there is no official source for passive node art to pull from. '+
-    '<b>The attribute orb</b> comes from where the node sits. The tree is a wheel with six class starts in an inner ring about 60° apart — '+
-    'Marauder at 156° is pure strength, Ranger at 25° pure dexterity, Witch at 269° pure intelligence, and the three between them are the hybrids: '+
-    'Duelist strength and dexterity, Templar strength and intelligence, Shadow dexterity and intelligence. Every node takes the attributes of the start '+
-    'whose sector it falls in, which is why a hybrid region splits its orbs down the middle. '+
-    '430 nodes override that with an attribute they grant outright, 4,060 take it from their region, and 662 — the ascendancy nodes, which sit off the wheel — '+
-    'have none and stay hollow. '+
-    '<b>Checked, not assumed:</b> reading each node\u2019s own stats for armour / melee / physical against evasion / projectile / accuracy against energy shield / mana / spell, '+
-    'the theme agrees with the sector\u2019s attribute on <b>1,782 of 1,974 nodes, 90.3%</b>. An earlier attempt at this reported failure and was itself wrong: '+
-    'it paired the six start nodes with the class list by array position, and those two orders do not align — it had the Ranger start labelled Warrior, so strength '+
-    'nodes looked like they were clustering in the wrong place. The starts are labelled in the export by their own legacy names, and matching on those is what makes it come out.';
+    'Duplicates are merged; <b>Copies</b> counts them. <b>Anoint</b> is what the three emotions cost on the Currency Exchange. '+
+    'Source: GGG’s own passive tree export and game files.';
 }
 
 /* boot: the tab in the address, straight away; the page counts as drawn once its table is (assets/bridge.js) */

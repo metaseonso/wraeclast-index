@@ -120,8 +120,8 @@ function build(){
       ACTIONS.map(a => '<li class="keys-row"><span class="keys-name">' + a.name + '</span>' +
         '<button type="button" class="keys-key" data-id="' + a.id + '"></button>' +
         '<button type="button" class="keys-reset" data-id="' + a.id + '" aria-label="Reset ' + a.name + '">Reset</button></li>').join('') +
-      '</ul><p class="keys-note" role="status" aria-live="polite"></p></div>' +
-      '<div class="keys-foot"><button type="button" class="keys-clear">Clear all keybinds</button></div>' +
+      '</ul><p class="keys-note" role="status" aria-live="polite"></p>' +
+      '<div class="keys-foot"><button type="button" class="keys-clear">Clear all keybinds</button></div></div>' +
     '</div>';
   document.body.appendChild(OV);
   OV.addEventListener('click', e => {

@@ -1,4 +1,4 @@
-/* Pins: a personal watch list, any kind, kept for the tab. The way onto it is under the card itself — a
+/* Pins: a personal watch list, any kind, kept in this browser. The way onto it is under the card itself — a
    Pin button, one act every pinnable kind names in its own declaration (ACTS.pin, assets/kinds.js) — and
    app.js answers that click and keeps the list (isPinned, togglePin, pinnedKeys, onPinChange), the same way
    it already answers Trade and Full stats. Nothing here touches sessionStorage: this file is only the other
@@ -33,8 +33,8 @@ function paint(){
 function open(){
   BOX = document.createElement('section');
   BOX.className = 'pins panel';
-  BOX.innerHTML = '<h3>Pins</h3><p class="note">Every card pinned, this tab.</p>' +
-    '<p class="note pins-empty">Nothing pinned yet.</p><div class="pins-list"></div>';
+  BOX.innerHTML = '<h2>Pins</h2><p class="note">Every card you pinned, kept in this browser.</p>' +
+    '<p class="note pins-empty">Nothing pinned yet. Every card has a Pin button.</p><div class="pins-list"></div>';
   BOX.addEventListener('click', e => {
     const row = e.target.closest('.pin-row'); if(!row) return;
     const it = D.byKey.get(row.dataset.key); if(!it) return;

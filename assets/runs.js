@@ -67,7 +67,7 @@ export function count(){
 function open(){
   BOX = document.createElement('section');
   BOX.className = 'runs panel';
-  BOX.innerHTML = '<h3>Runs</h3>' +
+  BOX.innerHTML = '<h2>Runs</h2>' +
     '<p class="run-n"></p><div class="run-rate-box"></div><p class="note run-last"></p>' +
     '<div class="row run-ctl"><button type="button" class="btn gold" data-do="add">+1 run</button>' +
       '<button type="button" class="btn" data-do="undo">Take one off</button>' +

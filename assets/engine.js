@@ -158,11 +158,12 @@ function pickOne(it, opt, rnd){
 }
 /* A refusal has to say which wall it hit, because "nothing left" reads the same for a full item and for an
    orb whose floor is above anything the item level can reach. */
+const plural = (n, one, many) => n + ' ' + (n === 1 ? one : many);
 function whyEmpty(it, opt = {}){
   const a = opt.only;
   if(a && countSide(it, a) >= capFor(it, a)) return sideWord(a) + ' are full';
   if(!a && countSide(it, 'p') >= capFor(it, 'p') && countSide(it, 's') >= capFor(it, 's'))
-    return 'It is full — ' + countSide(it, 'p') + ' prefixes and ' + countSide(it, 's') + ' suffixes';
+    return 'It is full — ' + plural(countSide(it, 'p'), 'prefix', 'prefixes') + ' and ' + plural(countSide(it, 's'), 'suffix', 'suffixes');
   if(opt.min && opt.min > it.ilvl) return 'This orb only adds modifiers of level ' + opt.min + ' and up, and item level ' + it.ilvl + ' cannot reach them';
   if(opt.min) return 'Nothing of level ' + opt.min + ' or higher is left for it to add';
   if(opt.tag) return 'Nothing of that type is left for it to add';

@@ -86,6 +86,7 @@ h1,h2,h3{margin:0; text-wrap:balance}
 .chip:hover{border-color:var(--accent); color:var(--text)}
 .chip[aria-pressed="true"]{background:var(--accent); border-color:var(--accent); color:var(--ground); font-weight:500}
 .chip .ct{font-family:var(--mono); font-size:11px; opacity:.75; margin-left:5px}
+.chip.zero:not([aria-pressed="true"]){opacity:.42}   /* a kind the words found nothing in */
 
 .quote{margin:4px auto 2px; text-align:center; font-family:var(--disp, serif); color:var(--muted)}
 .quote blockquote{margin:0; font-style:italic; font-size:15px; letter-spacing:.02em}
@@ -424,8 +425,8 @@ small.at-bonus{display:block}
 .cr-top{display:grid; gap:12px; margin-bottom:14px}
 .cr-pick{position:relative; max-width:560px}
 .cr-pick input{width:100%}
-.cr-kinds{display:flex; flex-wrap:wrap; align-items:center; gap:6px 10px}
-.cr-kinds .lbl{min-width:76px}
+.cr-kinds{display:grid; grid-template-columns:76px minmax(0,1fr); align-items:baseline; gap:6px 10px}   /* one indent: chips that wrap stay under their own row */
+.cr-kinds .lbl{min-width:0}
 .cr-chips{justify-content:flex-start; margin:0; gap:5px}
 .cr-bctl{display:grid; gap:12px; align-content:start}
 .cr-lab{display:grid; gap:5px; min-width:0}
@@ -851,7 +852,7 @@ small.at-bonus{display:block}
    picture's own. Both hold still whenever the lights do (.mp-rest, assets/map.js tick()): a hidden tab, the
    picture scrolled off. Less motion: the rule at the top of this file stops both, and assets/map.js never
    starts the lights. */
-.mp-fig{margin:0; position:relative; overflow:hidden; max-width:1180px;
+.mp-fig{margin:0; position:relative; overflow:hidden; max-width:100%;
   border:1px solid var(--line); border-radius:var(--r); background:var(--sunken); box-shadow:var(--shadow)}
 .mp-fig::after{content:''; position:absolute; inset:0; pointer-events:none;
   background:radial-gradient(58% 78% at 52% 45%, rgba(140,203,63,.07), transparent 72%);

@@ -36,7 +36,7 @@ async function open(){
   const log = await load();
   const box = document.createElement('section');
   box.className = 'notes panel';
-  box.innerHTML = '<h3>Patch notes</h3>' +
+  box.innerHTML = '<h2>Patch notes</h2>' +
     '<p class="note">What changed on Wraeclast Index. <a href="' + GAME + '" target="_blank" rel="noopener">Game patch notes ↗</a></p>' +
     log.map(e => '<article class="notes-v"><h4><span class="notes-ver">v' + esc(e.v) + '</span> ' + esc(e.title) +
       ' <span class="note">' + esc(e.date) + '</span></h4><ul>' + (e.items || []).map(i => '<li>' + i + '</li>').join('') + '</ul></article>').join('');

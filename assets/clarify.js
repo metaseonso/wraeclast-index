@@ -109,7 +109,7 @@ function whoRow(w){
 function playersHTML(key, r){
   const lean = (r && r.lean) || {}, n = (r && r.n) || 0, who = (r && r.who) || [];
   return '<p class="card-facts">What players report</p>' +
-    (n ? bars(lean, n) : '<p class="clar-none">No answers yet.</p>') +
+    (n ? bars(lean, n) : '') +   // no answers: the way to weigh in, and nothing drawn empty
     (who.length ? '<ul class="clar-who">' + who.map(whoRow).join('') + '</ul>' +
       '<p class="clar-mine">Players’ own words, not the game’s.</p>'
       : n ? '<p class="clar-mine">Names go up once we have read them.</p>' : '') +
@@ -148,6 +148,7 @@ function heatHTML(key, r){
   const rows = cards.map(it => ({it, key: it.k + ':' + it.id, n: count.get(it.k + ':' + it.id) || 0}))
     .sort((a, b) => b.n - a.n || a.it.n.localeCompare(b.it.n));
   const top = Math.max(1, ...rows.map(x => x.n)), all = rows.reduce((a, x) => a + x.n, 0);
+  if(!all) return '';   // nobody has answered any of them yet: a grid of zeros says nothing
   return '<p class="card-facts">How often each one is answered</p>' +
     '<ul class="clar-heat">' + rows.map(x =>
       '<li><button type="button" class="clar-cell' + (x.key === key ? ' here' : '') + '" data-open="' +

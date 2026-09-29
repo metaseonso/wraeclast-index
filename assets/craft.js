@@ -569,7 +569,7 @@ function poolHTML(){
   return '<div class="cr-bar"><input class="field" type="search" data-k="q" placeholder="Filter mods (e.g. life, fire res)" value="' + esc(UI.q) + '" autocomplete="off">' +
     '<div class="kinds cr-chips" role="group" aria-label="Tags">' + [['', 'All mods'], ...tags].map(([t, l]) =>
       '<button type="button" class="chip" data-tag="' + t + '" aria-pressed="' + (UI.tag === t) + '">' + l + '</button>').join('') + '</div>' +
-    '<span class="cr-tally">' + live('p') + ' prefixes · ' + live('s') + ' suffixes</span></div>' +
+    '<span class="cr-tally">' + live('p') + (live('p') === 1 ? ' prefix' : ' prefixes') + ' · ' + live('s') + (live('s') === 1 ? ' suffix' : ' suffixes') + '</span></div>' +
     '<div class="cr-tbl">' + narrowHTML() +
     '<div class="cr-cols">' + (only !== 's' ? col('p') : '') + (only !== 'p' ? col('s') : '') + '</div></div>' +
     (TOT ? '<p class="note">Share of that side at item level ' + S.l + ', one mod at a time. ' +

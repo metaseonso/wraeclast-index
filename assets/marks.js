@@ -95,8 +95,9 @@ const held = (block, s, e) => {
 };
 
 /* The marks in one line of a card: [start, length, key], left to right and never overlapping. `block` is the
-   ground the index's own marks already hold on this line ("lx"), or nothing. */
-export function scan(it, text, block){
+   ground the index's own marks already hold on this line ("lx"), or nothing. `seen` is the keys already marked
+   in the card's earlier lines: a word is a door once per card, where it is first read. */
+export function scan(it, text, block, seen){
   const {first, gates} = vocab();
   const mine = it.k + ':' + it.id, kw = it.kw;
   const self = X.keywordIdOf(it);   // a keystone stands for its own keyword: not a door to itself either
@@ -114,7 +115,10 @@ export function scan(it, text, block){
         if(only === 'gate' && !mechOK(gates.get(p), text, s, e)) continue;
       }
       at = e;   // the phrase holds its ground whether or not it opens anything
-      if(key && key !== mine && !(self && key === X.kwKey(self)) && !(block && held(block, s, e))) out.push([s, p.length, key]);
+      if(key && key !== mine && !(self && key === X.kwKey(self)) && !(block && held(block, s, e)) && !(seen && seen.has(key))){
+        out.push([s, p.length, key]);
+        if(seen) seen.add(key);
+      }
       break;
     }
   }

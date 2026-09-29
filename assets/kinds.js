@@ -84,8 +84,7 @@ export const PAGES = {...ROUTES,
   ...Object.fromEntries(Object.entries(SECTIONS).map(([k, words]) => ['explore-' + k, words]))};
 
 /* A tab that is named and is not open, and the line it says instead. A page shut here keeps its name, its
-   address and its count, so a bookmark and an old link land on the page itself and are told what happened
-   rather than dropped on Search. Nothing offers it: the tab is not in the nav, the shortcut is not in the
+   address and its count; a bookmark and an old link land on Search, which says the line. Nothing offers it: the tab is not in the nav, the shortcut is not in the
    keys, the act that travels to it is not drawn on a card, and llms.txt does not list it. Opening one again
    is deleting a line here. tools/dev/frame.mjs fails a build where the nav and this table disagree. */
 export const SHUT = {
