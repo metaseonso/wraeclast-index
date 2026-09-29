@@ -438,7 +438,9 @@ body[data-route="home"] .top .topsearch{display:none}
 .tctl input[type=range]{flex:1 1 160px; accent-color:var(--accent)}
 .tnum{width:82px; padding:4px 8px; font:500 13px var(--mono)}
 .tctl .seg button, .tstates .seg button, .tpay button{padding:3px 9px; font-size:12px}
-.tstates{display:grid; grid-template-columns:repeat(auto-fill, minmax(250px, 1fr)); gap:6px 14px}
+/* Any / Yes / No stays on one line: the name beside it wraps instead */
+.tstates{display:grid; grid-template-columns:repeat(auto-fill, minmax(min(100%, 280px), 1fr)); gap:6px 14px}
+.tstates .seg{flex:none; flex-wrap:nowrap}
 .trow{display:flex; justify-content:space-between; align-items:center; gap:10px; font-size:12.5px; color:var(--muted)}
 .tonline{display:inline-flex; gap:6px; align-items:center; cursor:pointer}
 .tgo{display:flex; justify-content:flex-end; gap:8px}

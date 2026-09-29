@@ -55,12 +55,16 @@ function rows(){
 const cats = () => [...new Set(ALL.map(r => r.m.cat).filter(Boolean))];
 // ...and the groups inside whichever question is being asked, so the second row narrows with the first
 const askCats = () => S.ask === 'all' ? cats() : cats().filter(c => ASK[c] === S.ask);
-const askCount = k => ALL.filter(r => ASK[r.m.cat] === k).length;
+/* What a question chip counts: the rows its press would show, every other filter as it stands. A group the
+   question does not hold is dropped by the press (the ask handler), so it is dropped from the count too: the
+   chip that is pressed always says what the grid holds. */
+const catFor = k => k === 'all' || S.cat === 'all' || ASK[S.cat] === k ? S.cat : 'all';
+const askCount = k => ALL.filter(r => match(r, k, catFor(k))).length;
 
-function match(r){
+function match(r, ask = S.ask, cat = S.cat){
   const {it, m} = r;
-  if(S.ask !== 'all' && ASK[m.cat] !== S.ask) return false;
-  if(S.cat !== 'all' && m.cat !== S.cat) return false;
+  if(ask !== 'all' && ASK[m.cat] !== ask) return false;
+  if(cat !== 'all' && m.cat !== cat) return false;
   if(S.liquid && (m.vol ?? 0) < MIN_VOL && S.trend !== 'watch') return false;
   if(S.q && hits(it, S.words || []) === null) return false;   // every word, anywhere on the row
   switch(S.trend){
@@ -145,9 +149,10 @@ function markets(host){
     const A = D.byKey.get('c:' + a), B = D.byKey.get('c:' + b);
     return '<button type="button" class="cxm-row" data-k="' + esc(a) + '">' +
       '<span class="cxm-ic">' + iconHTML(A || {n: a}) + '</span>' +
-      '<b>' + esc(a) + '</b>' +
+      // the name and the rate share a line while the tile holds both; past that the rate drops under the name
+      '<span class="cxm-top"><b>' + esc(a) + '</b>' +
       '<span class="cxm-for">1 = ' + (r >= 100 ? Math.round(r).toLocaleString() : +r.toPrecision(3)) +
-        (B ? '<span class="cxm-ic sm">' + iconHTML(B) + '</span>' : ' ') + '<b>' + esc(b) + '</b></span>' +
+        (B ? '<span class="cxm-ic sm">' + iconHTML(B) + '</span>' : ' ') + '<b>' + esc(b) + '</b></span></span>' +
       '<span class="cxm-vol">' + compact(vol) + ' div traded</span></button>';
   }).join('');
   host.addEventListener('click', e => { const b = e.target.closest('.cxm-row'); const it = b && D.byKey.get('c:' + b.dataset.k); if(it) openDetail(it, {}, null); });
@@ -261,32 +266,29 @@ export function mount(el){
   if(!D.market){ el.innerHTML = '<div class="pagehd"><h2>Currency</h2><p class="err">Prices are not loaded.</p></div>'; return {}; }
   // the rows are made once per set of prices: coming back to the tab draws them again, it does not remake them
   if(ALLOF !== D.market){ ALL = rows(); ALLOF = D.market; }
-  const kinds = ['all', ...cats()];
   /* The currency a player came for is the top of the page. The busiest markets are a thing to browse once
      you are done, so they sit under the grid rather than 24 rows above it. */
   el.innerHTML =
     '<div class="pagehd"><h2>Currency</h2><p>What each currency really traded for on the in-game Currency ' +
       'Exchange over the last 24 hours. Updated every hour.</p></div>' +
-    '<div class="sect"><h3>Every currency</h3><p id="cxcount"></p><span class="grow"></span>' +
+    '<div class="sect"><h3>Every currency</h3><span class="grow"></span>' +
       '<button type="button" class="btn gold" id="cxpick">★ Add to watch list</button></div>' +
-    '<div class="controls cx">' +
-      // what a player came with in hand, asked as a question. The groups below narrow to whatever is asked.
-      '<div class="row"><div class="kinds cx-ask" id="cxask" style="margin:0;justify-content:flex-start">' +
-        '<button type="button" class="chip" data-v="all" aria-pressed="' + (S.ask === 'all') + '">All ' +
-          ALL.length.toLocaleString() + '</button>' +
-        ASKS.map(([k, words]) => '<button type="button" class="chip" data-v="' + k + '" aria-pressed="' +
-          (k === S.ask) + '">' + esc(words) + ' <span class="chip-n">' + askCount(k) + '</span></button>').join('') +
-      '</div></div>' +
-      '<div class="row"><div class="seg" id="cxcat">' + kinds.map(c => '<button type="button" data-v="' + esc(c) + '" aria-pressed="' + (c === S.cat) + '">' +
-        (c === 'all' ? 'All' : esc(c)) + '</button>').join('') + '</div></div>' +
-      // the price chips were a third row of their own; one list says the same seven things in one line
-      '<div class="row"><input class="field" id="cxq" type="search" placeholder="Search currency…" autocomplete="off">' +
-        '<span class="grow"></span>' +
-        '<label class="note"><input type="checkbox" id="cxliq" checked> Hide low volume</label>' +
+    /* One row that wraps: what a player came with in hand, asked as a question; then the group (narrowed to
+       whatever is asked), the search, and how the list is cut and sorted. The chips carry the tab's one count,
+       drawn again with the grid (render). The price chips were a row of their own; one list says the same
+       seven things. */
+    '<div class="controls cx"><div class="row cx-row">' +
+      '<div class="kinds cx-ask" id="cxask">' +
+        [['all', 'All'], ...ASKS].map(([k, words]) => '<button type="button" class="chip" data-v="' + k + '" aria-pressed="' +
+          (k === S.ask) + '">' + esc(words) + ' <span class="chip-n" data-n="' + k + '"></span></button>').join('') +
+      '</div>' +
+      '<select class="field" id="cxcat" aria-label="Group"></select>' +
+      '<input class="field" id="cxq" type="search" placeholder="Search currency…" autocomplete="off" aria-label="Search currency">' +
+        '<label class="note cx-liq"><input type="checkbox" id="cxliq" checked> Hide low volume</label>' +
         '<select class="field" id="cxtrend" aria-label="Price action">' + TRENDS.map(([k, l]) =>
           '<option value="' + k + '">' + (k === 'all' ? 'Any price action' : l) + '</option>').join('') + '</select>' +
-        '<select class="field" id="cxsort">' + SORTS.map(([k, l]) => '<option value="' + k + '">' + l + '</option>').join('') + '</select></div>' +
-    '</div>' +
+        '<select class="field" id="cxsort" aria-label="Sort">' + SORTS.map(([k, l]) => '<option value="' + k + '">' + l + '</option>').join('') + '</select>' +
+    '</div></div>' +
     '<div class="cards" id="cxcards"></div><div class="more cx-more" id="cxmore" hidden>' +
       '<button type="button" class="btn cx-next">Show more</button><button type="button" class="btn cx-all">Show all</button></div>' +
     '<p class="note" style="margin-top:18px">Rising or falling: 10%+ this week. Swinging: 12%+ in one day. Low volume: under ' + MIN_VOL + ' div a day. ' +
@@ -295,13 +297,7 @@ export function mount(el){
     '<div class="sect"><h3>Busiest exchange markets</h3><p>Last 24 hours. What one buys, and how much traded.</p></div>' +
     '<div class="cxm" id="cxmarkets"></div>';
 
-  const seg = (id, key) => $('#' + id, el).addEventListener('click', e => {
-    const b = e.target.closest('button'); if(!b) return;
-    S[key] = b.dataset.v; S.shown = PAGE;
-    [...b.parentNode.children].forEach(c => c.setAttribute('aria-pressed', String(c === b)));
-    render();
-  });
-  seg('cxcat', 'cat');
+  $('#cxcat', el).addEventListener('change', e => { S.cat = e.target.value; S.shown = PAGE; render(); });
   $('#cxtrend', el).addEventListener('change', e => { S.trend = e.target.value; S.shown = PAGE; render(); });
   /* a question narrows the groups under it, and the group chips are drawn again to whatever is left. The
      group a player had chosen is kept where the new question still holds it, and dropped where it does not. */
@@ -337,22 +333,23 @@ function update(){
   if(c){ S.q = c.toLowerCase(); S.words = words(S.q); S.cat = 'all'; S.trend = 'all'; S.liquid = false;
     const q = $('#cxq', EL); if(q) q.value = c;
     const l = $('#cxliq', EL); if(l) l.checked = false;
-    EL.querySelectorAll('#cxcat button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.v === 'all')));
+    const g = $('#cxcat', EL); if(g) g.value = 'all';
     const t = $('#cxtrend', EL); if(t) t.value = 'all';
   }
   render();
 }
 
-/* The group chips, drawn again whenever the question changes: All, then every group the question covers. */
+/* The group list, drawn again whenever the question changes: every group, then each one the question covers. */
 function paintCats(){
   const box = EL && $('#cxcat', EL); if(!box) return;
-  box.innerHTML = ['all', ...askCats()].map(c => '<button type="button" data-v="' + esc(c) + '" aria-pressed="' +
-    (c === S.cat) + '">' + (c === 'all' ? 'All' : esc(c)) + '</button>').join('');
+  box.innerHTML = ['all', ...askCats()].map(c => '<option value="' + esc(c) + '">' + (c === 'all' ? 'Every group' : esc(c)) + '</option>').join('');
+  box.value = S.cat;
 }
 function render(){
   if(!EL) return;   // off the tab (a star from the popup): the tab draws the list from S when it is back
-  const list = ALL.filter(match).sort(SORTER[S.sort]);
-  $('#cxcount', EL).textContent = list.length + ' item' + (list.length === 1 ? '' : 's');
+  const list = ALL.filter(r => match(r)).sort(SORTER[S.sort]);
+  for(const n of EL.querySelectorAll('#cxask .chip-n'))
+    n.textContent = (n.dataset.n === S.ask ? list.length : askCount(n.dataset.n)).toLocaleString();
   const grid = $('#cxcards', EL);
   flow(grid, list.slice(0, S.shown).map(r => ({key: 'c:' + r.it.id, r})), x => currencyCard(x.r));
   if(!list.length) grid.innerHTML = '<div class="empty" style="grid-column:1/-1"><h3>Nothing here</h3>' +
