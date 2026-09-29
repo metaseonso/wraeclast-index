@@ -80,5 +80,13 @@ function use(){
     '<a href="md/item/divine-orb.md">/md/item/divine-orb.md</a>.</li>' +
     '<li>The index for tools and AI: <a href="llms.txt">llms.txt</a>, <a href="llms-full.txt">llms-full.txt</a>, ' +
     '<a href="data/manifest.json">the manifest</a>, <a href="sitemap.xml">the sitemap</a>.</li>' +
+    '<li>The index as JSON: <a href="data/manifest.json">data/manifest.json</a> names every file. Files named by ' +
+    'their content never change.</li>' +
+    '<li>Prices: <a href="data/market.json?part=live">data/market.json?part=live</a>, each price with the time it ' +
+    'was checked. Day by day: <a href="data/market.json?part=hist">?part=hist</a>. The market pages: ' +
+    '<a href="data/market/index.json">data/market/index.json</a>. PC, the current trade league.</li>' +
+    '<li>Patch notes: <a href="data/changelog.json">data/changelog.json</a>.</li>' +
+    '<li>Open to any site (CORS). Prices refresh every 5 minutes at most: keep a copy that long. ' +
+    'Name the tool and a contact in the User-Agent. Over 120 requests a minute from one address: 429.</li>' +
     '</ul></section>';
 }
