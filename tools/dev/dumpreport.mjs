@@ -33,6 +33,8 @@ const EMPTY_N = 20, EMPTY_SHARE = 0.10;   // a field emptied on at least this ma
 const SHRINK = 0.5;             // a file that loses this share of its bytes
 // name.<hash>.json: the drill-down page's data and the index's cut (tools/shards.py, its words files .txt), named by content
 const HASHED = /\.[0-9a-f]{8,}\.(?:json|txt)$/;
+// a numbered piece of the cut, and the part of its name every piece of that kind shares
+const PIECE = /^(data\/(?:cards|seo)\/[\w-]+\/[a-z]*)\d+\.[0-9a-f]{6,}\.(?:json|txt)$/;
 const FIRST = 5;                // names shown per list
 const MAX_MD = 60000;           // a GitHub comment holds 65,536 characters
 
@@ -161,6 +163,12 @@ async function report(){
     const block = f.state === 'removed' && HASHED.test(p) ? p.replace(HASHED, '.') : null;
     const heir = block && after.find(q => q !== p && q.replace(HASHED, '.') === block);
     if(heir){ f.state = 'replaced'; f.by = heir; }
+    /* A numbered piece of the cut (tools/shards.py: data/cards/<kind>/NN, data/seo/item/NN, data/seo/words/<kind>NN)
+       is closed at a size, so one kind needing a piece fewer drops the last number. Its rows are in the pieces
+       that are left, and the cut as a whole is held to the index by shards --check (tools/pipeline.py CUT_PIECE):
+       said, not flagged, while the kind still has a piece. */
+    const piece = f.state === 'removed' && !heir ? PIECE.exec(p) : null;
+    if(piece && after.some(q => q !== p && (PIECE.exec(q) || [])[1] === piece[1])) f.state = 'one piece fewer';
     out.files.push(f);
     if(f.state === 'removed' && ignored.has(p)) f.state = 'no longer committed';
     if(f.state === 'removed') flag(p, 'the file went away');

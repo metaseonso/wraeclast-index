@@ -202,6 +202,23 @@ STAGES = [
     dict(name='monsters', run=['tools/monsterlevels.py'], cadence='patch', source='game files',
          reads=['data/bosshits.json', 'data/areas.json', 'data/index.json'], last=['data/bosshits.json'],
          writes=['data/index.json', 'data/index-core.json', 'data/index-rest.json'], count={'data/index.json': 'items'}),
+    # Runes of Aldur: the recipes both ways, the highlight bands, the Verisium Anvil (#113)
+    dict(name='runes', run=['tools/runes.py'], cadence='patch', source='game files',
+         reads=['data/game/rune_recipes.json', 'data/game/rune_highlights.json', 'data/game/verisium_crafts.json',
+                'data/index.json', 'data/exchange.json'],
+         writes=['data/runes.json'], count={'data/runes.json': 'recipes'}),
+    # the game's achievements, joined by name to the cards (#91); data/areas.json is #72's, on main
+    dict(name='achievements', run=['tools/achievements.py'], cadence='patch', source='game files',
+         reads=['data/game/achievements.json', 'data/game/achievement_sets.json', 'data/index.json',
+                'data/exchange.json', 'data/bosses.json', 'data/areas.json'],
+         writes=['data/achievements.json'], count={'data/achievements.json': 'achievements'}),
+    # the runes and the achievements as cards of their own (#113, #91), and the Verisium Anvil on the bases it
+    # takes. Before nodelinks, like the world: every run links the same cards
+    dict(name='joincards', run=['tools/joincards.py'], cadence='patch', source='game files',
+         reads=['data/runes.json', 'data/achievements.json', 'data/bosses.json', 'data/market.json',
+                'data/exchange.json', 'data/index.json'],
+         last=['data/bosses.json', 'data/market.json', 'data/exchange.json'],
+         writes=['data/index.json', 'data/index-core.json', 'data/index-rest.json'], count={'data/index.json': 'items'}),
     dict(name='nodelinks', run=['tools/nodelinks.py'], cadence='patch', source='files',
          reads=['data/index.json'],
          writes=['data/index.json', 'data/index-core.json', 'data/index-rest.json'], count={'data/index.json': 'items'}),
@@ -222,11 +239,6 @@ STAGES = [
          writes=['data/gold.json'], count={'data/gold.json': 'exchange'}),
     dict(name='gemlines', run=['tools/gemlines.py'], cadence='patch', source='files',
          reads=['data/explore/gems.*.json'], writes=['data/gemlines.json']),
-    # Runes of Aldur: the recipes both ways, the highlight bands, the Verisium Anvil (#113)
-    dict(name='runes', run=['tools/runes.py'], cadence='patch', source='game files',
-         reads=['data/game/rune_recipes.json', 'data/game/rune_highlights.json', 'data/game/verisium_crafts.json',
-                'data/index.json', 'data/exchange.json'],
-         writes=['data/runes.json'], count={'data/runes.json': 'recipes'}),
     dict(name='treelines', run=['tools/treelines.py'], cadence='patch', source='files',
          reads=['data/explore/tree.*.json'], writes=['data/treelines.json']),
     dict(name='treechanges', run=['tools/treeexport.py'], cadence='patch', source="GGG's passive tree export",
@@ -243,11 +255,6 @@ STAGES = [
          reads=['https://www.pathofexile.com/forum/ (the patch notes threads data/patches.json names)',
                 'data/patches.json', 'data/index.json'],
          writes=['data/patchnotes.json'], count={'data/patchnotes.json': 'lines'}),
-    # the game's achievements, joined by name to the cards (#91); data/areas.json is #72's, on main
-    dict(name='achievements', run=['tools/achievements.py'], cadence='patch', source='game files',
-         reads=['data/game/achievements.json', 'data/game/achievement_sets.json', 'data/index.json',
-                'data/exchange.json', 'data/bosses.json', 'data/areas.json'],
-         writes=['data/achievements.json'], count={'data/achievements.json': 'achievements'}),
     dict(name='map', run=['tools/map.py'], cadence='patch', source='files, and the live market list',
          reads=['data/index.json', 'data/kwuse.json', 'data/grants.json', 'data/gamedata.json', 'assets/kinds.js',
                 'assets/theme.css', 'data/bosses.json', 'data/dropsfrom.json', 'data/market.json',

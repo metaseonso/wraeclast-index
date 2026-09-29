@@ -1001,6 +1001,25 @@ small.at-bonus{display:block}
   .pt-list td.pt-t{white-space:nowrap; font-size:11.5px}
   .pt-lg{display:block; font-family:var(--sans, inherit); font-size:11px; color:var(--faint)}
 }
+/* the Rune recipes page (assets/runes.js): the rune chips, then a recipe a row */
+.rn-ctl{display:flex; flex-direction:column; gap:10px; margin-bottom:12px}
+.rn-picks{display:flex; flex-wrap:wrap; gap:6px}
+.rn-make{flex:1 1 220px}
+.rn-list{display:flex; flex-direction:column}
+.rn-row{border-bottom:1px solid var(--line); padding:9px 0; display:flex; flex-direction:column; gap:4px}
+.rn-in{display:flex; flex-wrap:wrap; align-items:center; gap:4px 6px; font-size:13px}
+.rn-rune{color:var(--text); text-decoration:none}
+a.rn-rune:hover, a.rn-rune:focus-visible, .rn-out a:hover, .rn-out a:focus-visible, .rn-bands a:hover{color:var(--accent)}
+.rn-plus{color:var(--faint)}
+.rn-out{display:flex; flex-wrap:wrap; align-items:baseline; gap:4px 8px; font-size:13.5px}
+.rn-out a, .rn-bands a{color:var(--accent); text-decoration:none; font-weight:500}
+.rn-arrow{color:var(--faint)}
+.rn-meta{color:var(--faint); font-size:12px}
+.rn-off summary{cursor:pointer; font-size:12px; color:var(--muted)}
+.rn-off summary .pill{margin-left:6px}
+.rn-off ul{margin:4px 0 0; padding-left:18px; font-size:12px; color:var(--muted); line-height:1.6}
+.rn-lenrow{margin-bottom:8px}
+.rn-bands{min-width:0}
 
 /* ---------- the Market tab (assets/market.js) ---------- */
 .mk-block{margin:0 0 6px}
