@@ -954,6 +954,22 @@ small.at-bonus{display:block}
 .dt-jobs{border-collapse:collapse; font-size:13px; min-width:420px}
 .dt-jobs th{text-align:left; font-weight:600; color:var(--faint); font-size:11.5px; text-transform:uppercase; letter-spacing:.04em}
 .dt-jobs th, .dt-jobs td{padding:5px 14px 5px 0; border-bottom:1px solid var(--line); white-space:nowrap}
+/* the Patches page (assets/patches.js): the Data page's table, a patch a row */
+.pt-list{width:100%}
+.pt-list td a{color:var(--accent); text-decoration:none}
+.pt-list td a:hover, .pt-list td a:focus-visible{text-decoration:underline}
+.pt-list .pt-hotfix td:first-child, .pt-list .pt-restart td:first-child, .pt-list .pt-maintenance td:first-child{padding-left:12px}
+.pt-f{color:var(--faint); font-size:11.5px}
+.pt-t{font-family:var(--mono); font-size:12px; color:var(--muted)}
+.pt-list .pt-n{text-align:right; font-family:var(--mono); padding-right:0}
+.pt-lg{display:none}
+@media (max-width:640px){
+  .pt-list{min-width:0; font-size:12.5px}
+  .pt-list .pt-lc{display:none}
+  .pt-list td{white-space:normal}
+  .pt-list td.pt-t{white-space:nowrap; font-size:11.5px}
+  .pt-lg{display:block; font-family:var(--sans, inherit); font-size:11px; color:var(--faint)}
+}
 
 /* ---------- the Market tab (assets/market.js) ---------- */
 .mk-block{margin:0 0 6px}
@@ -1007,3 +1023,11 @@ small.at-bonus{display:block}
   .side-toc a[aria-current] .ti{opacity:1}
 }
 
+/* a boss's big hits (assets/bosses.js hitsHTML) */
+.bo-hits{list-style:none; margin:6px 0; padding:0}
+.bo-hits li{display:grid; grid-template-columns:minmax(0,1fr) auto auto 72px; gap:4px 12px; align-items:baseline;
+  padding:4px 0; border-bottom:1px solid var(--line-soft); font-size:13px}
+.bo-hk{color:var(--faint); font-size:12px; white-space:nowrap}
+.bo-hn{font-variant-numeric:tabular-nums; white-space:nowrap}
+.bo-how summary{cursor:pointer; color:var(--muted); font-size:12.5px; margin:4px 0}
+@media (max-width:640px){ .bo-hits li{grid-template-columns:minmax(0,1fr) auto} .bo-hits li .bo-hk{grid-column:1} }

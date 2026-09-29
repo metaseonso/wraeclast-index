@@ -49,7 +49,7 @@ for(var k in WI_FIRST) WI_FIRST[k].catch(function(){});</script>
 </head>
 <body>
 <script>/* the tab first, so the top bar never changes shape on the first paint (assets/app.js show() keeps it) */
-document.body.dataset.route = (function(r){ return ['build','currency','market','trade','farms','atlas','bosses','craft','map','data'].indexOf(r) >= 0 ? r : 'home'; })((location.hash.match(/^#\/(\w+)/) || [])[1]);</script>
+document.body.dataset.route = (function(r){ return ['build','currency','market','trade','farms','atlas','bosses','craft','map','data','patches'].indexOf(r) >= 0 ? r : 'home'; })((location.hash.match(/^#\/(\w+)/) || [])[1]);</script>
 
 <header class="top">
   <div class="top-in">
@@ -71,6 +71,11 @@ document.body.dataset.route = (function(r){ return ['build','currency','market',
             <a href="#/?k=t" data-list="t"><i class="ti ti-clusters" aria-hidden="true"></i>Clusters</a>
             <a href="#/?k=y" data-list="y"><i class="ti ti-ascendancy" aria-hidden="true"></i>Ascendancies</a>
           </div></div>
+        <div class="navdrop"><button type="button" class="navdrop-b" aria-expanded="false" aria-controls="nd-world">World<svg class="caret" viewBox="0 0 10 10" aria-hidden="true"><path d="M2 3.5 5 6.5 8 3.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          <div class="navdrop-m" id="nd-world">
+            <a href="#/?k=r" data-list="r"><i class="ti ti-areas" aria-hidden="true"></i>Areas</a>
+            <a href="#/?k=j" data-list="j"><i class="ti ti-quests" aria-hidden="true"></i>Quests</a>
+          </div></div>
         <div class="navdrop"><button type="button" class="navdrop-b" aria-expanded="false" aria-controls="nd-mechanics">Mechanics<svg class="caret" viewBox="0 0 10 10" aria-hidden="true"><path d="M2 3.5 5 6.5 8 3.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
           <div class="navdrop-m" id="nd-mechanics">
             <a href="#/?k=w" data-list="w"><i class="ti ti-keywords" aria-hidden="true"></i>Keywords</a>
@@ -90,7 +95,11 @@ document.body.dataset.route = (function(r){ return ['build','currency','market',
             <a href="#/trade" data-route="trade"><i class="ti ti-trade" aria-hidden="true"></i>Trade</a>
           </div></div>
         <a href="#/craft" data-route="craft"><i class="ti ti-craft" aria-hidden="true"></i>Craft</a>
-        <a href="#/data" data-route="data"><i class="ti ti-data" aria-hidden="true"></i>Data</a>
+        <div class="navdrop"><button type="button" class="navdrop-b" aria-expanded="false" aria-controls="nd-data">Data<svg class="caret" viewBox="0 0 10 10" aria-hidden="true"><path d="M2 3.5 5 6.5 8 3.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          <div class="navdrop-m" id="nd-data">
+            <a href="#/data" data-route="data"><i class="ti ti-data" aria-hidden="true"></i>Data</a>
+            <a href="#/patches" data-route="patches"><i class="ti ti-patches" aria-hidden="true"></i>Patches</a>
+          </div></div>
       </nav>
       <div class="topmore" id="topmore">
         <button id="notesbtn" type="button" class="notesbtn">Patch notes <span class="ct wait">v0.00</span></button>
@@ -150,6 +159,10 @@ document.body.dataset.route = (function(r){ return ['build','currency','market',
           <li><a href="#/?k=t" data-list="t"><i class="ti ti-clusters" aria-hidden="true"></i><span>Clusters</span><span class="toc-n" data-k="t"></span></a></li>
           <li><a href="#/?k=y" data-list="y"><i class="ti ti-ascendancy" aria-hidden="true"></i><span>Ascendancies</span><span class="toc-n" data-k="y"></span></a></li>
         </ul></div>
+        <div class="toc-sec"><h3>World</h3><ul>
+          <li><a href="#/?k=r" data-list="r"><i class="ti ti-areas" aria-hidden="true"></i><span>Areas</span><span class="toc-n" data-k="r"></span></a></li>
+          <li><a href="#/?k=j" data-list="j"><i class="ti ti-quests" aria-hidden="true"></i><span>Quests</span><span class="toc-n" data-k="j"></span></a></li>
+        </ul></div>
         <div class="toc-sec"><h3>Mechanics</h3><ul>
           <li><a href="#/?k=w" data-list="w"><i class="ti ti-keywords" aria-hidden="true"></i><span>Keywords</span><span class="toc-n" data-k="w"></span></a></li>
           <li><a href="#/?k=h" data-list="h"><i class="ti ti-mechanics" aria-hidden="true"></i><span>How it works</span><span class="toc-n" data-k="h"></span></a></li>
@@ -164,6 +177,10 @@ document.body.dataset.route = (function(r){ return ['build','currency','market',
           <li><a href="#/currency" data-route="currency"><i class="ti ti-currency" aria-hidden="true"></i><span>Currency</span><span class="toc-n" data-k="c"></span></a></li>
           <li><a href="#/market" data-route="market"><i class="ti ti-market" aria-hidden="true"></i><span>Market</span><span class="toc-n"></span></a></li>
           <li><a href="#/trade" data-route="trade"><i class="ti ti-trade" aria-hidden="true"></i><span>Trade</span><span class="toc-n"></span></a></li>
+        </ul></div>
+        <div class="toc-sec"><h3>Data</h3><ul>
+          <li><a href="#/data" data-route="data"><i class="ti ti-data" aria-hidden="true"></i><span>Data</span><span class="toc-n"></span></a></li>
+          <li><a href="#/patches" data-route="patches"><i class="ti ti-patches" aria-hidden="true"></i><span>Patches</span><span class="toc-n"></span></a></li>
         </ul></div>
       </div>
       <!-- a community guide for a player who has not got to any of this yet (data/guides.json, tools/guides.py) -->
@@ -201,6 +218,7 @@ document.body.dataset.route = (function(r){ return ['build','currency','market',
   <section class="view" id="view-craft" data-view="craft" hidden></section>
   <section class="view" id="view-map" data-view="map" hidden></section>
   <section class="view" id="view-data" data-view="data" hidden></section>
+  <section class="view" id="view-patches" data-view="patches" hidden></section>
 </main>
 
 <footer class="foot">

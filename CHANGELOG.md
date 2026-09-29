@@ -3,6 +3,21 @@
 The full list of changes. The public patch notes (data/changelog.json, shown on the site) stay short.
 Add the details here first, then a short public line there.
 
+## 0.43 — 29 Sep 2026: know the fight
+
+- **Boss hits (#80, #126):** assets/bosses.js reads data/bosshits.json with the tab's own files: level, life, armour,
+  evasion, resistances and the big hits (attack, spell, over time; type; hit at the boss's level; cooldown), under
+  the file's Estimate label, with its stated working and patch. Tells and "how to survive" wait for data (#126).
+- **Rules and gold (#111, #88):** field `rules` (type rules) on keyword and mechanics cards; `exfee` on currency and
+  `goldv` on uniques (type gold, `of` names the table); a respec calculator under the passive tree (explore.html,
+  bridge.css). Gem gold by level and quality is not drawn yet.
+- **Map (#71):** tools/map.py seats the market's currency and the bosses (runtime_cards), a boss linked to the
+  uniques it drops: 8,614 dots.
+- **Gap report:** every area left out has its reason, from tools/areas.py why_hidden.
+- **Plan:** docs/data-plan.md settles the letters and field names the design docs shared (r Area, j Quest, v Act,
+  z Achievement, l Trial modifier, m Monster modifier, o Rune, s Odds pool; steps / goals, changed / treechg,
+  respen, hidden) and the decisions they left open.
+
 ## 0.42 — 29 Sep 2026: where the market is
 
 - **Currency and Trade (PR #178):** the count lives on the question chips (each shows what it would show, with the

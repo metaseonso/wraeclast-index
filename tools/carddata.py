@@ -188,6 +188,81 @@ def weights(index):
     return 'bases %d with a mod count, %d of them measured' % (n, meas)
 
 
+def tree_changes(index):
+    """tc and wa: what the patches in data/treechanges/ did to the nodes a passive card holds (#87).
+
+    tools/treeexport.py writes one file per patch, each node by the tree's own number. The drill-down's tree
+    (data/explore/tree.*.json) joins that number to the node's game id, which is a notable's or a keystone's
+    card id; a small passive's card holds every node with its name and effect, so those are joined by the two.
+    Per card, the newest step that did each thing: tc {nw: the patch it was added in, ch: the patch it was
+    last reworded or moved in, wn: its name before that}, wa: its lines before the newest reword that changed
+    them. A card holding more nodes than changed says how many ("0.5.1 (2 of 12)"). A node gone from the tree
+    has no card, so a removed one draws nothing. The number is never drawn (#12)."""
+    try:
+        ix = load('treechanges/index.json')
+    except FileNotFoundError:
+        return 'tree changes: none'
+    tree = one('explore/tree.*.json') or {'passives': []}
+    effect = lambda node: frozenset(plain(y) for x in node.get('t') or [] for y in x.split('\n') if y.strip())
+    by_id, by_line = {}, {}
+    for it in index['items']:
+        if it['k'] != 'p':
+            continue
+        it.pop('tc', None)
+        it.pop('wa', None)
+        by_id[it['id']] = it
+        if it.get('lo'):
+            by_line[(it['n'], frozenset(it.get('ls') or []))] = it
+    card_of, held = {}, Counter()
+    for node in tree['passives']:
+        it = by_id.get(node.get('id')) or by_line.get(((node.get('n') or '').strip(), effect(node)))
+        if it:
+            card_of[node['h']] = it
+            held[id(it)] += 1
+    got = {}   # id(card) -> {what: [patch, nodes, extra]}
+    for step in ix.get('steps') or []:
+        try:
+            f = load(step['file'])
+        except FileNotFoundError:
+            continue
+        v = step['to']
+        for what, rows in (('nw', f.get('added')), ('ch', f.get('reworded')), ('ch', f.get('moved'))):
+            for row in rows or []:
+                it = card_of.get(row.get('id'))
+                if not it:
+                    continue
+                g = got.setdefault(id(it), {'it': it})
+                was = g.get(what)
+                if not was or was[0] != v:
+                    g[what] = [v, set()]
+                g[what][1].add(row['id'])
+                old = row.get('was') or {}
+                if old.get('n') and old['n'] != it['n']:
+                    g['wn'] = old['n']
+                if old.get('ls'):
+                    g['wa'] = [plain(x) for x in old['ls']]
+    n = Counter()
+    for g in got.values():
+        it = g['it']
+        tc = {}
+        for what in ('nw', 'ch'):
+            if what in g:
+                v, nodes = g[what]
+                of = held[id(it)]
+                tc[what] = v + (' (%d of %d)' % (len(nodes), of) if of > 1 and len(nodes) < of else '')
+                n[what] += 1
+        if g.get('wn'):
+            tc['wn'] = g['wn']
+            n['wn'] += 1
+        if g.get('wa') and g['wa'] != it.get('ls'):
+            it['wa'] = g['wa']
+            n['wa'] += 1
+        if tc:
+            it['tc'] = tc
+    return 'passives: %d new, %d changed, %d renamed, %d with old lines (tree changes %s to %s)' % (
+        n['nw'], n['ch'], n['wn'], n['wa'], (ix.get('steps') or [{}])[0].get('from', '?'), ix.get('latest', '?'))
+
+
 def market_text(index):
     """ix: the official text for a priced name no card covers, where the market file has none itself."""
     carded = {it['n'] for it in index['items']}
@@ -230,7 +305,7 @@ def market_ids(index):
 
 def main():
     index = load('index.json')
-    said = [flavour(index), atlas_text(index), weights(index), market_text(index), market_ids(index)]
+    said = [flavour(index), atlas_text(index), weights(index), tree_changes(index), market_text(index), market_ids(index)]
     body = json.dumps(index, ensure_ascii=False, separators=(',', ':'))
     lastgood.save(DATA / 'index.json', body)
     print('data/index.json ' + str(len(body.encode('utf-8')) // 1024) + ' KB ' + DOT + ' ' + (' ' + DOT + ' ').join(said))
