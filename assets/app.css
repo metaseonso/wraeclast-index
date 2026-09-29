@@ -320,6 +320,9 @@ small.at-bonus{display:block}
 }
 .at-more{display:flex; flex-wrap:wrap; gap:8px 12px; align-items:center; margin:0 0 14px}
 .at-more .note{margin:0}
+.at-mech{margin:0 0 14px}
+.at-mech{justify-content:flex-start}
+.at-mech .at-mhd{flex-basis:100%; font-size:.8rem; color:var(--muted)}
 /* Bosses tab (assets/bosses.js): the list, and the item rows in a boss card */
 .bo-src{margin:0; font-size:12px; line-height:1.5; color:var(--faint)}
 .bo-ctl .field{flex:1 1 240px; max-width:440px}
