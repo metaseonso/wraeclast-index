@@ -13,6 +13,8 @@ never joined onto the entry, so no card could draw them:
   cw  how many mods can roll on a base item and whether their weights are measured (data/craft)
   ix  the official text for a name the market prices but no card covers, where the market file itself has
       none: it goes in the rest, so the popup can fill in a priced card that would otherwise say nothing
+  did a currency card's address word, the key its daily market file is kept under (data/market.json's `did`,
+      else the same rule on the name: tools/marketlib.py did), so its market fields can find it
 
 Reads files this repo already ships, and for the flavour lines they lack, the game's own flavour file. Writes data/index.json, then the two parts the app loads
 (tools/appdata.py). Run it after tools/sync.py, tools/atlas.py or tools/craft.py have written theirs:
@@ -208,9 +210,27 @@ def market_text(index):
     return 'priced names with no card of their own %d' % len(ix)
 
 
+def market_ids(index):
+    """did: a currency card's address word, the key of its part in the daily market files (tools/market_history.py
+    names each card file by it). The market's own currency cards carry theirs from data/market.json; an index
+    currency card gets the same word here, by the same rule."""
+    from marketlib import did
+    try:
+        market = load('market.json')
+    except FileNotFoundError:
+        market = {'items': {}}
+    dids = {m['n']: m['did'] for m in (market.get('items') or {}).values() if m.get('n') and m.get('did')}
+    n = 0
+    for it in index['items']:
+        if it['k'] == 'c':
+            it['did'] = did(it['n'], dids)
+            n += 1
+    return 'currency %d with a market address' % n
+
+
 def main():
     index = load('index.json')
-    said = [flavour(index), atlas_text(index), weights(index), market_text(index)]
+    said = [flavour(index), atlas_text(index), weights(index), market_text(index), market_ids(index)]
     body = json.dumps(index, ensure_ascii=False, separators=(',', ':'))
     lastgood.save(DATA / 'index.json', body)
     print('data/index.json ' + str(len(body.encode('utf-8')) // 1024) + ' KB ' + DOT + ' ' + (' ' + DOT + ' ').join(said))

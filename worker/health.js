@@ -42,6 +42,8 @@ export const JOBS = [
   ['file', 'exchange.json', 'Currency prices', 1, 2, 6, '2026-09-01'],
   ['file', 'market.json', 'Currency list', 1, 2, 6, '2026-09-01'],
   ['file', 'leagues.json', 'League dates', 6, 13, 26, '2026-09-01'],
+  // the market products (design/market-products.md): the data repo's daily Market job sends index.json with the rest
+  ['file', 'market/index.json', 'Market history', 24, 30, 54, '2026-09-28'],
   ['price', 'uniq', 'Unique prices', 24, 6, 26, '2026-09-01'],
   ['price', 'base', 'Base item prices', 24, 6, 26, '2026-09-23'],
   ['price', 'roll', 'Mod roll prices', 24, 6, 26, '2026-09-01'],

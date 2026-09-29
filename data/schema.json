@@ -141,6 +141,14 @@
       "anoint"
      ]
     },
+    "did": {
+     "json": [
+      "string"
+     ],
+     "by": [
+      "row"
+     ]
+    },
     "w": {
      "json": [
       "array"
@@ -457,6 +465,14 @@
       "anoint"
      ]
     },
+    "did": {
+     "json": [
+      "string"
+     ],
+     "by": [
+      "row"
+     ]
+    },
     "rq": {
      "json": [
       "array"
@@ -749,6 +765,14 @@
       "anoint"
      ]
     },
+    "did": {
+     "json": [
+      "string"
+     ],
+     "by": [
+      "row"
+     ]
+    },
     "asc": {
      "json": [
       "string"
@@ -1019,6 +1043,14 @@
      "by": [
       "row",
       "anoint"
+     ]
+    },
+    "did": {
+     "json": [
+      "string"
+     ],
+     "by": [
+      "row"
      ]
     },
     "reg": {
@@ -1293,6 +1325,14 @@
      "by": [
       "row",
       "anoint"
+     ]
+    },
+    "did": {
+     "json": [
+      "string"
+     ],
+     "by": [
+      "row"
      ]
     },
     "rq": {
@@ -1576,6 +1616,14 @@
       "anoint"
      ]
     },
+    "did": {
+     "json": [
+      "string"
+     ],
+     "by": [
+      "row"
+     ]
+    },
     "pr": {
      "json": [
       "array"
@@ -1829,6 +1877,14 @@
      "by": [
       "row",
       "anoint"
+     ]
+    },
+    "did": {
+     "json": [
+      "string"
+     ],
+     "by": [
+      "row"
      ]
     },
     "ty": {
@@ -2111,6 +2167,14 @@
      "by": [
       "row",
       "anoint"
+     ]
+    },
+    "did": {
+     "json": [
+      "string"
+     ],
+     "by": [
+      "row"
      ]
     },
     "dl": {
@@ -2408,6 +2472,14 @@
       "anoint"
      ]
     },
+    "did": {
+     "json": [
+      "string"
+     ],
+     "by": [
+      "row"
+     ]
+    },
     "max": {
      "json": [
       "number"
@@ -2671,6 +2743,14 @@
       "anoint"
      ]
     },
+    "did": {
+     "json": [
+      "string"
+     ],
+     "by": [
+      "row"
+     ]
+    },
     "ls": {
      "json": [
       "array",
@@ -2914,6 +2994,14 @@
      "by": [
       "row",
       "anoint"
+     ]
+    },
+    "did": {
+     "json": [
+      "string"
+     ],
+     "by": [
+      "row"
      ]
     },
     "max": {
@@ -3179,6 +3267,14 @@
       "anoint"
      ]
     },
+    "did": {
+     "json": [
+      "string"
+     ],
+     "by": [
+      "row"
+     ]
+    },
     "ls": {
      "json": [
       "array",
@@ -3422,6 +3518,14 @@
      "by": [
       "row",
       "anoint"
+     ]
+    },
+    "did": {
+     "json": [
+      "string"
+     ],
+     "by": [
+      "row"
      ]
     },
     "ls": {
@@ -3876,6 +3980,31 @@
    ],
    "by": [
     "weights"
+   ]
+  },
+  "did": {
+   "json": [
+    "string"
+   ],
+   "kinds": [
+    "a",
+    "b",
+    "c",
+    "d",
+    "g",
+    "h",
+    "i",
+    "p",
+    "q",
+    "t",
+    "u",
+    "w",
+    "y"
+   ],
+   "need": [],
+   "drawn": [],
+   "by": [
+    "row"
    ]
   },
   "dl": {

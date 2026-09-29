@@ -49,7 +49,7 @@ for(var k in WI_FIRST) WI_FIRST[k].catch(function(){});</script>
 </head>
 <body>
 <script>/* the tab first, so the top bar never changes shape on the first paint (assets/app.js show() keeps it) */
-document.body.dataset.route = (function(r){ return ['build','currency','trade','farms','atlas','bosses','craft','map','data'].indexOf(r) >= 0 ? r : 'home'; })((location.hash.match(/^#\/(\w+)/) || [])[1]);</script>
+document.body.dataset.route = (function(r){ return ['build','currency','market','trade','farms','atlas','bosses','craft','map','data'].indexOf(r) >= 0 ? r : 'home'; })((location.hash.match(/^#\/(\w+)/) || [])[1]);</script>
 
 <header class="top">
   <div class="top-in">
@@ -86,6 +86,7 @@ document.body.dataset.route = (function(r){ return ['build','currency','trade','
         <div class="navdrop"><button type="button" class="navdrop-b" aria-expanded="false" aria-controls="nd-economy">Economy<svg class="caret" viewBox="0 0 10 10" aria-hidden="true"><path d="M2 3.5 5 6.5 8 3.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
           <div class="navdrop-m" id="nd-economy">
             <a href="#/currency" data-route="currency"><i class="ti ti-currency" aria-hidden="true"></i>Currency</a>
+            <a href="#/market" data-route="market"><i class="ti ti-market" aria-hidden="true"></i>Market</a>
             <a href="#/trade" data-route="trade"><i class="ti ti-trade" aria-hidden="true"></i>Trade</a>
           </div></div>
         <a href="#/craft" data-route="craft"><i class="ti ti-craft" aria-hidden="true"></i>Craft</a>
@@ -161,6 +162,7 @@ document.body.dataset.route = (function(r){ return ['build','currency','trade','
         </ul></div>
         <div class="toc-sec"><h3>Economy</h3><ul>
           <li><a href="#/currency" data-route="currency"><i class="ti ti-currency" aria-hidden="true"></i><span>Currency</span><span class="toc-n" data-k="c"></span></a></li>
+          <li><a href="#/market" data-route="market"><i class="ti ti-market" aria-hidden="true"></i><span>Market</span><span class="toc-n"></span></a></li>
           <li><a href="#/trade" data-route="trade"><i class="ti ti-trade" aria-hidden="true"></i><span>Trade</span><span class="toc-n"></span></a></li>
         </ul></div>
       </div>
@@ -191,6 +193,7 @@ document.body.dataset.route = (function(r){ return ['build','currency','trade','
 
   <section class="view" id="view-build" data-view="build" hidden></section>
   <section class="view" id="view-currency" data-view="currency" hidden></section>
+  <section class="view" id="view-market" data-view="market" hidden></section>
   <section class="view" id="view-trade" data-view="trade" hidden></section>
   <section class="view" id="view-farms" data-view="farms" hidden></section>
   <section class="view" id="view-atlas" data-view="atlas" hidden></section>
