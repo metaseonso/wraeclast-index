@@ -738,7 +738,14 @@ function itemPage(m, e){
   const week = px && ((px.sp || []).filter(v => v !== null && isFinite(v)).length > 1);
   const priceLine = px && px.v !== undefined ? 'Today\'s price' + (week ? ' and a 7-day chart' : '') + '.'
     : an && an.div !== null ? 'Anoint with ' + an.parts.map(p => p.n).join(' + ') + ', at today\'s prices.' : '';
-  const desc = clip([lead(m, e), priceLine, lines.length ? lines.slice(0, 3).map(sentence).join(' ') : sentence(it.t)].filter(Boolean).join(' '));
+  const said = lines.length ? lines.slice(0, 3).map(sentence).join(' ') : sentence(it.t);
+  const desc = clip([lead(m, e), priceLine, said].filter(Boolean).join(' '));
+  // a shared link (Discord, Reddit, X) is read when it is posted, so its preview carries the price, with the
+  // time it was checked in the same breath
+  let cost = px && px.v > 0 && moneyText(m, px.v);
+  if(cost === '1 div') cost = m.rate ? fmt(Math.round(m.rate)) + ' ex' : '';   // the Divine Orb, in exalted
+  if(cost === '1 ex') cost = '';                                                // the Exalted Orb is the unit
+  const share = cost ? clip([it.n + ': ' + cost + '.', 'Checked ' + when(checkedAt(m, px)) + '.', lead(m, e), said].filter(Boolean).join(' ')) : '';
   const title = titleOf(e, px) + ' | Wraeclast Index';
 
   // the card, in the app's own markup
@@ -819,7 +826,7 @@ function itemPage(m, e){
   if(g !== LISTS[K.list].h1) crumbs.push([g, '/' + K.list + '#' + anchor(g)]);
   crumbs.push([it.n, path]);
   return page(m, {
-    title, desc, path, list: K.list, art: artOf(it), alt: it.n, md: '/md/item/' + e.slug + '.md',
+    title, desc, share, path, list: K.list, art: artOf(it), alt: it.n, md: '/md/item/' + e.slug + '.md',
     ld: ld(m, {path, title, desc, crumbs, thing: thingOf(m, e, px), day: px ? m.day : m.gen, art: artOf(it), px}),
     body: crumbsHTML(crumbs) + card + more + browse(),
   });
@@ -962,7 +969,7 @@ ${navHTML('/').split('\n').map(l => '      ' + l).join('\n')}
 /* `art` is the card's own picture, where the thing has one of its own. A page that has one says so instead of
    the brand card: a share of one unique shows that unique, and a crawler is handed the same picture the
    structured data points at. A page with none keeps the wide brand card. */
-function page(m, {title, desc, path, body, ld: data, noindex, art, alt, md}){
+function page(m, {title, desc, share, path, body, ld: data, noindex, art, alt, md}){
   const url = SITE + path;
   const img = art || SITE + '/assets/brand/social.png';
   const imgAlt = art ? alt || title : 'Wraeclast Index: Path of Exile 2, made easier for every kind of player.';
@@ -979,7 +986,7 @@ ${md ? `<link rel="alternate" type="text/markdown" href="${md}">\n` : ''}<link r
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Wraeclast Index">
 <meta property="og:title" content="${esc(title)}">
-<meta property="og:description" content="${esc(desc)}">
+<meta property="og:description" content="${esc(share || desc)}">
 <meta property="og:url" content="${url}">
 <meta property="og:image" content="${esc(img)}">
 ${art ? '' : '<meta property="og:image:width" content="1200">\n<meta property="og:image:height" content="630">\n'}<meta property="og:image:alt" content="${esc(imgAlt)}">
