@@ -1440,6 +1440,14 @@ function clarifyFill(host, it, f, o){
   lazy('./clarify.js', 'What players report').then(m => { if(host.isConnected) m.fill(host, it, f, o); }, () => {});
 }
 
+/* ---------- player drop reports ----------
+   "I got it from there", counted on both ends (assets/kinds.js gotfrom and gothere, worker/community.js). Live,
+   so the box is left and assets/drops.js fills it when the answer lands. In the popup only. */
+function reportsFill(host, it, f, o){
+  if(!host) return;
+  lazy('./drops.js', 'Player reports').then(m => { if(host.isConnected) m.fill(host, it, f, o); }, () => {});
+}
+
 /* ---------- a field the kind's own module fills ----------
    A card that is an application rather than a row of the index leaves a box and its own module puts the
    application in it (KINDS own), the same shape as a field whose table is a file of its own. One renderer,
@@ -1753,6 +1761,8 @@ export const TYPE = {
     ? '<div class="card-clar" data-fill="' + esc(name) + '"></div>' : ''},
   heat:   {raw: 1, fill: clarifyFill, v: (it, f, o, name) => o.full
     ? '<div class="card-heat" data-fill="' + esc(name) + '"></div>' : ''},
+  reports: {raw: 1, fill: reportsFill, v: (it, f, o, name) => o.full && it.n
+    ? '<div class="card-got" data-fill="' + esc(name) + '"></div>' : ''},
   swap:   {raw: 1, v: (it, f, o) => swapHTML(it, f, o.full)},
   flow:   {raw: 1, v: (it, f, o) => flowHTML(it, o.full)},
   source: {raw: 1, v: (it, f) => it[f.at] ? '<p class="card-src">' + esc(it[f.at]) + '</p>' : ''},

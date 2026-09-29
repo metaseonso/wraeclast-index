@@ -1,4 +1,4 @@
-/* What players do together: popular trade searches (and later, suggestions).
+/* What players do together: popular trade searches, notes from the Suggest button, and drop reports.
    Only the search itself is stored. Rate limits use a hash of the address with a random salt that changes
    every day, so nothing can be traced back to a person. */
 
@@ -14,8 +14,9 @@ export function sameSite(request, url){
   return request.headers.get('X-WI') === '1' && (!origin || new URL(origin).host === url.host);
 }
 
-/* at most `max` of `action` per address per hour */
-export async function allowed(env, request, action, max){
+/* at most `max` of `action` per address per hour, or per `span` seconds. A window never runs past midnight UTC:
+   the salt changes there and the key with it, so the row is spent anyway, and the day's first call deletes it. */
+export async function allowed(env, request, action, max, span = 3600){
   const day = new Date().toISOString().slice(0, 10);
   let salt = await env.DB.prepare('SELECT v FROM meta WHERE k = ?').bind('salt:' + day).first();
   if(!salt){
@@ -26,12 +27,12 @@ export async function allowed(env, request, action, max){
     await env.DB.prepare('DELETE FROM hits WHERE until < ?').bind(Math.floor(Date.now() / 1000)).run();
   }
   const key = await sha(salt.v + '|' + (request.headers.get('CF-Connecting-IP') || '') + '|' + action);
-  const now = Math.floor(Date.now() / 1000);
+  const now = Math.floor(Date.now() / 1000), midnight = (Math.floor(now / 86400) + 1) * 86400;
   const row = await env.DB.prepare('SELECT n, until FROM hits WHERE key = ?').bind(key).first();
   if(row && row.until > now && row.n >= max) return false;
   await env.DB.prepare(`INSERT INTO hits (key, n, until) VALUES (?1, 1, ?2)
     ON CONFLICT(key) DO UPDATE SET n = CASE WHEN until > ?3 THEN n + 1 ELSE 1 END, until = CASE WHEN until > ?3 THEN until ELSE ?2 END`)
-    .bind(key, now + 3600, now).run();
+    .bind(key, Math.min(now + span, midnight), now).run();
   return true;
 }
 
@@ -97,6 +98,92 @@ async function reported(env, ctx, url){
   const res = json(200, await reportOn(env, card), {'Cache-Control': 'public, max-age=60'});
   if(ctx) ctx.waitUntil(caches.default.put(key, res.clone()));
   return res;
+}
+
+/* ---------- drop reports (#125) ----------
+   "I got <item> from <boss or area>", with the area level and the day. Drop pools are held on GGG's servers, so
+   no file says what drops where; players can. Both ends are named by their card, by name and never by id: the
+   item "u:<name>", where it fell "x:<boss>" or "r:<area>" (migration 0012).
+
+   Three rules, and nothing is moderated by hand:
+     * both ends must be cards the site has: the same files the cards are drawn from (data/dropsfrom.json for
+       the uniques, data/bosses.json, data/areas.json), read off the deploy's own files once an hour
+     * a report whose area level is under the item's drop level (data/dropsfrom.json lv) is kept but held: it
+       is in no count on a card, and the owner's dashboard counts it (worker/dash.js)
+     * a pair is shown once AGREE reports that are not held name it, and then as a count, never a rate
+   One report per item and place per address a day, by the same daily-salted hash as every other limit. */
+const AGREE = 3;
+const FROM = /^[xr]:[^\u0000-\u001f]{1,78}$/, ITEM = /^u:[^\u0000-\u001f]{1,78}$/;
+const FIRST_DAY = '2024-12-06';   // Path of Exile 2 opened: no drop is older
+let NAMES = null;
+async function names(env, origin){
+  if(NAMES && NAMES.until > Date.now()) return NAMES;
+  if(!env.ASSETS) return null;
+  const get = p => env.ASSETS.fetch(new Request(origin + p)).then(r => r.ok ? r.json() : null).catch(() => null);
+  const [d, b, a] = await Promise.all([get('/data/dropsfrom.json'), get('/data/bosses.json'), get('/data/areas.json')]);
+  if(!d || !d.uniques || !b || !a) return NAMES;   // a file that does not answer keeps the last good lists
+  NAMES = {items: new Map(Object.entries(d.uniques).map(([n, e]) => [n, +(e && e.lv) || 0])),
+    from: new Set([...(b.bosses || []).map(x => 'x:' + x.name), ...(a.areas || []).map(x => 'r:' + x.n)]),
+    until: Date.now() + 3600e3};
+  return NAMES;
+}
+function dayOk(day){
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(day) || isNaN(Date.parse(day + 'T00:00:00Z'))) return false;
+  const latest = new Date(Date.now() + 86400e3).toISOString().slice(0, 10);   // a player a timezone ahead
+  return day >= FIRST_DAY && day <= latest;
+}
+
+export async function drops(request, env, url, ctx){
+  if(request.method === 'GET') return dropsRead(env, ctx, url);
+  if(request.method !== 'POST' || !sameSite(request, url)) return json(403, {error: 'Not allowed.'});
+  let b = {};
+  try { b = await request.json(); } catch {}
+  const item = text(b.item, 80), from = text(b.from, 80), lvl = +b.lvl, day = text(b.day, 10);
+  if(!ITEM.test(item) || !FROM.test(from)) return json(400, {error: 'Item or place missing.'});
+  if(!Number.isInteger(lvl) || lvl < 1 || lvl > 100) return json(400, {error: 'Area level is 1 to 100.'});
+  if(!dayOk(day)) return json(400, {error: 'No such day.'});
+  const known = await names(env, url.origin);
+  if(!known) return json(503, {error: 'Reports are closed for now.'});
+  if(!known.items.has(item.slice(2))) return json(400, {error: 'No such unique.'});
+  if(!known.from.has(from)) return json(400, {error: 'No such boss or area.'});
+  if(!(await allowed(env, request, 'drop', 10))) return json(429, {error: 'Too many reports for now.'});
+  if(!(await allowed(env, request, 'drop:' + await sha(item + '|' + from), 1, 86400))) return json(429, {error: 'Already sent today.'});
+  const floor = known.items.get(item.slice(2)), held = floor && lvl < floor ? 1 : 0;
+  try {
+    await env.DB.prepare('INSERT INTO drops (item, src, lvl, day, at, held) VALUES (?, ?, ?, ?, ?, ?)')
+      .bind(item, from, lvl, day, new Date().toISOString(), held).run();
+  } catch { return json(503, {error: 'Reports are closed for now.'}); }
+  // the tally of the card it was sent from, straight back: the read is cached at the edge and would miss this one
+  return json(200, {ok: true, held: !!held, floor: held ? floor : 0, ...(await dropsFor(env, text(b.card, 80) === from ? from : item))});
+}
+
+/* One card's reports: an item's by where they fell, a boss's or an area's by what fell there. Pairs under
+   AGREE are left out, and so is every held report. */
+async function dropsFor(env, card){
+  const [mine, other] = card[0] === 'u' ? ['item', 'src'] : ['src', 'item'];
+  let rows = [];
+  try {
+    rows = (await env.DB.prepare(`SELECT ${other} AS k, COUNT(*) AS n FROM drops WHERE ${mine} = ? AND held = 0
+      GROUP BY ${other} HAVING n >= ${AGREE} ORDER BY n DESC, k LIMIT 40`).bind(card).all()).results || [];
+  } catch {}   // before migration 0012: no reports yet
+  return {card, agree: AGREE, rows: rows.map(r => [r.k, r.n])};
+}
+
+async function dropsRead(env, ctx, url){
+  const card = text(url.searchParams.get('card'), 80);
+  if(!ITEM.test(card) && !FROM.test(card)) return json(400, {error: 'No such card.'});
+  const key = new Request(url.origin + '/api/drops?card=' + encodeURIComponent(card));
+  const hit = await caches.default.match(key);
+  if(hit) return hit;
+  const res = json(200, await dropsFor(env, card), {'Cache-Control': 'public, max-age=300'});
+  if(ctx) ctx.waitUntil(caches.default.put(key, res.clone()));
+  return res;
+}
+
+/* the owner's dashboard: how many reports are held back (worker/dash.js) */
+export async function heldDrops(env){
+  try { return (await env.DB.prepare('SELECT COUNT(*) AS n FROM drops WHERE held = 1').first()).n || 0; }
+  catch { return null; }
 }
 
 /* ---------- popular trade searches ---------- */

@@ -569,6 +569,18 @@ export const FIELDS = {
      theirs — named, dated and under their own heading — and never as the game's own word. */
   players:  {type: 'players', slot: 'body', api: 'api/suggest'},
   heat:     {type: 'heat', slot: 'body', api: 'api/suggest'},
+  /* ---------- player drop reports (#125) ----------
+     "I got <item> from <boss or area>": both ends of one report, each on its own card. Live off
+     worker/community.js (migration 0012), so nothing of it is in the index or in first paint: the opened card
+     leaves a box and assets/drops.js fills it. Counts only, shown once 3 reports agree, under the field's
+     `label`. `side` is which end this card is; `ends` are the cards the other end may be, each read out of the
+     file the site already draws it from (`list` in that file: an object keyed by name, or rows whose `name`
+     field is the name). The worker checks a report against the same files. */
+  gotfrom:  {type: 'reports', slot: 'body', api: 'api/drops', side: 'item', label: 'Source: player reports', ends: [
+    {k: 'x', file: 'data/bosses.json', list: 'bosses', name: 'name', one: 'Boss'},
+    {k: 'r', file: 'data/areas.json', list: 'areas', name: 'n', one: 'Area'}]},
+  gothere:  {type: 'reports', slot: 'body', api: 'api/drops', side: 'from', label: 'Source: player reports', ends: [
+    {k: 'u', file: 'data/dropsfrom.json', list: 'uniques', one: 'Unique'}]},
   tags:     {type: 'tags', at: 'tags', slot: 'body', every: 1},
   anoint:   {type: 'anoint', at: 'rec', slot: 'body', every: 1},
   keywords: {type: 'chips', at: 'kw', slot: 'body', every: 1, ids: 1},   // the popup only: a way in, not a line of text
@@ -777,7 +789,7 @@ export const KINDS = [
    index: true, search: true, item: true, crawl: {word: 'unique', list: 'uniques', rank: 0, is: 'Thing'},
    sprite: 'uniques', make: {base: 'sub1'},
    builds: [{key: 'items'}],
-   fields: [...HEAD, 'reqs', 'corrupt', 'limit', 'group', 'props', 'implicit', ...SAYS, 'mapdanger', 'weight', ...REST, 'drop', 'goldv', ...FOOT],
+   fields: [...HEAD, 'reqs', 'corrupt', 'limit', 'group', 'props', 'implicit', ...SAYS, 'mapdanger', 'weight', ...REST, 'drop', 'gotfrom', 'goldv', ...FOOT],
    acts: ['trade', 'pool', 'full', 'pin', 'open'],
    rel: ['base', 'variants', 'grants', 'dropsfrom', 'rollsin', 'named', 'namedby', 'cat']},
 
@@ -870,7 +882,7 @@ export const KINDS = [
 
   {k: 'x', one: 'Boss', tone: 'str', many: 'Bosses', place: 'Bosses', link: './#/bosses?q=@n', own: './bosses.js',
    search: true,
-   fields: [...HEAD, ...BODY, ...FOOT],
+   fields: [...HEAD, ...BODY, 'gothere', ...FOOT],
    acts: ['pin', 'open'],
    rel: ['drops', 'foughtin', 'bossmech', 'namedby', 'cat']},
 
@@ -892,7 +904,7 @@ export const KINDS = [
   {k: 'r', one: 'Area', tone: 'muted', many: 'Areas', index: true, search: true,
    crawl: {word: 'area', list: 'areas', rank: 7, is: 'DefinedTerm'},
    fields: [...HEAD, 'waypoint', 'town', 'waystone', 'unsure', 'respen', 'monlife', 'mondmg', 'biome', 'content',
-            ...SAYS, 'hidden', 'corruption', ...REST, ...FOOT],
+            ...SAYS, 'hidden', 'corruption', ...REST, 'gothere', ...FOOT],
    acts: ['pin'],
    rel: ['leadsto', 'leadsfrom', 'bosshere', 'questhere', 'openedwith', 'onlyholds', 'actof', 'inact']},
 

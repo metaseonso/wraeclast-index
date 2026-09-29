@@ -23,7 +23,7 @@
    GETs above (tools/dev/dash.mjs). Only its SHA-256 (hex) is kept, in the OWNER_HASH secret; no OWNER_HASH,
    no key works. It reads only: never a write, never a sign-in. */
 import { PAGES } from '../assets/kinds.js';   // every page that is counted, from the one table the site reads
-import { sameSite, allowed } from './community.js';
+import { sameSite, allowed, heldDrops } from './community.js';
 import { cloudflare, quotaToday, aeSQL, TRACK_SET } from './cfstats.js';
 import { health } from './health.js';
 
@@ -329,6 +329,7 @@ export async function stats(env, url){
   const days = rangeOf(url), since = sinceOf(days), today = dayOf(), now = Date.now();
   const since48 = hourOf(now - 47 * 3600e3);
   const ae = aeCounts(env, since, since48);
+  const held = heldDrops(env);   // its own read: before migration 0012 it answers null and the rest still draws
   const [v, c, sg, sgCount, ld, ts] = (await env.DB.batch([
     env.DB.prepare('SELECT day, route, source, device, country, n FROM views WHERE day >= ?').bind(since),
     env.DB.prepare('SELECT route, label, SUM(n) AS n FROM clicks WHERE day >= ? GROUP BY route, label').bind(since),
@@ -392,7 +393,7 @@ export async function stats(env, url){
 
   return {
     days, since, today,
-    totals: {views, arrivals, clicks, newNotes: status.new},
+    totals: {views, arrivals, clicks, newNotes: status.new, heldDrops: await held},
     perDay: dayList.map(d => ({day: d, n: perDay.get(d) || 0})),
     routes: top(routes, ROUTES.length + 5, 'route'),
     sources: top(sources, 20, 'source').map(x => ({...x, kind: kindOf(x.source)})),
