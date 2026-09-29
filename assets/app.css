@@ -982,6 +982,22 @@ small.at-bonus{display:block}
 .pt-t{font-family:var(--mono); font-size:12px; color:var(--muted)}
 .pt-list .pt-n{text-align:right; font-family:var(--mono); padding-right:0}
 .pt-lg{display:none}
+/* ...and above it, what the data changed from one patch to the next: a chip per patch, a chip per kind, then the
+   changes grouped by kind (the rows are the card's own, .dif in assets/cards.css) */
+.pd h3{margin:0 0 8px; font-size:15px}
+.pd .kinds{justify-content:flex-start; margin:8px 0 0}
+.pd-sub{margin:8px 0 0}
+.pd-list{display:grid; gap:18px; margin-top:14px}
+.pd-g{display:grid; gap:10px}
+.pd-g h4{margin:0; font-size:12px; color:var(--faint); text-transform:uppercase; letter-spacing:.04em; font-weight:600}
+.pd-g h4 .ct{font-family:var(--mono); margin-left:4px}
+.pd-e{display:grid; gap:4px; padding-bottom:10px; border-bottom:1px solid var(--line)}
+.pd-n{margin:0; display:flex; flex-wrap:wrap; align-items:baseline; gap:4px 8px}
+.pd-go{all:unset; cursor:pointer; color:var(--accent); font-weight:600; font-size:13.5px}
+.pd-go:hover, .pd-go:focus-visible{text-decoration:underline}
+.pd-on .pd-go{font-weight:400; font-size:12.5px}
+.pd-nm{font-weight:600; font-size:13.5px}
+.pd-s, .pd-on{color:var(--faint); font-size:12px}
 @media (max-width:640px){
   .pt-list{min-width:0; font-size:12.5px}
   .pt-list .pt-lc{display:none}

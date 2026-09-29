@@ -60,6 +60,7 @@
       "row",
       "name",
       "gemgold",
+      "patchdiff",
       "changed"
      ],
      "need": 1,
@@ -478,6 +479,7 @@
       "name",
       "mapdanger",
       "weight",
+      "patchdiff",
       "changed",
       "drop",
       "goldv"
@@ -879,6 +881,7 @@
      "by": [
       "row",
       "name",
+      "patchdiff",
       "changed"
      ],
      "need": 1,
@@ -1275,6 +1278,7 @@
      "by": [
       "row",
       "name",
+      "patchdiff",
       "changed"
      ],
      "need": 1,
@@ -1654,6 +1658,7 @@
       "name",
       "canroll",
       "cancorrupt",
+      "patchdiff",
       "changed"
      ],
      "need": 1,
@@ -2040,6 +2045,7 @@
      "by": [
       "row",
       "name",
+      "patchdiff",
       "changed"
      ],
      "need": 1,
@@ -2400,6 +2406,7 @@
       "row",
       "name",
       "mapdanger",
+      "patchdiff",
       "changed"
      ],
      "need": 1,
@@ -2807,6 +2814,7 @@
       "adds",
       "weight",
       "exfee",
+      "patchdiff",
       "changed"
      ],
      "need": 1,
@@ -3208,6 +3216,7 @@
       "mondanger",
       "rules",
       "weight",
+      "patchdiff",
       "changed"
      ],
      "need": 1,
@@ -3587,6 +3596,7 @@
      "by": [
       "row",
       "name",
+      "patchdiff",
       "changed"
      ],
      "need": 1,
@@ -3937,6 +3947,7 @@
      "by": [
       "row",
       "name",
+      "patchdiff",
       "changed"
      ],
      "need": 1,
@@ -4306,6 +4317,7 @@
       "row",
       "name",
       "rules",
+      "patchdiff",
       "changed"
      ],
      "need": 1,
@@ -4656,6 +4668,7 @@
      "by": [
       "row",
       "name",
+      "patchdiff",
       "changed"
      ],
      "need": 1,
@@ -5088,6 +5101,7 @@
      "by": [
       "row",
       "name",
+      "patchdiff",
       "changed"
      ],
      "need": 1,
@@ -5495,6 +5509,7 @@
      "by": [
       "row",
       "name",
+      "patchdiff",
       "changed"
      ],
      "need": 1,
@@ -5955,6 +5970,7 @@
      "by": [
       "row",
       "name",
+      "patchdiff",
       "changed"
      ],
      "need": 1,
@@ -6393,6 +6409,7 @@
      "by": [
       "row",
       "name",
+      "patchdiff",
       "changed"
      ],
      "need": 1,
@@ -7934,6 +7951,7 @@
     "mapdanger",
     "mondanger",
     "name",
+    "patchdiff",
     "row",
     "rules",
     "weight"
