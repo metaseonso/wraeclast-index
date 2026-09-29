@@ -30,9 +30,9 @@ if(navigator.deviceMemory<=4||navigator.hardwareConcurrency<=4||matchMedia("(pre
 {"@type":"VideoGame","@id":"https://wraeclastindex.fyi/#game","name":"Path of Exile 2"}
 ]}
 </script>
-<script>/* what the first paint needs, asked for before anything else: today's prices, for the stamp (assets/app.js takes
-   it; the index follows once the page needs it) */
-window.WI_FIRST = {now: fetch('data/market.json?part=live')};
+<script>/* what the first paint needs, asked for before anything else: today's prices, for the stamp, and the manifest,
+   which names every other file (assets/app.js takes both; the index follows once the page needs it) */
+window.WI_FIRST = {now: fetch('data/market.json?part=live'), man: fetch('data/manifest.json', {cache: 'no-cache'})};
 for(var k in WI_FIRST) WI_FIRST[k].catch(function(){});</script>
 <link rel="stylesheet" href="assets/app.css">
 <link rel="stylesheet" href="assets/cards.css">
@@ -43,13 +43,14 @@ for(var k in WI_FIRST) WI_FIRST[k].catch(function(){});</script>
 <link rel="preload" href="assets/fonts/ibmplexsans-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="modulepreload" href="assets/app.js"><link rel="modulepreload" href="assets/keys.js">
 <link rel="modulepreload" href="assets/kinds.js"><link rel="modulepreload" href="assets/edges.js">
-<link rel="modulepreload" href="assets/marks.js">
+<link rel="modulepreload" href="assets/marks.js"><link rel="modulepreload" href="assets/rank.js">
+<link rel="modulepreload" href="assets/cut.js"><link rel="modulepreload" href="assets/graph.js">
 <link rel="icon" type="image/png" sizes="64x64" href="assets/brand/favicon-64.png">
 <link rel="icon" type="image/png" sizes="32x32" href="assets/brand/favicon-32.png">
 </head>
 <body>
 <script>/* the tab first, so the top bar never changes shape on the first paint (assets/app.js show() keeps it) */
-document.body.dataset.route = (function(r){ return ['build','currency','market','trade','farms','atlas','bosses','craft','map','data','patches','campaign','start'].indexOf(r) >= 0 ? r : 'home'; })((location.hash.match(/^#\/(\w+)/) || [])[1]);</script>
+document.body.dataset.route = (function(r){ return ['build','currency','market','trade','farms','atlas','bosses','craft','map','data','patches','campaign','runes','start'].indexOf(r) >= 0 ? r : 'home'; })((location.hash.match(/^#\/(\w+)/) || [])[1]);</script>
 
 <header class="top">
   <div class="top-in">
@@ -63,6 +64,8 @@ document.body.dataset.route = (function(r){ return ['build','currency','market',
             <a href="explore#gems"><i class="ti ti-gems" aria-hidden="true"></i>Gems</a>
             <a href="#/?k=b" data-list="b"><i class="ti ti-bases" aria-hidden="true"></i>Bases</a>
             <a href="#/?k=i" data-list="i"><i class="ti ti-classes" aria-hidden="true"></i>Item classes</a>
+            <a href="#/?k=o" data-list="o"><i class="ti ti-runes" aria-hidden="true"></i>Runes</a>
+            <a href="#/runes" data-route="runes"><i class="ti ti-recipes" aria-hidden="true"></i>Rune recipes</a>
           </div></div>
         <div class="navdrop"><button type="button" class="navdrop-b" aria-expanded="false" aria-controls="nd-passives">Passives<svg class="caret" viewBox="0 0 10 10" aria-hidden="true"><path d="M2 3.5 5 6.5 8 3.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
           <div class="navdrop-m" id="nd-passives">
@@ -77,6 +80,7 @@ document.body.dataset.route = (function(r){ return ['build','currency','market',
             <a href="#/campaign" data-route="campaign"><i class="ti ti-campaign" aria-hidden="true"></i>Campaign</a>
             <a href="#/?k=r" data-list="r"><i class="ti ti-areas" aria-hidden="true"></i>Areas</a>
             <a href="#/?k=j" data-list="j"><i class="ti ti-quests" aria-hidden="true"></i>Quests</a>
+            <a href="#/?k=z" data-list="z"><i class="ti ti-achievements" aria-hidden="true"></i>Achievements</a>
           </div></div>
         <div class="navdrop"><button type="button" class="navdrop-b" aria-expanded="false" aria-controls="nd-mechanics">Mechanics<svg class="caret" viewBox="0 0 10 10" aria-hidden="true"><path d="M2 3.5 5 6.5 8 3.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
           <div class="navdrop-m" id="nd-mechanics">
@@ -155,6 +159,8 @@ document.body.dataset.route = (function(r){ return ['build','currency','market',
           <li><a href="explore#gems" data-sec="gems"><i class="ti ti-gems" aria-hidden="true"></i><span>Gems</span><span class="toc-n" data-k="g"></span></a></li>
           <li><a href="#/?k=b" data-list="b"><i class="ti ti-bases" aria-hidden="true"></i><span>Bases</span><span class="toc-n" data-k="b"></span></a></li>
           <li><a href="#/?k=i" data-list="i"><i class="ti ti-classes" aria-hidden="true"></i><span>Item classes</span><span class="toc-n" data-k="i"></span></a></li>
+          <li><a href="#/?k=o" data-list="o"><i class="ti ti-runes" aria-hidden="true"></i><span>Runes</span><span class="toc-n" data-k="o"></span></a></li>
+          <li><a href="#/runes" data-route="runes"><i class="ti ti-recipes" aria-hidden="true"></i><span>Rune recipes</span><span class="toc-n"></span></a></li>
         </ul></div>
         <div class="toc-sec"><h3>Passives</h3><ul>
           <li><a href="explore#tree" data-sec="tree"><i class="ti ti-tree" aria-hidden="true"></i><span>Passive tree</span><span class="toc-n"></span></a></li>
@@ -167,6 +173,7 @@ document.body.dataset.route = (function(r){ return ['build','currency','market',
           <li><a href="#/campaign" data-route="campaign"><i class="ti ti-campaign" aria-hidden="true"></i><span>Campaign</span><span class="toc-n"></span></a></li>
           <li><a href="#/?k=r" data-list="r"><i class="ti ti-areas" aria-hidden="true"></i><span>Areas</span><span class="toc-n" data-k="r"></span></a></li>
           <li><a href="#/?k=j" data-list="j"><i class="ti ti-quests" aria-hidden="true"></i><span>Quests</span><span class="toc-n" data-k="j"></span></a></li>
+          <li><a href="#/?k=z" data-list="z"><i class="ti ti-achievements" aria-hidden="true"></i><span>Achievements</span><span class="toc-n" data-k="z"></span></a></li>
         </ul></div>
         <div class="toc-sec"><h3>Mechanics</h3><ul>
           <li><a href="#/?k=w" data-list="w"><i class="ti ti-keywords" aria-hidden="true"></i><span>Keywords</span><span class="toc-n" data-k="w"></span></a></li>
@@ -226,6 +233,7 @@ document.body.dataset.route = (function(r){ return ['build','currency','market',
   <section class="view" id="view-data" data-view="data" hidden></section>
   <section class="view" id="view-patches" data-view="patches" hidden></section>
   <section class="view" id="view-campaign" data-view="campaign" hidden></section>
+  <section class="view" id="view-runes" data-view="runes" hidden></section>
   <section class="view" id="view-start" data-view="start" hidden></section>
 </main>
 

@@ -835,6 +835,18 @@ small.at-bonus{display:block}
   .cxp-chips::-webkit-scrollbar{display:none}
   .cxp-list{max-height:none; overflow:visible}
 }
+/* Currency tab: the loot filter block (assets/currency.js). The rules keep their own lines and scroll inside
+   their box sideways, so a long BaseType line never widens the page */
+.sect-btns{display:flex; flex-wrap:wrap; gap:6px; align-self:center}
+.cxfilt h3{font-family:var(--disp); font-size:19px; margin:0 0 10px}
+.cxf-mode{display:flex; flex-wrap:wrap; align-items:center; gap:6px; margin-bottom:10px}
+.cxf-mode .chip{padding:3px 10px; font-size:12px}
+.cxf-over{display:inline-flex; align-items:center; gap:5px; font-size:12px; color:var(--muted); margin-right:6px}
+.cxf-over .field{width:84px; padding:4px 8px}
+.cxf-out{margin:0; max-height:46vh; overflow:auto; overscroll-behavior:contain; padding:10px 12px; border:1px solid var(--line);
+  border-radius:8px; background:var(--sunken, var(--surface)); font:12px/1.5 var(--mono); color:var(--text); white-space:pre; tab-size:4}
+.cxf-out:focus-visible{outline:none; border-color:var(--accent)}
+.cxf-ft{display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap; margin-top:10px}
 /* Admin: Cloudflare section */
 .dv-sect{margin:26px 0 6px; font-family:var(--disp); font-size:20px}
 .dv-g{display:inline-block; padding:1px 7px; border-radius:6px; font-family:var(--mono); font-size:12px; border:1px solid var(--line)}
@@ -989,6 +1001,25 @@ small.at-bonus{display:block}
   .pt-list td.pt-t{white-space:nowrap; font-size:11.5px}
   .pt-lg{display:block; font-family:var(--sans, inherit); font-size:11px; color:var(--faint)}
 }
+/* the Rune recipes page (assets/runes.js): the rune chips, then a recipe a row */
+.rn-ctl{display:flex; flex-direction:column; gap:10px; margin-bottom:12px}
+.rn-picks{display:flex; flex-wrap:wrap; gap:6px}
+.rn-make{flex:1 1 220px}
+.rn-list{display:flex; flex-direction:column}
+.rn-row{border-bottom:1px solid var(--line); padding:9px 0; display:flex; flex-direction:column; gap:4px}
+.rn-in{display:flex; flex-wrap:wrap; align-items:center; gap:4px 6px; font-size:13px}
+.rn-rune{color:var(--text); text-decoration:none}
+a.rn-rune:hover, a.rn-rune:focus-visible, .rn-out a:hover, .rn-out a:focus-visible, .rn-bands a:hover{color:var(--accent)}
+.rn-plus{color:var(--faint)}
+.rn-out{display:flex; flex-wrap:wrap; align-items:baseline; gap:4px 8px; font-size:13.5px}
+.rn-out a, .rn-bands a{color:var(--accent); text-decoration:none; font-weight:500}
+.rn-arrow{color:var(--faint)}
+.rn-meta{color:var(--faint); font-size:12px}
+.rn-off summary{cursor:pointer; font-size:12px; color:var(--muted)}
+.rn-off summary .pill{margin-left:6px}
+.rn-off ul{margin:4px 0 0; padding-left:18px; font-size:12px; color:var(--muted); line-height:1.6}
+.rn-lenrow{margin-bottom:8px}
+.rn-bands{min-width:0}
 
 /* ---------- the Market tab (assets/market.js) ---------- */
 .mk-block{margin:0 0 6px}

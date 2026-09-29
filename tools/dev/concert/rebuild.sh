@@ -28,7 +28,8 @@ git commit -q -m "Built data back to main's copy before the rebuild
 Co-Authored-By: Claude <noreply@anthropic.com>" 2>/dev/null
 echo "  main $(git rev-parse --short origin/main) merged; code differs from main in: $(git diff --name-only origin/main | grep -vE "$GEN" | tr '\n' ' ')"
 [ -d build ] && { chmod -R u+w build; rm -rf build; }
-WI_NO_TICKET=1 python tools/pipeline.py --from sync patch > "$LOG/pipe-$PR.txt" 2>&1
+# --force: data/ was just set back to main's copy, so a stage whose inputs match its last stamp must still run
+WI_NO_TICKET=1 python tools/pipeline.py --from sync patch --force > "$LOG/pipe-$PR.txt" 2>&1
 git checkout -q -- data/faults.json 2>/dev/null
 grep -qE "files? into data/ in one step" "$LOG/pipe-$PR.txt" && ! grep -q "^FAILED" "$LOG/pipe-$PR.txt" \
   || stop "pipeline: $(grep -E '^FAILED|DATA FAULT' "$LOG/pipe-$PR.txt" | head -2 | tr '\n' ' ')"

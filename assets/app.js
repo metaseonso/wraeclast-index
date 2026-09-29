@@ -460,6 +460,8 @@ export const first = (async () => {
 })();
 /* The search: the worker has every kind's rows, the bosses have joined, and the cards whose words mark other
    cards' lines are held (keywords, mechanics, interactions, and the keystones a keyword stands for). */
+// the search rows start downloading in the worker the moment the manifest is in, not after the prices and the meta
+SEEK.then(() => MAN).then(man => ask('fetch', {man, base: new URL('.', document.baseURI).href})).catch(() => {});
 export const searching = SEEK.then(() => first).then(async () => {
   await ask('init', {man: D.man, base: new URL('.', document.baseURI).href,
     market: Object.keys((D.market && D.market.items) || {}), runtime: D.rt.map(rtRow), seen: seenKeys()});
@@ -1015,6 +1017,20 @@ function gemGoldHTML(it, t, f){
   }
   return out && '<p class="card-facts">' + esc(f.label || '') + flag + '</p>' + out + src;
 }
+/* One word off a table of its own, found by the card's kind and the field's `at` ("c:Divine Orb" in its `of`
+   part), as a pill that links to where the table is from: the file names its source (`src`) and its address
+   (`url`), so a word that is not the game's says whose it is. A name the table does not hold draws nothing. */
+function keyedFill(host, it, f){
+  if(!host) return;
+  tableOf(f.file).then(t => {
+    const v = t && (t[f.of] || {})[it.k + ':' + it[f.at]];
+    if(!v || !host.isConnected) return;
+    host.textContent = (f.pre || '') + v + (t.url ? ' ↗' : '');
+    if(t.url) host.href = t.url;
+    if(t.src) host.title = t.src;
+    host.hidden = false;
+  });
+}
 const tableFill = draw => (host, it, f) => {
   if(!host) return;
   tableOf(f.file).then(t => {
@@ -1440,6 +1456,14 @@ function clarifyFill(host, it, f, o){
   lazy('./clarify.js', 'What players report').then(m => { if(host.isConnected) m.fill(host, it, f, o); }, () => {});
 }
 
+/* ---------- player drop reports ----------
+   "I got it from there", counted on both ends (assets/kinds.js gotfrom and gothere, worker/community.js). Live,
+   so the box is left and assets/drops.js fills it when the answer lands. In the popup only. */
+function reportsFill(host, it, f, o){
+  if(!host) return;
+  lazy('./drops.js', 'Player reports').then(m => { if(host.isConnected) m.fill(host, it, f, o); }, () => {});
+}
+
 /* ---------- a field the kind's own module fills ----------
    A card that is an application rather than a row of the index leaves a box and its own module puts the
    application in it (KINDS own), the same shape as a field whose table is a file of its own. One renderer,
@@ -1743,6 +1767,8 @@ export const TYPE = {
   market: {raw: 1, fill: mkFill, v: (it, f, o, name) => !o.full || !it[f.at] ? ''
     : f.slot === 'pill' ? '<span class="pill mk-pill" data-fill="' + esc(name) + '" hidden></span>'
     : '<div class="card-addsbox" data-fill="' + esc(name) + '" hidden></div>'},
+  keyed:  {raw: 1, fill: keyedFill, v: (it, f, o, name) => o.full && it[f.at]
+    ? '<a class="pill pill-src" data-fill="' + esc(name) + '" target="_blank" rel="noopener" hidden></a>' : ''},
   changed: {raw: 1, fill: changedFill, v: (it, f, o, name) => o.full && it[f.at]
     ? '<div class="card-addsbox card-chg" data-fill="' + esc(name) + '" hidden></div>' : ''},
   drop:   {raw: 1, fill: dropFill, v: (it, f, o, name) => o.full && it[f.at]
@@ -1753,6 +1779,8 @@ export const TYPE = {
     ? '<div class="card-clar" data-fill="' + esc(name) + '"></div>' : ''},
   heat:   {raw: 1, fill: clarifyFill, v: (it, f, o, name) => o.full
     ? '<div class="card-heat" data-fill="' + esc(name) + '"></div>' : ''},
+  reports: {raw: 1, fill: reportsFill, v: (it, f, o, name) => o.full && it.n
+    ? '<div class="card-got" data-fill="' + esc(name) + '"></div>' : ''},
   swap:   {raw: 1, v: (it, f, o) => swapHTML(it, f, o.full)},
   flow:   {raw: 1, v: (it, f, o) => flowHTML(it, o.full)},
   source: {raw: 1, v: (it, f) => it[f.at] ? '<p class="card-src">' + esc(it[f.at]) + '</p>' : ''},
@@ -3138,13 +3166,21 @@ export function mountTopSearch(host){
 }
 // every keyboard shortcut lives in keys.js; "Search everything" jumps into the big box on home, the top box everywhere else
 initKeys(() => (IS_APP && route() === 'home' && document.getElementById('q')) || TOPQ);
-lazy('./suggest.js').then(m => { m.mountSuggest(); m.mountFlag(); }).catch(() => {});   // the Suggest button, and the owner's own flag
-lazy('./notes.js').then(m => m.mountNotes()).catch(() => {});       // Patch notes, on every page
-lazy('./pins.js').then(m => m.mountPins()).catch(() => {});         // the Pins button, and the list it opens
-lazy('./runs.js').then(m => m.mountRuns()).catch(() => {});         // the run counter, and the key that counts one
-lazy('./support.js').then(m => m.mountSupport()).catch(() => {});   // Support link, once data/support.json is filled in
-lazy('./track.js').then(m => { TRACKER = m; m.mountTrack(); }).catch(() => {});       // page views and clicks for the owner's dashboard
-mountGuide();                                                       // the community guide under the hero
+/* The page's extras. A first visit that opens on a search (#/?q=...) takes the answer first: on a phone on 4G these
+   few files share the line with the search rows, so they wait until the search has answered (tools/dev/speed.mjs
+   phone, #117). Any other page loads them at once. */
+function extras(){
+  lazy('./suggest.js').then(m => { m.mountSuggest(); m.mountFlag(); }).catch(() => {});   // the Suggest button, and the owner's own flag
+  lazy('./notes.js').then(m => m.mountNotes()).catch(() => {});       // Patch notes, on every page
+  lazy('./pins.js').then(m => m.mountPins()).catch(() => {});         // the Pins button, and the list it opens
+  lazy('./runs.js').then(m => m.mountRuns()).catch(() => {});         // the run counter, and the key that counts one
+  lazy('./support.js').then(m => m.mountSupport()).catch(() => {});   // Support link, once data/support.json is filled in
+  lazy('./track.js').then(m => { TRACKER = m; m.mountTrack(); }).catch(() => {});       // page views and clicks for the owner's dashboard
+  mountGuide();                                                       // the community guide under the hero
+}
+if(document.getElementById('view-home') && /^#\/\?(.*&)?q=[^&]/.test(location.hash))
+  Promise.race([searching, new Promise(r => setTimeout(r, 8000))]).then(() => setTimeout(extras, 300), () => extras());
+else extras();
 
 /* A guide somebody else wrote, for a player who has not got to any of this yet. Linked where it helps,
    named where it is shown, never ours. The list is data/guides.json (tools/guides.py), which reads every

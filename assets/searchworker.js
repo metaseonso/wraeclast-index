@@ -4,6 +4,7 @@
    It holds every kind's search rows (data/search/<k>.<hash>.json, tools/shards.py): each card's name, sub line,
    art, the fields the ranking reads, and every other word the card carries. The page holds only the cards it
    shows. What it answers, each a message {id, op, ...} and a reply {id, ...}:
+     fetch    the manifest and where the site is: every kind's search rows asked for at once, for init to take
      init     the manifest, where the site is, today's priced keys, the cards the page makes itself (the market's
               currency, the bosses) and the trail; replies once every kind's rows are in
      runtime  the cards the page makes itself, again (the bosses land after the market)
@@ -76,12 +77,24 @@ function rebuild(){
   S.v++;
   R.vocabLater();
 }
+/* The search rows asked for as soon as the manifest is in (fetch), while the page still waits for its prices and
+   the card meta; init takes them from here. A file that failed is asked for again by init. */
+const EARLY = new Map();
+function fetchRows(m){
+  if(!S.base) S.base = m.base;
+  for(const K of Object.values(m.man.kinds)){
+    const f = K.search.file;
+    if(!EARLY.has(f)) EARLY.set(f, getJSON(f).catch(() => { EARLY.delete(f); return null; }));
+  }
+  return {};
+}
+const rowsOf = async f => (EARLY.has(f) && await EARLY.get(f)) || getJSON(f);
 async function init(m){
   S.man = m.man; S.base = m.base; S.market = new Set(m.market || []); S.seen = m.seen || [];
   S.runtime = m.runtime || [];
   const byKind = {};
   await Promise.all(Object.entries(S.man.kinds).map(async ([k, K]) => {
-    const part = unpack(await getJSON(K.search.file));
+    const part = unpack(await rowsOf(K.search.file));
     const rows = part.rows.map(r => take(k, r));
     // where each card's whole card is: its file, and its place in that file
     let c = 0, left = K.cards.length ? K.cards[0].n : 0, i = 0;
@@ -147,6 +160,7 @@ function answer(m, S){
 }
 const OPS = {
   init,
+  fetch: fetchRows,
   async runtime(m){ S.runtime = m.runtime || []; rebuild(); return {}; },
   async market(m){ S.market = new Set(m.market || []); S.v++; return {}; },
   async search(m){
@@ -167,6 +181,7 @@ const OPS = {
   },
 };
 export async function handle(m){
+  if(m.op === 'fetch') return OPS.fetch(m);
   if(m.op !== 'init' && m.op !== 'runtime' && m.op !== 'market') await S.ready;
   if(m.op === 'init') return S.ready = OPS.init(m);
   if(m.op === 'runtime' || m.op === 'market') await S.ready;

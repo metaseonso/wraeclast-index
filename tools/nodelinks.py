@@ -35,6 +35,8 @@ The rules, and no guessing:
   * a kind whose name is what a thing is rather than the name of one (NOT_A_NAME: the item classes) is left
     out for the same reason — "Gloves" in a mod line is the kind of item the mod rolls on, and "Shield" and
     "Ring" are a keyword and a base item before they are a class. Its own lines are read as any other card's.
+  * an achievement (TITLES) is named with a title of its own ("Hero", "Leader", "The Hunter"): a line that says
+    the words is never naming it. It is reached from the cards its steps need ("Asked by achievements").
   * no card has that name                    -> plain text, as before
 
 What is written, beside the lines (never in place of them, so every page still reads the plain text):
@@ -65,6 +67,7 @@ NO_LINK = {'w', 'q'}       # keywords and interactions: the page marks those its
                            # size budget, and the browser already holds every one of those cards
 NOT_A_NAME = {'i'}         # item classes: the words say what a thing is, never which card is meant
 NAMED_AFTER = {'t'}        # clusters: the name is their notable's or keystone's, and a line naming it means that
+TITLES = {'z'}             # achievements: a title of its own, never a name a line refers to
 FORGED = re.compile(r'^(Runeforged|Runemastered) ')
 FORMS = {'w', 'h'}         # kinds with other words they are reached by ("f")
 # A line that declares which kind it names. "Grants Skill: Ice Nova" is a gem, whatever else shares the name.
@@ -118,7 +121,7 @@ class Doors:
         for it in index['items']:
             # a low-ranked card's name is the stat's own wording and an item class's is what a thing is, not
             # the name of one: neither is a phrase to look for (see the rules above)
-            if it.get('lo') or it['k'] in NOT_A_NAME or it['k'] in NAMED_AFTER:
+            if it.get('lo') or it['k'] in NOT_A_NAME or it['k'] in NAMED_AFTER or it['k'] in TITLES:
                 continue
             by_name[it['n']].append(it)
         for it in index['items']:   # the other words a keyword is shown as, so a longer keyword beats a shorter card name
