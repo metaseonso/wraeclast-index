@@ -32,6 +32,8 @@ const UA = 'wraeclast-index/1.0 (contact: https://wraeclastindex.fyi/)';
 export default {
   async fetch(request, env, ctx){
     const url = new URL(request.url);
+    if(await flooding(request, env, url.pathname))
+      return new Response('Too many requests.', {status: 429, headers: {'Retry-After': '60', 'Cache-Control': 'no-store'}});
     if(url.pathname === '/data/market.json') return serveMarket(request, env, ctx);
     if(url.pathname.startsWith('/data/market/')) return marketFile(env, url, ctx);
     if(url.pathname === '/api/pob') return pob(url);
@@ -50,6 +52,20 @@ export default {
     return env.ASSETS.fetch(request);
   },
 };
+
+/* A cap per address on the worker's own paths (wrangler.jsonc ratelimits): a page asks 1 to 3 of them, so 120 a
+   minute is far above any player, and one script cannot spend the day's worker requests (docs/budget.md). The
+   jobs' paths carry their own key and have no cap. The address is hashed before Cloudflare counts it, and the count
+   lasts one minute. */
+const JOBS = new Set(['/api/prices/ingest', '/api/data/put', '/api/prices/state']);
+async function flooding(request, env, path){
+  const ip = env.LIMIT && !JOBS.has(path) && request.headers.get('CF-Connecting-IP');
+  if(!ip) return false;
+  try {
+    const h = new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode('wi-limit:' + ip)));
+    return !(await env.LIMIT.limit({key: Array.from(h.slice(0, 12), b => b.toString(16).padStart(2, '0')).join('')})).success;
+  } catch { return false; }
+}
 
 /* An hourly data file coming in (worker/files.js). When it is the Currency Exchange prices, the day's prices
    are also put into the league they belong to, once a day, so a currency's line survives the league
