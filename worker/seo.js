@@ -602,7 +602,7 @@ function otherTitle(e, g){
   if(e.k === 'a') return 'More from the Atlas';
   if(e.k === 'r') return 'Other areas in ' + g;
   if(e.k === 'j') return 'Other quests in ' + g;
-  return 'Other keywords';
+  return 'Other ' + LISTS[KIND[e.k].list].h1.toLowerCase();   // keywords, runes, achievements
 }
 
 /* ---------- item pages ---------- */
@@ -665,7 +665,7 @@ function titleOf(e, px){
   if(e.k === 'a') return it.n + ' – PoE2 ' + parts[0].replace(/\b\w/g, c => c.toUpperCase());
   if(e.k === 'r') return it.n + ' – PoE2 ' + parts[0] + ' Area';
   if(e.k === 'j') return it.n + ' – PoE2 ' + parts[0] + ' Quest';
-  return it.n + ' – PoE2 Keyword';
+  return it.n + ' – PoE2 ' + KIND[e.k].one;   // Keyword, Rune, Achievement
 }
 
 /* ---------- the thing itself, as a search engine reads it ----------
