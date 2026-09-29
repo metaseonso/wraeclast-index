@@ -2345,10 +2345,12 @@ function paintStep(){
   const uses = relSection(it, step.uses);
   body.appendChild(uses);
   const acts = actsHTML(it, opts, href);
-  if(acts){
+  // the patch the card's game data is from, at the foot of every card (#127); a price says its own age above
+  const patch = D.man && D.man.patch ? '<span class="ov-fresh" title="Game data from the game files of this patch">Patch ' + esc(D.man.patch) + '</span>' : '';
+  if(acts || patch){
     const row = document.createElement('div');
     row.className = 'ov-go';
-    row.innerHTML = acts;
+    row.innerHTML = patch + acts;
     body.appendChild(row);
     const tb = row.querySelector('.ttoggle');
     if(tb) tb.addEventListener('click', async () => {
