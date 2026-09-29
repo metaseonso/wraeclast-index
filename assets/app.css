@@ -968,6 +968,7 @@ small.at-bonus{display:block}
 .cp-bases{border-bottom:1px solid var(--line); padding:6px 0}
 .cp-bases summary{cursor:pointer}
 .cp-bases ul{margin:6px 0 4px}
+.st-words{justify-content:flex-start; margin:0 0 8px}
 .dt-scroll{overflow-x:auto}
 .dt-jobs{border-collapse:collapse; font-size:13px; min-width:420px}
 .dt-jobs th{text-align:left; font-weight:600; color:var(--faint); font-size:11.5px; text-transform:uppercase; letter-spacing:.04em}
