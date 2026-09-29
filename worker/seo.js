@@ -69,8 +69,10 @@ const LISTS = {
   atlas: {k: 'a', h1: 'Atlas', title: 'PoE2 Atlas: atlas passives, waystones, tablets and keys', app: '/#/atlas'},
   currency: {k: 'c', h1: 'Currency', title: 'PoE2 Currency Prices', app: '/#/currency'},
   keywords: {k: 'w', h1: 'Keywords', title: 'PoE2 Keywords', app: '/#/'},
+  areas: {k: 'r', h1: 'Areas', title: 'PoE2 Areas: every campaign and Atlas area', app: '/#/?k=r'},
+  quests: {k: 'j', h1: 'Quests', title: 'PoE2 Quests: rewards and permanent bonuses', app: '/#/?k=j'},
 };
-const ORDER = ['gems', 'uniques', 'passives', 'bases', 'atlas', 'currency', 'keywords'];
+const ORDER = ['gems', 'uniques', 'passives', 'bases', 'atlas', 'currency', 'keywords', 'areas', 'quests'];
 
 /* What the worker still answers here: /search, a redirect it cannot know before the request. Everything else is a
    file (crawl() below, through tools/build.mjs). */
@@ -530,6 +532,16 @@ function factsOf(it){
     if(it.sp !== undefined) f.push(it.sp + ' Spirit');
   }
   if((it.k === 'u' || it.k === 'b') && it.pr) f.push(...it.pr);
+  if(it.k === 'r'){
+    if(it.wp) f.push('Waypoint');
+    if(it.town) f.push('Town');
+    if(it.rs) f.push(it.rs + '% to all Elemental Resistances');
+    f.push(...(it.bio || []), ...(it.mc || []));
+  }
+  if(it.k === 'j'){
+    if(it.gb) f.push('Given by ' + it.gb);
+    if(it.rf) f.push('Reward from ' + it.rf);
+  }
   if(it.k === 'w' && it.use){
     const parts = [];
     for(const [k, one, many] of [['gems', 'gem', 'gems'], ['uniques', 'unique', 'uniques'], ['passives', 'passive', 'passives']])
@@ -548,12 +560,14 @@ function groupOf(e){
   if(e.k === 'c') return it.s || 'Currency';
   if(e.k === 'b') return parts[0];
   if(e.k === 'a') return it.at === 'tree' ? 'Atlas passives' + (parts[1] ? ' · ' + parts[1] : '') : parts[0];
+  if(e.k === 'r' || e.k === 'j') return parts[0];   // the act
   const c = e.sort.charAt(0).toUpperCase();
   return /[A-Z]/.test(c) ? c : '#';
 }
 function groupRank(e, g){
   if(e.k === 'p') return (e.it.asc ? 3 : /^Keystone/.test(g) ? 0 : /^Notable/.test(g) ? 1 : 2) + ' ' + g;
   if(e.k === 'c') return (g === 'Currency' ? '0 ' : '1 ') + g;
+  if(e.k === 'r' || e.k === 'j') return (g === 'Interlude' ? '5 ' : g === 'Endgame' ? '9 ' : '0 ') + g;   // the game's order
   return g;
 }
 // a group's own place on its list page: the section's id, the jump chip and the breadcrumb all read this one
@@ -574,6 +588,8 @@ function otherTitle(e, g){
   if(e.k === 'c') return g === 'Currency' ? 'More currency' : 'Other ' + g.toLowerCase();
   if(e.k === 'b') return 'Other ' + g.toLowerCase() + ' bases';
   if(e.k === 'a') return 'More from the Atlas';
+  if(e.k === 'r') return 'Other areas in ' + g;
+  if(e.k === 'j') return 'Other quests in ' + g;
   return 'Other keywords';
 }
 
@@ -623,6 +639,8 @@ function lead(m, e){
   if(e.k === 'c') return it.n + ': ' + singular(it.s).toLowerCase() + ' in Path of Exile 2.';
   if(e.k === 'b') return it.n + ': ' + parts[0].toLowerCase() + ' base in Path of Exile 2.';
   if(e.k === 'a') return it.n + ': ' + parts[0].toLowerCase() + ' in Path of Exile 2.';
+  if(e.k === 'r') return it.n + ': ' + parts[0] + ' area in Path of Exile 2' + (parts[1] ? ', ' + parts[1].toLowerCase() : '') + '.';
+  if(e.k === 'j') return it.n + ': ' + parts[0] + (parts[1] ? ' ' + parts[1].toLowerCase() : '') + ' quest in Path of Exile 2.';
   return it.n + ': Path of Exile 2 keyword.';
 }
 function titleOf(e, px){
@@ -633,6 +651,8 @@ function titleOf(e, px){
   if(e.k === 'c') return it.n + ' – PoE2 ' + singular(it.s) + (px && px.v !== undefined ? ' Price' : '');
   if(e.k === 'b') return it.n + ' – PoE2 ' + parts[0] + ' Base';
   if(e.k === 'a') return it.n + ' – PoE2 ' + parts[0].replace(/\b\w/g, c => c.toUpperCase());
+  if(e.k === 'r') return it.n + ' – PoE2 ' + parts[0] + ' Area';
+  if(e.k === 'j') return it.n + ' – PoE2 ' + parts[0] + ' Quest';
   return it.n + ' – PoE2 Keyword';
 }
 
@@ -746,6 +766,7 @@ function itemPage(m, e){
     if(lines.length > ni) body += '<ul class="card-ls">' + lines.slice(ni).map(x => '<li>' + esc(x) + '</li>').join('') + '</ul>';
   } else if(it.t) body = '<p class="card-tx">' + esc(it.t) + '</p>';
   if(it.o && it.o.length) body += '<p class="card-facts">Choose one:</p><ul class="card-ls">' + it.o.map(x => '<li>' + esc(x) + '</li>').join('') + '</ul>';
+  if(it.kp && it.kp.length) body += '<p class="card-facts">Permanent</p><ul class="card-ls">' + it.kp.map(x => '<li>' + esc(x) + '</li>').join('') + '</ul>';
   let price = '';
   if(px){
     if(px.h && px.h.length > 3){
@@ -830,7 +851,7 @@ function agesHTML(m, list){
 
 function entryHTML(m, x, withKind){
   const px = priceOf(m, x), it = x.it, parts = (it.s || '').split(' · ');
-  const sub = withKind ? KIND[x.k].one : x.k === 'g' ? parts[1] : x.k === 'u' ? parts[0] : x.k === 'b' ? parts[1] : '';
+  const sub = withKind ? KIND[x.k].one : x.k === 'g' ? parts[1] : x.k === 'u' ? parts[0] : x.k === 'b' || x.k === 'r' || x.k === 'j' ? parts[1] : '';
   return '<li class="k-' + x.k + '">' + link(x) + (sub ? '<span class="sub">' + esc(sub) + '</span>' : '') +
     (px && px.v !== undefined ? '<b class="px">' + moneyHTML(m, px.v) + '</b>' : '') + '</li>';
 }
@@ -857,6 +878,8 @@ function intro(m, name){
     atlas: 'The Atlas in Path of Exile 2' + patch + ': ' + n + ' atlas passives, waystone tiers, tablets, keys and atlas items, from the game files.',
     currency: n + ' currency items in Path of Exile 2' + (m.league ? ' with ' + m.league + ' prices from the in-game Currency Exchange' : '') + '. Updated every hour.',
     keywords: 'All ' + n + ' Path of Exile 2 keywords, in the game\'s own words.',
+    areas: 'All ' + n + ' areas in Path of Exile 2' + patch + ', the campaign and the Atlas: area levels, waypoints and what each area always carries, from the game files.',
+    quests: 'All ' + n + ' quests in Path of Exile 2' + patch + ': where each one goes, what it gives, and what it gives for good, from the game files.',
   }[name];
 }
 function listPage(m, name, all){
@@ -1138,6 +1161,7 @@ function itemWords(e){
   if(it.ls) out.push(...it.ls);
   else if(it.t) out.push(it.t);
   if(it.o) out.push('Choose one: ' + it.o.join(' / '));
+  if(it.kp) out.push('Permanent: ' + it.kp.join(' / '));
   if(it.tags) out.push('Tags: ' + it.tags.join(', '));
   return out.join('\n');
 }

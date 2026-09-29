@@ -118,6 +118,10 @@ export const INDEX = [
     {list: 't', icon: 'clusters', about: 'every cluster of the passive tree, and what it costs to take'},
     {list: 'y', icon: 'ascendancy', about: 'every ascendancy and its notables'},
   ]},
+  {id: 'world', name: 'World', pages: [
+    {list: 'r', icon: 'areas', about: 'every area: its level, waypoint, where it leads and who is fought there'},
+    {list: 'j', icon: 'quests', about: 'every quest: where it goes, what it gives, and what it gives for good'},
+  ]},
   {id: 'mechanics', name: 'Mechanics', pages: [
     {list: 'w', icon: 'keywords', about: "every game keyword, in the game's own words"},
     {list: 'h', name: 'How it works', icon: 'mechanics', about: 'how damage, defences and scaling work'},
@@ -334,6 +338,16 @@ export const MAPS = {
   place: {at: 'at'},              // every card listed in one section of the Atlas
   cat:   {at: 's', per: 'kind'},  // every card that carries the same sub line, inside its own kind
   job:   {at: 'job', per: 'kind'},// ...and every card whose own line says it does the same job (JOBS)
+  act:   {at: 'act', of: 'v'},    // every area and quest of one act, under that act's own card
+  /* `keys`: the field is a list of card keys, the card's own edges one way (REL `at`). The map is those edges
+     turned round, so the card at the other end finds every card that names it: a boss the areas it is fought
+     in, a Waystone the maps it opens. */
+  go:    {at: 'go', keys: 1},     // the areas an area leads to
+  bx:    {at: 'bx', keys: 1},     // the bosses fought in an area
+  wx:    {at: 'wx', keys: 1},     // the areas a quest walks
+  ox:    {at: 'ox', keys: 1},     // the Waystones that open a map
+  mx:    {at: 'mx', keys: 1},     // the content a map is kept to
+  rw:    {at: 'rw', keys: 1},     // the items a quest's reward windows offer
 };
 /* Every declaration a kind may carry. A key that is not here is a rule that reaches one kind, which is the
    shape the frame does not have: it belongs in FIELDS, FRAME, MAPS or REL. */
@@ -371,6 +385,16 @@ export const FIELDS = {
      renderer of its own. */
   points:   {type: 'number', at: 'pts', slot: 'pill', post: ' point inside', many: ' points inside'},
   shared:   {type: 'number', at: 'shr', slot: 'pill', post: ' shared with another cluster'},
+  /* An area and a quest (tools/world.py, design/areas.md and design/quests.md). */
+  waypoint: {type: 'flag', at: 'wp', slot: 'pill', is: 'Waypoint'},
+  town:     {type: 'flag', at: 'town', slot: 'pill', is: 'Town'},
+  waystone: {type: 'flag', at: 'way', slot: 'pill', is: 'Level from its Waystone'},
+  questgold: {type: 'number', at: 'gd', slot: 'pill', post: ' Gold'},
+  permanent: {type: 'flag', at: 'pm', slot: 'pill', is: 'Permanent'},
+  oneofset: {type: 'flag', at: 'pk', slot: 'pill', is: 'One of a set'},
+  /* Whatever the game files leave unsure on this card: a line the game never shows, a choice nobody has said
+     can be undone, an amount read from a column nobody has named. The pill says so and its note says why. */
+  unsure:   {type: 'flag', at: 'un', slot: 'pill', is: 'Subject to change', note: 'Depends on GGG. May change without notice.'},
 
   usetime:  {type: 'duration', at: 'ct', slot: 'fact', post: ' use time'},
   cost:     {type: 'cost', at: 'cost', slot: 'fact'},
@@ -380,6 +404,12 @@ export const FIELDS = {
   uses:     {type: 'uses', at: 'use', slot: 'fact'},
   weights:  {type: 'weights', at: 'cw', slot: 'fact'},       // how often a mod rolls here (tools/carddata.py)
   frommods: {type: 'lines', at: 'fm', slot: 'fact'},        // the modifiers with no card that give a buff (tools/buffs.py)
+  respen:   {type: 'number', at: 'rs', slot: 'fact', post: '% to all Elemental Resistances'},   // the area's penalty
+  biome:    {type: 'lines', at: 'bio', slot: 'fact'},
+  content:  {type: 'lines', at: 'mc', slot: 'fact'},        // what an Atlas map can hold (tools/atlascontent.py)
+  where:    {type: 'lines', at: 'wh', slot: 'fact'},        // the areas a quest walks, in its own order
+  givenby:  {type: 'text', at: 'gb', slot: 'fact', pre: 'Given by '},
+  rewardfrom: {type: 'text', at: 'rf', slot: 'fact', pre: 'Reward from '},
 
   lines:    {type: 'rich', at: 'ls', slot: 'body', every: 1},   // the effect lines: mods, stats, what it adds
   text:     {type: 'rich', at: 't', slot: 'body', every: 1},    // what it does, in the game's own words
@@ -388,6 +418,17 @@ export const FIELDS = {
   quality:  {type: 'rich', at: 'gq', slot: 'body'},
   // ...and a passive's lines before the newest patch that reworded them (tools/carddata.py, the tree export)
   was:      {type: 'rich', at: 'wa', slot: 'body', label: 'Was:'},
+  /* an area's lines the game never shows, under their own heading (tools/areas.py, tools/atlascontent.py) */
+  hidden:   {type: 'rich', at: 'hm', slot: 'body', label: 'Not shown in game'},
+  /* the reward windows: a row each, a choice where the row offers more than one (tools/quests.py) */
+  take:     {type: 'choice', at: 'tk', slot: 'body', label: 'Rewards', pick: 'Take one'},
+  keeps:    {type: 'rich', at: 'kp', slot: 'body', label: 'Permanent'},
+  /* What a weighted pool in a table of its own can add, each line with its share of the pool: here, what
+     corrupting or cleansing a map on the Atlas adds (data/atlascontent.json). A pool the file flags carries
+     the flag and its reason. Drawn on an opened card only. */
+  corruption: {type: 'weighted', at: 'cx', slot: 'body', file: 'data/atlascontent.json', from: 'corruption',
+    of: ['corrupted', 'cleansed'], say: {corrupted: 'Corrupted, it can add', cleansed: 'Cleansed, it can add'},
+    none: 'Corrupted, nothing more'},
   /* ...and the same words where the game wrote them as a table rather than a sentence: one row per slot.
      The card carries one or the other and never both, because the line is split where the card is made.
      `beside` is the slot names, drawn as the left-hand column. They are headings and take no marked words:
@@ -617,6 +658,24 @@ export const REL = {
   grants:   {label: 'Grants', edge: 'grants', needs: 'grants'},
   granted:  {label: 'Granted by', edge: 'granted', needs: 'grants'},
   section:  {label: 'Listed with', of: 'a', edge: 'section', map: 'place', filter: 'atlas'},
+  /* The world (tools/world.py). `own` reads the card's own list of keys at `at`; `back` the cards whose list
+     names this one, off the map of the same name. */
+  leadsto:  {label: 'Leads to', of: 'r', edge: 'own', at: 'go'},
+  leadsfrom: {label: 'Reached from', of: 'r', edge: 'back', map: 'go'},
+  bosshere: {label: 'Bosses here', of: 'x', edge: 'own', at: 'bx'},
+  foughtin: {label: 'Fought in', of: 'r', edge: 'back', map: 'bx'},
+  questwhere: {label: 'Where', of: 'r', edge: 'own', at: 'wx'},
+  questhere: {label: 'Quests here', of: 'j', edge: 'back', map: 'wx'},
+  openedwith: {label: 'Opened with', of: 'a', edge: 'own', at: 'ox'},
+  opens:    {label: 'Opens', of: 'r', edge: 'back', map: 'ox'},
+  onlyholds: {label: 'Can only hold', of: 'w', edge: 'own', at: 'mx'},
+  onlyon:   {label: 'Maps kept to this', of: 'r', edge: 'back', map: 'mx'},
+  rewards:  {label: 'Rewards', edge: 'own', at: 'rw'},
+  rewardin: {label: 'Quest reward in', of: 'j', edge: 'back', map: 'rw'},
+  // an act holds its areas and its quests, each in the order the game lists them; `of` picks which
+  inact:    {label: 'In this act', of: 'r', edge: 'act', map: 'act'},
+  questsin: {label: 'Quests in this act', of: 'j', edge: 'act', map: 'act'},
+  actof:    {label: 'Act', of: 'v', edge: 'actof', map: 'act'},
   cat:      {label: 'Listed with', edge: 'cat', map: 'cat'},
   job:      {label: 'Others that do this', edge: 'job', map: 'job'},
   named:    {label: 'Names', edge: 'named'},
@@ -681,7 +740,7 @@ export const KINDS = [
    make: {base: 'name', ni: 'lines'},
    fields: [...HEAD, 'reqs', 'props', 'implicit', 'weights', ...SAYS, 'canroll', 'cancorrupt', ...REST, ...FOOT],
    acts: ['trade', 'pool', 'bench', 'pin', 'craft'],
-   rel: ['uniques', 'grants', 'klassof', 'klass', 'named', 'namedby']},
+   rel: ['uniques', 'grants', 'klassof', 'klass', 'named', 'namedby', 'rewardin']},
 
   {k: 'i', one: 'Item class', tone: 'bronze', many: 'Item classes', place: 'Craft', link: 'craft',
    index: true, search: true,
@@ -695,20 +754,20 @@ export const KINDS = [
    px: {as: 'c'}, notitem: {at: 'at', is: 'tree'},
    fields: [...HEAD, 'nodety', 'ontree', 'warn', 'implicit', ...SAYS, 'mapdanger', ...REST, ...FOOT],
    acts: ['trade', 'pin', 'open'],
-   rel: ['section', 'named', 'namedby']},
+   rel: ['section', 'opens', 'rewardin', 'named', 'namedby']},
 
   {k: 'c', one: 'Currency', tone: 'c-currency', many: 'Currency', place: 'Currency', link: './#/currency?c=@id',
    index: true, search: true, item: true, crawl: {word: 'currency', list: 'currency', rank: 4, is: 'Thing'},
    px: {as: 'c'}, make: {nx: 'yes'}, gone: {at: 'nx'},
    fields: [...HEAD, 'droplv', ...SAYS, 'perslot', 'ladder', 'adds', 'exfee', ...REST, ...FOOT],
    acts: ['trade', 'pool', 'bench', 'pin', 'open'],
-   rel: ['named', 'namedby', 'job', 'cat']},
+   rel: ['named', 'namedby', 'job', 'rewardin', 'cat']},
 
   {k: 'w', one: 'Keyword', tone: 'accent', many: 'Keywords', sec: 'keywords', index: true, search: true, crawl: {word: 'keyword', list: 'keywords', rank: 3, is: 'DefinedTerm'},
    kw: 'id', rank: -25, words: {n: 'own', f: 'alt', mark: 'game'},
-   fields: [...HEAD, 'stacks', 'uses', ...SAYS, 'mondanger', 'rules', 'share', 'weight', 'mechlines', ...REST, ...FOOT],
+   fields: [...HEAD, 'stacks', 'uses', ...SAYS, 'mondanger', 'rules', 'share', 'weight', 'mechlines', 'corruption', ...REST, ...FOOT],
    acts: ['full', 'pin'],
-   rel: [...KWUSE, 'granted', 'named', 'namedby']},
+   rel: [...KWUSE, 'granted', 'onlyon', 'named', 'namedby']},
 
   /* An ascendancy: its class, the flavour text the game shows for it, its notables by name (each line a door to
      the notable's card, and the notable "Named by" it, tools/nodelinks.py) and where its eight points come from
@@ -748,7 +807,31 @@ export const KINDS = [
    search: true,
    fields: [...HEAD, ...BODY, ...FOOT],
    acts: ['pin', 'open'],
-   rel: ['drops', 'namedby', 'cat']},
+   rel: ['drops', 'foughtin', 'namedby', 'cat']},
+
+  /* The world, off the game's own tables (tools/world.py, design/areas.md, design/quests.md). An area is a
+     place: its level, where it leads, who is fought there, what it always carries, and, on the Atlas, what it
+     can hold and what corrupting it adds. A quest is where it walks, who gives it and what it gives. An act has
+     no list of its own: its card adds up what the act gives for good and holds its areas and quests. None of
+     them has a tab, so the card is the page. */
+  {k: 'r', one: 'Area', tone: 'muted', many: 'Areas', index: true, search: true,
+   crawl: {word: 'area', list: 'areas', rank: 7, is: 'DefinedTerm'},
+   fields: [...HEAD, 'waypoint', 'town', 'waystone', 'unsure', 'respen', 'biome', 'content',
+            ...SAYS, 'hidden', 'corruption', ...REST, ...FOOT],
+   acts: ['pin'],
+   rel: ['leadsto', 'leadsfrom', 'bosshere', 'questhere', 'openedwith', 'onlyholds', 'actof', 'inact']},
+
+  {k: 'j', one: 'Quest', tone: 'muted', many: 'Quests', index: true, search: true,
+   crawl: {word: 'quest', list: 'quests', rank: 8, is: 'DefinedTerm'},
+   fields: [...HEAD, 'questgold', 'permanent', 'oneofset', 'unsure', 'where', 'givenby', 'rewardfrom',
+            ...SAYS, 'take', 'keeps', ...REST, ...FOOT],
+   acts: ['pin'],
+   rel: ['questwhere', 'rewards', 'actof']},
+
+  {k: 'v', one: 'Act', tone: 'muted', many: 'Acts', index: true,
+   fields: [...HEAD, 'unsure', ...SAYS, 'keeps', 'take', ...REST, ...FOOT],
+   acts: ['pin'],
+   rel: ['inact', 'questsin']},
 
   /* The bench: one card, holding an item and the currency and omens picked for it before anything runs. It
      has no rows in the index — you reach it from a base, from the currency it crafts with, or from the Craft

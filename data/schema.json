@@ -338,6 +338,90 @@
      "by": [
       "declaration"
      ]
+    },
+    "act": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "go": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "bx": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "wx": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "ox": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "mx": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "rw": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
     }
    }
   },
@@ -627,6 +711,90 @@
      ]
     },
     "job": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "act": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "go": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "bx": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "wx": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "ox": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "mx": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "rw": {
      "json": [
       "string",
       "number",
@@ -929,6 +1097,90 @@
      "by": [
       "declaration"
      ]
+    },
+    "act": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "go": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "bx": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "wx": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "ox": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "mx": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "rw": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
     }
    }
   },
@@ -1192,6 +1444,90 @@
      ]
     },
     "job": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "act": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "go": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "bx": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "wx": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "ox": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "mx": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "rw": {
      "json": [
       "string",
       "number",
@@ -1486,6 +1822,90 @@
      "by": [
       "declaration"
      ]
+    },
+    "act": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "go": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "bx": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "wx": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "ox": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "mx": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "rw": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
     }
    }
   },
@@ -1731,6 +2151,90 @@
      ]
     },
     "job": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "act": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "go": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "bx": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "wx": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "ox": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "mx": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "rw": {
      "json": [
       "string",
       "number",
@@ -2014,6 +2518,90 @@
      ]
     },
     "job": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "act": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "go": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "bx": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "wx": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "ox": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "mx": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "rw": {
      "json": [
       "string",
       "number",
@@ -2309,6 +2897,90 @@
       "declaration"
      ]
     },
+    "act": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "go": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "bx": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "wx": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "ox": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "mx": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "rw": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
     "nx": {
      "json": [
       "string",
@@ -2477,6 +3149,17 @@
      ],
      "drawn": 1
     },
+    "cx": {
+     "json": [
+      "number",
+      "boolean",
+      "string"
+     ],
+     "by": [
+      "corruption"
+     ],
+     "drawn": 1
+    },
     "qt": {
      "json": [
       "string"
@@ -2577,6 +3260,90 @@
      ]
     },
     "job": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "act": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "go": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "bx": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "wx": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "ox": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "mx": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "rw": {
      "json": [
       "string",
       "number",
@@ -2823,6 +3590,90 @@
      ]
     },
     "job": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "act": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "go": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "bx": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "wx": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "ox": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "mx": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "rw": {
      "json": [
       "string",
       "number",
@@ -3097,6 +3948,90 @@
      "by": [
       "declaration"
      ]
+    },
+    "act": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "go": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "bx": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "wx": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "ox": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "mx": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "rw": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
     }
    }
   },
@@ -3334,6 +4269,90 @@
      ]
     },
     "job": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "act": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "go": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "bx": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "wx": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "ox": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "mx": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "rw": {
      "json": [
       "string",
       "number",
@@ -3590,6 +4609,90 @@
      "by": [
       "declaration"
      ]
+    },
+    "act": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "go": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "bx": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "wx": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "ox": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "mx": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "rw": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
     }
    }
   },
@@ -3674,6 +4777,1206 @@
      "drawn": 1
     }
    }
+  },
+  "r": {
+   "one": "Area",
+   "many": "Areas",
+   "rows": "index.json",
+   "fields": {
+    "k": {
+     "json": [
+      "string"
+     ],
+     "by": [
+      "row"
+     ],
+     "need": 1
+    },
+    "id": {
+     "json": [
+      "string"
+     ],
+     "by": [
+      "row"
+     ],
+     "need": 1
+    },
+    "n": {
+     "json": [
+      "string"
+     ],
+     "by": [
+      "row",
+      "name",
+      "changed"
+     ],
+     "need": 1,
+     "drawn": 1
+    },
+    "s": {
+     "json": [
+      "string"
+     ],
+     "by": [
+      "row",
+      "sub"
+     ],
+     "need": 1,
+     "drawn": 1
+    },
+    "img": {
+     "json": [
+      "string"
+     ],
+     "by": [
+      "row",
+      "art"
+     ]
+    },
+    "ic": {
+     "json": [
+      "array"
+     ],
+     "by": [
+      "row",
+      "art"
+     ]
+    },
+    "lx": {
+     "json": [
+      "array"
+     ],
+     "by": [
+      "row"
+     ]
+    },
+    "q": {
+     "json": [
+      "string"
+     ],
+     "by": [
+      "row"
+     ]
+    },
+    "lo": {
+     "json": [
+      "number"
+     ],
+     "by": [
+      "row"
+     ]
+    },
+    "f": {
+     "json": [
+      "array"
+     ],
+     "by": [
+      "row"
+     ]
+    },
+    "fg": {
+     "json": [
+      "string"
+     ],
+     "by": [
+      "row"
+     ]
+    },
+    "ac": {
+     "json": [
+      "number"
+     ],
+     "by": [
+      "row",
+      "anoint"
+     ]
+    },
+    "wp": {
+     "json": [
+      "number",
+      "boolean",
+      "string"
+     ],
+     "by": [
+      "waypoint"
+     ],
+     "drawn": 1
+    },
+    "town": {
+     "json": [
+      "number",
+      "boolean",
+      "string"
+     ],
+     "by": [
+      "town"
+     ],
+     "drawn": 1
+    },
+    "way": {
+     "json": [
+      "number",
+      "boolean",
+      "string"
+     ],
+     "by": [
+      "waystone"
+     ],
+     "drawn": 1
+    },
+    "un": {
+     "json": [
+      "number",
+      "boolean",
+      "string"
+     ],
+     "by": [
+      "unsure"
+     ],
+     "drawn": 1
+    },
+    "rs": {
+     "json": [
+      "number"
+     ],
+     "by": [
+      "respen"
+     ],
+     "drawn": 1
+    },
+    "bio": {
+     "json": [
+      "array"
+     ],
+     "by": [
+      "biome"
+     ],
+     "drawn": 1
+    },
+    "mc": {
+     "json": [
+      "array"
+     ],
+     "by": [
+      "content"
+     ],
+     "drawn": 1
+    },
+    "ls": {
+     "json": [
+      "array",
+      "string"
+     ],
+     "by": [
+      "lines"
+     ],
+     "drawn": 1
+    },
+    "t": {
+     "json": [
+      "array",
+      "string"
+     ],
+     "by": [
+      "text"
+     ],
+     "drawn": 1
+    },
+    "hm": {
+     "json": [
+      "array",
+      "string"
+     ],
+     "by": [
+      "hidden"
+     ],
+     "drawn": 1
+    },
+    "cx": {
+     "json": [
+      "number",
+      "boolean",
+      "string"
+     ],
+     "by": [
+      "corruption"
+     ],
+     "drawn": 1
+    },
+    "qt": {
+     "json": [
+      "string"
+     ],
+     "by": [
+      "quote"
+     ],
+     "drawn": 1
+    },
+    "o": {
+     "json": [
+      "array"
+     ],
+     "by": [
+      "options"
+     ],
+     "drawn": 1
+    },
+    "fl": {
+     "json": [
+      "array"
+     ],
+     "by": [
+      "flow"
+     ],
+     "drawn": 1
+    },
+    "src": {
+     "json": [
+      "string"
+     ],
+     "by": [
+      "source"
+     ],
+     "drawn": 1
+    },
+    "tags": {
+     "json": [
+      "array"
+     ],
+     "by": [
+      "tags"
+     ],
+     "drawn": 1
+    },
+    "rec": {
+     "json": [
+      "array"
+     ],
+     "by": [
+      "anoint"
+     ],
+     "drawn": 1
+    },
+    "kw": {
+     "json": [
+      "array"
+     ],
+     "by": [
+      "keywords"
+     ],
+     "ids": 1
+    },
+    "base": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "cr": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "at": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "job": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "act": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "go": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "bx": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "wx": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "ox": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "mx": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "rw": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    }
+   }
+  },
+  "j": {
+   "one": "Quest",
+   "many": "Quests",
+   "rows": "index.json",
+   "fields": {
+    "k": {
+     "json": [
+      "string"
+     ],
+     "by": [
+      "row"
+     ],
+     "need": 1
+    },
+    "id": {
+     "json": [
+      "string"
+     ],
+     "by": [
+      "row"
+     ],
+     "need": 1
+    },
+    "n": {
+     "json": [
+      "string"
+     ],
+     "by": [
+      "row",
+      "name",
+      "changed"
+     ],
+     "need": 1,
+     "drawn": 1
+    },
+    "s": {
+     "json": [
+      "string"
+     ],
+     "by": [
+      "row",
+      "sub"
+     ],
+     "need": 1,
+     "drawn": 1
+    },
+    "img": {
+     "json": [
+      "string"
+     ],
+     "by": [
+      "row",
+      "art"
+     ]
+    },
+    "ic": {
+     "json": [
+      "array"
+     ],
+     "by": [
+      "row",
+      "art"
+     ]
+    },
+    "lx": {
+     "json": [
+      "array"
+     ],
+     "by": [
+      "row"
+     ]
+    },
+    "q": {
+     "json": [
+      "string"
+     ],
+     "by": [
+      "row"
+     ]
+    },
+    "lo": {
+     "json": [
+      "number"
+     ],
+     "by": [
+      "row"
+     ]
+    },
+    "f": {
+     "json": [
+      "array"
+     ],
+     "by": [
+      "row"
+     ]
+    },
+    "fg": {
+     "json": [
+      "string"
+     ],
+     "by": [
+      "row"
+     ]
+    },
+    "ac": {
+     "json": [
+      "number"
+     ],
+     "by": [
+      "row",
+      "anoint"
+     ]
+    },
+    "gd": {
+     "json": [
+      "number"
+     ],
+     "by": [
+      "questgold"
+     ],
+     "drawn": 1
+    },
+    "pm": {
+     "json": [
+      "number",
+      "boolean",
+      "string"
+     ],
+     "by": [
+      "permanent"
+     ],
+     "drawn": 1
+    },
+    "pk": {
+     "json": [
+      "number",
+      "boolean",
+      "string"
+     ],
+     "by": [
+      "oneofset"
+     ],
+     "drawn": 1
+    },
+    "un": {
+     "json": [
+      "number",
+      "boolean",
+      "string"
+     ],
+     "by": [
+      "unsure"
+     ],
+     "drawn": 1
+    },
+    "wh": {
+     "json": [
+      "array"
+     ],
+     "by": [
+      "where"
+     ],
+     "drawn": 1
+    },
+    "gb": {
+     "json": [
+      "string"
+     ],
+     "by": [
+      "givenby"
+     ],
+     "drawn": 1
+    },
+    "rf": {
+     "json": [
+      "string"
+     ],
+     "by": [
+      "rewardfrom"
+     ],
+     "drawn": 1
+    },
+    "ls": {
+     "json": [
+      "array",
+      "string"
+     ],
+     "by": [
+      "lines"
+     ],
+     "drawn": 1
+    },
+    "t": {
+     "json": [
+      "array",
+      "string"
+     ],
+     "by": [
+      "text"
+     ],
+     "drawn": 1
+    },
+    "tk": {
+     "json": [
+      "array"
+     ],
+     "by": [
+      "take"
+     ],
+     "drawn": 1
+    },
+    "kp": {
+     "json": [
+      "array",
+      "string"
+     ],
+     "by": [
+      "keeps"
+     ],
+     "drawn": 1
+    },
+    "qt": {
+     "json": [
+      "string"
+     ],
+     "by": [
+      "quote"
+     ],
+     "drawn": 1
+    },
+    "o": {
+     "json": [
+      "array"
+     ],
+     "by": [
+      "options"
+     ],
+     "drawn": 1
+    },
+    "fl": {
+     "json": [
+      "array"
+     ],
+     "by": [
+      "flow"
+     ],
+     "drawn": 1
+    },
+    "src": {
+     "json": [
+      "string"
+     ],
+     "by": [
+      "source"
+     ],
+     "drawn": 1
+    },
+    "tags": {
+     "json": [
+      "array"
+     ],
+     "by": [
+      "tags"
+     ],
+     "drawn": 1
+    },
+    "rec": {
+     "json": [
+      "array"
+     ],
+     "by": [
+      "anoint"
+     ],
+     "drawn": 1
+    },
+    "kw": {
+     "json": [
+      "array"
+     ],
+     "by": [
+      "keywords"
+     ],
+     "ids": 1
+    },
+    "base": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "cr": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "at": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "job": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "act": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "go": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "bx": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "wx": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "ox": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "mx": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "rw": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    }
+   }
+  },
+  "v": {
+   "one": "Act",
+   "many": "Acts",
+   "rows": "index.json",
+   "fields": {
+    "k": {
+     "json": [
+      "string"
+     ],
+     "by": [
+      "row"
+     ],
+     "need": 1
+    },
+    "id": {
+     "json": [
+      "string"
+     ],
+     "by": [
+      "row"
+     ],
+     "need": 1
+    },
+    "n": {
+     "json": [
+      "string"
+     ],
+     "by": [
+      "row",
+      "name",
+      "changed"
+     ],
+     "need": 1,
+     "drawn": 1
+    },
+    "s": {
+     "json": [
+      "string"
+     ],
+     "by": [
+      "row",
+      "sub"
+     ],
+     "need": 1,
+     "drawn": 1
+    },
+    "img": {
+     "json": [
+      "string"
+     ],
+     "by": [
+      "row",
+      "art"
+     ]
+    },
+    "ic": {
+     "json": [
+      "array"
+     ],
+     "by": [
+      "row",
+      "art"
+     ]
+    },
+    "lx": {
+     "json": [
+      "array"
+     ],
+     "by": [
+      "row"
+     ]
+    },
+    "q": {
+     "json": [
+      "string"
+     ],
+     "by": [
+      "row"
+     ]
+    },
+    "lo": {
+     "json": [
+      "number"
+     ],
+     "by": [
+      "row"
+     ]
+    },
+    "f": {
+     "json": [
+      "array"
+     ],
+     "by": [
+      "row"
+     ]
+    },
+    "fg": {
+     "json": [
+      "string"
+     ],
+     "by": [
+      "row"
+     ]
+    },
+    "ac": {
+     "json": [
+      "number"
+     ],
+     "by": [
+      "row",
+      "anoint"
+     ]
+    },
+    "un": {
+     "json": [
+      "number",
+      "boolean",
+      "string"
+     ],
+     "by": [
+      "unsure"
+     ],
+     "drawn": 1
+    },
+    "ls": {
+     "json": [
+      "array",
+      "string"
+     ],
+     "by": [
+      "lines"
+     ],
+     "drawn": 1
+    },
+    "t": {
+     "json": [
+      "array",
+      "string"
+     ],
+     "by": [
+      "text"
+     ],
+     "drawn": 1
+    },
+    "kp": {
+     "json": [
+      "array",
+      "string"
+     ],
+     "by": [
+      "keeps"
+     ],
+     "drawn": 1
+    },
+    "tk": {
+     "json": [
+      "array"
+     ],
+     "by": [
+      "take"
+     ],
+     "drawn": 1
+    },
+    "qt": {
+     "json": [
+      "string"
+     ],
+     "by": [
+      "quote"
+     ],
+     "drawn": 1
+    },
+    "o": {
+     "json": [
+      "array"
+     ],
+     "by": [
+      "options"
+     ],
+     "drawn": 1
+    },
+    "fl": {
+     "json": [
+      "array"
+     ],
+     "by": [
+      "flow"
+     ],
+     "drawn": 1
+    },
+    "src": {
+     "json": [
+      "string"
+     ],
+     "by": [
+      "source"
+     ],
+     "drawn": 1
+    },
+    "tags": {
+     "json": [
+      "array"
+     ],
+     "by": [
+      "tags"
+     ],
+     "drawn": 1
+    },
+    "rec": {
+     "json": [
+      "array"
+     ],
+     "by": [
+      "anoint"
+     ],
+     "drawn": 1
+    },
+    "kw": {
+     "json": [
+      "array"
+     ],
+     "by": [
+      "keywords"
+     ],
+     "ids": 1
+    },
+    "base": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "cr": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "at": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "job": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "act": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "go": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "bx": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "wx": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "ox": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "mx": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    },
+    "rw": {
+     "json": [
+      "string",
+      "number",
+      "boolean",
+      "array",
+      "object"
+     ],
+     "by": [
+      "declaration"
+     ]
+    }
+   }
   }
  },
  "fields": {
@@ -3689,10 +5992,13 @@
     "g",
     "h",
     "i",
+    "j",
     "p",
     "q",
+    "r",
     "t",
     "u",
+    "v",
     "w",
     "y"
    ],
@@ -3716,6 +6022,38 @@
    ],
    "by": [
     "row"
+   ]
+  },
+  "act": {
+   "json": [
+    "string",
+    "number",
+    "boolean",
+    "array",
+    "object"
+   ],
+   "kinds": [
+    "a",
+    "b",
+    "c",
+    "d",
+    "g",
+    "h",
+    "i",
+    "j",
+    "p",
+    "q",
+    "r",
+    "t",
+    "u",
+    "v",
+    "w",
+    "y"
+   ],
+   "need": [],
+   "drawn": [],
+   "by": [
+    "declaration"
    ]
   },
   "areas": {
@@ -3766,10 +6104,13 @@
     "g",
     "h",
     "i",
+    "j",
     "p",
     "q",
+    "r",
     "t",
     "u",
+    "v",
     "w",
     "y"
    ],
@@ -3795,10 +6136,60 @@
     "g",
     "h",
     "i",
+    "j",
     "p",
     "q",
+    "r",
     "t",
     "u",
+    "v",
+    "w",
+    "y"
+   ],
+   "need": [],
+   "drawn": [],
+   "by": [
+    "declaration"
+   ]
+  },
+  "bio": {
+   "json": [
+    "array"
+   ],
+   "kinds": [
+    "r"
+   ],
+   "need": [],
+   "drawn": [
+    "r"
+   ],
+   "by": [
+    "biome"
+   ]
+  },
+  "bx": {
+   "json": [
+    "string",
+    "number",
+    "boolean",
+    "array",
+    "object"
+   ],
+   "kinds": [
+    "a",
+    "b",
+    "c",
+    "d",
+    "g",
+    "h",
+    "i",
+    "j",
+    "p",
+    "q",
+    "r",
+    "t",
+    "u",
+    "v",
     "w",
     "y"
    ],
@@ -3871,10 +6262,13 @@
     "g",
     "h",
     "i",
+    "j",
     "p",
     "q",
+    "r",
     "t",
     "u",
+    "v",
     "w",
     "y"
    ],
@@ -3912,6 +6306,25 @@
    ],
    "by": [
     "weights"
+   ]
+  },
+  "cx": {
+   "json": [
+    "number",
+    "boolean",
+    "string"
+   ],
+   "kinds": [
+    "r",
+    "w"
+   ],
+   "need": [],
+   "drawn": [
+    "r",
+    "w"
+   ],
+   "by": [
+    "corruption"
    ]
   },
   "dl": {
@@ -3956,10 +6369,13 @@
     "g",
     "h",
     "i",
+    "j",
     "p",
     "q",
+    "r",
     "t",
     "u",
+    "v",
     "w",
     "y"
    ],
@@ -3981,10 +6397,13 @@
     "g",
     "h",
     "i",
+    "j",
     "p",
     "q",
+    "r",
     "t",
     "u",
+    "v",
     "w",
     "y"
    ],
@@ -4006,10 +6425,13 @@
     "g",
     "h",
     "i",
+    "j",
     "p",
     "q",
+    "r",
     "t",
     "u",
+    "v",
     "w",
     "y"
    ],
@@ -4022,10 +6444,13 @@
     "g",
     "h",
     "i",
+    "j",
     "p",
     "q",
+    "r",
     "t",
     "u",
+    "v",
     "w",
     "y"
    ],
@@ -4048,6 +6473,68 @@
     "frommods"
    ]
   },
+  "gb": {
+   "json": [
+    "string"
+   ],
+   "kinds": [
+    "j"
+   ],
+   "need": [],
+   "drawn": [
+    "j"
+   ],
+   "by": [
+    "givenby"
+   ]
+  },
+  "gd": {
+   "json": [
+    "number"
+   ],
+   "kinds": [
+    "j"
+   ],
+   "need": [],
+   "drawn": [
+    "j"
+   ],
+   "by": [
+    "questgold"
+   ]
+  },
+  "go": {
+   "json": [
+    "string",
+    "number",
+    "boolean",
+    "array",
+    "object"
+   ],
+   "kinds": [
+    "a",
+    "b",
+    "c",
+    "d",
+    "g",
+    "h",
+    "i",
+    "j",
+    "p",
+    "q",
+    "r",
+    "t",
+    "u",
+    "v",
+    "w",
+    "y"
+   ],
+   "need": [],
+   "drawn": [],
+   "by": [
+    "declaration"
+   ]
+  },
   "gq": {
    "json": [
     "array",
@@ -4064,6 +6551,22 @@
     "quality"
    ]
   },
+  "hm": {
+   "json": [
+    "array",
+    "string"
+   ],
+   "kinds": [
+    "r"
+   ],
+   "need": [],
+   "drawn": [
+    "r"
+   ],
+   "by": [
+    "hidden"
+   ]
+  },
   "ic": {
    "json": [
     "array"
@@ -4076,10 +6579,13 @@
     "g",
     "h",
     "i",
+    "j",
     "p",
     "q",
+    "r",
     "t",
     "u",
+    "v",
     "w",
     "y"
    ],
@@ -4102,10 +6608,13 @@
     "g",
     "h",
     "i",
+    "j",
     "p",
     "q",
+    "r",
     "t",
     "u",
+    "v",
     "w",
     "y"
    ],
@@ -4117,10 +6626,13 @@
     "g",
     "h",
     "i",
+    "j",
     "p",
     "q",
+    "r",
     "t",
     "u",
+    "v",
     "w",
     "y"
    ],
@@ -4141,10 +6653,13 @@
     "g",
     "h",
     "i",
+    "j",
     "p",
     "q",
+    "r",
     "t",
     "u",
+    "v",
     "w",
     "y"
    ],
@@ -4171,10 +6686,13 @@
     "g",
     "h",
     "i",
+    "j",
     "p",
     "q",
+    "r",
     "t",
     "u",
+    "v",
     "w",
     "y"
    ],
@@ -4196,10 +6714,13 @@
     "g",
     "h",
     "i",
+    "j",
     "p",
     "q",
+    "r",
     "t",
     "u",
+    "v",
     "w",
     "y"
    ],
@@ -4211,16 +6732,37 @@
     "g",
     "h",
     "i",
+    "j",
     "p",
     "q",
+    "r",
     "t",
     "u",
+    "v",
     "w",
     "y"
    ],
    "drawn": [],
    "by": [
     "row"
+   ]
+  },
+  "kp": {
+   "json": [
+    "array",
+    "string"
+   ],
+   "kinds": [
+    "j",
+    "v"
+   ],
+   "need": [],
+   "drawn": [
+    "j",
+    "v"
+   ],
+   "by": [
+    "keeps"
    ]
   },
   "kw": {
@@ -4235,10 +6777,13 @@
     "g",
     "h",
     "i",
+    "j",
     "p",
     "q",
+    "r",
     "t",
     "u",
+    "v",
     "w",
     "y"
    ],
@@ -4251,10 +6796,13 @@
     "g",
     "h",
     "i",
+    "j",
     "p",
     "q",
+    "r",
     "t",
     "u",
+    "v",
     "w",
     "y"
    ],
@@ -4306,10 +6854,13 @@
     "g",
     "h",
     "i",
+    "j",
     "p",
     "q",
+    "r",
     "t",
     "u",
+    "v",
     "w",
     "y"
    ],
@@ -4332,10 +6883,13 @@
     "g",
     "h",
     "i",
+    "j",
     "p",
     "q",
+    "r",
     "t",
     "u",
+    "v",
     "w",
     "y"
    ],
@@ -4348,10 +6902,13 @@
     "g",
     "h",
     "i",
+    "j",
     "p",
     "q",
+    "r",
     "t",
     "u",
+    "v",
     "w",
     "y"
    ],
@@ -4371,10 +6928,13 @@
     "g",
     "h",
     "i",
+    "j",
     "p",
     "q",
+    "r",
     "t",
     "u",
+    "v",
     "w",
     "y"
    ],
@@ -4401,6 +6961,53 @@
     "stacks"
    ]
   },
+  "mc": {
+   "json": [
+    "array"
+   ],
+   "kinds": [
+    "r"
+   ],
+   "need": [],
+   "drawn": [
+    "r"
+   ],
+   "by": [
+    "content"
+   ]
+  },
+  "mx": {
+   "json": [
+    "string",
+    "number",
+    "boolean",
+    "array",
+    "object"
+   ],
+   "kinds": [
+    "a",
+    "b",
+    "c",
+    "d",
+    "g",
+    "h",
+    "i",
+    "j",
+    "p",
+    "q",
+    "r",
+    "t",
+    "u",
+    "v",
+    "w",
+    "y"
+   ],
+   "need": [],
+   "drawn": [],
+   "by": [
+    "declaration"
+   ]
+  },
   "n": {
    "json": [
     "string"
@@ -4413,10 +7020,13 @@
     "g",
     "h",
     "i",
+    "j",
     "p",
     "q",
+    "r",
     "t",
     "u",
+    "v",
     "w",
     "y"
    ],
@@ -4428,10 +7038,13 @@
     "g",
     "h",
     "i",
+    "j",
     "p",
     "q",
+    "r",
     "t",
     "u",
+    "v",
     "w",
     "y"
    ],
@@ -4443,10 +7056,13 @@
     "g",
     "h",
     "i",
+    "j",
     "p",
     "q",
+    "r",
     "t",
     "u",
+    "v",
     "w",
     "y"
    ],
@@ -4561,10 +7177,13 @@
     "g",
     "h",
     "i",
+    "j",
     "p",
     "q",
+    "r",
     "t",
     "u",
+    "v",
     "w",
     "y"
    ],
@@ -4577,15 +7196,50 @@
     "g",
     "h",
     "i",
+    "j",
     "p",
     "q",
+    "r",
     "t",
     "u",
+    "v",
     "w",
     "y"
    ],
    "by": [
     "options"
+   ]
+  },
+  "ox": {
+   "json": [
+    "string",
+    "number",
+    "boolean",
+    "array",
+    "object"
+   ],
+   "kinds": [
+    "a",
+    "b",
+    "c",
+    "d",
+    "g",
+    "h",
+    "i",
+    "j",
+    "p",
+    "q",
+    "r",
+    "t",
+    "u",
+    "v",
+    "w",
+    "y"
+   ],
+   "need": [],
+   "drawn": [],
+   "by": [
+    "declaration"
    ]
   },
   "pinnacle": {
@@ -4603,6 +7257,40 @@
    ],
    "by": [
     "row"
+   ]
+  },
+  "pk": {
+   "json": [
+    "number",
+    "boolean",
+    "string"
+   ],
+   "kinds": [
+    "j"
+   ],
+   "need": [],
+   "drawn": [
+    "j"
+   ],
+   "by": [
+    "oneofset"
+   ]
+  },
+  "pm": {
+   "json": [
+    "number",
+    "boolean",
+    "string"
+   ],
+   "kinds": [
+    "j"
+   ],
+   "need": [],
+   "drawn": [
+    "j"
+   ],
+   "by": [
+    "permanent"
    ]
   },
   "pr": {
@@ -4681,10 +7369,13 @@
     "g",
     "h",
     "i",
+    "j",
     "p",
     "q",
+    "r",
     "t",
     "u",
+    "v",
     "w",
     "y"
    ],
@@ -4709,10 +7400,13 @@
     "g",
     "h",
     "i",
+    "j",
     "p",
     "q",
+    "r",
     "t",
     "u",
+    "v",
     "w",
     "y"
    ],
@@ -4725,10 +7419,13 @@
     "g",
     "h",
     "i",
+    "j",
     "p",
     "q",
+    "r",
     "t",
     "u",
+    "v",
     "w",
     "y"
    ],
@@ -4763,10 +7460,13 @@
     "g",
     "h",
     "i",
+    "j",
     "p",
     "q",
+    "r",
     "t",
     "u",
+    "v",
     "w",
     "y"
    ],
@@ -4779,10 +7479,13 @@
     "g",
     "h",
     "i",
+    "j",
     "p",
     "q",
+    "r",
     "t",
     "u",
+    "v",
     "w",
     "y"
    ],
@@ -4807,6 +7510,21 @@
     "region"
    ]
   },
+  "rf": {
+   "json": [
+    "string"
+   ],
+   "kinds": [
+    "j"
+   ],
+   "need": [],
+   "drawn": [
+    "j"
+   ],
+   "by": [
+    "rewardfrom"
+   ]
+  },
   "rq": {
    "json": [
     "array"
@@ -4824,6 +7542,53 @@
     "reqs"
    ]
   },
+  "rs": {
+   "json": [
+    "number"
+   ],
+   "kinds": [
+    "r"
+   ],
+   "need": [],
+   "drawn": [
+    "r"
+   ],
+   "by": [
+    "respen"
+   ]
+  },
+  "rw": {
+   "json": [
+    "string",
+    "number",
+    "boolean",
+    "array",
+    "object"
+   ],
+   "kinds": [
+    "a",
+    "b",
+    "c",
+    "d",
+    "g",
+    "h",
+    "i",
+    "j",
+    "p",
+    "q",
+    "r",
+    "t",
+    "u",
+    "v",
+    "w",
+    "y"
+   ],
+   "need": [],
+   "drawn": [],
+   "by": [
+    "declaration"
+   ]
+  },
   "s": {
    "json": [
     "string"
@@ -4836,10 +7601,13 @@
     "g",
     "h",
     "i",
+    "j",
     "p",
     "q",
+    "r",
     "t",
     "u",
+    "v",
     "w",
     "y"
    ],
@@ -4851,10 +7619,13 @@
     "g",
     "h",
     "i",
+    "j",
     "p",
     "q",
+    "r",
     "t",
     "u",
+    "v",
     "w",
     "y"
    ],
@@ -4866,10 +7637,13 @@
     "g",
     "h",
     "i",
+    "j",
     "p",
     "q",
+    "r",
     "t",
     "u",
+    "v",
     "w",
     "y"
    ],
@@ -4920,10 +7694,13 @@
     "g",
     "h",
     "i",
+    "j",
     "p",
     "q",
+    "r",
     "t",
     "u",
+    "v",
     "w",
     "y"
    ],
@@ -4936,10 +7713,13 @@
     "g",
     "h",
     "i",
+    "j",
     "p",
     "q",
+    "r",
     "t",
     "u",
+    "v",
     "w",
     "y"
    ],
@@ -4960,10 +7740,13 @@
     "g",
     "h",
     "i",
+    "j",
     "p",
     "q",
+    "r",
     "t",
     "u",
+    "v",
     "w",
     "y"
    ],
@@ -4976,10 +7759,13 @@
     "g",
     "h",
     "i",
+    "j",
     "p",
     "q",
+    "r",
     "t",
     "u",
+    "v",
     "w",
     "y"
    ],
@@ -4999,10 +7785,13 @@
     "g",
     "h",
     "i",
+    "j",
     "p",
     "q",
+    "r",
     "t",
     "u",
+    "v",
     "w",
     "y"
    ],
@@ -5015,10 +7804,13 @@
     "g",
     "h",
     "i",
+    "j",
     "p",
     "q",
+    "r",
     "t",
     "u",
+    "v",
     "w",
     "y"
    ],
@@ -5039,6 +7831,40 @@
    ],
    "by": [
     "treechg"
+   ]
+  },
+  "tk": {
+   "json": [
+    "array"
+   ],
+   "kinds": [
+    "j",
+    "v"
+   ],
+   "need": [],
+   "drawn": [
+    "j",
+    "v"
+   ],
+   "by": [
+    "take"
+   ]
+  },
+  "town": {
+   "json": [
+    "number",
+    "boolean",
+    "string"
+   ],
+   "kinds": [
+    "r"
+   ],
+   "need": [],
+   "drawn": [
+    "r"
+   ],
+   "by": [
+    "town"
    ]
   },
   "ty": {
@@ -5069,6 +7895,27 @@
    ],
    "by": [
     "cutfrom"
+   ]
+  },
+  "un": {
+   "json": [
+    "number",
+    "boolean",
+    "string"
+   ],
+   "kinds": [
+    "j",
+    "r",
+    "v"
+   ],
+   "need": [],
+   "drawn": [
+    "j",
+    "r",
+    "v"
+   ],
+   "by": [
+    "unsure"
    ]
   },
   "up": {
@@ -5130,6 +7977,87 @@
    ],
    "by": [
     "was"
+   ]
+  },
+  "way": {
+   "json": [
+    "number",
+    "boolean",
+    "string"
+   ],
+   "kinds": [
+    "r"
+   ],
+   "need": [],
+   "drawn": [
+    "r"
+   ],
+   "by": [
+    "waystone"
+   ]
+  },
+  "wh": {
+   "json": [
+    "array"
+   ],
+   "kinds": [
+    "j"
+   ],
+   "need": [],
+   "drawn": [
+    "j"
+   ],
+   "by": [
+    "where"
+   ]
+  },
+  "wp": {
+   "json": [
+    "number",
+    "boolean",
+    "string"
+   ],
+   "kinds": [
+    "r"
+   ],
+   "need": [],
+   "drawn": [
+    "r"
+   ],
+   "by": [
+    "waypoint"
+   ]
+  },
+  "wx": {
+   "json": [
+    "string",
+    "number",
+    "boolean",
+    "array",
+    "object"
+   ],
+   "kinds": [
+    "a",
+    "b",
+    "c",
+    "d",
+    "g",
+    "h",
+    "i",
+    "j",
+    "p",
+    "q",
+    "r",
+    "t",
+    "u",
+    "v",
+    "w",
+    "y"
+   ],
+   "need": [],
+   "drawn": [],
+   "by": [
+    "declaration"
    ]
   },
   "x": {

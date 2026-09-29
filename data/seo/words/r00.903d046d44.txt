@@ -1,0 +1,654 @@
+### Abandoned Prison
+Act 4 · Area level 46 · https://wraeclastindex.fyi/item/abandoned-prison
+Waypoint · -30% to all Elemental Resistancesabandoned-prisonabandoned-prisonG4_5_1Abandoned Prison### Abyssal Depths
+Act 2 · Area level 22 · https://wraeclastindex.fyi/item/abyssal-depths-area
+-10% to all Elemental Resistances
+Natural Rare Monsters in Area have 1 extra Abyssal Modifierabyssal-depths-areaabyssal-depthsAbyss_Depths1Abyssal Depths### Aggorat
+Act 3 · Area level 44 · https://wraeclastindex.fyi/item/aggorat
+Waypoint · -20% to all Elemental ResistancesaggorataggoratG3_16Aggorat### Alpine Ridge
+Endgame · Area level 65 to 80 · https://wraeclastindex.fyi/item/alpine-ridge
+-60% to all Elemental Resistances · Ezomyte City · Mountain · Can hold any content
+Activate the Precursor Beaconalpine-ridgealpine-ridgeMapAlpineRidgeAlpine Ridge### Ancient Cache
+Endgame · Area level 65 · https://wraeclastindex.fyi/item/ancient-cache
+-60% to all Elemental Resistancesancient-cacheancient-cacheExpeditionSubArea_PrecursorAncient Cache### Ancient Gateway
+Endgame · Area level 65 · https://wraeclastindex.fyi/item/ancient-gateway
+-60% to all Elemental Resistances
+Find and activate the Precursor Beaconancient-gatewayancient-gatewayMapUniqueReactor_02Ancient Gateway### Apex of Filth
+Act 3 · Area level 41 · https://wraeclastindex.fyi/item/apex-of-filth
+Waypoint · -20% to all Elemental Resistancesapex-of-filthapex-of-filthG3_11Apex of Filth### Arastas
+Act 4 · Area level 52 · https://wraeclastindex.fyi/item/arastas
+Waypoint · -30% to all Elemental ResistancesarastasarastasG4_8aArastas### Arid Plains
+Endgame · Area level 65 to 80 · https://wraeclastindex.fyi/item/arid-plains
+-60% to all Elemental Resistances · Desert · Breach Stronghold · Can hold any contentarid-plainsarid-plainsMapAridPlainsArid Plains### Arroyo
+Endgame · Area level 65 · https://wraeclastindex.fyi/item/arroyo
+-60% to all Elemental ResistancesarroyoarroyoMapArroyoArroyo### Ashen Forest
+Interlude · Area level 54 · https://wraeclastindex.fyi/item/ashen-forest
+-40% to all Elemental Resistancesashen-forestashen-forestP3_1Ashen Forest### Atziri's Temple
+Act 3 · Area level 46 · https://wraeclastindex.fyi/item/atziris-temple
+-30% to all Elemental Resistancesatziris-templeatziris-templeIncursionTempleAtziri's Temple### Augury
+Endgame · Area level 65 to 80 · https://wraeclastindex.fyi/item/augury
+-60% to all Elemental Resistances · Grass · Swamp · Forest · Can hold any contentauguryauguryMapAuguryAugury### Azmerian Ranges
+Endgame · Area level 65 to 80 · https://wraeclastindex.fyi/item/azmerian-ranges
+-60% to all Elemental Resistances · Mountain · Forest · Can hold any contentazmerian-rangesazmerian-rangesMapAzmerianRangesAzmerian Ranges### Backwash
+Endgame · Area level 65 to 80 · https://wraeclastindex.fyi/item/backwash
+-60% to all Elemental Resistances · Forest · Swamp · Island · Breach Stronghold · Can hold any contentbackwashbackwashMapBackwashBackwash### Barren Atoll
+Endgame · Area level 65 · https://wraeclastindex.fyi/item/barren-atoll
+-60% to all Elemental Resistances · Ocean · Can only hold Irradiated · Always holds Grand Expedition
+Place Explosives & Activate the Detonatorbarren-atollbarren-atollExpeditionLogBook_AtollBarren Atoll### Bastille
+Endgame · Area level 65 to 80 · https://wraeclastindex.fyi/item/bastille
+-60% to all Elemental Resistances · Grass · Forest · Island · Breach Stronghold · Can hold any contentbastillebastilleMapBastilleBastille### Bazaar
+Endgame · Area level 65 to 80 · https://wraeclastindex.fyi/item/bazaar
+-60% to all Elemental Resistances · Vaal City · Can hold any contentbazaarbazaarMapBazaarBazaar### Bleached Shoals
+Endgame · Area level 65 · https://wraeclastindex.fyi/item/bleached-shoals
+-60% to all Elemental Resistances · Ocean · Can only hold Irradiated · Always holds Grand Expedition
+Place Explosives & Activate the Detonatorbleached-shoalsbleached-shoalsExpeditionLogBook_ReefBleached Shoals### Bloodwood
+Endgame · Area level 65 to 80 · https://wraeclastindex.fyi/item/bloodwood
+-60% to all Elemental Resistances · Forest · Island · Breach Stronghold · Can hold any contentbloodwoodbloodwoodMapBloodwoodBloodwood### Blooming Field
+Endgame · Area level 65 to 80 · https://wraeclastindex.fyi/item/blooming-field
+-60% to all Elemental Resistances · Grass · Forest · Island · Can hold any contentblooming-fieldblooming-fieldMapBloomingFieldBlooming Field### Bluff
+Endgame · Area level 65 to 80 · https://wraeclastindex.fyi/item/bluff
+-60% to all Elemental Resistances · Grass · Island · Can hold any content
+Activate the Precursor BeaconbluffbluffMapBluffBluff### Brinerot Cove
+Act 4 · Area level 53 · https://wraeclastindex.fyi/item/brinerot-cove
+Waypoint · -30% to all Elemental Resistancesbrinerot-covebrinerot-coveG4_14Brinerot Cove### Burial Bog
+Endgame · Area level 65 to 80 · https://wraeclastindex.fyi/item/burial-bog
+-60% to all Elemental Resistances · Swamp · Breach Stronghold · Can hold any contentburial-bogburial-bogMapBurialBogBurial Bog### Buried Shrines
+Act 2 · Area level 23 · https://wraeclastindex.fyi/item/buried-shrines
+Waypoint · -10% to all Elemental Resistancesburied-shrinesburied-shrinesG2_4_3Buried Shrines### Caer Tarth
+Endgame · Area level 79 · https://wraeclastindex.fyi/item/caer-tarth
+-60% to all Elemental Resistances · Can only hold Notable Location
+Players cannot gain or lose experience
+Area allows unlimited Revivals
+Arbiter has 10% chance to drop a valuable Gem
+Arbiter has 5% chance to drop a valuable Socket Currency
+Arbiter drops an additional Corrupted Rare Tabletcaer-tarthcaer-tarthMapUberBoss_RitualCaer Tarth### Caldera
+Endgame · Area level 65 to 80 · https://wraeclastindex.fyi/item/caldera
+-60% to all Elemental Resistances · Water · Ocean · Island · Can hold any contentcalderacalderaMapCalderaCaldera### Canyon
+Endgame · Area level 65 to 80 · https://wraeclastindex.fyi/item/canyon
+-60% to all Elemental Resistances · Mountain · Desert · Breach Stronghold · Can hold any contentcanyoncanyonMapCanyonCanyon### Castaway
+Endgame · Area level 65 · https://wraeclastindex.fyi/item/castaway
+-60% to all Elemental Resistances · Water · Ocean
+(500-1000)% increased Gold found in this Area
+Contains buried treasure
+All items dropped are converted to GoldcastawaycastawayMapUniqueCastawayCastaway### Cemetery of the Eternals
+Act 1 · Area level 7 · https://wraeclastindex.fyi/item/cemetery-of-the-eternals
+Waypointcemetery-of-the-eternalscemetery-of-the-eternalsG1_7Cemetery of the Eternals### Cenotes
+Endgame · Area level 65 to 80 · https://wraeclastindex.fyi/item/cenotes
+-60% to all Elemental Resistances · Mountain · Swamp · Desert · Island · Can hold any contentcenotescenotesMapCenotesCenotes### Channel
+Endgame · Area level 65 to 80 · https://wraeclastindex.fyi/item/channel
+-60% to all Elemental Resistances · Faridun City · Desert · Can hold any contentchannelchannelMapChannelChannel### Chasm
+Endgame · Area level 65 to 80 · https://wraeclastindex.fyi/item/chasm
+-60% to all Elemental Resistances · Mountain · Water · Ocean · Island · Can hold any contentchasmchasmMapChasmChasm### Chimeral Wetlands
+Act 3 · Area level 36 · https://wraeclastindex.fyi/item/chimeral-wetlands
+Waypoint · -20% to all Elemental Resistanceschimeral-wetlandschimeral-wetlandsG3_5Chimeral Wetlands### Clearfell
+Act 1 · Area level 2 · https://wraeclastindex.fyi/item/clearfell
+WaypointclearfellclearfellG1_2Clearfell### Clearfell Encampment
+Act 1 · Area level 15 · https://wraeclastindex.fyi/item/clearfell-encampment
+Waypoint · Townclearfell-encampmentclearfell-encampmentG1_townClearfell Encampment### Cliffside
+Endgame · Area level 65 to 80 · https://wraeclastindex.fyi/item/cliffside
+-60% to all Elemental Resistances · Water · Ocean · Island · Can hold any contentcliffsidecliffsideMapCliffsideCliffside### Confluence
+Endgame · Area level 65 to 80 · https://wraeclastindex.fyi/item/confluence
+-60% to all Elemental Resistances · Desert · Breach Stronghold · Can hold any contentconfluenceconfluenceMapSevenWatersConfluence### Craggy Peninsula
+Endgame · Area level 65 · https://wraeclastindex.fyi/item/craggy-peninsula
+-60% to all Elemental Resistances · Ocean · Can only hold Irradiated · Always holds Grand Expedition
+Place Explosives & Activate the Detonatorcraggy-peninsulacraggy-peninsulaExpeditionLogBook_PeninsulaCraggy Peninsula### Creek
+Endgame · Area level 65 to 80 · https://wraeclastindex.fyi/item/creek
+-60% to all Elemental Resistances · Forest · Island · Breach Stronghold · Can hold any contentcreekcreekMapCreekCreek### Crimson Shores
+Endgame · Area level 65 to 80 · https://wraeclastindex.fyi/item/crimson-shores
+-60% to all Elemental Resistances · Water · Ocean · Can hold any contentcrimson-shorescrimson-shoresMapCrimsonShoresCrimson Shores### Crux of Nothingness
+Endgame · Area level 80 · https://wraeclastindex.fyi/item/crux-of-nothingness
+-60% to all Elemental Resistances
+Players cannot gain or lose experiencecrux-of-nothingnesscrux-of-nothingnessRitualLeagueBossCrux of Nothingness### Crypt
+Endgame · Area level 65 to 80 · https://wraeclastindex.fyi/item/crypt
+-60% to all Elemental Resistances · Grass · Desert · Can hold any contentcryptcryptMapCryptCrypt### Dark Domain
+Endgame · Area level 79 · https://wraeclastindex.fyi/item/dark-domain
+-60% to all Elemental Resistances
+Natural Rare Monsters in Area have 1 extra Abyssal Modifierdark-domaindark-domainAbyss_Boss2Dark Domain### Decay
+Endgame · Area level 65 to 80 · https://wraeclastindex.fyi/item/decay
+-60% to all Elemental Resistances · Grass · Swamp · Forest · Island · Breach Stronghold · Can hold any contentdecaydecayMapDecayDecay### Decayed Laboratory
+Endgame · Area level 65 · https://wraeclastindex.fyi/item/decayed-laboratory
+-60% to all Elemental Resistancesdecayed-laboratorydecayed-laboratoryExpeditionSubArea_LaboratoryDecayed Laboratory### Deforestation
+Endgame · Area level 65 to 80 · https://wraeclastindex.fyi/item/deforestation
+-60% to all Elemental Resistances · Forest · Island · Breach Stronghold · Can hold any contentdeforestationdeforestationMapDeforestationDeforestation### Derelict Catacombs
+Endgame · Area level 65 · https://wraeclastindex.fyi/item/derelict-catacombs
+-60% to all Elemental Resistancesderelict-catacombsderelict-catacombsExpeditionSubArea_CatacombDerelict Catacombs### Derelict Mansion
+Endgame · Area level 65 to 80 · https://wraeclastindex.fyi/item/derelict-mansion
+-60% to all Elemental Resistances · Grass · Swamp · Forest · Can hold any contentderelict-mansionderelict-mansionMapDerelictMansionDerelict Mansion### Deserted
+Endgame · Area level 65 to 80 · https://wraeclastindex.fyi/item/deserted
+-60% to all Elemental Resistances · Desert · Breach Stronghold · Can hold any contentdeserteddesertedMapDesertedDeserted### Deserted Post
+Act 4 · Area level 53 · https://wraeclastindex.fyi/item/deserted-post
+-30% to all Elemental Resistancesdeserted-postdeserted-postExpeditionSubArea_Kalguur_Act4Deserted Post### Deshar
+Act 2 · Area level 28 · https://wraeclastindex.fyi/item/deshar
+Waypoint · -10% to all Elemental ResistancesdeshardesharG2_8Deshar### Digsite
+Endgame · Area level 65 to 80 · https://wraeclastindex.fyi/item/digsite
+-60% to all Elemental Resistances · Grass · Desert · Island · Breach Stronghold · Can hold any contentdigsitedigsiteMapExcavationDigsite### Dreadnought
+Act 2 · Area level 31 · https://wraeclastindex.fyi/item/dreadnought
+Waypoint · -10% to all Elemental ResistancesdreadnoughtdreadnoughtG2_12Dreadnought### Eastern Enigma Chamber
+Endgame · Area level 80 · https://wraeclastindex.fyi/item/eastern-enigma-chamber
+-60% to all Elemental Resistances · Faridun Cityeastern-enigma-chambereastern-enigma-chamberMapUberBoss_StoneCitadel_QuestEastern Enigma Chamber### Eastern Gateway
+Endgame · Area level 65 · https://wraeclastindex.fyi/item/eastern-gateway
+-60% to all Elemental Resistances
+Find and activate the Precursor Beaconeastern-gatewayeastern-gatewayMapUniqueReactor_03Eastern Gateway### Epitaph
+Endgame · Area level 65 to 80 · https://wraeclastindex.fyi/item/epitaph
+-60% to all Elemental Resistances · Mountain · Grass · Forest · Can hold any contentepitaphepitaphMapEpitaphEpitaph### Etched Ravine
+Interlude · Area level 56 · https://wraeclastindex.fyi/item/etched-ravine
+Waypoint · -40% to all Elemental Resistancesetched-ravineetched-ravineP3_6Etched Ravine### Exhumed Ruins
+Endgame · Area level 65 · https://wraeclastindex.fyi/item/exhumed-ruins
+-60% to all Elemental Resistances · Ocean · Can only hold Irradiated · Always holds Grand Expedition
+Place Explosives & Activate the Detonatorexhumed-ruinsexhumed-ruinsExpeditionLogBook_DigsiteExhumed Ruins### Eye of Hinekora
+Act 4 · Area level 46 · https://wraeclastindex.fyi/item/eye-of-hinekora
+Waypoint · -30% to all Elemental Resistanceseye-of-hinekoraeye-of-hinekoraG4_4_1Eye of Hinekora### Famed Pond
+Endgame · Area level 65 · https://wraeclastindex.fyi/item/famed-pond
+-60% to all Elemental Resistancesfamed-pondfamed-pondExpeditionSubArea_PondFamed Pond### Flotsam
+Endgame · Area level 65 to 80 · https://wraeclastindex.fyi/item/flotsam
+-60% to all Elemental Resistances · Grass · Forest · Water · Ocean · Island · Breach Stronghold · Can hold any contentflotsamflotsamMapFlotsamFlotsam### Forge
+Endgame · Area level 65 to 80 · https://wraeclastindex.fyi/item/forge
+-60% to all Elemental Resistances · Mountain · Desert · Can hold any contentforgeforgeMapForgeForge### Fortress
+Endgame · Area level 65 to 80 · https://wraeclastindex.fyi/item/fortress
+-60% to all Elemental Resistances · Desert · Island · Breach Stronghold · Can hold any contentfortressfortressMapFortressFortress### Freight
+Endgame · Area level 65 · https://wraeclastindex.fyi/item/freight
+-60% to all Elemental ResistancesfreightfreightMapUniqueFreight_Freight### Freythorn
+Act 1 · Area level 11 · https://wraeclastindex.fyi/item/freythorn
+WaypointfreythornfreythornG1_12Freythorn### Frigid Bluffs
+Endgame · Area level 65 · https://wraeclastindex.fyi/item/frigid-bluffs
+-60% to all Elemental Resistances · Ocean · Can only hold Irradiated · Always holds Grand Expedition
+Place Explosives & Activate the Detonatorfrigid-bluffsfrigid-bluffsExpeditionLogBook_TundraFrigid Bluffs### Frozen Falls
+Endgame · Area level 65 to 80 · https://wraeclastindex.fyi/item/frozen-falls
+-60% to all Elemental Resistances · Mountain · Island · Can hold any contentfrozen-fallsfrozen-fallsMapFrozenFallsFrozen Falls### Garukhan's Tomb
+Endgame · Area level 65 · https://wraeclastindex.fyi/item/garukhans-tomb
+-60% to all Elemental Resistances
+Players cannot gain or lose experiencegarukhans-tombgarukhans-tombDelirium_Act2RevealGarukhan's Tomb### Geode
+Endgame · Area level 65 · https://wraeclastindex.fyi/item/geode
+-60% to all Elemental ResistancesgeodegeodeMapGeodeGeode### Gilded Deposit
+Endgame · Area level 65 · https://wraeclastindex.fyi/item/gilded-deposit
+-60% to all Elemental Resistancesgilded-depositgilded-depositExpeditionSubArea_VeinGilded Deposit### Glacial Tarn
+Interlude · Area level 55 · https://wraeclastindex.fyi/item/glacial-tarn
+Waypoint · -40% to all Elemental Resistancesglacial-tarnglacial-tarnP3_3Glacial Tarn### Grazed Prairie
+Endgame · Area level 65 · https://wraeclastindex.fyi/item/grazed-prairie
+-60% to all Elemental Resistances · Ocean · Can only hold Irradiated · Always holds Grand Expedition
+Place Explosives & Activate the Detonatorgrazed-prairiegrazed-prairieExpeditionLogBook_PrairieGrazed Prairie### Greenhouse
+Endgame · Area level 65 to 80 · https://wraeclastindex.fyi/item/greenhouse
+-60% to all Elemental Resistances · Forest · Swamp · Can hold any contentgreenhousegreenhouseMapGreenhouseGreenhouse### Grimhaven
+Endgame · Area level 65 to 80 · https://wraeclastindex.fyi/item/grimhaven
+-60% to all Elemental Resistances · Ezomyte City · Grass · Breach Stronghold · Can hold any contentgrimhavengrimhavenMapGrimhavenGrimhaven### Halls of the Dead
+Act 4 · Area level 47 · https://wraeclastindex.fyi/item/halls-of-the-dead
+Waypoint · -30% to all Elemental Resistanceshalls-of-the-deadhalls-of-the-deadG4_4_2Halls of the Dead### Headland
+Endgame · Area level 65 to 80 · https://wraeclastindex.fyi/item/headland
+-60% to all Elemental Resistances · Faridun City · Desert · Mountain · Island · Breach Stronghold · Can hold any contentheadlandheadlandMapHeadlandHeadland### Heart of the Tribe
+Act 4 · Area level 53 · https://wraeclastindex.fyi/item/heart-of-the-tribe
+Waypoint · -30% to all Elemental Resistancesheart-of-the-tribeheart-of-the-tribeG4_11_2Heart of the Tribe### Hidden Aquifer
+Endgame · Area level 65 · https://wraeclastindex.fyi/item/hidden-aquifer
+-60% to all Elemental Resistanceshidden-aquiferhidden-aquiferExpeditionSubArea_SirenHidden Aquifer### Hidden Grotto
+Endgame · Area level 65 to 80 · https://wraeclastindex.fyi/item/hidden-grotto
+-60% to all Elemental Resistances · Grass · Swamp · Forest · Island · Can hold any contenthidden-grottohidden-grottoMapHiddenGrottoHidden Grotto### Hilda's Campsite
+Endgame · Area level 65 · https://wraeclastindex.fyi/item/hildas-campsite
+-60% to all Elemental Resistances · Forest · Swamp · Can only hold Notable Locationhildas-campsitehildas-campsiteMap_HildaCampsiteHilda's Campsite### Hive
+Endgame · Area level 65 to 80 · https://wraeclastindex.fyi/item/hive
+-60% to all Elemental Resistances · Desert · Breach Stronghold · Can hold any contenthivehiveMapHiveHive### Hive Colony
+Endgame · Area level 65 · https://wraeclastindex.fyi/item/hive-colony
+-60% to all Elemental Resistances · Breach Stronghold
+Breach Monsters in Area do not drop Splintershive-colonyhive-colonyChayulaLeague_TowerBossHive Colony### Hive Fortress
+Endgame · Area level 65 · https://wraeclastindex.fyi/item/hive-fortress
+-60% to all Elemental Resistances · Breach Stronghold · Can only hold Irradiated
+Breach Monsters in Area do not drop Splintershive-fortresshive-fortressChayulaLeague_TowerHive Fortress### Holten
+Interlude · Area level 55 · https://wraeclastindex.fyi/item/holten
+Waypoint · -40% to all Elemental ResistancesholtenholtenP1_4Holten### Holten Estate
+Interlude · Area level 56 · https://wraeclastindex.fyi/item/holten-estate
+Waypoint · -40% to all Elemental Resistancesholten-estateholten-estateP1_6Holten Estate### Howling Caves
+Interlude · Area level 55 · https://wraeclastindex.fyi/item/howling-caves
+Waypoint · -40% to all Elemental Resistanceshowling-caveshowling-cavesP3_4Howling Caves### Hunting Grounds
+Act 1 · Area level 10 · https://wraeclastindex.fyi/item/hunting-grounds
+Waypointhunting-groundshunting-groundsG1_11Hunting Grounds### Ice Cave
+Endgame · Area level 65 to 80 · https://wraeclastindex.fyi/item/ice-cave
+-60% to all Elemental Resistances · Mountain · Island · Can hold any contentice-caveice-caveMapIceCaveIce Cave### Inferno
+Endgame · Area level 65 to 80 · https://wraeclastindex.fyi/item/inferno
+-60% to all Elemental Resistances · Forest · Can hold any contentinfernoinfernoMapInfernoInferno### Infested Barrens
+Act 3 · Area level 35 · https://wraeclastindex.fyi/item/infested-barrens
+Waypoint · -20% to all Elemental Resistancesinfested-barrensinfested-barrensG3_2_1Infested Barrens### Isle of Decay
+Act 4 · Area level 53 · https://wraeclastindex.fyi/item/isle-of-decay
+Waypoint · -30% to all Elemental Resistancesisle-of-decayisle-of-decayG4_9_Isle of Decay### Isle of Kin
+Act 4 · Area level 46 · https://wraeclastindex.fyi/item/isle-of-kin
+Waypoint · -30% to all Elemental Resistancesisle-of-kinisle-of-kinG4_1_1Isle of Kin### Jado's Campsite
+Endgame · Area level 65 · https://wraeclastindex.fyi/item/jados-campsite
+-60% to all Elemental Resistances · Desert
+Take an Item from the Nameless Seerjados-campsitejados-campsiteMapUniqueMerchant01_OasisJado's Campsite### Jiquani's Machinarium
+Act 3 · Area level 37 · https://wraeclastindex.fyi/item/jiquanis-machinarium
+Waypoint · -20% to all Elemental Resistancesjiquanis-machinariumjiquanis-machinariumG3_6_1Jiquani's Machinarium### Jiquani's Sanctum
+Act 3 · Area level 38 · https://wraeclastindex.fyi/item/jiquanis-sanctum
+Waypoint · -20% to all Elemental Resistancesjiquanis-sanctumjiquanis-sanctumG3_6_2Jiquani's Sanctum### Journey's End
+Act 4 · Area level 47 · https://wraeclastindex.fyi/item/journeys-end
+Waypoint · -30% to all Elemental Resistancesjourneys-endjourneys-endG4_2_2Journey's End### Jungle Ruins
+Act 3 · Area level 34 · https://wraeclastindex.fyi/item/jungle-ruins
+Waypoint · -20% to all Elemental Resistancesjungle-ruinsjungle-ruinsG3_3Jungle Ruins### Kalguuran Tomb
+Endgame · Area level 80 · https://wraeclastindex.fyi/item/kalguuran-tomb
+-60% to all Elemental Resistances
+Players cannot gain or lose experiencekalguuran-tombkalguuran-tombExpeditionLeagueBossKalguuran Tomb### Karst
+Endgame · Area level 65 · https://wraeclastindex.fyi/item/karst
+-60% to all Elemental ResistanceskarstkarstMapKarstKarst### Kedge Bay
+Act 4 · Area level 46 · https://wraeclastindex.fyi/item/kedge-bay
+Waypoint · -30% to all Elemental Resistanceskedge-baykedge-bayG4_2_1Kedge Bay### Keth
+Act 2 · Area level 21 · https://wraeclastindex.fyi/item/keth
+Waypoint · -10% to all Elemental ResistanceskethkethG2_4_1Keth### Kingsmarch
+Act 4 · Area level 53 · https://wraeclastindex.fyi/item/kingsmarch
+Waypoint · Town · -30% to all Elemental ResistanceskingsmarchkingsmarchG4_townKingsmarch### Kriar Peaks
+Interlude · Area level 56 · https://wraeclastindex.fyi/item/kriar-peaks
+Waypoint · -40% to all Elemental Resistanceskriar-peakskriar-peaksP3_5Kriar Peaks### Kriar Village
+Interlude · Area level 54 · https://wraeclastindex.fyi/item/kriar-village
+Waypoint · -40% to all Elemental Resistanceskriar-villagekriar-villageP3_2Kriar Village### Library of Kamasa
+Act 3 · Area level 43 · https://wraeclastindex.fyi/item/library-of-kamasa
+Waypoint · -20% to all Elemental Resistanceslibrary-of-kamasalibrary-of-kamasaG3_15Library of Kamasa### Lightless Passage
+Act 2 · Area level 22 · https://wraeclastindex.fyi/item/lightless-passage
+Waypoint · -10% to all Elemental Resistanceslightless-passagelightless-passageAbyss_IntroLightless Passage### Lightless Void
+Endgame · Area level 79 · https://wraeclastindex.fyi/item/lightless-void
+-60% to all Elemental Resistances
+Natural Rare Monsters in Area have 1 extra Abyssal Modifierlightless-voidlightless-voidAbyss_Boss1Lightless Void### Loathsome Mire
+Endgame · Area level 80 · https://wraeclastindex.fyi/item/loathsome-mire
+-60% to all Elemental Resistances
+Players cannot gain or lose experience
+Monsters drop no itemsloathsome-mireloathsome-mireDelirium_HungerBossLoathsome Mire### Lofty Summit
+Endgame · Area level 65 to 80 · https://wraeclastindex.fyi/item/lofty-summit
+-60% to all Elemental Resistances · Mountain · Island · Can hold any contentlofty-summitlofty-summitMapLoftySummitLofty Summit### Lost Catacombs
+Act 1 · Area level 12 · https://wraeclastindex.fyi/item/lost-catacombslost-catacombslost-catacombsExpeditionSubArea_Kalguur_Act1Lost Catacombs### Lost Temple
+Act 1 · Area level 65 · https://wraeclastindex.fyi/item/lost-temple
+-60% to all Elemental Resistanceslost-templelost-templeIncursionTemplePresentLost Temple### Lost Towers
+Endgame · Area level 65 to 80 · https://wraeclastindex.fyi/item/lost-towers
+-60% to all Elemental Resistances · Forest · Island · Can hold any content
+Activate the Precursor Beaconlost-towerslost-towersMapLostTowersLost Towers### Lush Isle
+Endgame · Area level 65 · https://wraeclastindex.fyi/item/lush-isle
+-60% to all Elemental Resistances · Ocean · Can only hold Irradiated · Always holds Grand Expedition
+Place Explosives & Activate the Detonatorlush-islelush-isleExpeditionLogBook_TropicalLush Isle### Marrow
+Endgame · Area level 65 to 80 · https://wraeclastindex.fyi/item/marrow
+-60% to all Elemental Resistances · Grass · Desert · Can hold any contentmarrowmarrowMapMarrowMarrow### Mastodon Badlands
+Act 2 · Area level 21 · https://wraeclastindex.fyi/item/mastodon-badlands
+Waypoint · -10% to all Elemental Resistancesmastodon-badlandsmastodon-badlandsG2_5_1Mastodon Badlands### Mausoleum of the Praetor
+Act 1 · Area level 8 · https://wraeclastindex.fyi/item/mausoleum-of-the-praetor
+Waypointmausoleum-of-the-praetormausoleum-of-the-praetorG1_8Mausoleum of the Praetor### Mawdun Mine
+Act 2 · Area level 18 · https://wraeclastindex.fyi/item/mawdun-mine
+Waypoint · -10% to all Elemental Resistancesmawdun-minemawdun-mineG2_10_2Mawdun Mine### Mawdun Quarry
+Act 2 · Area level 17 · https://wraeclastindex.fyi/item/mawdun-quarry
+Waypoint · -10% to all Elemental Resistancesmawdun-quarrymawdun-quarryG2_10_1Mawdun Quarry### Merchant's Campsite
+Endgame · Area level 65 · https://wraeclastindex.fyi/item/merchants-campsite
+-60% to all Elemental Resistances · Forest · Swamp
+Take an Item from the Nameless Seermerchants-campsitemerchants-campsiteMapUniqueMerchant01_ChimeralMerchant's Campsite### Mesa
+Endgame · Area level 65 to 80 · https://wraeclastindex.fyi/item/mesa
+-60% to all Elemental Resistances · Faridun City · Desert · Can hold any content
+Activate the Precursor BeaconmesamesaMapMesaMesa### Mezzanine
+Endgame · Area level 65 · https://wraeclastindex.fyi/item/mezzanine
+-60% to all Elemental ResistancesmezzaninemezzanineMapMezzanineMezzanine### Mineshaft
+Endgame · Area level 65 to 80 · https://wraeclastindex.fyi/item/mineshaft
+-60% to all Elemental Resistances · Faridun City · Desert · Mountain · Island · Can hold any contentmineshaftmineshaftMapMineshaftMineshaft### Mire
+Endgame · Area level 65 to 80 · https://wraeclastindex.fyi/item/mire
+-60% to all Elemental Resistances · Forest · Swamp · Island · Can hold any contentmiremireMapMireMire### Molten Vault
+Endgame · Area level 65 to 80 · https://wraeclastindex.fyi/item/molten-vault
+-60% to all Elemental Resistances · Vaal City · Mountain · Desert · Can hold any contentmolten-vaultmolten-vaultMapVaalFoundryMolten Vault### Moment of Zen
+Endgame · Area level 65 · https://wraeclastindex.fyi/item/moment-of-zen
+-60% to all Elemental Resistances · Island
+Take an Item from the Nameless Seermoment-of-zenmoment-of-zenMapUniqueMerchant03_BeachMoment of Zen### Monastery of the Keepers
+Endgame · Area level 65 · https://wraeclastindex.fyi/item/monastery-of-the-keepers
+-60% to all Elemental Resistances · Can only hold Notable Locationmonastery-of-the-keepersmonastery-of-the-keepersChayulaLeagueMonastery of the Keepers### Moor of Fallen Skies
+Endgame · Area level 65 · https://wraeclastindex.fyi/item/moor-of-fallen-skies
+-60% to all Elemental Resistances · Ocean · Can only hold Irradiated · Always holds Grand Expedition
+Place Explosives & Activate the Detonatormoor-of-fallen-skiesmoor-of-fallen-skiesExpeditionLogBook_HeathMoor of Fallen Skies### Mortuary
+Endgame · Area level 65 to 80 · https://wraeclastindex.fyi/item/mortuary
+-60% to all Elemental Resistances · Grass · Swamp · Can hold any contentmortuarymortuaryMapMortuaryMortuary### Mournful Cliffside
+Endgame · Area level 65 · https://wraeclastindex.fyi/item/mournful-cliffside
+-60% to all Elemental Resistances · Ocean · Can only hold Irradiated or Powerful Map Boss
+Players cannot gain or lose experiencemournful-cliffsidemournful-cliffsideExpeditionSubArea_VoranaBossMournful Cliffside### Mud Burrow
+Act 1 · Area level 3 · https://wraeclastindex.fyi/item/mud-burrowmud-burrowmud-burrowG1_3Mud Burrow### Mystic Refuge
+Act 3 · Area level 35 · https://wraeclastindex.fyi/item/mystic-refuge
+Waypoint · -20% to all Elemental Resistancesmystic-refugemystic-refugeExpeditionSubArea_Kalguur_Act3Mystic Refuge### Necropolis
+Endgame · Area level 65 to 80 · https://wraeclastindex.fyi/item/necropolis
+-60% to all Elemental Resistances · Ezomyte City · Forest · Breach Stronghold · Can hold any contentnecropolisnecropolisMapNecropolisNecropolis### Ngakanu
+Act 4 · Area level 53 · https://wraeclastindex.fyi/item/ngakanu
+Waypoint · -30% to all Elemental ResistancesngakanungakanuG4_11_1aNgakanu### Oasis
+Endgame · Area level 65 to 80 · https://wraeclastindex.fyi/item/oasis-area
+-60% to all Elemental Resistances · Faridun City · Desert · Island · Can hold any contentoasis-areaoasisMapOasisOasis### Obscure Island
+Endgame · Area level 65 · https://wraeclastindex.fyi/item/obscure-island
+-60% to all Elemental Resistances · Ocean · Can only hold Irradiated or Powerful Map Boss
+Players cannot gain or lose experienceobscure-islandobscure-islandExpeditionSubArea_OlrothBossObscure Island### Ogham Farmlands
+Act 1 · Area level 12 · https://wraeclastindex.fyi/item/ogham-farmlands
+Waypointogham-farmlandsogham-farmlandsG1_13_1Ogham Farmlands### Ogham Manor
+Act 1 · Area level 15 · https://wraeclastindex.fyi/item/ogham-manor
+Waypointogham-manorogham-manorG1_15Ogham Manor### Ogham Village
+Act 1 · Area level 13 · https://wraeclastindex.fyi/item/ogham-village
+Waypointogham-villageogham-villageG1_13_2Ogham Village### Orbala's Crossing
+Endgame · Area level 65 to 80 · https://wraeclastindex.fyi/item/orbalas-crossing
+-60% to all Elemental Resistances · Mountain · Desert · Can hold any contentorbalas-crossingorbalas-crossingMapOrbalasCrossingOrbala's Crossing### Ornate Chambers
+Endgame · Area level 65 to 80 · https://wraeclastindex.fyi/item/ornate-chambers
+-60% to all Elemental Resistances · Mountain · Desert · Can hold any contentornate-chambersornate-chambersMapOrnateChambersOrnate Chambers### Outlands
+Endgame · Area level 65 to 80 · https://wraeclastindex.fyi/item/outlands
+-60% to all Elemental Resistances · Faridun City · Can hold any contentoutlandsoutlandsMapOutlandsOutlands### Overgrown
+Endgame · Area level 65 to 80 · https://wraeclastindex.fyi/item/overgrown
+-60% to all Elemental Resistances · Forest · Island · Breach Stronghold · Can hold any contentovergrownovergrownMapOvergrownOvergrown### Path of Mourning
+Act 2 · Area level 29 · https://wraeclastindex.fyi/item/path-of-mourning
+Waypoint · -10% to all Elemental Resistancespath-of-mourningpath-of-mourningG2_9_1Path of Mourning### Penitentiary
+Endgame · Area level 65 to 80 · https://wraeclastindex.fyi/item/penitentiary
+-60% to all Elemental Resistances · Ezomyte City · Grass · Island · Breach Stronghold · Can hold any contentpenitentiarypenitentiaryMapPenitentiaryPenitentiary### Pit
+Endgame · Area level 65 to 80 · https://wraeclastindex.fyi/item/pit
+-60% to all Elemental Resistances · Mountain · Desert · Island · Breach Stronghold · Faridun City · Can hold any contentpitpitMapPitPit### Plantation
+Endgame · Area level 65 to 80 · https://wraeclastindex.fyi/item/plantation
+-60% to all Elemental Resistances · Grass · Island · Breach Stronghold · Can hold any contentplantationplantationMapPlantationPlantation### Plunder's Point
+Act 4 · Area level 53 · https://wraeclastindex.fyi/item/plunders-point
+Waypoint · -30% to all Elemental Resistancesplunders-pointplunders-pointG4_13Plunder's Point### Pools of Khatal
+Interlude · Area level 55 · https://wraeclastindex.fyi/item/pools-of-khatal
+Waypoint · -40% to all Elemental Resistancespools-of-khatalpools-of-khatalP2_2Pools of Khatal### Port
+Endgame · Area level 65 to 80 · https://wraeclastindex.fyi/item/port
+-60% to all Elemental Resistances · Water · Grass · Ocean · Island · Can hold any contentportportMapPortPort### Precipice
+Endgame · Area level 65 to 80 · https://wraeclastindex.fyi/item/precipice
+-60% to all Elemental Resistances · Mountain · Grass · Forest · Island · Can hold any contentprecipiceprecipiceMapPrecipicePrecipice### Precursor Tower
+Endgame · Area level 65 to 80 · https://wraeclastindex.fyi/item/precursor-tower
+-60% to all Elemental Resistances · Desert · Can hold any contentprecursor-towerprecursor-towerMapPrecursorTowerPrecursor Tower### Precursor Vault
+Endgame · Area level 65 · https://wraeclastindex.fyi/item/precursor-vault
+-60% to all Elemental Resistancesprecursor-vaultprecursor-vaultPrecursorVaultPrecursor Vault### Qimah
+Interlude · Area level 56 · https://wraeclastindex.fyi/item/qimah
+Waypoint · -40% to all Elemental ResistancesqimahqimahP2_6Qimah### Qimah Reservoir
+Interlude · Area level 56 · https://wraeclastindex.fyi/item/qimah-reservoir
+Waypoint · -40% to all Elemental Resistancesqimah-reservoirqimah-reservoirP2_7Qimah Reservoir### Rancid Nest
+Endgame · Area level 65 · https://wraeclastindex.fyi/item/rancid-nest
+-60% to all Elemental Resistancesrancid-nestrancid-nestExpeditionSubArea_LairRancid Nest### Ravine
+Endgame · Area level 65 to 80 · https://wraeclastindex.fyi/item/ravine
+-60% to all Elemental Resistances · Mountain · Forest · Island · Can hold any contentravineravineMapRavineRavine### Razed Fields
+Endgame · Area level 65 to 80 · https://wraeclastindex.fyi/item/razed-fields
+-60% to all Elemental Resistances · Grass · Island · Can hold any contentrazed-fieldsrazed-fieldsMapRazedFieldsRazed Fields### Reservoir
+Endgame · Area level 65 to 80 · https://wraeclastindex.fyi/item/reservoir
+-60% to all Elemental Resistances · Swamp · Forest · Island · Can hold any contentreservoirreservoirMapReservoirReservoir### Riverhold
+Endgame · Area level 65 to 80 · https://wraeclastindex.fyi/item/riverhold
+-60% to all Elemental Resistances · Grass · Forest · Can hold any contentriverholdriverholdMapRiverholdRiverhold### Riverside
+Endgame · Area level 65 to 80 · https://wraeclastindex.fyi/item/riverside
+-60% to all Elemental Resistances · Forest · Breach Stronghold · Can hold any contentriversideriversideMapRiversideRiverside### Rockpools
+Endgame · Area level 65 to 80 · https://wraeclastindex.fyi/item/rockpools
+-60% to all Elemental Resistances · Water · Ocean · Island · Can hold any contentrockpoolsrockpoolsMapRockpoolsRockpools### Root Hollow
+Act 1 · Area level 15 · https://wraeclastindex.fyi/item/root-hollowroot-hollowroot-hollowG1_10Root Hollow### Rugosa
+Endgame · Area level 65 to 80 · https://wraeclastindex.fyi/item/rugosa
+-60% to all Elemental Resistances · Water · Ocean · Can hold any contentrugosarugosaMapRugosaRugosa### Ruins of Kingsmarch
+Endgame · Area level 79 · https://wraeclastindex.fyi/item/ruins-of-kingsmarch
+-60% to all Elemental Resistances · Can only hold Notable Location
+Players cannot gain or lose experience
+Area allows unlimited Revivals
+Arbiter has 10% chance to drop a valuable Gem
+Arbiter has 5% chance to drop a valuable Socket Currency
+Arbiter drops an additional Corrupted Rare Tabletruins-of-kingsmarchruins-of-kingsmarchMapUberBoss_FallenStarRuins of Kingsmarch### Runic Catacombs
+Endgame · Area level 65 · https://wraeclastindex.fyi/item/runic-catacombs
+-60% to all Elemental Resistancesrunic-catacombsrunic-catacombsExpeditionSubArea_KalguurRunic Catacombs### Rupture
+Endgame · Area level 65 to 80 · https://wraeclastindex.fyi/item/rupture-area
+-60% to all Elemental Resistances · Swamp · Island · Breach Stronghold · Can hold any contentrupture-arearuptureMapRuptureRupture### Rustbowl
+Endgame · Area level 65 to 80 · https://wraeclastindex.fyi/item/rustbowl
+-60% to all Elemental Resistances · Desert · Island · Breach Stronghold · Can hold any contentrustbowlrustbowlMapRustbowlRustbowl### Sacred Reservoir
+Endgame · Area level 65 to 80 · https://wraeclastindex.fyi/item/sacred-reservoir
+-60% to all Elemental Resistances · Desert · Can hold any contentsacred-reservoirsacred-reservoirMapCavernCitySacred Reservoir### Sanctuary
+Endgame · Area level 65 to 80 · https://wraeclastindex.fyi/item/sanctuary
+-60% to all Elemental Resistances · Desert · Island · Can hold any contentsanctuarysanctuaryMapSanctuarySanctuary### Sandspit
+Endgame · Area level 65 to 80 · https://wraeclastindex.fyi/item/sandspit
+-60% to all Elemental Resistances · Water · Ocean · Can hold any contentsandspitsandspitMapSandspitSandspit### Sandswept Marsh
+Act 3 · Area level 33 · https://wraeclastindex.fyi/item/sandswept-marsh
+Waypoint · -20% to all Elemental Resistancessandswept-marshsandswept-marshG3_1Sandswept Marsh### Savannah
+Endgame · Area level 65 to 80 · https://wraeclastindex.fyi/item/savannah
+-60% to all Elemental Resistances · Grass · Desert · Island · Breach Stronghold · Can hold any contentsavannahsavannahMapSavannaSavannah### Scorched Cay
+Endgame · Area level 65 · https://wraeclastindex.fyi/item/scorched-cay
+-60% to all Elemental Resistances · Ocean · Can only hold Irradiated · Always holds Grand Expedition
+Place Explosives & Activate the Detonatorscorched-cayscorched-cayExpeditionLogBook_WastesScorched Cay### Scorched Farmlands
+Interlude · Area level 54 · https://wraeclastindex.fyi/item/scorched-farmlands
+Waypoint · -40% to all Elemental Resistancesscorched-farmlandsscorched-farmlandsP1_1Scorched Farmlands### Sealed Vault
+Endgame · Area level 65 to 80 · https://wraeclastindex.fyi/item/sealed-vault
+-60% to all Elemental Resistances · Mountain · Can hold any contentsealed-vaultsealed-vaultMapVaalVaultSealed Vault### Secluded Temple
+Endgame · Area level 65 · https://wraeclastindex.fyi/item/secluded-temple
+-60% to all Elemental Resistances · Ocean · Can only hold Irradiated or Powerful Map Boss
+Players cannot gain or lose experiencesecluded-templesecluded-templeExpeditionSubArea_UhtredBossSecluded Temple### Seepage
+Endgame · Area level 65 to 80 · https://wraeclastindex.fyi/item/seepage
+-60% to all Elemental Resistances · Grass · Swamp · Forest · Can hold any contentseepageseepageMapSeepageSeepage### Sel Khari Sanctuary
+Interlude · Area level 55 · https://wraeclastindex.fyi/item/sel-khari-sanctuary
+Waypoint · -40% to all Elemental Resistancessel-khari-sanctuarysel-khari-sanctuaryP2_3Sel Khari Sanctuary### Shrike Island
+Act 4 · Area level 46 · https://wraeclastindex.fyi/item/shrike-island
+Waypoint · -30% to all Elemental Resistancesshrike-islandshrike-islandG4_7Shrike Island### Simulacrum of Delusion
+Endgame · Area level 80 · https://wraeclastindex.fyi/item/simulacrum-of-delusion
+-60% to all Elemental Resistances · Swamp · Grass · Forest · Desert · Always holds Simulacrumsimulacrum-of-delusionsimulacrum-of-delusionDelirium_Act1TownSimulacrum of Delusion### Singing Caverns
+Act 4 · Area level 47 · https://wraeclastindex.fyi/item/singing-caverns
+Waypoint · -30% to all Elemental Resistancessinging-cavernssinging-cavernsG4_3_2Singing Caverns### Sinkhole
+Endgame · Area level 65 to 80 · https://wraeclastindex.fyi/item/sinkhole
+-60% to all Elemental Resistances · Water · Ocean · Can hold any contentsinkholesinkholeMapSinkholeSinkhole### Sinking Spire
+Endgame · Area level 65 to 80 · https://wraeclastindex.fyi/item/sinking-spire
+-60% to all Elemental Resistances · Vaal City · Swamp · Can hold any content
+Activate the Precursor Beaconsinking-spiresinking-spireMapSwampTowerSinking Spire### Sinter Rift
+Endgame · Area level 65 to 80 · https://wraeclastindex.fyi/item/sinter-rift
+-60% to all Elemental Resistances · Mountain · Desert · Island · Breach Stronghold · Can hold any contentsinter-riftsinter-riftMapSinterRiftSinter Rift### Site of the Chosen
+Endgame · Area level 65 · https://wraeclastindex.fyi/item/site-of-the-chosen
+Waypoint · -60% to all Elemental Resistancessite-of-the-chosensite-of-the-chosenMapUniqueReactor_04Site of the Chosen### Skull of the Titan
+Act 2 · Area level 28 · https://wraeclastindex.fyi/item/skull-of-the-titan
+Waypoint · -10% to all Elemental Resistancesskull-of-the-titanskull-of-the-titanExpeditionSubArea_Kalguur_Act2Skull of the Titan### Slash
+Endgame · Area level 65 to 80 · https://wraeclastindex.fyi/item/slash
+-60% to all Elemental Resistances · Forest · Island · Breach Stronghold · Can hold any contentslashslashMapSlashSlash### Slick
+Endgame · Area level 65 to 80 · https://wraeclastindex.fyi/item/slick
+-60% to all Elemental Resistances · Grass · Desert · Breach Stronghold · Can hold any contentslickslickMapSlickSlick### Sloughed Gully
+Endgame · Area level 65 · https://wraeclastindex.fyi/item/sloughed-gully
+-60% to all Elemental Resistances · Ocean · Can only hold Irradiated · Always holds Grand Expedition
+Place Explosives & Activate the Detonatorsloughed-gullysloughed-gullyExpeditionLogBook_GullySloughed Gully### Smuggler's Den
+Endgame · Area level 65 · https://wraeclastindex.fyi/item/smugglers-den
+-60% to all Elemental Resistancessmugglers-densmugglers-denExpeditionSubArea_CavernSmuggler's Den### Snowfall
+Endgame · Area level 65 to 80 · https://wraeclastindex.fyi/item/snowfall
+-60% to all Elemental Resistances · Mountain · Island · Can hold any contentsnowfallsnowfallMapSnowfallSnowfall### Solitary Confinement
+Act 4 · Area level 47 · https://wraeclastindex.fyi/item/solitary-confinement
+Waypoint · -30% to all Elemental Resistancessolitary-confinementsolitary-confinementG4_5_2Solitary Confinement### Spider Woods
+Endgame · Area level 65 to 80 · https://wraeclastindex.fyi/item/spider-woods
+-60% to all Elemental Resistances · Forest · Island · Breach Stronghold · Can hold any contentspider-woodsspider-woodsMapSpiderWoodsSpider Woods### Sprawling Jungle
+Endgame · Area level 65 · https://wraeclastindex.fyi/item/sprawling-jungle
+-60% to all Elemental Resistances · Ocean · Can only hold Irradiated or Powerful Map Boss
+Players cannot gain or lose experiencesprawling-junglesprawling-jungleExpeditionSubArea_MedvedBossSprawling Jungle### Spring
+Endgame · Area level 65 to 80 · https://wraeclastindex.fyi/item/spring
+-60% to all Elemental Resistances · Desert · Breach Stronghold · Can hold any contentspringspringMapSpring_Spring### Stagnant Basin
+Endgame · Area level 65 · https://wraeclastindex.fyi/item/stagnant-basin
+-60% to all Elemental Resistances · Ocean · Can only hold Irradiated · Always holds Grand Expedition
+Place Explosives & Activate the Detonatorstagnant-basinstagnant-basinExpeditionLogBook_BasinStagnant Basin### Stale Crevice
+Endgame · Area level 65 · https://wraeclastindex.fyi/item/stale-crevice
+-60% to all Elemental Resistancesstale-crevicestale-creviceExpeditionSubArea_FissureStale Crevice### Steaming Springs
+Endgame · Area level 65 to 80 · https://wraeclastindex.fyi/item/steaming-springs
+-60% to all Elemental Resistances · Grass · Forest · Island · Breach Stronghold · Can hold any contentsteaming-springssteaming-springsMapSteamingSpringsSteaming Springs### Steppe
+Endgame · Area level 65 to 80 · https://wraeclastindex.fyi/item/steppe
+-60% to all Elemental Resistances · Grass · Island · Breach Stronghold · Can hold any contentsteppesteppeMapSteppeSteppe### Stones of Serle
+Interlude · Area level 54 · https://wraeclastindex.fyi/item/stones-of-serle
+Waypoint · -40% to all Elemental Resistancesstones-of-serlestones-of-serleP1_2Stones of Serle### Stronghold
+Endgame · Area level 65 to 80 · https://wraeclastindex.fyi/item/stronghold
+-60% to all Elemental Resistances · Water · Ocean · Can hold any contentstrongholdstrongholdMapStrongholdStronghold### Sulphur Mines
+Endgame · Area level 65 · https://wraeclastindex.fyi/item/sulphur-mines
+-60% to all Elemental Resistancessulphur-minessulphur-minesExpeditionSubArea_VolcanoSulphur Mines### Sulphuric Caverns
+Endgame · Area level 65 to 80 · https://wraeclastindex.fyi/item/sulphuric-caverns
+-60% to all Elemental Resistances · Swamp · Desert · Island · Breach Stronghold · Can hold any contentsulphuric-cavernssulphuric-cavernsMapSulphuricCavernsSulphuric Caverns### Sump
+Endgame · Area level 65 to 80 · https://wraeclastindex.fyi/item/sump
+-60% to all Elemental Resistances · Swamp · Island · Breach Stronghold · Can hold any contentsumpsumpMapSumpSump### Sun Temple
+Endgame · Area level 65 to 80 · https://wraeclastindex.fyi/item/sun-temple
+-60% to all Elemental Resistances · Vaal City · Swamp · Can hold any contentsun-templesun-templeMapSunTempleSun Temple### Sunken Pyramid
+Endgame · Area level 65 · https://wraeclastindex.fyi/item/sunken-pyramid
+-60% to all Elemental Resistances
+Players cannot gain or lose experiencesunken-pyramidsunken-pyramidDelirium_Act3TownSunken Pyramid### Swarm
+Endgame · Area level 65 to 80 · https://wraeclastindex.fyi/item/swarm
+-60% to all Elemental Resistances · Grass · Desert · Can hold any contentswarmswarmMapSwarmSwarm### Temple of Kopec
+Act 3 · Area level 42 · https://wraeclastindex.fyi/item/temple-of-kopec
+-20% to all Elemental Resistancestemple-of-kopectemple-of-kopecG3_12Temple of Kopec### Terrace
+Endgame · Area level 65 · https://wraeclastindex.fyi/item/terrace
+-60% to all Elemental ResistancesterraceterraceMapTerraceTerrace### The Ardura Caravan
+Act 2 · Area level 32 · https://wraeclastindex.fyi/item/the-ardura-caravan
+Waypoint · Town · -10% to all Elemental Resistancesthe-ardura-caravanthe-ardura-caravanG2_townThe Ardura Caravan### The Assembly
+Endgame · Area level 65 to 80 · https://wraeclastindex.fyi/item/the-assembly
+-60% to all Elemental Resistances · Vaal City · Grass · Breach Stronghold · Can hold any contentthe-assemblythe-assemblyMapVaalFactoryThe Assembly### The Azak Bog
+Act 3 · Area level 40 · https://wraeclastindex.fyi/item/the-azak-bog
+Waypoint · -20% to all Elemental Resistancesthe-azak-bogthe-azak-bogG3_7The Azak Bog### The Black Chambers
+Act 3 · Area level 45 · https://wraeclastindex.fyi/item/the-black-chambers
+Waypoint · -30% to all Elemental Resistancesthe-black-chambersthe-black-chambersG3_17The Black Chambers### The Blackwood
+Interlude · Area level 55 · https://wraeclastindex.fyi/item/the-blackwood
+Waypoint · -40% to all Elemental Resistancesthe-blackwoodthe-blackwoodP1_3The Blackwood### The Bone Pits
+Act 2 · Area level 22 · https://wraeclastindex.fyi/item/the-bone-pits
+Waypoint · -10% to all Elemental Resistancesthe-bone-pitsthe-bone-pitsG2_5_2The Bone Pits### The Burning Monolith
+Endgame · Area level 74 · https://wraeclastindex.fyi/item/the-burning-monolith-area
+-60% to all Elemental Resistances
+Players cannot gain or lose experience
+Area allows unlimited Revivals
+Arbiter has 10% chance to drop a valuable Gem
+Arbiter has 5% chance to drop a valuable Socket Currency
+Arbiter drops an additional Corrupted Rare Tabletthe-burning-monolith-areathe-burning-monolithMapUberBoss_MonolithThe Burning Monolith### The Chained Beast
+Endgame · Area level 65 · https://wraeclastindex.fyi/item/the-chained-beast
+-60% to all Elemental Resistancesthe-chained-beastthe-chained-beastEndgameDoodad_BeastGroundZeroThe Chained Beast### The Copper Citadel
+Endgame · Area level 75 to 80 · https://wraeclastindex.fyi/item/the-copper-citadel
+-60% to all Elemental Resistances · Faridun City · Holds no contentthe-copper-citadelthe-copper-citadelMapUberBoss_CopperCitadelThe Copper Citadel### The Cuachic Vault
+Interlude · Area level 56 · https://wraeclastindex.fyi/item/the-cuachic-vault
+Waypoint · -40% to all Elemental Resistancesthe-cuachic-vaultthe-cuachic-vaultP3_7The Cuachic Vault### The Dreadnought's Wake
+Act 2 · Area level 30 · https://wraeclastindex.fyi/item/the-dreadnoughts-wake
+Waypoint · -10% to all Elemental Resistancesthe-dreadnoughts-wakethe-dreadnoughts-wakeG2_11The Dreadnought's Wake### The Drowned City
+Act 3 · Area level 40 · https://wraeclastindex.fyi/item/the-drowned-city
+Waypoint · -20% to all Elemental Resistancesthe-drowned-citythe-drowned-cityG3_8The Drowned City### The Excavation
+Act 4 · Area level 52 · https://wraeclastindex.fyi/item/the-excavation
+Waypoint · -30% to all Elemental Resistancesthe-excavationthe-excavationG4_10The Excavation### The Ezomyte Megaliths
+Endgame · Area level 65 · https://wraeclastindex.fyi/item/the-ezomyte-megaliths
+-60% to all Elemental Resistances · Grass · Forest · Island
+Contains a Powerful Boss Encounterthe-ezomyte-megalithsthe-ezomyte-megalithsMapUniqueMegalithThe Ezomyte Megaliths### The Fallen Star
+Endgame · Area level 65 · https://wraeclastindex.fyi/item/the-fallen-star
+-60% to all Elemental Resistancesthe-fallen-starthe-fallen-starEndgameDoodad_MeteorCraterThe Fallen Star### The Fractured Lake
+Endgame · Area level 65 · https://wraeclastindex.fyi/item/the-fractured-lake
+-60% to all Elemental Resistances · Water · Ocean
+Rare Monsters Are Mirrored
+(150-300)% increased number of Rare Monsters
+Contains the Fragmented Mirrorthe-fractured-lakethe-fractured-lakeMapUniqueLakeThe Fractured Lake### The Galai Gates
+Interlude · Area level 56 · https://wraeclastindex.fyi/item/the-galai-gates
+Waypoint · -40% to all Elemental Resistancesthe-galai-gatesthe-galai-gatesP2_5The Galai Gates### The Glade
+Interlude · Area level 64 · https://wraeclastindex.fyi/item/the-glade
+Waypoint · Town · -50% to all Elemental Resistancesthe-gladethe-gladeP3_TownThe Glade### The Grelwood
+Act 1 · Area level 4 · https://wraeclastindex.fyi/item/the-grelwood
+Waypointthe-grelwoodthe-grelwoodG1_4The Grelwood### The Grim Tangle
+Act 1 · Area level 6 · https://wraeclastindex.fyi/item/the-grim-tangle
+Waypointthe-grim-tanglethe-grim-tangleG1_6The Grim Tangle### The Halani Gates
+Act 2 · Area level 20 · https://wraeclastindex.fyi/item/the-halani-gates
+Waypoint · -10% to all Elemental Resistancesthe-halani-gatesthe-halani-gatesG2_3The Halani Gates### The Iron Citadel
+Endgame · Area level 80 · https://wraeclastindex.fyi/item/the-iron-citadel
+-60% to all Elemental Resistances · Ezomyte City · Can hold any contentthe-iron-citadelthe-iron-citadelMapUberBoss_IronCitadelThe Iron Citadel### The Jade Isles
+Endgame · Area level 65 to 80 · https://wraeclastindex.fyi/item/the-jade-isles
+-60% to all Elemental Resistances · Water · Ocean · Can hold any contentthe-jade-islesthe-jade-islesMapUberBoss_JadeCitadelThe Jade Isles### The Khari Bazaar
+Interlude · Area level 64 · https://wraeclastindex.fyi/item/the-khari-bazaar
+Waypoint · Town · -50% to all Elemental Resistancesthe-khari-bazaarthe-khari-bazaarP2_TownThe Khari Bazaar### The Khari Crossing
+Interlude · Area level 54 · https://wraeclastindex.fyi/item/the-khari-crossing
+-40% to all Elemental Resistancesthe-khari-crossingthe-khari-crossingP2_1The Khari Crossing### The Lost City
+Act 2 · Area level 22 · https://wraeclastindex.fyi/item/the-lost-city
+Waypoint · -10% to all Elemental Resistancesthe-lost-citythe-lost-cityG2_4_2The Lost City### The Manor Ramparts
+Act 1 · Area level 14 · https://wraeclastindex.fyi/item/the-manor-ramparts
+Waypointthe-manor-rampartsthe-manor-rampartsG1_14The Manor Ramparts### The Matlan Waterways
+Act 3 · Area level 39 · https://wraeclastindex.fyi/item/the-matlan-waterways
+Waypoint · -20% to all Elemental Resistancesthe-matlan-waterwaysthe-matlan-waterwaysG3_2_2The Matlan Waterways### The Matriarch Halls
+Endgame · Area level 65 · https://wraeclastindex.fyi/item/the-matriarch-halls
+-60% to all Elemental Resistances · Desert · Forest · Swamp · Grass · Can hold any contentthe-matriarch-hallsthe-matriarch-hallsMapMothersoul_FemaleThe Matriarch Halls### The Molten Vault
+Act 3 · Area level 41 · https://wraeclastindex.fyi/item/the-molten-vault
+Waypoint · -20% to all Elemental Resistancesthe-molten-vaultthe-molten-vaultG3_9The Molten Vault### The Monument
+Endgame · Area level 65 to 80 · https://wraeclastindex.fyi/item/the-monument
+-60% to all Elemental Resistances · Grass · Swamp · Island · Can hold any contentthe-monumentthe-monumentMapMonumentThe Monument### The Origin Tower
+Endgame · Area level 79 · https://wraeclastindex.fyi/item/the-origin-tower
+-60% to all Elemental Resistances
+Players cannot gain or lose experience
+Area allows unlimited Revivals
+Arbiter has 10% chance to drop a valuable Gem
+Arbiter has 5% chance to drop a valuable Socket Currency
+Arbiter drops an additional Corrupted Rare Tabletthe-origin-towerthe-origin-towerMapUberBoss_DivinityThe Origin Tower### The Patriarch Halls
+Endgame · Area level 65 · https://wraeclastindex.fyi/item/the-patriarch-halls
+-60% to all Elemental Resistances · Desert · Forest · Swamp · Grass · Can hold any contentthe-patriarch-hallsthe-patriarch-hallsMapMothersoul_MaleThe Patriarch Halls### The Realmgate
+Endgame · Area level 65 · https://wraeclastindex.fyi/item/the-realmgate-area
+-60% to all Elemental Resistancesthe-realmgate-areathe-realmgateMapLeaguePortalThe Realmgate### The Red Vale
+Act 1 · Area level 5 · https://wraeclastindex.fyi/item/the-red-vale
+Waypointthe-red-valethe-red-valeG1_5The Red Vale### The Refuge
+Interlude · Area level 64 · https://wraeclastindex.fyi/item/the-refuge
+Waypoint · Town · -50% to all Elemental Resistancesthe-refugethe-refugeP1_TownThe Refuge### The Reliquary Vault
+Endgame · Area level 65 · https://wraeclastindex.fyi/item/the-reliquary-vault-area
+-60% to all Elemental Resistancesthe-reliquary-vault-areathe-reliquary-vaultMapVoidReliquaryThe Reliquary Vault### The Riverbank
+Act 1 · Area level 1 · https://wraeclastindex.fyi/item/the-riverbankthe-riverbankthe-riverbankG1_1The Riverbank### The Silent Cave
+Endgame · Area level 65 · https://wraeclastindex.fyi/item/the-silent-cave
+-60% to all Elemental Resistances · Mountain · Desert · Island
+Contains many Rare Monsters trapped in Essences
+Contains an Imprisoned Boss that absorbs Essences from Rare Monstersthe-silent-cavethe-silent-caveMapUniqueSeleniteThe Silent Cave### The Spires of Deshar
+Act 2 · Area level 30 · https://wraeclastindex.fyi/item/the-spires-of-deshar
+Waypoint · -10% to all Elemental Resistancesthe-spires-of-desharthe-spires-of-desharG2_9_2The Spires of Deshar### The Stone Citadel
+Endgame · Area level 80 · https://wraeclastindex.fyi/item/the-stone-citadel
+-60% to all Elemental Resistances · Vaal City · Can hold any contentthe-stone-citadelthe-stone-citadelMapUberBoss_StoneCitadelThe Stone Citadel### The Temple of Chaos
+Act 3 · Area level 38 · https://wraeclastindex.fyi/item/the-temple-of-chaos
+Waypoint · -20% to all Elemental Resistancesthe-temple-of-chaosthe-temple-of-chaosG3_10_AirlockThe Temple of Chaos### The Titan Grotto
+Act 2 · Area level 22 · https://wraeclastindex.fyi/item/the-titan-grotto
+Waypoint · -10% to all Elemental Resistancesthe-titan-grottothe-titan-grottoG2_7The Titan Grotto### The Trial of Chaos
+Act 3 · Area level 38 · https://wraeclastindex.fyi/item/the-trial-of-chaos
+-20% to all Elemental Resistancesthe-trial-of-chaosthe-trial-of-chaosG3_10The Trial of Chaos### The Venom Crypts
+Act 3 · Area level 35 · https://wraeclastindex.fyi/item/the-venom-crypts
+Waypoint · -20% to all Elemental Resistancesthe-venom-cryptsthe-venom-cryptsG3_4The Venom Crypts### The Viridian Wildwood
+Endgame · Area level 65 · https://wraeclastindex.fyi/item/the-viridian-wildwood
+-60% to all Elemental Resistances · Forest · Swamp · Island
+Shrouded in Darkness
+Contains Omen Altarsthe-viridian-wildwoodthe-viridian-wildwoodMapUniqueWildwoodThe Viridian Wildwood### The Voyage
+Endgame · Area level 65 · https://wraeclastindex.fyi/item/the-voyage
+-60% to all Elemental Resistancesthe-voyagethe-voyageMapUniqueMerchant04_PirateShipThe Voyage### The Well of Souls
+Act 2 · Area level 22 · https://wraeclastindex.fyi/item/the-well-of-souls
+Waypoint · -10% to all Elemental Resistancesthe-well-of-soulsthe-well-of-soulsAbyss_HubThe Well of Souls### The Well of Souls
+Endgame · Area level 79 · https://wraeclastindex.fyi/item/the-well-of-souls-2
+-60% to all Elemental Resistances · Can only hold Notable Location
+Players cannot gain or lose experiencethe-well-of-souls-2the-well-of-soulsAbyss_PinnacleThe Well of Souls### The Withered Willow
+Endgame · Area level 79 · https://wraeclastindex.fyi/item/the-withered-willow
+-60% to all Elemental Resistances · Can only hold Notable Location
+Players cannot gain or lose experience
+Area allows unlimited Revivals
+Arbiter has 10% chance to drop a valuable Gem
+Arbiter has 5% chance to drop a valuable Socket Currency
+Arbiter drops an additional Corrupted Rare Tabletthe-withered-willowthe-withered-willowMapUberBoss_DeliriumThe Withered Willow### The Ziggurat Refuge
+Endgame · Area level 65 · https://wraeclastindex.fyi/item/the-ziggurat-refuge
+Waypoint · Town · -60% to all Elemental Resistances · Swamp · Grass · Forest · Desertthe-ziggurat-refugethe-ziggurat-refugeG_Endgame_TownThe Ziggurat Refuge### Tomb of the Consort
+Act 1 · Area level 8 · https://wraeclastindex.fyi/item/tomb-of-the-consort
+Waypointtomb-of-the-consorttomb-of-the-consortG1_9Tomb of the Consort### Tomb of the Fallen Knight
+Endgame · Area level 80 · https://wraeclastindex.fyi/item/tomb-of-the-fallen-knight
+-60% to all Elemental Resistances
+Players cannot gain or lose experiencetomb-of-the-fallen-knighttomb-of-the-fallen-knightExpeditionSubArea_BlackKnightBossTomb of the Fallen Knight### Traitor's Passage
+Act 2 · Area level 19 · https://wraeclastindex.fyi/item/traitors-passage
+Waypoint · -10% to all Elemental Resistancestraitors-passagetraitors-passageG2_2Traitor's Passage### Tranquil Chamber
+Endgame · Area level 65 · https://wraeclastindex.fyi/item/tranquil-chamber
+-60% to all Elemental Resistancestranquil-chambertranquil-chamberExpeditionSubArea_SanctuaryTranquil Chamber### Trenches
+Endgame · Area level 65 to 80 · https://wraeclastindex.fyi/item/trenches
+-60% to all Elemental Resistances · Forest · Swamp · Island · Can hold any contenttrenchestrenchesMapTrenchesTrenches### Trial of the Ancestors
+Act 4 · Area level 51 · https://wraeclastindex.fyi/item/trial-of-the-ancestors
+Waypoint · -30% to all Elemental Resistancestrial-of-the-ancestorstrial-of-the-ancestorsG4_4_3Trial of the Ancestors### Trial of the Sekhemas
+Act 2 · Area level 22 · https://wraeclastindex.fyi/item/trial-of-the-sekhemas
+Waypoint · -10% to all Elemental Resistancestrial-of-the-sekhemastrial-of-the-sekhemasG2_13Trial of the Sekhemas### Twisted Domain
+Endgame · Area level 79 · https://wraeclastindex.fyi/item/twisted-domain
+-60% to all Elemental Resistances
+Breach Monsters in Area do not drop Splinters
+Players cannot gain or lose experiencetwisted-domaintwisted-domainBreachDomain_01Twisted Domain### Untainted Paradise
+Endgame · Area level 65 · https://wraeclastindex.fyi/item/untainted-paradise
+-60% to all Elemental Resistances · Water · Ocean
+(200-400)% increased Experience gain
+Monsters drop no itemsuntainted-paradiseuntainted-paradiseMapUniqueUntaintedParadiseUntainted Paradise### Utzaal
+Act 3 · Area level 43 · https://wraeclastindex.fyi/item/utzaal
+Waypoint · -20% to all Elemental ResistancesutzaalutzaalG3_14Utzaal### Vaal City
+Endgame · Area level 65 to 80 · https://wraeclastindex.fyi/item/vaal-city
+-60% to all Elemental Resistances · Vaal City · Swamp · Can hold any contentvaal-cityvaal-cityMapVaalCityVaal City### Vaal Ruins
+Act 3 · Area level 2 · https://wraeclastindex.fyi/item/vaal-ruins
+Waypointvaal-ruinsvaal-ruinsIncursionHubVaal Ruins### Vaal Ruins
+Endgame · Area level 65 · https://wraeclastindex.fyi/item/vaal-ruins-2
+-60% to all Elemental Resistances · Can only hold Notable Locationvaal-ruins-2vaal-ruinsIncursionHubEndgameVaal Ruins### Vaal Village
+Endgame · Area level 65 to 80 · https://wraeclastindex.fyi/item/vaal-village
+-60% to all Elemental Resistances · Vaal City · Swamp · Can hold any contentvaal-villagevaal-villageMapVaalVillageVaal Village### Valley of the Titans
+Act 2 · Area level 21 · https://wraeclastindex.fyi/item/valley-of-the-titans
+Waypoint · -10% to all Elemental Resistancesvalley-of-the-titansvalley-of-the-titansG2_6Valley of the Titans### Vastiri Outskirts
+Act 2 · Area level 16 · https://wraeclastindex.fyi/item/vastiri-outskirts
+Waypoint · -10% to all Elemental Resistancesvastiri-outskirtsvastiri-outskirtsG2_1Vastiri Outskirts### Vaults of Kamasa
+Endgame · Area level 65 · https://wraeclastindex.fyi/item/vaults-of-kamasa
+-60% to all Elemental Resistances · Vaal City
+(100-200)% increased Rarity of Items found in this Area
+All Chests are Magic or Rarevaults-of-kamasavaults-of-kamasaMapUniqueVaultVaults of Kamasa### Volcanic Warrens
+Act 4 · Area level 47 · https://wraeclastindex.fyi/item/volcanic-warrens
+Waypoint · -30% to all Elemental Resistancesvolcanic-warrensvolcanic-warrensG4_1_2Volcanic Warrens### Wayward Isle
+Endgame · Area level 65 to 80 · https://wraeclastindex.fyi/item/wayward-isle
+-60% to all Elemental Resistances · Water · Ocean · Can hold any contentwayward-islewayward-isleMapWaywardIsleWayward Isle### Western Enigma Chamber
+Endgame · Area level 75 · https://wraeclastindex.fyi/item/western-enigma-chamber
+-60% to all Elemental Resistances · Ezomyte Citywestern-enigma-chamberwestern-enigma-chamberMapUberBoss_IronCitadel_QuestWestern Enigma Chamber### Western Gateway
+Endgame · Area level 65 · https://wraeclastindex.fyi/item/western-gateway
+-60% to all Elemental Resistances
+Find and activate the Precursor Beaconwestern-gatewaywestern-gatewayMapUniqueReactor_01Western Gateway### Wetlands
+Endgame · Area level 65 to 80 · https://wraeclastindex.fyi/item/wetlands
+-60% to all Elemental Resistances · Swamp · Island · Breach Stronghold · Can hold any contentwetlandswetlandsMapWetlandsWetlands### Whakapanu Island
+Act 4 · Area level 46 · https://wraeclastindex.fyi/item/whakapanu-island
+Waypoint · -30% to all Elemental Resistanceswhakapanu-islandwhakapanu-islandG4_3_1Whakapanu Island### Willow
+Endgame · Area level 65 to 80 · https://wraeclastindex.fyi/item/willow
+-60% to all Elemental Resistances · Forest · Island · Breach Stronghold · Can hold any contentwillowwillowMapWillowWillow### Wolvenhold
+Interlude · Area level 56 · https://wraeclastindex.fyi/item/wolvenhold
+Waypoint · -40% to all Elemental ResistanceswolvenholdwolvenholdP1_5Wolvenhold### Woodland
+Endgame · Area level 65 to 80 · https://wraeclastindex.fyi/item/woodland
+-60% to all Elemental Resistances · Forest · Island · Breach Stronghold · Can hold any contentwoodlandwoodlandMapWoodlandWoodland### Ziggurat Encampment
+Act 3 · Area level 44 · https://wraeclastindex.fyi/item/ziggurat-encampment
+Waypoint · Town · -20% to all Elemental Resistancesziggurat-encampmentziggurat-encampmentG3_townZiggurat Encampment
