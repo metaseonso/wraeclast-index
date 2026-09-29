@@ -78,6 +78,7 @@ NINJA = 'https://poe.ninja/poe2/'
 FEED = 'https://web.poecdn.com/ (the Currency Exchange feed)'
 CDN = 'https://patch-poe2.poecdn.com/'
 DATSCHEMA = 'https://github.com/poe-tool-dev/dat-schema'
+NEVERSINK = 'https://github.com/NeverSinkDev/NeverSink-Filter-for-PoE2 (the latest release)'
 CXARCHIVE = 'wraeclast-data/cx (the Currency Exchange feed, archived every hour; private, WI_CX)'
 
 """The stages, in the order the data needs them: a stage reads what the ones above it wrote. Per stage:
@@ -284,6 +285,11 @@ STAGES = [
          count={'data/index.json': 'items'}),
     dict(name='ninjapast', run=['tools/ninjapast.py'], cadence='hand', source='poe.ninja',
          reads=[NINJA, 'data/leagues.json'], writes=['data/pastprices.json']),
+    # NeverSink's loot filter tiers, for the base and currency cards (#93). A table the card reads when it is
+    # opened (assets/kinds.js FIELDS.filtertier), so it changes no card and the index cut does not carry it
+    dict(name='filtertiers', run=['tools/filtertiers.py'], cadence='daily', source="NeverSink's loot filter",
+         reads=[NEVERSINK, 'data/index.json', 'data/market.json'], writes=['data/filtertiers.json'],
+         count={'data/filtertiers.json': 'tiers'}),
     # last, once the index is final: the cut the site reads a piece at a time (the search, the cards, the crawler
     # pages). After a hand stage that edits the index, run it on its own (--only shards); --check says when it is due
     dict(name='shards', run=['tools/shards.py'], cadence='patch', source='files',

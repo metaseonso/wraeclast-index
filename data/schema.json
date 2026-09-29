@@ -1652,6 +1652,7 @@
      "by": [
       "row",
       "name",
+      "filtertier",
       "canroll",
       "cancorrupt",
       "changed"
@@ -2804,6 +2805,7 @@
      "by": [
       "row",
       "name",
+      "filtertier",
       "adds",
       "weight",
       "exfee",
@@ -7929,6 +7931,7 @@
     "changed",
     "drop",
     "exfee",
+    "filtertier",
     "gemgold",
     "goldv",
     "mapdanger",

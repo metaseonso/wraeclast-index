@@ -835,6 +835,18 @@ small.at-bonus{display:block}
   .cxp-chips::-webkit-scrollbar{display:none}
   .cxp-list{max-height:none; overflow:visible}
 }
+/* Currency tab: the loot filter block (assets/currency.js). The rules keep their own lines and scroll inside
+   their box sideways, so a long BaseType line never widens the page */
+.sect-btns{display:flex; flex-wrap:wrap; gap:6px; align-self:center}
+.cxfilt h3{font-family:var(--disp); font-size:19px; margin:0 0 10px}
+.cxf-mode{display:flex; flex-wrap:wrap; align-items:center; gap:6px; margin-bottom:10px}
+.cxf-mode .chip{padding:3px 10px; font-size:12px}
+.cxf-over{display:inline-flex; align-items:center; gap:5px; font-size:12px; color:var(--muted); margin-right:6px}
+.cxf-over .field{width:84px; padding:4px 8px}
+.cxf-out{margin:0; max-height:46vh; overflow:auto; overscroll-behavior:contain; padding:10px 12px; border:1px solid var(--line);
+  border-radius:8px; background:var(--sunken, var(--surface)); font:12px/1.5 var(--mono); color:var(--text); white-space:pre; tab-size:4}
+.cxf-out:focus-visible{outline:none; border-color:var(--accent)}
+.cxf-ft{display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap; margin-top:10px}
 /* Admin: Cloudflare section */
 .dv-sect{margin:26px 0 6px; font-family:var(--disp); font-size:20px}
 .dv-g{display:inline-block; padding:1px 7px; border-radius:6px; font-family:var(--mono); font-size:12px; border:1px solid var(--line)}

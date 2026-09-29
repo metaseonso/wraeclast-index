@@ -64,6 +64,10 @@
 /* the market files on an opened currency card (assets/app.js MKT): a pill that fills when its file lands, the
    week's hours as a grid (7 days by 24 hours, UTC) */
 .pill.mk-pill[hidden]{display:none}
+/* a word off a table that is not the game's (assets/app.js keyed): a pill that links to whose word it is */
+.pill.pill-src[hidden]{display:none}
+a.pill.pill-src{text-decoration:none}
+a.pill.pill-src:hover{color:var(--text); border-color:var(--accent)}
 .mk-heat{display:grid; grid-template-columns:30px repeat(24, minmax(0, 1fr)); gap:1px; align-items:center;
   font:10px/1 var(--mono); color:var(--faint)}
 .mk-heat b{font-weight:400}

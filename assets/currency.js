@@ -260,6 +260,125 @@ function openPicker(){
   setTimeout(() => $('.cxp-q', box).focus(), 50);
 }
 
+/* ---------- the loot filter block ----------
+   Rules to paste into a loot filter: the currencies worth over a number of exalted on the Currency Exchange
+   today, or the watch list. Built off the same price rows the grid draws, in the words GGG's own filter
+   reference uses (pathofexile.com/item-filter/about): BaseType ==, GemLevel, and the label, sound, beam and map
+   icon actions, each value inside the range the reference gives. A price moves, so the block says in a comment
+   when the prices it was cut from were checked, and is cut again from today's prices every time it is opened.
+
+   A name the Exchange lists with its level ("Uncut Skill Gem (Level 20)") is one base item at a gem level, so a
+   group in LEVELLED is written as the base and the levels it was picked at, each run of levels one rule. */
+const LEVELLED = {'Uncut Gems': 'GemLevel'};
+const LEVEL = /^(.+) \(Level (\d+)\)$/;
+const FILTER_OVER = 50;   // exalted: where "worth over" starts
+const LOOK = ['SetFontSize 45', 'SetTextColor 255 255 255 255', 'SetBorderColor 255 255 255 255',
+  'SetBackgroundColor 120 30 140 255', 'PlayAlertSound 1 300', 'PlayEffect Purple', 'MinimapIcon 0 Purple Star'];
+const FLT = {mode: 'over', over: FILTER_OVER};
+let FEL = null;   // the open filter box
+
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+function utc(iso){
+  const d = new Date(iso);
+  if(isNaN(d)) return '';
+  const two = n => String(n).padStart(2, '0');
+  return d.getUTCDate() + ' ' + MONTHS[d.getUTCMonth()] + ' ' + d.getUTCFullYear() + ', ' +
+    two(d.getUTCHours()) + ':' + two(d.getUTCMinutes()) + ' UTC';
+}
+const exOf = r => {
+  const ex = D.market.rates && D.market.rates.exalted;
+  return ex && r.m.v !== undefined && r.m.v !== null ? r.m.v * ex : null;
+};
+function filterRows(){
+  if(FLT.mode === 'watch') return ALL.filter(r => S.watch.has(r.it.id));
+  return ALL.filter(r => (r.m.vol ?? 0) >= MIN_VOL && exOf(r) !== null && exOf(r) >= FLT.over);
+}
+function filterText(list){
+  const quote = n => '"' + n + '"';
+  const plain = [], lv = new Map();
+  for(const r of list){
+    if(r.it.n.includes('"')) continue;   // no base item carries one; a name that did could not be written
+    const m = LEVELLED[r.m.cat] && LEVEL.exec(r.it.n);
+    if(m) (lv.get(m[1]) || lv.set(m[1], []).get(m[1])).push(+m[2]);
+    else plain.push(r.it.n);
+  }
+  const rules = [];
+  const rule = conds => rules.push(['Show', ...conds, ...LOOK].map((x, i) => i ? '\t' + x : x).join('\n'));
+  if(plain.length) rule(['BaseType == ' + plain.sort((a, b) => a.localeCompare(b)).map(quote).join(' ')]);
+  for(const [base, levels] of [...lv].sort((a, b) => a[0].localeCompare(b[0]))){
+    const at = LEVELLED[list.find(r => r.it.n.startsWith(base + ' (')).m.cat];
+    levels.sort((a, b) => a - b);
+    for(let i = 0; i < levels.length; ){
+      let j = i;
+      while(j + 1 < levels.length && levels[j + 1] === levels[j] + 1) j++;
+      rule(['BaseType == ' + quote(base), at + ' >= ' + levels[i], at + ' <= ' + levels[j]]);
+      i = j + 1;
+    }
+  }
+  const times = list.map(r => r.m.at).filter(Boolean).sort();
+  const px = list.map(exOf).filter(v => v !== null).sort((a, b) => a - b);
+  const exs = v => (v >= 100 ? Math.round(v).toLocaleString('en') : +v.toPrecision(2)) + ' ex';
+  const said = FLT.mode === 'watch' ? 'the watch list' + (px.length ? ', worth ' + (px.length > 1 && exs(px[0]) !== exs(px[px.length - 1])
+      ? exs(px[0]) + ' to ' + exs(px[px.length - 1]) : exs(px[0])) : '')
+    : 'worth ' + FLT.over.toLocaleString('en') + ' ex or more, ' + MIN_VOL + '+ div traded a day';
+  return ['# Wraeclast Index: ' + said,
+    '# Prices checked ' + (utc(times[0] || D.market.updated) || 'at an unknown time') + ' on the Currency Exchange',
+    '# ' + list.length + (list.length === 1 ? ' item' : ' items') + '. Place above every other rule.',
+    '', rules.join('\n\n'), ''].join('\n');
+}
+function paintFilter(){
+  if(!FEL) return;
+  const list = filterRows();
+  for(const b of FEL.querySelectorAll('.cxf-mode .chip')) b.setAttribute('aria-pressed', String(b.dataset.m === FLT.mode));
+  $('.cxf-watch .ct', FEL).textContent = watched();
+  const out = $('.cxf-out', FEL), copy = $('.cxf-copy', FEL);
+  out.textContent = list.length ? filterText(list)
+    : FLT.mode === 'watch' ? 'No stars yet.' : 'Nothing worth that much today.';
+  copy.disabled = !list.length;
+  copy.textContent = 'Copy';
+  $('.cxf-n', FEL).textContent = list.length + (list.length === 1 ? ' currency' : ' currencies');
+}
+function copyFilter(btn){
+  const text = $('.cxf-out', FEL).textContent;
+  const done = () => { btn.textContent = 'Copied'; };
+  const byHand = () => {   // no clipboard permission: select the block, the way a player would
+    const r = document.createRange();
+    r.selectNodeContents($('.cxf-out', FEL));
+    const s = getSelection(); s.removeAllRanges(); s.addRange(r);
+    try { if(document.execCommand('copy')) done(); } catch {}
+  };
+  if(navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(done, byHand);
+  else byHand();
+}
+function openFilter(){
+  const box = document.createElement('section');
+  box.className = 'cxfilt panel';
+  box.innerHTML = '<h3>Loot filter</h3>' +
+    '<div class="cxf-mode">' +
+      '<button type="button" class="chip" data-m="over">Worth over</button>' +
+      '<label class="cxf-over"><input class="field" type="number" min="1" step="1" inputmode="numeric" ' +
+        'aria-label="Exalted Orbs" value="' + FLT.over + '"> ex</label>' +
+      '<button type="button" class="chip cxf-watch" data-m="watch">★ Watching <span class="ct"></span></button>' +
+    '</div>' +
+    '<pre class="cxf-out" tabindex="0"></pre>' +
+    '<div class="cxf-ft"><span class="note cxf-n" aria-live="polite"></span>' +
+      '<button type="button" class="btn gold cxf-copy">Copy</button></div>';
+  FEL = box;
+  const n = $('.cxf-over input', box);
+  onType(n, () => {
+    const v = Math.floor(+n.value);
+    if(v >= 1){ FLT.over = v; FLT.mode = 'over'; paintFilter(); }
+  });
+  box.addEventListener('click', e => {
+    const m = e.target.closest('.cxf-mode .chip');
+    if(m){ FLT.mode = m.dataset.m; paintFilter(); return; }
+    const c = e.target.closest('.cxf-copy');
+    if(c) copyFilter(c);
+  });
+  paintFilter();
+  openBox(box, 'Loot filter');
+}
+
 /* ---------- view ---------- */
 export function mount(el){
   EL = el;
@@ -272,7 +391,8 @@ export function mount(el){
     '<div class="pagehd"><h2>Currency</h2><p>What each currency really traded for on the in-game Currency ' +
       'Exchange over the last 24 hours. Updated every hour.</p></div>' +
     '<div class="sect"><h3>Every currency</h3><span class="grow"></span>' +
-      '<button type="button" class="btn gold" id="cxpick">★ Add to watch list</button></div>' +
+      '<span class="sect-btns"><button type="button" class="btn" id="cxfilter">Loot filter</button>' +
+      '<button type="button" class="btn gold" id="cxpick">★ Add to watch list</button></span></div>' +
     /* One row that wraps: what a player came with in hand, asked as a question; then the group (narrowed to
        whatever is asked), the search, and how the list is cut and sorted. The chips carry the tab's one count,
        drawn again with the grid (render). The price chips were a row of their own; one list says the same
@@ -322,6 +442,7 @@ export function mount(el){
   $('.cx-next', el).addEventListener('click', () => { S.shown += PAGE; render(); });
   $('.cx-all', el).addEventListener('click', () => { S.shown += MOST; render(); });
   $('#cxpick', el).addEventListener('click', openPicker);
+  $('#cxfilter', el).addEventListener('click', openFilter);
   el.addEventListener('click', onPage);
 
   markets($('#cxmarkets', el));

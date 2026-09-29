@@ -1015,6 +1015,20 @@ function gemGoldHTML(it, t, f){
   }
   return out && '<p class="card-facts">' + esc(f.label || '') + flag + '</p>' + out + src;
 }
+/* One word off a table of its own, found by the card's kind and the field's `at` ("c:Divine Orb" in its `of`
+   part), as a pill that links to where the table is from: the file names its source (`src`) and its address
+   (`url`), so a word that is not the game's says whose it is. A name the table does not hold draws nothing. */
+function keyedFill(host, it, f){
+  if(!host) return;
+  tableOf(f.file).then(t => {
+    const v = t && (t[f.of] || {})[it.k + ':' + it[f.at]];
+    if(!v || !host.isConnected) return;
+    host.textContent = (f.pre || '') + v + (t.url ? ' ↗' : '');
+    if(t.url) host.href = t.url;
+    if(t.src) host.title = t.src;
+    host.hidden = false;
+  });
+}
 const tableFill = draw => (host, it, f) => {
   if(!host) return;
   tableOf(f.file).then(t => {
@@ -1751,6 +1765,8 @@ export const TYPE = {
   market: {raw: 1, fill: mkFill, v: (it, f, o, name) => !o.full || !it[f.at] ? ''
     : f.slot === 'pill' ? '<span class="pill mk-pill" data-fill="' + esc(name) + '" hidden></span>'
     : '<div class="card-addsbox" data-fill="' + esc(name) + '" hidden></div>'},
+  keyed:  {raw: 1, fill: keyedFill, v: (it, f, o, name) => o.full && it[f.at]
+    ? '<a class="pill pill-src" data-fill="' + esc(name) + '" target="_blank" rel="noopener" hidden></a>' : ''},
   changed: {raw: 1, fill: changedFill, v: (it, f, o, name) => o.full && it[f.at]
     ? '<div class="card-addsbox card-chg" data-fill="' + esc(name) + '" hidden></div>' : ''},
   drop:   {raw: 1, fill: dropFill, v: (it, f, o, name) => o.full && it[f.at]
