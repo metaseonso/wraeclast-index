@@ -1,0 +1,46 @@
+{
+  "name": "wraeclast-index-mcp",
+  "version": "0.1.0",
+  "description": "Wraeclast Index for AI assistants: Path of Exile 2 cards, prices, price history and patch notes over MCP (stdio). Reads the site's public files.",
+  "type": "module",
+  "bin": {
+    "wraeclast-index-mcp": "bin/wraeclast-index-mcp.js"
+  },
+  "main": "src/server.js",
+  "exports": {
+    ".": "./src/server.js"
+  },
+  "files": [
+    "bin/",
+    "src/",
+    "README.md"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "start": "node bin/wraeclast-index-mcp.js",
+    "test": "node --test"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "path-of-exile-2",
+    "poe2",
+    "wraeclast-index"
+  ],
+  "homepage": "https://wraeclastindex.fyi/#/data",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/metaseonso/wraeclast-index.git",
+    "directory": "mcp"
+  },
+  "bugs": {
+    "url": "https://github.com/metaseonso/wraeclast-index/issues"
+  },
+  "license": "CC-BY-4.0",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.31.0",
+    "zod": "^3.25.0"
+  }
+}

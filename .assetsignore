@@ -17,5 +17,7 @@ package.json
 package-lock.json
 dist
 /build/
+# the MCP package (npm: wraeclast-index-mcp): its own code, tests and fixture, never the site's
+/mcp/
 # the market files: the worker serves the Market job's copies at /data/market/<name> (worker/files.js)
 data/market

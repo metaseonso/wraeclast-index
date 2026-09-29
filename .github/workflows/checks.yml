@@ -41,6 +41,25 @@ jobs:
           python3 tools/patches.py --check
           python3 tools/diff.py --check
 
+  # The MCP package (mcp/, npm: wraeclast-index-mcp): its tests, on the oldest Node it promises and the newest,
+  # against its own fixture, never the live site.
+  mcp:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    strategy:
+      matrix:
+        node: ['18', '22']
+    defaults:
+      run:
+        working-directory: mcp
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+      - run: npm ci
+      - run: npm test
+
   # A pull request that touches data/: what the rebuild changed, file by file, kind by kind and field by field
   # (tools/dev/dumpreport.mjs), as one comment on the pull request that each push rewrites, and in the run's
   # summary. A kind or a field that collapsed turns this red: by the last-good rule that is a fault, not news.

@@ -1,0 +1,25 @@
+### Death's Harp
+Dualstring Bow · Bow · https://wraeclastindex.fyi/item/deaths-harp-dualstring-bow
+Requires: level 28, 52 Dex
+Physical Damage: 19-35 · Critical Hit Chance: 5% · Attacks per Second: 1.15
++50% Surpassing chance to fire an additional Arrow
++(20-25)% to Critical Damage Bonus
+Gain (20-30) Life per enemy killed
+Gain (12-18) Mana per enemy killed
++(250-330)% Surpassing chance to fire an additional Arrowdeaths-harp-dualstring-bowdeaths-harpDeath's Harp | Dualstring BowDeath's Harp### Death's Harp
+Runeforged Dualstring Bow · Bow · https://wraeclastindex.fyi/item/deaths-harp-runeforged-dualstring-bow
+Requires: level 55, 97 Dex
+Physical Damage: 45-83 · Critical Hit Chance: 6.5% · Attacks per Second: 1.15
++50% Surpassing chance to fire an additional Arrow
++(20-25)% to Critical Damage Bonus
+Gain (20-30) Life per enemy killed
+Gain (12-18) Mana per enemy killed
++(250-330)% Surpassing chance to fire an additional Arrowdeaths-harp-runeforged-dualstring-bowdeaths-harpDeath's Harp | Runeforged Dualstring BowDeath's Harp### Headhunter
+Heavy Belt · Belt · https://wraeclastindex.fyi/item/headhunter
+Requires: level 50
+Has (1-3) Charm Slots
+(20-30)% increased Stun Threshold
++(40-60) to maximum Life
++(20-40) to Strength
++(20-40) to Dexterity
+When you kill a Rare monster, you gain its Modifiers for 60 secondsheadhunterheadhunterHeadhunter

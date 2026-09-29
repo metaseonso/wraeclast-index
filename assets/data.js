@@ -86,6 +86,7 @@ function use(){
     'was checked. Day by day: <a href="data/market.json?part=hist">?part=hist</a>. The market pages: ' +
     '<a href="data/market/index.json">data/market/index.json</a>. PC, the current trade league.</li>' +
     '<li>Patch notes: <a href="data/changelog.json">data/changelog.json</a>.</li>' +
+    '<li>For AI assistants: the MCP server <code>wraeclast-index-mcp</code> on npm, once published.</li>' +
     '<li>Open to any site (CORS). Prices refresh every 5 minutes at most: keep a copy that long. ' +
     'Name the tool and a contact in the User-Agent. Over 120 requests a minute from one address: 429.</li>' +
     '</ul></section>';
