@@ -36,12 +36,13 @@ const SHOW = 3;            // problems printed per kind
 const TYPE_JSON = {
   text: ['string'], enum: ['string'], quote: ['string'], source: ['string'], note: ['string'],
   adds: ['string'], pool: ['string'], danger: ['string'], odds: ['string'], drop: ['string'], rules: ['string'], gold: ['string'],
+  changed: ['string'],
   number: ['number'], duration: ['number'],
   flag: ['number', 'boolean', 'string'],
   rich: ['array', 'string'],
   gemreq: ['array'], reqs: ['array'], cost: ['array'], lines: ['array'], weights: ['array'], perslot: ['array'],
   ladder: ['array'], options: ['array'], flow: ['array'], tags: ['array'], anoint: ['array'], chips: ['array'],
-  uses: ['object'],
+  uses: ['object'], pills: ['object'],
   item: ['object'], picks: ['object'], launch: ['object'], budget: ['object'], gear: ['object'], tree: ['object'],
 };
 /* The renderers that read a field of the row without an `at`: the name box reads the name, which a player

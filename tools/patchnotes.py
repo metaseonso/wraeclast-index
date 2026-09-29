@@ -296,9 +296,12 @@ def build(args, gaps_out):
     out = {'v': 2, 'updated': now.isoformat(timespec='minutes'), 'names': names.print,
            'source': {'name': "GGG's patch notes forum", 'url': FORUM},
            'note': ("GGG's own patch-note lines, each with the cards it names (kind:name). A patch is its row id in "
-                    'data/patches.json, where its date, league and thread are. Lines that name no card are counted '
+                    'data/patches.json, where its league is; its thread, title and time (UTC) are copied here. Lines that name no card are counted '
                     'under unmatched, not shipped. Written by tools/patchnotes.py.'),
-           'patches': [{'id': r['id'], 'notes': r['notes']} for r in rows],
+           # the thread's own title and the hour it went up ride along from the registry, so a card that asks
+           # for this file reads one file and not two (docs/frame.md, `file`)
+           'patches': [{'id': r['id'], 'notes': r['notes'], 'title': r.get('title') or r['id'], 'posted': r['posted']}
+                       for r in rows],
            **body}
     n, of = body['unmatched']['n'], body['unmatched']['of']
     print('%d threads (%d read, %d kept from the committed copy); %d lines, %d name a card (%d%%), %d cards named'
