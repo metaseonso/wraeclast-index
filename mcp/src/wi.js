@@ -18,6 +18,8 @@ export const KINDS = {
   a: {one: 'Atlas', word: 'atlas', rank: 6},
   r: {one: 'Area', word: 'area', rank: 7},
   j: {one: 'Quest', word: 'quest', rank: 8},
+  o: {one: 'Rune', word: 'rune', rank: 3},
+  z: {one: 'Achievement', word: 'achievement', rank: 10},
 };
 export const ORDER = Object.keys(KINDS).sort((a, b) => KINDS[a].rank - KINDS[b].rank);
 const BY_WORD = new Map(Object.entries(KINDS).flatMap(([k, d]) => [[d.word, k], [d.word + 's', k], [d.one.toLowerCase(), k]]));

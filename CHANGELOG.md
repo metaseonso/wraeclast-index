@@ -3,6 +3,26 @@
 The full list of changes. The public patch notes (data/changelog.json, shown on the site) stay short.
 Add the details here first, then a short public line there.
 
+## 0.46 — 30 Sep 2026: runes, trials, and what each patch changed
+
+- **#185** Runes `o` (34, the 33 same-named keyword cards folded in, addresses kept) and the rune finder
+  (#/runes); Achievements `z` (75); `anvil` on 488 bases; stage `joincards` before nodelinks.
+- **#189** Trial modifiers `l` (206) and rare monster modifiers `m` (97, the 55 keyword cards folded in; keywords
+  728 -> 640); Ascensions on the 22 Ascendancy cards; stage `modcards`; `mondanger` replaced by the card's `harms`.
+- **#186** Boss tells: 11 of 28 pinnacle hits on 4 bosses, each with its source (tools/bosstells-src.json).
+- **#187** Player drop reports (D1 migration 0012 applied 29 Sep): shown at 3 agreeing reports, held when under
+  the item's drop level.
+- **#188** NeverSink tiers (918 cards, stage `filtertiers`); the Currency page's loot filter block.
+- **#190** Patch data diff: snapshots per patch (data/snapshots), passives 0.4.0 -> 0.5.5 (318 changes, 193 not in
+  the notes); `patchdiff` field and the Patches page's Data changes block.
+- **#191** design/price-check.md rewritten from the tools' code; **#192** the local MCP package (mcp/, not on npm
+  yet); **#193** CDA sweep, 129 lines, 39 new voice shapes.
+- **#117** Phone: manifest with the prices, preloaded modules, search rows fetched at once, extras and fog after
+  the first answer (4G 3.3-4.3 s -> 2.3-2.7 s; tools/dev/speed.mjs phone, slow4g).
+- **Hotfixes:** the side index removed; the respec box a fold-out (it had taken explore.html's drawer class
+  `panel`); dark dropdown lists (theme.css); Start here, Campaign and gem gold lines in the game's voice.
+- **Concert:** rebuild.sh runs the pipeline with --force (a stamp match left new cards out).
+
 ## 0.45 — 29 Sep 2026: the odds, the campaign, the leagues
 
 - **#183** (odds, mechanics, monsters, gem gold): Odds pool `s` (14 cards, tools/pools.py stage `pools`, before

@@ -8,6 +8,7 @@ import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js';
 import { createServer, VERSION } from '../src/server.js';
 import { fixtureSource, NOW } from './helpers.mjs';
+import { KINDS, ORDER } from '../src/wi.js';
 
 async function connect(){
   const server = createServer({source: fixtureSource(), now: () => NOW});
@@ -29,7 +30,7 @@ test('six tools, all read-only', async () => {
   }
   const card = tools.find(t => t.name === 'card');
   assert.deepEqual(card.inputSchema.required, ['name']);
-  assert.deepEqual(card.inputSchema.properties.kind.enum, ['unique', 'gem', 'passive', 'keyword', 'currency', 'base', 'atlas', 'area', 'quest']);
+  assert.deepEqual(card.inputSchema.properties.kind.enum, ORDER.map(k => KINDS[k].word));   // every kind with a page, in its claim order
   await client.close();
 });
 
