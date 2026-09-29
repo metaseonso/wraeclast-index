@@ -993,6 +993,29 @@ function goldHTML(it, t, f){
   return '<p class="card-facts">' + esc(f.label || '') + ' · <b>' + (+n).toLocaleString('en') + '</b> gold</p>' +
     (t[f.of + 'Src'] ? '<p class="card-src">' + esc(t[f.of + 'Src']) + '</p>' : '');
 }
+/* A gold price off a table of the file (f.of) that is not keyed by name: one flat price where the first of the
+   declaration's tests holds (`flat`, each naming its key), else a list per key the declaration words (`say`),
+   each the table's own numbers in its own order. The file's own Subject to change, with the declaration's why,
+   and the file's source close it. */
+function gemGoldHTML(it, t, f){
+  const g = t[f.of];
+  if(!g) return '';
+  const ch = t.change || {}, n = x => (+x).toLocaleString('en');
+  const flag = ch.label ? ' <span class="pill" title="' + esc([ch.tip, f.why].filter(Boolean).join(' ')) + '">' +
+    esc(ch.label) + '</span>' : '';
+  const src = g.src ? '<p class="card-src">' + esc(g.src) + '</p>' : '';
+  const flat = (f.flat || []).find(c => holds(it, c));
+  if(flat) return g[flat.then] > 0 ? '<p class="card-facts">' + esc(f.label || '') + ' · <b>' + n(g[flat.then]) +
+    '</b> gold' + flag + '</p>' + src : '';
+  let out = '';
+  for(const l of f.lists || []){
+    // `from`: what the list's first place stands for (gem level 1, 0% quality), `post` the word after it
+    const list = (g[l.at] || []).map((v, i) => [i + (l.from || 0), v]).filter(([, v]) => v > 0);
+    if(list.length) out += '<p class="card-facts">' + esc(l.is) + '</p><ul class="card-gold">' + list.map(([at, v]) =>
+      '<li><span>' + esc(at + (l.post || '')) + '</span><b>' + n(v) + '</b></li>').join('') + '</ul>';
+  }
+  return out && '<p class="card-facts">' + esc(f.label || '') + flag + '</p>' + out + src;
+}
 const tableFill = draw => (host, it, f) => {
   if(!host) return;
   tableOf(f.file).then(t => {
@@ -1708,6 +1731,25 @@ export const TYPE = {
     ? '<div class="card-addsbox" data-fill="' + esc(name) + '" hidden></div>' : ''},
   gold:   {raw: 1, fill: tableFill(goldHTML), v: (it, f, o, name) => o.full && it[f.at]
     ? '<div class="card-addsbox" data-fill="' + esc(name) + '" hidden></div>' : ''},
+  gemgold: {raw: 1, fill: tableFill(gemGoldHTML), v: (it, f, o, name) => o.full && it[f.at]
+    ? '<div class="card-addsbox" data-fill="' + esc(name) + '" hidden></div>' : ''},
+  /* the outcomes of a weight table, off the entry: each [name, weight, 1 in N, the game's words], heaviest first
+     as the entry holds them. The grid draws FRAME.lines rows and counts the rest; the popup draws all of them. A
+     weight of 0 has no 1 in N: it is in the table and cannot roll. No price is set beside a chance here: a card
+     the outcome names carries its own price under Connections. */
+  outcomes: {raw: 1, v: (it, f, o) => {
+    const rows = it[f.at];
+    if(!Array.isArray(rows) || !rows.length) return '';
+    const cap = o.full ? rows.length : FRAME.lines;
+    const over = rows.length - cap > FRAME.slack ? rows.length - cap : 0;
+    const n = x => (+x).toLocaleString('en');
+    return '<div class="card-blk">' + (f.label ? '<p class="card-facts">' + esc(f.label) + '</p>' : '') +
+      '<ul class="card-pool">' + rows.slice(0, over ? cap : rows.length).map(([name, w, one, words]) =>
+        '<li><span class="pool-ml">' + esc(name) + ((words || []).length
+          ? '<span class="pool-tx">' + words.map(esc).join('<br>') + '</span>' : '') + '</span>' +
+        '<span class="pool-rs">' + (one > 0 ? '1 in ' + n(one) + ' · ' : '') + 'weight ' + n(w) + '</span></li>').join('') +
+      (over ? '<li class="more-n">' + esc(FRAME.more(over)) + '</li>' : '') + '</ul></div>';
+  }},
   odds:   {raw: 1, fill: oddsFill, v: (it, f, o, name) => o.full && it[f.at]
     ? '<div class="card-addsbox" data-fill="' + esc(name) + '" hidden></div>' : ''},
   share:  {raw: 1, fill: mechFill(shareHTML), v: (it, f, o, name) => o.full && it.id
@@ -2556,7 +2598,7 @@ function kwChips(it){
 /* The files some of the lists are worked out from, each fetched the first time a card asks for one and kept
    for the rest of the visit. A card that needs none of them never asks for any. */
 const REL_FILES = {kwuse: 'data/kwuse.json', grants: 'data/grants.json', clusters: 'data/clusters.json',
-  dropsfrom: 'data/dropsfrom.json'};
+  dropsfrom: 'data/dropsfrom.json', leaguemech: 'data/leaguemech.json'};
 const HAVE = {};            // what is in
 const JOB = {};             // what is on its way
 let DRILL = null;           // the keywords the drill-down page can filter by, once its file is in
@@ -2580,9 +2622,13 @@ function releaseFiles(){
   }, LET_GO);
 }
 let relBad = false;         // a fetch that failed: the card says so instead of waiting for ever
+/* A file a card's own fields read too (data/dropsfrom.json, data/leaguemech.json) is the same copy they read
+   (tableOf), so it is fetched once. The keyword lists are the one file let go, so they are read on their own. */
+const relFile = f => f === 'kwuse' ? getJSON(REL_FILES[f])
+  : tableOf(REL_FILES[f]).then(j => j || Promise.reject(new Error(REL_FILES[f])));
 function needFiles(names){
   return Promise.all(names.map(f => JOB[f] || (JOB[f] =
-    getJSON(REL_FILES[f]).then(j => { HAVE[f] = j; }, () => { relBad = true; }))));
+    relFile(f).then(j => { HAVE[f] = j; }, () => { relBad = true; }))));
 }
 // rows per category before the "See all", the slack that is not worth a button, and the width a section
 // gets its filter box at: the frame's own numbers, the same on every card (assets/kinds.js FRAME.rel)

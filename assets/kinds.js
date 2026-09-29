@@ -81,7 +81,8 @@
    worker/dash.js) and the owner's dashboard (assets/admin.js). A new tab is one line here.
    tools/dev/frame.mjs fails a build where a second copy of this list has drifted from it. */
 export const ROUTES = {home: 'Search', build: 'Build', trade: 'Trade', farms: 'Farms', craft: 'Craft',
-  currency: 'Currency', market: 'Market', atlas: 'Atlas', bosses: 'Bosses', map: 'Map', data: 'Data', patches: 'Patches'};
+  currency: 'Currency', market: 'Market', atlas: 'Atlas', bosses: 'Bosses', map: 'Map', data: 'Data', patches: 'Patches',
+  campaign: 'Campaign'};
 export const SECTIONS = {gems: 'Gems', uniques: 'Uniques', tree: 'Passive tree'};
 /* every page that is counted, in one list: the tabs, then the sections under the names the count gives them */
 export const PAGES = {...ROUTES,
@@ -123,6 +124,7 @@ export const INDEX = [
     {list: 'y', icon: 'ascendancy', about: 'every ascendancy and its notables'},
   ]},
   {id: 'world', name: 'World', pages: [
+    {route: 'campaign', icon: 'campaign', about: 'act by act: the areas, the quests and every reward kept for good, with ticks'},
     {list: 'r', icon: 'areas', about: 'every area: its level, waypoint, where it leads and who is fought there'},
     {list: 'j', icon: 'quests', about: 'every quest: where it goes, what it gives, and what it gives for good'},
   ]},
@@ -136,6 +138,7 @@ export const INDEX = [
   {id: 'endgame', name: 'Endgame', pages: [
     {route: 'atlas', k: 'a', icon: 'atlas', about: 'atlas passives, waystones, tablets and keys'},
     {route: 'bosses', k: 'x', icon: 'bosses', about: 'every endgame boss, what it drops and what it costs to get in'},
+    {list: 's', icon: 'odds', about: 'every weight table the game rolls unseen: what each can roll, and how often'},
     {list: 'l', icon: 'trials', about: 'every Trial of Chaos and Trial of the Sekhemas modifier: what it does to you, and what it pays'},
   ]},
   {id: 'economy', name: 'Economy', pages: [
@@ -355,6 +358,7 @@ export const MAPS = {
   ox:    {at: 'ox', keys: 1},     // the Waystones that open a map
   mx:    {at: 'mx', keys: 1},     // the content a map is kept to
   rw:    {at: 'rw', keys: 1},     // the items a quest's reward windows offer
+  ro:    {at: 'ro', keys: 1},     // the cards an odds pool can roll (tools/pools.py)
   rb:    {at: 'rb', keys: 1},     // the relic bases a relic modifier rolls on
   kx:    {at: 'kx', keys: 1},     // the Barya a floor of the Trial of the Sekhemas takes
   /* `each`: the field is a list of words, and every word is a group of its own. A card sits in the group of each
@@ -407,6 +411,9 @@ export const FIELDS = {
   /* Whatever the game files leave unsure on this card: a line the game never shows, a choice nobody has said
      can be undone, an amount read from a column nobody has named. The pill says so and its note says why. */
   unsure:   {type: 'flag', at: 'un', slot: 'pill', is: 'Subject to change', note: 'Depends on GGG. May change without notice.'},
+  /* An odds pool (tools/pools.py, off data/odds.json): how many outcomes it has, its total weight and the most
+     likely outcome's 1 in N, each the file's own number. */
+  outcount: {type: 'number', at: 'nn', slot: 'pill', post: ' outcome', many: ' outcomes'},
   /* A trial modifier and a rare monster modifier (tools/modcards.py, design/trials.md, design/monster-mods.md).
      The mark is given only where the modifier's own words decide it (tools/trials.py says which rule). */
   trialmark: {type: 'enum', at: 'mark', slot: 'pill', of: {danger: 'Dangerous for most builds', safe: 'Safe to take'}},
@@ -425,6 +432,12 @@ export const FIELDS = {
   weights:  {type: 'weights', at: 'cw', slot: 'fact'},       // how often a mod rolls here (tools/carddata.py)
   frommods: {type: 'lines', at: 'fm', slot: 'fact'},        // the modifiers with no card that give a buff (tools/buffs.py)
   respen:   {type: 'number', at: 'rs', slot: 'fact', post: '% to all Elemental Resistances'},   // the area's penalty
+  /* a normal monster's life and damage at the area's level, the game's own table (tools/monsterlevels.py, off
+     data/bosshits.json levels, which carries no label: the numbers are the game's) */
+  monlife:  {type: 'number', at: 'ml', slot: 'fact', pre: 'Normal monsters here: ', post: ' life'},
+  mondmg:   {type: 'number', at: 'md', slot: 'fact', post: ' damage'},
+  pooltotal: {type: 'number', at: 'tw', slot: 'fact', pre: 'Total weight '},
+  likely:   {type: 'number', at: 'tp', slot: 'fact', pre: 'Most likely: 1 in '},
   biome:    {type: 'lines', at: 'bio', slot: 'fact'},
   content:  {type: 'lines', at: 'mc', slot: 'fact'},        // what an Atlas map can hold (tools/atlascontent.py)
   where:    {type: 'lines', at: 'wh', slot: 'fact'},        // the areas a quest walks, in its own order
@@ -443,6 +456,11 @@ export const FIELDS = {
   /* the reward windows: a row each, a choice where the row offers more than one (tools/quests.py) */
   take:     {type: 'choice', at: 'tk', slot: 'body', label: 'Rewards', pick: 'Take one'},
   keeps:    {type: 'rich', at: 'kp', slot: 'body', label: 'Permanent'},
+  /* An odds pool's outcomes, heaviest first: each its name, 1 in N and its weight, and the game's words where it
+     has them. A weight of 0 is listed last: it is in the table and cannot roll today. Then, for a pool whose
+     shape is our reading of the table, the file's own reason under the flag's own words. */
+  outcomes: {type: 'outcomes', at: 'oc', slot: 'body', label: 'Outcomes'},
+  why:      {type: 'rich', at: 'uw', slot: 'body', label: 'Subject to change', plain: 1},
   /* Where an ascendancy's eight points come from: a row per Ascension, each trial that gives it (tools/ascendancies.py,
      off data/trials.json). A way the game files do not tie to its set says Subject to change. */
   ascend:   {type: 'choice', at: 'ap', slot: 'body', label: 'Ascendancy points', pick: 'Either', popup: 1},
@@ -456,7 +474,7 @@ export const FIELDS = {
              num: [{at: 'rarity', post: '% more Rarity'}, {at: 'level', pre: 'Item level '}]},
   others:   {type: 'rich', at: 'alt', slot: 'body', label: 'Other steps'},   // the lines the other steps differ by
   floornames: {type: 'rich', at: 'names', slot: 'body', label: 'By floor', plain: 1},
-  why:      {type: 'rich', at: 'why', slot: 'body', label: 'Why', plain: 1},    // which rule gave the mark
+  markwhy:  {type: 'rich', at: 'why', slot: 'body', label: 'Why', plain: 1},    // which rule gave the mark
   /* What it does to you, in one list of words shared by every file that tags a danger (tools/monstermods.py,
      tools/trials.py, and the map modifiers), so one word means one thing wherever it is read. A word read off the
      name alone, because the game gives the thing no words, is in `est` and says Estimate beside it. */
@@ -511,6 +529,14 @@ export const FIELDS = {
   rules:    {type: 'rules', at: 'n', slot: 'body', file: 'data/rules.json', label: 'The game’s own numbers'},
   exfee:    {type: 'gold', at: 'n', slot: 'body', file: 'data/gold.json', of: 'exchange', label: 'Currency Exchange fee'},
   goldv:    {type: 'gold', at: 'n', slot: 'body', file: 'data/gold.json', of: 'unique', label: 'Gold value'},
+  /* A gem's gold price, off the game's own tables: by gem level and by quality, or one flat price where the gem
+     is a support (the first test in `flat` that holds picks it). The files name it a price and do not say what it
+     is paid for, so the block carries the file's own Subject to change and `why`. `lists`: each table the block
+     draws, what its first place stands for (levels[0] is gem level 1, quality[0] is 0%) and the word after it. */
+  gemgold:  {type: 'gemgold', at: 'n', slot: 'body', file: 'data/gold.json', of: 'gem', label: 'Gold price',
+    flat: [{at: 'li', then: 'lineage'}, {at: 's', starts: 'Support', then: 'support'}],
+    lists: [{at: 'levels', is: 'By gem level', from: 1}, {at: 'quality', is: 'By quality', from: 0, post: '%'}],
+    why: 'The game files give this price and do not say where it is paid.'},
   /* A league mechanic, on the game's own keyword card for it (tools/mechanics_league.py, data/leaguemech.json,
      found by the card's own key). `share`: its own currency's share of what the Currency Exchange traded this
      league, with the move over 7 days and the league's days as a line. Measured from GGG's feed hour by hour,
@@ -746,6 +772,24 @@ export const REL = {
   drops:    {label: 'Drops', of: 'u', edge: 'drops', needs: 'dropsfrom'},
   incluster: {label: 'Nodes in this cluster', of: 'p', edge: 'incluster', needs: 'clusters'},
   clusterof: {label: 'Cluster it sits in', of: 't', edge: 'clusterof', needs: 'clusters'},
+  /* An odds pool and the cards its outcomes name, both ways (tools/pools.py, the pool's own list of keys) */
+  rolls:    {label: 'Can roll', edge: 'own', at: 'ro'},
+  rollsin:  {label: 'Rolls in', of: 's', edge: 'back', map: 'ro'},
+  /* A league mechanic and what is its, both ways, out of data/leaguemech.json (tools/mechanics_league.py): the
+     mechanic is the entry whose card is the card you are on, `at` names the list of the entry the group reads,
+     and a name in it is the card of kind `of` by that name. A name no card answers to is no row. */
+  mechcur:  {label: 'Its currency', of: 'c', edge: 'mech', at: 'currency', needs: 'leaguemech'},
+  curmech:  {label: 'Currency of', edge: 'mechof', at: 'currency', needs: 'leaguemech'},
+  mechatlas: {label: 'Atlas passives', of: 'a', edge: 'mech', at: 'atlas', needs: 'leaguemech'},
+  atlasmech: {label: 'Adds to', edge: 'mechof', at: 'atlas', needs: 'leaguemech'},
+  mechtabs: {label: 'Tablets', of: 'a', edge: 'mech', at: 'tablets', needs: 'leaguemech'},
+  tabmech:  {label: 'Adds', edge: 'mechof', at: 'tablets', needs: 'leaguemech'},
+  mechboss: {label: 'Bosses', of: 'x', edge: 'mech', at: 'bosses', needs: 'leaguemech'},
+  bossmech: {label: 'Boss of', edge: 'mechof', at: 'bosses', needs: 'leaguemech'},
+  mechpool: {label: 'Its odds', of: 's', edge: 'mech', at: 'pools', needs: 'leaguemech'},
+  poolmech: {label: 'Rolls inside', edge: 'mechof', at: 'pools', needs: 'leaguemech'},
+  mechpart: {label: 'Part of', edge: 'mechpart', needs: 'leaguemech'},
+  partmech: {label: 'League content in it', edge: 'partmech', needs: 'leaguemech'},
 };
 
 const HEAD = ['art', 'name', 'sub', 'offer', 'ask', 'price'];
@@ -755,13 +799,15 @@ const REST = ['quote', 'options', 'flow', 'changed', 'source', 'swaps', 'tags', 
 const BODY = [...SAYS, ...REST];
 const FOOT = ['spark', 'usage', 'thin', 'builds'];
 const KWUSE = ['kwu', 'kwg', 'kwp', 'kwb', 'kwe', 'kwa', 'kwm', 'kwc', 'kww'];
+// a league mechanic's own groups, on the card that is the mechanic (data/leaguemech.json)
+const MECH = ['mechpart', 'partmech', 'mechcur', 'mechatlas', 'mechtabs', 'mechboss', 'mechpool'];
 
 export const KINDS = [
   {k: 'g', one: 'Gem', tone: 'c-gem', many: 'Gems', place: 'Gems', sec: 'gems', link: 'explore#gems=@n', mark: 't',
    index: true, search: true, item: true, crawl: {word: 'gem', list: 'gems', rank: 1, is: 'Thing'},
    sprite: 'gems', px: {as: 'c', at: 'li'},
    builds: [{at: 'w', key: 'skills'}, {key: 'allskills'}],
-   fields: [...HEAD, 'gemreq', 'lineage', 'cutfrom', 'usetime', 'cost', 'spirit', ...SAYS, 'quality', ...REST, ...FOOT],
+   fields: [...HEAD, 'gemreq', 'lineage', 'cutfrom', 'usetime', 'cost', 'spirit', ...SAYS, 'quality', 'gemgold', ...REST, ...FOOT],
    acts: ['trade', 'pool', 'full', 'pin', 'open'],
    rel: ['granted', 'grants', 'named', 'namedby', 'cat']},
 
@@ -771,7 +817,7 @@ export const KINDS = [
    builds: [{key: 'items'}],
    fields: [...HEAD, 'reqs', 'corrupt', 'limit', 'group', 'props', 'implicit', ...SAYS, 'mapdanger', 'weight', ...REST, 'drop', 'goldv', ...FOOT],
    acts: ['trade', 'pool', 'full', 'pin', 'open'],
-   rel: ['base', 'variants', 'grants', 'dropsfrom', 'named', 'namedby', 'cat']},
+   rel: ['base', 'variants', 'grants', 'dropsfrom', 'rollsin', 'named', 'namedby', 'cat']},
 
   {k: 'p', one: 'Passive', tone: 'c-keystone', many: 'Passives', place: 'Passive tree', sec: 'tree', link: 'explore#tree=@n', mark: 'ls',
    index: true, search: true, crawl: {word: 'passive', list: 'passives', rank: 2, is: 'DefinedTerm'},
@@ -809,22 +855,22 @@ export const KINDS = [
   {k: 'a', one: 'Atlas', tone: 'int', many: 'Atlas', place: 'Atlas', link: './#/atlas?s=@at&q=@n',
    index: true, search: true, item: true, crawl: {word: 'atlas', list: 'atlas', rank: 6, is: 'Thing', unless: {at: 'at', is: 'tree', then: 'DefinedTerm'}},
    px: {as: 'c'}, notitem: {at: 'at', is: 'tree'},
-   fields: [...HEAD, 'nodety', 'ontree', 'warn', 'implicit', ...SAYS, 'mapdanger', ...REST, ...FOOT],
+   fields: [...HEAD, 'nodety', 'ontree', 'warn', 'implicit', 'monlife', 'mondmg', ...SAYS, 'mapdanger', ...REST, ...FOOT],
    acts: ['trade', 'pin', 'open'],
-   rel: ['section', 'opens', 'rewardin', 'named', 'namedby']},
+   rel: ['section', 'opens', 'atlasmech', 'tabmech', 'rewardin', 'named', 'namedby']},
 
   {k: 'c', one: 'Currency', tone: 'c-currency', many: 'Currency', place: 'Currency', link: './#/currency?c=@id',
    index: true, search: true, item: true, crawl: {word: 'currency', list: 'currency', rank: 4, is: 'Thing'},
    px: {as: 'c'}, make: {nx: 'yes'}, gone: {at: 'nx'},
-   fields: [...HEAD, 'droplv', 'liquid', 'stock', ...SAYS, 'perslot', 'ladder', 'adds', 'exfee', 'leaguedays', 'gap', 'sellmap', ...REST, ...FOOT],
+   fields: [...HEAD, 'droplv', 'liquid', 'stock', ...SAYS, 'perslot', 'ladder', 'adds', 'weight', 'exfee', 'leaguedays', 'gap', 'sellmap', ...REST, ...FOOT],
    acts: ['trade', 'pool', 'bench', 'pin', 'open'],
-   rel: ['named', 'namedby', 'job', 'rewardin', 'opensfloor', 'cat']},
+   rel: ['named', 'namedby', 'job', 'curmech', 'rollsin', 'rewardin', 'opensfloor', 'cat']},
 
   {k: 'w', one: 'Keyword', tone: 'accent', many: 'Keywords', sec: 'keywords', index: true, search: true, crawl: {word: 'keyword', list: 'keywords', rank: 3, is: 'DefinedTerm'},
    kw: 'id', rank: -25, words: {n: 'own', f: 'alt', mark: 'game'},
    fields: [...HEAD, 'stacks', 'uses', ...SAYS, 'rules', 'share', 'weight', 'mechlines', 'corruption', ...REST, ...FOOT],
    acts: ['full', 'pin'],
-   rel: [...KWUSE, 'granted', 'onlyon', 'named', 'namedby']},
+   rel: [...KWUSE, 'granted', 'onlyon', ...MECH, 'rollsin', 'named', 'namedby']},
 
   /* An ascendancy: its class, the flavour text the game shows for it, its notables by name (each line a door to
      the notable's card, and the notable "Named by" it, tools/nodelinks.py) and where its eight points come from
@@ -848,7 +894,7 @@ export const KINDS = [
    words: {f: 'own', mark: 'ours', only: 'gate'},
    fields: [...HEAD, ...SAYS, 'rules', 'share', 'mechlines', ...REST, ...FOOT],
    acts: ['pin'],
-   rel: ['namedby', 'cat']},
+   rel: [...MECH, 'namedby', 'cat']},
 
   /* An interaction the game's wording names and nothing answers: ours, kind "q", one per open question
      (tools/interactions.py). Its words are doors wherever they are read, like a mechanics card's, and they
@@ -864,7 +910,17 @@ export const KINDS = [
    search: true,
    fields: [...HEAD, ...BODY, ...FOOT],
    acts: ['pin', 'open'],
-   rel: ['drops', 'foughtin', 'namedby', 'cat']},
+   rel: ['drops', 'foughtin', 'bossmech', 'namedby', 'cat']},
+
+  /* An odds pool: one of the weight tables the game rolls unseen — a Forbidden Rite, a strongbox, an Azmeri spirit
+     (tools/pools.py, off data/odds.json; design/hidden-odds.md). Its outcomes, heaviest first, with 1 in N; the
+     cards they name under Connections, with today's price where the market has one. A pool whose shape is our
+     reading of the table carries Subject to change and the file's reason. No card has a tab, so the card is the
+     page. */
+  {k: 's', one: 'Pool', many: 'Odds', index: true, search: true,
+   fields: [...HEAD, 'unsure', 'outcount', 'pooltotal', 'likely', ...SAYS, 'outcomes', 'why', ...REST, ...FOOT],
+   acts: ['pin'],
+   rel: ['rolls', 'poolmech', 'cat']},
 
   /* The world, off the game's own tables (tools/world.py, design/areas.md, design/quests.md). An area is a
      place: its level, where it leads, who is fought there, what it always carries, and, on the Atlas, what it
@@ -873,7 +929,7 @@ export const KINDS = [
      them has a tab, so the card is the page. */
   {k: 'r', one: 'Area', tone: 'muted', many: 'Areas', index: true, search: true,
    crawl: {word: 'area', list: 'areas', rank: 7, is: 'DefinedTerm'},
-   fields: [...HEAD, 'waypoint', 'town', 'waystone', 'unsure', 'respen', 'biome', 'content',
+   fields: [...HEAD, 'waypoint', 'town', 'waystone', 'unsure', 'respen', 'monlife', 'mondmg', 'biome', 'content',
             ...SAYS, 'hidden', 'corruption', ...REST, ...FOOT],
    acts: ['pin'],
    rel: ['leadsto', 'leadsfrom', 'bosshere', 'questhere', 'openedwith', 'onlyholds', 'actof', 'inact']},
@@ -891,7 +947,7 @@ export const KINDS = [
   {k: 'l', one: 'Trial modifier', many: 'Trial modifiers', index: true, search: true,
    crawl: {word: 'trial', list: 'trials', rank: 10, is: 'DefinedTerm'},
    fields: [...HEAD, 'trialmark', 'onwho', 'steps', 'rooms', 'floorlv', 'relicgen', 'unsure',
-            ...SAYS, 'risk', 'reward', 'tiers', 'others', 'floornames', 'why', 'harms', ...REST, ...FOOT],
+            ...SAYS, 'risk', 'reward', 'tiers', 'others', 'floornames', 'markwhy', 'harms', ...REST, ...FOOT],
    acts: ['pin'],
    rel: ['danger', 'rollson', 'takes', 'bosshere', 'cat']},
 

@@ -57,7 +57,7 @@ HAY = ('t', 'q', 'asc', 'reg', 'qt', 'src', 'ls', 'pr', 'tags', 'o', 'rec', 'f')
 # the ranking reads (the low band, the field a kind's price row is tested on, the fields the Connections groups
 # are keyed by, the words a keyword or mechanics card is marked by)
 # (the act a card is in, the lists of keys the page turns round, and the words it groups by: assets/kinds.js MAPS)
-HEAD = ('ic', 'img', 'lo', 'li', 'cr', 'at', 'f', 'fg', 'act', 'go', 'bx', 'wx', 'ox', 'mx', 'rw', 'rb', 'kx', 'dg')
+HEAD = ('ic', 'img', 'lo', 'li', 'cr', 'at', 'f', 'fg', 'act', 'go', 'bx', 'wx', 'ox', 'mx', 'rw', 'ro', 'rb', 'kx', 'dg')
 # JavaScript's \s: a typed word is split on these, so a word never holds one
 SPACE = re.compile('[\t\n\x0b\x0c\r    -     　﻿]+')
 # the kinds whose names the market must not repeat: an index card of that name is the card (worker/seo.js does
