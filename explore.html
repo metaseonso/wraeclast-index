@@ -343,7 +343,11 @@ details.tech>summary{color:var(--faint)}
             <a href="./#/trade"><i class="ti ti-trade" aria-hidden="true"></i>Trade</a>
           </div></div>
         <a href="./#/craft"><i class="ti ti-craft" aria-hidden="true"></i>Craft</a>
-        <a href="./#/data"><i class="ti ti-data" aria-hidden="true"></i>Data</a>
+        <div class="navdrop"><button type="button" class="navdrop-b" aria-expanded="false" aria-controls="nd-data">Data<svg class="caret" viewBox="0 0 10 10" aria-hidden="true"><path d="M2 3.5 5 6.5 8 3.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          <div class="navdrop-m" id="nd-data">
+            <a href="./#/data"><i class="ti ti-data" aria-hidden="true"></i>Data</a>
+            <a href="./#/patches"><i class="ti ti-patches" aria-hidden="true"></i>Patches</a>
+          </div></div>
       </nav>
       <div class="topmore" id="topmore">
         <button id="notesbtn" type="button" class="notesbtn">Patch notes <span class="ct wait">v0.00</span></button>
@@ -509,6 +513,17 @@ details.tech>summary{color:var(--faint)}
     </tr></thead><tbody id="jtbody"></tbody></table>
   </div>
   <p class="foot" id="tfoot"></p>
+  <!-- what a respec costs, off the game's own table (data/gold.json respec, tools/gold.py) -->
+  <div class="panel respec" id="respec" hidden>
+    <h3>Respec <span class="card-pxa" title="Depends on GGG. May change without notice.">Subject to change</span></h3>
+    <div class="respec-in">
+      <label>Character level <input class="field sm" id="rs-lv" type="number" min="1" max="100" value="80"></label>
+      <label>Passive points <input class="field sm" id="rs-pp" type="number" min="0" max="999" placeholder="0"></label>
+      <label>Ascendancy points <input class="field sm" id="rs-ap" type="number" min="0" max="12" placeholder="0"></label>
+    </div>
+    <p class="respec-out" id="rs-out" aria-live="polite"></p>
+    <p class="card-src" id="rs-src"></p>
+  </div>
 </section>
 
 </div>
@@ -1832,6 +1847,29 @@ async function ubuild(){
 }
 
 /* ======================= PASSIVE TREE ======================= */
+/* What a respec costs: the gold to refund one passive point at a character level (GoldRespecPrices), an Ascendancy
+   point at the game's own multiple of it. Only the numbers typed: no guessed count of points. */
+async function respec(){
+  const box = $('#respec');
+  if(!box || box.dataset.on) return;
+  box.dataset.on = '1';
+  let R = null;
+  try { R = ((await (await fetch('data/gold.json')).json()) || {}).respec; } catch(e){}
+  if(!R || !(R.levels || []).length) return;
+  const n = x => Math.max(0, Math.floor(+x || 0));
+  const draw = () => {
+    const lv = n($('#rs-lv').value), pp = n($('#rs-pp').value), ap = n($('#rs-ap').value);
+    const per = lv >= 1 && lv <= R.levels.length ? R.levels[lv - 1] : null;
+    if(per === null){ $('#rs-out').textContent = ''; return; }
+    const total = per * pp + per * (R.ascendancy || 0) * ap;
+    $('#rs-out').innerHTML = '<b>' + per.toLocaleString('en') + '</b> gold a point' +
+      (pp || ap ? ' · <b>' + total.toLocaleString('en') + '</b> gold' : '');
+  };
+  $('#rs-src').textContent = R.src + (R.ascendancySrc ? ' · Ascendancy points: ' + R.ascendancySrc.replace(/^Source: /, '') : '');
+  for(const id of ['#rs-lv', '#rs-pp', '#rs-ap']) $(id).addEventListener('input', draw);
+  draw();
+  box.hidden = false;
+}
 let T, TKW;
 const TKIND = ['keystone','notable','small','anoint','jewel socket','ascendancy start'];
 async function tbuild(){
@@ -2048,6 +2086,7 @@ async function tbuild(){
     'Templar and Eternal Empire have full conqueror tables and seed ranges but no jewel in the game yet</b>. '+
     'Abyssal is the odd one out twice over: five conquerors instead of three, and seeds 79–30,977 against everyone else’s few thousand.';
 
+  respec();
   $('#tfoot').innerHTML =
     'Every passive in the base tree and all ascendancies, from the patch <b>0.5.5</b> tree export: '+
     TR.passives.filter(p=>p.k==='keystone').length+' keystones, '+

@@ -5,7 +5,7 @@
                        trade site listings (worker/prices.js); trends from the site's own daily prices
    Build usage links to poe.ninja's own builds page: their builds API is not open to other sites. */
 import {initKeys, setCardKeys, keyLabel} from './keys.js';
-import {KIND, DEFAULT, FIELDS, ACTS, CHIPS, NAMES, ROUTES, SHUT, INDEX, pageKind, contentsHTML, fieldsOf, FRAME, SLOTS, BOXES, MAKE, KW, holds, markOf, ours, slotList, jobOf} from './kinds.js';
+import {KIND, DEFAULT, FIELDS, ACTS, CHIPS, NAMES, ROUTES, SHUT, INDEX, pageKind, contentsHTML, fieldsOf, FRAME, SLOTS, BOXES, MAKE, KW, holds, markOf, ours, slotList, jobOf, namedIn} from './kinds.js';
 import * as edges from './edges.js';
 import * as marks from './marks.js';
 import {ranker, hits, SEEN_MAX} from './rank.js';
@@ -973,6 +973,32 @@ function dangerFill(host, it, f){
   });
 }
 
+/* ---------- the game's own rules, and gold ----------
+   data/rules.json (tools/rules.py): the game's constants a player meets, each worded, on the card it lands on by
+   name. data/gold.json (tools/gold.py): a thing's gold number, by name, off one of the file's tables (f.of: the
+   Currency Exchange's fee, a unique's gold value). Each with the table it was read from. */
+function rulesHTML(it, t, f){
+  const rows = (t.rows || []).filter(r => r.card === it[f.at] && r.text);
+  if(!rows.length) return '';
+  return '<p class="card-facts">' + esc(f.label || '') + '</p><ul class="card-rules">' +
+    rows.map(r => '<li>' + esc(r.text) + (r.src ? '<span class="card-src">' + esc(r.src) + '</span>' : '') + '</li>').join('') + '</ul>';
+}
+function goldHTML(it, t, f){
+  const tab = t[f.of] || {}, v = tab[it[f.at]], n = v && typeof v === 'object' ? v.fee : v;
+  if(!(n > 0)) return '';
+  return '<p class="card-facts">' + esc(f.label || '') + ' · <b>' + (+n).toLocaleString('en') + '</b> gold</p>' +
+    (t[f.of + 'Src'] ? '<p class="card-src">' + esc(t[f.of + 'Src']) + '</p>' : '');
+}
+const tableFill = draw => (host, it, f) => {
+  if(!host) return;
+  tableOf(f.file).then(t => {
+    const html = t && draw(it, t, f);
+    if(!html || !host.isConnected) return;
+    host.innerHTML = html;
+    host.hidden = false;
+  });
+};
+
 /* ---------- how often it rolls, where the game rolls unseen ----------
    data/odds.json (tools/odds.py): one pool per weight table in the game's own files, each outcome with its weight
    and 1 in how many. The card's name is matched to an outcome's name exactly. One line per pool it is in, a
@@ -1069,6 +1095,66 @@ const mechFill = draw => (host, it, f) => {
     host.hidden = false;
   });
 };
+
+/* ---------- GGG's patch notes, on the cards they name ----------
+   data/patchnotes.json (tools/patchnotes.py): every patch-note line that names a card, and per card ("g:Frostbolt",
+   the kind and the name the card already carries) the lines that name it. The lines that count are the frame's
+   rule (FRAME.changed, namedIn), so a keyword card and a gem card are drawn by the same code. Newest patch first:
+   its name as GGG titled the thread and as the link to it, the day and hour it went up in the reader's own time,
+   then GGG's section and GGG's lines, each marked like any line on the site. FRAME.changed.cap patches, then a
+   "See all N" that opens the rest in place. */
+const HOUR = iso => { const d = new Date(iso); return isNaN(d) ? '' : d.getDate() + ' ' + MON[d.getMonth()] + ' ' +
+  d.getFullYear() + ', ' + String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0'); };
+/* a patch as GGG title its thread, without the words every title carries: "0.5.5c Patch Notes" is 0.5.5c,
+   "Content Update 0.5.0 — Path of Exile 2: Return of the Ancients" is 0.5.0, "0.5.5 Hotfix 10" stays itself */
+export const patchName = p => {
+  const t = String(p.title || '');
+  const cu = /^Content Update (\S+)/.exec(t);
+  return cu ? cu[1] : t.replace(/\s+Patch ?notes\b.*$/i, '') || t;
+};
+/* the lines that count for one card: [patch, [[section, line], ...]], newest patch first */
+export function patchesOf(t, key){
+  const by = new Map();
+  for(const i of (t && t.on && t.on[key]) || []){
+    const l = t.lines[i];
+    if(!l || !namedIn(key, l[2])) continue;
+    if(!by.has(l[0])) by.set(l[0], []);
+    by.get(l[0]).push([t.heads[l[1]] || '', l[2]]);
+  }
+  return [...by.entries()].sort((a, b) => b[0] - a[0]);
+}
+function changedHTML(it, t, f){
+  const key = it.k + ':' + it[f.at], list = patchesOf(t, key);
+  if(!list.length) return '';
+  const group = ([pi, rows]) => {
+    const p = t.patches[pi] || {}, name = patchName(p), v = name.split(' ')[0];
+    let out = '<div class="chg-p"><p class="chg-hd">' + (p.notes ? '<a href="' + esc(p.notes) + '" target="_blank" rel="noopener" title="' +
+      esc(p.title || '') + '">' + esc(name) + '</a>' : esc(name)) + '<span>' + esc(HOUR(p.posted)) + '</span></p>', sec = null;
+    for(const [head, line] of rows){
+      // GGG's section, where it says more than the patch's own name does
+      if(head !== sec){ sec = head; if(head && !head.startsWith(v)) out += '<p class="chg-sec">' + esc(head) + '</p>'; }
+      out += '<p class="chg-l">' + spansHTML(line, marks.scan(it, line)) + '</p>';
+    }
+    return out + '</div>';
+  };
+  const cap = FRAME.changed.cap, over = list.length - cap > FRAME.slack;
+  const src = t.source || {};
+  return '<p class="card-facts">' + esc(f.label || '') + ' · ' + list.length + '</p>' +
+    list.slice(0, over ? cap : list.length).map(group).join('') +
+    (over ? '<details class="chg-more"><summary>See all ' + list.length.toLocaleString() + '</summary>' +
+      list.slice(cap).map(group).join('') + '</details>' : '') +
+    '<p class="card-src">Source: ' + (src.url ? '<a href="' + esc(src.url) + '" target="_blank" rel="noopener">' +
+      esc(f.src || '') + '</a>' : esc(f.src || '')) + '</p>';
+}
+function changedFill(host, it, f){
+  if(!host) return;
+  tableOf(f.file).then(t => {
+    const html = t && changedHTML(it, t, f);
+    if(!html || !host.isConnected) return;
+    host.innerHTML = html;
+    host.hidden = false;
+  });
+}
 
 /* ---------- a switch on the card ----------
    Something outside the item changes what the item is while it is worn. The switch sits on the card the
@@ -1380,6 +1466,13 @@ export const TYPE = {
     // `label`: the words above the lines, where the lines are one block of several on the card
     return html && f.label ? '<div class="card-blk"><p class="card-facts">' + esc(f.label) + '</p>' + html + '</div>' : html;
   }},
+  /* short facts off one object on the entry, each its own pill, in the declaration's order (`of`: what each
+     reads, the words before and after it, its tone). A part the entry does not carry draws nothing. */
+  pills:  {raw: 1, v: (it, f) => {
+    const v = it[f.at];
+    if(!v || typeof v !== 'object') return '';
+    return (f.of || []).filter(p => v[p.at]).map(p => pill((p.pre || '') + v[p.at] + (p.post || ''), p.tone)).join('');
+  }},
   /* Rows of options: each row a choice of one where it offers more than one, drawn side by side, and one
      thing given where it offers one. A row may name where it is, ahead of its options ({w, o}). The grid draws
      FRAME.lines rows and counts the rest; the popup draws all of them. */
@@ -1450,12 +1543,18 @@ export const TYPE = {
     ? '<div class="card-addsbox" data-fill="' + esc(name) + '" hidden></div>' : ''},
   danger: {raw: 1, fill: dangerFill, v: (it, f, o, name) => o.full && it[f.at]
     ? '<div class="card-addsbox" data-fill="' + esc(name) + '" hidden></div>' : ''},
+  rules:  {raw: 1, fill: tableFill(rulesHTML), v: (it, f, o, name) => o.full && it[f.at]
+    ? '<div class="card-addsbox" data-fill="' + esc(name) + '" hidden></div>' : ''},
+  gold:   {raw: 1, fill: tableFill(goldHTML), v: (it, f, o, name) => o.full && it[f.at]
+    ? '<div class="card-addsbox" data-fill="' + esc(name) + '" hidden></div>' : ''},
   odds:   {raw: 1, fill: oddsFill, v: (it, f, o, name) => o.full && it[f.at]
     ? '<div class="card-addsbox" data-fill="' + esc(name) + '" hidden></div>' : ''},
   share:  {raw: 1, fill: mechFill(shareHTML), v: (it, f, o, name) => o.full && it.id
     ? '<div class="card-addsbox" data-fill="' + esc(name) + '" hidden></div>' : ''},
   mechlines: {raw: 1, fill: mechFill(mechlinesHTML), v: (it, f, o, name) => o.full && it.id
     ? '<div class="card-addsbox" data-fill="' + esc(name) + '" hidden></div>' : ''},
+  changed: {raw: 1, fill: changedFill, v: (it, f, o, name) => o.full && it[f.at]
+    ? '<div class="card-addsbox card-chg" data-fill="' + esc(name) + '" hidden></div>' : ''},
   drop:   {raw: 1, fill: dropFill, v: (it, f, o, name) => o.full && it[f.at]
     ? '<div class="card-addsbox" data-fill="' + esc(name) + '" hidden></div>' : ''},
   pool:   {raw: 1, fill: poolFill, v: (it, f, o, name) => o.full && it[f.at] && fileOf(f, it)
@@ -2899,6 +2998,7 @@ export function fillCounts(man, host = document){
 
 /* ---------- router ---------- */
 function route(){ const m = location.hash.match(/^#\/(\w+)/); return m ? m[1] : 'home'; }
+const BARE = ['data', 'patches'];   // the pages that read a file or two of their own and never the index
 export function params(){ const i = location.hash.indexOf('?'); return new URLSearchParams(i >= 0 ? location.hash.slice(i + 1) : ''); }
 /* A tab is drawn when it is opened and taken down when it is left: a page that kept every tab it had ever
    shown grew from a thousand elements to six thousand in a few clicks, and a weak machine pays for each one on
@@ -2956,9 +3056,9 @@ async function show(e){
     homeRender();
     if(!matchMedia('(pointer:coarse)').matches) $('#q').focus({preventScroll:true});
   } else {
-    if(r !== 'data') need();   // the Data page reads the manifest only
+    if(!BARE.includes(r)) need();   // the Data and Patches pages read files of their own, not the index
     // every other tab draws cards out of the index, with their charts; the map is a finished picture
-    if(r !== 'map' && r !== 'data') await Promise.all([ready, hist()]);
+    if(r !== 'map' && !BARE.includes(r)) await Promise.all([ready, hist()]);
     if(ON !== r) return;           // left again while the index came in: nothing to draw
     const view = $('#view-' + r);
     if(!LIVE[r]) LIVE[r] = modOf(r).then(m => m.mount(view));

@@ -77,7 +77,7 @@
    worker/dash.js) and the owner's dashboard (assets/admin.js). A new tab is one line here.
    tools/dev/frame.mjs fails a build where a second copy of this list has drifted from it. */
 export const ROUTES = {home: 'Search', build: 'Build', trade: 'Trade', farms: 'Farms', craft: 'Craft',
-  currency: 'Currency', atlas: 'Atlas', bosses: 'Bosses', map: 'Map', data: 'Data'};
+  currency: 'Currency', atlas: 'Atlas', bosses: 'Bosses', map: 'Map', data: 'Data', patches: 'Patches'};
 export const SECTIONS = {gems: 'Gems', uniques: 'Uniques', tree: 'Passive tree'};
 /* every page that is counted, in one list: the tabs, then the sections under the names the count gives them */
 export const PAGES = {...ROUTES,
@@ -137,7 +137,10 @@ export const INDEX = [
     {route: 'trade', icon: 'trade', about: 'any trade search in plain words, opened on the official trade site'},
   ]},
   {id: 'craft', pages: [{route: 'craft', icon: 'craft', about: 'the crafting bench, with the real weights'}]},
-  {id: 'data', pages: [{route: 'data', icon: 'data', about: 'what the index holds, where it comes from, and how fresh it is'}]},
+  {id: 'data', name: 'Data', pages: [
+    {route: 'data', icon: 'data', about: 'what the index holds, where it comes from, and how fresh it is'},
+    {route: 'patches', icon: 'patches', about: 'every patch, hotfix and restart: its date and hour, its league, its notes, and how many cards it changed'},
+  ]},
 ];
 /* a page's name: its own, else its tab's, its section's, or its kind's */
 export function pageName(p){
@@ -217,6 +220,15 @@ export const FRAME = {
      button (seven rows and a "See all 9" is worse than nine rows). A section wider than `filter` gets its
      filter box from the start. */
   rel: {cap: 8, slack: 2, filter: 30},
+  /* GGG's patch notes on a card (the `changed` field): the popup draws the newest `cap` patches, then a "See all
+     N" that draws the rest in place, with the slack every slot keeps. A line counts for a card where it names
+     the card, and where the card's name is one of the game's own words (KINDS words.mark in `whole`: a keyword,
+     a buff) only where that word stands whole in the line: not the first or last word of a longer name in
+     capitals. "Maximum" in "to Maximum Life" and "Rune" in "per Socketed Rune" are other things; "Quality now
+     provides" is the keyword. A proper name (a gem, a unique, a passive) is never cut by it: GGG write "The
+     Bones of Ullr Unique Boots". Measured 29 Sep 2026: the keyword cards keep 3,060 of 4,444 lines, and
+     Expedition drops from 33 patches to 16. One rule, read by the card and the Patches page alike (namedIn). */
+  changed: {cap: 8, whole: ['game']},
   /* The map: the whole index as one picture (tools/map.py draws it, assets/map.js frames it, docs/frame.md
      "The map" states it). It is laid out once with the data, so the page obeys no number per frame and the
      picture's own constants sit with the drawing, the way a card's markup sits in app.js. What the frame
@@ -274,6 +286,24 @@ export function jobOf(t){
     if(m) return j.say.replace('$1', m[1].trim());
   }
   return null;
+}
+
+/* Does this line of GGG's patch notes count for the card behind `key` ("w:Maximum")? The rule is the frame's
+   (FRAME.changed above); nothing here knows a kind, only whose words the card's name is. */
+const CAPWORD = /^[A-Z][\w']*$/;
+export function namedIn(key, line){
+  const at = key.indexOf(':'), name = key.slice(at + 1);
+  if(!FRAME.changed.whole.includes(markOf(key))) return true;
+  const re = new RegExp("(^|[^\\w'-])" + name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + "(?:'s|s)?(?!\\w)", 'g');
+  for(let m; (m = re.exec(line)); ){
+    const s = m.index + m[1].length, e = m.index + m[0].length;
+    const pre = /([A-Za-z][\w']*) $/.exec(line.slice(0, s)), post = /^ ([A-Za-z][\w']*)/.exec(line.slice(e));
+    // the word before opens the line or the sentence: a capital there says nothing
+    const open = pre && (pre.index === 0 || /[.:;!?"(] ?$/.test(line.slice(0, pre.index)));
+    if(!(pre && !open && CAPWORD.test(pre[1])) && !(post && CAPWORD.test(post[1]))) return true;
+    re.lastIndex = e;
+  }
+  return false;
 }
 
 export const holds = (it, c) => {
@@ -340,6 +370,11 @@ export const FIELDS = {
   group:    {type: 'text', at: 'q', slot: 'pill'},
   nodety:   {type: 'enum', at: 'ty', slot: 'pill', of: {c: 'Choice', n: 'Notable', s: 'Small'}},
   ontree:   {type: 'number', at: 'x', slot: 'pill', post: ' on the tree', from: 2},
+  /* What the patches in data/treechanges/ did to a passive's nodes, from GGG's own tree export (tools/carddata.py
+     joins it; design/tree-diff.md): the patch it came in, the patch that last reworded or moved it, and the
+     name it had before. One field, its pills in this order; a node nothing changed draws none. */
+  treechg:  {type: 'pills', at: 'tc', slot: 'pill', of: [
+    {at: 'nw', pre: 'New in ', tone: 'lin'}, {at: 'ch', pre: 'Changed in '}, {at: 'wn', pre: 'Was named '}]},
   warn:     {type: 'text', at: 'nt', slot: 'pill', tone: 'warn'},
   asc:      {type: 'text', at: 'asc', slot: 'pill', post: ' ascendancy'},
   region:   {type: 'text', at: 'reg', slot: 'pill', post: ' region'},
@@ -381,6 +416,8 @@ export const FIELDS = {
   /* what 0 to 20% quality adds to a gem: the game's own divider line, then its lines with the range its tooltip
      prints (tools/gems.py quality_lines). Drawn as the game's lines are, under the gem's own text. */
   quality:  {type: 'rich', at: 'gq', slot: 'body'},
+  // ...and a passive's lines before the newest patch that reworded them (tools/carddata.py, the tree export)
+  was:      {type: 'rich', at: 'wa', slot: 'body', label: 'Was:'},
   /* an area's lines the game never shows, under their own heading (tools/areas.py, tools/atlascontent.py) */
   hidden:   {type: 'rich', at: 'hm', slot: 'body', label: 'Not shown in game'},
   /* the reward windows: a row each, a choice where the row offers more than one (tools/quests.py) */
@@ -435,6 +472,10 @@ export const FIELDS = {
      name is matched to the card's name exactly, so "2 Divine Orbs" is not the Divine Orb card. A pool whose
      shape is ours and not the table's says so beside it. Never multiplied by a price (design/hidden-odds.md). */
   weight:   {type: 'odds', at: 'n', slot: 'body', file: 'data/odds.json', label: 'How often it rolls'},
+  /* the game's own constants on the card they land on (tools/rules.py), and a thing's gold number (tools/gold.py) */
+  rules:    {type: 'rules', at: 'n', slot: 'body', file: 'data/rules.json', label: 'The game’s own numbers'},
+  exfee:    {type: 'gold', at: 'n', slot: 'body', file: 'data/gold.json', of: 'exchange', label: 'Currency Exchange fee'},
+  goldv:    {type: 'gold', at: 'n', slot: 'body', file: 'data/gold.json', of: 'unique', label: 'Gold value'},
   /* A league mechanic, on the game's own keyword card for it (tools/mechanics_league.py, data/leaguemech.json,
      found by the card's own key). `share`: its own currency's share of what the Currency Exchange traded this
      league, with the move over 7 days and the league's days as a line. Measured from GGG's feed hour by hour,
@@ -446,6 +487,11 @@ export const FIELDS = {
   quote:    {type: 'quote', at: 'qt', slot: 'body', every: 1},   // the game's own flavour line
   options:  {type: 'options', at: 'o', slot: 'body', every: 1},
   flow:     {type: 'flow', at: 'fl', slot: 'body', every: 1},
+  /* GGG's own patch-note lines that name this card, newest patch first, each patch its thread's link and the
+     hour it went up (tools/patchnotes.py writes data/patchnotes.json, keyed "kind:name"). The popup only, the
+     file fetched the first time one asks; FRAME.changed says how many patches draw and which lines count. */
+  changed:  {type: 'changed', at: 'n', slot: 'body', every: 1, file: 'data/patchnotes.json', label: 'Changed in',
+             src: 'GGG patch notes'},
   source:   {type: 'source', at: 'src', slot: 'body', every: 1},
   /* The way to a card that lays out what this one's own text is about: a small mark beside the name, not a
      block across the card — it is a way out, not what you came to read. Never on a card of a kind one of
@@ -648,7 +694,7 @@ export const REL = {
 const HEAD = ['art', 'name', 'sub', 'offer', 'ask', 'price'];
 // the words first, then the rest of the body: a kind with more to say puts it between the two (the currency)
 const SAYS = ['lines', 'text'];
-const REST = ['quote', 'options', 'flow', 'source', 'swaps', 'tags', 'anoint', 'keywords'];
+const REST = ['quote', 'options', 'flow', 'changed', 'source', 'swaps', 'tags', 'anoint', 'keywords'];
 const BODY = [...SAYS, ...REST];
 const FOOT = ['spark', 'usage', 'thin', 'builds'];
 const KWUSE = ['kwu', 'kwg', 'kwp', 'kwb', 'kwe', 'kwa', 'kwm', 'kwc', 'kww'];
@@ -666,7 +712,7 @@ export const KINDS = [
    index: true, search: true, item: true, crawl: {word: 'unique', list: 'uniques', rank: 0, is: 'Thing'},
    sprite: 'uniques', make: {base: 'sub1'},
    builds: [{key: 'items'}],
-   fields: [...HEAD, 'reqs', 'corrupt', 'limit', 'group', 'props', 'implicit', ...SAYS, 'mapdanger', 'weight', ...REST, 'drop', ...FOOT],
+   fields: [...HEAD, 'reqs', 'corrupt', 'limit', 'group', 'props', 'implicit', ...SAYS, 'mapdanger', 'weight', ...REST, 'drop', 'goldv', ...FOOT],
    acts: ['trade', 'pool', 'full', 'pin', 'open'],
    rel: ['base', 'variants', 'grants', 'dropsfrom', 'named', 'namedby', 'cat']},
 
@@ -674,7 +720,7 @@ export const KINDS = [
    index: true, search: true, crawl: {word: 'passive', list: 'passives', rank: 2, is: 'DefinedTerm'},
    kw: 'name',
    builds: [{at: 's', starts: 'Keystone', key: 'keypassives'}, {at: 'asc', key: 'keypassives'}, {at: 'rec', key: 'anointed'}],
-   fields: [...HEAD, 'asc', 'region', 'ontree', ...BODY, ...FOOT],
+   fields: [...HEAD, 'asc', 'region', 'ontree', 'treechg', ...SAYS, 'was', ...REST, ...FOOT],
    acts: ['pool', 'full', 'pin', 'open'],
    rel: [...KWUSE, 'grants', 'clusterof', 'named', 'namedby', 'cat']},
 
@@ -713,13 +759,13 @@ export const KINDS = [
   {k: 'c', one: 'Currency', tone: 'c-currency', many: 'Currency', place: 'Currency', link: './#/currency?c=@id',
    index: true, search: true, item: true, crawl: {word: 'currency', list: 'currency', rank: 4, is: 'Thing'},
    px: {as: 'c'}, make: {nx: 'yes'}, gone: {at: 'nx'},
-   fields: [...HEAD, 'droplv', ...SAYS, 'perslot', 'ladder', 'adds', ...REST, ...FOOT],
+   fields: [...HEAD, 'droplv', ...SAYS, 'perslot', 'ladder', 'adds', 'exfee', ...REST, ...FOOT],
    acts: ['trade', 'pool', 'bench', 'pin', 'open'],
    rel: ['named', 'namedby', 'job', 'rewardin', 'cat']},
 
   {k: 'w', one: 'Keyword', tone: 'accent', many: 'Keywords', sec: 'keywords', index: true, search: true, crawl: {word: 'keyword', list: 'keywords', rank: 3, is: 'DefinedTerm'},
    kw: 'id', rank: -25, words: {n: 'own', f: 'alt', mark: 'game'},
-   fields: [...HEAD, 'stacks', 'uses', ...SAYS, 'mondanger', 'share', 'weight', 'mechlines', 'corruption', ...REST, ...FOOT],
+   fields: [...HEAD, 'stacks', 'uses', ...SAYS, 'mondanger', 'rules', 'share', 'weight', 'mechlines', 'corruption', ...REST, ...FOOT],
    acts: ['full', 'pin'],
    rel: [...KWUSE, 'granted', 'onlyon', 'named', 'namedby']},
 
@@ -743,7 +789,7 @@ export const KINDS = [
 
   {k: 'h', one: 'Mechanics', tone: 'blood', many: 'Mechanics', index: true, search: true, mark: 'ls',
    words: {f: 'own', mark: 'ours', only: 'gate'},
-   fields: [...HEAD, ...SAYS, 'share', 'mechlines', ...REST, ...FOOT],
+   fields: [...HEAD, ...SAYS, 'rules', 'share', 'mechlines', ...REST, ...FOOT],
    acts: ['pin'],
    rel: ['namedby', 'cat']},
 

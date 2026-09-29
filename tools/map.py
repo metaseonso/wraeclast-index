@@ -54,6 +54,7 @@ Usage:
 """
 import argparse
 import json
+import urllib.request
 import math
 import re
 import struct
@@ -136,6 +137,35 @@ def hsl(h, s, light):
     return (ch(0), ch(8), ch(4))
 
 
+# ---------- the cards made while the site runs ----------
+MARKET = 'https://wraeclastindex.fyi/data/market.json?part=now'
+
+
+def runtime_cards(have):
+    """The currency the market prices that the index has no card for, and the bosses: the cards assets/app.js
+    makes at runtime, keyed the same way (c:<name>, x:<name>). The market's list comes from the live site, else
+    the committed data/market.json; a name the index already cards is left to its card."""
+    out = []
+    items = {}
+    try:
+        with urllib.request.urlopen(urllib.request.Request(MARKET, headers={'User-Agent': 'wraeclast-index map'}), timeout=30) as r:
+            items = json.loads(r.read().decode('utf-8')).get('items') or {}
+    except Exception as e:
+        print('  the live market list did not answer (%s): the committed data/market.json instead' % e)
+    if not items and (DATA / 'market.json').exists():
+        items = json.loads((DATA / 'market.json').read_text(encoding='utf-8')).get('items') or {}
+    named = {it['n'] for key, it in have.items() if key.startswith('c:')}
+    for key, m in sorted(items.items()):
+        if key.startswith('c:') and m.get('n') and m['n'] not in named and key not in have:
+            out.append({'k': 'c', 'id': key[2:], 'n': m['n']})
+    f = DATA / 'bosses.json'
+    if f.exists():
+        for b in json.loads(f.read_text(encoding='utf-8')).get('bosses') or []:
+            if b.get('name') and 'x:' + b['name'] not in have:
+                out.append({'k': 'x', 'id': b['name'], 'n': b['name']})
+    return out
+
+
 # ---------- the graph ----------
 class Graph:
     """Every card as a node, every edge the site can follow, and what was left out."""
@@ -146,6 +176,11 @@ class Graph:
         self.index = json.loads((DATA / 'index.json').read_text(encoding='utf-8'))
         self.items = [it for it in self.index['items'] if not it.get('dup')]
         self.by_key = {it['k'] + ':' + it['id']: it for it in self.items}
+        # the cards the site makes while it runs (assets/app.js runtime): the currency the market prices beyond
+        # the catalogue, and the bosses. Seated with the rest, so every card the site shows has a dot (#71).
+        for it in runtime_cards(self.by_key):
+            self.items.append(it)
+            self.by_key[it['k'] + ':' + it['id']] = it
         self.order = {key: i for i, key in enumerate(self.by_key)}
         self.edges = set()
         self.per_family = {}
@@ -163,12 +198,27 @@ class Graph:
         self.per_family[name] = {'edges': len(mine), 'new': len(self.edges) - was}
 
     def build(self):
+        self.family('drops', self.drops)
         self.family('keywords', self.keywords)
         self.family('marks', self.marks)
         self.family('named', self.named)
         self.family('base', self.bases)
         self.family('grants', self.grants)
         self.groups()
+
+    # --- data/dropsfrom.json: a boss and the uniques it drops (assets/edges.js dropsfrom / drops) ---
+    def drops(self, out):
+        f = DATA / 'dropsfrom.json'
+        if not f.exists():
+            return
+        by_name = defaultdict(list)
+        for key, it in self.by_key.items():
+            if it['k'] == 'u':
+                by_name[it['n']].append(key)
+        for name, row in (json.loads(f.read_text(encoding='utf-8')).get('uniques') or {}).items():
+            for src in row.get('from') or []:
+                for u in by_name.get(name, []):
+                    out.add(('x:' + src.get('n', ''), u))
 
     # --- data/kwuse.json: the nine lists under a keyword card (assets/edges.js kwRows) ---
     def keywords(self, out):

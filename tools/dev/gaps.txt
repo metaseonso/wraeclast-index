@@ -1,7 +1,7 @@
 Wraeclast Index · the official game data, and what we ship of it
 
   export  patch 0.5.5, files dated 11 Sep 2026
-  pulled  2026-09-28 18:13 UTC · 23 files, 0 downloaded
+  pulled  2026-09-29 03:55 UTC · 23 files, 22 downloaded
   index   7,859 cards over 7,332 names
 
   Counts are names, not cards: one name can be several cards.
@@ -35,7 +35,12 @@ Wraeclast Index · the official game data, and what we ship of it
     Artifact, Exotic Coinage, Order Artifact …)
   · currency, 1: no text anywhere in the game files for it (poe2db shows none either) (Omen of
     Recombination)
-  · areas, 103: NO REASON YET (Act 1, Act 2, Act 3, Act 4 …)
+  · areas, 85: a hideout: a player's own place, not the world (All at Sea Hideout, Alpine Plateau
+    Hideout, Ancestral Hideout, Arcane Isle Hideout …)
+  · areas, 9: a developers' test area (All Black, Boss Rush Area 1, Boss Rush Area 2, Boss Rush Area 3
+    …)
+  · areas, 9: a screen or a heading, not a place (character select, an act's title) (Act 1, Act 2, Act
+    3, Act 4 …)
 
   game: the export, minus the names players never see ([DNT] markers, names the game fills in).
   Bases and currency count the official trade site's lists instead (data/trade.json): the export

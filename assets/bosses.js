@@ -12,7 +12,7 @@ import { D, $, esc, card, openDetail, priceOf, hrefOf, money as coin, moneyHTML,
 const SHOW = [['all', 'All'], ['pin', 'Pinnacle'], ['drops', 'With drops']];
 const SORTS = [['name', 'Name'], ['way', 'Way in']];
 const S = {q: '', show: 'drops', sort: 'name'};   // opens on the bosses with drops: most of the rest have none listed yet
-let EL, B = null, BP = null, ROWS = [], WIRED = false;
+let EL, B = null, BP = null, HITS = null, ROWS = [], WIRED = false;
 
 async function getJSON(url){
   try {
@@ -373,6 +373,29 @@ export async function openCard(it){
 }
 /* Everything the boss card carries under its head, made again whenever it is drawn again: the meter stands on
    a number the player sets, so the card's own copy of it has to be made fresh and not kept. */
+/* How hard it hits (data/bosshits.json, tools/bosshits.py): the boss's life and defences at the level it is
+   fought at, and its big hits, each worked out from the game files the way the file's own `calc` says. The
+   numbers are worked out, not read off the game: they carry the file's own Estimate label. */
+const KINDWORD = {a: 'attack', s: 'spell', d: 'over time'};
+const fmt = n => (+n >= 100 ? Math.round(+n) : Math.round(+n * 10) / 10).toLocaleString('en');
+function hitsHTML(r){
+  const h = HITS && (HITS.bosses || []).find(x => x.name === r.b.name);
+  if(!h || !(h.hits || []).length) return '';
+  const est = '<span class="card-pxa" title="Worked out from the game files, not shown by the game">Estimate</span>';
+  const res = Object.entries(h.res || {}).map(([t, v]) => t.toLowerCase() + ' ' + v + '%').join(', ');
+  const stats = ['level ' + h.lv, h.life ? 'life ' + fmt(h.life) : '', h.armour ? 'armour ' + fmt(h.armour) : '',
+    h.evasion ? 'evasion ' + fmt(h.evasion) : '', res ? 'resistances: ' + res : ''].filter(Boolean).join(' · ');
+  const rows = h.hits.map(x => '<li><b>' + esc(x.n) + '</b><span class="bo-hk">' + esc([KINDWORD[x.k] || '', (x.t || '').toLowerCase()]
+      .filter(Boolean).join(' · ')) + '</span><b class="bo-hn">' + (x.k === 'd' ? fmt(x.h[0]) + ' a second'
+      : fmt(x.h[0]) + (x.h[1] !== x.h[0] ? '–' + fmt(x.h[1]) : '')) + '</b>' +
+    (x.cd ? '<span class="bo-hk">every ' + fmt(x.cd) + ' s</span>' : '<span></span>') + '</li>').join('');
+  const kinds = [...new Set(h.hits.map(x => ({a: 'Attack', s: 'Spell', d: 'Damage over time'})[x.k]))].filter(k => HITS.calc && HITS.calc[k]);
+  const how = kinds.map(k => '<p class="note"><b>' + esc(k) + ':</b> ' + esc(HITS.calc[k].says) + '</p>').join('');
+  return '<div class="bo-sec"><p class="lbl">How hard it hits ' + est + '</p><p class="note">' + esc(stats) + '</p>' +
+    '<ul class="bo-hits">' + rows + '</ul>' +
+    (how ? '<details class="bo-how"><summary>How it is worked out</summary>' + how + '</details>' : '') +
+    '<p class="note">Game files, patch ' + esc(HITS.patch || '') + '.</p></div>';
+}
 function extraOf(r){
   const b = r.b, rated = !!(b.rates && (b.rates.rows || []).length), from = dropSrc(r);
   const pills = [];   // the level is not a pill: it sits on its own area, in the line under the boss's name
@@ -380,6 +403,7 @@ function extraOf(r){
   if(r.drops.length) pills.push('<span class="pill">' + r.drops.length + (r.drops.length === 1 ? ' drop' : ' drops') + '</span>');
   return (pills.length ? '<div class="card-req">' + pills.join('') + '</div>' : '') +
     roiHTML(r) +
+    hitsHTML(r) +
     (r.access.length ? '<div class="bo-sec"><p class="lbl">Way in</p><div class="bo-tbl">' +
       r.access.map((x, i) => itemRow(x, r.i + ':a:' + i, false)).join('') +
       '</div><p class="note">Way in: the entry items Exiled Exchange 2 lists as dropping what this boss drops.</p></div>' : '') +
@@ -438,9 +462,10 @@ function wayHTML(r){
 let LOADING = null;
 function load(){
   return LOADING || (LOADING = (async () => {
-    const [data, px] = await Promise.all([D.bosses || getJSON('data/bosses.json'), getJSON('data/bossprices.json')]);
+    const [data, px, hits] = await Promise.all([D.bosses || getJSON('data/bosses.json'), getJSON('data/bossprices.json'),
+      getJSON('data/bosshits.json').catch(() => null)]);
     if(!data || !data.bosses) return false;
-    B = data; BP = px;
+    B = data; BP = px; HITS = hits;
     ROWS = data.bosses.map(row);
     wire();
     return true;

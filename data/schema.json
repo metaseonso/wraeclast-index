@@ -58,7 +58,8 @@
      ],
      "by": [
       "row",
-      "name"
+      "name",
+      "changed"
      ],
      "need": 1,
      "drawn": 1
@@ -456,7 +457,9 @@
       "name",
       "mapdanger",
       "weight",
-      "drop"
+      "changed",
+      "drop",
+      "goldv"
      ],
      "need": 1,
      "drawn": 1
@@ -834,7 +837,8 @@
      ],
      "by": [
       "row",
-      "name"
+      "name",
+      "changed"
      ],
      "need": 1,
      "drawn": 1
@@ -944,6 +948,15 @@
      ],
      "drawn": 1
     },
+    "tc": {
+     "json": [
+      "object"
+     ],
+     "by": [
+      "treechg"
+     ],
+     "drawn": 1
+    },
     "ls": {
      "json": [
       "array",
@@ -961,6 +974,16 @@
      ],
      "by": [
       "text"
+     ],
+     "drawn": 1
+    },
+    "wa": {
+     "json": [
+      "array",
+      "string"
+     ],
+     "by": [
+      "was"
      ],
      "drawn": 1
     },
@@ -1190,7 +1213,8 @@
      ],
      "by": [
       "row",
-      "name"
+      "name",
+      "changed"
      ],
      "need": 1,
      "drawn": 1
@@ -1548,7 +1572,8 @@
       "row",
       "name",
       "canroll",
-      "cancorrupt"
+      "cancorrupt",
+      "changed"
      ],
      "need": 1,
      "drawn": 1
@@ -1913,7 +1938,8 @@
      ],
      "by": [
       "row",
-      "name"
+      "name",
+      "changed"
      ],
      "need": 1,
      "drawn": 1
@@ -2252,7 +2278,8 @@
      "by": [
       "row",
       "name",
-      "mapdanger"
+      "mapdanger",
+      "changed"
      ],
      "need": 1,
      "drawn": 1
@@ -2618,7 +2645,9 @@
      "by": [
       "row",
       "name",
-      "adds"
+      "adds",
+      "exfee",
+      "changed"
      ],
      "need": 1,
      "drawn": 1
@@ -2997,7 +3026,9 @@
       "row",
       "name",
       "mondanger",
-      "weight"
+      "rules",
+      "weight",
+      "changed"
      ],
      "need": 1,
      "drawn": 1
@@ -3355,7 +3386,8 @@
      ],
      "by": [
       "row",
-      "name"
+      "name",
+      "changed"
      ],
      "need": 1,
      "drawn": 1
@@ -3684,7 +3716,8 @@
      ],
      "by": [
       "row",
-      "name"
+      "name",
+      "changed"
      ],
      "need": 1,
      "drawn": 1
@@ -4031,7 +4064,9 @@
      ],
      "by": [
       "row",
-      "name"
+      "name",
+      "rules",
+      "changed"
      ],
      "need": 1,
      "drawn": 1
@@ -4360,7 +4395,8 @@
      ],
      "by": [
       "row",
-      "name"
+      "name",
+      "changed"
      ],
      "need": 1,
      "drawn": 1
@@ -4771,7 +4807,8 @@
      ],
      "by": [
       "row",
-      "name"
+      "name",
+      "changed"
      ],
      "need": 1,
      "drawn": 1
@@ -5192,7 +5229,8 @@
      ],
      "by": [
       "row",
-      "name"
+      "name",
+      "changed"
      ],
      "need": 1,
      "drawn": 1
@@ -5609,7 +5647,8 @@
      ],
      "by": [
       "row",
-      "name"
+      "name",
+      "changed"
      ],
      "need": 1,
      "drawn": 1
@@ -7031,11 +7070,15 @@
     "adds",
     "cancorrupt",
     "canroll",
+    "changed",
     "drop",
+    "exfee",
+    "goldv",
     "mapdanger",
     "mondanger",
     "name",
     "row",
+    "rules",
     "weight"
    ]
   },
@@ -7775,6 +7818,21 @@
     "tags"
    ]
   },
+  "tc": {
+   "json": [
+    "object"
+   ],
+   "kinds": [
+    "p"
+   ],
+   "need": [],
+   "drawn": [
+    "p"
+   ],
+   "by": [
+    "treechg"
+   ]
+  },
   "tk": {
    "json": [
     "array"
@@ -7903,6 +7961,22 @@
    ],
    "by": [
     "gemreq"
+   ]
+  },
+  "wa": {
+   "json": [
+    "array",
+    "string"
+   ],
+   "kinds": [
+    "p"
+   ],
+   "need": [],
+   "drawn": [
+    "p"
+   ],
+   "by": [
+    "was"
    ]
   },
   "way": {
