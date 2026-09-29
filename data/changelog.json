@@ -1,5 +1,21 @@
 [
  {
+  "v": "0.46",
+  "date": "30 Sep 2026",
+  "title": "Runes, trials, and what each patch changed",
+  "items": [
+   "Runes: a card for each rune, and a recipe finder. Bases show what the Verisium Anvil makes of them.",
+   "Achievements: a card for each, with the areas, bosses and items each step needs.",
+   "Trial modifiers and rare monster modifiers are cards, with what each one does to you.",
+   "Boss cards show the tell before each big hit, with its source.",
+   "Report a drop on unique, boss and area cards. A count shows once 3 reports agree.",
+   "NeverSink's filter tier on base and currency cards. The Currency page makes a loot filter block from today's prices.",
+   "Passive cards and the Patches page show what each patch changed, old and new, and what the patch notes left out.",
+   "Faster first search on phones.",
+   "The side index is gone. The respec cost folds out under the passive tree."
+  ]
+ },
+ {
   "v": "0.45",
   "date": "29 Sep 2026",
   "title": "The odds, the campaign, the leagues",
