@@ -187,7 +187,7 @@ def main():
     unnamed = {}
     pools = rites(unnamed) + strongboxes() + corruption() + map_content() + altars() + spirits()
     doc = {'source': meta['source'], 'ids': ['file'], 'flags': FLAGS, 'unnamed': unnamed, 'pools': pools}
-    OUT.write_text(json.dumps(doc, ensure_ascii=False, separators=(',', ':')) + '\n', encoding='utf-8')
+    OUT.write_text(json.dumps(doc, ensure_ascii=False, separators=(',', ':')) + '\n', encoding='utf-8', newline='\n')
     sure = sum(1 for p in pools if p['sure'])
     print('data/odds.json: %d pools (%d sure, %d %s), %d outcomes, %d bytes'
           % (len(pools), sure, len(pools) - sure, FLAG, sum(len(p['outcomes']) for p in pools), OUT.stat().st_size))

@@ -261,7 +261,7 @@ def main():
     f = ROOT / 'data' / 'index.json'
     index = json.loads(f.read_text(encoding='utf-8'))
     rep = attach(index)
-    f.write_text(json.dumps(index, ensure_ascii=False, separators=(',', ':')), encoding='utf-8')
+    f.write_text(json.dumps(index, ensure_ascii=False, separators=(',', ':')), encoding='utf-8', newline='\n')
     report(index, rep)
     import appdata   # the two parts the home page loads, with each part's own key table
     appdata.write(index)

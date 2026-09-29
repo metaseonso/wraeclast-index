@@ -99,7 +99,7 @@ def state():
 
 def save_state():
     CACHE.mkdir(parents=True, exist_ok=True)
-    PULLED.write_text(json.dumps(state(), indent=1, sort_keys=True), encoding='utf-8')
+    PULLED.write_text(json.dumps(state(), indent=1, sort_keys=True), encoding='utf-8', newline='\n')
 
 
 def _open(url, headers):

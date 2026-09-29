@@ -71,6 +71,6 @@ def write(name, doc):
     """data/<name>, compact, one step."""
     path = DATA / name
     tmp = path.with_name(path.name + '.tmp')
-    tmp.write_text(json.dumps(doc, ensure_ascii=False, separators=(',', ':')) + '\n', encoding='utf-8')
+    tmp.write_text(json.dumps(doc, ensure_ascii=False, separators=(',', ':')) + '\n', encoding='utf-8', newline='\n')
     os.replace(tmp, path)
     return path.stat().st_size

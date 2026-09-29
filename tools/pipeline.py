@@ -552,7 +552,7 @@ def run_stage(stage, artifact, log, later=()):
     runner = node() if stage['run'][0].endswith('.mjs') else sys.executable
     started = time.time()
     if not runner:
-        Path(log).write_text('there is no Node here to run %s with\n' % stage['run'][0], encoding='utf-8')
+        Path(log).write_text('there is no Node here to run %s with\n' % stage['run'][0], encoding='utf-8', newline='\n')
         say('  | there is no Node here to run %s with' % stage['run'][0])
         return 127, 0
     cmd = [runner, str(TREE / stage['run'][0])] + args_of(stage, artifact)
@@ -741,7 +741,7 @@ def main():
         say('FAILED at %s: %s' % (stage['name'], why))
         say('Nothing went into data/: it keeps its last good copy. The log is build/%s/log.txt.' % stage['name'])
         report['failed'] = {'stage': stage['name'], 'why': why}
-        (BUILD / 'report.json').write_text(json.dumps(report, indent=1), encoding='utf-8')
+        (BUILD / 'report.json').write_text(json.dumps(report, indent=1), encoding='utf-8', newline='\n')
         if not found:
             found = [lastgood.fault('Pipeline: ' + stage['name'],
                                     {'was': (counts or {}).get('was', 0), 'now': (counts or {}).get('now', 0),
@@ -823,7 +823,7 @@ def main():
         say('  it holds up')
     record_moved = start.get(RECORD) != end.get(RECORD)
     report.update(ran=ran, skipped=skipped, files=final)
-    (BUILD / 'report.json').write_text(json.dumps(report, indent=1), encoding='utf-8')
+    (BUILD / 'report.json').write_text(json.dumps(report, indent=1), encoding='utf-8', newline='\n')
     say('')
     if a.dry:
         say('dry run: %d ran, %d skipped, %d file%s would go into data/. Nothing did; see build/.'

@@ -88,7 +88,7 @@ def poe2db(page):
     if not f.exists() or time.time() - f.stat().st_mtime > DAY:
         body = fetch('https://poe2db.tw/us/' + urllib.parse.quote(page, safe="'"))   # poe2db wants the ' as it is
         POE2DB_CACHE.mkdir(parents=True, exist_ok=True)
-        f.write_text(body, encoding='utf-8')
+        f.write_text(body, encoding='utf-8', newline='\n')
     return f.read_text(encoding='utf-8')
 
 

@@ -320,7 +320,7 @@ def write(index, sh, cl, new):
         p = [i for i, it in enumerate(index['items']) if it['k'] == 'p']
         at = (max(p) + 1) if p else len(index['items'])
         index['items'][at:at] = new       # next to the passive cards, so the index keeps its order
-        INDEX.write_text(json.dumps(index, ensure_ascii=False, separators=(',', ':')), encoding='utf-8')
+        INDEX.write_text(json.dumps(index, ensure_ascii=False, separators=(',', ':')), encoding='utf-8', newline='\n')
 
 
 def main():

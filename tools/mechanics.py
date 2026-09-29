@@ -426,7 +426,7 @@ def main():
     index['items'] = [it for it in index['items'] if it['k'] != KIND] + build()
     print('cards: %d -> %d (%d mechanics cards)' % (was, len(index['items']), len(CARDS)))
     rep = nodelinks.attach(index)
-    f.write_text(json.dumps(index, ensure_ascii=False, separators=(',', ':')), encoding='utf-8')
+    f.write_text(json.dumps(index, ensure_ascii=False, separators=(',', ':')), encoding='utf-8', newline='\n')
     nodelinks.report(index, rep)
     import appdata   # the two parts the home page loads
     appdata.write(index)

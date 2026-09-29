@@ -159,7 +159,7 @@ def smalls(index, write=True):
         at = max(i for i, it in enumerate(index['items']) if it['k'] == 'p') + 1
         index['items'][at:at] = cards   # next to the passive cards, so the index keeps its order
         sync.CACHE.mkdir(parents=True, exist_ok=True)   # the links node_image checked, remembered as sync.py does
-        sync.CHECKED.write_text(json.dumps(sorted(sync._checked), indent=0), encoding='utf-8')
+        sync.CHECKED.write_text(json.dumps(sorted(sync._checked), indent=0), encoding='utf-8', newline='\n')
     return {'cards': cards, 'why': why, 'kept': kept, 'nodes': sum(len(v) for v in groups.values()),
             'groups': len(groups)}
 
@@ -227,7 +227,7 @@ def main():
         return 0
     import nodelinks   # the doors inside the new cards' own lines
     rep = nodelinks.attach(index)
-    INDEX.write_text(json.dumps(index, ensure_ascii=False, separators=(',', ':')), encoding='utf-8')
+    INDEX.write_text(json.dumps(index, ensure_ascii=False, separators=(',', ':')), encoding='utf-8', newline='\n')
     nodelinks.report(index, rep)
     import appdata   # the index in two parts for the home page
     appdata.write(index)

@@ -458,7 +458,7 @@ def main():
                        "Ritual's share is its crafting omens."),
             'unit': 'basis points (1 = 0.01%)', 'rows': rows, 'leagues': pop},
     }
-    OUT.write_text(json.dumps(doc, ensure_ascii=False, separators=(',', ':')) + '\n', encoding='utf-8')
+    OUT.write_text(json.dumps(doc, ensure_ascii=False, separators=(',', ':')) + '\n', encoding='utf-8', newline='\n')
     by_rule = {}
     for g, rule in group.values():
         by_rule[rule] = by_rule.get(rule, 0) + 1

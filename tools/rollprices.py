@@ -61,7 +61,7 @@ def main():
         values = pick(sorted({t[0] for t in tiers}), n) if tiers else pick([m[2], m[3]], 2)
         jobs.append([m[0], values])
         print(m[1], values)
-    (ROOT / 'data' / 'pricejobs.json').write_text(json.dumps({'roll': jobs}, separators=(',', ':')), encoding='utf-8')
+    (ROOT / 'data' / 'pricejobs.json').write_text(json.dumps({'roll': jobs}, separators=(',', ':')), encoding='utf-8', newline='\n')
     print(len(jobs), 'mods,', sum(len(v) for _, v in jobs), 'points to check')
 
 

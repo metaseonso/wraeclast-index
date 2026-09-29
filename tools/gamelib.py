@@ -828,7 +828,7 @@ def main():
     if args.report:
         print('\n--report: nothing written')
         return
-    INDEX.write_text(json.dumps(index, ensure_ascii=False, separators=(',', ':')), encoding='utf-8')
+    INDEX.write_text(json.dumps(index, ensure_ascii=False, separators=(',', ':')), encoding='utf-8', newline='\n')
     STATS.write_text(json.dumps(stats, ensure_ascii=False, separators=(',', ':')), encoding='utf-8', newline='\n')
     JEWELS.write_text(json.dumps(jw, ensure_ascii=False, separators=(',', ':')), encoding='utf-8', newline='\n')
     import appdata   # the index in two parts for the home page

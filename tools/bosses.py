@@ -378,7 +378,7 @@ def wiki_pages(names, cache=None):
     if cache:
         cache.mkdir(parents=True, exist_ok=True)
         for name in want:
-            (cache / (re.sub(r'[^\w -]', '_', name) + '.txt')).write_text(out.get(name, ''), encoding='utf-8')
+            (cache / (re.sub(r'[^\w -]', '_', name) + '.txt')).write_text(out.get(name, ''), encoding='utf-8', newline='\n')
     return out
 
 
@@ -524,7 +524,7 @@ def poe2db(path):
             raise
         body = ''
     POE2DB_CACHE.mkdir(parents=True, exist_ok=True)
-    f.write_text(body, encoding='utf-8')
+    f.write_text(body, encoding='utf-8', newline='\n')
     time.sleep(POE2DB_PAUSE)
     return body
 

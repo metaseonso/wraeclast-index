@@ -88,7 +88,7 @@ def main():
     if not doc['e']:
         sys.exit('no essence tables in data/craft — run python tools/craft.py first')
     text = json.dumps(doc, ensure_ascii=False, separators=(',', ':'))
-    OUT.write_text(text, encoding='utf-8')
+    OUT.write_text(text, encoding='utf-8', newline='\n')
     mods = sum(len(v) for v in doc['e'].values())
     print('data/essences.json: %d essences, %d mods over %d kinds of item (%d rows in data/craft), %.1f kB'
           % (len(doc['e']), mods, len(doc['cl']), len(rows), len(text.encode('utf-8')) / 1000))

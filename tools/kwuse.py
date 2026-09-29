@@ -508,7 +508,7 @@ def main():
                 sys.exit('raw game code in kwuse: %r' % line)
 
     raw = json.dumps(out, ensure_ascii=False, separators=(',', ':'))
-    OUT.write_text(raw, encoding='utf-8')
+    OUT.write_text(raw, encoding='utf-8', newline='\n')
     print('data/kwuse.json: %d keywords, %d KB (small passive groups %d, atlas %d (%d with a card), currency %d, crafting %d, '
           'essence lines %d)' % (len(out_k), len(raw.encode('utf-8')) // 1024, len(sp), len(at_out), sum(len(a) > 3 for a in at_out),
                                   len(cu), len(cr), len(es)))
@@ -531,7 +531,7 @@ def main():
                 it['use'] = n
                 changed += 1
     if changed:
-        (ROOT / 'data' / 'index.json').write_text(json.dumps(index, ensure_ascii=False, separators=(',', ':')), encoding='utf-8')
+        (ROOT / 'data' / 'index.json').write_text(json.dumps(index, ensure_ascii=False, separators=(',', ':')), encoding='utf-8', newline='\n')
     print('data/index.json: "Used by" counts on %d keyword cards updated' % changed)
     import appdata   # and its two parts for the home page
     appdata.write()

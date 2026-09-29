@@ -707,7 +707,7 @@ def build_index(html):
             if img:
                 it['img'] = img
     CACHE.mkdir(parents=True, exist_ok=True)
-    CHECKED.write_text(json.dumps(sorted(_checked), indent=0), encoding='utf-8')
+    CHECKED.write_text(json.dumps(sorted(_checked), indent=0), encoding='utf-8', newline='\n')
 
     for it in items:  # the standard: nothing in the search index may read as game code
         it.pop('_try', None)
@@ -868,7 +868,7 @@ def externalize(html):
     def write(bid, name, obj):
         body = json.dumps(obj, ensure_ascii=False, separators=(',', ':'))
         rel = 'data/explore/%s.%s.json' % (name, hashlib.sha1(body.encode('utf-8')).hexdigest()[:10])
-        (ROOT / rel).write_text(body, encoding='utf-8')
+        (ROOT / rel).write_text(body, encoding='utf-8', newline='\n')
         files[bid] = rel
     apart = ("WI_DATA.get('%s')" % GEMTEXT) in html   # the page fetches a gem's level text on its own
     for m in BLOCK.finditer(html):

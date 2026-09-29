@@ -408,7 +408,7 @@ def main():
     print('cards: %d -> %d (%d interaction cards)' % (was, len(index['items']), len(CARDS)))
     import nodelinks
     rel = nodelinks.attach(index)
-    f.write_text(json.dumps(index, ensure_ascii=False, separators=(',', ':')), encoding='utf-8')
+    f.write_text(json.dumps(index, ensure_ascii=False, separators=(',', ':')), encoding='utf-8', newline='\n')
     nodelinks.report(index, rel)
     rep = survey(index)
     write(index, rep)

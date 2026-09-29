@@ -324,7 +324,7 @@ def entry(name, defs, cards, keys, mods):
     if top > 1:
         out['max'] = top
     rows = [c for c in (cards.card(k) for k in keys) if c]
-    rows.sort(key=lambda c: (KINDS.index(c['k']), c['n']))
+    rows.sort(key=lambda c: (KINDS.index(c['k']), c['n'], c['key']))   # the key breaks a tie between givers of one name
     if rows:
         out['by'] = rows
     if mods:
