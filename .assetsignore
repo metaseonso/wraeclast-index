@@ -17,3 +17,5 @@ package.json
 package-lock.json
 dist
 /build/
+# the market files: the worker serves the Market job's copies at /data/market/<name> (worker/files.js)
+data/market

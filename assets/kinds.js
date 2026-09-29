@@ -61,6 +61,8 @@
               it is in the index or in first paint, and a card whose name the table does not hold draws nothing.
               It may carry @field, filled in from the entry the way a gold button's link is, so one field can
               read a table per item class without naming one.
+     key      where a table comes in bundles: the file that says which bundle holds this card, whose number
+              is the `#` in `file`
      ids      its values are ids a renderer turns into words (a keyword chip), never words a player reads as
               they stand
      row      'price' where `at` reads the price row rather than the index entry
@@ -77,7 +79,7 @@
    worker/dash.js) and the owner's dashboard (assets/admin.js). A new tab is one line here.
    tools/dev/frame.mjs fails a build where a second copy of this list has drifted from it. */
 export const ROUTES = {home: 'Search', build: 'Build', trade: 'Trade', farms: 'Farms', craft: 'Craft',
-  currency: 'Currency', atlas: 'Atlas', bosses: 'Bosses', map: 'Map', data: 'Data', patches: 'Patches'};
+  currency: 'Currency', market: 'Market', atlas: 'Atlas', bosses: 'Bosses', map: 'Map', data: 'Data', patches: 'Patches'};
 export const SECTIONS = {gems: 'Gems', uniques: 'Uniques', tree: 'Passive tree'};
 /* every page that is counted, in one list: the tabs, then the sections under the names the count gives them */
 export const PAGES = {...ROUTES,
@@ -134,6 +136,7 @@ export const INDEX = [
   ]},
   {id: 'economy', name: 'Economy', pages: [
     {route: 'currency', k: 'c', icon: 'currency', about: 'every currency price and trend, hour by hour'},
+    {route: 'market', icon: 'market', about: 'the Currency Exchange measured: price index, league start, rising fast, crafting demand, league gap, patch shocks, weekly digest'},
     {route: 'trade', icon: 'trade', about: 'any trade search in plain words, opened on the official trade site'},
   ]},
   {id: 'craft', pages: [{route: 'craft', icon: 'craft', about: 'the crafting bench, with the real weights'}]},
@@ -484,6 +487,20 @@ export const FIELDS = {
   share:    {type: 'share', slot: 'body', file: 'data/leaguemech.json', label: 'Of what the Currency Exchange traded'},
   mechlines: {type: 'mechlines', slot: 'body', file: 'data/leaguemech.json', of: ['waystone', 'campaign'],
     say: {waystone: 'Waystone modifiers that add it', campaign: 'What its rites call up in the campaign'}},
+  /* ---------- the Currency Exchange, measured (design/market-products.md) ----------
+     Built once a day from every hour of GGG's feed since 6 Dec 2024 by the data repo's Market job, and served at
+     /data/market/<name> (worker/files.js MARKET), never in the deploy. Each field reads a table of its own, the
+     first time an opened card asks for it. A product file holds one row per currency, found by the card's name
+     (`at`); the cards' own parts come in bundles, and `key` is the file that says which bundle holds a card
+     (its site.cards, by `at`): `#` in `file` is that bundle's number. `of` says which part of the row it draws.
+     A price in any of them carries the hour it is from; a rule's words are the file's own. */
+  liquid:   {type: 'market', of: 'pill', at: 'n', slot: 'pill', file: 'data/market/liquidity.json'},
+  stock:    {type: 'market', of: 'stock', at: 'n', slot: 'pill', file: 'data/market/liquidity.json'},
+  leaguedays: {type: 'market', of: 'days', at: 'did', slot: 'body', file: 'data/market/cards-#.json',
+    key: 'data/market/index.json', label: 'By league day'},
+  gap:      {type: 'market', of: 'gap', at: 'n', slot: 'body', file: 'data/market/gap.json', label: 'Other leagues, last 24 hours'},
+  sellmap:  {type: 'market', of: 'sell', at: 'did', slot: 'body', file: 'data/market/cards-#.json',
+    key: 'data/market/index.json', label: 'When it trades'},
   quote:    {type: 'quote', at: 'qt', slot: 'body', every: 1},   // the game's own flavour line
   options:  {type: 'options', at: 'o', slot: 'body', every: 1},
   flow:     {type: 'flow', at: 'fl', slot: 'body', every: 1},
@@ -588,6 +605,7 @@ export const ROW = {
   f:   {json: 'array'},              // its other spellings (words)
   fg:  {json: 'string'},             // the rule each of them counts by (words, only: 'gate')
   ac:  {json: 'number'},             // what an anointment costs, in divines
+  did: {json: 'string'},             // a currency's address word, the key of its market file (tools/carddata.py)
 };
 
 /* The buttons under a card in the popup. "open" is the gold one: the kind's own tab.
@@ -759,7 +777,7 @@ export const KINDS = [
   {k: 'c', one: 'Currency', tone: 'c-currency', many: 'Currency', place: 'Currency', link: './#/currency?c=@id',
    index: true, search: true, item: true, crawl: {word: 'currency', list: 'currency', rank: 4, is: 'Thing'},
    px: {as: 'c'}, make: {nx: 'yes'}, gone: {at: 'nx'},
-   fields: [...HEAD, 'droplv', ...SAYS, 'perslot', 'ladder', 'adds', 'exfee', ...REST, ...FOOT],
+   fields: [...HEAD, 'droplv', 'liquid', 'stock', ...SAYS, 'perslot', 'ladder', 'adds', 'exfee', 'leaguedays', 'gap', 'sellmap', ...REST, ...FOOT],
    acts: ['trade', 'pool', 'bench', 'pin', 'open'],
    rel: ['named', 'namedby', 'job', 'rewardin', 'cat']},
 

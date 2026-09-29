@@ -971,6 +971,41 @@ small.at-bonus{display:block}
   .pt-lg{display:block; font-family:var(--sans, inherit); font-size:11px; color:var(--faint)}
 }
 
+/* ---------- the Market tab (assets/market.js) ---------- */
+.mk-block{margin:0 0 6px}
+.mk-block .sect{margin-bottom:8px}
+.mk-body{display:grid; gap:8px; min-width:0}
+.mk-body > *{margin:0}
+.mk-wait{min-height:260px}   /* a block not in yet holds its room, so the blocks under it stay off the screen */
+.mk-big{display:flex; flex-wrap:wrap; align-items:baseline; gap:4px 12px}
+.mk-big b{font:600 30px/1 var(--mono); color:var(--text)}
+.mk-big span{color:var(--muted); font-size:13px}
+.mk-two{display:grid; grid-template-columns:repeat(auto-fit, minmax(min(100%, 320px), 1fr)); gap:10px 20px}
+.mk-two > div{min-width:0}
+.mk-chips{justify-content:flex-start; margin:0}
+.mk-t td:first-child{white-space:normal; min-width:160px}
+.mk-t .mk-no{color:var(--faint)}
+.mk-n{color:var(--text); text-decoration:none; border-bottom:1px dotted var(--line)}
+.mk-n:hover, .mk-n:focus-visible{color:var(--accent); border-color:var(--accent)}
+.mk-list{list-style:none; margin:0; padding:0; display:grid; gap:0}
+.mk-list li{display:flex; flex-wrap:wrap; gap:2px 12px; align-items:baseline; padding:6px 0; border-bottom:1px solid var(--line); font-size:13.5px}
+.mk-list li span{font:12px/1.45 var(--mono); color:var(--muted)}
+.mk-all{justify-self:start}
+.mk-rule summary, .mk-patch summary{cursor:pointer; font-size:12.5px; color:var(--muted)}
+.mk-rule p{font-size:12px; color:var(--faint); line-height:1.5; max-width:90ch; margin:6px 0 0}
+.mk-patches{display:grid; gap:0}
+.mk-patch{border-bottom:1px solid var(--line); padding:7px 0}
+.mk-patch summary{display:flex; flex-wrap:wrap; gap:2px 10px; align-items:baseline; list-style:none}
+.mk-patch summary::-webkit-details-marker{display:none}
+.mk-patch summary::before{content:'▸'; color:var(--faint); width:10px}
+.mk-patch[open] summary::before{content:'▾'}
+.mk-patch summary b{color:var(--text); font-size:13.5px; font-weight:600}
+.mk-patch > p, .mk-patch > ul{margin:6px 0 0}
+.mk-moves{list-style:none; padding:0; display:grid; gap:3px; font-size:13px}
+.mk-was{font:11.5px var(--mono); color:var(--faint)}
+.mk-line{font-size:13.5px; line-height:1.55; margin:6px 0 0; max-width:100ch}
+@media (max-width:640px){ .mk-t td:first-child{min-width:124px} .mk-big b{font-size:26px} }
+
 /* ---------- the index down the side of a list (assets/app.js sideShow) ----------
    From 1280 px, on a page that is a list (a search, a kind's list, Currency, Atlas, Bosses): the whole index in one
    column beside it, the page on show marked. Narrower, the index is in the menu instead. */

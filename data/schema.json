@@ -142,6 +142,14 @@
       "anoint"
      ]
     },
+    "did": {
+     "json": [
+      "string"
+     ],
+     "by": [
+      "row"
+     ]
+    },
     "w": {
      "json": [
       "array"
@@ -544,6 +552,14 @@
       "anoint"
      ]
     },
+    "did": {
+     "json": [
+      "string"
+     ],
+     "by": [
+      "row"
+     ]
+    },
     "rq": {
      "json": [
       "array"
@@ -919,6 +935,14 @@
      "by": [
       "row",
       "anoint"
+     ]
+    },
+    "did": {
+     "json": [
+      "string"
+     ],
+     "by": [
+      "row"
      ]
     },
     "asc": {
@@ -1297,6 +1321,14 @@
       "anoint"
      ]
     },
+    "did": {
+     "json": [
+      "string"
+     ],
+     "by": [
+      "row"
+     ]
+    },
     "reg": {
      "json": [
       "string"
@@ -1654,6 +1686,14 @@
      "by": [
       "row",
       "anoint"
+     ]
+    },
+    "did": {
+     "json": [
+      "string"
+     ],
+     "by": [
+      "row"
      ]
     },
     "rq": {
@@ -2022,6 +2062,14 @@
       "anoint"
      ]
     },
+    "did": {
+     "json": [
+      "string"
+     ],
+     "by": [
+      "row"
+     ]
+    },
     "pr": {
      "json": [
       "array"
@@ -2360,6 +2408,14 @@
      "by": [
       "row",
       "anoint"
+     ]
+    },
+    "did": {
+     "json": [
+      "string"
+     ],
+     "by": [
+      "row"
      ]
     },
     "ty": {
@@ -2728,6 +2784,14 @@
      "by": [
       "row",
       "anoint"
+     ]
+    },
+    "did": {
+     "json": [
+      "string"
+     ],
+     "by": [
+      "row"
      ]
     },
     "dl": {
@@ -3111,6 +3175,14 @@
       "anoint"
      ]
     },
+    "did": {
+     "json": [
+      "string"
+     ],
+     "by": [
+      "row"
+     ]
+    },
     "max": {
      "json": [
       "number"
@@ -3470,6 +3542,14 @@
       "anoint"
      ]
     },
+    "did": {
+     "json": [
+      "string"
+     ],
+     "by": [
+      "row"
+     ]
+    },
     "ls": {
      "json": [
       "array",
@@ -3798,6 +3878,14 @@
      "by": [
       "row",
       "anoint"
+     ]
+    },
+    "did": {
+     "json": [
+      "string"
+     ],
+     "by": [
+      "row"
      ]
     },
     "max": {
@@ -4149,6 +4237,14 @@
       "anoint"
      ]
     },
+    "did": {
+     "json": [
+      "string"
+     ],
+     "by": [
+      "row"
+     ]
+    },
     "ls": {
      "json": [
       "array",
@@ -4477,6 +4573,14 @@
      "by": [
       "row",
       "anoint"
+     ]
+    },
+    "did": {
+     "json": [
+      "string"
+     ],
+     "by": [
+      "row"
      ]
     },
     "ls": {
@@ -4889,6 +4993,14 @@
      "by": [
       "row",
       "anoint"
+     ]
+    },
+    "did": {
+     "json": [
+      "string"
+     ],
+     "by": [
+      "row"
      ]
     },
     "wp": {
@@ -5313,6 +5425,14 @@
       "anoint"
      ]
     },
+    "did": {
+     "json": [
+      "string"
+     ],
+     "by": [
+      "row"
+     ]
+    },
     "gd": {
      "json": [
       "number"
@@ -5729,6 +5849,14 @@
      "by": [
       "row",
       "anoint"
+     ]
+    },
+    "did": {
+     "json": [
+      "string"
+     ],
+     "by": [
+      "row"
      ]
     },
     "un": {
@@ -6325,6 +6453,34 @@
    ],
    "by": [
     "corruption"
+   ]
+  },
+  "did": {
+   "json": [
+    "string"
+   ],
+   "kinds": [
+    "a",
+    "b",
+    "c",
+    "d",
+    "g",
+    "h",
+    "i",
+    "j",
+    "p",
+    "q",
+    "r",
+    "t",
+    "u",
+    "v",
+    "w",
+    "y"
+   ],
+   "need": [],
+   "drawn": [],
+   "by": [
+    "row"
    ]
   },
   "dl": {

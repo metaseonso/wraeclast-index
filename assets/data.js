@@ -49,6 +49,8 @@ function sources(game, now){
   if(game && game.patch) lines.push('<li><b>Game data</b> — GGG\'s own game files, patch ' + esc(game.patch) +
     (game.dated ? ', files of ' + esc(DAY(game.dated)) : '') + (game.pulled ? ', read ' + esc(DAY(game.pulled)) : '') + '.</li>');
   lines.push('<li><b>Currency prices</b> — the in-game Currency Exchange, every hour.</li>');
+  lines.push('<li><b>Market history</b> — every hour of the Currency Exchange since 6 Dec 2024, measured once a day: ' +
+    'the <a href="#/market">Market</a> tab and every currency card.</li>');
   lines.push('<li><b>Item prices</b> — live listings on the official trade site, checked every day. Nothing listed: checked again every week.</li>');
   lines.push('<li><b>Anything else</b> — named on the card that shows it.</li>');
   const stamp = now && now.updated ? '<p class="note">Prices: ' + esc(now.league || '') + ' · ' + ago(now.updated) + '</p>' : '';
