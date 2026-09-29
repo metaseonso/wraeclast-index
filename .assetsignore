@@ -19,3 +19,5 @@ dist
 /build/
 # the market files: the worker serves the Market job's copies at /data/market/<name> (worker/files.js)
 data/market
+# the copy of the numbers per patch the data diff is made from (tools/patchdiff.py); the site reads data/patchdiff/
+data/snapshots

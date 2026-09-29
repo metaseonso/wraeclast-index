@@ -178,6 +178,17 @@ a.pill.pill-src:hover{color:var(--text); border-color:var(--accent)}
 .chg-more > summary:hover, .chg-more > summary:focus-visible{text-decoration:underline}
 .chg-more[open]{display:grid}
 .chg-more[open] > summary{display:none}
+/* What the data changed ("patchdiff", data/patchdiff/): a change a row, the old value faint and the new one in
+   full, an arrow between. A long line wraps under its label; nothing is cut. */
+.dif{margin:0; padding:0; list-style:none; display:grid; gap:3px}
+.dif li{padding-left:10px; position:relative; font-size:12.5px; line-height:1.45; overflow-wrap:anywhere}
+.dif li::before{content:''; position:absolute; left:0; top:.62em; width:4px; height:4px; border-radius:50%; background:var(--accent); opacity:.7}
+.dif-l{color:var(--muted); font:11.5px var(--mono); margin-right:6px}
+.dif-o{color:var(--faint)}
+.dif-a{color:var(--accent); margin:0 6px}
+.dif-n{color:var(--text)}
+.dif-q{font-size:10.5px; padding:1px 6px; margin-left:4px}
+.chg-sec .dif-q{text-transform:none; letter-spacing:0}
 /* The flowchart on the damage card ("fl", tools/mechanics.py; flowHTML in assets/app.js): one box a step,
    an arrow drawn in the gap between them, two runs. No fixed widths and no SVG text, so a long step wraps
    and still reads at 375px, and every colour is a theme token, so it draws in either theme. */

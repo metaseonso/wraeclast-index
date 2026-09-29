@@ -1342,6 +1342,51 @@ function changedFill(host, it, f){
   });
 }
 
+/* ---------- what the data changed, patch to patch ----------
+   data/patchdiff/ (tools/patchdiff.py): per step between two patches, every thing whose numbers or lines moved,
+   each change [label, old, new] in the game's own words. The index says which cards a step touched, so a card
+   fetches only the steps it is on. Newest patch first, FRAME.changed.cap of them, then "See all N". The words
+   are the field's own (`say`), and the Patches page draws its rows with the same two functions. */
+export function diffRowsHTML(rows, say){
+  return '<ul class="dif">' + (rows || []).map(([label, o, n]) => '<li>' +
+    (label ? '<span class="dif-l">' + esc(label) + '</span>' : '') +
+    (o !== null && n !== null ? '<span class="dif-o">' + esc(o) + '</span><span class="dif-a" aria-label="to">→</span><span class="dif-n">' + esc(n) + '</span>'
+      : o === null ? '<span class="dif-n">' + esc(say.add + n) + '</span>' : '<span class="dif-o">' + esc(say.cut + o) + '</span>') +
+    '</li>').join('') + '</ul>';
+}
+export const diffLinesHTML = ls => '<ul class="dif">' + (ls || []).map(x => '<li><span class="dif-n">' + esc(x) + '</span></li>').join('') + '</ul>';
+function diffHTML(it, groups, f){
+  const say = f.say;
+  const quiet = '<span class="pill warn dif-q">' + esc(say.quiet) + '</span>';
+  const group = ([s, list]) => {
+    const all = list.every(e => e.q), word = list.length === 1 && list[0].st ? say[list[0].st] : say.changed;
+    return '<div class="chg-p"><p class="chg-hd"><a href="./#/patches?d=' + encodeURIComponent(s.to) + '">' + esc(word + s.to) +
+      '</a>' + (all ? quiet : '') + '</p>' + list.map(e =>
+        (list.length > 1 || e.n !== it.n ? '<p class="chg-sec">' + esc(e.n) + (e.q && !all ? ' ' + quiet : '') + '</p>' : '') +
+        (e.st ? diffLinesHTML(e.ls) : diffRowsHTML(e.r, say))).join('') + '</div>';
+  };
+  const cap = FRAME.changed.cap, over = groups.length - cap > FRAME.slack;
+  const src = [...new Set(groups.map(([s]) => s.src).filter(Boolean))];
+  return groups.slice(0, over ? cap : groups.length).map(group).join('') +
+    (over ? '<details class="chg-more"><summary>See all ' + groups.length.toLocaleString() + '</summary>' +
+      groups.slice(cap).map(group).join('') + '</details>' : '') +
+    (src.length ? '<p class="card-src">Source: ' + esc(src.join(', ')) + '</p>' : '');
+}
+function diffFill(host, it, f){
+  if(!host) return;
+  const key = it.k + ':' + it[f.at];
+  tableOf(f.file).then(ix => {
+    const steps = ((ix && ix.steps) || []).filter(s => (s.cards || []).includes(key));
+    return Promise.all(steps.map(s => tableOf(s.file))).then(bodies => steps.map((s, i) =>
+      [s, Object.values((bodies[i] && bodies[i].parts) || {}).flat().filter(e => (e.c || []).includes(key))]));
+  }).then(groups => {
+    groups = (groups || []).filter(g => g[1].length);
+    if(!groups.length || !host.isConnected) return;
+    host.innerHTML = diffHTML(it, groups, f);
+    host.hidden = false;
+  }).catch(() => {});
+}
+
 /* ---------- a switch on the card ----------
    Something outside the item changes what the item is while it is worn. The switch sits on the card the
    player is already reading, off until it is pressed, and what it does is the granting card's own lines —
@@ -1789,6 +1834,8 @@ export const TYPE = {
   keyed:  {raw: 1, fill: keyedFill, v: (it, f, o, name) => o.full && it[f.at]
     ? '<a class="pill pill-src" data-fill="' + esc(name) + '" target="_blank" rel="noopener" hidden></a>' : ''},
   changed: {raw: 1, fill: changedFill, v: (it, f, o, name) => o.full && it[f.at]
+    ? '<div class="card-addsbox card-chg" data-fill="' + esc(name) + '" hidden></div>' : ''},
+  patchdiff: {raw: 1, fill: diffFill, v: (it, f, o, name) => o.full && it[f.at]
     ? '<div class="card-addsbox card-chg" data-fill="' + esc(name) + '" hidden></div>' : ''},
   drop:   {raw: 1, fill: dropFill, v: (it, f, o, name) => o.full && it[f.at]
     ? '<div class="card-addsbox" data-fill="' + esc(name) + '" hidden></div>' : ''},
