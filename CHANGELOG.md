@@ -3,6 +3,17 @@
 The full list of changes. The public patch notes (data/changelog.json, shown on the site) stay short.
 Add the details here first, then a short public line there.
 
+## 0.42 — 29 Sep 2026: where the market is
+
+- **Currency and Trade (PR #178):** the count lives on the question chips (each shows what it would show, with the
+  other filters as they are); market tiles at least 320 px, a name gets 150 px and the rate never splits; the three
+  filter rows are one wrapping row (the group strip is a dropdown); Trade's summary is one line of pieces joined by
+  " · " ("Rare Boots · at least 25% increased Movement Speed · any seller"); Any/Yes/No never wrap.
+- **Price tiers (F1):** /api/prices/state sends each price's listing count; tools/pricepull.py `tiers()` holds a
+  thing nobody listed at its last check back for a week (QUIET = 168 h). The Data page says both cycles.
+- **Price history (F3):** the data repo's daily job copies prices on both of its runs (09:37 and 21:37 UTC); the
+  first copy of a UTC day stands. On 28 Sep the 21:37 run started at 01:12 and the day had no copy.
+
 ## 0.41 — 29 Sep 2026: sharper edges (the 1.0 polish list)
 
 App (commit 551b346):
