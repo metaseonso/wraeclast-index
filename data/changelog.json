@@ -19,7 +19,7 @@
   "date": "29 Sep 2026",
   "title": "The world, the market, the patches",
   "items": [
-   "World: a card for every area, quest and act. See where each area leads, who you fight there and what each quest gives.",
+   "World: a card for every area, quest and act: where each area leads, who you fight there and what each quest gives.",
    "Maps show what content they can hold, and what corrupting them can add.",
    "Market: a new page with the price index, league start, rising fast, crafting demand, the league gap, patch shocks and weekly digests.",
    "Currency cards show how easy they are to trade, their price by league day, and the hours they trade most.",
@@ -178,7 +178,7 @@
   "date": "24 Sep 2026",
   "title": "Count your runs",
   "items": [
-   "The map answers. Point at a dot for its name, press it for its card, and find one by name — the same search that forgives a slip, so <b>quaterstaff</b> rings all 77 of them.",
+   "The map answers: a dot gives its name and opens its card, and one is found by name with the same search that forgives a slip, so <b>quaterstaff</b> rings all 77 of them.",
    "The map also says what it does not hold: 756 cards the site carries today have no dot on it.",
    "Search forgives a slip. <b>divien orb</b> finds the Divine Orb, <b>quaterstaff</b> the Quarterstaff, <b>simulcrum</b> the Simulacrum.",
    "Search reads every line of a card, not just its name. <b>untold toll</b> finds Bluetongue by its flavour line; <b>fire resistance</b> finds the runes that give it.",
@@ -195,7 +195,7 @@
   "title": "Ask the Currency page a question",
   "items": [
    "Eight buttons over the Currency grid ask what a thing does instead of what its price did: changes an item, guarantees a modifier, sockets in and stays, adds quality, desecrates, opens a door, becomes a gem, supports a skill. The groups under them narrow to whatever is chosen.",
-   "Orb cards now show the whole upgrade ladder: what each step asks today, and the lowest modifier level it guarantees. The game says the same sentence on all three, so nothing told you what the upgrade bought.",
+   "Orb cards now show the whole upgrade ladder: what each step asks today, and the lowest modifier level it guarantees.",
    "Runes, soul cores and idols read as a table — the slot on the left, what it gives there on the right — instead of one run-on line.",
    "The crafting bench is one press from any currency card that can reach it.",
    "The bench is one screen. Rolling no longer sends you to a second card, the drawer keeps your materials in hand, and more currency can come in mid-craft.",
@@ -204,7 +204,7 @@
    "The Currency page leads with the currency. The busiest exchange markets moved below the grid, and the price buttons became one list beside the sort, so the cards start on the first screen.",
    "A market says what it is priced in, so one currency's two markets no longer read as the same row twice.",
    "A currency card now lists <b>others that do this</b>, cheapest first. 13 things add quality on a ring or amulet, over a 48× spread, and 13 more do it on a jewel.",
-   "Still levelling? The community campaign guide moved to the front page."
+   "The community campaign guide moved to the front page."
   ]
  },
  {
@@ -229,10 +229,10 @@
    "The crafting bench: a base, the currency and omens on it, and the pool it rolls from. Every roll comes off the real pool, with how often each one lands named where it is shown. A craft you leave is still there after a refresh.",
    "Every card you can craft with carries a way to the bench: bases, orbs, essences, omens, runes, catalysts and bones.",
    "A base card now says what it can roll and what a corruption can add. Gloves carry a Stonefist switch.",
-   "Trade: pick a base and the mods, the defence types and the sliders narrow to what that base can have. One tap clears it.",
+   "Trade: a chosen base narrows the mods, the defence types and the sliders to what that base can have. One tap clears it.",
    "Item classes are cards of their own: Gloves, Boots, Quarterstaves and 28 more, each with every base under it.",
    "32 more keyword cards, and every keyword card now says what uses it.",
-   "Still levelling? The Build tab links a community campaign guide by domistae.",
+   "The Build tab links a community campaign guide by domistae.",
    "How damage works and how defences work are now a sword and a shield beside the name, instead of two blocks across the card."
   ]
  },
@@ -297,7 +297,7 @@
    "Currency prices come straight from the in-game Currency Exchange, every hour.",
    "Unique prices come from live trade site listings, with when they were checked.",
    "The Currency tab shows the busiest exchange markets.",
-   "Farms no longer shows a cost total: the sheet has no amounts, so there is no real one.",
+   "Farms no longer shows a cost total: the sheet has no amounts.",
    "Keyword cards list <b>everything</b> that uses them, in order: uniques, gems, every passive, atlas, crafting mods, currency and keywords."
   ]
  },
@@ -338,7 +338,7 @@
   "date": "19 Sep 2026",
   "title": "Keys and art",
   "items": [
-   "Keybindings: press <b>?</b>. <b>Ctrl + /</b> searches the list you are on.",
+   "Keybindings open on <b>?</b>. <b>Ctrl + /</b> searches the list you are on.",
    "Game art on every card."
   ]
  },
@@ -354,7 +354,7 @@
  {
   "v": "0.16",
   "date": "19 Sep 2026",
-  "title": "Our own home",
+  "title": "A home of its own",
   "items": [
    "wraeclastindex.fyi, the poison theme and a search box on every page."
   ]

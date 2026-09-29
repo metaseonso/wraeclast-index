@@ -188,8 +188,8 @@ function chipPair(chip, n){
     '" aria-label="' + esc(n) + ' card">Card</button></span>' : chip;
 }
 /* why something cannot go on: what is blocking it, then what would take the block away. Short, and both. */
-const needLvl = lv => 'Needs item level ' + lv + ' · raise the item level';
-const orbLow = () => 'This orb only adds mods from level ' + (UI.f ? UI.f.ml : 0) + ' · clear the orb';
+const needLvl = lv => 'Needs item level ' + lv;
+const orbLow = () => 'This orb only adds mods from level ' + (UI.f ? UI.f.ml : 0);
 const whyHTML = w => '<span class="cr-why">' + esc(w || '') + '</span>';
 const defName = d => d ? d.split('+').map(x => DEF[x]).join(' + ') : '';
 const words = q => q.trim().toLowerCase().split(/\s+/).filter(Boolean);
@@ -242,7 +242,7 @@ function check(src, i){
   if(src === 'r'){
     const c = counts();
     return c.r < CL.so ? {ok: true}
-      : {ok: false, why: CL.so ? 'Sockets full · remove a rune to add this' : 'No sockets on this item'};
+      : {ok: false, why: CL.so ? 'Sockets full' : 'No sockets on this item'};
   }
   const m = P.mods[i], f = P.fam[m[1]];
   if(src === 'c'){
@@ -253,9 +253,9 @@ function check(src, i){
   const same = c.fam.get(m[1]);
   if(same !== undefined) c = counts(same);
   if(src !== 'e' && m[2] > S.l) return {ok: false, why: needLvl(m[2])};
-  if(f[3].some(g => c.g.has(g))) return {ok: false, why: 'A mod of this group is on the item · remove it to add this'};
+  if(f[3].some(g => c.g.has(g))) return {ok: false, why: 'A mod of this group is on the item'};
   const max = CL.mx[f[0] === 'p' ? 0 : 1];
-  if(c[f[0]] >= max) return {ok: false, why: (f[0] === 'p' ? 'Prefixes' : 'Suffixes') + ' full · remove one to add this'};
+  if(c[f[0]] >= max) return {ok: false, why: (f[0] === 'p' ? 'Prefixes' : 'Suffixes') + ' full'};
   return {ok: true, replace: same};
 }
 function add(src, i, from){
@@ -443,7 +443,7 @@ function desHTML(){
   return '<div class="cr-list">' + bones.map(b => rowHTML(b.n, '<b>' + esc(b.n) + '</b>' + px(b.n) +
       '<span class="cr-rs">' + esc(b.t) + (b.mi ? ' · item level ' + b.mi + ' or less' : '') + (b.ml ? ' · mods level ' + b.ml + '+' : '') + '</span>')).join('') +
     omensFor('Desecrate').map(o => omenRow(o)).join('') + '</div>' +
-    (X.wsrc ? '<p class="note">No weights here: what is measured is the pool an orb rolls from, not what a bone adds.</p>' : '') +
+    (X.wsrc ? '<p class="note">Weights cover what an orb rolls, not what a bone adds.</p>' : '') +
     ['p', 's'].map(a => {
       const list = fams.filter(f => f.fam[0] === a);
       return list.length ? '<h4 class="cr-h4">' + (a === 'p' ? 'Prefixes' : 'Suffixes') + '</h4><div class="cr-fams">' + list.map(f => famHTML(f, 'd')).join('') + '</div>' : '';
@@ -454,7 +454,7 @@ function corHTML(){
       return rowHTML(n, '<b>' + esc(n) + '</b>' + px(n) + '<span class="cr-rs">' + esc(o.t) + '</span>'); }).join('') +
     omensFor('Vaal Orb').map(o => omenRow(o)).join('') + '</div>' +
     '<h4 class="cr-h4">Can add one of these</h4>' +
-    (X.wsrc ? '<p class="note">No weights here: what is measured is the pool an orb rolls from, not what a Vaal Orb adds.</p>' : '') +
+    (X.wsrc ? '<p class="note">Weights cover what an orb rolls, not what a Vaal Orb adds.</p>' : '') +
     '<div class="cr-fams">' + families('c').map(f => famHTML(f, 'c')).join('') + '</div>';
 }
 function omenHTML(){
@@ -840,7 +840,7 @@ function readsHTML(r){
 /* what the share on the row is a share of, and who measured it — the same words the pool uses, because it is
    the same number: one mod's share of its own side at this item level, never the odds for a whole item */
 function shareNote(r){
-  if(r.kind) return '<p class="note">No share here: what is measured is the pool an orb rolls from, not what a ' +
+  if(r.kind) return '<p class="note">Shares cover what an orb rolls, not what a ' +
     (r.kind === 'd' ? 'bone adds' : 'Vaal Orb adds') + '.</p>';
   if(!TOT) return '<p class="note">No weights for this item class.' + (X.wsrc ? ' None published, and none ' +
     'measured by ' + esc(X.wsrc.n) + '.' : '') + '</p>';
@@ -1059,8 +1059,7 @@ function orbPickHTML(){
       [[o.n, 0], ...(o.up || [])].map(([n, ml]) => '<button type="button" class="chip" data-orb="' + esc(o.n) +
         '" data-v="' + esc(n) + '" data-ml="' + ml + '" aria-pressed="' + on(n) + '">' +
         esc(n === o.n ? n : n.split(' ')[0] + ' · level ' + ml + '+') + px(n) + '</button>').join('')).join('') + '</div>' +
-    (UI.f && UI.f.n ? '<p class="note">With ' + esc(UI.f.n) + ' picked, the pool above shows only what it can add, ' +
-      'and the shares are out of that.</p>' : '');
+    (UI.f && UI.f.n ? '<p class="note">Pool and shares are for what ' + esc(UI.f.n) + ' can add.</p>' : '');
 }
 /* What the plan and the rail have named, at today's real prices and no other kind of price. A currency the
    market does not price today is left off rather than guessed at, and nothing here is a cost to hit.

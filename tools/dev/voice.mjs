@@ -53,6 +53,13 @@ export const SHAPES = [
   [/\bwe['’]ll\b/i,             'speaks as the author'],   // the apostrophe is required: "well" is an ordinary word
   [/\bI['’]ll\b/,               'speaks as the author'],   // required here too: "Ill" is an ordinary word
   [/\blet[’']s\b/i,       'speaks as the author'],   // the contraction only: "lets" is an ordinary verb
+  /* 29 September 2026: shapes the sweep found in shipped copy. A page does not introduce its own parts
+     ("Each result is a card with…", "Every word opens…"), say where the reader's own ticks are kept, or
+     explain that the game files are silent: it says what is true, or leaves the line off. */
+  [/\beach (result|row|line|card|entry) (is|has|shows|opens)\b/i, 'narrates the interface'],
+  [/\bevery (word|name|line|row|result) (opens|links|leads|is a)\b/i, 'narrates the interface'],
+  [/\bstays? in this browser\b/i, 'says where the reader’s own data is kept'],
+  [/\bthe game files [^.!?<]{0,60}\bdo(es)? not (say|give|show|state|hold)\b/i, 'explains ourselves'],
   [/\bsimply\b/i,               'coaches the reader'],
   [/\bjust (click|pick|tap|choose|select)\b/i, 'coaches the reader'],
   [/\bfeel free\b/i,            'coaches the reader'],

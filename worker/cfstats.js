@@ -166,7 +166,7 @@ const CRAWLERS = [
   ['Ahrefs', 'SEO tool', /AhrefsBot/i], ['Semrush', 'SEO tool', /SemrushBot/i], ['Majestic', 'SEO tool', /MJ12bot/i],
   ['Discord previews', 'Link preview', /Discordbot/i], ['X / Twitter previews', 'Link preview', /Twitterbot/i],
   ['Slack previews', 'Link preview', /Slackbot/i], ['Telegram previews', 'Link preview', /TelegramBot/i], ['Reddit previews', 'Link preview', /redditbot/i],
-  ['Our own jobs and scripts', 'Scripts', /wraeclast-index|python-urllib|python-requests|curl\/|Wget|node-fetch|undici|Go-http-client|axios|okhttp/i],
+  ['Site jobs and scripts', 'Scripts', /wraeclast-index|python-urllib|python-requests|curl\/|Wget|node-fetch|undici|Go-http-client|axios|okhttp/i],
   ['Other bots', 'Other bot', /bot\b|crawler|spider|scrap|fetch|preview|monitor|uptime/i],
 ];
 function who(ua){
@@ -187,7 +187,7 @@ const pick = (rows, dim) => (rows || []).map(r => {
 const ms = v => v === null || v === undefined ? null : Math.round(v / 1000);   // Cloudflare gives microseconds
 /* a page load, step by step: our name and Cloudflare's, in the order a browser does them */
 const STEPS = [['Finding the address', 'dnsTime'], ['Connecting', 'connectionTime'], ['Securing the line', 'tlsTime'],
-  ['Asking us', 'requestTime'], ['Our answer', 'responseTime'], ['Page drawn', 'pageRenderTime'],
+  ['Asking the site', 'requestTime'], ['Site answer', 'responseTime'], ['Page drawn', 'pageRenderTime'],
   ['Everything loaded', 'loadEventTime'], ['Full load', 'pageLoadTime']];
 /* good / needs work / poor for one metric */
 const split = (row, key) => {

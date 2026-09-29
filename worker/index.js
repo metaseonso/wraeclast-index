@@ -125,7 +125,7 @@ async function pob(url){
   if(!r.ok) return reply(502, "Couldn't open that link.");
   const text = await r.text();
   const code = (host[3] ? host[3](text) : text).trim();
-  if(host[3] && !code) return reply(404, "The author of this build did not add a Path of Building code, so it can't be read. Try another build or paste a code.");
+  if(host[3] && !code) return reply(404, "The author of this build did not add a Path of Building code, so it can't be read.");
   if(code.length > 400000 || !/^[A-Za-z0-9+/=_-]+$/.test(code)) return reply(502, "That link doesn't hold a build code.");
   return reply(200, code);
 }

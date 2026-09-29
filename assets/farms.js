@@ -296,7 +296,7 @@ function versionHTML(){
   const by = yt ? '<a href="' + esc(yt.u) + '" target="_blank" rel="noopener">' + esc(s.author) + '</a>' : esc(s.author);
   const warn = [];
   if(!lg) warn.push('Prices are not loaded.');
-  else if(s.league && lg !== s.league) warn.push('This list is from an older league. Prices below are from ' + esc(lg) + '.');
+  else if(s.league && lg !== s.league) warn.push('This list is from an older league. Prices are from ' + esc(lg) + '.');
   if(patch && s.version && patch !== s.version && !patch.startsWith(s.version + '.')) warn.push('The game is on patch ' + esc(patch) + ' now.');
   const entries = n => n + ' entr' + (n === 1 ? 'y is' : 'ies are');
   const marked = ROWS.filter(r => r.age === 'mark').length, dried = ROWS.filter(r => r.dry).length;

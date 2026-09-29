@@ -178,7 +178,7 @@ def spirits():
     rs = [r for r in rows('azmeri_spirits') if r.get('weight')]
     got = by_band([r['level'][0] for r in rs], lambda a: [one(r['name'], r['weight']) for r in rs if r['level'][0] <= a])
     return [pool(banded('Azmeri spirits', a, b, len(got) == 1), 'an Azmeri spirit in an area', 'azmeri_spirits', outs,
-                 'A spirit\u2019s weight also moves with the kind of area it is in, which is not read here yet.')
+                 'A spirit\u2019s weight also moves with the kind of area it is in. That is not read yet.')
             for a, b, outs in got]
 
 

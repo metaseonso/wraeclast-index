@@ -461,7 +461,7 @@ async function tab(){
       '">' + icHTML(((all[g.g] || []).find(x => artOf(x.n)) || all[g.g][0] || {}).n || '') + '<span>' + esc(g.n) + '<i>' + all[g.g].length +
       '</i></span></button>').join('') + '</div>' +
     '<div class="bn-mid">' +
-      (run ? '<p class="bn-now">' + (sel ? icHTML(sel.n) + '<b>' + esc(sel.n) + '</b>' : '<b>Pick a currency</b>') + '</p>' +
+      (run ? '<p class="bn-now">' + (sel ? icHTML(sel.n) + '<b>' + esc(sel.n) + '</b>' : '<b>No currency picked</b>') + '</p>' +
         '<p class="bn-h4">In hand <span>' + inHand.length + '</span></p>' +
         '<div class="bn-cells bn-hand">' + inHand.map(({k, x}) => runCell(run, k, x)).join('') + '</div>' +
         (omens.length ? '<p class="bn-h4">Omens <span>' + [...run.armed].length + ' armed</span></p>' +
@@ -556,7 +556,7 @@ function runView(run){
     mods: it.mods.map(m => ({side: E.side(d, m.i) || 'p', lines: m.lines, frac: m.frac,
       lvl: E.lvlOf(d, m.i), tier: tierOf(d, it.pool, m.i), src: SRC[m.src] || ''})),
     pool: null,   // no share on any row here: a chance beside a modifier that has landed is a chance per hit
-    use: sel ? 'Use ' + sel.n + ' on it' : 'Pick a currency, then use it on the item',
+    use: sel ? 'Use ' + sel.n + ' on it' : 'No currency picked',
     kinds: [], bases: [], picks: [], again: '', ready: false, why: '', note: '',
     running: true,   // the roll button is not drawn over a craft that is already rolling
     steps: run.log.filter(l => l.ok).length,
@@ -613,7 +613,7 @@ function offerChoice(run, x, on, opt){
     : E.vaalChoices(run.it);
   run.offer = {n: x.n, om: on, why: can.why, src: x.g === 'bone' ? 'd' : 'c',
     more: on.includes('Omen of Abyssal Echoes')
-      ? 'The bench already shows every modifier the item can take, so there is nothing left for a second reveal to change.' : '',
+      ? 'Every modifier the item can take is already shown; a second reveal changes nothing.' : '',
     list: list.map(i => ({i, lines: d.mods[i][3], side: E.side(d, i), lvl: E.lvlOf(d, i),
       lord: d.fam[d.mods[i][1]][5] || ''}))};
   TAB.up = false;            // the choice comes first: the drawer is out of the way until it is answered
@@ -797,7 +797,7 @@ async function restore(){
   if(r.p === X.patch){ try { made = rebuild(d, r); } catch { made = null; } }
   if(!made){
     BENCH.say = r.p === X.patch
-      ? 'The craft you left could not be rebuilt from the data as it stands, so the bench kept the plan.'
+      ? 'The craft could not be rebuilt from the data. The bench kept the plan.'
       : 'The game is on patch ' + X.patch + ' now — the bench kept the plan and dropped the item.';
     return;
   }

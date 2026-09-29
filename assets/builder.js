@@ -217,7 +217,6 @@ export async function openPool(it){
           '<span>' + esc(what) + '</span></label>' +
           '<button type="button" class="btn" data-open="' + esc(f.id) + '">Open</button></li>').join('') + '</ul>'
         : '<p class="note">No build file yet.</p>') +
-      '<p class="note">Choosing happens in the builder.</p>' +
       (b.files.length < OPEN ? '<button type="button" class="btn" data-new="1">New build</button>'
         : '<p class="note">A guest keeps three files, in this session.</p>');
   };
@@ -712,7 +711,7 @@ function files(host, v){
       '<label class="bn-lab"><span class="lbl">Level</span>' +
         '<input class="field" type="number" min="1" max="100" data-do="lv" value="' + (v.lv || 1) + '"></label>' +
     '</div>' +
-    '<p class="card-src">Which class starts where is not in the files we read, so the start is the tree’s own '
+    '<p class="card-src">Which class starts where is not in the game files: the start is the tree’s own '
       + 'and the class is the game’s.</p>';
   host.replaceChildren(node);
 }
@@ -1219,7 +1218,7 @@ function optBox(host, v, f){
     (!run && !opt ? liveHTML(v.live) : '') +
     (opt ? rowsHTML(opt) : '') +
     leftHTML(left, v) +
-    '<p class="note">This is not the best build. It is the best of what it tried, out of what you pooled.</p>' +
+    '<p class="note">Best of what it tried from the pool, not the best build.</p>' +
     '<p class="card-src">' + esc(M.SOURCE.sockets) + '</p>' +
     '<p class="card-src">' + esc(M.SOURCE.order) + ' ' + esc(M.BASE_SOURCE) + '</p>';
   host.replaceChildren(node);
@@ -1306,5 +1305,5 @@ function leftHTML(left, v){
       (left.free ? ' · ' + left.free + ' with no price' : '') + '.</p>'
       : (left.free ? '<p class="note">' + left.free + (left.free === 1 ? ' pick has' : ' picks have') +
         ' no price. A rare is not a listed thing.</p>' : '')) +
-    '<p class="note">Points counted off the level. What a quest grants is in nothing we read.</p>';
+    '<p class="note">Points counted off the level. What a quest grants is not in the game files.</p>';
 }

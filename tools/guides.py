@@ -35,7 +35,7 @@ FLOOR = 4000        # bytes: a page shorter than this answered with something, b
 GUIDES = [
     {'name': 'PoE 2 Leveling Guide',
      'by': 'domistae',
-     'what': 'Acts I–IV and the Interludes, step by step, ticked off as you go',
+     'what': 'Acts I–IV and the Interludes, step by step',
      'url': 'https://domistae.github.io/poe2-leveling/poe2_leveling_guide.html',
      'holds': 'Leveling Guide'},
 ]

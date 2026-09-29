@@ -189,8 +189,7 @@ function find(q, el){
 /* ---------- the words ---------- */
 function head(){
   return '<div class="pagehd"><h2>The index as a map</h2>' +
-    '<p>Every card is a dot, coloured by its kind. Every connection between two cards is a line. ' +
-    'A dot opens its card.</p></div>';
+    '<p>Every card is a dot, coloured by its kind. Every connection between two cards is a line.</p></div>';
 }
 
 function figure(){

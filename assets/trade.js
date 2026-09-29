@@ -253,7 +253,7 @@ export async function tradePanel(it){
   const draw = () => {
     const url = searchURL(league, build());
     box.innerHTML = '<h4>Find it on trade <span class="note">' + esc(league) + '</span></h4>' +
-      (rows.length ? '<p class="note">Tick the mods you care about.</p>' + heatNote(false, false) +
+      (rows.length ? heatNote(false, false) +
         (searchable().length > 1 ? '<label class="tcheck tall"><input type="checkbox" data-k="all"' + (searchable().every(r => r.on) ? ' checked' : '') + '><span>Tick all</span></label>' : '') +
         '<div class="tmods">' + rows.map(rowHTML).join('') + '</div>' : '') +
       '<div class="tstates">' + STATES.filter(s => stateName[s]).map(s =>

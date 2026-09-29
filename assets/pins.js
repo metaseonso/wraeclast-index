@@ -33,8 +33,8 @@ function paint(){
 function open(){
   BOX = document.createElement('section');
   BOX.className = 'pins panel';
-  BOX.innerHTML = '<h2>Pins</h2><p class="note">Every card you pinned, kept in this browser.</p>' +
-    '<p class="note pins-empty">Nothing pinned yet. Every card has a Pin button.</p><div class="pins-list"></div>';
+  BOX.innerHTML = '<h2>Pins</h2>' +
+    '<p class="note pins-empty">Nothing pinned yet.</p><div class="pins-list"></div>';
   BOX.addEventListener('click', e => {
     const row = e.target.closest('.pin-row'); if(!row) return;
     const it = D.byKey.get(row.dataset.key); if(!it) return;

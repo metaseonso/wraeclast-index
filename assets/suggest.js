@@ -175,20 +175,20 @@ function open(card){
   const box = document.createElement('section');
   box.className = 'suggest panel';
   box.innerHTML = '<h3>Got an idea or found a problem?</h3>' +
-    '<p class="note">' + (it ? 'About <b>' + esc(it.n) + '</b>. ' : '') + 'Keep it short. No sign-in, no name needed.</p>' +
-    '<textarea class="field" maxlength="500" rows="5" placeholder="What should we add or fix?" aria-label="Your note"></textarea>' +
+    '<p class="note">' + (it ? 'About <b>' + esc(it.n) + '</b>. ' : '') + 'No sign-in, no name needed.</p>' +
+    '<textarea class="field" maxlength="500" rows="5" placeholder="What to add or fix" aria-label="Your note"></textarea>' +
     '<div class="sug-row"><span class="note sug-count">0 / 500</span><button type="button" class="btn gold sug-send">Send</button></div>' +
     '<p class="note sug-msg" aria-live="polite"></p>';
   const ta = box.querySelector('textarea'), send = box.querySelector('.sug-send'), msg = box.querySelector('.sug-msg');
   ta.addEventListener('input', () => { box.querySelector('.sug-count').textContent = ta.value.length + ' / 500'; });
   send.addEventListener('click', async () => {
     const text = ta.value.trim();
-    if(text.length < 3){ msg.textContent = 'Write a little more.'; return; }
+    if(text.length < 3){ msg.textContent = 'Too short.'; return; }
     send.disabled = true; msg.textContent = 'Sending…';
     try {
       const r = await fetch('api/suggest', {method: 'POST', headers: {'Content-Type': 'application/json', 'X-WI': '1'},
         body: JSON.stringify({text, page: location.pathname + location.hash.split('?')[0], card})});
-      if(r.ok){ box.innerHTML = '<h3>Thanks!</h3><p class="note">Got it. We read every note.</p>'; return; }
+      if(r.ok){ box.innerHTML = '<h3>Thanks!</h3><p class="note">Got it. Every note is read.</p>'; return; }
       msg.textContent = r.status === 429 ? 'That is a lot of notes.' : 'It did not send.';
     } catch { msg.textContent = 'It did not send.'; }
     send.disabled = false;
