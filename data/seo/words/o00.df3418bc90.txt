@@ -108,7 +108,8 @@ Monsters gain:
 Increased Monster Rarityopulent-runeopulent-runeOpulent Rune### Power Rune
 Runes of Aldur · https://wraeclastindex.fyi/item/power-rune
 In 42 recipes
-The Power Rune upgrades all other Runic Modifiers on the Remnant to a more powerful and rewarding variant.
+Runes gain:
+Empowered
 Highlighted: 4 runes, slot 3 · area level 35 and up / 5 runes, slot 3 · area level 55 and up / 6 runes, slot 3 · area level 65 and up / 6 runes, slot 4 · area level 70 and up / 6 runes, slot 5 · area level 70 and up / 6 runes, slot 6 · area level 70 and up / 8 runes, slot 8 · area level 70 and up / 9 runes, slot 1 · area level 70 and up / 9 runes, slot 2 · area level 70 and up / 9 runes, slot 3 · area level 70 and up / 9 runes, slot 4 · area level 70 and up / 9 runes, slot 6 · area level 70 and up / 9 runes, slot 7 · area level 70 and up / 9 runes, slot 9 · area level 70 and up / 10 runes, slot 3 · area level 78 and uppower-runepower-runePower Rune### Prismatic Rune
 Runes of Aldur · https://wraeclastindex.fyi/item/prismatic-rune
 In 50 recipes
