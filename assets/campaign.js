@@ -49,7 +49,7 @@ function draw(){
   const kept = act.from.map(k => 'k:' + k.id), got = kept.filter(id => DONE.has(id)).length;
   EL.innerHTML =
     '<div class="pagehd"><h2>Campaign</h2><p>Act by act: the areas, the quests, and every reward kept for good. ' +
-      'Ticks stay in this browser. Source: the game files.</p></div>' +
+      'Source: the game files.</p></div>' +
     '<div class="kinds cp-acts" role="group" aria-label="Act">' + acts.map(a => {
       const ids = a.from.map(k => 'k:' + k.id), n = ids.filter(id => DONE.has(id)).length;
       return '<button type="button" class="chip" data-act="' + esc(a.act) + '" aria-pressed="' + (a === act) + '">' + esc(a.act) +

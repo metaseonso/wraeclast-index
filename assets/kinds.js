@@ -532,7 +532,7 @@ export const FIELDS = {
   gemgold:  {type: 'gemgold', at: 'n', slot: 'body', file: 'data/gold.json', of: 'gem', label: 'Gold price',
     flat: [{at: 'li', then: 'lineage'}, {at: 's', starts: 'Support', then: 'support'}],
     lists: [{at: 'levels', is: 'By gem level', from: 1}, {at: 'quality', is: 'By quality', from: 0, post: '%'}],
-    why: 'The game files give this price and do not say where it is paid.'},
+    why: 'Where it is paid: not in the game files.'},
   /* A league mechanic, on the game's own keyword card for it (tools/mechanics_league.py, data/leaguemech.json,
      found by the card's own key). `share`: its own currency's share of what the Currency Exchange traded this
      league, with the move over 7 days and the league's days as a line. Measured from GGG's feed hour by hour,
