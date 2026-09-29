@@ -363,7 +363,19 @@ def reasons(kind, missing):
     """Why each name the game has and no card carries is left out: {name: reason}. A name with no reason here is
     a gap nobody has looked at, and the report says so."""
     why = {}
-    if kind == 'gems':
+    if kind == 'areas':   # tools/areas.py decides what a player never stands in; its words, one reason each
+        import areas
+        said = {'hideout': "a hideout: a player's own place, not the world",
+                'not a place': "a screen or a heading, not a place (character select, an act's title)",
+                'test': "a developers' test area", '[DNT]': 'marked "do not translate": not in the game players see',
+                'no name': 'an area with no name'}
+        for aid, v in official('world_areas.min.json').items():
+            n = (v.get('name') or '').strip()
+            if n in missing and n not in why:
+                w = areas.why_hidden(aid, v, {})
+                if w in said:
+                    why[n] = said[w]
+    elif kind == 'gems':
         for n in missing:
             if n == 'Coming Soon':
                 why[n] = 'a slot the game holds open for a gem that is not in it yet'
