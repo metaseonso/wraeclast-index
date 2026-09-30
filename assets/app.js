@@ -182,6 +182,18 @@ const touched = e => { const t = e.target; if(t && t.closest && t.closest(BOX)) 
 addEventListener('pointerdown', touched, {capture: true, passive: true});
 addEventListener('keydown', e => { if(e.key === '/') wake(); else touched(e); }, {capture: true, passive: true});
 addEventListener('focusin', e => { const u = navigator.userActivation; if(!u || u.hasBeenActive) touched(e); }, true);
+/* An item copied in game (Ctrl+C) and pasted into either search box opens its card (assets/paste.js). Only the
+   game's own item text: a first line naming the class or the rarity, a rarity line and a line of dashes. Any
+   other paste, and all typing, goes into the box as ever. The reader is fetched on the first such paste. */
+const ITEM_PASTE = t => /^\s*(?:Item Class|Rarity): \S/.test(t) && /^Rarity: \S/m.test(t) && /^-{8,}\s*$/m.test(t);
+addEventListener('paste', e => {
+  const box = e.target && e.target.closest && e.target.closest(BOX);
+  const t = box && e.clipboardData && e.clipboardData.getData('text/plain');
+  if(!t || !ITEM_PASTE(t)) return;
+  e.preventDefault();
+  wake();
+  lazy('./paste.js', 'The item').then(m => m.pasted(t, box), () => {});
+}, true);
 
 /* ---------- the short files, read back ----------
    Every file above that is written short is put back into the shape the rest of the page reads here, as it

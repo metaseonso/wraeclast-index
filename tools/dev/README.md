@@ -136,6 +136,13 @@ for byte, and clears the fault behind it.
 Writes only inside a temporary folder; `node tools/dev/faults.mjs` (add `--keep` to leave that folder behind).
 Not part of `guard.mjs`: it runs Python, so it is its own line.
 
+`itemtext.test.mjs`: the item-text reader (`assets/itemtext.js`), the one "paste an item" uses. 85 item texts in
+the game's copy format, plain and advanced, written for the test from the index's own names and lines: uniques,
+currency and everything else that stacks, gems, rares, magic and normal items, waystones, tablets; unidentified,
+corrupted, twice corrupted, mirrored and fractured; quality, sockets, runes, stack sizes. Each names what the reader
+must find and the card it must open, looked up in `data/index.json` and `data/market.json` the way the page does.
+`node --test tools/dev/itemtext.test.mjs`, under a second, no network. Not part of `guard.mjs`.
+
 `cfcheck.mjs`: every Cloudflare query the owner's dashboard makes, against the real API. Needs `CF_ANALYTICS_TOKEN`.
 
 `dash.mjs`: set `WI_OWNER_KEY` to the owner key (only its SHA-256 lives in the `OWNER_HASH` secret), then
