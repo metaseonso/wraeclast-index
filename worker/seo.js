@@ -619,10 +619,11 @@ function otherTitle(e, g){
 }
 
 /* ---------- item pages ---------- */
+const SHEET = Object.fromEntries(KINDS.filter(d => d.sprite).map(d => [d.k, d.sprite]));
 function icon(m, it){
   if(it.img) return '<img src="' + esc(it.img) + '" alt="" width="34" height="34" decoding="async">';
   const S = m.sprites;
-  const sp = it.ic && S && (it.k === 'u' ? S.uniques : S.gems);
+  const sp = it.ic && S && S[SHEET[it.k]];   // the sheet the kind names (assets/kinds.js KINDS sprite)
   if(sp){
     const sc = Math.min(46 / sp.cw, 50 / sp.ch), w = sp.cw * sc, h = sp.ch * sc;
     return '<span class="ic" style="width:' + w + 'px;height:' + h + 'px;background-image:url(/sprites/' + sp.file +
