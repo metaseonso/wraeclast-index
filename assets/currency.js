@@ -1,7 +1,7 @@
 /* Currency tab: every currency-type item, what it does, how its price moves, trading routes,
    and a watch list. Prices: data/market.json: what each currency traded for on the in-game Currency Exchange
    (GGG's public hourly feed, tools/exchange.py). */
-import { D, $, esc, card, flow, money, moneyHTML, params, openDetail, openBox, actHTML, runAct, iconHTML, words, hits, onType } from './app.js';
+import { D, $, esc, card, flow, money, moneyHTML, params, openDetail, openBox, actHTML, runAct, iconHTML, words, hits, onType, noPrice } from './app.js';
 import { ASKS, ASK } from './kinds.js';   // the questions the page is asked, and which group answers which
 
 const WATCH_KEY = 'wi.watch';
@@ -135,7 +135,8 @@ function currencyCard(r){
   const on = S.watch.has(it.id);
   const star = '<button type="button" class="star" aria-pressed="' + on + '" title="' + (on ? 'Stop watching' : 'Watch this') +
     '" data-id="' + esc(it.id) + '">' + (on ? '★' : '☆') + '</button>';
-  const extra = '<p class="card-facts">' + compact(m.vol || 0) + ' div traded in 24 h' +
+  // what it traded and what for: a mode with no prices draws the card without them (FRAME.modes)
+  const extra = noPrice() ? '' : '<p class="card-facts">' + compact(m.vol || 0) + ' div traded in 24 h' +
     (r.sw >= 12 ? ' · swings ' + Math.round(r.sw) + '% a day' : '') + '</p>' + leagueLine(r);
   // the bench in the card's own corner: the act's test decides which of these get one (assets/kinds.js ACTS)
   return card(it, {href: null, builds: false, action: star + actHTML('bench', it), extra});
@@ -413,7 +414,7 @@ export function mount(el){
       '<button type="button" class="btn cx-next">Show more</button><button type="button" class="btn cx-all">Show all</button></div>' +
     '<p class="note" style="margin-top:18px">Rising or falling: 10%+ this week. Swinging: 12%+ in one day. Low volume: under ' + MIN_VOL + ' div a day. ' +
       'Source: the in-game Currency Exchange (GGG’s hourly feed of real trades).</p>' +
-    '<div class="sect"><h3>Busiest exchange markets</h3><p>Last 24 hours. What one buys, and how much traded.</p></div>' +
+    '<div class="sect cxm-hd"><h3>Busiest exchange markets</h3><p>Last 24 hours. What one buys, and how much traded.</p></div>' +
     '<div class="cxm" id="cxmarkets"></div>';
 
   $('#cxcat', el).addEventListener('change', e => { S.cat = e.target.value; S.shown = PAGE; render(); });

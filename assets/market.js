@@ -163,6 +163,7 @@ function drawDigest(t){
 export function mount(el){
   EL = el;
   el.innerHTML = '<div class="pagehd"><h2>Market</h2><p>The Currency Exchange, hour by hour since 6 Dec 2024. Built once a day.</p></div>' +
+    '<p class="note px-off">Prices: Trade mode only.</p>' +   // a play mode with no prices draws no block (assets/cards.css)
     BLOCKS.map(x => '<section class="mk-block" data-b="' + x.b + '"><div class="sect"><h3>' + esc(x.h) + '</h3><p>' + esc(x.sub) + '</p></div>' +
       '<div class="mk-body"><p class="note mk-wait">Loading…</p></div></section>').join('');
   el.addEventListener('click', onClick);
