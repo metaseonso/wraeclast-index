@@ -92,9 +92,19 @@ const swap = node => {
   const x = tr(v);
   if(x && x !== v.trim()) node.nodeValue = v.replace(v.trim(), x);
 };
+/* A card's line drawn in English because its kind's table came in after it (assets/app.js lineHTML draws it whole
+   in the language once the table is in): the same line, whole, as lineHTML would have drawn it. */
+function lines(root){
+  const els = root.matches && root.matches('[data-mk]') ? [root] : root.querySelectorAll ? root.querySelectorAll('[data-mk]') : [];
+  for(const el of els){
+    const x = line(el.textContent.trim());
+    if(x) el.textContent = x;
+  }
+}
 function walk(root){
   if(root.nodeType === 3) return swap(root);
   if(root.nodeType !== 1 || SKIP.has(root.nodeName)) return;
+  lines(root);
   const tw = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
   for(let n = tw.nextNode(); n; n = tw.nextNode()) swap(n);
   const els = root.querySelectorAll ? [root, ...root.querySelectorAll('[placeholder],[aria-label],[title]')] : [];

@@ -525,10 +525,14 @@ export async function whole(keys){
   const want = keys.filter(k => { const it = D.byKey.get(k); return !it || it._head; });
   if(want.length && !D.full){
     await wake();
-    for(const b of (await ask('bodies', {keys: want})).bodies) settle(b);
+    const got = (await ask('bodies', {keys: want})).bodies;
+    // in the player's language a card is whole only once its kind's lines are in too: a card the page holds whole
+    // is drawn at once, by any path, so it must never be whole a moment before its words are
+    await inLang(got.map(b => b.k));
+    for(const b of got) settle(b);
   }
   const out = keys.map(k => D.byKey.get(k)).filter(it => it && !it._head);
-  await inLang(out.map(it => it.k));   // a card is drawn in the language once its kind's lines are in
+  await inLang(out.map(it => it.k));
   return out;
 }
 /* Every card of one kind by one name, whole (the drill-down page's rows: the tree carries one name in several
