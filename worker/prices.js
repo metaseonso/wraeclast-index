@@ -312,8 +312,14 @@ function fields(r){
     out.h = h.map(([d, v]) => [MON[+d.slice(5, 7) - 1] + ' ' + +d.slice(8, 10), v]);
     out.sp = h.slice(-7).map(x => x[1]);
     const today = Date.parse(h[h.length - 1][0]), weekAgo = h.find(x => today - Date.parse(x[0]) <= 7 * 864e5);
-    if(weekAgo && today - Date.parse(weekAgo[0]) >= 6 * 864e5 && weekAgo[1] > 0)
-      out.ch = +(((h[h.length - 1][1] / weekAgo[1]) - 1) * 100).toFixed(1);
+    // the move is from the middle of the week's first three days, never one day: one stray listing (Mageblood at
+    // 2 div on 23 Sep) read +24,900%. A start 5x off the whole week's middle is such a listing, and there is no move.
+    const age = x => today - Date.parse(x[0]);
+    const mid = a => { const s = a.filter(v => v > 0).sort((p, q) => p - q); return s.length ? s[(s.length - 1) >> 1] : 0; };
+    const from = mid(h.filter(x => age(x) <= 7 * 864e5 && age(x) >= 5 * 864e5).map(x => x[1]));
+    const week = mid(h.filter(x => age(x) <= 7 * 864e5).map(x => x[1]));
+    if(weekAgo && age(weekAgo) >= 6 * 864e5 && from > 0 && week > 0 && from <= week * 5 && from >= week / 5)
+      out.ch = +(((h[h.length - 1][1] / from) - 1) * 100).toFixed(1);
   }
   return out;
 }
