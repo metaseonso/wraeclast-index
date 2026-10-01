@@ -320,6 +320,13 @@ function fields(r){
     const week = mid(h.filter(x => age(x) <= 7 * 864e5).map(x => x[1]));
     if(weekAgo && age(weekAgo) >= 6 * 864e5 && from > 0 && week > 0 && from <= week * 5 && from >= week / 5)
       out.ch = +(((h[h.length - 1][1] / from) - 1) * 100).toFixed(1);
+    // a thin market's jump is a joke listing, not a price: today 20x off its own last week on 5 listings or fewer
+    // (Serle's Grit at 136,000,000 div on 2 listings, 30 Sep) shows no price that day, and its spark leaves it out
+    const before = mid(h.slice(-8, -1).map(x => x[1]));
+    if(out.v !== undefined && before > 0 && (r.total ?? 0) <= 5 && (out.v > before * 20 || out.v < before / 20)){
+      delete out.v; delete out.ch;
+      out.sp = out.sp.slice(0, -1);
+    }
   }
   return out;
 }
