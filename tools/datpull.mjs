@@ -9,6 +9,8 @@
      node tools/datpull.mjs --list           the declared files and the tables behind each, nothing fetched
      node tools/datpull.mjs --raw PassiveSkills,Stats --out <dir>
                                              whole tables, row for row, as tools/gamepull.py dat() reads them
+     node tools/datpull.mjs --raw Words --lang russian --out <dir>
+                                             the same table in one of GGG's own translations (data/balance/<lang>/)
      node tools/datpull.mjs --find-patch     print the live CDN folder, nothing else fetched
 
    It is the patch stage "datpull" of tools/pipeline.py, which runs it in build/tree/ and holds every file it
@@ -37,6 +39,12 @@
       game's own stat descriptions (RePoE's export of them). A stat the game never shows a player has no words;
       it is kept by its id under `hidden` and never in a field a page draws.
 
+   The languages: the game ships each translated table again under data/balance/<language>/ (french, german,
+   japanese, korean, portuguese, russian, spanish, thai, traditional chinese; 217 tables each in 0.5.5), row for
+   row with the English, and every language's stat wording inside the one set of data/statdescriptions/*.csd
+   files. table(name, lang) reads a translated table; file() and folder() read the .csd files. tools/lang.mjs
+   imports this reader for them (#121).
+
    Every file is { source, table, note, ids, rows }. `ids` names the fields that may hold an internal id (a join
    key, a hidden stat): tools/lastgood.py fails a pull where any other field does. Nothing else is written
    anywhere but the cache. */
@@ -47,11 +55,13 @@ import { join, dirname, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-const args = process.argv.slice(2);
+// run as a tool, or imported for its reader (tools/lang.mjs): imported, it reads no arguments and runs nothing
+const MAIN = !!process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href;
+const args = MAIN ? process.argv.slice(2) : [];
 const opt = f => { const i = args.indexOf(f); return i >= 0 ? args[i + 1] : null; };
 
 // Node's fetch reads HTTPS_PROXY only when told to at start-up: start again, told
-if((process.env.HTTPS_PROXY || process.env.https_proxy) && !process.env.NODE_USE_ENV_PROXY){
+if(MAIN && (process.env.HTTPS_PROXY || process.env.https_proxy) && !process.env.NODE_USE_ENV_PROXY){
   const r = spawnSync(process.execPath, [...process.execArgv, ...process.argv.slice(1)],
     {stdio: 'inherit', env: {...process.env, NODE_USE_ENV_PROXY: '1', NODE_NO_WARNINGS: '1'}});
   process.exit(r.status == null ? 1 : r.status);
@@ -70,8 +80,7 @@ const UA = 'wraeclast-index/1.0 (contact: https://wraeclastindex.fyi/)';
 const say = m => process.stderr.write(m + '\n');
 // a pull that stops says why in one line and exits 1; the pipeline turns that into the last good fault
 const stop = e => { say('datpull stopped: ' + (e && e.message || e)); process.exit(1); };
-process.on('uncaughtException', stop);
-process.on('unhandledRejection', stop);
+if(MAIN){ process.on('uncaughtException', stop); process.on('unhandledRejection', stop); }
 
 /* ---------- the network: a few tries, then a plain error ---------- */
 async function get(url, how = {}){
@@ -159,6 +168,11 @@ async function openGame(patch, schema){
   B.decompressSliceInBundle(indexBin, 0, raw);
   const idx = B.readIndexBundle(raw);
   const files = new B.FileLoader({fetchFile: bundle}, {bundlesInfo: idx.bundlesInfo, filesInfo: idx.filesInfo});
+  let reps = null;   // the index's own list of paths, unpacked the first time a folder is listed
+  const listing = path => {
+    if(!reps){ reps = new Uint8Array(B.decompressedBundleSize(idx.pathRepsBundle)); B.decompressSliceInBundle(idx.pathRepsBundle, 0, reps); }
+    return B.getDirContent(path, reps, idx.dirsInfo);
+  };
   const enums = Object.fromEntries(schema.enumerations.map(e => [e.name, e]));
   const tables = new Map();
 
@@ -187,13 +201,16 @@ async function openGame(patch, schema){
     }
     return out;
   }
-  /* one table, every row an object keyed by the schema's column names; read once a run */
-  async function table(name){
-    if(tables.has(name)) return tables.get(name);
+  /* one table, every row an object keyed by the schema's column names; read once a run. `lang`: the game's folder
+     for a language (data/balance/<lang>/, "russian"), the same table in GGG's own translation, row for row */
+  async function table(name, lang = ''){
+    const at = lang ? lang + '/' + name : name;
+    if(tables.has(at)) return tables.get(at);
     const cands = schema.tables.filter(s => s.name.toLowerCase() === name.toLowerCase());
     const sch = cands.find(s => s.validFor & 2) || cands[0];
     if(!sch) throw new Error('dat-schema has no table ' + name);
-    const dat = readDatFile('.datc64', await files.getFileContents('data/balance/' + name.toLowerCase() + '.datc64'));
+    const dat = readDatFile('.datc64', await files.getFileContents('data/balance/' + (lang ? lang.toLowerCase() + '/' : '') +
+      name.toLowerCase() + '.datc64'));
     const cols = columns(sch, dat), rows = [];
     for(let i = 0; i < dat.rowCount; i++){
       const o = {};
@@ -201,10 +218,14 @@ async function openGame(patch, schema){
       rows.push(o);
     }
     const t = {rows, sch, exact: cols.length === sch.columns.filter(c => c.type !== 'array').length};
-    tables.set(name, t);
+    tables.set(at, t);
     return t;
   }
-  return {table, fetched: () => fetched};
+  // any other file in the bundles, as bytes (the stat descriptions, data/statdescriptions/*.csd), and a folder's
+  // files and folders
+  const file = path => files.getFileContents(path);
+  const folder = path => listing(path);
+  return {table, file, folder, fetched: () => fetched};
 }
 
 /* ---------- 5. the words ---------- */
@@ -608,60 +629,65 @@ const FILES = [
 ];
 
 /* ---------- run ---------- */
-if(args.includes('--find-patch')){ console.log(await findPatch()); process.exit(0); }
-if(opt('--raw')){
-  // whole tables for tools/gamepull.py dat(): every row, every column dat-schema names (Unknown<n> where it
-  // does not), a foreign key as its row number, _i the row's own.
-  const names = opt('--raw').split(',').filter(Boolean);
-  const patch = opt('--patch') || await findPatch();
-  const {schema} = await loadSchema(false);
-  const game = await openGame(patch, schema);
-  await mkdir(OUT, {recursive: true});
-  for(const name of names){
-    const t = await game.table(name);
-    const body = JSON.stringify(t.rows.map((r, i) => ({_i: i, ...r})));
-    await writeFile(join(OUT, name + '.json.tmp'), body);
-    await rename(join(OUT, name + '.json.tmp'), join(OUT, name + '.json'));
-    say('  ' + name + ': ' + t.rows.length + ' rows from ' + patch + (t.exact ? '' : ' (schema shorter than the row: read what fits)'));
+// the reader, for a tool that reads the game's files beside this one (tools/lang.mjs)
+export {findPatch, gamePatch, loadSchema, openGame, clean, real};
+if(MAIN) await main();
+async function main(){
+  if(args.includes('--find-patch')){ console.log(await findPatch()); process.exit(0); }
+  if(opt('--raw')){
+    // whole tables for tools/gamepull.py dat(): every row, every column dat-schema names (Unknown<n> where it
+    // does not), a foreign key as its row number, _i the row's own.
+    const names = opt('--raw').split(',').filter(Boolean);
+    const patch = opt('--patch') || await findPatch();
+    const {schema} = await loadSchema(false);
+    const game = await openGame(patch, schema);
+    await mkdir(OUT, {recursive: true});
+    for(const name of names){
+      const t = await game.table(name, opt('--lang') || '');
+      const body = JSON.stringify(t.rows.map((r, i) => ({_i: i, ...r})));
+      await writeFile(join(OUT, name + '.json.tmp'), body);
+      await rename(join(OUT, name + '.json.tmp'), join(OUT, name + '.json'));
+      say('  ' + name + ': ' + t.rows.length + ' rows from ' + patch + (t.exact ? '' : ' (schema shorter than the row: read what fits)'));
+    }
+    process.exit(0);
   }
-  process.exit(0);
-}
-if(args.includes('--list')){
-  for(const f of FILES) console.log(f.file.padEnd(22) + f.tables.join(', ') + (f.later ? '  (later)' : ''));
-  process.exit(0);
-}
-const only = (opt('--only') || '').split(',').filter(Boolean);
-const want = FILES.filter(f => only.length ? only.includes(f.file) : !f.later || args.includes('--all'));
-if(!want.length) throw new Error('no declared file is called ' + only.join(', '));
+  if(args.includes('--list')){
+    for(const f of FILES) console.log(f.file.padEnd(22) + f.tables.join(', ') + (f.later ? '  (later)' : ''));
+    process.exit(0);
+  }
+  const only = (opt('--only') || '').split(',').filter(Boolean);
+  const want = FILES.filter(f => only.length ? only.includes(f.file) : !f.later || args.includes('--all'));
+  if(!want.length) throw new Error('no declared file is called ' + only.join(', '));
 
-const patch = opt('--patch') || await findPatch();
-say('datpull · CDN folder ' + patch + ' (patch ' + gamePatch(patch) + ')');
-const {schema, commit} = await loadSchema();
-say('  dat-schema v' + schema.version + ', built ' + new Date(schema.createdAt * 1000).toISOString().slice(0, 10) +
-  (commit ? ', commit ' + commit.slice(0, 12) : ''));
-const game = await openGame(patch, schema);
-const T = {};
-for(const name of new Set(want.flatMap(f => f.tables).concat('Stats'))) T[name] = await game.table(name);
-const W = await wording();
-const R = resolver(T, W);
-const source = 'game files, patch ' + gamePatch(patch);
-const meta = {ids: ['files', 'schema'], source, patch: gamePatch(patch), cdn: patch, reader: 'pathofexile-dat ' + DAT_VERSION,
-  schema: {commit, version: schema.version, built: new Date(schema.createdAt * 1000).toISOString().slice(0, 10), url: SCHEMA_GIT},
-  files: {}};
-await mkdir(OUT, {recursive: true});
-for(const f of want){
-  const rows = f.rows({T, R});
-  const loose = f.tables.filter(t => !T[t].exact);
-  const body = JSON.stringify({source, table: f.tables.join(', '), note: f.note, ids: f.ids, rows});
-  await writeFile(join(OUT, f.file + '.json'), body + '\n');
-  meta.files[f.file] = {patch: gamePatch(patch), tables: f.tables, rows: rows.length, bytes: body.length + 1};
-  say('  ' + f.file.padEnd(22) + String(rows.length).padStart(5) + ' rows ' + String(body.length + 1).padStart(8) + ' bytes' +
-    (loose.length ? '  (schema shorter than the row in ' + loose.join(', ') + ': read what fits)' : ''));
+  const patch = opt('--patch') || await findPatch();
+  say('datpull · CDN folder ' + patch + ' (patch ' + gamePatch(patch) + ')');
+  const {schema, commit} = await loadSchema();
+  say('  dat-schema v' + schema.version + ', built ' + new Date(schema.createdAt * 1000).toISOString().slice(0, 10) +
+    (commit ? ', commit ' + commit.slice(0, 12) : ''));
+  const game = await openGame(patch, schema);
+  const T = {};
+  for(const name of new Set(want.flatMap(f => f.tables).concat('Stats'))) T[name] = await game.table(name);
+  const W = await wording();
+  const R = resolver(T, W);
+  const source = 'game files, patch ' + gamePatch(patch);
+  const meta = {ids: ['files', 'schema'], source, patch: gamePatch(patch), cdn: patch, reader: 'pathofexile-dat ' + DAT_VERSION,
+    schema: {commit, version: schema.version, built: new Date(schema.createdAt * 1000).toISOString().slice(0, 10), url: SCHEMA_GIT},
+    files: {}};
+  await mkdir(OUT, {recursive: true});
+  for(const f of want){
+    const rows = f.rows({T, R});
+    const loose = f.tables.filter(t => !T[t].exact);
+    const body = JSON.stringify({source, table: f.tables.join(', '), note: f.note, ids: f.ids, rows});
+    await writeFile(join(OUT, f.file + '.json'), body + '\n');
+    meta.files[f.file] = {patch: gamePatch(patch), tables: f.tables, rows: rows.length, bytes: body.length + 1};
+    say('  ' + f.file.padEnd(22) + String(rows.length).padStart(5) + ' rows ' + String(body.length + 1).padStart(8) + ' bytes' +
+      (loose.length ? '  (schema shorter than the row in ' + loose.join(', ') + ': read what fits)' : ''));
+  }
+  // a run over some of the files keeps what _meta.json says about the rest
+  let had = {};
+  try { had = JSON.parse(await readFile(join(OUT, '_meta.json'), 'utf8')).files || {}; } catch {}
+  meta.files = {...(only.length ? had : {}), ...meta.files};
+  meta.files = Object.fromEntries(Object.entries(meta.files).sort());
+  await writeFile(join(OUT, '_meta.json'), JSON.stringify(meta, null, 1) + '\n');
+  say('  ' + game.fetched() + ' bundle' + (game.fetched() === 1 ? '' : 's') + ' downloaded this run; written to ' + OUT);
 }
-// a run over some of the files keeps what _meta.json says about the rest
-let had = {};
-try { had = JSON.parse(await readFile(join(OUT, '_meta.json'), 'utf8')).files || {}; } catch {}
-meta.files = {...(only.length ? had : {}), ...meta.files};
-meta.files = Object.fromEntries(Object.entries(meta.files).sort());
-await writeFile(join(OUT, '_meta.json'), JSON.stringify(meta, null, 1) + '\n');
-say('  ' + game.fetched() + ' bundle' + (game.fetched() === 1 ? '' : 's') + ' downloaded this run; written to ' + OUT);

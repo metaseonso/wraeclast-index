@@ -6,7 +6,8 @@
    shows. What it answers, each a message {id, op, ...} and a reply {id, ...}:
      fetch    the manifest and where the site is: every kind's search rows asked for at once, for init to take
      init     the manifest, where the site is, today's priced keys, the cards the page makes itself (the market's
-              currency, the bosses) and the trail; replies once every kind's rows are in
+              currency, the bosses), the trail and the player's language where one is on; replies once every kind's
+              rows are in, and the names in that language (m.lang: data/lang/<code>/names.<h>.json)
      runtime  the cards the page makes itself, again (the bosses land after the market)
      market   today's priced keys, again
      search   {q, kind, seen, n, from, take}: the matches, best first, by the rules in assets/rank.js: how many
@@ -105,6 +106,15 @@ async function init(m){
     byKind[k] = rows;
   }));
   S.index = inOrder(S.man.order, byKind);
+  // the player's language (#121): every card's name and sub line in it, so a search in it and a search in English
+  // both find the card. Asked for only when a language is on (the manifest names its file)
+  if(m.lang){
+    const t = (await getJSON(m.lang).catch(() => ({}))).t || {};
+    for(const r of S.index){
+      const n = t[r.n];
+      if(n){ r._nl2 = n.toLowerCase(); r._tw = (n + ' ' + (t[r.s] || '')).toLowerCase(); }
+    }
+  }
   rebuild();
   return {n: S.items.length};
 }

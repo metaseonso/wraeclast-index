@@ -1,0 +1,397 @@
+{
+ "source": "the game files, patch 0.5.5: GGG’s own translations (tools/lang.mjs)",
+ "langs": {
+  "ru": {
+   "name": "Русский",
+   "html": "ru",
+   "file": "data/lang/ru/files.ba8e4cbf0a.json",
+   "bytes": 1144,
+   "words": "assets/words/ru.json",
+   "names": {
+    "file": "data/lang/ru/names.dbd3c85ed6.json",
+    "bytes": 529663
+   },
+   "kinds": {
+    "g": {
+     "file": "data/lang/ru/g.256148c53c.json",
+     "bytes": 544784
+    },
+    "u": {
+     "file": "data/lang/ru/u.64091b5018.json",
+     "bytes": 382673
+    },
+    "p": {
+     "file": "data/lang/ru/p.6febd1257b.json",
+     "bytes": 411009
+    },
+    "t": {
+     "file": "data/lang/ru/t.5f74d5e1eb.json",
+     "bytes": 228820
+    },
+    "w": {
+     "file": "data/lang/ru/w.c7703015e5.json",
+     "bytes": 432676
+    },
+    "b": {
+     "file": "data/lang/ru/b.8ab489b641.json",
+     "bytes": 70159
+    },
+    "a": {
+     "file": "data/lang/ru/a.c25d7e64cb.json",
+     "bytes": 89449
+    },
+    "c": {
+     "file": "data/lang/ru/c.21eabe1809.json",
+     "bytes": 14723
+    },
+    "d": {
+     "file": "data/lang/ru/d.d153671fee.json",
+     "bytes": 14386
+    },
+    "y": {
+     "file": "data/lang/ru/y.8bd93029c2.json",
+     "bytes": 15252
+    },
+    "l": {
+     "file": "data/lang/ru/l.800df887ba.json",
+     "bytes": 17549
+    },
+    "m": {
+     "file": "data/lang/ru/m.bde1d4affd.json",
+     "bytes": 21202
+    },
+    "v": {
+     "file": "data/lang/ru/v.fe47b959a2.json",
+     "bytes": 692
+    },
+    "r": {
+     "file": "data/lang/ru/r.d61fe40dbc.json",
+     "bytes": 25875
+    },
+    "j": {
+     "file": "data/lang/ru/j.71b89acb88.json",
+     "bytes": 21710
+    },
+    "o": {
+     "file": "data/lang/ru/o.0befe197cd.json",
+     "bytes": 912
+    },
+    "z": {
+     "file": "data/lang/ru/z.c86bf712b8.json",
+     "bytes": 10179
+    }
+   },
+   "cover": {
+    "g": {
+     "names": [
+      1066,
+      1072
+     ],
+     "subs": [
+      1072,
+      1072
+     ],
+     "lines": [
+      5797,
+      6508
+     ]
+    },
+    "u": {
+     "names": [
+      734,
+      734
+     ],
+     "subs": [
+      734,
+      734
+     ],
+     "lines": [
+      6385,
+      6656
+     ]
+    },
+    "p": {
+     "names": [
+      2120,
+      2120
+     ],
+     "subs": [
+      2103,
+      2120
+     ],
+     "lines": [
+      5487,
+      5571
+     ]
+    },
+    "t": {
+     "names": [
+      1017,
+      1017
+     ],
+     "subs": [
+      1017,
+      1017
+     ],
+     "lines": [
+      2826,
+      2838
+     ]
+    },
+    "w": {
+     "names": [
+      640,
+      640
+     ],
+     "subs": [
+      640,
+      640
+     ],
+     "lines": [
+      640,
+      640
+     ]
+    },
+    "b": {
+     "names": [
+      1555,
+      1555
+     ],
+     "subs": [
+      1537,
+      1555
+     ],
+     "lines": [
+      3281,
+      3289
+     ]
+    },
+    "i": {
+     "names": [
+      29,
+      31
+     ],
+     "subs": [
+      31,
+      31
+     ],
+     "lines": [
+      0,
+      116
+     ]
+    },
+    "a": {
+     "names": [
+      368,
+      368
+     ],
+     "subs": [
+      332,
+      368
+     ],
+     "lines": [
+      573,
+      613
+     ]
+    },
+    "c": {
+     "names": [
+      104,
+      104
+     ],
+     "subs": [
+      104,
+      104
+     ],
+     "lines": [
+      72,
+      105
+     ]
+    },
+    "h": {
+     "names": [
+      2,
+      9
+     ],
+     "subs": [
+      9,
+      9
+     ],
+     "lines": [
+      0,
+      47
+     ]
+    },
+    "q": {
+     "names": [
+      0,
+      13
+     ],
+     "subs": [
+      0,
+      13
+     ],
+     "lines": [
+      0,
+      35
+     ]
+    },
+    "d": {
+     "names": [
+      86,
+      86
+     ],
+     "subs": [
+      73,
+      86
+     ],
+     "lines": [
+      94,
+      153
+     ]
+    },
+    "y": {
+     "names": [
+      22,
+      22
+     ],
+     "subs": [
+      22,
+      22
+     ],
+     "lines": [
+      226,
+      248
+     ]
+    },
+    "l": {
+     "names": [
+      197,
+      206
+     ],
+     "subs": [
+      17,
+      206
+     ],
+     "lines": [
+      126,
+      305
+     ]
+    },
+    "m": {
+     "names": [
+      97,
+      97
+     ],
+     "subs": [
+      97,
+      97
+     ],
+     "lines": [
+      121,
+      234
+     ]
+    },
+    "v": {
+     "names": [
+      6,
+      6
+     ],
+     "subs": [
+      0,
+      6
+     ],
+     "lines": [
+      14,
+      20
+     ]
+    },
+    "r": {
+     "names": [
+      288,
+      288
+     ],
+     "subs": [
+      288,
+      288
+     ],
+     "lines": [
+      567,
+      705
+     ]
+    },
+    "j": {
+     "names": [
+      103,
+      103
+     ],
+     "subs": [
+      101,
+      103
+     ],
+     "lines": [
+      280,
+      356
+     ]
+    },
+    "s": {
+     "names": [
+      3,
+      14
+     ],
+     "subs": [
+      0,
+      14
+     ],
+     "lines": [
+      0,
+      0
+     ]
+    },
+    "o": {
+     "names": [
+      33,
+      34
+     ],
+     "subs": [
+      34,
+      34
+     ],
+     "lines": [
+      15,
+      92
+     ]
+    },
+    "z": {
+     "names": [
+      75,
+      75
+     ],
+     "subs": [
+      75,
+      75
+     ],
+     "lines": [
+      79,
+      86
+     ]
+    }
+   },
+   "total": {
+    "names": [
+     8545,
+     8594
+    ],
+    "subs": [
+     8286,
+     8594
+    ],
+    "lines": [
+     26583,
+     28617
+    ]
+   },
+   "patch": "0.5.5"
+  }
+ }
+}
