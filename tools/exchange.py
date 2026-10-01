@@ -162,9 +162,15 @@ def build():
         hist = [[d, float('%.4g' % (days[d][x][0] / days[d][x][1]))] for d in sorted(days) if x in days[d] and days[d][x][1]]
         if len(hist) >= 2:
             it['h'] = hist
-            week = [p for p in hist if (dt.date.fromisoformat(today) - dt.date.fromisoformat(p[0])).days in (6, 7)]
-            if week and week[0][1] > 0:
-                it['ch'] = round((it['v'] / week[0][1] - 1) * 100, 1)
+            # the 7-day move, only on a market: from the middle of the week's first three days (one odd day is not a
+            # start), with 1 divine or more traded today and the week's dearest and cheapest days within 20x, the
+            # same rule the listed prices keep (worker/prices.js fields). Lesser Essence of Haste read +30,559%.
+            ago = lambda p: (dt.date.fromisoformat(today) - dt.date.fromisoformat(p[0])).days
+            first = sorted(p[1] for p in hist if 5 <= ago(p) <= 7 and p[1] > 0)
+            days7 = [p[1] for p in hist if ago(p) <= 7 and p[1] > 0]
+            if (any(ago(p) in (6, 7) for p in hist) and first and it['vol'] >= 1
+                    and max(days7) <= min(days7) * 20):
+                it['ch'] = round((it['v'] / first[(len(first) - 1) // 2] - 1) * 100, 1)
         if name in tids:
             it['tid'] = tids[name]
         items[name] = it
