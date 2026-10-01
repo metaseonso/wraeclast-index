@@ -318,7 +318,11 @@ function fields(r){
     const mid = a => { const s = a.filter(v => v > 0).sort((p, q) => p - q); return s.length ? s[(s.length - 1) >> 1] : 0; };
     const from = mid(h.filter(x => age(x) <= 7 * 864e5 && age(x) >= 5 * 864e5).map(x => x[1]));
     const week = mid(h.filter(x => age(x) <= 7 * 864e5).map(x => x[1]));
-    if(weekAgo && age(weekAgo) >= 6 * 864e5 && from > 0 && week > 0 && from <= week * 5 && from >= week / 5)
+    // and only where the week is a market: a price today, 10 listings or more, and a week whose dearest and
+    // cheapest days are within 20x (a cheap unique that went 0.002 -> 2.5 -> 0.002 div has no move to state)
+    const days = h.filter(x => age(x) <= 7 * 864e5).map(x => x[1]).filter(v => v > 0);
+    const market = out.v !== undefined && (r.total ?? 0) >= 10 && days.length && Math.max(...days) <= Math.min(...days) * 20;
+    if(market && weekAgo && age(weekAgo) >= 6 * 864e5 && from > 0 && week > 0 && from <= week * 5 && from >= week / 5)
       out.ch = +(((h[h.length - 1][1] / from) - 1) * 100).toFixed(1);
     // a thin market's jump is a joke listing, not a price: today 20x off its own last week on 5 listings or fewer
     // (Serle's Grit at 136,000,000 div on 2 listings, 30 Sep) shows no price that day, and its spark leaves it out
