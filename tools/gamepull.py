@@ -233,6 +233,27 @@ def dat(table):
     return json.loads(f.read_bytes())
 
 
+def gamefiles(paths):
+    """Files out of the game's own bundles, byte for byte: {path: bytes}, a path the game files do not hold left
+    out. For the pictures the export does not mirror (tools/cardart.py). The same reader as dat(), the same
+    patch folder, kept beside its tables under files/, so a second read is a file. Paths are asked in lower case,
+    the way the bundles' index names them."""
+    d = dat_dir() / 'files'
+    want = sorted({p.lower() for p in paths if p})
+    miss = [p for p in want if not (d / p.replace('/', '@')).exists()]
+    node = shutil.which('node') if miss else None
+    if miss and not node:
+        raise SystemExit('cannot read the game files: there is no Node here to run tools/datpull.mjs')
+    for i in range(0, len(miss), 200):   # a command line holds a couple of hundred paths comfortably
+        r = subprocess.run([node, str(ROOT / 'tools' / 'datpull.mjs'), '--files', ','.join(miss[i:i + 200]),
+                            '--patch', dat_dir().name[4:], '--out', str(d)], cwd=str(ROOT), stdout=sys.stderr,
+                           timeout=1800)
+        if r.returncode:
+            raise SystemExit('cannot read the game files from %s (tools/datpull.mjs --files stopped with %d)'
+                             % (dat_dir().name[4:], r.returncode))
+    return {p: (d / p.replace('/', '@')).read_bytes() for p in want if (d / p.replace('/', '@')).exists()}
+
+
 def home():
     """The export's listing page, fetched once a run: it carries the build number and every file name."""
     global _home
