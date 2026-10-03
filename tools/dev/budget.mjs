@@ -163,7 +163,10 @@ async function orphans(){
     .filter(f => /\.(html|m?js|py|ya?ml|jsonc)$/.test(f) && !f.startsWith('data/') && !SELF.has(f));
   const text = (await Promise.all(readers.map(read))).join('\n');
   const data = (await walk(join(ROOT, 'data'))).filter(x => !x.dir).map(x => rel(x.p));
-  const cut = new Set(named(await readJSON('data/manifest.json')));   // what the manifest names is read through it
+  const man = await readJSON('data/manifest.json');
+  const cut = new Set(named(man));   // what the manifest names is read through it
+  // ...and what a language's own list names (data/lang/<code>/files.<h>.json, read by assets/lang.js)
+  for(const e of Object.values((man && man.lang) || {})) for(const f of named(await readJSON(e.file))) cut.add(f);
   return data.filter(f => {
     if(cut.has(f)) return false;
     const name = f.slice(f.lastIndexOf('/') + 1), dir = f.slice(0, f.lastIndexOf('/') + 1);

@@ -155,7 +155,13 @@ function manifestFiles(man){
 async function asked(files){
   const text = await siteText(files), left = [];
   let cut = new Set();
-  try { cut = manifestFiles(JSON.parse(await readFile(join(ROOT, 'data', 'manifest.json'), 'utf8'))); } catch {}
+  try {
+    const man = JSON.parse(await readFile(join(ROOT, 'data', 'manifest.json'), 'utf8'));
+    cut = manifestFiles(man);
+    // a language's own list (data/lang/<code>/files.<h>.json) names the rest of its files: assets/lang.js reads it
+    for(const e of Object.values(man.lang || {}))
+      for(const f of manifestFiles(JSON.parse(await readFile(join(ROOT, e.file), 'utf8')))) cut.add(f);
+  } catch {}
   const keep = files.filter(f => {
     if(!f.startsWith('data/') || PUBLIC.some(([re]) => re.test(f)) || cut.has(f)) return true;
     const name = f.slice(f.lastIndexOf('/') + 1), dir = f.slice(0, f.lastIndexOf('/') + 1);

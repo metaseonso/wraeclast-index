@@ -12,7 +12,8 @@
      X.version()     anything that changes when the cards do
      X.idle(f)       run f when the thread has nothing else to do
    A card here carries what assets/app.js prep gives it: _nl (its name, lower case) and _hay (every word on it,
-   lower case). */
+   lower case). With a language on (#121, assets/lang.js) it carries _nl2, its name in that language, and _tw,
+   its name and sub line in it: a word matches either, and a card with neither answers exactly as it always has. */
 import {KIND, KW} from './kinds.js';
 
 /* ---------- where you have been ----------
@@ -85,7 +86,10 @@ export function ranker(X){
      way to "divine"; it is the finished word that misses, and then it costs one pass over a list of short
      words, once, on that keystroke. */
   let VOCAB = null, VOCAB_AT = -1;
-  const wordsOf = (set, it) => { for(const w of (it._hay || '').match(/[a-z0-9]+/g) || []) if(w.length > 2) set.add(w); };
+  const wordsOf = (set, it) => {
+    for(const w of (it._hay || '').match(/[a-z0-9]+/g) || []) if(w.length > 2) set.add(w);
+    if(it._tw) for(const w of it._tw.match(/[\p{L}\p{N}]+/gu) || []) if(w.length > 2) set.add(w);   // the language's own letters
+  };
   function vocab(){
     const items = X.items(), n = items.length;
     if(VOCAB && VOCAB_AT === n) return VOCAB;
@@ -151,14 +155,16 @@ export function ranker(X){
     const fw = slipped ? 0.5 : 1;
     const wordStart = new RegExp('(^|[^a-z0-9])' + qs.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
     const near = nearness();   // no trail, and the score below is the one it always was
+    // the whole-name bonus, on the name in English and, where a language is on, on the name in it: the better one
+    // (a word starts after anything that is not a letter or a digit in any alphabet, for the name in the language)
+    const wordStart2 = new RegExp('(^|[^\\p{L}\\p{N}])' + qs.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'u');
+    const named = (nl, at = wordStart) => nl === fixed ? 1000 * fw : nl.startsWith(fixed) ? 600 * fw
+      : !slipped && at.test(nl) ? 380 : nl.includes(fixed) ? 220 * fw : 0;
     for(const it of X.items()){
       if((kind !== 'all' && it.k !== kind) || it.dup) continue;
       let s = hits(it, ws);
       if(s === null) continue;
-      if(it._nl === fixed) s += 1000 * fw;
-      else if(it._nl.startsWith(fixed)) s += 600 * fw;
-      else if(!slipped && wordStart.test(it._nl)) s += 380;
-      else if(it._nl.includes(fixed)) s += 220 * fw;
+      s += it._nl2 ? Math.max(named(it._nl), named(it._nl2, wordStart2)) : named(it._nl);
       s += (KIND[it.k] || {}).rank || 0;              // a kind that should not rank beside the rest says so once
       if(X.priced(it)) s += 12;
       const u = X.usage(it); if(u) s += Math.min(40, u * 2);
@@ -177,7 +183,7 @@ export function ranker(X){
      name, the tree's own wordings for a stat last as they are in a search */
   function list(kind){
     return X.items().filter(it => it.k === kind && !it.dup)
-      .sort((a, b) => (a.lo ? 1 : 0) - (b.lo ? 1 : 0) || a.n.localeCompare(b.n));
+      .sort((a, b) => (a.lo ? 1 : 0) - (b.lo ? 1 : 0) || (a._nl2 || a.n).localeCompare(b._nl2 || b.n));
   }
   return {words, hits, search, list, vocab, vocabLater};
 }
@@ -212,8 +218,8 @@ export function hits(it, ws){
   for(const w of ws){
     let best = 0;
     for(const a of w.alts){
-      if(it._nl.includes(a)){ best = w.near ? 30 : 40; break; }
-      if(it._hay.includes(a)) best = Math.max(best, w.near ? 5 : 8);
+      if(it._nl.includes(a) || (it._nl2 && it._nl2.includes(a))){ best = w.near ? 30 : 40; break; }
+      if(it._hay.includes(a) || (it._tw && it._tw.includes(a))) best = Math.max(best, w.near ? 5 : 8);
     }
     if(!best) return null;
     s += best;

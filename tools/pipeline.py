@@ -317,10 +317,16 @@ STAGES = [
     dict(name='filtertiers', run=['tools/filtertiers.py'], cadence='daily', source="NeverSink's loot filter",
          reads=[NEVERSINK, 'data/index.json', 'data/market.json'], writes=['data/filtertiers.json'],
          count={'data/filtertiers.json': 'tiers'}),
+    # the index in other languages, in GGG's own words (#121): every string a card draws, matched to the game's
+    # translated tables and stat descriptions. Once the index is final and before the cut, which names its files
+    dict(name='lang', run=['tools/lang.mjs'], cadence='patch', source='game files',
+         reads=[CDN, DATSCHEMA, 'data/index.json', 'assets/kinds.js', 'assets/words/*.json'],
+         writes=['data/lang/langs.json', 'data/lang/*/*.json'], count={'data/lang/langs.json': 'langs'}, minutes=20),
     # last, once the index is final: the cut the site reads a piece at a time (the search, the cards, the crawler
     # pages). After a hand stage that edits the index, run it on its own (--only shards); --check says when it is due
     dict(name='shards', run=['tools/shards.py'], cadence='patch', source='files',
-         reads=['data/index.json', 'data/index-core.json', 'worker/seo.js', 'assets/kinds.js', 'tools/seoshards.mjs'],
+         reads=['data/index.json', 'data/index-core.json', 'worker/seo.js', 'assets/kinds.js', 'tools/seoshards.mjs',
+                'data/lang/langs.json'],
          writes=['data/manifest.json', 'data/search/*.json', 'data/cards/*.json', 'data/cards/*/*.json',
                  'data/seo/*.json', 'data/seo/*/*.json', 'data/seo/words/*.txt']),
 ]
@@ -491,7 +497,7 @@ CARD_FILES = ('data/index.json', 'data/index-core.json', 'data/index-rest.json',
 # Which cards land in piece NN moves whenever the number of pieces does (a card more, a card less), so a piece is
 # never held to the old piece of the same number: the cut as a whole is held to the index (shards.stale()), and
 # the index to the committed one. A piece's own ids still hold.
-CUT_PIECE = re.compile(r'^data/(?:cards|seo)/[\w-]+/\d+\.[0-9a-f]{6,}\.json$')
+CUT_PIECE = re.compile(r'^data/(?:(?:cards|seo)/[\w-]+/\d+|lang/[\w-]+/\w+)\.[0-9a-f]{6,}\.json$')
 
 
 def links(index):
