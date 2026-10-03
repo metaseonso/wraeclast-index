@@ -146,6 +146,20 @@ export function checkTable(seen = [], types = null){
     if(g.of && !KIND[g.of]) bad.push('map "' + m + '" is named after kind "' + g.of + '", which is no kind');
   }
 
+  /* the play mode (FRAME.modes): each one says its word, whether it has prices and what it leads with; every
+     group a mode leads with is one some field carries, and every field's group is one a mode leads with. A mode
+     to fall back to has prices: a player who never picks one sees the site as it always was. */
+  const leads = new Set(Object.values(FIELDS).map(f => f.first).filter(Boolean)), led = new Set();
+  for(const [k, m] of Object.entries(FRAME.modes || {})){
+    if(!m.is || typeof m.px !== 'boolean' || !Array.isArray(m.first)) bad.push('play mode "' + k + '" has no word, no price rule or no lead');
+    for(const g of m.first || []){
+      led.add(g);
+      if(!leads.has(g)) bad.push('play mode "' + k + '" leads with "' + g + '", which no field carries');
+    }
+  }
+  for(const g of leads) if(!led.has(g)) bad.push('fields lead with "' + g + '", which no play mode leads with');
+  if(!(FRAME.modes && FRAME.modes.trade && FRAME.modes.trade.px)) bad.push('there is no Trade mode with prices to fall back to');
+
   said.push(KINDS.length + ' kinds, ' + Object.keys(FIELDS).length + ' fields, ' + every.length + ' on every card' +
     ', ' + SLOTS.length + ' slots capped ' + SLOTS.filter(s => s !== 'head').map(s => s + ' ' + FRAME.cap[s]).join('/'));
   return {bad, said: said.join(' · ')};
@@ -183,6 +197,17 @@ export async function checkOneTable(){
     const want = tabs.filter(t => t !== 'home').sort();
     if(got.join(',') !== want.join(',')) bad.push('index.html sets the tab from ' + (got.join(', ') || '(none)') +
       ', and the table says ' + want.join(', '));
+  }
+
+  // the first paint's play mode: the modes with no prices, under the key the app keeps the pick in
+  const m3 = idx && idx.match(/\/\^\(([\w|]+)\)\$\/\.test\(localStorage\.getItem\('([\w.]+)'\)\)/);
+  const nopx = Object.keys(FRAME.modes).filter(k => !FRAME.modes[k].px).sort();
+  const app = await text('assets/app.js');
+  if(idx && !m3) bad.push('index.html: could not find the play mode it sets on the first paint');
+  else if(m3){
+    if(m3[1].split('|').sort().join() !== nopx.join()) bad.push('index.html paints no prices in ' + m3[1].split('|').join(', ') +
+      ', and the table says ' + nopx.join(', '));
+    if(app && !app.includes("MODE_KEY = '" + m3[2] + "'")) bad.push('index.html reads the play mode from "' + m3[2] + '", and assets/app.js keeps it elsewhere');
   }
 
   // the drill-down's own sections and the header the sync tool writes: the same sections, in the same order,

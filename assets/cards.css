@@ -394,6 +394,25 @@ header.top .brand{font-size:19px; letter-spacing:.03em; color:inherit}   /* the 
 .stamp{font-size:11.5px; color:var(--faint); white-space:nowrap}
 .stamp b{color:var(--muted); font-weight:500}
 .stamp.wait{min-width:190px}   /* about the width of "Prices: <league> · 1 h ago", so the top bar keeps its shape while it loads */
+/* the play mode's switch (assets/app.js, FRAME.modes): a chip that is the stamp's first word, as wide as its word
+   where the browser can size it so; under ☰ with the rest where the bar has no room */
+.modesw{flex:none; height:24px; padding:0 17px 0 8px; border:1px solid var(--line); border-radius:20px; cursor:pointer;
+  field-sizing:content; font:500 11.5px/1 var(--sans); color:var(--muted); background:var(--surface) no-repeat right 6px center / 8px 8px;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10'%3E%3Cpath d='M2 3.5 5 6.5 8 3.5' fill='none' stroke='%2398A48E' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  -webkit-appearance:none; appearance:none; transition:color .15s, border-color .15s}
+.modesw:hover, .modesw:focus-visible{color:var(--text); border-color:var(--accent); outline:none}
+.top-in > .modesw{margin-right:-9px}   /* the stamp's own word: closer to it than the bar's gap */
+body.nopx .modesw{color:var(--accent); border-color:var(--accent)}
+.topmore .modesw{height:34px; padding-right:24px; border-width:2px; border-radius:8px; font-size:12px; margin:0}
+@media (min-width:1280px){ .topmore .modesw{width:100%} }   /* the box under ☰ is a column there */
+/* No prices (SSF, Hardcore, HC SSF): a card already draws none (assets/app.js slotHTML); this is the rest of the
+   site. A cell in a grid keeps its place, so the columns beside it stay where they are. */
+body.nopx :is(.stamp, .card-inv, .uses-px, .tsearch-row .p, .cr-px, .bn-px, .bn-spend, .cxp-px, .spark, .chg, .bo-worth, .lad-p,
+  .cxm, .cxm-hd, .fm-p){display:none}
+body.nopx :is(.bo-px, .bo-thd span:nth-child(2)){visibility:hidden}
+.px-off{display:none}
+body.nopx .px-off{display:block}
+body.nopx .mk-block{display:none}   /* the Market tab is prices and nothing else: its blocks never load */
 /* a group of the index: its name, and the pages under it in a box that drops from it */
 .tabs.topnav{overflow:visible; flex:none}
 .navdrop{position:relative; display:flex}

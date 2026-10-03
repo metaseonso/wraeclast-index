@@ -7,7 +7,7 @@
    Prices: data/bossprices.json (worker/prices.js) resolves every name at once from the unique checks, the
    in-game Currency Exchange and the trade searches in data/bossqueries.json; a name it does not carry falls back to
    the card's own market price. Real prices only, and a rate never meets one: no value per kill, here or anywhere. */
-import { D, $, esc, card, openDetail, priceOf, hrefOf, money as coin, moneyHTML, change, spark, ago, params, onType } from './app.js';
+import { D, $, esc, card, openDetail, priceOf, hrefOf, money as coin, moneyHTML, change, spark, ago, params, onType, leadFirst, noPrice } from './app.js';
 
 const SHOW = [['all', 'All'], ['pin', 'Pinnacle'], ['drops', 'With drops']];
 const SORTS = [['name', 'Name'], ['way', 'Way in']];
@@ -414,13 +414,23 @@ function extraOf(r){
   const pills = [];   // the level is not a pill: it sits on its own area, in the line under the boss's name
   if(b.pinnacle) pills.push('<span class="pill">Pinnacle</span>');
   if(r.drops.length) pills.push('<span class="pill">' + r.drops.length + (r.drops.length === 1 ? ' drop' : ' drops') + '</span>');
-  return (pills.length ? '<div class="card-req">' + pills.join('') + '</div>' : '') +
-    roiHTML(r) +
-    hitsHTML(r) +
-    (r.access.length ? '<div class="bo-sec"><p class="lbl">Way in</p><div class="bo-tbl">' +
+  /* the blocks in the card's own order, each in the group the play mode may lead with (FRAME.modes, the same
+     marks a field carries): its hits are what it does to you, its drops where things come from. The meter is
+     prices and nothing else, so a mode with no prices has none. */
+  const blocks = [
+    {html: noPrice() ? '' : roiHTML(r)},
+    {first: 'danger', html: hitsHTML(r)},
+    {html: r.access.length ? '<div class="bo-sec"><p class="lbl">Way in</p><div class="bo-tbl">' +
       r.access.map((x, i) => itemRow(x, r.i + ':a:' + i, false)).join('') +
-      '</div><p class="note">Way in: the entry items Exiled Exchange 2 lists as dropping what this boss drops.</p></div>' : '') +
-    (r.drops.length ? '<div class="bo-sec"><p class="lbl">What it drops</p>' +
+      '</div><p class="note">Way in: the entry items Exiled Exchange 2 lists as dropping what this boss drops.</p></div>' : ''},
+    {first: 'drop', html: dropsHTML(r, rated, from)},
+  ];
+  return (pills.length ? '<div class="card-req">' + pills.join('') + '</div>' : '') +
+    leadFirst(blocks, x => x.first).map(x => x.html).join('');
+}
+function dropsHTML(r, rated, from){
+  const b = r.b;
+  return (r.drops.length ? '<div class="bo-sec"><p class="lbl">What it drops</p>' +
       (rated ? '<div class="bo-thd"><span>Item</span><span>Price</span><span>Drop rate</span></div>' : '') +
       '<div class="bo-tbl">' + r.drops.map((x, i) => itemRow(x, r.i + ':d:' + i, rated)).join('') + '</div>' +
       (from ? '<p class="note">' + esc(from) + '</p>' : '') +
