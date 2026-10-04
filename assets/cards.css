@@ -396,15 +396,17 @@ header.top .brand{font-size:19px; letter-spacing:.03em; color:inherit}   /* the 
 .stamp.wait{min-width:190px}   /* about the width of "Prices: <league> · 1 h ago", so the top bar keeps its shape while it loads */
 /* the play mode's switch (assets/app.js, FRAME.modes): a chip that is the stamp's first word, as wide as its word
    where the browser can size it so; under ☰ with the rest where the bar has no room */
-.modesw{flex:none; height:24px; padding:0 17px 0 8px; border:1px solid var(--line); border-radius:20px; cursor:pointer;
-  field-sizing:content; font:500 11.5px/1 var(--sans); color:var(--muted); background:var(--surface) no-repeat right 6px center / 8px 8px;
-  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10'%3E%3Cpath d='M2 3.5 5 6.5 8 3.5' fill='none' stroke='%2398A48E' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
-  -webkit-appearance:none; appearance:none; transition:color .15s, border-color .15s}
-.modesw:hover, .modesw:focus-visible{color:var(--text); border-color:var(--accent); outline:none}
-.top-in > .modesw{margin-right:-9px}   /* the stamp's own word: closer to it than the bar's gap */
-body.nopx .modesw{color:var(--accent); border-color:var(--accent)}
-.topmore .modesw{height:34px; padding-right:24px; border-width:2px; border-radius:8px; font-size:12px; margin:0}
-@media (min-width:1280px){ .topmore .modesw{width:100%} }   /* the box under ☰ is a column there */
+.modesw{position:relative; flex:none; display:inline-flex; align-items:center; gap:7px; height:34px; padding:0 10px 0 9px;
+  border:2px solid var(--line); border-radius:8px; background:var(--surface); color:var(--muted); cursor:pointer;
+  transition:color .15s, border-color .15s, box-shadow .15s}
+.modesw-ic{width:16px; height:16px; flex:none; fill:none; stroke:currentColor; stroke-width:1.5; stroke-linecap:round; stroke-linejoin:round}
+.modesw-is{font:600 12.5px/1 var(--disp); letter-spacing:.03em; color:var(--text); white-space:nowrap}
+.modesw-c{width:9px; height:9px; flex:none; margin-left:1px; fill:none; stroke:currentColor; stroke-width:1.6; stroke-linecap:round; stroke-linejoin:round}
+.modesw select{position:absolute; inset:0; width:100%; height:100%; opacity:0; cursor:pointer; font-size:16px; border:0; margin:0}
+.modesw:hover{color:var(--text); border-color:var(--accent)}
+.modesw:focus-within{color:var(--text); border-color:var(--accent); box-shadow:0 0 0 3px rgba(140,203,63,.18)}
+.modesw[data-mode]:not([data-mode="trade"]){color:var(--accent)}   /* prices off: the mark in the poison green */
+.topmore .modesw{width:100%; margin:0}
 /* No prices (SSF, Hardcore, HC SSF): a card already draws none (assets/app.js slotHTML); this is the rest of the
    site. A cell in a grid keeps its place, so the columns beside it stay where they are. */
 body.nopx :is(.stamp, .card-inv, .uses-px, .tsearch-row .p, .cr-px, .bn-px, .bn-spend, .cxp-px, .spark, .chg, .bo-worth, .lad-p,
