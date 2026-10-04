@@ -620,15 +620,15 @@ export function ago(iso){
 export function iconHTML(it){
   if(it.img) return '<img src="' + esc(it.img) + '" alt="" loading="lazy" decoding="async">';
   const S = D.index && D.index.sprites;
-  if(it.ic && S){
-    const sp = S[(KIND[it.k] || {}).sprite];   // the sheet this kind's art is cut from (KINDS sprite)
-    if(sp){
-      const sc = Math.min(34 / sp.cw, 38 / sp.ch), w = sp.cw * sc, h = sp.ch * sc;
-      // a screen of one pixel per point takes the sheet cut to this size (tools/sprites.py); the grid is the same
-      const url = 'url(sprites/' + sp.file + ')', lo = sp.lo ? ';background-image:image-set(url(sprites/' + sp.lo + ') 1x,' + url + ' 2x)' : '';
-      return '<span class="ic" style="width:' + w + 'px;height:' + h + 'px;background-image:' + url + lo +
-        ';background-size:' + (sp.w * sc) + 'px ' + (sp.h * sc) + 'px;background-position:' + (-it.ic[0] * w) + 'px ' + (-it.ic[1] * h) + 'px"></span>';
-    }
+  const sp = S && S[(KIND[it.k] || {}).sprite];   // the sheet this kind's art is cut from (KINDS sprite)
+  // its cell: the card's own, or for a card the page makes itself (a boss) its name on the sheet
+  const cell = sp && (it.ic || (sp.at && sp.at[it.n]));
+  if(cell){
+    const sc = Math.min(34 / sp.cw, 38 / sp.ch), w = sp.cw * sc, h = sp.ch * sc;
+    // a screen of one pixel per point takes the sheet cut to this size (tools/sprites.py); the grid is the same
+    const url = 'url(sprites/' + sp.file + ')', lo = sp.lo ? ';background-image:image-set(url(sprites/' + sp.lo + ') 1x,' + url + ' 2x)' : '';
+    return '<span class="ic" style="width:' + w + 'px;height:' + h + 'px;background-image:' + url + lo +
+      ';background-size:' + (sp.w * sc) + 'px ' + (sp.h * sc) + 'px;background-position:' + (-cell[0] * w) + 'px ' + (-cell[1] * h) + 'px"></span>';
   }
   // no art of its own: its kind's mark from the index (assets/kinds.js INDEX), never a letter
   const ic = KIND_ICON[it.k];

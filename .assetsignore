@@ -25,3 +25,5 @@ dist
 data/market
 # the copy of the numbers per patch the data diff is made from (tools/patchdiff.py); the site reads data/patchdiff/
 data/snapshots
+# the screenshots a preview PR carries for the owner, never the site's
+/design/previews/

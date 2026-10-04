@@ -30,7 +30,8 @@
      link     where its gold button goes: a template with @field in it, or a form app.js names (LINKS)
      gone     a test: an entry that answers it has nowhere to go yet, so it gets no link
      notitem  a test: an entry that answers it is not an item, whatever the kind says
-     sprite   the sheet its art is cut from, where its art is in one
+     sprite   the sheet its art is cut from, where its art is in one: a card's cell is its `ic`, or for a card the
+              page makes itself (a boss) its name in the sheet's `at` (tools/cardart.py)
      px       where else its price may be listed: {as} the kind it is listed under, {at} only when it carries it
      rank     what the search adds to or takes off this kind, where it should not rank beside the rest
      builds   which of poe.ninja's build lists this kind is in: the first test that answers wins
@@ -929,7 +930,7 @@ export const KINDS = [
      keystone does (kw), and the keyword card is folded into it: its name is the game's word wherever a line says
      it, and it claims the address the keyword page had, before a currency of the same name. */
   {k: 'o', one: 'Rune', many: 'Runes', place: 'Rune recipes', link: './#/runes?rune=@n', index: true, search: true,
-   crawl: {word: 'rune', list: 'runes', rank: 3, is: 'DefinedTerm'},
+   crawl: {word: 'rune', list: 'runes', rank: 3, is: 'DefinedTerm'}, sprite: 'runes',
    kw: 'name', words: {n: 'own', mark: 'game'},
    fields: [...HEAD, 'recipes', ...SAYS, 'bands', ...REST, ...FOOT],
    acts: ['pin', 'open'],
@@ -990,7 +991,7 @@ export const KINDS = [
    rel: ['namedby', 'cat']},
 
   {k: 'x', one: 'Boss', tone: 'str', many: 'Bosses', place: 'Bosses', link: './#/bosses?q=@n', own: './bosses.js',
-   search: true,
+   search: true, sprite: 'bosses',
    fields: [...HEAD, ...BODY, 'gothere', ...FOOT],
    acts: ['pin', 'open'],
    rel: ['drops', 'foughtin', 'bossmech', 'askedby', 'namedby', 'cat']},
@@ -1000,7 +1001,7 @@ export const KINDS = [
      cards they name under Connections, with today's price where the market has one. A pool whose shape is our
      reading of the table carries Subject to change and the file's reason. No card has a tab, so the card is the
      page. */
-  {k: 's', one: 'Pool', many: 'Odds', index: true, search: true,
+  {k: 's', one: 'Pool', many: 'Odds', index: true, search: true, sprite: 'pools',
    fields: [...HEAD, 'unsure', 'outcount', 'pooltotal', 'likely', ...SAYS, 'outcomes', 'why', ...REST, ...FOOT],
    acts: ['pin'],
    rel: ['rolls', 'poolmech', 'cat']},
@@ -1011,14 +1012,14 @@ export const KINDS = [
      no list of its own: its card adds up what the act gives for good and holds its areas and quests. None of
      them has a tab, so the card is the page. */
   {k: 'r', one: 'Area', tone: 'muted', many: 'Areas', index: true, search: true,
-   crawl: {word: 'area', list: 'areas', rank: 7, is: 'DefinedTerm'},
+   crawl: {word: 'area', list: 'areas', rank: 7, is: 'DefinedTerm'}, sprite: 'areas',
    fields: [...HEAD, 'waypoint', 'town', 'waystone', 'unsure', 'respen', 'monlife', 'mondmg', 'biome', 'content',
             ...SAYS, 'hidden', 'corruption', ...REST, 'gothere', ...FOOT],
    acts: ['pin'],
    rel: ['leadsto', 'leadsfrom', 'bosshere', 'questhere', 'openedwith', 'onlyholds', 'askedby', 'actof', 'inact']},
 
   {k: 'j', one: 'Quest', tone: 'muted', many: 'Quests', index: true, search: true,
-   crawl: {word: 'quest', list: 'quests', rank: 8, is: 'DefinedTerm'},
+   crawl: {word: 'quest', list: 'quests', rank: 8, is: 'DefinedTerm'}, sprite: 'quests',
    fields: [...HEAD, 'questgold', 'permanent', 'oneofset', 'unsure', 'where', 'givenby', 'rewardfrom',
             ...SAYS, 'take', 'keeps', ...REST, ...FOOT],
    acts: ['pin'],
@@ -1028,7 +1029,7 @@ export const KINDS = [
      Sekhemas, what it does, what it does to you and what it pays (tools/modcards.py, off tools/trials.py;
      design/trials.md). The four Ascensions are the Ascendancy cards' own (`ascend`). */
   {k: 'l', one: 'Trial modifier', many: 'Trial modifiers', index: true, search: true,
-   crawl: {word: 'trial', list: 'trials', rank: 11, is: 'DefinedTerm'},
+   crawl: {word: 'trial', list: 'trials', rank: 11, is: 'DefinedTerm'}, sprite: 'trials',
    fields: [...HEAD, 'trialmark', 'onwho', 'steps', 'rooms', 'floorlv', 'relicgen', 'unsure',
             ...SAYS, 'risk', 'reward', 'tiers', 'others', 'floornames', 'markwhy', 'harms', ...REST, ...FOOT],
    acts: ['pin'],

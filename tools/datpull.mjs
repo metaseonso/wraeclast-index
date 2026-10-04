@@ -9,6 +9,9 @@
      node tools/datpull.mjs --list           the declared files and the tables behind each, nothing fetched
      node tools/datpull.mjs --raw PassiveSkills,Stats --out <dir>
                                              whole tables, row for row, as tools/gamepull.py dat() reads them
+     node tools/datpull.mjs --files art/uiimages1.txt,<path>.dds --out <dir>
+                                             whole files, as tools/gamepull.py gamefile() reads them (the
+                                             game's own pictures, for tools/cardart.py)
      node tools/datpull.mjs --find-patch     print the live CDN folder, nothing else fetched
 
    It is the patch stage "datpull" of tools/pipeline.py, which runs it in build/tree/ and holds every file it
@@ -204,7 +207,9 @@ async function openGame(patch, schema){
     tables.set(name, t);
     return t;
   }
-  return {table, fetched: () => fetched};
+  /* one file out of the bundles as it is (a picture, a list), or null where the index names no such path */
+  const file = path => files.tryGetFileContents(path.toLowerCase());
+  return {table, file, fetched: () => fetched};
 }
 
 /* ---------- 5. the words ---------- */
@@ -624,6 +629,26 @@ if(opt('--raw')){
     await rename(join(OUT, name + '.json.tmp'), join(OUT, name + '.json'));
     say('  ' + name + ': ' + t.rows.length + ' rows from ' + patch + (t.exact ? '' : ' (schema shorter than the row: read what fits)'));
   }
+  process.exit(0);
+}
+if(opt('--files')){
+  // whole files for tools/gamepull.py gamefile(): the game's own pictures and the lists that place them, byte
+  // for byte, each at its path with / as @. A path the index does not name is said on stderr and left out.
+  const names = opt('--files').split(',').filter(Boolean);
+  const patch = opt('--patch') || await findPatch();
+  const {schema} = await loadSchema(false);
+  const game = await openGame(patch, schema);
+  await mkdir(OUT, {recursive: true});
+  let got = 0;
+  for(const name of names){
+    const body = await game.file(name);
+    if(!body){ say('  ' + name + ': not in the game files of ' + patch); continue; }
+    const f = join(OUT, name.toLowerCase().replace(/\//g, '@'));
+    await writeFile(f + '.tmp', body);
+    await rename(f + '.tmp', f);
+    got++;
+  }
+  say('  ' + got + ' of ' + names.length + ' files from ' + patch);
   process.exit(0);
 }
 if(args.includes('--list')){
