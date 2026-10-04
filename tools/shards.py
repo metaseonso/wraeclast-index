@@ -23,6 +23,10 @@ for a year and a new index is new names:
   data/seo/...                the crawler pages' own cut (worker/seo.js cut(), run by tools/seoshards.mjs):
                               base.<h>.json, list/<k>.<h>.json, item/<nn>.<h>.json, words/<k>.<h>.txt
 
+The languages other than English (#121) are written by tools/lang.mjs, named by their content already
+(data/lang/<code>/...), and listed in data/lang/langs.json; the manifest carries that list under "lang", so the
+page learns which languages there are, and where each one's files are, from the file it reads first anyway.
+
 data/index.json, index-core.json and index-rest.json are left exactly as they are: they are the open data,
 and a page opened before this cut still reads them.
 
@@ -249,7 +253,26 @@ def build(index_file=DATA / 'index.json'):
         'source': 'data/index.json: the game files (tools/sync.py and the pipeline stages after it), cut by tools/shards.py',
         'order': order, 'meta': put('meta.json', body(meta), 'data/cards'), 'kinds': kinds, 'seo': seo,
     }
+    langs = languages()
+    if langs:
+        man['lang'] = langs
     return man, files
+
+
+def languages():
+    """The languages tools/lang.mjs wrote, one line each in the manifest: its name, its HTML code and the file
+    that lists the rest of its files (its words, every card's name, one file per kind). Only those whose files are
+    all here."""
+    try:
+        got = json.loads((DATA / 'lang' / 'langs.json').read_text(encoding='utf-8')).get('langs') or {}
+    except (OSError, ValueError):
+        return {}
+    out = {}
+    for code, e in sorted(got.items()):
+        files = [e['file'], e['names']['file']] + [k['file'] for k in (e.get('kinds') or {}).values()]
+        if all((ROOT / f).exists() for f in files) and (ROOT / e['words']).exists():
+            out[code] = {'name': e['name'], 'html': e.get('html') or code, 'file': e['file'], 'bytes': e['bytes']}
+    return out
 
 
 def files_of(man):

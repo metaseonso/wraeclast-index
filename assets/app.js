@@ -155,6 +155,19 @@ async function lastPrices(){
 const NOW = Promise.race([livePrices(), new Promise((_, no) => setTimeout(() => no(new Error('live prices slow')), LIVE_WAIT))])
   .catch(() => lastPrices()).then(m => (D.market = live(m)), () => null);
 const MAN = getJSON('data/manifest.json', {cache: 'no-cache'}, EARLY.man);
+/* ---------- the player's language (#121) ----------
+   English is the page as it is: an English visit runs none of this and fetches nothing for it. A language picked
+   in the footer is kept in this browser (wi.lang), and assets/lang.js comes in for it with the files the manifest
+   names: our own words and every card's name first, before a card is drawn, then each kind's lines the first time
+   a card of that kind is drawn whole. Only on the index's own page, not the drill-down page. */
+const LANG_KEY = 'wi.lang';
+const LANG = (() => { try { return localStorage.getItem(LANG_KEY) || ''; } catch { return ''; } })();
+let TR = null;   // the language, once it is in
+const LANGUP = !LANG || !document.getElementById('view-home') ? null : MAN.then(man => {
+  const e = man.lang && man.lang[LANG];
+  return e ? lazy('./lang.js').then(m => m.start(LANG, e)).then(t => (TR = t)) : null;
+}).catch(() => null);
+const inLang = kinds => LANGUP ? LANGUP.then(t => t && t.need(kinds)) : null;
 /* for the tabs that say what the index holds and how fresh it is (assets/data.js) */
 export const manifest = () => MAN;
 export const prices = () => NOW;
@@ -300,6 +313,7 @@ function prep(it, k, IMGS, lxk){   // once per card: its kind, full image link, 
     const v = f ? f(it) : undefined;
     if(v !== undefined) it[at] = v;
   }
+  if(TR) TR.mark(it);   // its name and sub line in the player's language, for a search on this page
   return it;
 }
 /* Every orb on an upgrade ladder, pointing at the ladder it is on (the meta's "up", tools/carddata.py).
@@ -482,7 +496,7 @@ async function fresh(){
 }
 
 export const first = (async () => {
-  const [man, meta] = await Promise.all([MAN, META, NOW, FACTS]);
+  const [man, meta] = await Promise.all([MAN, META, NOW, FACTS, LANGUP]);
   D.man = man; D.meta = meta;
   rungs(meta.up);   // the orb ladders, before any currency card is made
   D.named = new Set(meta.named || []);
@@ -497,7 +511,7 @@ export const first = (async () => {
 // the search rows start downloading in the worker the moment the manifest is in, not after the prices and the meta
 SEEK.then(() => MAN).then(man => ask('fetch', {man, base: new URL('.', document.baseURI).href})).catch(() => {});
 export const searching = SEEK.then(() => first).then(async () => {
-  await ask('init', {man: D.man, base: new URL('.', document.baseURI).href,
+  await ask('init', {man: D.man, base: new URL('.', document.baseURI).href, lang: TR ? TR.names : '',
     market: Object.keys((D.market && D.market.items) || {}), runtime: D.rt.map(rtRow), seen: seenKeys()});
   const w = await ask('words', {names: Object.values(D.index.kwx || {})});
   for(const h of w.heads) hold(h);
@@ -520,6 +534,7 @@ export const ready = ALL.then(() => first).then(async () => {
   }));
   D.bosses = await BOSS;
   runtime();
+  await inLang(Object.keys(man.kinds));
   const items = inOrder(man.order, byKind).map(settle);
   for(const it of D.rt) items.push(it);
   D.index = {...D.index, items};
@@ -542,9 +557,15 @@ export async function whole(keys){
   const want = keys.filter(k => { const it = D.byKey.get(k); return !it || it._head; });
   if(want.length && !D.full){
     await wake();
-    for(const b of (await ask('bodies', {keys: want})).bodies) settle(b);
+    const got = (await ask('bodies', {keys: want})).bodies;
+    // in the player's language a card is whole only once its kind's lines are in too: a card the page holds whole
+    // is drawn at once, by any path, so it must never be whole a moment before its words are
+    await inLang(got.map(b => b.k));
+    for(const b of got) settle(b);
   }
-  return keys.map(k => D.byKey.get(k)).filter(it => it && !it._head);
+  const out = keys.map(k => D.byKey.get(k)).filter(it => it && !it._head);
+  await inLang(out.map(it => it.k));
+  return out;
 }
 /* Every card of one kind by one name, whole (the drill-down page's rows: the tree carries one name in several
    strengths). */
@@ -750,6 +771,9 @@ const MK = new Set();   // the cards holding their lines, oldest first
 const PLAIN = new Set(Object.values(FIELDS).filter(f => f.plain && f.at).map(f => f.at));
 function lineHTML(it, at, i, text, marked){
   if(PLAIN.has(at)) return esc(text);
+  // in the player's language: the game's own line, whole. Its keywords stay under the card as chips
+  const said = TR && TR.line(text);
+  if(said) return esc(said);
   const v = marks.version();
   if(it._mkv !== v){
     it._mkv = v; it._mk = {}; it._mkSeen = new Set();   // the keywords this card has marked so far, in line order
@@ -3471,6 +3495,16 @@ MAN.then(man => {
   // the client build (4.5.5.2) as players know it: patch 0.5.5
   fillCounts(man);
   $('#gamever').textContent = (man.v || '').replace(/^4\.(\d+)\.(\d+).*$/, '0.$1.$2');
+  // the languages the manifest names, into the footer's switch; a pick is kept in this browser and the page opens again in it
+  const pick = $('#langpick');
+  if(pick && man.lang){
+    for(const [code, e] of Object.entries(man.lang)) if(e && e.name) pick.add(new Option(e.name, code));
+    if(LANG && man.lang[LANG]) pick.value = LANG;
+    pick.addEventListener('change', () => {
+      try { if(pick.value) localStorage.setItem(LANG_KEY, pick.value); else localStorage.removeItem(LANG_KEY); } catch {}
+      location.reload();
+    });
+  }
 }).catch(failed);
 searching.then(() => {
   // once this page is idle: the service worker (repeat visits paint from this browser's copy, and it keeps a copy of
