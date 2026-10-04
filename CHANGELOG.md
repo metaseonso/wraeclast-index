@@ -3,6 +3,21 @@
 The full list of changes. The public patch notes (data/changelog.json, shown on the site) stay short.
 Add the details here first, then a short public line there.
 
+## 0.47 — 4 Oct 2026: paste, modes, pictures, Russian
+
+- **#198** Paste an item (assets/itemtext.js parser, 89 tests; assets/paste.js): a copied item opens its card by name
+  or base type; a rare or magic item lists its modifiers with a pre-filled trade search. Nothing in first paint.
+- **#199** Play mode (FRAME.modes: trade, ssf, hc, hcssf), kept in localStorage `wi.mode`; body.nopx hides every
+  price; cards lead with drop or danger fields. The switch is a plate in the chips' rim with a drawn mark per mode
+  (redesigned before ship). Hardcore prices are left off: they would need a worker route of their own.
+- **#200** Card art from the game files (stage `cardart`, 12 sprite sheets): quests 103, areas 288, runes 34,
+  bosses 104 (map icons), trial modifiers 133, odds pools 10. The crawler pages take each kind's own sheet.
+- **#201** Russian (data/lang/ru, assets/words/ru.json, tools/lang.mjs): names 99.4%, lines 92.9%, 52 site words
+  ours; search in Russian and English; the switch at the foot of the page. A card waits for its kind's lines.
+- **Hotfixes (#202):** 7-day moves from the middle of the week's first days, only on a real market (10+ listings or
+  1+ divine traded, a week within 20x); a thin market's 20x jump shows no price. A sent fault record is sent every
+  run (#197). The Bosses page's gap report and four assistant lines removed (#194, #196).
+
 ## 0.46 — 30 Sep 2026: runes, trials, and what each patch changed
 
 - **#185** Runes `o` (34, the 33 same-named keyword cards folded in, addresses kept) and the rune finder

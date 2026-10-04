@@ -1,5 +1,17 @@
 [
  {
+  "v": "0.47",
+  "date": "4 Oct 2026",
+  "title": "Paste, modes, pictures, Russian",
+  "items": [
+   "Paste an item copied in game into the search box: its card opens. A rare lists its modifiers with a trade search.",
+   "Play mode in the top bar: Trade, SSF, Hardcore or HC SSF. SSF and Hardcore hide prices; Hardcore puts danger first.",
+   "Quests, areas, runes, bosses, trial modifiers and odds pools show the game's own pictures.",
+   "The index in Russian, in GGG's own translations. Pick it at the foot of the page.",
+   "A price's 7-day move shows only on a real market. Joke listings show no price."
+  ]
+ },
+ {
   "v": "0.46",
   "date": "30 Sep 2026",
   "title": "Runes, trials, and what each patch changed",
