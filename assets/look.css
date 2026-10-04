@@ -121,6 +121,13 @@ html:not(#_) .chip{
   box-shadow:inset 0 1px 0 rgba(230,200,140,.06), 0 1px 2px rgba(0,0,0,.6);
 }
 html:not(#_) .chip:hover{border-color:rgba(140,203,63,.6)}
+/* the play mode's plate (assets/app.js): the chips' bronze rim, the poison rim once prices are off */
+html:not(#_) .modesw{border-color:transparent;
+  background:linear-gradient(180deg, #151612, #0C0D0B) padding-box, var(--fa-rim-dim) border-box;
+  box-shadow:inset 0 1px 0 rgba(230,200,140,.06), 0 1px 2px rgba(0,0,0,.6)}
+html:not(#_) .modesw:hover, html:not(#_) .modesw:focus-within{border-color:rgba(140,203,63,.6)}
+html:not(#_) .modesw:not([data-mode="trade"]){border-color:transparent;
+  background:linear-gradient(180deg, rgba(140,203,63,.06), transparent) padding-box, linear-gradient(180deg, #151612, #0C0D0B) padding-box, var(--fa-poison) border-box}
 html:not(#_) .chip[aria-pressed="true"]{
   border-color:transparent; color:var(--accent);
   background:linear-gradient(180deg, rgba(140,203,63,.06), transparent) padding-box, linear-gradient(180deg, #151612, #0C0D0B) padding-box, var(--fa-poison) border-box;

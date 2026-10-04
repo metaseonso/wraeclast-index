@@ -15,6 +15,26 @@ export const $ = (s, el = document) => el.querySelector(s);
 export const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
+/* ---------- the play mode ----------
+   Trade, SSF, Hardcore or HC SSF (FRAME.modes), picked in the top bar and kept in this browser. A mode with no
+   prices marks <body> `nopx`: index.html does it before the first paint, and this does it on a page that has no
+   such line (the drill-down page). What a mode changes on a card is the frame's (slotHTML, card); what it changes
+   off a card is assets/cards.css `body.nopx`. A new pick redraws the page: every card is drawn again under it. */
+const MODE_KEY = 'wi.mode';
+export const MODE = (() => { let m = ''; try { m = localStorage.getItem(MODE_KEY) || ''; } catch {} return m in FRAME.modes ? m : 'trade'; })();
+const PLAY = FRAME.modes[MODE];
+document.body.classList.toggle('nopx', !PLAY.px);
+/* What the mode leads with, first in a list: each group the mode names, in its order, then the rest, every group in
+   the order it came in. `of` says which group a piece is in. The slot rule uses it on a card's fields, and a module
+   that draws a card of its own (assets/bosses.js) on its blocks, so both put the same things first. */
+export function leadFirst(list, of){
+  const lead = PLAY.first;
+  if(!lead.length) return list;
+  const rank = x => { const i = lead.indexOf(of(x)); return i < 0 ? lead.length : i; };
+  return list.map((x, i) => [rank(x), i, x]).sort((a, b) => a[0] - b[0] || a[1] - b[1]).map(r => r[2]);
+}
+export const noPrice = () => !PLAY.px;
+
 /* ---------- a module fetched when it is needed ----------
    Every lazy import on this page goes through here, because they all share one fault. A tab left open across a
    deploy is still running that deploy's app.js, and the server keeps one version of each path — the new one. So a
@@ -1685,7 +1705,7 @@ export const TYPE = {
   /* px.as: what was really priced, where that is not the item as the card names it — a base item is priced
      white, and a rare of that name is another item at another price. The word goes under the number, so the
      price is never read as the wrong thing. It comes off the price row, so no kind is named here. */
-  money:  {raw: 1, v: (it, f, o) => isUnit(it) ? unitHTML() : o.px && o.px.v !== undefined
+  money:  {raw: 1, v: (it, f, o) => !PLAY.px ? '' : isUnit(it) ? unitHTML() : o.px && o.px.v !== undefined
     ? '<b>' + moneyHTML(o.px.v) + '</b>' + change(o.px.ch) +
       (o.px.as ? '<span class="card-pxa">' + esc(o.px.as) + '</span>' : '') : ''},
   uses:   {v: (it, f) => {   // a keyword: how much of the game it touches, from the index's own count
@@ -1920,10 +1940,11 @@ export const TYPE = {
    puts that count, in its own shape and with no style of its own. */
 function slotHTML(it, slot, o){
   const out = [];
-  for(const name of fieldsOf(it.k, slot)){
+  // the play mode's own two rules (FRAME.modes): what it leads with first, and no field off the market without prices
+  for(const name of leadFirst(fieldsOf(it.k, slot), n => FIELDS[n].first)){
     if(o.without && o.without.includes(name)) continue;   // a page that already draws this field in full
     const f = FIELDS[name], t = TYPE[f.type];
-    if(!t || (f.popup && !o.full)) continue;   // a field its declaration keeps to the opened card
+    if(!t || (f.popup && !o.full) || (f.trade && !PLAY.px)) continue;   // a field its declaration keeps to the opened card
     const v = t.v(it, f, o, name);
     if(v === null || v === undefined || v === '') continue;
     out.push({name, f, html: t.raw ? v : esc(v), text: t.raw ? '' : v});
@@ -1940,7 +1961,7 @@ function slotHTML(it, slot, o){
    same call the card itself makes, so tools/dev/frame.mjs reads the frame rather than the markup. */
 export function slotsOf(it, opts = {}){
   const o = {...opts};
-  o.px = opts.price !== undefined ? opts.price : priceOf(it);
+  o.px = !PLAY.px ? null : opts.price !== undefined ? opts.price : priceOf(it);   // no prices: a card with no price
   o.href = opts.href !== undefined ? opts.href : hrefOf(it);
   const out = {};
   for(const slot of SLOTS){
@@ -1987,7 +2008,7 @@ function headHTML(head){
 
 export function card(it, opts = {}){
   const o = {...opts};
-  o.px = opts.price !== undefined ? opts.price : priceOf(it);
+  o.px = !PLAY.px ? null : opts.price !== undefined ? opts.price : priceOf(it);   // no prices: a card with no price
   o.href = opts.href !== undefined ? opts.href : hrefOf(it);
   const d = KIND[it.k] || DEFAULT;
   const el = document.createElement('article');
@@ -2496,7 +2517,7 @@ function paintStep(){
   const {it, opts, href} = step;
   const box = OV.querySelector('.ov-box');
   box.setAttribute('aria-label', 'Details');
-  const px = opts.price !== undefined ? opts.price : priceOf(it);
+  const px = !PLAY.px ? null : opts.price !== undefined ? opts.price : priceOf(it);
   const body = OV.querySelector('.ov-body');
   const c = card(it, {...opts, href: null, rank: undefined, full: true, detail: true, extra: (opts.extra || '') + detailExtras(it, px)});
   c.classList.add('detail');
@@ -3390,12 +3411,50 @@ if(STAMP) NOW.then(M => {
     STAMP.innerHTML = 'Prices from ' + esc(stampTime(M.updated)) + ' · <span class="err">live prices paused</span>';
     return;
   }
-  // the league and its dot are the part a tight row drops (assets/cards.css .stamp-lg)
+  // the league and its dot are the part a tight row drops (assets/cards.css .stamp-lg); the mode's switch in front
+  // of it is the stamp's word for what the prices are (below)
   if(M && M.updated) STAMP.title = 'Prices: ' + M.league + ' · ' + ago(M.updated);
-  if(M && M.updated) STAMP.innerHTML = 'Prices: <b class="stamp-lg">' + esc(M.league) + '</b><span class="stamp-lg"> · </span>' + ago(M.updated) +
+  if(M && M.updated) STAMP.innerHTML = '<b class="stamp-lg">' + esc(M.league) + '</b><span class="stamp-lg"> · </span>' + ago(M.updated) +
     (M.late ? ' · <span class="err">waiting for new prices</span>' : '');
   else STAMP.textContent = 'Prices not loaded yet';
 });
+/* The play mode's switch (FRAME.modes): the stamp's first word, so the bar gives it little more room than the
+   stamp had, and under ☰ where the bar has no room left. A mode with no prices has no stamp, only the switch. A pick
+   is kept in this browser and the page is drawn again under it. */
+/* each mode's mark, drawn in the bar's own 16px stroke: the exchange's two arrows, a lone shield, a cracked heart,
+   and the shield cracked */
+const MODE_MARK = {
+  trade: '<path d="M3 5.5h9.5L10 3M13 10.5H3.5L6 13"/>',
+  ssf:   '<path d="M8 1.8 13 3.6v4c0 3-2.2 5.2-5 6.6-2.8-1.4-5-3.6-5-6.6v-4z"/>',
+  hc:    '<path d="M8 13.6S2.4 10 2.4 6.1A2.8 2.8 0 0 1 8 4.5a2.8 2.8 0 0 1 5.6 1.6C13.6 10 8 13.6 8 13.6z"/><path d="M8.4 4.6 7.2 7.6l2 1-1.1 3"/>',
+  hcssf: '<path d="M8 1.8 13 3.6v4c0 3-2.2 5.2-5 6.6-2.8-1.4-5-3.6-5-6.6v-4z"/><path d="M8.4 3.4 7.2 6.8l2 1-1.1 3.6"/>',
+};
+if(STAMP){
+  // a plate in the chips' own rim with the mode's mark and word; the browser's own list opens from the select
+  // laid over it, so a phone gets its native picker and a keyboard its arrows
+  const sw = document.createElement('label');
+  sw.className = 'modesw';
+  sw.dataset.mode = MODE;
+  sw.innerHTML = '<svg class="modesw-ic" viewBox="0 0 16 16" aria-hidden="true">' + (MODE_MARK[MODE] || '') + '</svg>' +
+    '<span class="modesw-is">' + esc(PLAY.is) + '</span>' +
+    '<svg class="modesw-c" viewBox="0 0 10 10" aria-hidden="true"><path d="M2 3.5 5 6.5 8 3.5"/></svg>' +
+    '<select aria-label="Play mode">' + Object.entries(FRAME.modes).map(([k, m]) =>
+      '<option value="' + k + '"' + (k === MODE ? ' selected' : '') + '>' + esc(m.is) + '</option>').join('') + '</select>';
+  const pick = sw.querySelector('select');
+  pick.addEventListener('change', () => {
+    try { localStorage.setItem(MODE_KEY, pick.value); } catch {}
+    location.reload();
+  });
+  // under ☰ where the bar has no room for it: the stamp is gone (under 900px), or the index's whole row has just come
+  // into the bar and the stamp is already down to nothing (1280 to 1379px, assets/cards.css)
+  const tight = matchMedia('(max-width:899px), (min-width:1280px) and (max-width:1379px)');
+  const place = () => {
+    const more = document.getElementById('topmore');
+    if(tight.matches && more) more.appendChild(sw); else STAMP.before(sw);
+  };
+  place();
+  tight.addEventListener('change', place);
+}
 if(IS_APP){
 homeInit();
 mountTopSearch(document.getElementById('topsearch'));
