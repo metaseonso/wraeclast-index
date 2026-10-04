@@ -394,6 +394,27 @@ header.top .brand{font-size:19px; letter-spacing:.03em; color:inherit}   /* the 
 .stamp{font-size:11.5px; color:var(--faint); white-space:nowrap}
 .stamp b{color:var(--muted); font-weight:500}
 .stamp.wait{min-width:190px}   /* about the width of "Prices: <league> · 1 h ago", so the top bar keeps its shape while it loads */
+/* the play mode's switch (assets/app.js, FRAME.modes): a chip that is the stamp's first word, as wide as its word
+   where the browser can size it so; under ☰ with the rest where the bar has no room */
+.modesw{position:relative; flex:none; display:inline-flex; align-items:center; gap:7px; height:34px; padding:0 10px 0 9px;
+  border:2px solid var(--line); border-radius:8px; background:var(--surface); color:var(--muted); cursor:pointer;
+  transition:color .15s, border-color .15s, box-shadow .15s}
+.modesw-ic{width:16px; height:16px; flex:none; fill:none; stroke:currentColor; stroke-width:1.5; stroke-linecap:round; stroke-linejoin:round}
+.modesw-is{font:600 12.5px/1 var(--disp); letter-spacing:.03em; color:var(--text); white-space:nowrap}
+.modesw-c{width:9px; height:9px; flex:none; margin-left:1px; fill:none; stroke:currentColor; stroke-width:1.6; stroke-linecap:round; stroke-linejoin:round}
+.modesw select{position:absolute; inset:0; width:100%; height:100%; opacity:0; cursor:pointer; font-size:16px; border:0; margin:0}
+.modesw:hover{color:var(--text); border-color:var(--accent)}
+.modesw:focus-within{color:var(--text); border-color:var(--accent); box-shadow:0 0 0 3px rgba(140,203,63,.18)}
+.modesw[data-mode]:not([data-mode="trade"]){color:var(--accent)}   /* prices off: the mark in the poison green */
+.topmore .modesw{width:100%; margin:0}
+/* No prices (SSF, Hardcore, HC SSF): a card already draws none (assets/app.js slotHTML); this is the rest of the
+   site. A cell in a grid keeps its place, so the columns beside it stay where they are. */
+body.nopx :is(.stamp, .card-inv, .uses-px, .tsearch-row .p, .cr-px, .bn-px, .bn-spend, .cxp-px, .spark, .chg, .bo-worth, .lad-p,
+  .cxm, .cxm-hd, .fm-p){display:none}
+body.nopx :is(.bo-px, .bo-thd span:nth-child(2)){visibility:hidden}
+.px-off{display:none}
+body.nopx .px-off{display:block}
+body.nopx .mk-block{display:none}   /* the Market tab is prices and nothing else: its blocks never load */
 /* a group of the index: its name, and the pages under it in a box that drops from it */
 .tabs.topnav{overflow:visible; flex:none}
 .navdrop{position:relative; display:flex}

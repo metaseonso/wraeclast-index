@@ -554,12 +554,18 @@ def write_record(faults):
     A run that changes nothing writes nothing: the file moves only when what is stale moves, so a good run
     leaves the same bytes behind it every time."""
     rows = [{**f, 'line': line(f)} for f in faults]
-    if last_record().get('faults') == rows:
+    try:
+        import sitedata
+        sends = sitedata.sending()
+    except Exception:
+        sends = False
+    # a job that sends compares with nothing: the site's copy is not the one on this disk, so a fault sent by an
+    # earlier run would outlive its source coming back (29 Sep: League dates read stale for a day after it answered)
+    if not sends and last_record().get('faults') == rows:
         return
     out = {'updated': dt.datetime.now(dt.timezone.utc).isoformat(timespec='minutes'), 'note': NOTE, 'faults': rows}
     try:
-        import sitedata
-        if sitedata.sending():
+        if sends:
             sitedata.publish(RECORD, out, to=SENT)   # writes it where the jobs keep their files, and sends it on
             return
     except Exception as e:

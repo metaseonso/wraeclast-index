@@ -30,7 +30,8 @@
      link     where its gold button goes: a template with @field in it, or a form app.js names (LINKS)
      gone     a test: an entry that answers it has nowhere to go yet, so it gets no link
      notitem  a test: an entry that answers it is not an item, whatever the kind says
-     sprite   the sheet its art is cut from, where its art is in one
+     sprite   the sheet its art is cut from, where its art is in one: a card's cell is its `ic`, or for a card the
+              page makes itself (a boss) its name in the sheet's `at` (tools/cardart.py)
      px       where else its price may be listed: {as} the kind it is listed under, {at} only when it carries it
      rank     what the search adds to or takes off this kind, where it should not rank beside the rest
      builds   which of poe.ninja's build lists this kind is in: the first test that answers wins
@@ -243,6 +244,21 @@ export const FRAME = {
      Bones of Ullr Unique Boots". Measured 29 Sep 2026: the keyword cards keep 3,060 of 4,444 lines, and
      Expedition drops from 33 patches to 16. One rule, read by the card and the Patches page alike (namedIn). */
   changed: {cap: 8, whole: ['game']},
+  /* The play mode, picked in the top bar and kept in this browser (assets/app.js MODE). Two rules, and they
+     reach every card alike:
+       px     false: no price anywhere. Every card is drawn as a card with no price (docs/frame.md "No price"),
+              every field that reads the market (`trade` in FIELDS) draws nothing, and the page marks <body>
+              `nopx` for what is not a card (the stamp, a price column). Hardcore has no prices of its own yet:
+              the Currency Exchange feed carries its league, but the site has no path for a second league's file.
+       first  inside each slot, the fields that carry one of these `first` marks draw first, in this order,
+              each in the kind's own order; the rest follow in theirs. The caps then cut from the end as always.
+     index.html sets `nopx` before the first paint off the same keys (tools/dev/frame.mjs holds it to this). */
+  modes: {
+    trade: {is: 'Trade', px: true, first: []},
+    ssf:   {is: 'SSF', px: false, first: ['drop']},
+    hc:    {is: 'Hardcore', px: false, first: ['danger']},
+    hcssf: {is: 'HC SSF', px: false, first: ['danger', 'drop']},
+  },
   /* The map: the whole index as one picture (tools/map.py draws it, assets/map.js frames it, docs/frame.md
      "The map" states it). It is laid out once with the data, so the page obeys no number per frame and the
      picture's own constants sit with the drawing, the way a card's markup sits in app.js. What the frame
@@ -377,6 +393,9 @@ export const DECL = ['k', 'one', 'many', 'tone', 'place', 'sec', 'search', 'item
   'fields', 'acts', 'rel', 'link', 'gone', 'notitem', 'sprite', 'px', 'rank', 'builds', 'mark', 'make',
   'kw', 'words'];
 
+/* Two marks a field may carry for the play mode (FRAME.modes): `first` names the group it draws first in when the
+   mode leads with that group ('drop': where it comes from; 'danger': what it does to you), and `trade: 1` says it
+   reads the market, so a mode with no prices draws none of it. */
 export const FIELDS = {
   art:      {type: 'art', slot: 'head', box: 'art', every: 1},
   name:     {type: 'name', slot: 'head', box: 'name', every: 1},
@@ -400,7 +419,7 @@ export const FIELDS = {
   warn:     {type: 'text', at: 'nt', slot: 'pill', tone: 'warn'},
   asc:      {type: 'text', at: 'asc', slot: 'pill', post: ' ascendancy'},
   region:   {type: 'text', at: 'reg', slot: 'pill', post: ' region'},
-  droplv:   {type: 'number', at: 'dl', slot: 'pill', pre: 'Drops from area level '},
+  droplv:   {type: 'number', first: 'drop', at: 'dl', slot: 'pill', pre: 'Drops from area level '},
   stacks:   {type: 'number', at: 'max', slot: 'pill', pre: 'Up to ', post: ' stack', many: ' stacks', from: 2},
   /* A cluster's two numbers: the points it costs to take the whole of it, and how many of its nodes are
      also in another cluster (tools/clusters.py). Both are numbers with a word after them, so neither is a
@@ -435,7 +454,7 @@ export const FIELDS = {
   filtertier: {type: 'keyed', at: 'n', slot: 'pill', file: 'data/filtertiers.json', of: 'tiers', pre: 'NeverSink tier: '},
   /* A trial modifier and a rare monster modifier (tools/modcards.py, design/trials.md, design/monster-mods.md).
      The mark is given only where the modifier's own words decide it (tools/trials.py says which rule). */
-  trialmark: {type: 'enum', at: 'mark', slot: 'pill', of: {danger: 'Dangerous for most builds', safe: 'Safe to take'}},
+  trialmark: {type: 'enum', first: 'danger', at: 'mark', slot: 'pill', of: {danger: 'Dangerous for most builds', safe: 'Safe to take'}},
   onwho:    {type: 'enum', at: 'on', slot: 'pill', of: {'On you': 'On you', 'On monsters': 'On monsters', 'In the room': 'In the room'}},
   steps:    {type: 'number', at: 'steps', slot: 'pill', post: ' step', many: ' steps', from: 2},
   rooms:    {type: 'number', at: 'rooms', slot: 'pill', post: ' room', many: ' rooms'},
@@ -454,7 +473,7 @@ export const FIELDS = {
   /* a normal monster's life and damage at the area's level, the game's own table (tools/monsterlevels.py, off
      data/bosshits.json levels, which carries no label: the numbers are the game's) */
   monlife:  {type: 'number', at: 'ml', slot: 'fact', pre: 'Normal monsters here: ', post: ' life'},
-  mondmg:   {type: 'number', at: 'md', slot: 'fact', post: ' damage'},
+  mondmg:   {type: 'number', first: 'danger', at: 'md', slot: 'fact', post: ' damage'},
   pooltotal: {type: 'number', at: 'tw', slot: 'fact', pre: 'Total weight '},
   likely:   {type: 'number', at: 'tp', slot: 'fact', pre: 'Most likely: 1 in '},
   biome:    {type: 'lines', at: 'bio', slot: 'fact'},
@@ -493,7 +512,7 @@ export const FIELDS = {
   ascend:   {type: 'choice', at: 'ap', slot: 'body', label: 'Ascendancy points', pick: 'Either', popup: 1},
   /* A choice in a trial: what it costs and what it pays, two statements and never one sentence (docs/frame.md).
      Partly our words: no marks. */
-  risk:     {type: 'rich', at: 'risk', slot: 'body', label: 'Risk', plain: 1},
+  risk:     {type: 'rich', first: 'danger', at: 'risk', slot: 'body', label: 'Risk', plain: 1},
   reward:   {type: 'rich', at: 'reward', slot: 'body', label: 'Reward', plain: 1},
   /* A modifier's tiers: per tier, which one (`lead`: the first of these the tier carries), its lines, and the
      number beside them (`num`: the first it carries). The grid draws FRAME.lines tiers and counts the rest. */
@@ -505,7 +524,7 @@ export const FIELDS = {
   /* What it does to you, in one list of words shared by every file that tags a danger (tools/monstermods.py,
      tools/trials.py, and the map modifiers), so one word means one thing wherever it is read. A word read off the
      name alone, because the game gives the thing no words, is in `est` and says Estimate beside it. */
-  harms:    {type: 'tags', at: 'dg', slot: 'body', label: 'What it does to you', est: 'est'},
+  harms:    {type: 'tags', first: 'danger', at: 'dg', slot: 'body', label: 'What it does to you', est: 'est'},
   /* What a weighted pool in a table of its own can add, each line with its share of the pool: here, what
      corrupting or cleansing a map on the Atlas adds (data/atlascontent.json). A pool the file flags carries
      the flag and its reason. Drawn on an opened card only. */
@@ -526,7 +545,7 @@ export const FIELDS = {
      Two columns and never one sentence: the price moves by the hour and carries its own age, the level does
      not move and carries its source (docs/frame.md, "A number that moves, beside one that does not"). A step
      the market has no price for shows no number at all, never a stale one and never a zero. */
-  ladder:   {type: 'ladder', at: 'up', slot: 'body', label: 'The upgrades', src: 'poe2db'},
+  ladder:   {type: 'ladder', trade: 1, at: 'up', slot: 'body', label: 'The upgrades', src: 'poe2db'},
   /* the modifier it puts on an item, per kind of item: an essence adds a different one to a bow than to a body
      armour, and the game's one line says none of it. Anything else that adds a known modifier reads the same
      table, keyed by whatever "at" names (tools/essences.py). */
@@ -538,14 +557,14 @@ export const FIELDS = {
      "Source not known") and its labels, out of a table of its own keyed by the name (tools/bosses.py writes
      data/dropsfrom.json). Drop pools are held on GGG's servers, so every line names its sources; the file's
      own `labels` gives the one that carries a tooltip. design/boss-drops.md. */
-  drop:     {type: 'drop', at: 'n', slot: 'body', file: 'data/dropsfrom.json'},
+  drop:     {type: 'drop', first: 'drop', at: 'n', slot: 'body', file: 'data/dropsfrom.json'},
   canroll:  {type: 'pool', at: 'n', slot: 'body', file: 'data/craft/@cr.json', of: 'm', label: 'Modifiers it can roll'},
   cancorrupt: {type: 'pool', at: 'n', slot: 'body', file: 'data/craft/@cr.json', of: 'c', label: 'A corruption can add'},
   /* The same words on a map modifier, out of a table of its own found by the card's name: a tag read off the name
      alone says Estimate beside it, and a tag with the game's own line behind it shows that line on hover.
      tools/mapdanger.py stops when its words and tools/monstermods.py's part, in word or in order. A rare monster
      modifier carries its own words (`harms`, on its own card): its keyword card is that card now. */
-  mapdanger: {type: 'danger', at: 'n', slot: 'body', file: 'data/mapdanger.json',
+  mapdanger: {type: 'danger', first: 'danger', at: 'n', slot: 'body', file: 'data/mapdanger.json',
     label: 'On your maps'},
   /* the real weight a thing rolls at where the game rolls for it unseen — a Forbidden Rite, a strongbox, an
      Azmeri spirit — and its share of each pool it is in (tools/odds.py, off the game's own tables). The outcome's
@@ -569,7 +588,7 @@ export const FIELDS = {
      league, with the move over 7 days and the league's days as a line. Measured from GGG's feed hour by hour,
      never modelled. `mechlines`: what it holds that has no card — the waystone modifiers that add it, the
      campaign bosses a rite calls up. A keyword that is no mechanic finds nothing and draws nothing. */
-  share:    {type: 'share', slot: 'body', file: 'data/leaguemech.json', label: 'Of what the Currency Exchange traded'},
+  share:    {type: 'share', trade: 1, slot: 'body', file: 'data/leaguemech.json', label: 'Of what the Currency Exchange traded'},
   mechlines: {type: 'mechlines', slot: 'body', file: 'data/leaguemech.json', of: ['waystone', 'campaign'],
     say: {waystone: 'Waystone modifiers that add it', campaign: 'What its rites call up in the campaign'}},
   /* ---------- the Currency Exchange, measured (design/market-products.md) ----------
@@ -579,12 +598,12 @@ export const FIELDS = {
      (`at`); the cards' own parts come in bundles, and `key` is the file that says which bundle holds a card
      (its site.cards, by `at`): `#` in `file` is that bundle's number. `of` says which part of the row it draws.
      A price in any of them carries the hour it is from; a rule's words are the file's own. */
-  liquid:   {type: 'market', of: 'pill', at: 'n', slot: 'pill', file: 'data/market/liquidity.json'},
-  stock:    {type: 'market', of: 'stock', at: 'n', slot: 'pill', file: 'data/market/liquidity.json'},
-  leaguedays: {type: 'market', of: 'days', at: 'did', slot: 'body', file: 'data/market/cards-#.json',
+  liquid:   {type: 'market', trade: 1, of: 'pill', at: 'n', slot: 'pill', file: 'data/market/liquidity.json'},
+  stock:    {type: 'market', trade: 1, of: 'stock', at: 'n', slot: 'pill', file: 'data/market/liquidity.json'},
+  leaguedays: {type: 'market', trade: 1, of: 'days', at: 'did', slot: 'body', file: 'data/market/cards-#.json',
     key: 'data/market/index.json', label: 'By league day'},
-  gap:      {type: 'market', of: 'gap', at: 'n', slot: 'body', file: 'data/market/gap.json', label: 'Other leagues, last 24 hours'},
-  sellmap:  {type: 'market', of: 'sell', at: 'did', slot: 'body', file: 'data/market/cards-#.json',
+  gap:      {type: 'market', trade: 1, of: 'gap', at: 'n', slot: 'body', file: 'data/market/gap.json', label: 'Other leagues, last 24 hours'},
+  sellmap:  {type: 'market', trade: 1, of: 'sell', at: 'did', slot: 'body', file: 'data/market/cards-#.json',
     key: 'data/market/index.json', label: 'When it trades'},
   quote:    {type: 'quote', at: 'qt', slot: 'body', every: 1},   // the game's own flavour line
   options:  {type: 'options', at: 'o', slot: 'body', every: 1},
@@ -642,7 +661,7 @@ export const FIELDS = {
      `label`. `side` is which end this card is; `ends` are the cards the other end may be, each read out of the
      file the site already draws it from (`list` in that file: an object keyed by name, or rows whose `name`
      field is the name). The worker checks a report against the same files. */
-  gotfrom:  {type: 'reports', slot: 'body', api: 'api/drops', side: 'item', label: 'Source: player reports', ends: [
+  gotfrom:  {type: 'reports', first: 'drop', slot: 'body', api: 'api/drops', side: 'item', label: 'Source: player reports', ends: [
     {k: 'x', file: 'data/bosses.json', list: 'bosses', name: 'name', one: 'Boss'},
     {k: 'r', file: 'data/areas.json', list: 'areas', name: 'n', one: 'Area'}]},
   gothere:  {type: 'reports', slot: 'body', api: 'api/drops', side: 'from', label: 'Source: player reports', ends: [
@@ -911,7 +930,7 @@ export const KINDS = [
      keystone does (kw), and the keyword card is folded into it: its name is the game's word wherever a line says
      it, and it claims the address the keyword page had, before a currency of the same name. */
   {k: 'o', one: 'Rune', many: 'Runes', place: 'Rune recipes', link: './#/runes?rune=@n', index: true, search: true,
-   crawl: {word: 'rune', list: 'runes', rank: 3, is: 'DefinedTerm'},
+   crawl: {word: 'rune', list: 'runes', rank: 3, is: 'DefinedTerm'}, sprite: 'runes',
    kw: 'name', words: {n: 'own', mark: 'game'},
    fields: [...HEAD, 'recipes', ...SAYS, 'bands', ...REST, ...FOOT],
    acts: ['pin', 'open'],
@@ -972,7 +991,7 @@ export const KINDS = [
    rel: ['namedby', 'cat']},
 
   {k: 'x', one: 'Boss', tone: 'str', many: 'Bosses', place: 'Bosses', link: './#/bosses?q=@n', own: './bosses.js',
-   search: true,
+   search: true, sprite: 'bosses',
    fields: [...HEAD, ...BODY, 'gothere', ...FOOT],
    acts: ['pin', 'open'],
    rel: ['drops', 'foughtin', 'bossmech', 'askedby', 'namedby', 'cat']},
@@ -982,7 +1001,7 @@ export const KINDS = [
      cards they name under Connections, with today's price where the market has one. A pool whose shape is our
      reading of the table carries Subject to change and the file's reason. No card has a tab, so the card is the
      page. */
-  {k: 's', one: 'Pool', many: 'Odds', index: true, search: true,
+  {k: 's', one: 'Pool', many: 'Odds', index: true, search: true, sprite: 'pools',
    fields: [...HEAD, 'unsure', 'outcount', 'pooltotal', 'likely', ...SAYS, 'outcomes', 'why', ...REST, ...FOOT],
    acts: ['pin'],
    rel: ['rolls', 'poolmech', 'cat']},
@@ -993,14 +1012,14 @@ export const KINDS = [
      no list of its own: its card adds up what the act gives for good and holds its areas and quests. None of
      them has a tab, so the card is the page. */
   {k: 'r', one: 'Area', tone: 'muted', many: 'Areas', index: true, search: true,
-   crawl: {word: 'area', list: 'areas', rank: 7, is: 'DefinedTerm'},
+   crawl: {word: 'area', list: 'areas', rank: 7, is: 'DefinedTerm'}, sprite: 'areas',
    fields: [...HEAD, 'waypoint', 'town', 'waystone', 'unsure', 'respen', 'monlife', 'mondmg', 'biome', 'content',
             ...SAYS, 'hidden', 'corruption', ...REST, 'gothere', ...FOOT],
    acts: ['pin'],
    rel: ['leadsto', 'leadsfrom', 'bosshere', 'questhere', 'openedwith', 'onlyholds', 'askedby', 'actof', 'inact']},
 
   {k: 'j', one: 'Quest', tone: 'muted', many: 'Quests', index: true, search: true,
-   crawl: {word: 'quest', list: 'quests', rank: 8, is: 'DefinedTerm'},
+   crawl: {word: 'quest', list: 'quests', rank: 8, is: 'DefinedTerm'}, sprite: 'quests',
    fields: [...HEAD, 'questgold', 'permanent', 'oneofset', 'unsure', 'where', 'givenby', 'rewardfrom',
             ...SAYS, 'take', 'keeps', ...REST, ...FOOT],
    acts: ['pin'],
@@ -1010,7 +1029,7 @@ export const KINDS = [
      Sekhemas, what it does, what it does to you and what it pays (tools/modcards.py, off tools/trials.py;
      design/trials.md). The four Ascensions are the Ascendancy cards' own (`ascend`). */
   {k: 'l', one: 'Trial modifier', many: 'Trial modifiers', index: true, search: true,
-   crawl: {word: 'trial', list: 'trials', rank: 11, is: 'DefinedTerm'},
+   crawl: {word: 'trial', list: 'trials', rank: 11, is: 'DefinedTerm'}, sprite: 'trials',
    fields: [...HEAD, 'trialmark', 'onwho', 'steps', 'rooms', 'floorlv', 'relicgen', 'unsure',
             ...SAYS, 'risk', 'reward', 'tiers', 'others', 'floornames', 'markwhy', 'harms', ...REST, ...FOOT],
    acts: ['pin'],

@@ -64,7 +64,7 @@ TREE = BUILD / 'tree'
 CACHE = ROOT / 'tools' / 'cache'
 STAMPS = CACHE / 'stamps.json'
 LEAVE = {'.git', 'node_modules', 'dist', 'build', 'tmp', '.wrangler', '__pycache__'}   # never copied into the tree
-WATCH = ('data', 'explore.html', 'tools/craftweights.json', 'tools/dev/gaps.txt')     # what a stage may change
+WATCH = ('data', 'explore.html', 'sprites', 'tools/craftweights.json', 'tools/dev/gaps.txt')   # what a stage may change
 RECORD = 'data/' + lastgood.RECORD   # the last good record: merged by lastgood, never swapped in as a data file
 SENDS = ('WI_DATA_DIR', 'WI_INGEST_KEY', 'ACTIONS_ID_TOKEN_REQUEST_URL', 'ACTIONS_ID_TOKEN_REQUEST_TOKEN')
 CADENCES = {'patch': ('patch', 'daily'), 'daily': ('daily',), 'hourly': ('hourly',), 'hand': ('hand',)}
@@ -225,6 +225,13 @@ STAGES = [
                 'data/exchange.json', 'data/index.json'],
          last=['data/bosses.json', 'data/market.json', 'data/exchange.json'],
          writes=['data/index.json', 'data/index-core.json', 'data/index-rest.json'], count={'data/index.json': 'items'}),
+    # the game's own pictures for the cards that had none (#179): quests, trial modifiers, runes, areas, pools and
+    # bosses, each kind cut into a sprite sheet of its own. After every stage that makes those cards, before nodelinks
+    dict(name='cardart', run=['tools/cardart.py'], cadence='patch', source='game files',
+         reads=[CDN, DATSCHEMA, 'data/index.json', 'data/bosses.json', 'data/areas.json', 'data/odds.json'],
+         last=['data/bosses.json'],
+         writes=['data/index.json', 'data/index-core.json', 'data/index-rest.json', 'sprites/*.webp'],
+         count={'data/index.json': 'items'}),
     dict(name='nodelinks', run=['tools/nodelinks.py'], cadence='patch', source='files',
          reads=['data/index.json'],
          writes=['data/index.json', 'data/index-core.json', 'data/index-rest.json'], count={'data/index.json': 'items'}),

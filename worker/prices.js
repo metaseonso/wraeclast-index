@@ -312,8 +312,25 @@ function fields(r){
     out.h = h.map(([d, v]) => [MON[+d.slice(5, 7) - 1] + ' ' + +d.slice(8, 10), v]);
     out.sp = h.slice(-7).map(x => x[1]);
     const today = Date.parse(h[h.length - 1][0]), weekAgo = h.find(x => today - Date.parse(x[0]) <= 7 * 864e5);
-    if(weekAgo && today - Date.parse(weekAgo[0]) >= 6 * 864e5 && weekAgo[1] > 0)
-      out.ch = +(((h[h.length - 1][1] / weekAgo[1]) - 1) * 100).toFixed(1);
+    // the move is from the middle of the week's first three days, never one day: one stray listing (Mageblood at
+    // 2 div on 23 Sep) read +24,900%. A start 5x off the whole week's middle is such a listing, and there is no move.
+    const age = x => today - Date.parse(x[0]);
+    const mid = a => { const s = a.filter(v => v > 0).sort((p, q) => p - q); return s.length ? s[(s.length - 1) >> 1] : 0; };
+    const from = mid(h.filter(x => age(x) <= 7 * 864e5 && age(x) >= 5 * 864e5).map(x => x[1]));
+    const week = mid(h.filter(x => age(x) <= 7 * 864e5).map(x => x[1]));
+    // and only where the week is a market: a price today, 10 listings or more, and a week whose dearest and
+    // cheapest days are within 20x (a cheap unique that went 0.002 -> 2.5 -> 0.002 div has no move to state)
+    const days = h.filter(x => age(x) <= 7 * 864e5).map(x => x[1]).filter(v => v > 0);
+    const market = out.v !== undefined && (r.total ?? 0) >= 10 && days.length && Math.max(...days) <= Math.min(...days) * 20;
+    if(market && weekAgo && age(weekAgo) >= 6 * 864e5 && from > 0 && week > 0 && from <= week * 5 && from >= week / 5)
+      out.ch = +(((h[h.length - 1][1] / from) - 1) * 100).toFixed(1);
+    // a thin market's jump is a joke listing, not a price: today 20x off its own last week on 5 listings or fewer
+    // (Serle's Grit at 136,000,000 div on 2 listings, 30 Sep) shows no price that day, and its spark leaves it out
+    const before = mid(h.slice(-8, -1).map(x => x[1]));
+    if(out.v !== undefined && before > 0 && (r.total ?? 0) <= 5 && (out.v > before * 20 || out.v < before / 20)){
+      delete out.v; delete out.ch;
+      out.sp = out.sp.slice(0, -1);
+    }
   }
   return out;
 }

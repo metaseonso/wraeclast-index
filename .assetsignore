@@ -17,9 +17,13 @@ package.json
 package-lock.json
 dist
 /build/
+# design proposals' screenshots: for the pull request, never the site
+/design/previews/
 # the MCP package (npm: wraeclast-index-mcp): its own code, tests and fixture, never the site's
 /mcp/
 # the market files: the worker serves the Market job's copies at /data/market/<name> (worker/files.js)
 data/market
 # the copy of the numbers per patch the data diff is made from (tools/patchdiff.py); the site reads data/patchdiff/
 data/snapshots
+# the screenshots a preview PR carries for the owner, never the site's
+/design/previews/
