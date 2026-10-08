@@ -149,7 +149,7 @@ export const INDEX = [
   {id: 'economy', name: 'Economy', pages: [
     {route: 'currency', k: 'c', icon: 'currency', about: 'every currency price and trend, hour by hour'},
     {route: 'market', icon: 'market', about: 'the Currency Exchange measured: price index, league start, rising fast, crafting demand, league gap, patch shocks, weekly digest'},
-    {route: 'trade', icon: 'trade', about: 'any trade search in plain words, opened on the official trade site'},
+    {route: 'trade', icon: 'trade', about: 'any trade search, opened on the official trade site'},
   ]},
   {id: 'craft', pages: [{route: 'craft', icon: 'craft', about: 'the crafting bench, with the real weights'}]},
   {id: 'data', name: 'Data', pages: [

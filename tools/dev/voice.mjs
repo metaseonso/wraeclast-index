@@ -115,6 +115,7 @@ export const SHAPES = [
   [/\bmakes it easy\b/i,        'sells the feature'],
   [/\blets you\b/i,          'sells the feature'],
   [/\bhandy\b/i,                'sells the feature'],
+  [/\bin plain (?:words|english)\b/i, 'sells the feature'],   // the home page's line, 9 Oct (CDA)
   [/\bkeep in mind\b/i,         'essay glue'],
   [/\bnote that\b/i,            'essay glue'],
   [/\bin other words\b/i,       'essay glue'],

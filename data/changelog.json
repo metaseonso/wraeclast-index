@@ -290,7 +290,7 @@
    "On a phone the card fills the screen, so there is far less dead space to mis-tap.",
    "Escape while typing clears the box instead of closing the card.",
    "Cleaner card text: 197 leftover lines of game code removed from unique items.",
-   "Page notes rewritten in plain English."
+   "Page notes rewritten."
   ]
  },
  {
@@ -373,7 +373,7 @@
  {
   "v": "0.17",
   "date": "19 Sep 2026",
-  "title": "Trade in plain words",
+  "title": "Trade search",
   "items": [
    "A Trade page that speaks human.",
    "A Trade button on every card."
