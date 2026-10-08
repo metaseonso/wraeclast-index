@@ -766,7 +766,7 @@ PARSE = re.compile(r"JSON\.parse\(document\.getElementById\('(\w+)'\)\.textConte
 RUN = re.compile(r'<script>WI_DATA\.run\((\[[^\]]*\]),function\(\)\{(.*?)\}\);</script>', re.S)
 DATA_TAG = re.compile(r'<script id="wi-data">.*?</script>', re.S)
 DATA_JS = ('<script id="wi-data">/* the page\'s data (tools/sync.py): the tab in the address first, every other file when a script asks for it */\n'
-           'if(navigator.deviceMemory<=4||navigator.hardwareConcurrency<=4||matchMedia("(prefers-reduced-motion: reduce)").matches||(navigator.connection&&navigator.connection.saveData))document.documentElement.classList.add("lite");\n'   # a weak machine: html.lite, as in index.html
+           'if(navigator.deviceMemory<4||navigator.hardwareConcurrency<4||matchMedia("(prefers-reduced-motion: reduce)").matches||(navigator.connection&&navigator.connection.saveData))document.documentElement.classList.add("lite");\n'   # a weak machine: html.lite, as in index.html
            '(function(){var F=__FILES__,W=__FIRST__;var D=window.WI_DATA={files:F},q=Promise.resolve(),got={};'
            'document.documentElement.classList.add("wi-wait");'
            # a file this page names answers the not-found page (or any page): the site may have a newer page that no
