@@ -408,10 +408,28 @@ const codes = (existsSync(WORDS) ? await readdir(WORDS) : []).filter(f => /^[a-z
 const only = opt('--words') || opt('--only');
 const todo = codes.filter(c => !only || c === only);
 if(!todo.length) throw new Error('no table in assets/words/ for ' + (only || 'any language'));
-const patch = opt('--patch') || await findPatch();
+/* The CDN folder: the one asked for, else the live one, else the newest read before (as tools/gamepull.py dat_dir()
+   does). GGG's CDN out of reach and nothing of it here: the last good data/lang stays as it is, said loudly, and
+   the run goes on, so one missing language never holds up the rest of the index (12 Oct: no folder answered). */
+const keep = why => { say('lang · KEPT the last good data/lang: ' + why); process.exit(0); };
+let patch = opt('--patch');
+if(!patch){
+  try { patch = await findPatch(); }
+  catch(e){
+    const dir = join(ROOT, 'tools', 'cache', 'datpull');
+    const have = (existsSync(dir) ? await readdir(dir) : []).filter(v => /^\d+(?:\.\d+)+$/.test(v))
+      .sort((x, y) => { const a = x.split('.').map(Number), b = y.split('.').map(Number);
+        for(let i = 0; i < Math.max(a.length, b.length); i++) if((a[i] || 0) !== (b[i] || 0)) return (a[i] || 0) - (b[i] || 0);
+        return 0; });
+    if(!have.length) keep('the CDN gave no patch folder (' + e.message + ') and none was read before');
+    patch = have[have.length - 1];
+    say('lang · the CDN gave no patch folder (' + e.message + '): reading ' + patch + ', the newest read before');
+  }
+}
 say('lang · CDN folder ' + patch + ' (patch ' + gamePatch(patch) + ')');
 const {schema} = await loadSchema(false);
-const game = await openGame(patch, schema);
+let game;
+try { game = await openGame(patch, schema); } catch(e){ keep('the game files of ' + patch + ' could not be opened (' + e.message + ')'); }
 const langs = {};
 const was = existsSync(join(ROOT, 'data', 'lang', 'langs.json'))
   ? JSON.parse(await readFile(join(ROOT, 'data', 'lang', 'langs.json'), 'utf8')) : {};
@@ -420,13 +438,17 @@ for(const code of todo){
   const table = JSON.parse(await readFile(file, 'utf8')), meta = table._ || {};
   if(!meta.game || !meta.csd) throw new Error('assets/words/' + code + '.json says under "_" neither its game folder nor its stat description name');
   say(code + ' · ' + meta.name + ' (data/balance/' + meta.game + ', lang "' + meta.csd + '")');
-  const D = await pairs(game, schema, meta.game);
-  if(opt('--words')){ await siteWords(code, file, D); continue; }
+  let D;
   const blocks = [];
-  for(const f of await statFiles(game)){
-    const bytes = await game.file(f);
-    blocks.push(...parseCsd(new TextDecoder('utf-16le').decode(bytes), meta.csd));
-  }
+  try {   // everything read from the CDN, before anything is written: a miss here keeps the last good copy whole
+    D = await pairs(game, schema, meta.game);
+    if(!opt('--words')) for(const f of await statFiles(game)){
+      const bytes = await game.file(f);
+      if(!bytes) throw new Error(f + ' is not in the game files of ' + patch);
+      blocks.push(...parseCsd(new TextDecoder('utf-16le').decode(bytes), meta.csd));
+    }
+  } catch(e){ keep(code + ': ' + e.message); }
+  if(opt('--words')){ await siteWords(code, file, D); continue; }
   const T = templates(blocks, D.tmpl);
   say('  ' + blocks.length.toLocaleString('en') + ' stat descriptions, ' + T.n.toLocaleString('en') + ' wordings');
   langs[code] = {...await build(code, meta, D, T, table), patch: gamePatch(patch)};
