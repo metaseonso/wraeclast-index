@@ -2,7 +2,7 @@
 
      python tools/pipeline.py --only datpull   the way to run it: a patch stage, under the last good rule
      node tools/datpull.mjs                  find today's patch, pull, write data/game/ in place
-     node tools/datpull.mjs --patch 4.5.5.3  that CDN folder, no probing
+     node tools/datpull.mjs --patch 0.5.5.4.2  that CDN folder, no asking
      node tools/datpull.mjs --out <dir>      write somewhere else
      node tools/datpull.mjs --only strongboxes,ritual_rites   those files only
      node tools/datpull.mjs --all            the files marked later too
@@ -25,9 +25,13 @@
    dat(), and dat() asks this. One reader of the game's bundles, no token and no private copy of the tables.
 
    How, step by step (proved on all 1,023 tables of 0.5.5 in #83):
-   1. The patch folder. GGG's patch server speaks raw TCP on 13060 and says nothing through a proxy, so start from
-      the version RePoE's PoE2 export names (4.5.5.2) and ask GGG's CDN for patch-poe2.poecdn.com/<v>/Bundles2/
-      _.index.bin with HEAD, a few hotfix numbers either side. The highest that answers is live; old ones are gone.
+   1. The patch folder. Ask GGG's patch server, as the game client does: raw TCP to patch.pathofexile2.com:13060,
+      send the bytes [1, 6], and the reply names the CDN root, a length byte at 34 and UTF-16 from 35
+      (https://patch-poe2.poecdn.com/0.5.5.4.2/ on 12 Oct 2026). Since about 28 Sep the folders are named like the
+      game's patches, 0.5.5.4.2; the old 4.5.5.x folders are gone and pathofexile-dat 15.2.0's toCdnUrl sends any
+      folder not starting 4. to the PoE1 CDN, so the bundle URL is built here (#208). The patch server says
+      nothing through a proxy: then HEAD patch-poe2.poecdn.com/<v>/Bundles2/_.index.bin for a few folders past the
+      newest read before. The highest that answers is live; old ones are gone.
    2. The schema. poe-tool-dev/dat-schema's own release file, schema.min.json (version 7), the PoE2 half of it
       (validFor & 2). Which commit it was built from is asked of git, and both land in data/game/_meta.json.
    3. The bundles. The index (about 115 MB) and then only the bundles the declared tables sit in, each kept in
@@ -51,7 +55,8 @@
    Every file is { source, table, note, ids, rows }. `ids` names the fields that may hold an internal id (a join
    key, a hidden stat): tools/lastgood.py fails a pull where any other field does. Nothing else is written
    anywhere but the cache. */
-import { mkdir, readFile, writeFile, rename, stat } from 'node:fs/promises';
+import { mkdir, readFile, readdir, writeFile, rename, stat } from 'node:fs/promises';
+import { connect } from 'node:net';
 import { existsSync } from 'node:fs';
 import { spawnSync, execFileSync } from 'node:child_process';
 import { join, dirname, resolve } from 'node:path';
@@ -109,21 +114,58 @@ async function cached(file, url){
 }
 
 /* ---------- 1. which patch folder is live ---------- */
-async function findPatch(){
-  const home = await (await get(REPOE)).text();
-  const m = home.match(/version (4\.\d+\.\d+)\.(\d+)/);
-  if(!m) throw new Error('RePoE’s page no longer names a game version');
-  let found = null;
-  for(let k = Math.max(0, +m[2] - 2); k <= +m[2] + 8; k++){
-    const v = m[1] + '.' + k;
-    const r = await get(CDN + v + '/Bundles2/_.index.bin', {method: 'HEAD'}).catch(() => null);
-    if(r && r.ok) found = v;            // the highest that answers
-  }
-  if(!found) throw new Error('no patch folder answers near ' + m[1] + '.' + m[2]);
-  return found;
+const PATCH_SERVER = {host: 'patch.pathofexile2.com', port: 13060};
+const KNOWN = '0.5.5.4.2';   // the folder the patch server named on 12 Oct 2026: where the probe starts with nothing newer
+const indexUrl = v => CDN + v + '/Bundles2/_.index.bin';
+// newest last: the folders named 4.x.y.z (before about 28 Sep 2026) come before every 0.x.y.z.w, then number by number
+const folderKey = v => [v.startsWith('4.') ? 0 : 1, ...v.split('.').map(Number)];
+const byFolder = (x, y) => { const a = folderKey(x), b = folderKey(y);
+  for(let i = 0; i < Math.max(a.length, b.length); i++) if((a[i] ?? -1) !== (b[i] ?? -1)) return (a[i] ?? -1) - (b[i] ?? -1);
+  return 0; };
+
+// the CDN root the patch server names: a length byte at 34, then that many UTF-16 characters
+function askPatchServer(){
+  return new Promise((ok, no) => {
+    let buf = Buffer.alloc(0);
+    const s = connect({...PATCH_SERVER, timeout: 10000}, () => s.write(Buffer.from([1, 6])));
+    s.on('data', d => {
+      buf = Buffer.concat([buf, d]);
+      if(buf.length > 35 && buf.length >= 35 + buf[34] * 2){ s.destroy(); ok(buf.toString('utf16le', 35, 35 + buf[34] * 2)); }
+    });
+    s.on('timeout', () => { s.destroy(); no(new Error('the patch server said nothing in 10 s')); });
+    s.on('error', e => no(new Error('the patch server: ' + (e.code || e.message))));
+    s.on('close', () => no(new Error('the patch server closed without naming a CDN folder')));
+  });
 }
-// 4.5.5.3 on the CDN is patch 0.5.5 in the game's own numbering
-const gamePatch = cdn => cdn.replace(/^4\.(\d+)\.(\d+).*$/, '0.$1.$2');
+
+async function findPatch(){
+  let why;
+  try {
+    const root = await askPatchServer();
+    const m = root.match(/^(https:\/\/[^/]+\/)(\d+(?:\.\d+)+)\/$/);
+    if(!m) throw new Error('the patch server named ' + JSON.stringify(root) + ', not a CDN folder');
+    if(m[1] !== CDN) throw Object.assign(new Error('the patch server names a new CDN, ' + m[1] + ': tools/datpull.mjs CDN needs it'), {loud: true});
+    const r = await get(indexUrl(m[2]), {method: 'HEAD'}).catch(() => null);
+    if(r && r.ok) return m[2];
+    why = 'the patch server named ' + m[2] + ' but the CDN has no index there';
+  } catch(e){ if(e.loud) throw e; why = e.message; }
+  say('  ' + why + '; asking the CDN for the folders past the newest read before');
+  // the newest 0.x.y.z.w folder read before (this cache, or tools/gamepull.py's dat-<folder>), else KNOWN
+  const seen = [KNOWN];
+  for(const [dir, pre] of [[CACHE, ''], [join(ROOT, 'tools', 'cache'), 'dat-']])
+    if(existsSync(dir)) for(const n of await readdir(dir))
+      if(n.startsWith(pre) && /^0(\.\d+){4}$/.test(n.slice(pre.length))) seen.push(n.slice(pre.length));
+  const [a, b, c, h, n] = seen.sort(byFolder).pop().split('.').map(Number);
+  // the next two hotfixes and their first builds, then this hotfix's later builds, the newest first: at most 15 HEADs
+  for(let hh = h + 2; hh >= h; hh--) for(let nn = 4; nn >= (hh === h ? n : 0); nn--){
+    const v = [a, b, c, hh, nn].join('.');
+    const r = await get(indexUrl(v), {method: 'HEAD'}).catch(() => null);
+    if(r && r.ok) return v;
+  }
+  throw new Error(why + ', and no CDN folder answers from ' + [a, b, c, h, n].join('.') + ' to ' + [a, b, c, h + 2, 4].join('.'));
+}
+// the CDN folder as players know the patch: 0.5.5.4.2 (and 4.5.5.3 before 28 Sep 2026) is patch 0.5.5
+const gamePatch = cdn => cdn.replace(/^[04]\.(\d+)\.(\d+).*$/, '0.$1.$2');
 
 /* ---------- 2. the schema, and the commit it came from ---------- */
 async function loadSchema(askGit = true){
@@ -164,7 +206,8 @@ async function openGame(patch, schema){
   const bundle = async name => {
     const f = join(dir, name.replace(/\//g, '@'));
     if(!existsSync(f)) fetched++;
-    return new Uint8Array(await cached(f, B.toCdnUrl(patch, name)));
+    // not B.toCdnUrl: pathofexile-dat 15.2.0 sends every folder not starting 4. to the PoE1 CDN (#208)
+    return new Uint8Array(await cached(f, CDN + patch + '/Bundles2/' + name));
   };
   const indexBin = await bundle('_.index.bin');
   const raw = new Uint8Array(B.decompressedBundleSize(indexBin));
@@ -633,7 +676,7 @@ const FILES = [
 
 /* ---------- run ---------- */
 // the reader, for a tool that reads the game's files beside this one (tools/lang.mjs)
-export {findPatch, gamePatch, loadSchema, openGame, clean, real};
+export {findPatch, gamePatch, byFolder, loadSchema, openGame, clean, real};
 if(MAIN) await main();
 async function main(){
   if(args.includes('--find-patch')){ console.log(await findPatch()); process.exit(0); }

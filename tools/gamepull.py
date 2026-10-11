@@ -203,7 +203,8 @@ def dat_dir():
                   file=sys.stderr)
         if not re.fullmatch(r'\d+(?:\.\d+)+', live):
             have = sorted((p.name[4:] for p in cache.glob('dat-*') if re.fullmatch(r'dat-\d+(?:\.\d+)+', p.name)),
-                          key=lambda v: [int(x) for x in v.split('.')])
+                          # 4.x.y.z folders (before about 28 Sep 2026) are older than every 0.x.y.z.w (#208)
+                          key=lambda v: [0 if v.startswith('4.') else 1] + [int(x) for x in v.split('.')])
             if not have:
                 raise SystemExit('cannot read the game tables: no live patch folder and none read before')
             live = have[-1]

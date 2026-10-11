@@ -50,7 +50,7 @@ const stop = e => { say('lang stopped: ' + (e && e.message || e)); process.exit(
 process.on('uncaughtException', stop);
 process.on('unhandledRejection', stop);
 
-const {findPatch, gamePatch, loadSchema, openGame} = await import(pathToFileURL(join(ROOT, 'tools', 'datpull.mjs')));
+const {findPatch, gamePatch, byFolder, loadSchema, openGame} = await import(pathToFileURL(join(ROOT, 'tools', 'datpull.mjs')));
 const {KIND, FIELDS, fieldsOf} = await import(pathToFileURL(join(ROOT, 'assets', 'kinds.js')));
 
 /* The tables whose strings are paired, English to translation, row by row and column by column: every string
@@ -417,10 +417,7 @@ if(!patch){
   try { patch = await findPatch(); }
   catch(e){
     const dir = join(ROOT, 'tools', 'cache', 'datpull');
-    const have = (existsSync(dir) ? await readdir(dir) : []).filter(v => /^\d+(?:\.\d+)+$/.test(v))
-      .sort((x, y) => { const a = x.split('.').map(Number), b = y.split('.').map(Number);
-        for(let i = 0; i < Math.max(a.length, b.length); i++) if((a[i] || 0) !== (b[i] || 0)) return (a[i] || 0) - (b[i] || 0);
-        return 0; });
+    const have = (existsSync(dir) ? await readdir(dir) : []).filter(v => /^\d+(?:\.\d+)+$/.test(v)).sort(byFolder);
     if(!have.length) keep('the CDN gave no patch folder (' + e.message + ') and none was read before');
     patch = have[have.length - 1];
     say('lang · the CDN gave no patch folder (' + e.message + '): reading ' + patch + ', the newest read before');
