@@ -176,7 +176,7 @@ export function checkTable(seen = [], types = null){
    visits were all counted as Search. Three files run before any module is there to read (the line that sets
    the tab on the first paint, the drill-down page, the tool that writes its header), so those are held to
    the same names and the same words instead. */
-const READS = [['assets/track.js', './kinds.js'], ['assets/admin.js', './kinds.js'], ['worker/dash.js', '../assets/kinds.js']];
+const READS = [['assets/ui/track.js', '../kinds.js'], ['assets/admin.js', './kinds.js'], ['worker/dash.js', '../assets/kinds.js']];
 export async function checkOneTable(){
   const bad = [];
   const text = f => readFile(join(ROOT, f), 'utf8').catch(() => null);

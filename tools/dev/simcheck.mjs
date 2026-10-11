@@ -50,7 +50,7 @@ const CASES = [
    lives in this file; what is below the engine is the measuring. */
 import { useData, prepClass, rng, oneOf, newItem, clone, fam, side, famOf, tagsOf, groupsOf, lvlOf,
   countSide, capFor, heldTags, shareOf, candidates, draw, pickOne, RANGE, rollValues, modLines, addMod,
-  STEP, OMEN, DECISION, NO_ROLL, LEGACY, DESECRATE_OMEN, omenOpts } from '../../assets/engine.js';
+  STEP, OMEN, DECISION, NO_ROLL, LEGACY, DESECRATE_OMEN, omenOpts } from '../../assets/engines/engine.js';
 
 /* ---------- the data ---------- */
 const readJSON = async p => JSON.parse(await readFile(join(ROOT, p), 'utf8'));
