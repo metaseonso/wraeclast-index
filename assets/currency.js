@@ -4,6 +4,15 @@
 import { D, $, esc, card, flow, money, moneyHTML, params, openDetail, openBox, actHTML, runAct, iconHTML, words, hits, onType, noPrice } from './app.js';
 import { ASKS, ASK } from './kinds.js';   // the questions the page is asked, and which group answers which
 
+/* ---------- the page contract ----------
+   What every tab module says about itself (docs/framework.md, "Pages"): the route it answers, what it needs before
+   it is mounted, and the state its address carries. The router (assets/app.js show) decides on its own until
+   docs/migration.md stage 10 lands; until then `needs` states what the router awaits for this tab today, and
+   `state` is the one place this tab reads its address. */
+export const route = 'currency';
+export const needs = ['index', 'hist'];   // the whole index and the price history, as the router awaits them before every tab that draws cards
+export function state(p){ return {c: p.get('c') || ''}; }
+
 const WATCH_KEY = 'wi.watch';
 function loadWatch(){ try { return new Set(JSON.parse(localStorage.getItem(WATCH_KEY) || '[]')); } catch { return new Set(); } }
 function saveWatch(){ try { localStorage.setItem(WATCH_KEY, JSON.stringify([...S.watch])); } catch {} }
@@ -450,7 +459,7 @@ export function mount(el){
 }
 
 function update(){
-  const c = params().get('c');
+  const c = state(params()).c;
   if(c){ S.q = c.toLowerCase(); S.words = words(S.q); S.cat = 'all'; S.trend = 'all'; S.liquid = false;
     const q = $('#cxq', EL); if(q) q.value = c;
     const l = $('#cxliq', EL); if(l) l.checked = false;

@@ -7,6 +7,15 @@ import { classFor } from './basepool.js';
    numbers. Nothing on this page works a stat out for itself. */
 import * as M from './maths.js';
 
+/* ---------- the page contract ----------
+   What every tab module says about itself (docs/framework.md, "Pages"): the route it answers, what it needs before
+   it is mounted, and the state its address carries. The router (assets/app.js show) decides on its own until
+   docs/migration.md stage 10 lands; until then `needs` states what the router awaits for this tab today, and
+   `state` is the one place this tab reads its address. */
+export const route = 'build';
+export const needs = ['index', 'hist'];   // the whole index and the price history, as the router awaits them before every tab that draws cards
+export function state(p){ return {}; }
+
 /* ---------- 1. code -> XML ----------
    PoB: base64url( zlib( xml ) ). DecompressionStream('deflate') reads zlib. */
 async function decode(code){
@@ -672,6 +681,7 @@ export function mount(el){
   try { const last = sessionStorage.getItem('wi.pob'); if(last){ $('#pob', el).value = last; go(); } } catch {}
   return {};
 }
+export function unmount(){ EL = null; LAST = null; }
 
 async function run(code){
   const out = $('#pobout', EL), msg = $('#pobmsg', EL);
