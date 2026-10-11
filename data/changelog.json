@@ -1,5 +1,20 @@
 [
  {
+  "v": "0.48",
+  "date": "12 Oct 2026",
+  "title": "Cleaner cards, the latest hotfix",
+  "items": [
+   "Game data from GGG's latest 0.5.5 hotfix.",
+   "Card popups lead with the game's text. Patch notes, gold prices and related cards fold up, the most useful group open.",
+   "Keyword chips open their meaning in place.",
+   "Search shows only the kinds that have results. Every card price shows its age.",
+   "Easier to read: lighter grey text, larger small labels, bigger tap targets on phones. The drill-down tables sort from the keyboard.",
+   "Source lines name the game files, not internal tables. Crafting rows show their ranges.",
+   "Boss cards no longer show a value per kill.",
+   "Phones draw the poison fog again."
+  ]
+ },
+ {
   "v": "0.47",
   "date": "4 Oct 2026",
   "title": "Paste, modes, pictures, Russian",
