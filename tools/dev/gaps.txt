@@ -1,8 +1,8 @@
 Wraeclast Index · the official game data, and what we ship of it
 
   export  patch 0.5.5, files dated 11 Sep 2026
-  pulled  2026-09-29 03:55 UTC · 23 files, 22 downloaded
-  index   7,859 cards over 7,332 names
+  pulled  2026-10-11 17:04 UTC · 23 files, 23 downloaded
+  index   8,594 cards over 8,050 names
 
   Counts are names, not cards: one name can be several cards.
 
@@ -46,7 +46,7 @@ Wraeclast Index · the official game data, and what we ship of it
   Bases and currency count the official trade site's lists instead (data/trade.json): the export
   still marks hundreds of old and unused items released.
 
-  · 1086 items have official text in data/info.json and 337 of them get no card — but only 7 of those
+  · 1086 items have official text in data/info.json and 334 of them get no card — but only 7 of those
     are on the trade site's list today. The rest are old items the export still carries.
   · 239 base items grant a skill; we card 201 of them and name the skill on 201. The other 38 are not on
     the trade site's list.
