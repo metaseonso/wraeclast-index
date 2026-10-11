@@ -335,7 +335,9 @@ STAGES = [
          reads=['data/index.json', 'data/index-core.json', 'worker/seo.js', 'assets/kinds.js', 'tools/seoshards.mjs',
                 'data/lang/langs.json'],
          writes=['data/manifest.json', 'data/search/*.json', 'data/cards/*.json', 'data/cards/*/*.json',
-                 'data/seo/*.json', 'data/seo/*/*.json', 'data/seo/words/*.txt']),
+                 'data/seo/*.json', 'data/seo/*/*.json', 'data/seo/words/*.txt'],
+         # a kind's search file is its rows (one a card); the heads file is one list per kind, counted whole
+         count={'data/search/heads.*.json': '', 'data/search/*.json': 'rows'}),
 ]
 BY = {s['name']: s for s in STAGES}
 
@@ -578,7 +580,13 @@ def check_files(stage, changed, root, against, schema=True, later=()):
                 return path, why, {}
             continue
         name = path[len('data/'):] if path.startswith('data/') else path
-        bad = lastgood.look(new, old, count_of(stage, path), file=name)
+        # a kind's search rows carry their words and what the ranking reads; their head (name, sub line, art) is in
+        # data/search/heads.<h>.json since stage 5 of docs/migration.md. A last good copy from before that split
+        # still carries the head on every row, so its shape is another layout's: the count holds, the shape does not
+        same_layout = not (path.startswith('data/search/') and isinstance(old, dict) and isinstance(old.get('rows'), list)
+                           and old['rows'] and isinstance(old['rows'][0], dict) and 'n' in old['rows'][0]
+                           and isinstance(new, dict) and new.get('rows') and 'n' not in new['rows'][0])
+        bad = lastgood.look(new, old, count_of(stage, path), file=name, shape=same_layout)
         if bad:
             return path, bad['why'], bad
         if path == 'data/index.json':
