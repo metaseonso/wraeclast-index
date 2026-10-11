@@ -8,7 +8,8 @@
    - a phone's search button opens the top search under the bar, or on the home page goes to its own search box
    - the group holding the page on show wears the tab's own "here" look: the app marks its links (app.js show()),
      the drill-down page its section buttons (#nav, kept out of sight), and this follows either */
-const NARROW = matchMedia('(max-width:1279px)');   // the same width as the sheet in assets/cards.css
+import { narrow } from './core/screen.js';   // the one place the site's widths are written
+const NARROW = narrow();   // the same width as the sheet in assets/cards.css (SCREEN.bar)
 
 const bar = document.querySelector('header.top');
 if(bar && !bar.dataset.nav){

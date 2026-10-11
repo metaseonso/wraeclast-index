@@ -19,14 +19,13 @@
    canvas pixel per pixel on screen. */
 import { $, esc, first, D, words, hits, openDetail, hrefOf } from './app.js';
 import { KIND } from './kinds.js';
+import { still, lite as LITE } from './core/motion.js';   // less motion asked for, or a weak machine: asked once, in one place
 import { onType } from './app.js';   // the search box waits out a burst of keys, like every box on the site
 
 const TRIP = 11;         // seconds for a light to travel the length of its edge
 const BEAT = 8.5;        // seconds for a hub to breathe in and out
 const GOLD = 0.6180339887;
 const num = n => (+n || 0).toLocaleString('en');
-const still = matchMedia('(prefers-reduced-motion: reduce)');
-const LITE = document.documentElement.classList.contains('lite');
 // canvas pixels per pixel on screen: the screen's own, never more than two, and one on a weak machine
 const ratio = () => LITE ? 1 : Math.min(devicePixelRatio || 1, 2);
 

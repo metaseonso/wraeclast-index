@@ -163,7 +163,7 @@ button.bn-item:focus-visible{outline:2px solid var(--accent); outline-offset:2px
 .bn-note{margin:0}
 
 /* ---------- the phone: the tab as a sheet at the foot of the card ---------- */
-@media (max-width:640px){
+@media (max-width:640px){   /* assets/core/screen.js SCREEN.phone */
   /* The sheet has to stick to something taller than itself, so the box the field left is what sticks on the
      bench, and the run's own block is what sticks on a run. Both sit above the card's Back bar, whose height
      the module measures and hands over in --bn-nav. */

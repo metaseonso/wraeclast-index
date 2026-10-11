@@ -1,0 +1,24 @@
+/* Wraeclast Index: one motion scale for every page (docs/framework.md "Motion").
+   Four durations and two easings, and nothing moves for longer than --dur-4 unless it is ambient (the fog over the
+   crest, the wisp, the map's haze), which keeps its own --amb-* times here and nowhere else. Motion is for a state
+   change: a hover, a focus, a card opening or docking, a list reflowing. The one switch that stops all of it is
+   below; a sheet never writes its own prefers-reduced-motion block (tools/dev/arch.mjs holds the rule).
+   Loaded first on every page, so a sheet reads the scale with var(--dur-2); a sheet the drill-down page loads before
+   this file reaches it (tools/sync.py writes that page) names the same value as its fallback, var(--dur-2, 200ms),
+   until stage 12 of docs/migration.md.
+   The lite machine (html.lite, index.html) and the service worker's rules for it are unchanged. */
+:root{
+  --dur-1:120ms;    /* a colour or a rim lighting up */
+  --dur-2:200ms;    /* a card opening or docking, a rim fading */
+  --dur-3:300ms;    /* a panel or a sheet */
+  --dur-4:450ms;    /* a list gliding into its new order */
+  --ease:cubic-bezier(.2,.8,.2,1);
+  --ease-io:ease-in-out;
+  /* ambient: the fog, the wisp and the map's haze. Long on purpose, and paused when the crest is off screen,
+     a card is open, the machine is lite or motion is reduced (theme.css, app.css, assets/map.js) */
+  --amb-haze:23s; --amb-spill:17s; --amb-front:19.5s; --amb-wisp:22.5s; --amb-map:53s; --amb-map-haze:13s;
+}
+/* the one switch: a player who asks for less motion gets none, on every page and every sheet */
+@media (prefers-reduced-motion: reduce){
+  *, *::before, *::after{animation:none !important; transition:none !important}
+}
