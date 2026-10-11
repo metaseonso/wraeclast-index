@@ -40,7 +40,7 @@ function head(man, game){
 /* the index, section by section, each page with its count: the same contents the home page shows */
 function held(man){
   const counts = Object.fromEntries(Object.entries((man && man.kinds) || {}).map(([k, K]) => [k, K.n]));
-  return '<section class="dt-block"><div class="sect"><h3>The index</h3></div>' + contentsHTML(counts).replace(' id="toc"', '') +
+  return '<section class="dt-block"><div class="sect"><h3>The index</h3></div>' + contentsHTML(counts, '', {h: 'h4'}).replace(' id="toc"', '') +
     '<p class="note"><a href="#/map">The whole index as a map</a></p></section>';
 }
 

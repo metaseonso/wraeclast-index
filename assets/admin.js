@@ -160,7 +160,7 @@ document.addEventListener('click', e => {
 function step(){
   const names = Object.keys(PART), done = names.filter(n => ST[n] === 'ok' || ST[n] === 'fail').length;
   const bar = $('#bootfill'), say = $('#bootsay');
-  if(bar) bar.style.width = Math.round(done / names.length * 100) + '%';
+  if(bar) bar.style.setProperty('--p', Math.round(done / names.length * 100) + '%');
   const box = $('#bootbar');
   if(box) box.setAttribute('aria-valuenow', String(Math.round(done / names.length * 100)));
   const busy = names.find(n => ST[n] === 'loading');
@@ -180,7 +180,7 @@ function start(){
   $('#signin').hidden = true; $('#dash').hidden = true; $('#range').hidden = true; $('#signout').hidden = true;
   $('#boot').hidden = false;
   const bar = $('#bootfill');
-  if(bar) bar.style.width = '6%';
+  if(bar) bar.style.setProperty('--p', '6%');
   shell();
   RUN++;
   for(const k of Object.keys(ST)) ST[k] = 'idle';

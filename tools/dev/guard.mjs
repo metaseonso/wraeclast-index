@@ -83,6 +83,8 @@ const MARKS = [
   ['DNT marker', /\bDNT[-\w]*/],
   // a stat's short form with its value stuck on: "Critical Damage Bonus vs full life enemies@100%" (#133)
   ['@value stat text', /[^\s@"]@[+-]?\d+(?:\.\d+)?%/],
+  // a game table's own name in a source line: "Source: GameConstants, game files 0.5.5" (players see "Source: game files 0.5.5")
+  ['table name in a source', /\bSource:[^.\n"<]{0,100}?\b[A-Z][a-z]+(?:[A-Z][a-z]+)+\b/],
 ];
 const mark = s => { for(const [n, re] of MARKS) if(re.test(s)) return n; return null; };
 

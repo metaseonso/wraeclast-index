@@ -244,7 +244,7 @@ def main():
                 continue
             vals = {i: C[table][i] for i in ids}
             row.update(text=word(vals), **{'from': vals})
-        row['src'] = 'Source: %s, game files %s' % (table, patch)
+        row['src'] = 'Source: game files %s' % patch   # the table stays in row['table'], which the card does not draw
         if said(row['text'], c):
             row['said'] = True
         if check and ids is not None:
