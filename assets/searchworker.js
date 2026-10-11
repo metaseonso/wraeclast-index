@@ -27,6 +27,7 @@ import {KIND, MAKE, MAPS, KW, holds} from './kinds.js';
 import {ranker} from './rank.js';
 import * as graph from './graph.js';
 import {unpack, inOrder, HEAD} from './cut.js';
+import {OP} from './search/protocol.js';   // the questions by name: the one table the page reads too
 
 const S = {man: null, base: '', index: [], runtime: [], items: [], byKey: new Map(), market: new Set(), seen: [], v: 0, ready: null};
 const has = key => S.byKey.has(key);
@@ -168,33 +169,35 @@ function answer(m, S){
   const from = m.from || 0, take = m.take === undefined ? keys.length : m.take;
   return {keys: keys.slice(from, take), total: keys.length, counts: L.counts, heads: heads(keys.slice(0, m.n || 0))};
 }
+/* one handler per question, keyed by the protocol's names (assets/search/protocol.js): what each asks and answers
+   is written there, once, and tools/dev/protocol.mjs holds both sides to it */
 const OPS = {
-  init,
-  fetch: fetchRows,
-  async runtime(m){ S.runtime = m.runtime || []; rebuild(); return {}; },
-  async market(m){ S.market = new Set(m.market || []); S.v++; return {}; },
-  async search(m){
+  [OP.init]: init,
+  [OP.fetch]: fetchRows,
+  [OP.runtime]: async m => { S.runtime = m.runtime || []; rebuild(); return {}; },
+  [OP.market]: async m => { S.market = new Set(m.market || []); S.v++; return {}; },
+  [OP.search]: async m => {
     if(m.seen) S.seen = m.seen;
     return answer(m, S);
   },
-  async heads(m){ return {heads: heads(m.keys || [])}; },
-  async bodies(m){ return {bodies: await bodies(m.keys || [])}; },
-  async rel(m){
+  [OP.heads]: async m => ({heads: heads(m.keys || [])}),
+  [OP.bodies]: async m => ({bodies: await bodies(m.keys || [])}),
+  [OP.rel]: async m => {
     const it = S.byKey.get(m.key);
     return {lists: it ? graph.lists(ix(), it, has) : null};
   },
-  async find(m){ return {keys: S.items.filter(it => it.k === m.k && it.n === m.n).map(it => it.k + ':' + it.id)}; },
-  async words(m){
+  [OP.find]: async m => ({keys: S.items.filter(it => it.k === m.k && it.n === m.n).map(it => it.k + ':' + it.id)}),
+  [OP.words]: async m => {
     const names = new Set(m.names || []);
     const list = S.index.filter(it => (KIND[it.k] || {}).words || (KW.named.includes(it.k) && names.has(it.n)));
     return {heads: list.map(headOf)};
   },
 };
 export async function handle(m){
-  if(m.op === 'fetch') return OPS.fetch(m);
-  if(m.op !== 'init' && m.op !== 'runtime' && m.op !== 'market') await S.ready;
-  if(m.op === 'init') return S.ready = OPS.init(m);
-  if(m.op === 'runtime' || m.op === 'market') await S.ready;
+  if(m.op === OP.fetch) return OPS[OP.fetch](m);
+  if(m.op !== OP.init && m.op !== OP.runtime && m.op !== OP.market) await S.ready;
+  if(m.op === OP.init) return S.ready = OPS[OP.init](m);
+  if(m.op === OP.runtime || m.op === OP.market) await S.ready;
   const f = OPS[m.op];
   if(!f) throw new Error('no such question: ' + m.op);
   return f(m);
