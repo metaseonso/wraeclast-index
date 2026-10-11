@@ -9,6 +9,15 @@
    the card's own market price. Real prices only, and a rate never meets one: no value per kill, here or anywhere. */
 import { D, $, esc, card, openDetail, priceOf, hrefOf, moneyHTML, change, spark, ago, params, onType, leadFirst } from '../app.js';
 
+/* ---------- the page contract ----------
+   What every tab module says about itself (docs/framework.md, "Pages"): the route it answers, what it needs before
+   it is mounted, and the state its address carries. The router (assets/app.js show) decides on its own until
+   docs/migration.md stage 10 lands; until then `needs` states what the router awaits for this tab today, and
+   `state` is the one place this tab reads its address. */
+export const route = 'bosses';
+export const needs = ['index', 'hist'];   // the whole index and the price history, as the router awaits them before every tab that draws cards
+export function state(p){ return {q: p.get('q') || ''}; }
+
 const SHOW = [['all', 'All'], ['pin', 'Pinnacle'], ['drops', 'With drops']];
 const SORTS = [['name', 'Name'], ['way', 'Way in']];
 const S = {q: '', show: 'drops', sort: 'name'};   // opens on the bosses with drops: most of the rest have none listed yet
@@ -404,7 +413,7 @@ function sync(){
 }
 function update(){
   if(!ROWS.length) return;
-  S.q = params().get('q') || '';
+  S.q = state(params()).q;
   $('#boq', EL).value = S.q;
   if(S.q){   // a boss asked for by name is shown, drops or not
     S.show = 'all';

@@ -21,6 +21,15 @@ import { $, esc, first, D, words, hits, openDetail, hrefOf } from '../app.js';
 import { KIND } from '../kinds.js';
 import { onType } from '../app.js';   // the search box waits out a burst of keys, like every box on the site
 
+/* ---------- the page contract ----------
+   What every tab module says about itself (docs/framework.md, "Pages"): the route it answers, what it needs before
+   it is mounted, and the state its address carries. The router (assets/app.js show) decides on its own until
+   docs/migration.md stage 10 lands; until then `needs` states what the router awaits for this tab today, and
+   `state` is the one place this tab reads its address. */
+export const route = 'map';
+export const needs = [];   // a finished picture and its seats: the router starts the index for it and awaits nothing
+export function state(p){ return {}; }
+
 const TRIP = 11;         // seconds for a light to travel the length of its edge
 const BEAT = 8.5;        // seconds for a hub to breathe in and out
 const GOLD = 0.6180339887;
@@ -32,6 +41,7 @@ const ratio = () => LITE ? 1 : Math.min(devicePixelRatio || 1, 2);
 
 let M = null, CV = null, CX = null, HALO = null, HEAD = null;
 let raf = 0, clock = 0, last = 0, onScreen = true;
+let RO = null, IO = null;   // the observers mount() sets, so unmount() can let them go
 /* Every card's seat on the picture (data/map-nodes.json, tools/map.py). The picture is drawn once at build
    time and these are where it put each dot, so a dot can be pointed at, opened, and found by name without
    the picture being redrawn or the index being read for anything but the card behind a seat.
@@ -57,8 +67,8 @@ export async function mount(el){
   HALO = sprite(64, '140,203,63');
   HEAD = sprite(64, '223,240,194');
   size();
-  new ResizeObserver(size).observe($('.mp-fig', el));
-  new IntersectionObserver(es => { onScreen = es.some(e => e.isIntersecting); tick(); }).observe($('.mp-fig', el));
+  RO = new ResizeObserver(size); RO.observe($('.mp-fig', el));
+  IO = new IntersectionObserver(es => { onScreen = es.some(e => e.isIntersecting); tick(); }); IO.observe($('.mp-fig', el));
   document.addEventListener('visibilitychange', tick);
   still.addEventListener('change', tick);
   tick();
@@ -67,6 +77,18 @@ export async function mount(el){
   seats(el);   // the seats behind the dots, once the picture is on screen
   first.then(() => age(el), () => {});
   return {update: tick};   // the router calls this every time the tab is opened again
+}
+/* The tab left: the lights stop, the observers and the window's listeners go, and what the pointer and the search
+   had marked is forgotten with the canvas. Coming back draws the picture again from the same files. */
+export function unmount(){
+  if(raf){ cancelAnimationFrame(raf); raf = 0; }
+  if(RO) RO.disconnect();
+  if(IO) IO.disconnect();
+  RO = IO = null;
+  document.removeEventListener('visibilitychange', tick);
+  still.removeEventListener('change', tick);
+  OVER = -1; FOUND = null; onScreen = true;
+  CV = CX = null;
 }
 
 /* How this picture stands against the site as it is now: drawn from one build of the index, and the site

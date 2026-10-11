@@ -11,6 +11,15 @@
    a rule's words are the file's own. Nothing is modelled. */
 import { D, $, esc, table, mkSource, divText, pct, utcHour, dayLines, leagueColours, wake, whole, openDetail, hrefOf } from '../app.js';
 
+/* ---------- the page contract ----------
+   What every tab module says about itself (docs/framework.md, "Pages"): the route it answers, what it needs before
+   it is mounted, and the state its address carries. The router (assets/app.js show) decides on its own until
+   docs/migration.md stage 10 lands; until then `needs` states what the router awaits for this tab today, and
+   `state` is the one place this tab reads its address. */
+export const route = 'market';
+export const needs = [];   // the daily market files are its own; it never waits for the index
+export function state(p){ return {}; }
+
 const FILE = n => 'data/market/' + n + '.json';
 const MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 const day = iso => { const d = new Date(iso); return isNaN(d) ? '' : d.getUTCDate() + ' ' + MON[d.getUTCMonth()] + ' ' + d.getUTCFullYear(); };

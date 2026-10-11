@@ -4,6 +4,15 @@
 import { D, $, esc, onType } from '../app.js';
 import { tradeData, searchURL, valueFor, valHTML, syncVal, stepOf, heatNote, rollFor, key, range } from '../engines/trade.js';
 import * as bp from '../engines/basepool.js';
+
+/* ---------- the page contract ----------
+   What every tab module says about itself (docs/framework.md, "Pages"): the route it answers, what it needs before
+   it is mounted, and the state its address carries. The router (assets/app.js show) decides on its own until
+   docs/migration.md stage 10 lands; until then `needs` states what the router awaits for this tab today, and
+   `state` is the one place this tab reads its address. */
+export const route = 'trade';
+export const needs = ['index', 'hist'];   // the whole index and the price history, as the router awaits them before every tab that draws cards
+export function state(p){ return {}; }
 // the rules an item keeps: fetched with the table they read, the first time a search names something that
 // has them, and never in the page's own load (assets/engine.js, the file the bench runs on)
 let ENG = null;

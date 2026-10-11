@@ -8,6 +8,15 @@
 import { esc, ago, manifest, prices } from '../app.js';
 import { contentsHTML } from '../kinds.js';
 
+/* ---------- the page contract ----------
+   What every tab module says about itself (docs/framework.md, "Pages"): the route it answers, what it needs before
+   it is mounted, and the state its address carries. The router (assets/app.js show) decides on its own until
+   docs/migration.md stage 10 lands; until then `needs` states what the router awaits for this tab today, and
+   `state` is the one place this tab reads its address. */
+export const route = 'data';
+export const needs = ['manifest', 'prices'];   // the manifest and today's prices, which it awaits itself
+export function state(p){ return {}; }
+
 let EL = null;
 const num = n => (+n || 0).toLocaleString('en');
 const every = h => h === 1 ? 'every hour' : h === 24 ? 'every day' : h % 24 === 0 ? 'every ' + (h / 24) + ' days' :

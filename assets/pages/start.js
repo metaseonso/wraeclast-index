@@ -4,6 +4,15 @@
    cards are all of them. */
 import { D, esc, openDetail, hrefOf, manifest } from '../app.js';
 
+/* ---------- the page contract ----------
+   What every tab module says about itself (docs/framework.md, "Pages"): the route it answers, what it needs before
+   it is mounted, and the state its address carries. The router (assets/app.js show) decides on its own until
+   docs/migration.md stage 10 lands; until then `needs` states what the router awaits for this tab today, and
+   `state` is the one place this tab reads its address. */
+export const route = 'start';
+export const needs = ['index', 'hist'];   // the whole index and the price history, as the router awaits them before every tab that draws cards
+export function state(p){ return {}; }
+
 const WORDS = ['Spirit', 'Energy Shield', 'Armour', 'Evasion', 'Resistances', 'Block', 'Stun', 'Heavy Stun',
   'Ailments', 'Weapon Sets', 'Charms', 'Flasks', 'Minions', 'Quality', 'Meta Gems', 'Accuracy'];
 const WAYS = [

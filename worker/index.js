@@ -30,26 +30,35 @@ import { serveHealth } from './health.js';
 
 const UA = 'wraeclast-index/1.0 (contact: https://wraeclastindex.fyi/)';
 
+/* The worker's paths, one row each: the path (or a prefix, ending in "/"), and who answers it. The first row whose
+   path fits wins; wrangler.jsonc run_worker_first must name every one of them (tools/dev/budget.mjs reads that list),
+   and a path that fits no row is a file (env.ASSETS) or, for /search, worker/seo.js. */
+export const ROUTES = [
+  ['/data/market.json',     (request, env, ctx) => serveMarket(request, env, ctx)],
+  ['/data/market/',         (request, env, ctx, url) => marketFile(env, url, ctx)],
+  ['/api/pob',              (request, env, ctx, url) => pob(url)],
+  ['/api/trade/searches',   (request, env, ctx, url) => tradeSearches(request, env, ctx, url)],
+  ['/api/suggest',          (request, env, ctx, url) => suggest(request, env, url, ctx)],
+  ['/api/drops',            (request, env, ctx, url) => drops(request, env, url, ctx)],
+  ['/api/health',           (request, env, ctx, url) => serveHealth(request, env, url, ctx)],
+  ['/api/t',                (request, env, ctx, url) => track(request, env, url)],
+  ['/api/admin/',           (request, env, ctx, url) => admin(request, env, url)],
+  ['/api/prices/ingest',    (request, env, ctx, url) => ingest(request, env, url, ctx)],
+  ['/api/prices/state',     (request, env, ctx, url) => state(request, env, url)],
+  ['/api/data/put',         (request, env, ctx, url) => dataPut(request, env, url, ctx)],
+  ['/data/rollprices.json', (request, env, ctx) => servePrices(request, env, ctx, 'roll')],
+  ['/data/farmprices.json', (request, env, ctx) => servePrices(request, env, ctx, 'farm')],
+  ['/data/bossprices.json', (request, env, ctx) => serveBossPrices(request, env, ctx)],
+];
+const routeOf = path => ROUTES.find(([p]) => p.endsWith('/') ? path.startsWith(p) : path === p);
+
 export default {
   async fetch(request, env, ctx){
     const url = new URL(request.url);
     if(await flooding(request, env, url.pathname))
       return new Response('Too many requests.', {status: 429, headers: {'Retry-After': '60', 'Cache-Control': 'no-store'}});
-    if(url.pathname === '/data/market.json') return serveMarket(request, env, ctx);
-    if(url.pathname.startsWith('/data/market/')) return marketFile(env, url, ctx);
-    if(url.pathname === '/api/pob') return pob(url);
-    if(url.pathname === '/api/trade/searches') return tradeSearches(request, env, ctx, url);
-    if(url.pathname === '/api/suggest') return suggest(request, env, url, ctx);
-    if(url.pathname === '/api/drops') return drops(request, env, url, ctx);
-    if(url.pathname === '/api/health') return serveHealth(request, env, url, ctx);
-    if(url.pathname === '/api/t') return track(request, env, url);
-    if(url.pathname.startsWith('/api/admin/')) return admin(request, env, url);
-    if(url.pathname === '/api/prices/ingest') return ingest(request, env, url, ctx);
-    if(url.pathname === '/api/prices/state') return state(request, env, url);
-    if(url.pathname === '/api/data/put') return dataPut(request, env, url, ctx);
-    if(url.pathname === '/data/rollprices.json') return servePrices(request, env, ctx, 'roll');
-    if(url.pathname === '/data/farmprices.json') return servePrices(request, env, ctx, 'farm');
-    if(url.pathname === '/data/bossprices.json') return serveBossPrices(request, env, ctx);
+    const route = routeOf(url.pathname);
+    if(route) return route[1](request, env, ctx, url);
     if(seo.handles(url.pathname)) return seo.respond(request);
     return env.ASSETS.fetch(request);
   },

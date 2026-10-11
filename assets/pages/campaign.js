@@ -5,6 +5,15 @@
    card. The ticks are kept in this browser only (wi-campaign), one set for every act. */
 import { D, esc, openDetail, hrefOf } from '../app.js';
 
+/* ---------- the page contract ----------
+   What every tab module says about itself (docs/framework.md, "Pages"): the route it answers, what it needs before
+   it is mounted, and the state its address carries. The router (assets/app.js show) decides on its own until
+   docs/migration.md stage 10 lands; until then `needs` states what the router awaits for this tab today, and
+   `state` is the one place this tab reads its address. */
+export const route = 'campaign';
+export const needs = ['index', 'hist'];   // the whole index and the price history, as the router awaits them before every tab that draws cards
+export function state(p){ return {}; }
+
 const KEEP = 'wi-campaign';
 const S = {act: 'Act 1'};
 let EL = null, Q = null, A = null, DONE = new Set();

@@ -11,6 +11,15 @@
    on that rune, and Back brings the last picks back. */
 import { D, $, esc, openDetail, hrefOf, params, onType } from '../app.js';
 
+/* ---------- the page contract ----------
+   What every tab module says about itself (docs/framework.md, "Pages"): the route it answers, what it needs before
+   it is mounted, and the state its address carries. The router (assets/app.js show) decides on its own until
+   docs/migration.md stage 10 lands; until then `needs` states what the router awaits for this tab today, and
+   `state` is the one place this tab reads its address. */
+export const route = 'runes';
+export const needs = ['index', 'hist'];   // the whole index and the price history, as the router awaits them before every tab that draws cards
+export function state(p){ return {rune: p.get('rune') || '', make: p.get('make') || '', tab: p.get('tab') || 'all'}; }
+
 const S = {runes: [], make: '', tab: 'all', len: 2};
 const FLAG = 'Subject to change';
 let EL = null, R = null, NAMES = null;
@@ -118,11 +127,11 @@ export function unmount(){ EL = null; }
 /* the address says what is picked: a rune card's gold button, a link, Back */
 function update(){
   if(!EL || !R) return;
-  const p = params();
+  const p = state(params());
   const names = new Set((R.runes || []).map(r => r.name));
-  S.runes = (p.get('rune') || '').split(',').map(s => s.trim()).filter(n => names.has(n));
-  S.make = p.get('make') || '';
-  S.tab = p.get('tab') || 'all';
+  S.runes = p.rune.split(',').map(s => s.trim()).filter(n => names.has(n));
+  S.make = p.make;
+  S.tab = p.tab;
   $('#rnmake', EL).value = S.make;
   render();
 }
