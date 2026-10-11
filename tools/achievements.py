@@ -186,7 +186,7 @@ def build(areas_arg=None):
         e.update({k: v for k, v in links.items() if v})
         if how:
             e['how'] = how
-            e['source'] = 'Source: game files (MonsterDeathAchievements), and the areas file for where'
+            e['source'] = 'Source: game files'   # the game's MonsterDeathAchievements table, and its areas for where
         out.append(e)
     rewards = [{'set': label[s['set']][0] or ('Achievements' if s.get('title') == 'Achievements' else 'Challenges'),
                 'rewards': [{'after': x['after'], 'text': re.sub(r'^Congratulations!\s*', '', x['text'])}

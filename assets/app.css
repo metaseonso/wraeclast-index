@@ -165,6 +165,7 @@ label.note{display:inline-flex; gap:6px; align-items:center; cursor:pointer}
 .foot .langpick{background:transparent; color:var(--muted); border:1px solid var(--line); border-radius:4px;
   padding:0 2px; font-size:11.5px; line-height:1.4; cursor:pointer}
 .foot .langpick option{background:var(--surface); color:var(--text)}
+@media (pointer:coarse){ .foot .langpick{min-height:44px; padding:0 8px; font-size:13px} }   /* a thumb's size on touch */
 
 @media (max-width:640px){
   .searchbox input{height:50px; font-size:16px}
@@ -301,7 +302,7 @@ a.pill.fm-tq small{margin-left:2px; color:var(--faint)}
 .at-row:hover{background:var(--raised)}
 .at-hd{display:flex; gap:8px; align-items:center; min-width:0}
 .at-hd b{font-weight:600; font-size:13.5px; overflow-wrap:anywhere}
-.at-tag{margin-left:auto; flex:none; font-size:9.5px; text-transform:uppercase; letter-spacing:.08em; color:var(--faint);
+.at-tag{margin-left:auto; flex:none; font-size:11px; text-transform:uppercase; letter-spacing:.08em; color:var(--faint);
   border:1px solid var(--line); border-radius:4px; padding:1px 5px; white-space:nowrap}
 .at-x{font:500 11px var(--mono); color:var(--accent)}
 .at-ls{margin:0; padding:0; list-style:none; font-size:12.5px; line-height:1.45; display:grid; gap:3px}
@@ -313,7 +314,7 @@ small.at-bonus{display:block}
   background:var(--sunken); border-bottom:1px solid var(--line); display:flex; gap:8px; align-items:baseline}
 .at-grp span{font:500 11px var(--mono); color:var(--faint)}
 .at-opts{display:grid; gap:4px; margin-left:10px; padding-left:10px; border-left:2px solid var(--line)}
-.at-opts > span{font-size:10px; text-transform:uppercase; letter-spacing:.09em; color:var(--faint)}
+.at-opts > span{font-size:11px; text-transform:uppercase; letter-spacing:.09em; color:var(--faint)}
 .dot.t-c{background:var(--accent)} .dot.t-n{background:var(--text)} .dot.t-s{background:var(--faint)}
 .card:not(.detail) .at-pop{display:none}
 .at-pop{display:grid; gap:6px}
@@ -368,7 +369,7 @@ small.at-bonus{display:block}
 .bo-sec .lbl, .bo-sec .note{margin:0}
 .bo-tbl{display:grid; grid-template-columns:minmax(0,1fr); gap:2px}
 .bo-thd{display:grid; grid-template-columns:24px minmax(0,1fr) auto minmax(0,120px); gap:8px; padding:0 7px 0 4px;
-  font-size:9.5px; text-transform:uppercase; letter-spacing:.08em; color:var(--faint)}
+  font-size:11px; text-transform:uppercase; letter-spacing:.08em; color:var(--faint)}
 .bo-thd span:first-child{grid-column:1/3}
 .bo-item{display:grid; grid-template-columns:24px minmax(0,1fr) auto; gap:3px 8px; align-items:center; width:100%;
   min-width:0; padding:4px 7px 4px 4px; border:0; border-radius:7px; background:none; color:inherit; font:inherit;
@@ -544,7 +545,7 @@ small.at-bonus{display:block}
 .cr-flab{font-size:11px; text-transform:uppercase; letter-spacing:.09em; color:var(--faint)}
 .cr-foff{display:inline-flex; gap:7px; align-items:center; border:1px solid var(--accent); border-radius:20px;
   background:var(--surface); color:var(--accent); font-size:12px; padding:3px 10px; cursor:pointer}
-.cr-foff i{font-style:normal; font-size:10px; color:var(--faint)}
+.cr-foff i{font-style:normal; font-size:11px; color:var(--faint)}
 .cr-foff:hover{background:var(--accent); border-color:var(--accent); color:var(--ground)}
 .cr-foff:hover i{color:var(--ground)}
 .cr-cols{display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:12px}
@@ -658,8 +659,11 @@ small.at-bonus{display:block}
   mix-blend-mode:screen; pointer-events:none; animation:wi-mark 6.5s ease-in-out infinite}
 .dv-bar{position:relative; width:100%; height:14px; border-radius:8px; overflow:hidden;
   background:var(--fa-sunk, var(--sunken)); box-shadow:inset 0 1px 3px rgba(0,0,0,.85), 0 0 0 1px var(--line-soft)}
-.dv-bar i{position:absolute; left:0; top:0; bottom:0; width:0; display:block; border-radius:8px;
-  background:var(--fa-poison, var(--accent)); box-shadow:0 0 14px rgba(140,203,63,.45); transition:width .55s cubic-bezier(.2,.8,.2,1)}
+/* the fill is full width and slides in from the left (a transform, not a width: no layout on each step). Not scaleX:
+   that would stretch the fog at its front and flatten its rounded end. assets/admin.js sets --p. */
+.dv-bar i{position:absolute; left:0; top:0; bottom:0; width:100%; display:block; border-radius:8px;
+  transform:translateX(calc(var(--p, 0%) - 100%));
+  background:var(--fa-poison, var(--accent)); box-shadow:0 0 14px rgba(140,203,63,.45); transition:transform .55s cubic-bezier(.2,.8,.2,1)}
 .dv-bar i img{position:absolute; right:-46px; bottom:-16px; width:190px; height:auto; mix-blend-mode:screen; opacity:.45;
   animation:wi-creep 4.5s ease-in-out infinite}
 @keyframes wi-creep{
@@ -809,7 +813,7 @@ small.at-bonus{display:block}
 .cxp-nm{grid-area:1/2/2/3; font-weight:600; font-size:13px; overflow-wrap:anywhere}
 .cxp-cat{grid-area:2/2/3/3; font-size:11px; color:var(--faint)}
 .cxp-px{grid-area:1/3/3/4; align-self:center; font-family:var(--mono); font-size:13px; white-space:nowrap}
-.cxp-px small{font-size:10px; color:var(--faint); margin-left:2px}
+.cxp-px small{font-size:11px; color:var(--faint); margin-left:2px}
 .cxp-ft{display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-top:10px}
 /* a phone: the chips run in one swipeable line each, so the currencies start above the fold, and the
    list scrolls with the popup rather than inside it — one finger, one surface */
@@ -935,7 +939,7 @@ small.at-bonus{display:block}
 .dt-block{margin:0 0 8px}
 /* the index's contents (assets/kinds.js contentsHTML): under the home page's search box, and on the Data page */
 .toc{display:grid; grid-template-columns:repeat(auto-fill, minmax(168px, 1fr)); gap:14px 22px; text-align:left}
-.toc-sec h3{font-family:var(--disp); font-size:15px; font-weight:600; margin:0 0 6px; color:var(--bronze)}
+.toc-sec :is(h2, h4){font-family:var(--disp); font-size:15px; font-weight:600; margin:0 0 6px; color:var(--bronze)}
 .toc-sec ul{list-style:none; margin:0; padding:0}
 .toc-sec li{border-bottom:1px solid var(--line)}
 .toc-sec a{display:flex; align-items:center; gap:0; padding:4px 0; color:var(--text); text-decoration:none; font-size:13.5px}
