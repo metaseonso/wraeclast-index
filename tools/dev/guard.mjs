@@ -7,7 +7,7 @@
      node tools/dev/guard.mjs --no-phone      skip the headless Chrome pass
      node tools/dev/guard.mjs --offline       the budget's first-paint line from the shipped copy, not the live site
 
-   Ten checks, one line each, non-zero exit on any FAIL:
+   Thirteen checks, one line each, non-zero exit on any FAIL:
      cards   how many cards of each kind, against tools/dev/guard-baseline.json, and every interaction the
              game's wording names: how many open a card, how many are marked unclear, how many are left as
              plain text (tools/interactions.py, data/interactions.json)
@@ -29,6 +29,9 @@
      budget  dist/ against the free plan: each file, the file count, what the worker parses per request, the
              home page's first-paint JSON, what the jobs send to the database, and no data file nothing reads
              (tools/dev/budget.mjs; it builds dist/ first when dist/ is missing or stale)
+     arch    the shape of the code holds where it is: no new static cycle, no module or function past its line, the
+             stylesheets' override depth, raw colours and twice-defined tokens no worse, the first paint no heavier
+             (tools/dev/arch.mjs LINES; docs/migration.md tightens one line a stage)
 
    The local server is this worktree's own files, then dist/ (the crawler's files: dist/ is built first when it
    is missing or stale, tools/dev/budget.mjs fresh), dist/_redirects and dist/404.html, as Cloudflare serves
@@ -54,6 +57,8 @@ import { checkMarket } from './marketcheck.mjs';
 // the budget: what the free plan lets dist/ be, and no data file nothing reads
 import { checkBudget, budgetLine, fresh } from './budget.mjs';
 import { checkBraces } from './cssbraces.mjs';
+// the shape of the code: the module graph, sizes, long functions and the stylesheets' depth, held where they are
+import { measure as checkArch } from './arch.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(HERE, '..', '..');
@@ -812,6 +817,8 @@ try {
   catch(e){ say('css', false, 'could not run: ' + clip(e && e.message || e, 160)); }
   try { const b = await checkBudget({offline}); say('budget', !b.bad.length, budgetLine(b)); }
   catch(e){ say('budget', false, 'could not run: ' + clip(e && e.message || e, 160)); }
+  try { const a = await checkArch(); say('arch', !a.over.length, a.over.length ? 'over the line: ' + clip(a.over.join('; '), 200) : a.said); }
+  catch(e){ say('arch', false, 'could not run: ' + clip(e && e.message || e, 160)); }
   if(!noPhone){
     const kws = index.items.filter(it => it.k === 'w' && it.use);
     kws.sort((a, b) => Object.values(b.use).reduce((x, y) => x + y, 0) - Object.values(a.use).reduce((x, y) => x + y, 0));
