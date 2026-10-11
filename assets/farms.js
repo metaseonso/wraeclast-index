@@ -20,6 +20,15 @@
 import { D, $, esc, card, flow, openDetail, priceOf, hrefOf, moneyHTML, change, spark, ago } from './app.js';
 import { searchURL } from './trade.js';
 
+/* ---------- the page contract ----------
+   What every tab module says about itself (docs/framework.md, "Pages"): the route it answers, what it needs before
+   it is mounted, and the state its address carries. The router (assets/app.js show) decides on its own until
+   docs/migration.md stage 10 lands; until then `needs` states what the router awaits for this tab today, and
+   `state` is the one place this tab reads its address. */
+export const route = 'farms';
+export const needs = ['index', 'hist'];   // the whole index and the price history, as the router awaits them before every tab that draws cards
+export function state(p){ return {}; }
+
 const TIER_ORDER = ['S', 'A', 'B', 'C', 'D', 'F'];
 const SORTS = [['tier', 'Tier'], ['rise', 'Outputs rising most']];
 const S = {tier: 'all', mech: 'all', sort: 'tier'};
@@ -354,6 +363,7 @@ export async function mount(el){
   $('#fmsort', el).addEventListener('change', e => { S.sort = e.target.value; render(); });
   return {update: render};
 }
+export function unmount(){ EL = null; }
 
 const rise = r => {   // the average 7-day move of the drops that have a price
   const m = r.outs.filter(x => x.px && num(x.px.ch)).map(x => x.px.ch);

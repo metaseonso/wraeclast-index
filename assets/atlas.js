@@ -5,6 +5,15 @@
    Bosses sit under this tab: the link at the top of the page opens #/bosses (assets/bosses.js). */
 import { D, $, esc, card, flow, params, onType, openDetail, hrefOf } from './app.js';
 
+/* ---------- the page contract ----------
+   What every tab module says about itself (docs/framework.md, "Pages"): the route it answers, what it needs before
+   it is mounted, and the state its address carries. The router (assets/app.js show) decides on its own until
+   docs/migration.md stage 10 lands; until then `needs` states what the router awaits for this tab today, and
+   `state` is the one place this tab reads its address. */
+export const route = 'atlas';
+export const needs = ['index', 'hist'];   // the whole index and the price history, as the router awaits them before every tab that draws cards
+export function state(p){ return {s: p.get('s') || '', q: p.get('q') || ''}; }
+
 const SECTS = [['ways', 'Waystones'], ['tabs', 'Tablets'], ['keys', 'Keys & invitations'], ['items', 'Atlas items'], ['tree', 'Atlas tree']];
 const HINT = {ways: 'Search waystones and mods…', tabs: 'Search tablets and mods…', keys: 'Search keys…',
   items: 'Search atlas items…', tree: 'Search the Atlas tree…'};
@@ -214,10 +223,9 @@ function sync(){
 
 function update(){
   if(!A) return;
-  const p = params();
-  const s = p.get('s');
-  S.sec = s && SECTS.some(x => x[0] === s) ? s : 'ways';
-  S.q = p.get('q') || '';
+  const p = state(params());
+  S.sec = p.s && SECTS.some(x => x[0] === p.s) ? p.s : 'ways';
+  S.q = p.q;
   $('#atq', EL).value = S.q;
   render(true);
 }

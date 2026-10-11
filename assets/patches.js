@@ -11,6 +11,15 @@
 import { esc, patchName, params, named, openDetail, hrefOf, diffRowsHTML, diffLinesHTML } from './app.js';
 import { namedIn, FIELDS } from './kinds.js';
 
+/* ---------- the page contract ----------
+   What every tab module says about itself (docs/framework.md, "Pages"): the route it answers, what it needs before
+   it is mounted, and the state its address carries. The router (assets/app.js show) decides on its own until
+   docs/migration.md stage 10 lands; until then `needs` states what the router awaits for this tab today, and
+   `state` is the one place this tab reads its address. */
+export const route = 'patches';
+export const needs = [];   // the patch registry and the data diff are its own files; it never waits for the index
+export function state(p){ return {d: p.get('d') || ''}; }
+
 let EL = null, OFF = null;
 const MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 const pad = n => String(n).padStart(2, '0');
@@ -81,7 +90,7 @@ function page(reg, cards, diff){
 const QUIET = 'quiet';
 function data(el, ix){
   const say = FIELDS.patchdiff.say, names = ix.names || {};
-  const steps = ix.steps, want = params().get('d');
+  const steps = ix.steps, want = state(params()).d;
   const st = {step: steps.find(s => s.to === want) || steps[0], kind: 'all', body: null};
   const $ = s => el.querySelector(s);
   const chip = (v, label, n, on) => '<button type="button" class="chip" data-v="' + esc(v) + '" aria-pressed="' + on + '">' +
@@ -127,7 +136,7 @@ function data(el, ix){
     load();
   };
   // a card's "Changed in" opens this page on its patch: the same page, another patch, when it is already open
-  const heard = () => { if(EL === el && location.hash.startsWith('#/patches')) pick(params().get('d') || steps[0].to, false); };
+  const heard = () => { if(EL === el && location.hash.startsWith('#/patches')) pick(state(params()).d || steps[0].to, false); };
   window.addEventListener('hashchange', heard);
   OFF = () => window.removeEventListener('hashchange', heard);
   el.querySelector('.pd').addEventListener('click', async e => {
