@@ -110,7 +110,7 @@ export function checkTable(seen = [], types = null){
   for(const s of Object.keys(FRAME.cap)) if(!slots.has(s)) bad.push('FRAME.cap caps "' + s + '", which is no slot');
   if(!(FRAME.slack >= 0)) bad.push('FRAME.slack is not a number');
   if(!(FRAME.lines > 0)) bad.push('FRAME.lines is not a number');
-  for(const n of ['cap', 'slack', 'filter']) if(!(FRAME.rel[n] >= 0)) bad.push('Connections has no ' + n);
+  for(const n of ['cap', 'slack', 'filter', 'open']) if(!(FRAME.rel[n] >= 0)) bad.push('Connections has no ' + n);
 
   // a field type with no renderer, and a renderer no field asks for
   if(types){
@@ -137,6 +137,10 @@ export function checkTable(seen = [], types = null){
     if(d.px && !d.px.as) bad.push(name + ' says its price is listed elsewhere and not under which kind');
     if(d.words && !d.words.mark) bad.push(name + ' puts its words in other cards’ lines and does not say whose words they are');
   }
+  for(const id of [...(FRAME.rel.lead || []), ...(FRAME.rel.last || [])])
+    if(!REL[id]) bad.push('Connections orders "' + id + '", which is no group');
+  for(const id of FRAME.rel.lead || []) if((FRAME.rel.last || []).includes(id))
+    bad.push('Connections group "' + id + '" both leads and is a bag');
   for(const [id, r] of Object.entries(REL)){
     if(r.map && !MAPS[r.map]) bad.push('Connections group "' + id + '" reads map "' + r.map + '", which is not declared');
     if(r.of && !KIND[r.of]) bad.push('Connections group "' + id + '" is of kind "' + r.of + '", which is no kind');
@@ -307,11 +311,13 @@ export const CARD_PROBE = `(async () => {
     for(const name of k.fieldsOf(it.k, 'body')){
       const f = k.FIELDS[name];
       if(!f.at || k.FIELDS[name].type !== 'rich' || !Array.isArray(it[f.at])) continue;
-      const over = it[f.at].length - (f.lines || k.FRAME.lines);
+      // the same line twice in a row draws once, with how many times: it is one line of the list
+      const runs = it[f.at].filter((x, i, a) => i === 0 || x !== a[i - 1]).length;
+      const over = runs - (f.lines || k.FRAME.lines);
       if(over <= k.FRAME.slack) continue;
       lines++;
       if(!grid.includes(k.FRAME.more(over)))
-        note(key + ': ' + it[f.at].length + ' lines cut to ' + (f.lines || k.FRAME.lines) + ' and the card does not say so');
+        note(key + ': ' + runs + ' lines cut to ' + (f.lines || k.FRAME.lines) + ' and the card does not say so');
     }
     // a card is never its own door
     const full = m.card(it, {href: null, full: true, detail: true});

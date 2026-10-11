@@ -36,9 +36,13 @@
 .card-px .chg{font:500 11.5px var(--mono)}
 /* what was really priced, where the card's own name is not it: a base item is priced white */
 .card-pxa{display:block; font-size:11px; color:var(--faint)}
+/* the price's age, on its own line under it (assets/app.js pxAge): a reading says when it was taken */
+.card-pxage{display:block; font:500 10.5px var(--mono); color:var(--muted); white-space:nowrap}
 .card-tx{margin:0; font-size:12.5px; color:var(--muted); line-height:1.45;
   display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden}
-.card.open .card-tx{-webkit-line-clamp:unset}
+/* unclamped, the line is a plain block: a -webkit-box with no clamp lays its children out as boxes and drops
+   the space between two marked words ("Fire damage" read as "Firedamage") */
+.card.open .card-tx{-webkit-line-clamp:unset; display:block}
 .card-req{display:flex; flex-wrap:wrap; gap:4px; align-items:center}
 .pill{font:500 11.5px var(--sans); font-variant-numeric:tabular-nums; border:1px solid var(--line); background:var(--raised); color:var(--muted);
   border-radius:5px; padding:1px 6px; white-space:nowrap}
@@ -61,6 +65,10 @@
 /* the box a field leaves for a table of its own and fills once the file lands: any such field uses it */
 .card-addsbox{display:grid; gap:6px}
 .card-addsbox[hidden]{display:none}
+/* a label is a pill as wide as its word, never a bar across the box */
+.card-addsbox > .pill{justify-self:start}
+.card-flags{margin:0; display:flex; flex-wrap:wrap; gap:4px}
+.card-tags .pill, .card-src .pill{margin-left:4px}
 /* the market files on an opened currency card (assets/app.js MKT): a pill that fills when its file lands, the
    week's hours as a grid (7 days by 24 hours, UTC) */
 .pill.mk-pill[hidden]{display:none}
@@ -85,8 +93,7 @@ a.pill.pill-src:hover{color:var(--text); border-color:var(--accent)}
 /* What a base item can already have (the "pool" fields, assets/kinds.js): one row per modifier, in the
    order the game data ships them. It is a long list on a big item class, so it scrolls in place rather
    than pushing the rest of the card off the screen. */
-.card-pool{margin:0; padding:0 2px 0 0; list-style:none; display:grid; gap:7px;
-  max-height:min(300px, 42vh); overflow:auto; overscroll-behavior:contain}
+.card-pool{margin:0; padding:0 2px 0 0; list-style:none; display:grid; gap:7px}
 .card-pool li{display:grid; gap:1px; padding-left:10px; position:relative}
 .card-pool li::before{content:''; position:absolute; left:0; top:.62em; width:4px; height:4px; border-radius:50%; background:var(--accent); opacity:.7}
 .pool-ml{font-size:12.5px; line-height:1.45; color:var(--text); overflow-wrap:anywhere}
@@ -154,6 +161,7 @@ a.pill.pill-src:hover{color:var(--text); border-color:var(--accent)}
    of a star, so a player can tell an answer from an open question before pressing either. */
 .qlink::after{content:'?'}
 .hlink, .kwmark{position:relative; z-index:1}
+.mk-w{white-space:nowrap}   /* a mark and the punctuation touching it break as one word (assets/app.js spansHTML) */
 /* where a mechanics card's maths was read off. It is not game text, and the card says so where it is read. */
 /* the game's own flavour line on a unique or a keystone ("qt", tools/carddata.py): the game prints it apart
    from the modifiers, and so do we */
@@ -319,7 +327,7 @@ body.ov-open{overflow:hidden}
 .card.detail:hover{translate:none}
 .card.detail h3{font-size:20px}
 .card.detail .card-ic{width:56px; height:56px}
-.card.detail .card-tx{-webkit-line-clamp:unset; font-size:13.5px}
+.card.detail .card-tx{-webkit-line-clamp:unset; display:block; font-size:13.5px}
 .card.detail .card-ls{font-size:13.5px}
 .chart{margin:4px 0 0}
 .chart figcaption{font-size:11px; color:var(--faint); margin-bottom:4px}
@@ -344,7 +352,8 @@ body.ov-open{overflow:hidden}
 @media (max-width:640px){
   .ov:has(.card.detail){display:flex; align-items:stretch; height:100dvh;
     padding:env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px) env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px)}
-  .ov:has(.card.detail) .ov-box{flex:1; width:100%; min-width:0; max-height:none; border-radius:0; display:flex; flex-direction:column}
+  .ov:has(.card.detail) .ov-box{flex:1; width:100%; min-width:0; max-height:none; border-radius:0; display:flex; flex-direction:column;
+    background:var(--ground)}   /* a sheet: the page never shows through between the card, Connections and the buttons */
   .ov:has(.card.detail) .ov-body{order:1; flex:1 0 auto; display:flex; flex-direction:column}
   .ov:has(.card.detail) .ov-body > .card.detail{flex:1 0 auto; border-radius:0; border-width:0; padding:14px 15px 12px; gap:10px}
   .ov:has(.card.detail) .ov-nav{order:2; flex:none; top:auto; bottom:0; margin:10px 0 0}
@@ -356,14 +365,13 @@ body.ov-open{overflow:hidden}
   .card.detail .card-id{min-width:min(100%, 190px)}
   .card.detail .card-id h3{overflow-wrap:break-word}
   .card.detail .card-px{margin-left:auto}
-  /* one finger, one surface: the Connections list is part of the card here, not a scroll box inside it */
-  .ov-box .uses-list{max-height:none; overflow:visible}
 }
 /* the card's own buttons (Trade, Pin, Open): the foot of the box, always in reach however long the card is */
 .ov-go{display:flex; justify-content:flex-end; gap:8px; flex-wrap:wrap; margin-top:10px}
 .ov-fresh{margin-right:auto; align-self:center; font-size:11.5px; color:var(--faint)}   /* the card's patch, left of its buttons */
 @media (min-width:641px){ .ov-box .ov-go{position:sticky; bottom:0; z-index:2; margin:0; padding:10px 14px;
   background:var(--surface); border-top:1px solid var(--line); border-radius:0 0 14px 14px} }
+@media (pointer:coarse){ .ov-go .btn, .ov-box .ov-nav button{min-height:44px} .ov-nav .ov-fwd, .ov-nav .ov-x{min-width:44px} }
 .btn.gold{display:inline-flex; align-items:center; gap:6px; padding:6px 13px; border-radius:8px; text-decoration:none;
   background:#0A0907; color:#D9B04A; border:1px solid #6E5520; font-weight:500; font-size:12.5px; letter-spacing:.02em;
   transition:color .15s, border-color .15s, box-shadow .15s}
@@ -685,20 +693,59 @@ header.top .notesbtn ~ .suggestbtn{margin-left:0}
 .kwchips{display:flex; flex-wrap:wrap; align-items:center; gap:6px; margin:12px 2px 0}
 .card .kwchips{margin:2px 2px 0}
 .kwchips .lbl{font-size:11px; text-transform:uppercase; letter-spacing:.08em; color:var(--faint); margin-right:4px}
+.kwchips .kwlink[aria-expanded="true"]{color:var(--accent); border-color:var(--accent)}
+/* a keyword's own words, opened in place under the chips: one at a time, and the way on to its card */
+.kwpeek{display:grid; gap:6px; margin:0 2px; padding:10px 12px; background:var(--sunken);
+  border-top:1px solid color-mix(in srgb, var(--bronze) 45%, transparent); border-radius:0 0 8px 8px}
+.kwpeek[hidden]{display:none}
+.kwpeek-tx{margin:0; font-size:13px; line-height:1.5; color:var(--text); max-width:72ch}
+.kwpeek-go{justify-self:start; font:inherit; font-size:12.5px; font-weight:500; color:var(--accent); background:none;
+  border:0; padding:4px 0; cursor:pointer}
+.kwpeek-go:hover, .kwpeek-go:focus-visible{text-decoration:underline}
+.kwpeek-go:focus-visible{outline:2px solid var(--accent); outline-offset:2px; border-radius:2px}
+@media (pointer:coarse){ .kwpeek-go{min-height:44px} }
 .uses{margin-top:14px; padding:14px; background:var(--surface); border:2px solid var(--line); border-radius:var(--r, 10px)}
 .uses h4{margin:0 0 8px}
 /* one block per category, each capped and each saying how many there really are (assets/edges.js) */
-.uses-cat{display:grid; gap:4px}
-.uses-cat + .uses-cat{margin-top:12px}
 .uses-cat[hidden]{display:none}
 .uses-hd{display:flex; align-items:baseline; gap:8px; margin:0 2px 2px}
 .uses-hd b{font-size:12px; text-transform:uppercase; letter-spacing:.06em; color:var(--muted); font-weight:600}
 .uses-hd .ct{font:500 11.5px var(--mono); color:var(--faint)}
+/* A fold (assets/app.js foldHTML): a long block of the popup behind one full-width row — a bronze hairline over
+   it, the label in the group style, the count in mono, what is inside in a few words, and a chevron at the far
+   end that turns as it opens. Native <details>: it opens by click, Enter or Space. */
+.fold{display:grid; min-width:0}
+.fold[hidden]{display:none}
+/* label and count never break; what is inside takes the rest of the row and wraps there */
+.fold > .fold-hd{list-style:none; display:grid; grid-template-columns:auto auto minmax(0, 1fr) auto; align-items:center;
+  gap:8px; min-height:36px; margin:0; padding:6px 2px;
+  border-top:1px solid color-mix(in srgb, var(--bronze) 45%, transparent); cursor:pointer; user-select:none}
+.fold > .fold-hd::-webkit-details-marker{display:none}
+.fold-hd > b{grid-column:1; white-space:nowrap} .fold-hd > .ct{grid-column:2; white-space:nowrap}
+.fold-hd > .fold-said{grid-column:3} .fold-hd > .fold-ch{grid-column:4}
+.fold > .fold-hd:hover b{color:var(--text)}
+.fold > .fold-hd:focus-visible{outline:2px solid var(--accent); outline-offset:-2px; border-radius:4px}
+.fold-said{min-width:0; font:500 11.5px/1.35 var(--mono); color:var(--muted); overflow-wrap:anywhere}
+.fold-said::before, .fold-hd .ct:has(+ .fold-said)::before{content:"· "}
+.fold-ch{width:14px; height:14px; fill:none; stroke:var(--bronze); stroke-width:1.6;
+  stroke-linecap:round; stroke-linejoin:round; transition:rotate .2s cubic-bezier(.2,.8,.2,1)}
+.fold[open] > .fold-hd .fold-ch{rotate:180deg}
+.fold-in{display:grid; gap:6px; padding:4px 0 10px; min-width:0}
+.uses-cat .fold-in{gap:4px}
+.ov-box .fold{scroll-margin-top:76px}   /* clear of the sticky bar when a door scrolls to it */
+@media (pointer:coarse){ .fold > .fold-hd{min-height:44px} }
+@media (prefers-reduced-motion:reduce){ .fold-ch{transition:none} }
+/* a count on the card that is a door to its own Connections group */
+.fold-go{color:inherit; text-decoration:underline; text-decoration-color:var(--accent); text-underline-offset:2px}
+.fold-go:hover, .fold-go:focus-visible{color:var(--accent)}
+.fold-go:focus-visible{outline:2px solid var(--accent); outline-offset:2px; border-radius:2px}
+/* the same line more than once in a row: drawn once, with how many times (assets/app.js richHTML) */
+.ln-x{font:500 11px var(--mono); color:var(--accent); white-space:nowrap}
 .uses-more{display:flex; flex-wrap:wrap; align-items:center; gap:8px; margin:4px 2px 0}
 .uses-all{font:inherit; font-size:12px; color:var(--accent); background:none; border:0; padding:2px 0; cursor:pointer}
 .uses-all:hover, .uses-all:focus-visible{text-decoration:underline}
 .uses-more .btn.gold{font-size:12px; padding:4px 10px}
-.uses-list{display:grid; gap:4px; max-height:360px; overflow:auto}
+.uses-list{display:grid; gap:0}
 .uses-row{display:flex; align-items:center; gap:10px; width:100%; text-align:left; padding:6px 8px; background:var(--raised);
   border:1px solid var(--line); border-radius:8px; color:var(--text); font:inherit; cursor:pointer; text-decoration:none}
 .uses-row:hover, .uses-row:focus-visible{border-color:var(--accent); outline:none}
@@ -710,7 +757,6 @@ header.top .notesbtn ~ .suggestbtn{margin-left:0}
 .uses-px{flex:none; font-size:12px}
 .uses-all{margin-top:10px}
 /* ---- keyword Connections lists: every row, a filter box on long lists (data/kwuse.json, usesSection in app.js) ---- */
-.uses-list{max-height:min(420px, 55vh); overscroll-behavior:contain}
 .uses-list > [hidden]{display:none}
 .uses-q{display:block; width:100%; box-sizing:border-box; margin:0 0 8px; padding:7px 10px; font:inherit; font-size:13px;
   color:var(--text); background:var(--raised); border:1px solid var(--line); border-radius:8px}
