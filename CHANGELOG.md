@@ -3,6 +3,26 @@
 The full list of changes. The public patch notes (data/changelog.json, shown on the site) stay short.
 Add the details here first, then a short public line there.
 
+## 0.48 — 12 Oct 2026: cleaner cards, the latest hotfix
+
+- **Design sweep** (impeccable critique + audit, 11 Oct: 25/40 and 13/20).
+  - **#207** popup order (game text, numbers and keywords first; changed/patchdiff last); native `<details>` folds
+    for Changed in, the gem gold grid and each Connections group (FRAME.rel: the most useful group opens, the
+    "Listed with" kind of group shuts and sorts last); no inner scroll in `.uses-list`/`.card-pool`; keyword chips
+    open their text in place; no marks in patch-note lines; zero-result kind chips hidden; price age under the
+    price; `aria-labelledby` on the popup; a repeated line draws once with ×N. Ignite's phone popup 8,414 → 1,976 px.
+  - **#205** `--faint` #66725E → #7D8A73 (3.6 → 5.0:1); `--str-text`; an 11px label floor; "Source: game files
+    0.5.5" for table names (rawcode guards it); crafting rows with their ranges (kwuse); the quality-bonus
+    dropdown in the game's words; explore sort buttons with aria-sort, labelled table regions, sticky first
+    column on phones; home index headings h2. Detector 46 → 26.
+- **#209 / #220** GGG renamed the CDN folders (0.5.5.4.2): findPatch asks the patch server (13060); the new data
+  merged. The patch job installs Pillow for cardart (#215).
+- **Architecture** (docs/architecture.md, framework.md, migration.md; Fable 5.1): stages 1–4 live: the arch check
+  in the guard (#210), the worker's cycle cut and route table (#212), the page contract (#213), the search
+  protocol (#214).
+- **Hotfixes:** boss Worth it removed, value per kill (#204); phones keep the fog, lite is under 4 GB or 4 cores
+  (#203); the lang stage keeps the last good copy when the CDN gives no folder; "in plain words" out (CDA).
+
 ## 0.47 — 4 Oct 2026: paste, modes, pictures, Russian
 
 - **#198** Paste an item (assets/itemtext.js parser, 89 tests; assets/paste.js): a copied item opens its card by name
