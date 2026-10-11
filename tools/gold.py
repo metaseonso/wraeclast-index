@@ -100,7 +100,8 @@ def main():
     gc = {r['id'].strip(): r['value'] / r['divisor'] if 'divisor' in r else r['value']
           for r in json.loads((GAME / 'game_constants.json').read_text(encoding='utf-8'))['rows']}
     patch = g['source'].split('patch ')[-1]
-    src = lambda t: 'Source: %s, game files %s' % (t, patch)
+    # a player sees the patch only; the table each number is read from (t) stays here and in out['table'], never drawn
+    src = lambda t: 'Source: game files %s' % patch
     rows = g['rows']
     kind = lambda k: [r for r in rows if r['kind'] == k]
     names = card_names()

@@ -181,13 +181,13 @@ function linkHTML(p, base, pad){
 /* The index's contents: every section with its pages, each page with a count once one is given ({kind: n}).
    The home page writes it out under its search box (tools/dev/nav.mjs, so the first paint has it) and fills
    the counts from the manifest; the Data page draws it with them. */
-export function contentsHTML(counts = null, base = '', {cls = 'toc', id = 'toc'} = {}){
+export function contentsHTML(counts = null, base = '', {cls = 'toc', id = 'toc', h = 'h2'} = {}){   // h: the group names' level (h2 under the home page's h1)
   const n = p => { const k = pageKind(p); return counts && k && counts[k] ? (+counts[k]).toLocaleString('en') : ''; };
   const out = ['<div class="' + cls + '"' + (id ? ' id="' + id + '"' : '') + '>'];
   for(const s of INDEX){
     if(!s.name) continue;
     const pages = s.pages.filter(p => !(p.route in SHUT));
-    out.push('  <div class="toc-sec"><h3>' + s.name + '</h3><ul>');
+    out.push('  <div class="toc-sec"><' + h + '>' + s.name + '</' + h + '><ul>');
     for(const p of pages) out.push('    <li><a href="' + pageHref(p, base) + '"' + (p.list ? ' data-list="' + p.list + '"' : '') +
       (p.route && base === '' ? ' data-route="' + p.route + '"' : '') + (p.sec ? ' data-sec="' + p.sec + '"' : '') +
       '><i class="ti ti-' + p.icon + '" aria-hidden="true"></i><span>' + pageName(p) + '</span><span class="toc-n"' +

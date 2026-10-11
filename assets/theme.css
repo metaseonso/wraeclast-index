@@ -43,13 +43,13 @@ html:root:not([data-theme="none"]){
   color-scheme:dark;
   --ground:#070807; --surface:#0D0F0D; --raised:#141614; --sunken:#050605;
   --line:#243022; --line-soft:#182017;
-  --text:#DCE3D2; --muted:#98A48E; --faint:#66725E;
+  --text:#DCE3D2; --muted:#98A48E; --faint:#7D8A73;   /* faint: 4.98:1 on --raised, 5.11:1 on the card face */
   --accent:#8CCB3F;            /* poison green: links, focus, active state */
   --accent-soft:#11160E;
   --blood:#B3261E;             /* red accent: warnings, falls, the rank badge */
   --blood-soft:#2A0F0C;
   --bronze:#A8844A;            /* forged-metal hairlines */
-  --str:#C9463B; --dex:#79B94A; --int:#5B8FD1; --any:#A89F8C;
+  --str:#C9463B; --str-text:#D65A4E; --dex:#79B94A; --int:#5B8FD1; --any:#A89F8C;
   --pos:#16C784; --neg:#EA3943;   /* market green and red: price moves read as market data, not as the poison theme */
   /* the game's item colours, for names */
   --c-unique:#C06A2B; --c-gem:#2BB5AA; --c-currency:#B8AC8C; --c-keystone:#D9B566; --c-rare:#E3D36B;
@@ -120,7 +120,7 @@ html:root:not([data-theme="none"]){scrollbar-color:#2A3627 #070907}
 input[type=range], input[type=checkbox]{accent-color:#4E7A28}
 .chip.c-r[aria-pressed="true"], .chip.c-g[aria-pressed="true"], .chip.c-b[aria-pressed="true"], .chip.c-w[aria-pressed="true"]{
   background:var(--raised); font-weight:500}
-.chip.c-r[aria-pressed="true"]{color:var(--str); border-color:var(--str)}
+.chip.c-r[aria-pressed="true"]{color:var(--str-text); border-color:var(--str)}   /* text red: 4.70:1 on --raised */
 .chip.c-g[aria-pressed="true"]{color:var(--dex); border-color:var(--dex)}
 .chip.c-b[aria-pressed="true"]{color:var(--int); border-color:var(--int)}
 .chip.c-w[aria-pressed="true"]{color:var(--any); border-color:var(--any)}
@@ -244,3 +244,8 @@ input[type=range], input[type=checkbox]{accent-color:#4E7A28}
   .fog .bank{width:420px} .fog .haze{width:460px}
 }
 html:root:not([data-theme="none"]) body{overflow-x:clip}   /* the fog may drift past the edge */
+/* the price stamp keeps its age whole in the one-row top bar (1280 up, where the row is always full): the search box
+   gives way first, and its "/" hint goes (the Keybindings list has it). The stamp was cut to "2…" on /currency and
+   /explore. */
+@media (min-width:1280px){ .top .stamp{min-width:min-content} .top .topsearch{min-width:76px}
+  .top .tsearch kbd{display:none} .top .tsearch input{padding-right:8px} }

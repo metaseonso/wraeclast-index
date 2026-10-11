@@ -101,6 +101,36 @@ def lines(t):
     return [re.sub(r'\s+', ' ', x).strip() for x in t.replace('\r', '').split('\n') if x.strip()]
 
 
+# A crafting mod's line, the game's way: its # filled with the range it rolls across every tier and item kind
+# ("+(5-36) to Strength"), off each tier's own line in data/craft. NUM reads a number or a game range "(5-8)".
+NUM = re.compile(r'\((-?\d+(?:\.\d+)?)-(-?\d+(?:\.\d+)?)\)|(-?\d+(?:\.\d+)?)')
+
+
+def spans(line):
+    """A line's shape (each number or range as #) and its numbers, as [lo, hi] per place."""
+    got = []
+    for m in NUM.finditer(line):
+        a, b = (m.group(1), m.group(2)) if m.group(1) is not None else (m.group(3), m.group(3))
+        got.append([float(a), float(b)])
+    return NUM.sub('#', line), got
+
+
+def ranged(template, tiers):
+    """The template with its ranges, or None when a tier does not read as the template (then the row goes)."""
+    shape = NUM.sub('#', template)
+    acc = None
+    for t in tiers:
+        sh, got = spans(t)
+        if sh != shape:
+            return None
+        acc = got if acc is None else [[min(x[0], y[0]), max(x[1], y[1])] for x, y in zip(acc, got)]
+    if acc is None:
+        return None
+    n = lambda v: ('%g' % v)
+    it = iter(acc)
+    return re.sub('#', lambda _: (lambda r: n(r[0]) if r[0] == r[1] else '(%s-%s)' % (n(r[0]), n(r[1])))(next(it)), shape)
+
+
 def strings(o):
     if isinstance(o, str):
         yield o
@@ -414,24 +444,34 @@ def main():
     # crafting: every mod line once, with the item kinds it rolls on
     kinds = {c['id']: c['n'] for c in craft['classes']}
     mods = defaultdict(set)   # (line, what) -> kinds
+    tiers = defaultdict(list)   # (line, what) -> each tier's own line, with its numbers
     for cid in kinds:
         f = ROOT / 'data' / 'craft' / (cid + '.json')
         if not f.exists():
             continue
         d = json.loads(f.read_text(encoding='utf-8'))
-        for fam in d.get('fam') or []:
+        of = defaultdict(list)
+        for m in d.get('mods') or []:
+            of[m[1]].append(' / '.join(y for x in m[3] for y in lines(x)))
+        for i, fam in enumerate(d.get('fam') or []):
             side = {'p': 'prefix', 's': 'suffix'}.get(fam[0], '')
             src, lord = fam[4] if len(fam) > 4 else '', fam[5] if len(fam) > 5 else ''
             what = {'d': 'Desecrated ' + side + (' (' + lord + ')' if lord else ''), 'c': 'Corrupted',
                     'e': 'Essence ' + side}.get(src, side.capitalize() or 'Mod').strip()
-            mods[(' / '.join(y for x in fam[1] for y in lines(x)), what)].add(cid)
-    cr = []
+            key = (' / '.join(y for x in fam[1] for y in lines(x)), what)
+            mods[key].add(cid)
+            tiers[key] += of[i]
+    cr, unranged = [], 0
     for (line, what) in sorted(mods, key=lambda x: (sort_key(x[0]), x[1])):
         ks = found([line])
         if not ks:
             continue
+        shown = ranged(line, tiers[(line, what)]) if '#' in line else line
+        if shown is None:   # no tier reads as the line: a bare # template is never shown
+            unranged += 1
+            continue
         ck = sorted(mods[(line, what)], key=lambda c: list(kinds).index(c))
-        cr.append([line, what, ck])
+        cr.append([shown, what, ck])
         for k in ks:
             use[k]['m'].append(((len(cr),), len(cr) - 1))
 
@@ -512,6 +552,8 @@ def main():
     print('data/kwuse.json: %d keywords, %d KB (small passive groups %d, atlas %d (%d with a card), currency %d, crafting %d, '
           'essence lines %d)' % (len(out_k), len(raw.encode('utf-8')) // 1024, len(sp), len(at_out), sum(len(a) > 3 for a in at_out),
                                   len(cu), len(cr), len(es)))
+    if unranged:
+        print('  %d crafting lines left out: no tier of theirs reads as the line' % unranged)
     print('  %d from the drill-down page, %d more that the index cards (tools/gamelib.py); %d can filter that '
           'page\'s own lists' % (len(kw) - added, added, len(dd)))
     print('  keywords used by bases: %d, by essences: %d' % (sum(1 for e in out_k.values() if e.get('b')),
