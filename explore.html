@@ -82,7 +82,7 @@ button,input,select{font:inherit; color:inherit}
   display:flex; align-items:center; gap:11px; background:var(--surface);
   border:1px solid var(--line); border-radius:7px; padding:6px 13px; flex:1 1 320px; min-width:240px;
 }
-.lvlbox label{font-size:11px; text-transform:uppercase; letter-spacing:.09em; color:var(--faint); white-space:nowrap}
+.lvlbox label{font-size:10px; text-transform:uppercase; letter-spacing:.09em; color:var(--faint); white-space:nowrap}
 .lvlnum{font-family:var(--mono); font-size:19px; font-weight:600; color:var(--accent); min-width:2.2ch; text-align:right; font-variant-numeric:tabular-nums}
 input[type=range]{flex:1; min-width:80px; accent-color:var(--accent); background:transparent}
 .lvlquick{display:flex; gap:3px}
@@ -118,14 +118,9 @@ input[type=range]{flex:1; min-width:80px; accent-color:var(--accent); background
 table{border-collapse:separate; border-spacing:0; width:100%; min-width:900px; font-size:13px}
 thead th{
   position:sticky; top:0; z-index:5; background:var(--raised); color:var(--muted);
-  text-align:left; font-weight:500; font-size:11px; text-transform:uppercase; letter-spacing:.07em;
-  padding:9px 10px; border-bottom:1px solid var(--line); white-space:nowrap; user-select:none;
+  text-align:left; font-weight:500; font-size:10.5px; text-transform:uppercase; letter-spacing:.07em;
+  padding:9px 10px; border-bottom:1px solid var(--line); white-space:nowrap; cursor:pointer; user-select:none;
 }
-/* a sortable column's label is a button (PoE.sortHead) that fills its cell */
-thead th.sortable{padding:0}
-.thsort{display:block; width:100%; padding:9px 10px; border:0; margin:0; background:none; cursor:pointer;
-  font:inherit; color:inherit; letter-spacing:inherit; text-transform:inherit; text-align:inherit; white-space:nowrap}
-.thsort:focus-visible{outline:2px solid var(--accent); outline-offset:-3px; border-radius:4px}
 thead th:hover{color:var(--text)}
 thead th.num{text-align:right}
 thead th .ar{color:var(--accent); font-size:10px}
@@ -143,7 +138,7 @@ td.num{text-align:right; font-family:var(--mono); font-variant-numeric:tabular-n
 .kw:hover{color:var(--accent); border-bottom-style:solid}
 .kwwrap{display:grid; gap:7px}
 .kwhd{display:flex; gap:10px; align-items:center; flex-wrap:wrap}
-.kwlbl{font-size:11px; text-transform:uppercase; letter-spacing:.09em; color:var(--faint); white-space:nowrap}
+.kwlbl{font-size:10px; text-transform:uppercase; letter-spacing:.09em; color:var(--faint); white-space:nowrap}
 .kwq{flex:0 1 240px; padding:5px 10px; font-size:12.5px}
 .kwlist{display:flex; gap:5px; flex-wrap:wrap; max-height:57px; overflow:hidden; padding:1px; position:relative}
 /* the closed list fades out over its last row: a plain overlay in the page's own colour (a mask repaints every chip) */
@@ -209,7 +204,7 @@ tr.jfiles td{opacity:.72}
 .orbkey{display:flex; gap:6px 16px; flex-wrap:wrap; align-items:center; font-size:11px; color:var(--faint);
   padding:8px 11px; border:1px solid var(--line-soft); border-radius:7px; background:var(--sunken)}
 .orbkey span.i{display:inline-flex; gap:6px; align-items:center}
-.orbkey .klbl{font-size:11px; text-transform:uppercase; letter-spacing:.09em; color:var(--faint)}
+.orbkey .klbl{font-size:10px; text-transform:uppercase; letter-spacing:.09em; color:var(--faint)}
 :root{--k-keystone:#CFA75E; --k-notable:#9E9686; --k-small:#5d574a;
   --k-anoint:#6C9AD6; --k-jewel-socket:#6EAE68; --k-ascendancy-start:#D2584C}
 .dot.r{background:var(--str)} .dot.g{background:var(--dex)} .dot.b{background:var(--int)} .dot.w{background:var(--any)}
@@ -302,14 +297,7 @@ details.tech>summary{color:var(--faint)}
   .brand{font-size:20px}
   .panel{width:100%; border-left:0}
   .tags{max-width:160px}
-  /* the name column stays put while the table scrolls sideways */
-  tbody td:first-child, thead th:first-child{position:sticky; left:0; background:var(--surface);
-    box-shadow:inset -1px 0 0 var(--line)}
-  thead th:first-child{z-index:6; background:var(--raised)}
-  tbody td:first-child{z-index:1}
 }
-/* a heading for screen readers and the outline only: the tab's own button already names it on screen */
-.vh{position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; border:0}
 </style>
 
 <header class="top">
@@ -388,8 +376,7 @@ details.tech>summary{color:var(--faint)}
 <script src="assets/topnav.js" type="module"></script>
 
 <div class="wrap">
-<section id="sec-gems" aria-labelledby="h-gems">
-  <h2 class="vh" id="h-gems">Gems</h2>
+<section id="sec-gems">
   <div class="controls">
     <div class="row">
       <div class="seg" id="modeseg" role="group" aria-label="Gem type"></div>
@@ -448,7 +435,7 @@ details.tech>summary{color:var(--faint)}
     </div>
   </div>
 
-  <div class="tablewrap" tabindex="0" role="region" aria-label="Gems table">
+  <div class="tablewrap">
     <table id="tbl">
       <thead><tr id="hrow"></tr></thead>
       <tbody id="tbody"></tbody>
@@ -460,8 +447,7 @@ details.tech>summary{color:var(--faint)}
   <p class="foot" id="foot"></p>
 </section>
 
-<section id="sec-uniques" hidden aria-labelledby="h-uniques">
-  <h2 class="vh" id="h-uniques">Uniques</h2>
+<section id="sec-uniques" hidden>
   <div class="controls">
     <div class="row">
       <div class="seg" id="ugroups" role="group" aria-label="Item group"></div>
@@ -487,7 +473,7 @@ details.tech>summary{color:var(--faint)}
       <span class="hint">Prices in divine, from live trade listings</span>
     </div>
   </div>
-  <div class="tablewrap" tabindex="0" role="region" aria-label="Uniques table">
+  <div class="tablewrap">
     <table id="utbl"><thead><tr id="uhrow"></tr></thead><tbody id="utbody"></tbody></table>
     <div class="more" id="umore" hidden></div>
     <div class="empty" id="uempty" hidden><h3>Nothing matches</h3></div>
@@ -495,12 +481,11 @@ details.tech>summary{color:var(--faint)}
   <p class="foot" id="ufoot"></p>
 </section>
 
-<section id="sec-tree" hidden aria-labelledby="h-tree">
-  <h2 class="vh" id="h-tree">Passive tree</h2>
+<section id="sec-tree" hidden>
   <div class="controls">
     <div class="row">
       <div class="seg" id="tkinds" role="group" aria-label="Passive kind"></div>
-      <input class="search" id="tq" type="search" placeholder="Search a passive by name or effect…" autocomplete="off">
+      <input class="search" id="tq" type="search" placeholder="Search a passive by name, effect, or stat id…" autocomplete="off">
     </div>
     <div class="row">
       <div class="lvlbox" style="flex:0 1 400px">
@@ -522,7 +507,7 @@ details.tech>summary{color:var(--faint)}
       <button class="linkbtn" id="tjewelbtn" type="button">Jump to timeless jewels</button>
     </div>
   </div>
-  <div class="tablewrap" tabindex="0" role="region" aria-label="Passives table">
+  <div class="tablewrap">
     <table id="ttbl"><thead><tr id="throw"></tr></thead><tbody id="ttbody"></tbody></table>
     <div class="more" id="tmore" hidden></div>
     <div class="empty" id="tempty" hidden><h3>Nothing matches</h3></div>
@@ -530,7 +515,7 @@ details.tech>summary{color:var(--faint)}
 
   <h2 class="secttl" id="jewels">Timeless jewels &mdash; every conqueror and its seed range</h2>
   <p class="lede" id="jlede"></p>
-  <div class="tablewrap" style="margin-top:12px" tabindex="0" role="region" aria-label="Timeless jewels table">
+  <div class="tablewrap" style="margin-top:12px">
     <table id="jtbl"><thead><tr>
       <th>Faction</th><th class="num">Version</th><th class="num">Conqueror roll</th>
       <th>Conqueror</th><th class="num">Seed range</th><th class="num" title="Raw value from the game files, no unit given.">Radius (raw)</th><th>Line on the jewel</th>
@@ -763,27 +748,8 @@ function orbKey(blank){
 }
 /* deep: a filter a card's "see all" carried in the address, applied by the section that owns it
    (assets/bridge.js fills in the keyword itself; each section below registers its own here). */
-/* A table's header row: each column a button that sorts by it, the sorted one marked for screen readers too
-   (aria-sort). Redrawn on every sort, so the key that sorted keeps its focus. */
-function sortHead(tr, cols, sort, pick){
-  const had = tr.contains(document.activeElement) ? document.activeElement.dataset.k : null;
-  tr.innerHTML='';
-  for(const c of cols){
-    const th=document.createElement('th'), on = sort.k===c.k;
-    th.className = (c.num?'num ':'')+'sortable';
-    th.scope = 'col';
-    if(c.title) th.title=c.title;
-    if(on) th.setAttribute('aria-sort', sort.dir>0 ? 'ascending' : 'descending');
-    const b=document.createElement('button');
-    b.type='button'; b.className='thsort'; b.dataset.k=c.k;
-    b.innerHTML = c.label + (on ? ' <span class="ar" aria-hidden="true">'+(sort.dir>0?'▲':'▼')+'</span>' : '');
-    b.onclick=()=>pick(c);
-    th.appendChild(b); tr.appendChild(th);
-  }
-  if(had){ const b=[...tr.querySelectorAll('.thsort')].find(x=>x.dataset.k===had); if(b) b.focus(); }
-}
 return { KW, esc, plain, rich, term, kwPicker, pickers, openKeyword, setSectionResolver, orb, orbKey,
-         attrOf, ATTRN, sortHead, deep: {} };
+         attrOf, ATTRN, deep: {} };
 })();
 
 });</script>
@@ -986,22 +952,15 @@ function qRender(item, Q){
   return {html: txt, n: first};
 }
 function qPrimary(g, Q){
-  const m = qMain(g);
-  return m ? qRender(m, Q) : null;
+  const L = qLines(g);
+  if(!L.length) return null;
+  return qRender(L[0], Q);
 }
-// a gem's quality line: the first one with words (some gems carry a bare stat ahead of its worded line)
-function qMain(g){ return qLines(g).find(x=>plain(x.t).trim()) || null; }
 function qStatId(g){
-  const m = qMain(g);
-  if(!m) return null;
-  const k = Object.keys(m.s);
+  const L = qLines(g);
+  if(!L.length) return null;
+  const k = Object.keys(L[0].s);
   return k.length ? k[0] : null;
-}
-// the quality-bonus filter's key: the line's stat and its wording, so one option is one line as the game words it
-function qKey(g){
-  const id = qStatId(g); if(!id) return null;
-  const w = plain(qMain(g).t.replace(/\{[^}]+\}/g,'…')).split('\n')[0].trim();
-  return w ? id+'\n'+w : null;
 }
 
 // Every stat set on the gem that carries damage of its own (main hit, shockwave, explosion, infused form…)
@@ -1269,17 +1228,26 @@ document.querySelectorAll('.lvlquick button').forEach(b=>{
   if(b.dataset.q!==undefined) b.onclick=()=>setQual(b.dataset.q==='max' ? qMax() : b.dataset.q);
 });
 
-// quality-bonus selector: one option per quality line as the game words it (qKey), so a numeric sort compares
-// like with like and every label is the game's own text. A gem whose quality line has no words is in none.
+// quality-bonus selector: one option per distinct quality stat, so a numeric sort compares like with like
 const QOPT = new Map();
-GEMS.forEach(g=>{ const k = qKey(g); if(k) QOPT.set(k, (QOPT.get(k)||0)+1); });
-const QKEYS = [...QOPT.entries()].map(([k,n])=>({k, n, label:k.slice(k.indexOf('\n')+1)}))
-  .sort((a,b)=>b.n-a.n || a.label.localeCompare(b.label));
+GEMS.forEach(g=>{
+  const id = qStatId(g); if(!id) return;
+  const wording = plain(qLines(g)[0].t.replace(/\{[^}]+\}/g,'\u2026')).split('\n')[0];
+  if(!QOPT.has(id)) QOPT.set(id, {n:0, words:new Map()});
+  const o = QOPT.get(id); o.n++;
+  o.words.set(wording, (o.words.get(wording)||0)+1);
+});
+// Gems can share a quality stat while wording it differently. Only borrow one gem's
+// wording as the label when every gem with that stat words it the same way.
+QOPT.forEach((o,id)=>{
+  o.label = (o.words.size===1) ? [...o.words.keys()][0] : titleize(id);
+});
 const qsel = $('#qsel');
 qsel.innerHTML = '<option value="">Any quality bonus</option>' +
-  QKEYS.map((o,i)=>'<option value="'+i+'">'+PoE.esc(o.label)+'  ('+o.n+')</option>').join('');
+  [...QOPT.entries()].sort((a,b)=>b[1].n-a[1].n || a[1].label.localeCompare(b[1].label))
+    .map(([id,o])=>'<option value="'+id+'">'+o.label.replace(/</g,'&lt;')+'  ('+o.n+')</option>').join('');
 qsel.onchange = e=>{
-  S.qstat = e.target.value==='' ? '' : QKEYS[+e.target.value].k; S.shown=120;
+  S.qstat = e.target.value; S.shown=120;
   if(S.qstat){ S.sort={k:'qv', dir:-1}; buildHead(); }
   $('#qhint').textContent = S.qstat ? 'Sorted by size of this bonus' : 'No quality bonus selected.';
   render();
@@ -1323,7 +1291,7 @@ function filtered(){
            (S.colors.has('w')&&!a[0]&&!a[1]&&!a[2]);
   });
   if(S.lineage) out = out.filter(g=>g.lin);
-  if(S.qstat) out = out.filter(g=>qKey(g)===S.qstat);
+  if(S.qstat) out = out.filter(g=>qLines(g).some(x=>S.qstat in x.s));
   if(KWP) out = out.filter(g=>KWP.match(g));
   if(S.tags.size){
     const want=[...S.tags];
@@ -1349,10 +1317,18 @@ function filtered(){
 
 /* ---------- render ---------- */
 function buildHead(){
-  PoE.sortHead($('#hrow'), colsFor(), S.sort, c=>{
-    if(S.sort.k===c.k) S.sort.dir*=-1;
-    else S.sort={k:c.k, dir: c.num?-1:1};
-    S.shown=120; buildHead(); render();
+  const hr = $('#hrow'); hr.innerHTML='';
+  colsFor().forEach(c=>{
+    const th=document.createElement('th');
+    th.className = c.num?'num':'';
+    th.innerHTML = c.label + (S.sort.k===c.k ? ' <span class="ar">'+(S.sort.dir>0?'▲':'▼')+'</span>' : '');
+    if(c.title) th.title=c.title;
+    th.onclick=()=>{
+      if(S.sort.k===c.k) S.sort.dir*=-1;
+      else S.sort={k:c.k, dir: c.num?-1:1};
+      S.shown=120; buildHead(); render();
+    };
+    hr.appendChild(th);
   });
 }
 
@@ -1673,9 +1649,17 @@ function mkTable(cfg){
   const head=document.getElementById(cfg.head), body=document.getElementById(cfg.body);
   let CUR=[], later=0, frame=0;
   function buildHead(){
-    PoE.sortHead(head, cfg.cols, S.sort, c=>{
-      if(S.sort.k===c.k) S.sort.dir*=-1; else S.sort={k:c.k, dir:c.num?-1:1};
-      S.shown=120; buildHead(); render();
+    head.innerHTML='';
+    cfg.cols.forEach(c=>{
+      const th=document.createElement('th');
+      th.className = c.num?'num':'';
+      th.innerHTML = c.label + (S.sort.k===c.k ? ' <span class="ar">'+(S.sort.dir>0?'▲':'▼')+'</span>' : '');
+      if(c.title) th.title=c.title;
+      th.onclick=()=>{
+        if(S.sort.k===c.k) S.sort.dir*=-1; else S.sort={k:c.k, dir:c.num?-1:1};
+        S.shown=120; buildHead(); render();
+      };
+      head.appendChild(th);
     });
   }
   // each row's sort value is read once per draw, not once per comparison
