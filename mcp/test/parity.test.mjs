@@ -60,7 +60,9 @@ test('the package stays out of the site\'s build', {skip}, () => {
 });
 
 test('the Data page names the package, once published', {skip}, () => {
-  const data = readFileSync(join(REPO, 'assets', 'data.js'), 'utf8');
+  // the Data page's module: assets/pages/data.js since the folders (docs/migration.md stage 7), assets/data.js before
+  const page = [join(REPO, 'assets', 'pages', 'data.js'), join(REPO, 'assets', 'data.js')].find(f => existsSync(f));
+  const data = readFileSync(page, 'utf8');
   assert.match(data, /wraeclast-index-mcp/);
   assert.match(data, /once published/);
 });

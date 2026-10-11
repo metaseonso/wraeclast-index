@@ -15,7 +15,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { isItemText, parse, plan, resolve, shown, ownPrice, runs } from '../../assets/itemtext.js';
+import { isItemText, parse, plan, resolve, shown, ownPrice, runs } from '../../assets/engines/itemtext.js';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
 const INDEX = JSON.parse(readFileSync(join(ROOT, 'data', 'index.json'), 'utf8'));

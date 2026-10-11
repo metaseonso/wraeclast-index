@@ -36,7 +36,7 @@ const ROOT = join(HERE, '..', '..');
    Nothing about a rule lives in this file; what is below is the measuring. */
 import { STEPS, TABLE, TYPES, UNKNOWNS, SOCKETS, socketsLeft, key, plain, spans, readLine, read,
   baseLife, baseMana, PER_LEVEL, BASE, RES_DEFAULT, RES_CEILING, MAX_REDUCTION,
-  hit, armourCut, resCut, taken, maxHit, range, widenedBy } from '../../assets/maths.js';
+  hit, armourCut, resCut, taken, maxHit, range, widenedBy } from '../../assets/engines/maths.js';
 
 /* ---------- arguments ---------- */
 const argv = process.argv.slice(2);

@@ -57,9 +57,12 @@ export const LINES = {
 
 const rel = p => relative(ROOT, p).replace(/\\/g, '/');
 const KB = n => Math.round(n / 1024 * 10) / 10;
-async function files(dir, re){
+async function files(dir, re){   // the folder and its folders (assets/core, ui, engines, pages, search)
   const out = [];
-  for(const f of await readdir(join(ROOT, dir))) if(re.test(f)) out.push(join(ROOT, dir, f));
+  for(const d of await readdir(join(ROOT, dir), {withFileTypes: true})){
+    if(d.isDirectory()){ for(const f of await readdir(join(ROOT, dir, d.name))) if(re.test(f)) out.push(join(ROOT, dir, d.name, f)); }
+    else if(re.test(d.name)) out.push(join(ROOT, dir, d.name));
+  }
   return out.sort();
 }
 const text = async f => readFile(f, 'utf8');
