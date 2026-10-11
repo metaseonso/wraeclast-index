@@ -7,7 +7,7 @@
    Prices: data/bossprices.json (worker/prices.js) resolves every name at once from the unique checks, the
    in-game Currency Exchange and the trade searches in data/bossqueries.json; a name it does not carry falls back to
    the card's own market price. Real prices only, and a rate never meets one: no value per kill, here or anywhere. */
-import { D, $, esc, card, openDetail, priceOf, hrefOf, money as coin, moneyHTML, change, spark, ago, params, onType, leadFirst, noPrice } from './app.js';
+import { D, $, esc, card, openDetail, priceOf, hrefOf, moneyHTML, change, spark, ago, params, onType, leadFirst } from './app.js';
 
 const SHOW = [['all', 'All'], ['pin', 'Pinnacle'], ['drops', 'With drops']];
 const SORTS = [['name', 'Name'], ['way', 'Way in']];
@@ -97,25 +97,11 @@ function row(b, i){
 }
 const wayValue = r => r.way && r.way.px && num(r.way.px.v) ? r.way.px.v : null;
 
-/* ---------- is it worth killing? ----------
-   Three real prices and one community sample, and nothing else. What the way in costs and what a drop sells
-   for are live prices; how often a drop falls is the PoE2 Wiki's own sample, named and counted on screen
-   wherever it is used. A rate never lands as one number: every one is drawn as the 95% Wilson band on the
-   sample the wiki took, so a figure taken over 71 kills reads as the span it really is. A row with no sample
-   and a drop with no price are both left out and counted on screen. Nothing here is filled in with a guess,
-   and no rate is ever multiplied into a value per kill that is offered as fact.
-
-   The settle figure is the other half of the answer, because these returns are lumpy. After n kills the 95%
-   band on the average is 1.96 * sigma / (mu * sqrt(n)) wide, so the kills that bring it inside a quarter of
-   the average are n = (1.96 * sigma / (0.25 * mu))^2, sigma taken over the counted drops one at a time (each
-   on its own, which is the wide end: a table where one unique drops or another cannot swing further than
-   that). For a single drop it comes to 1.96 / sqrt(k), which is 61 of the thing seen — the same arithmetic
-   as docs/proposal-farms.md. Kills an hour is the player's own number and is never ours. */
+/* ---------- drop rates ----------
+   How often a drop falls is the PoE2 Wiki's own sample, named and counted on screen wherever it is used, and
+   drawn as the 95% Wilson band on that sample, so a rate taken over 71 kills reads as the span it really is.
+   No rate is ever multiplied into a value per kill (the owner's rule, 21 Sep; the Worth it block went 11 Oct). */
 const Z = 1.96;         // the 95% band
-const NEAR = 0.25;      // how near the average has to settle before an average is worth reading
-const KPH_KEY = 'wi.bosskph';
-let KPH = 6;            // kills an hour, the player's own, kept in their browser
-try { const v = Math.round(+localStorage.getItem(KPH_KEY)); if(v >= 1 && v <= 30) KPH = v; } catch {}
 
 function wilson(p, n, up){
   const k = Z * Z / n, c = (p + k / 2) / (1 + k);
@@ -133,141 +119,6 @@ function rateBand(r){
   return {lo: wilson(Math.min(...v), r.sample, false), hi: wilson(Math.max(...v), r.sample, true), pt};
 }
 const pct = v => (v * 100 >= 10 ? Math.round(v * 100) : +(v * 100).toFixed(1)) + '%';
-
-/* A run is one way the fight is done. The wiki's table splits a boss by mode — the Arbiter is Regular or
-   Uber — and by the conditions it writes into a group ("If the ring is taken immediately…"); a row that names
-   neither belongs to every run. Two runs are never added together: that would count one drop twice. */
-const isCond = g => /^if\b/i.test(g || '');
-function runsOf(b){
-  const rows = (b.rates && b.rates.rows) || [];
-  const modes = [...new Set(rows.map(r => r.mode || '').filter(Boolean))];
-  const out = [];
-  for(const m of modes.length ? modes : ['']){
-    const mine = rows.filter(r => !r.mode || r.mode === m);
-    const conds = [...new Set(mine.map(r => r.group || '').filter(isCond))];
-    // the wiki writes a condition as a whole sentence about what drops; the run is named by the condition
-    // itself, which is the clause before the comma
-    for(const c of conds.length ? conds : [''])
-      out.push({name: [m, c.split(',')[0].replace(/\.*$/, '')].filter(Boolean).join(' · '),
-        rows: mine.filter(r => !isCond(r.group) || r.group === c)});
-  }
-  return out;
-}
-/* How many of an entry item one way in takes, off the item's own line and nothing else: a splinter says
-   "Combine 300 Splinters…" itself. An item that says nothing is one item. */
-function eachOf(x){
-  const M = (D.market && D.market.items) || {};
-  const said = (x.it && x.it.t) || (M['c:' + x.n] || {}).u || '';
-  const m = said.match(/Combine (\d+)/);
-  return m ? +m[1] : 1;
-}
-/* One run, worked: what it costs to get in, what the sampled drops come to, and how many kills the average
-   takes to settle. counted, nosample and noprice are all shown, so the reader sees how much of the table the
-   figures are made of. */
-function meterOf(r, run){
-  const px = new Map(r.drops.map(x => [x.n.toLowerCase(), x.px]));
-  const out = {counted: 0, nosample: 0, noprice: 0, lo: 0, hi: 0, kills: null, rows: run.rows.length,
-    sample: [...new Set(run.rows.filter(x => num(x.sample)).map(x => x.sample))].sort((a, b) => a - b)};
-  let mu = 0, vr = 0;
-  for(const row of run.rows){
-    const b = rateBand(row);
-    if(!b){ out.nosample++; continue; }
-    const p = px.get(row.item.toLowerCase());
-    if(!p || !num(p.v)){ out.noprice++; continue; }
-    out.counted++;
-    out.lo += b.lo * p.v; out.hi += b.hi * p.v;
-    mu += b.pt * p.v; vr += p.v * p.v * b.pt * (1 - b.pt);
-  }
-  if(out.counted && mu > 0) out.kills = Math.ceil(Math.pow(Z * Math.sqrt(vr) / (NEAR * mu), 2));
-  // nothing counted: the row says which of the two it is short of, and never the wrong one
-  out.why = out.counted ? '' : out.nosample >= out.noprice ? 'no sample' : 'no price';
-  out.short = out.counted ? '' : out.rows + ' drops, none ' +
-    (out.nosample && out.noprice ? 'sampled or priced' : out.nosample ? 'sampled' : 'priced');
-  const ways = r.access.filter(x => x.px && num(x.px.v))
-    .map(x => ({n: x.n, each: eachOf(x), div: eachOf(x) * x.px.v}))
-    .sort((a, x) => a.div - x.div);
-  out.way = ways[0] || null;
-  out.ways = ways.length;
-  return out;
-}
-
-/* ---------- the meter: four rows, and every one of them either a figure or what it is missing ---------- */
-/* A range in one unit, the dearer end picking it, so the two ends read against each other. */
-function span(lo, hi){
-  const m = coin(Math.max(Math.abs(lo), Math.abs(hi)));
-  if(!m) return '<b class="none">no price</b>';
-  const ex = (D.market && D.market.rates && D.market.rates.exalted) || 1;
-  const put = v => {
-    const x = m.u === 'ex' ? v * ex : v, a = Math.abs(x);
-    return (a >= 100 ? Math.round(x).toLocaleString() : +x.toFixed(a >= 10 ? 1 : 2)).toString();
-  };
-  return '<b>' + put(lo) + ' – ' + put(hi) + '<small>' + m.u + '</small></b>';
-}
-const hrs = n => n < 10 ? +n.toFixed(1) : Math.round(n);
-const miss = said => '<b class="none">' + esc(said) + '</b>';
-const figHTML = (cls, label, value, sub) => '<div class="bo-fig' + (cls ? ' ' + cls : '') + '"><span>' + label +
-  '</span>' + value + '<i>' + esc(sub) + '</i></div>';
-const wayFig = m => figHTML('', 'Way in', m.way ? '<b>' + moneyHTML(m.way.div) + '</b>' : miss('no price'),
-  m.way ? m.way.n + (m.way.each > 1 ? ' ×' + m.way.each : '') +
-    (m.ways > 1 ? ' · cheapest of ' + m.ways + ' priced' : '') : 'no entry priced');
-const killFig = m => figHTML('', 'A kill', m.counted ? span(m.lo, m.hi) : miss(m.why),
-  m.counted ? m.counted + ' of ' + m.rows + ' drops · ' + m.sample.join(' and ') + ' kills sampled' : m.short);
-const hourFig = m => figHTML('bo-hr', 'An hour',
-  m.counted && m.way ? span((m.lo - m.way.div) * KPH, (m.hi - m.way.div) * KPH) : miss(m.counted ? 'no price' : m.why),
-  m.counted && m.way ? 'at ' + KPH + ' kills an hour' : m.counted ? 'the way in has none' : 'nothing to work it out from');
-const settleFig = m => figHTML('bo-set', 'Settles',
-  m.kills ? '<b>' + m.kills.toLocaleString() + ' kills</b>' : miss(m.why || 'no sample'),
-  m.kills ? hrs(m.kills / KPH) + ' hours at ' + KPH + ' an hour' : 'nothing to work it out from');
-
-function runHTML(m, run, i){
-  const left = [m.nosample ? m.nosample + ' with no sample' : '', m.noprice ? m.noprice + ' with no price' : '']
-    .filter(Boolean);
-  return '<div class="bo-roi" data-run="' + i + '">' +
-    (run.name ? '<p class="lbl">' + esc(run.name) + '</p>' : '') +
-    wayFig(m) + killFig(m) + hourFig(m) + settleFig(m) +
-    (left.length ? '<p class="note">Left out: ' + esc(left.join(', ')) + '.</p>' : '') + '</div>';
-}
-/* The whole section. A boss with no rate table draws no meter at all; a table the wiki never counted draws
-   the rows and no figure, because a blank would read as a zero and a number would be a guess. The slider is
-   there only where a figure moves with it. */
-function roiHTML(r){
-  const b = r.b;
-  if(!b.rates || !((b.rates.rows || []).length)) return '';
-  const runs = runsOf(b).map(run => ({run, m: meterOf(r, run)}));
-  const live = runs.some(x => x.m.counted);
-  return '<div class="bo-sec bo-worth"><p class="lbl">Worth it</p>' +
-    runs.map((x, i) => runHTML(x.m, x.run, i)).join('') +
-    (live ? '<label class="bo-kph"><span class="lbl">Kills an hour <b>' + KPH + '</b></span>' +
-      '<input type="range" min="1" max="30" step="1" value="' + KPH + '" data-do="kph" aria-label="Kills an hour"></label>' : '') +
-    '<p class="note">' + esc(rateSrc(b.rates)) + '</p>' +
-    '<p class="note">Prices: the in-game Currency Exchange and the trade site' +
-      (BP && BP.updated ? ', checked ' + esc(ago(BP.updated)) : '') + '.</p>' +
-    (live ? '<p class="note">Kills an hour is yours. Settles: the kills it takes for the average to sit ' +
-      'within a quarter of itself, 19 times in 20.</p>' : '') + '</div>';
-}
-// a boss the meter can answer for: one run with a sampled rate and a real price on the same drop
-const drawsMeter = r => runsOf(r.b).some(run => meterOf(r, run).counted > 0);
-/* The slider moves and the two rows that stand on it are redrawn where they are, so the card keeps its place
-   and the finger keeps the slider. The card's own extra is rewritten with them: a step back and forward
-   redraws from it, and it would otherwise come back at the old number. */
-function onBoss(r, opts, what, el){
-  if(what !== 'kph') return;
-  const v = Math.max(1, Math.min(30, Math.round(+el.value) || KPH));
-  KPH = v;
-  try { localStorage.setItem(KPH_KEY, String(v)); } catch {}
-  const box = el.closest('.bo-worth');
-  if(!box) return;
-  const lab = box.querySelector('.bo-kph b');
-  if(lab) lab.textContent = v;
-  const runs = runsOf(r.b);
-  for(const blk of box.querySelectorAll('.bo-roi')){
-    const m = meterOf(r, runs[+blk.dataset.run]);
-    const hr = blk.querySelector('.bo-hr'), st = blk.querySelector('.bo-set');
-    if(hr) hr.outerHTML = hourFig(m);
-    if(st) st.outerHTML = settleFig(m);
-  }
-  opts.extra = extraOf(r);
-}
 
 /* ---------- small pieces ---------- */
 const ICONS = new Map();
@@ -418,7 +269,6 @@ function extraOf(r){
      marks a field carries): its hits are what it does to you, its drops where things come from. The meter is
      prices and nothing else, so a mode with no prices has none. */
   const blocks = [
-    {html: noPrice() ? '' : roiHTML(r)},
     {first: 'danger', html: hitsHTML(r)},
     {html: r.access.length ? '<div class="bo-sec"><p class="lbl">Way in</p><div class="bo-tbl">' +
       r.access.map((x, i) => itemRow(x, r.i + ':a:' + i, false)).join('') +
@@ -442,7 +292,6 @@ function openBoss(r){
   const here = /^#\/bosses\b/.test(location.hash);   // on the tab already: the gold button has nowhere new to go
   const opts = {price: null, builds: false, drawn: true, kind: b.pinnacle ? 'Pinnacle boss' : 'Boss',
     extra: extraOf(r)};
-  opts.on = (what, el) => onBoss(r, opts, what, el);
   openDetail(it, opts, here ? null : hrefOf(it));
 }
 /* The item rows live in the card's own HTML, so the popup redraws them itself on Back: one listener on the page,

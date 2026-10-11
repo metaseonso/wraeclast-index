@@ -409,7 +409,7 @@ header.top .brand{font-size:19px; letter-spacing:.03em; color:inherit}   /* the 
 .topmore .modesw{width:100%; margin:0}
 /* No prices (SSF, Hardcore, HC SSF): a card already draws none (assets/app.js slotHTML); this is the rest of the
    site. A cell in a grid keeps its place, so the columns beside it stay where they are. */
-body.nopx :is(.stamp, .card-inv, .uses-px, .tsearch-row .p, .cr-px, .bn-px, .bn-spend, .cxp-px, .spark, .chg, .bo-worth, .lad-p,
+body.nopx :is(.stamp, .card-inv, .uses-px, .tsearch-row .p, .cr-px, .bn-px, .bn-spend, .cxp-px, .spark, .chg, .lad-p,
   .cxm, .cxm-hd, .fm-p){display:none}
 body.nopx :is(.bo-px, .bo-thd span:nth-child(2)){visibility:hidden}
 .px-off{display:none}
