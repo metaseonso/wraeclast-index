@@ -120,6 +120,15 @@ Exaltation only adds a modifier sharing a tag; and no omen grants its currency a
 `--craft` for one craft printed step by step. Seeded, so the same seed prints the same table. Reads the data
 files and nothing else, writes nothing, no network. Not part of `guard.mjs`: it is the bench's own check.
 
+`arch.mjs`: the shape of the code, measured: the module graph (static, dynamic and Worker edges, the router's read off
+`ROUTES`), its cycles, every module's size and gzip, functions over 80 lines, `window` globals and storage keys, DOM ids
+reached from two modules, per-kind code outside the table, and per stylesheet the `html:not(#_)` rules, raw colours,
+tokens defined, used, undefined and defined twice, every `@media` query, and the motion durations and easings.
+`node tools/dev/arch.mjs` prints it; `--json` for a before and an after; `--graph` for one edge a line; `--check` exits
+non-zero where a number is past its line (`LINES` at the top, set at today's numbers). `docs/architecture.md` is written
+from it and `docs/migration.md` tightens one line per stage. Under a second, no network, writes nothing. Not part of
+`guard.mjs` yet (stage 1 of `docs/migration.md`).
+
 `speed.mjs`: how the site runs on a slow machine. Headless Chrome with the CPU slowed 4x and a fresh profile per
 page, so no cache or service worker helps. It reads home at rest (JSON parsed before anyone types, elements, heap,
 main-thread time over 5 idle seconds), typing "fireball" (busy time, longest frame, endless animations left once the
