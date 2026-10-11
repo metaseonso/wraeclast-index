@@ -258,11 +258,11 @@ export async function checkBudget({offline = false} = {}){
   const paintSum = rows.paint.reduce((a, r) => a + r.n, 0);
   rows.paintSum = note(judge('paint', paintSum, 'home, before a search', LIMITS.paint));
 
-  // search: the manifest, the card meta and every kind's search rows
+  // search: the manifest, the card meta, the heads file and every kind's search rows
   const man = await readJSON('data/manifest.json');
   rows.search = [];
   if(!man) bad.push({line: 'search', what: 'data/manifest.json', state: 'FAIL', note: 'not there: run python tools/shards.py'});
-  else for(const f of ['data/manifest.json', man.meta.file, ...Object.values(man.kinds).map(k => k.search.file)]){
+  else for(const f of ['data/manifest.json', man.meta.file, ...(man.heads ? [man.heads.file] : []), ...Object.values(man.kinds).map(k => k.search.file)]){
     let n = 0;
     try { n = (await stat(join(DIST, f))).size; } catch { try { n = (await stat(join(ROOT, f))).size; } catch {} }
     rows.search.push({line: 'search', what: f, n, state: 'ok'});
