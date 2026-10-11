@@ -32,6 +32,8 @@ jobs:
         run: node tools/dev/voice.mjs
       - name: The frame
         run: node tools/dev/frame.mjs
+      - name: The search protocol, both sides
+        run: node tools/dev/protocol.mjs --check
       - name: The guard, without the browser halves
         run: node tools/dev/guard.mjs --no-phone
       - name: The bench's own rolls
