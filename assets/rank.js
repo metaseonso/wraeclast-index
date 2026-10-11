@@ -90,28 +90,31 @@ export function ranker(X){
     for(const w of (it._hay || '').match(/[a-z0-9]+/g) || []) if(w.length > 2) set.add(w);
     if(it._tw) for(const w of it._tw.match(/[\p{L}\p{N}]+/gu) || []) if(w.length > 2) set.add(w);   // the language's own letters
   };
+  // the list is of one set of cards: how many there are, and the version their words were last read at (the search
+  // worker folds a kind's words into its heads as they land, assets/searchworker.js fold, and bumps it each time)
+  const vocabAt = () => X.items().length + '/' + X.version();
   function vocab(){
-    const items = X.items(), n = items.length;
-    if(VOCAB && VOCAB_AT === n) return VOCAB;
+    const items = X.items(), at = vocabAt();
+    if(VOCAB && VOCAB_AT === at) return VOCAB;
     const set = new Set();
     for(const it of items) wordsOf(set, it);
-    VOCAB_AT = n;
+    VOCAB_AT = at;
     return VOCAB = [...set];
   }
   /* The list is worked out while the thread has nothing else to do, a few milliseconds at a time, once the
      cards are in, so the first key typed never pays for it. A key that comes before it is finished builds the
      list whole, there and then, and this stops. */
   function vocabLater(){
-    const items = X.items(), n = items.length, set = new Set();
+    const items = X.items(), n = items.length, at = vocabAt(), set = new Set();
     let i = 0;
     const slice = () => {
-      if(VOCAB_AT === n || X.items() !== items) return;
+      if(VOCAB_AT === at || X.items() !== items) return;
       const stop = performance.now() + 6;
       while(i < n){
         wordsOf(set, items[i++]);
         if(!(i & 127) && performance.now() > stop) return void X.idle(slice);
       }
-      VOCAB_AT = n;
+      VOCAB_AT = at;
       VOCAB = [...set];
     };
     X.idle(slice);
