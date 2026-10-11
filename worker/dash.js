@@ -26,6 +26,7 @@ import { PAGES } from '../assets/kinds.js';   // every page that is counted, fro
 import { sameSite, allowed, heldDrops } from './community.js';
 import { cloudflare, quotaToday, aeSQL, TRACK_SET } from './cfstats.js';
 import { health } from './health.js';
+import { same } from './util.js';
 
 /* ---------- the crawler pages, and where their visits come from ----------
    The item and list pages (worker/seo.js, built as files) send one view each through assets/landing.js, as
@@ -219,11 +220,6 @@ export function parseHash(s){
   const iterations = +m[1];
   if(iterations < 1 || iterations > 100000) return null;   // the Workers limit for PBKDF2
   try { return {iterations, salt: unb64(m[2].replace(/=+$/, '')), hash: unb64(m[3].replace(/=+$/, ''))}; } catch { return null; }
-}
-export function same(a, b){   // constant time
-  let d = a.length ^ b.length;
-  for(let i = 0; i < Math.max(a.length, b.length); i++) d |= (a[i] | 0) ^ (b[i] | 0);
-  return d === 0;
 }
 export async function checkPassword(password, stored){
   const h = parseHash(stored);
