@@ -87,6 +87,8 @@ h1,h2,h3{margin:0; text-wrap:balance}
 .chip[aria-pressed="true"]{background:var(--accent); border-color:var(--accent); color:var(--ground); font-weight:500}
 .chip .ct{font-family:var(--mono); font-size:11px; opacity:.75; margin-left:5px}
 .chip.zero:not([aria-pressed="true"]){opacity:.42}   /* a kind the words found nothing in */
+.kinds .chip[hidden]{display:none}   /* ...is not offered at all while there are words in the box */
+@media (pointer:coarse){ .kinds .chip{min-height:44px} }
 
 .quote{margin:4px auto 2px; text-align:center; font-family:var(--disp, serif); color:var(--muted)}
 .quote blockquote{margin:0; font-style:italic; font-size:15px; letter-spacing:.02em}
@@ -235,7 +237,7 @@ label.note{display:inline-flex; gap:6px; align-items:center; cursor:pointer}
 .card.detail .fm-items .card{padding:11px 12px 9px; gap:6px; box-shadow:var(--shadow)}   /* item cards in a farm popup keep the grid size */
 .card.detail .fm-items .card h3{font-size:14px}
 .card.detail .fm-items .card-ic{width:40px; height:40px}
-.card.detail .fm-items .card-tx{-webkit-line-clamp:3; font-size:12.5px}
+.card.detail .fm-items .card-tx{display:-webkit-box; -webkit-line-clamp:3; font-size:12.5px}
 .card.detail .fm-items .card-ls{font-size:12.5px}
 .fm-links{display:flex; flex-wrap:wrap; gap:8px; margin-top:4px}
 .fm-mods{margin:0; font-size:12px; line-height:1.45; color:var(--muted)}

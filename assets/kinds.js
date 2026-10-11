@@ -233,8 +233,12 @@ export const FRAME = {
   more: n => '+' + n + ' more',    // how a slot says what it did not draw. Always a count, never an "etc."
   /* Connections, in the popup: rows per group before the rest is a button, and how much slack is not worth a
      button (seven rows and a "See all 9" is worse than nine rows). A section wider than `filter` gets its
-     filter box from the start. */
-  rel: {cap: 8, slack: 2, filter: 30},
+     filter box from the start.
+     Folds: a long block of the popup (the patch notes, a table of numbers, each Connections group) is a native
+     <details> with its label and its count on the summary row, shut until it is opened. `open` is how many
+     Connections groups start open, taken in the kind's own `rel` order: the first group the card has is the one
+     it is about. One rule for every kind; a card with one group has it open. */
+  rel: {cap: 8, slack: 2, filter: 30, open: 1},
   /* GGG's patch notes on a card (the `changed` field): the popup draws the newest `cap` patches, then a "See all
      N" that draws the rest in place, with the slack every slot keeps. A line counts for a card where it names
      the card, and where the card's name is one of the game's own words (KINDS words.mark in `whole`: a keyword,
@@ -466,7 +470,8 @@ export const FIELDS = {
   spirit:   {type: 'number', at: 'sp', slot: 'fact', post: ' Spirit'},
   props:    {type: 'lines', at: 'pr', slot: 'fact'},
   implicit: {type: 'number', at: 'ni', slot: 'fact', post: ' implicit', many: ' implicits'},
-  uses:     {type: 'uses', at: 'use', slot: 'fact'},
+  // in the popup each count is a door to its own Connections group (`go`: the count's key, the group it opens)
+  uses:     {type: 'uses', at: 'use', slot: 'fact', go: {gems: 'kwg', uniques: 'kwu', passives: 'kwp'}},
   weights:  {type: 'weights', at: 'cw', slot: 'fact'},       // how often a mod rolls here (tools/carddata.py)
   frommods: {type: 'lines', at: 'fm', slot: 'fact'},        // the modifiers with no card that give a buff (tools/buffs.py)
   respen:   {type: 'number', at: 'rs', slot: 'fact', post: '% to all Elemental Resistances'},   // the area's penalty
@@ -578,10 +583,11 @@ export const FIELDS = {
   /* A gem's gold price, off the game's own tables: by gem level and by quality, or one flat price where the gem
      is a support (the first test in `flat` that holds picks it). The files name it a price and do not say what it
      is paid for, so the block carries the file's own Subject to change and `why`. `lists`: each table the block
-     draws, what its first place stands for (levels[0] is gem level 1, quality[0] is 0%) and the word after it. */
+     draws, what its first place stands for (levels[0] is gem level 1, quality[0] is 0%) and the words before
+     and after it. The block is a fold, and its summary reads the first list, first place to last. */
   gemgold:  {type: 'gemgold', at: 'n', slot: 'body', file: 'data/gold.json', of: 'gem', label: 'Gold price',
     flat: [{at: 'li', then: 'lineage'}, {at: 's', starts: 'Support', then: 'support'}],
-    lists: [{at: 'levels', is: 'By gem level', from: 1}, {at: 'quality', is: 'By quality', from: 0, post: '%'}],
+    lists: [{at: 'levels', is: 'By gem level', from: 1, pre: 'level '}, {at: 'quality', is: 'By quality', from: 0, post: '%'}],
     why: 'Where it is paid: not in the game files.'},
   /* A league mechanic, on the game's own keyword card for it (tools/mechanics_league.py, data/leaguemech.json,
      found by the card's own key). `share`: its own currency's share of what the Currency Exchange traded this
@@ -866,8 +872,11 @@ export const REL = {
 
 const HEAD = ['art', 'name', 'sub', 'offer', 'ask', 'price'];
 // the words first, then the rest of the body: a kind with more to say puts it between the two (the currency)
-const SAYS = ['lines', 'text'];
-const REST = ['quote', 'options', 'flow', 'patchdiff', 'changed', 'source', 'swaps', 'tags', 'anoint', 'keywords'];
+export const SAYS = ['lines', 'text'];
+/* the game text, its key numbers and its keywords first; what changed patch by patch closes the card (a fold) */
+const TAIL = ['quote', 'options', 'flow', 'source', 'swaps', 'tags', 'anoint', 'keywords'];
+const HIST = ['patchdiff', 'changed'];
+const REST = [...TAIL, ...HIST];
 const BODY = [...SAYS, ...REST];
 const FOOT = ['spark', 'usage', 'thin', 'builds'];
 const KWUSE = ['kwu', 'kwg', 'kwp', 'kwb', 'kwe', 'kwa', 'kwm', 'kwc', 'kww'];
@@ -879,7 +888,7 @@ export const KINDS = [
    index: true, search: true, item: true, crawl: {word: 'gem', list: 'gems', rank: 1, is: 'Thing'},
    sprite: 'gems', px: {as: 'c', at: 'li'},
    builds: [{at: 'w', key: 'skills'}, {key: 'allskills'}],
-   fields: [...HEAD, 'gemreq', 'lineage', 'cutfrom', 'usetime', 'cost', 'spirit', ...SAYS, 'quality', 'gemgold', ...REST, ...FOOT],
+   fields: [...HEAD, 'gemreq', 'lineage', 'cutfrom', 'usetime', 'cost', 'spirit', ...SAYS, 'quality', ...TAIL, 'gemgold', ...HIST, ...FOOT],
    acts: ['trade', 'pool', 'full', 'pin', 'open'],
    rel: ['granted', 'grants', 'named', 'namedby', 'runemade', 'cat']},
 
@@ -887,7 +896,7 @@ export const KINDS = [
    index: true, search: true, item: true, crawl: {word: 'unique', list: 'uniques', rank: 0, is: 'Thing'},
    sprite: 'uniques', make: {base: 'sub1'},
    builds: [{key: 'items'}],
-   fields: [...HEAD, 'reqs', 'corrupt', 'limit', 'group', 'props', 'implicit', ...SAYS, 'mapdanger', 'weight', ...REST, 'drop', 'gotfrom', 'goldv', ...FOOT],
+   fields: [...HEAD, 'reqs', 'corrupt', 'limit', 'group', 'props', 'implicit', ...SAYS, 'mapdanger', 'weight', ...TAIL, 'drop', 'gotfrom', 'goldv', ...HIST, ...FOOT],
    acts: ['trade', 'pool', 'full', 'pin', 'open'],
    rel: ['base', 'variants', 'grants', 'dropsfrom', 'rollsin', 'named', 'namedby', 'cat']},
 
@@ -1014,7 +1023,7 @@ export const KINDS = [
   {k: 'r', one: 'Area', tone: 'muted', many: 'Areas', index: true, search: true,
    crawl: {word: 'area', list: 'areas', rank: 7, is: 'DefinedTerm'}, sprite: 'areas',
    fields: [...HEAD, 'waypoint', 'town', 'waystone', 'unsure', 'respen', 'monlife', 'mondmg', 'biome', 'content',
-            ...SAYS, 'hidden', 'corruption', ...REST, 'gothere', ...FOOT],
+            ...SAYS, 'hidden', 'corruption', ...TAIL, 'gothere', ...HIST, ...FOOT],
    acts: ['pin'],
    rel: ['leadsto', 'leadsfrom', 'bosshere', 'questhere', 'openedwith', 'onlyholds', 'askedby', 'actof', 'inact']},
 

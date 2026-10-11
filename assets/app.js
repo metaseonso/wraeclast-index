@@ -5,7 +5,7 @@
                        trade site listings (worker/prices.js); trends from the site's own daily prices
    Build usage links to poe.ninja's own builds page: their builds API is not open to other sites. */
 import {initKeys, setCardKeys, keyLabel} from './keys.js';
-import {KIND, DEFAULT, FIELDS, ACTS, CHIPS, NAMES, ROUTES, SHUT, INDEX, pageKind, contentsHTML, fieldsOf, FRAME, SLOTS, BOXES, MAKE, KW, holds, markOf, ours, slotList, jobOf, namedIn} from './kinds.js';
+import {KIND, DEFAULT, FIELDS, ACTS, CHIPS, NAMES, ROUTES, SHUT, INDEX, pageKind, contentsHTML, fieldsOf, FRAME, SLOTS, BOXES, MAKE, KW, holds, markOf, ours, slotList, jobOf, namedIn, SAYS} from './kinds.js';
 import * as edges from './edges.js';
 import * as marks from './marks.js';
 import {ranker, hits, SEEN_MAX} from './rank.js';
@@ -636,6 +636,8 @@ export function ago(iso){
   const h = Math.round(m / 60);
   return h < 48 ? h + ' h ago' : Math.round(h / 24) + ' days ago';
 }
+// a price's age, on its own line under the price: never in the same sentence as anything else
+const pxAge = iso => iso && Date.parse(iso) ? '<span class="card-pxage">' + esc(ago(iso)) + '</span>' : '';
 
 /* ---------- icons ---------- */
 export function iconHTML(it){
@@ -737,17 +739,24 @@ const MARK = {
   open: {cls: 'hlink qlink', data: 'h', title: 'Not settled — what the game states, and what players report',
          id: key => key},
 };
+/* A mark is a button, and a button is drawn as a box of its own: the line could break between it and the
+   comma after it, or the bracket before it. So the mark and whatever touches it with no space between ("(such
+   as Shock)", "over time,") are held together, and the spaces either side stay plain text in the line. */
 function spansHTML(text, spans){
   if(!spans || !spans.length) return esc(text);
   let out = '', at = 0;
-  for(const [s, n, key] of spans){
-    if(s < at) continue;
+  const list = spans.filter(x => MARK[markOf(x[2])]);
+  list.forEach(([s, n, key], i) => {
+    if(s < at) return;
     const m = MARK[markOf(key)];
-    if(!m) continue;
-    out += esc(text.slice(at, s)) + '<button type="button" class="' + m.cls + '" title="' + m.title +
-      '" data-' + m.data + '="' + esc(m.id(key)) + '">' + esc(text.slice(s, s + n)) + '</button>';
-    at = s + n;
-  }
+    const pre = text.slice(at, s), lead = /\S*$/.exec(pre)[0];
+    const stop = i + 1 < list.length ? Math.max(s + n, list[i + 1][0]) : text.length;
+    const tail = /^\S*/.exec(text.slice(s + n, stop))[0];
+    out += esc(pre.slice(0, pre.length - lead.length)) + '<span class="mk-w">' + esc(lead) +
+      '<button type="button" class="' + m.cls + '" title="' + m.title + '" data-' + m.data + '="' + esc(m.id(key)) + '">' +
+      esc(text.slice(s, s + n)) + '</button>' + esc(tail) + '</span>';
+    at = s + n + tail.length;
+  });
   return out + esc(text.slice(at));
 }
 /* One line, with the marks the build gave it and the keywords worked out here. `fixed` is what the build
@@ -807,10 +816,15 @@ function richHTML(it, at, max){
   const marked = (KIND[it.k] || {}).mark === at;
   if(!Array.isArray(v)) return '<p class="card-tx" data-mk="' + at + ':0">' + lineHTML(it, at, 0, v, marked) + '</p>';
   if(!v.length) return '';
-  const li = (x, i) => '<li data-mk="' + at + ':' + i + '">' + lineHTML(it, at, i, x, marked) + '</li>';
-  const more = v.length - max;
+  /* the same line twice in a row is one line and how many times it is there: Mageblood's source writes its
+     four random Mage's Legacy modifiers as one placeholder line each, and four of them read as a fault */
+  const runs = [];
+  v.forEach((x, i) => { const r = runs[runs.length - 1]; if(r && r[0] === x) r[2]++; else runs.push([x, i, 1]); });
+  const li = ([x, i, n]) => '<li data-mk="' + at + ':' + i + '">' + lineHTML(it, at, i, x, marked) +
+    (n > 1 ? ' <span class="ln-x">×' + n + '</span>' : '') + '</li>';
+  const more = runs.length - max;
   const cut = more > FRAME.slack;   // the same slack a slot keeps: one line left over is drawn, not counted
-  return '<ul class="card-ls">' + v.slice(0, cut ? max : v.length).map(li).join('') +
+  return '<ul class="card-ls">' + runs.slice(0, cut ? max : runs.length).map(li).join('') +
     (cut ? '<li class="more-n">' + esc(FRAME.more(more)) + '</li>' : '') + '</ul>';
 }
 /* ---------- the damage card ----------
@@ -970,8 +984,9 @@ function dropFill(host, it, f){
     const e = t && t.uniques && t.uniques[it[f.at]];
     if(!e || !e.line || !host.isConnected) return;
     const tips = t.labels || {};
-    host.innerHTML = '<p class="card-src">' + esc(e.line) + '</p>' + (e.labels || []).map(l =>
-      '<span class="pill"' + (tips[l] ? ' title="' + esc(tips[l]) + '"' : '') + '>' + esc(l) + '</span>').join(' ');
+    // the labels are pills in a row of their own, each as wide as its word
+    host.innerHTML = '<p class="card-src">' + esc(e.line) + '</p>' + ((e.labels || []).length ? '<p class="card-flags">' +
+      e.labels.map(l => '<span class="pill"' + (tips[l] ? ' title="' + esc(tips[l]) + '"' : '') + '>' + esc(l) + '</span>').join('') + '</p>' : '');
     host.hidden = false;
   });
 }
@@ -1018,7 +1033,7 @@ function rowByName(t, n){
   return BYNAME.get(t).get(n);
 }
 // beside a tag read off a name alone, because the game gives the thing no words
-const ESTIMATE = ' <span class="card-pxa" title="Read off its name: the game gives it no words">Estimate</span>';
+const ESTIMATE = ' <span class="pill" title="Read off its name: the game gives it no words">Estimate</span>';
 function dangerHTML(it, t, f){
   const r = rowByName(t, it[f.at]);
   if(!r || !(r.tags || []).length) return '';
@@ -1067,14 +1082,19 @@ function gemGoldHTML(it, t, f){
   const flat = (f.flat || []).find(c => holds(it, c));
   if(flat) return g[flat.then] > 0 ? '<p class="card-facts">' + esc(f.label || '') + ' · <b>' + n(g[flat.then]) +
     '</b> gold' + flag + '</p>' + src : '';
-  let out = '';
+  let out = '', said = '';
   for(const l of f.lists || []){
-    // `from`: what the list's first place stands for (gem level 1, 0% quality), `post` the word after it
+    // `from`: what the list's first place stands for (gem level 1, 0% quality), `pre` and `post` the words around it
     const list = (g[l.at] || []).map((v, i) => [i + (l.from || 0), v]).filter(([, v]) => v > 0);
-    if(list.length) out += '<p class="card-facts">' + esc(l.is) + '</p><ul class="card-gold">' + list.map(([at, v]) =>
+    if(!list.length) continue;
+    // the fold's summary: the first list, first place to last, in the table's own numbers
+    const at = x => n(x[1]) + ' at ' + (l.pre || '') + x[0] + (l.post || '');
+    if(!said) said = list.length > 1 ? at(list[0]) + ' → ' + at(list[list.length - 1]) : at(list[0]);
+    out += '<p class="card-facts">' + esc(l.is) + '</p><ul class="card-gold">' + list.map(([at, v]) =>
       '<li><span>' + esc(at + (l.post || '')) + '</span><b>' + n(v) + '</b></li>').join('') + '</ul>';
   }
-  return out && '<p class="card-facts">' + esc(f.label || '') + flag + '</p>' + out + src;
+  return out && foldHTML({label: f.label || '', said},
+    (flag ? '<p class="card-facts">' + flag.trim() + '</p>' : '') + out + src);
 }
 /* One word off a table of its own, found by the card's kind and the field's `at` ("c:Divine Orb" in its `of`
    part), as a pill that links to where the table is from: the file names its source (`src`) and its address
@@ -1240,7 +1260,7 @@ export function mkSource(t, also, short){
   return '<p class="card-src" title="' + esc(mkTip(t)) + '">' + esc(short || !t.source ? 'Source: Currency Exchange' : t.source) +
     (also ? ' · ' + esc(also) : '') +
     (t.updated ? ' · <span' + (old ? ' class="err"' : '') + '>last hour read ' + esc(utcHour(t.updated)) + ', ' + esc(ago(t.updated)) + '</span>' : '') +
-    Object.entries(t.flags || {}).map(([k, v]) => ' <span class="card-pxa" title="' + esc(v) + '">' + esc(k) + '</span>').join('') + '</p>';
+    Object.entries(t.flags || {}).map(([k, v]) => ' <span class="pill" title="' + esc(v) + '">' + esc(k) + '</span>').join('') + '</p>';
 }
 /* Each league's colour, as the price chart draws it (data/leagues.json): the one copy of the league dates */
 export function leagueColours(){
@@ -1365,6 +1385,19 @@ export function patchesOf(t, key){
   }
   return [...by.entries()].sort((a, b) => b[0] - a[0]);
 }
+/* A fold: a long block of the popup behind one full-width summary row — its label, its count, a short line of
+   what is inside, and a chevron that turns as it opens. Native <details>, so it opens by key and by finger with
+   nothing of ours in between. `c` is the group a door on the card can open (data-c). */
+const CHEV = '<svg class="fold-ch" viewBox="0 0 12 12" aria-hidden="true"><path d="M3 4.5l3 3 3-3"/></svg>';
+export function foldHTML({cls = '', c = '', label, count, note = '', said = '', open = false}, inner){
+  return '<details class="fold' + (cls ? ' ' + cls : '') + '"' + (c ? ' data-c="' + esc(c) + '"' : '') + (open ? ' open' : '') + '>' +
+    '<summary class="uses-hd fold-hd"><b>' + esc(label) + '</b>' +
+    (count !== undefined && count !== '' ? '<span class="ct"' + (note ? ' title="' + esc(note) + '"' : '') + '>' +
+      esc(String(count)) + '</span>' : '') +
+    (said ? '<span class="fold-said">' + esc(said) + '</span>' : '') + CHEV + '</summary>' +
+    '<div class="fold-in">' + inner + '</div></details>';
+}
+const DAY = iso => { const d = new Date(iso); return isNaN(d) ? '' : d.getDate() + ' ' + MON[d.getMonth()] + ' ' + d.getFullYear(); };
 function changedHTML(it, t, f){
   const key = it.k + ':' + it[f.at], list = patchesOf(t, key);
   if(!list.length) return '';
@@ -1375,18 +1408,20 @@ function changedHTML(it, t, f){
     for(const [head, line] of rows){
       // GGG's section, where it says more than the patch's own name does
       if(head !== sec){ sec = head; if(head && !head.startsWith(v)) out += '<p class="chg-sec">' + esc(head) + '</p>'; }
-      out += '<p class="chg-l">' + spansHTML(line, marks.scan(it, line)) + '</p>';
+      // GGG's words as GGG wrote them: the marks are for the card's own game text, not for the notes about it
+      out += '<p class="chg-l">' + esc(line) + '</p>';
     }
     return out + '</div>';
   };
   const cap = FRAME.changed.cap, over = list.length - cap > FRAME.slack;
-  const src = t.source || {};
-  return '<p class="card-facts">' + esc(f.label || '') + ' · ' + list.length + '</p>' +
+  const src = t.source || {}, last = t.patches[list[0][0]] || {};
+  return foldHTML({label: f.label || '', count: list.length,
+    said: ['latest ' + patchName(last), DAY(last.posted)].filter(Boolean).join(', ')},
     list.slice(0, over ? cap : list.length).map(group).join('') +
     (over ? '<details class="chg-more"><summary>See all ' + list.length.toLocaleString() + '</summary>' +
       list.slice(cap).map(group).join('') + '</details>' : '') +
     '<p class="card-src">Source: ' + (src.url ? '<a href="' + esc(src.url) + '" target="_blank" rel="noopener">' +
-      esc(f.src || '') + '</a>' : esc(f.src || '')) + '</p>';
+      esc(f.src || '') + '</a>' : esc(f.src || '')) + '</p>');
 }
 function changedFill(host, it, f){
   if(!host) return;
@@ -1729,13 +1764,20 @@ export const TYPE = {
   /* px.as: what was really priced, where that is not the item as the card names it — a base item is priced
      white, and a rare of that name is another item at another price. The word goes under the number, so the
      price is never read as the wrong thing. It comes off the price row, so no kind is named here. */
-  money:  {raw: 1, v: (it, f, o) => !PLAY.px ? '' : isUnit(it) ? unitHTML() : o.px && o.px.v !== undefined
+  /* ...and its age right under it, off the price's own time: a price is a reading, and says when it was taken */
+  money:  {raw: 1, v: (it, f, o) => !PLAY.px ? '' : isUnit(it)
+    ? (u => u && u + pxAge(D.market && D.market.times && D.market.times.currency))(unitHTML()) : o.px && o.px.v !== undefined
     ? '<b>' + moneyHTML(o.px.v) + '</b>' + change(o.px.ch) +
-      (o.px.as ? '<span class="card-pxa">' + esc(o.px.as) + '</span>' : '') : ''},
-  uses:   {v: (it, f) => {   // a keyword: how much of the game it touches, from the index's own count
+      (o.px.as ? '<span class="card-pxa">' + esc(o.px.as) + '</span>' : '') + pxAge(o.px.at) : ''},
+  /* a keyword: how much of the game it touches, from the index's own count. In the popup each count is a door
+     to its own Connections group (`go`), which it opens and scrolls to */
+  uses:   {raw: 1, v: (it, f, o) => {
     const u = it[f.at] || {}, parts = [];
-    for(const [k, one, many] of [['gems','gem','gems'], ['uniques','unique','uniques'], ['passives','passive','passives']])
-      if(u[k]) parts.push(u[k].toLocaleString() + ' ' + (u[k] === 1 ? one : many));
+    for(const [k, one, many] of [['gems','gem','gems'], ['uniques','unique','uniques'], ['passives','passive','passives']]){
+      if(!u[k]) continue;
+      const words = esc(u[k].toLocaleString() + ' ' + (u[k] === 1 ? one : many)), c = o.full && (f.go || {})[k];
+      parts.push(c ? '<a class="fold-go" href="#" data-go="' + esc(c) + '">' + words + '</a>' : words);
+    }
     return parts.length ? 'Used by ' + parts.join(', ') : '';
   }},
   /* how many mods can roll on this base item, and who measured how often each one does (tools/carddata.py,
@@ -2106,7 +2148,8 @@ function saveStep(){
   const box = OV.querySelector('.ov-box'), sec = box.querySelector('.uses');
   step.top = box.scrollTop;
   step.uses = sec && !sec.hidden ? {open: [...(sec._open || [])], more: {...(sec._more || {})},
-    q: (sec.querySelector('.uses-q') || {}).value || '', top: (sec.querySelector('.uses-list') || {}).scrollTop || 0} : null;
+    q: (sec.querySelector('.uses-q') || {}).value || '', top: (sec.querySelector('.uses-list') || {}).scrollTop || 0,
+    fold: [...(sec._fold || [])]} : null;
   step.trade = box.querySelector('.trade') || null;
   step.panel = box.querySelector('.ov-panel') || null;   // ...and the panel one of its acts opened
   // a panel is a whole piece of page, kept whole: only the few steps nearest are worth that. Further back, a
@@ -2291,7 +2334,11 @@ function ensureOV(){
       }
       const go = t.closest('a.btn.gold, a.uses-go');
       if(go){ if(go.target !== '_blank') hideDetail(); return; }   // leaving the page: nothing to undo. A new tab: the card stays
-      const kw = t.closest('.kwlink, .kwmark');   // a keyword chip, or a marked word in a line
+      const door = t.closest('a[data-go]');   // a count on the card that is a Connections group: open it, go to it
+      if(door){ e.preventDefault(); openFold(door.dataset.go); return; }
+      const chip = t.closest('.kwlink');   // a keyword chip: its words, in place under the row
+      if(chip){ peekKw(chip); return; }
+      const kw = t.closest('.kwpeek-go, .kwmark');   // the way on from those words, or a marked word in a line
       if(kw){ const c = keywordCard(kw.dataset.kw); if(c) openDetail(c, {nested: true}, hrefOf(c)); return; }
       const ask = t.closest('.card-ask');   // the mark in the corner: a note about the card you are on
       if(ask){ import('./suggest.js').then(m => m.openSuggest(ask.dataset.ask), () => {}); return; }
@@ -2412,6 +2459,7 @@ export function openBox(node, label = 'Details'){
   wake();   // a box can name cards (Pins): their heads come through the search
   ensureOV();
   TRAIL = []; AT = -1;
+  OV.querySelector('.ov-box').removeAttribute('aria-labelledby');
   OV.querySelector('.ov-box').setAttribute('aria-label', label);
   OV.querySelector('.ov-nav').hidden = true;
   OV.querySelector('.ov-body').replaceChildren(node);
@@ -2540,12 +2588,15 @@ function paintStep(){
   const step = CUR();
   const {it, opts, href} = step;
   const box = OV.querySelector('.ov-box');
-  box.setAttribute('aria-label', 'Details');
   const px = !PLAY.px ? null : opts.price !== undefined ? opts.price : priceOf(it);
   const body = OV.querySelector('.ov-body');
   const c = card(it, {...opts, href: null, rank: undefined, full: true, detail: true, extra: (opts.extra || '') + detailExtras(it, px)});
   c.classList.add('detail');
   body.replaceChildren(c);
+  // the box is called by the card's own name
+  const h = c.querySelector('h3');
+  if(h){ h.id = 'ov-title'; box.removeAttribute('aria-label'); box.setAttribute('aria-labelledby', 'ov-title'); }
+  else { box.removeAttribute('aria-labelledby'); box.setAttribute('aria-label', it.n || 'Details'); }
   const uses = relSection(it, step.uses);
   body.appendChild(uses);
   const acts = actsHTML(it, opts, href);
@@ -2719,7 +2770,35 @@ function kwChips(it){
   const ids = (it.kw || []).filter(k => k !== own && keywordCard(k));
   if(!ids.length) return '';
   return '<div class="kwchips"><span class="lbl">Keywords</span>' + ids.map(k =>
-    '<button type="button" class="chip kwlink" data-kw="' + esc(k) + '">' + esc(keywordCard(k).n) + '</button>').join('') + '</div>';
+    '<button type="button" class="chip kwlink" data-kw="' + esc(k) + '" aria-expanded="false" aria-controls="ov-kwpeek">' +
+      esc(keywordCard(k).n) + '</button>').join('') + '</div>' +
+    '<div class="kwpeek" id="ov-kwpeek" hidden></div>';
+}
+/* A chip opens its keyword's own words in place, under the row: one at a time, and a way on to its card. The
+   words are the card's own (SAYS), so a keyword card and a keystone that stands for its keyword read alike. */
+function peekHTML(c, id){
+  const say = x => esc((TR && TR.line(x)) || x);
+  const words = SAYS.map(n => c[FIELDS[n].at]).flatMap(v => Array.isArray(v) ? v : v ? [v] : []);
+  return (words.length ? words.map(x => '<p class="kwpeek-tx">' + say(x) + '</p>').join('') : '<p class="kwpeek-tx">…</p>') +
+    '<button type="button" class="kwpeek-go" data-kw="' + esc(id) + '">Open ' + esc(c.n) + ' →</button>';
+}
+function peekKw(b){
+  const row = b.closest('.kwchips'), box = row && row.nextElementSibling;
+  if(!box || !box.classList.contains('kwpeek')) return;
+  const was = b.getAttribute('aria-expanded') === 'true';
+  for(const x of row.querySelectorAll('.kwlink')) x.setAttribute('aria-expanded', 'false');
+  box.hidden = true;
+  if(was) return;
+  const c = keywordCard(b.dataset.kw);
+  if(!c) return;
+  b.setAttribute('aria-expanded', 'true');
+  const draw = x => {
+    if(b.getAttribute('aria-expanded') !== 'true' || !box.isConnected) return;
+    box.innerHTML = peekHTML(x, b.dataset.kw);
+    box.hidden = false;
+  };
+  draw(c);
+  if(c._head) whole([c.k + ':' + c.id]).then(([x]) => { if(x) draw(x); }, () => {});
 }
 
 /* ---------- the related section ----------
@@ -2824,6 +2903,18 @@ function seeAllHTML(it, cat){
 }
 /* want: the categories the player had opened, the filter and the scroll (saveStep), put back once the rows
    are in */
+/* A door on the card to one of its Connections groups ("Used by 63 gems"): the group opens and comes into view.
+   A group still loading is opened the moment it is drawn. */
+function openFold(c){
+  const sec = OV && OV.querySelector('.uses');
+  if(!sec || !sec._fold) return;
+  sec._fold.set(c, true);
+  const d = sec.querySelector('details.uses-cat[data-c="' + CSS.escape(c) + '"]');
+  if(!d){ sec._jump = c; return; }
+  d.open = true;
+  d.scrollIntoView({block: 'start'});
+  d.querySelector('summary').focus({preventScroll: true});
+}
 function relSection(it, want){
   const sec = document.createElement('section');
   sec.className = 'uses';
@@ -2831,6 +2922,11 @@ function relSection(it, want){
   sec._open = new Set((want && want.open) || []);
   sec._more = {...((want && want.more) || {})};   // an opened category drawn past its first REL_STEP rows
   sec._want = want || null;
+  sec._fold = new Map((want && want.fold) || []);   // the groups the player opened or shut, by id
+  sec.addEventListener('click', e => {
+    const s = e.target.closest('summary.fold-hd'), d = s && s.parentElement;
+    if(d && d.dataset.c) sec._fold.set(d.dataset.c, !d.open);   // the click is about to turn it
+  });
   // a page holding only what it shows first asks for the card's lists and the heads of every row they name
   sec._wait = !D.full;
   const need = paintRel(sec);
@@ -2866,21 +2962,21 @@ function paintRel(sec){
   sec.hidden = !cats.length && !waiting;
   if(sec.hidden){ sec.innerHTML = ''; sec._rows = []; return got.need; }
   const all = [];   // every row drawn, in order, for the filter box
-  const blocks = cats.map(c => {
+  // each group a fold: the frame's first FRAME.rel.open of them open, in the kind's own order, until the
+  // player opens or shuts one, which it then stays for this card
+  const blocks = cats.map((c, i) => {
     const open = sec._open.has(c.id);
     const show = open ? Math.min(c.total, sec._more[c.id] || REL_STEP) : c.total <= CAP + SLACK ? c.total : CAP;
     c.drawn = show;
     const drawn = c.rows.slice(0, show).map(relRow);
     all.push(...drawn);
     const left = c.total - show, more = seeAllHTML(it, c);
-    return '<div class="uses-cat" data-c="' + esc(c.id) + '">' +
-      '<p class="uses-hd"><b>' + esc(c.label) + '</b><span class="ct"' + (c.note ? ' title="' + esc(c.note) + '"' : '') +
-      '>' + c.total.toLocaleString() + '</span></p>' +
+    return foldHTML({cls: 'uses-cat', c: c.id, label: c.label, count: c.total.toLocaleString(), note: c.note,
+      open: sec._fold.has(c.id) ? sec._fold.get(c.id) : i < FRAME.rel.open},
       drawn.map(x => x.html).join('') +
       (left > 0 || more ? '<p class="uses-more">' +
         (left > 0 ? '<button type="button" class="uses-all" data-c="' + esc(c.id) + '">' +
-          (open ? 'Show more' : 'See all ' + c.total.toLocaleString()) + '</button>' : '') + more + '</p>' : '') +
-      '</div>';
+          (open ? 'Show more' : 'See all ' + c.total.toLocaleString()) + '</button>' : '') + more + '</p>' : ''));
   }).join('');
   const note = waiting ? '<p class="note">Looking…</p>' : relBad && !cats.length
     ? '<p class="note">This list did not load.</p>' : '';
@@ -2916,8 +3012,10 @@ function paintRel(sec){
       box.before(t.content);
       shown += n;
     }
-    for(const cat of sec.querySelectorAll('.uses-cat'))
+    for(const cat of sec.querySelectorAll('.uses-cat')){
       cat.hidden = ![...cat.querySelectorAll('.uses-row')].some(r => !r.hidden);
+      if(words.length && !cat.hidden) cat.open = true;   // a hit is never behind a shut fold
+    }
     sec.querySelector('.uses-none').hidden = shown > 0;
   });
   // Back to this card, or a category just opened: the filter it had and where the list was scrolled
@@ -2926,6 +3024,11 @@ function paintRel(sec){
     sec._want = null;
     if(q && want.q){ q.value = want.q; q.dispatchEvent(new Event('input')); }
     sec.querySelector('.uses-list').scrollTop = want.top || 0;
+  }
+  if(sec._jump && !waiting && sec.querySelector('details.uses-cat[data-c="' + CSS.escape(sec._jump) + '"]')){
+    const c = sec._jump;
+    sec._jump = null;
+    requestAnimationFrame(() => openFold(c));
   }
   return got.need;
 }
@@ -3206,13 +3309,17 @@ function homeRender(){
     for(const b of $('#kinds').children) b.querySelector('.ct').textContent = kinds
       ? (b.dataset.k === 'all' ? '' : kinds[b.dataset.k] ? (+kinds[b.dataset.k].n).toLocaleString() : '')
       : counts[b.dataset.k] || 0;
-    // a kind the words found nothing in: dimmed, still there to press
-    for(const b of $('#kinds').children) b.classList.toggle('zero', !kinds && b.dataset.k !== 'all' && !counts[b.dataset.k]);
+    // a kind the words found nothing in is not offered; All, and the kind in use, always are
+    for(const b of $('#kinds').children){
+      const none = !kinds && b.dataset.k !== 'all' && !counts[b.dataset.k];
+      b.classList.toggle('zero', none);
+      b.hidden = none && b.dataset.k !== H.kind;
+    }
     list = H.list;
     label = !total ? '' : listing ? '<b>' + total.toLocaleString() + '</b> ' + esc(KIND[H.kind].many) :
       '<b>' + total.toLocaleString() + '</b> match' + (total === 1 ? '' : 'es');
   } else {
-    for(const b of $('#kinds').children) b.querySelector('.ct').textContent = '';
+    for(const b of $('#kinds').children){ b.querySelector('.ct').textContent = ''; b.hidden = false; b.classList.remove('zero'); }
     list = []; label = ''; H.res = null; H.list = []; H.asked++;
   }
   const draw = ++H.draw, shown = list.slice(0, H.shown);

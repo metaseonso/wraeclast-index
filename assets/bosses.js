@@ -390,7 +390,7 @@ const tellHTML = t => '<span class="bo-tell">' + esc(t.tell) + (t.cd ? ' Cooldow
 function hitsHTML(r){
   const h = HITS && (HITS.bosses || []).find(x => x.name === r.b.name);
   if(!h || !(h.hits || []).length) return '';
-  const est = '<span class="card-pxa" title="Worked out from the game files, not shown by the game">Estimate</span>';
+  const est = '<span class="pill" title="Worked out from the game files, not shown by the game">Estimate</span>';
   const res = Object.entries(h.res || {}).map(([t, v]) => t.toLowerCase() + ' ' + v + '%').join(', ');
   const stats = ['level ' + h.lv, h.life ? 'life ' + fmt(h.life) : '', h.armour ? 'armour ' + fmt(h.armour) : '',
     h.evasion ? 'evasion ' + fmt(h.evasion) : '', res ? 'resistances: ' + res : ''].filter(Boolean).join(' · ');

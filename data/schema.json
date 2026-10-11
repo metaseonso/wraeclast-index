@@ -539,10 +539,10 @@
       "name",
       "mapdanger",
       "weight",
-      "patchdiff",
-      "changed",
       "drop",
-      "goldv"
+      "goldv",
+      "patchdiff",
+      "changed"
      ],
      "need": 1,
      "drawn": 1
