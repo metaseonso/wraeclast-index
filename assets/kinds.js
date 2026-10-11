@@ -237,8 +237,14 @@ export const FRAME = {
      Folds: a long block of the popup (the patch notes, a table of numbers, each Connections group) is a native
      <details> with its label and its count on the summary row, shut until it is opened. `open` is how many
      Connections groups start open, taken in the kind's own `rel` order: the first group the card has is the one
-     it is about. One rule for every kind; a card with one group has it open. */
-  rel: {cap: 8, slack: 2, filter: 30, open: 1},
+     it is about. One rule for every kind; a card with one group has it open.
+     Which group that is goes by meaning before order: `lead` first, in its own order — what it drops, what uses
+     it, what shares its base, what grants it — then the kind's own order. `last` are the bags: groups that put
+     every card of one sort together ("Listed with", "Shares its class with") rather than join two things. A bag
+     never opens by itself, always sorts last, and is left out where another group already lists every card in it. */
+  rel: {cap: 8, slack: 2, filter: 30, open: 1,
+        lead: ['drops', 'kwg', 'kwu', 'kwp', 'variants', 'granted', 'grants'],
+        last: ['cat', 'section', 'klass']},
   /* GGG's patch notes on a card (the `changed` field): the popup draws the newest `cap` patches, then a "See all
      N" that draws the rest in place, with the slack every slot keeps. A line counts for a card where it names
      the card, and where the card's name is one of the game's own words (KINDS words.mark in `whole`: a keyword,

@@ -195,14 +195,20 @@ Not a slot — the popup's own section, built from the edges the index already h
 
 * **Per group:** the first **8** rows, the true total beside the label, and a **See all N** that draws the
   rest in place. Slack **2**: a group with 10 or fewer draws all of them rather than showing 8 and a button.
-* **Ordered by** the order the index itself holds them in, which is the order the game data ships.
+* **Rows ordered by** the order the index itself holds them in, which is the order the game data ships.
 * **The rest,** where the drill-down page can show the same list, is a gold button carrying the filter that
   makes it that list and not the default view.
 * **A section over 30 rows** gets its filter box from the start; a shorter one keeps it out of the way until
   the card's own filter key is pressed.
-* **Each group is a fold,** its label and its total on the summary row. The first **1** (`FRAME.rel.open`) in
-  the kind's own `rel` order starts open, the rest shut; a group the player opens or shuts stays that way for
-  the card, back and forward included. A count on the card that is a group ("Used by 63 gems", the field's
+* **Each group is a fold,** its label and its total on the summary row. **1** group (`FRAME.rel.open`) starts
+  open, picked by meaning before order: the first the card has of `FRAME.rel.lead` (what it drops, what uses it,
+  what shares its base, what grants it), else the first in the kind's own `rel` order. Never a bag. The
+  groups draw in that same order: `lead`, then the kind's own, then the bags.
+* **Bags** (`FRAME.rel.last`: "Listed with", "Shares its class with") put every card of one sort together
+  instead of joining two things. A bag never opens by itself, always sorts last, and is left out where another
+  group on the card already lists every card in it.
+* **The rest start shut.** A group the player opens or shuts stays that way for the card, back and forward
+  included. A count on the card that is a group ("Used by 63 gems", the field's
   `go`) is a door: it opens that group and brings it into view. Filtering opens every group with a hit.
 * **Absence.** A group with nothing in it is not drawn. A card with no groups has no section.
 

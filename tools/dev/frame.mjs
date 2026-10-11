@@ -137,6 +137,10 @@ export function checkTable(seen = [], types = null){
     if(d.px && !d.px.as) bad.push(name + ' says its price is listed elsewhere and not under which kind');
     if(d.words && !d.words.mark) bad.push(name + ' puts its words in other cards’ lines and does not say whose words they are');
   }
+  for(const id of [...(FRAME.rel.lead || []), ...(FRAME.rel.last || [])])
+    if(!REL[id]) bad.push('Connections orders "' + id + '", which is no group');
+  for(const id of FRAME.rel.lead || []) if((FRAME.rel.last || []).includes(id))
+    bad.push('Connections group "' + id + '" both leads and is a bag');
   for(const [id, r] of Object.entries(REL)){
     if(r.map && !MAPS[r.map]) bad.push('Connections group "' + id + '" reads map "' + r.map + '", which is not declared');
     if(r.of && !KIND[r.of]) bad.push('Connections group "' + id + '" is of kind "' + r.of + '", which is no kind');

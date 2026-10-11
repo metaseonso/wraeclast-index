@@ -2958,13 +2958,20 @@ function paintRel(sec){
   const was = sec.querySelector('.uses-q');
   const keep = was ? {q: was.value, top: (sec.querySelector('.uses-list') || {}).scrollTop || 0} : null;
   const got = sec._wait ? {list: [], need: []} : edges.categories(it, HAVE);
-  const cats = got.list, waiting = (sec._wait || got.need.length) && !relBad;
+  const waiting = (sec._wait || got.need.length) && !relBad;
+  /* In order of meaning: FRAME.rel.lead first, then the kind's own order, then the bags (FRAME.rel.last), less
+     any bag that only repeats another group's cards. The first FRAME.rel.open open by themselves; a bag never. */
+  const bag = new Set(FRAME.rel.last), row = r => r.key || r.n;
+  const kept = got.list.filter(c => !bag.has(c.id));
+  const lead = [...new Set([...FRAME.rel.lead.map(id => kept.find(c => c.id === id)).filter(Boolean), ...kept])];
+  const cats = [...lead, ...got.list.filter(c => bag.has(c.id) &&
+    !kept.some(o => { const has = new Set(o.rows.map(row)); return c.rows.every(r => has.has(row(r))); }))];
+  const opens = new Set(lead.slice(0, FRAME.rel.open).map(c => c.id));
   sec.hidden = !cats.length && !waiting;
   if(sec.hidden){ sec.innerHTML = ''; sec._rows = []; return got.need; }
   const all = [];   // every row drawn, in order, for the filter box
-  // each group a fold: the frame's first FRAME.rel.open of them open, in the kind's own order, until the
-  // player opens or shuts one, which it then stays for this card
-  const blocks = cats.map((c, i) => {
+  // each group a fold, the ones picked above open, until the player opens or shuts one, which it then stays
+  const blocks = cats.map(c => {
     const open = sec._open.has(c.id);
     const show = open ? Math.min(c.total, sec._more[c.id] || REL_STEP) : c.total <= CAP + SLACK ? c.total : CAP;
     c.drawn = show;
@@ -2972,7 +2979,7 @@ function paintRel(sec){
     all.push(...drawn);
     const left = c.total - show, more = seeAllHTML(it, c);
     return foldHTML({cls: 'uses-cat', c: c.id, label: c.label, count: c.total.toLocaleString(), note: c.note,
-      open: sec._fold.has(c.id) ? sec._fold.get(c.id) : i < FRAME.rel.open},
+      open: sec._fold.has(c.id) ? sec._fold.get(c.id) : opens.has(c.id)},
       drawn.map(x => x.html).join('') +
       (left > 0 || more ? '<p class="uses-more">' +
         (left > 0 ? '<button type="button" class="uses-all" data-c="' + esc(c.id) + '">' +
