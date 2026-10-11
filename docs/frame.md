@@ -161,12 +161,21 @@ Use time, cost, spirit, properties, implicits, how many mods can roll. One line,
 ### 4. `body` — the blocks
 
 The words first (`lines`, then `text`), then whatever the kind puts between them, then the tail every card
-shares: flavour, options, chart, source, the mechanics cards it is offered, tags, anoint, keyword chips.
+shares: flavour, options, chart, source, the mechanics cards it is offered, tags, anoint, keyword chips —
+and last, what changed patch by patch (`patchdiff`, `changed`), so the game text, its numbers and its keywords
+are what a popup opens on. A kind with blocks of its own past the keywords (a unique's drops and gold value, a
+gem's gold price) puts them between the keywords and the patch history.
 
 * **Sequencing.** The kind's declared order. Cap **6** blocks, slack **1**. Cut: the first 6, then a muted
   line reading `+N more`.
 * **A list inside a block** is its own sequence: **4** lines in the grid, same slack of 1, the rest counted
-  as a `+N more` row. The popup draws every line. A single line is never truncated mid-word — it wraps.
+  as a `+N more` row. The popup draws every line. A single line is never truncated mid-word — it wraps. The
+  same line twice in a row is one line, drawn once with `×N` after it, and counts as one.
+* **A long block in the popup is a fold:** a native `<details>`, shut, behind one full-width row — a bronze
+  hairline over it, the label, the count, a few words of what is inside, a chevron that turns. The patch notes
+  ("Changed in · 13 · latest 0.5.5, 3 Sep 2026") and a table of numbers (a gem's gold price, its summary the
+  first list's first place to its last) are folds. Nothing in the popup scrolls inside itself: the popup is the
+  one surface, and the caps and **See all N** carry a long list.
 * **Reaching the rest.** The popup, and the gold button for the whole thing on its own page.
 * **Absence.** Nothing drawn.
 * **Widest today.** 3 of 6 in the grid, 5 in the popup (a passive).
@@ -186,11 +195,21 @@ Not a slot — the popup's own section, built from the edges the index already h
 
 * **Per group:** the first **8** rows, the true total beside the label, and a **See all N** that draws the
   rest in place. Slack **2**: a group with 10 or fewer draws all of them rather than showing 8 and a button.
-* **Ordered by** the order the index itself holds them in, which is the order the game data ships.
+* **Rows ordered by** the order the index itself holds them in, which is the order the game data ships.
 * **The rest,** where the drill-down page can show the same list, is a gold button carrying the filter that
   makes it that list and not the default view.
 * **A section over 30 rows** gets its filter box from the start; a shorter one keeps it out of the way until
   the card's own filter key is pressed.
+* **Each group is a fold,** its label and its total on the summary row. **1** group (`FRAME.rel.open`) starts
+  open, picked by meaning before order: the first the card has of `FRAME.rel.lead` (what it drops, what uses it,
+  what shares its base, what grants it), else the first in the kind's own `rel` order. Never a bag. The
+  groups draw in that same order: `lead`, then the kind's own, then the bags.
+* **Bags** (`FRAME.rel.last`: "Listed with", "Shares its class with") put every card of one sort together
+  instead of joining two things. A bag never opens by itself, always sorts last, and is left out where another
+  group on the card already lists every card in it.
+* **The rest start shut.** A group the player opens or shuts stays that way for the card, back and forward
+  included. A count on the card that is a group ("Used by 63 gems", the field's
+  `go`) is a door: it opens that group and brings it into view. Filtering opens every group with a hit.
 * **Absence.** A group with nothing in it is not drawn. A card with no groups has no section.
 
 ---
@@ -241,7 +260,9 @@ Every case below has one answer, and the answer is the frame's, not a kind's.
 | **A page that already draws a field in full** | The page leaves it off the card it draws (`without`), and the frame decides everything else about that card exactly as it does anywhere else. It is the caller's own call, like a card drawn with no price or no link, never a rule about a kind. |
 | **A relationship with hundreds of members** | 8 rows, the true total beside the label, **See all N** draws the rest in place, and the gold button carries the filter to the drill-down page. 1,448 things on one keyword costs 8 rows and one number. |
 | **A relationship with one member** | Still a group, still its own label, still a total of 1. No "See all" (1 is inside the slack), no button. A group of one is not a special case. |
-| **GGG's patch notes on a card** | The `changed` field, on every card (`REST`), in the popup only; its file (`data/patchnotes.json`) is fetched the first time a card asks. Newest patch first, **8** patches (`FRAME.changed.cap`), then **See all N**, which opens the rest in place; the slack is the slot's own 1. A card the notes never name draws nothing. |
+| **GGG's patch notes on a card** | The `changed` field, on every card (`REST`), in the popup only, last in the body and shut in a fold; its file (`data/patchnotes.json`) is fetched the first time a card asks. Newest patch first, **8** patches (`FRAME.changed.cap`), then **See all N**, which opens the rest in place; the slack is the slot's own 1. A card the notes never name draws nothing. GGG's lines are drawn as GGG wrote them: no keyword or mechanics marks — those belong to the card's own game text. |
+| **A keyword chip** | Opens the keyword's own words in place, under the chip row: one at a time (`aria-expanded` on the chip), with **Open <name> →** to its card. No hover popup, no overlay. The row itself always stays. |
+| **The price's age** | Right under the price in the head, off the price's own time ("6 h ago"), never in a sentence with anything else. The Divine Orb, priced in exalted off the Currency Exchange rate, carries that feed's hour. |
 | **A name that is also a common word in the notes** | Settled once, by whose words the name is, never by kind: a card whose name is the game's own word (`words.mark` in `FRAME.changed.whole`: keywords, buffs) counts a line only where that word stands whole — not the first or last word of a longer name in capitals ("to Maximum Life", "per Socketed Rune", "Fully Broken Armour"). A word that opens the line or a sentence is read as standing whole. A proper name is never cut: GGG write "The Bones of Ullr Unique Boots". The Patches page counts cards by the same rule (`namedIn`), so its numbers and the cards agree. |
 | **Words above a list of lines** | `rich` takes a `label`, drawn over its lines as `adds`, `pool` and `ladder` draw theirs ("Was:" over a passive's old lines). The label is ours; the lines stay the game's. |
 | **A card that is its own target** | Never, anywhere. A card is not in its own group, is not a row in its own Connections, is not its own base item, a word on it never opens the card you are already on, and a card is never offered a mechanics card of its own kind. The map joins no dot to itself. All of it **fails the guard**. |

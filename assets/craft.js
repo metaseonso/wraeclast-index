@@ -18,6 +18,16 @@ import { tradeData, key, searchURL, valHTML, syncVal } from './trade.js';
 import { table } from './basepool.js';
 import * as marks from './marks.js';
 
+/* ---------- the page contract ----------
+   What every tab module says about itself (docs/framework.md, "Pages"): the route it answers, what it needs before
+   it is mounted, and the state its address carries. The router (assets/app.js show) decides on its own until
+   docs/migration.md stage 10 lands; until then `needs` states what the router awaits for this tab today, and
+   `state` is the one place this tab reads its address. */
+export const route = 'craft';
+export const needs = ['index', 'hist'];   // the whole index and the price history, as the router awaits them before every tab that draws cards
+export function state(p){ return {base: p.get('base') || '', kind: (p.get('kind') || '').toLowerCase(), ilvl: p.get('ilvl') || '',
+    mods: p.get('mods') || '', ask: p.get('ask') || '', mod: p.get('mod') || '', find: p.get('find') || ''}; }
+
 const TAGS = [['life', 'Life'], ['mana', 'Mana'], ['defences', 'Defence'], ['resistance', 'Resistance'], ['attribute', 'Attribute'],
   ['attack', 'Attack'], ['caster', 'Caster'], ['minion', 'Minion'], ['damage', 'Damage'], ['physical', 'Physical'],
   ['elemental', 'Elemental'], ['fire', 'Fire'], ['cold', 'Cold'], ['lightning', 'Lightning'], ['chaos', 'Chaos'],
@@ -92,13 +102,13 @@ function entryOf(tok){
 }
 /* the plan a link names: the kind it is on, and the mods as words, read once the base's own file is in */
 function linked(){
-  const q = params(), base = q.get('base'), kind = (q.get('kind') || '').toLowerCase();
+  const q = state(params()), base = q.base, kind = q.kind;
   if(!base && !kind) return null;
   const cl = base ? X.classes.find(c => c.b.some(b => b[0] === base))
     : X.classes.find(c => c.n.toLowerCase() === kind || c.id === kind);
   if(!cl) return null;
-  return {c: cl.id, b: base || '', l: Math.max(0, Math.min(X.ilvl, Math.round(+q.get('ilvl')) || 0)), m: [],
-    t: (q.get('mods') || '').split(',').filter(Boolean)};
+  return {c: cl.id, b: base, l: Math.max(0, Math.min(X.ilvl, Math.round(+q.ilvl) || 0)), m: [],
+    t: q.mods.split(',').filter(Boolean)};
 }
 function packed(){   // a link made before the plan was in words
   const m = location.hash.match(/[?&]s=([^&]+)/);
@@ -110,9 +120,9 @@ function stored(){
   return null;
 }
 function load(){
-  const q = params();
-  ASK = q.get('ask') === 'mod' || q.get('mod') ? 'mod' : 'base';
-  if(ASK === 'mod'){ MOD.q = q.get('find') || ''; MOD.key = q.get('mod') || ''; MOD.open = false; }
+  const q = state(params());
+  ASK = q.ask === 'mod' || q.mod ? 'mod' : 'base';
+  if(ASK === 'mod'){ MOD.q = q.find; MOD.key = q.mod; MOD.open = false; }
   return linked() || packed() || stored() || blank();
 }
 let HREF = '';   // the address this page last wrote, so a link from anywhere else is told apart from our own

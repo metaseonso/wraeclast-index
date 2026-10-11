@@ -9,6 +9,15 @@
    the card's own market price. Real prices only, and a rate never meets one: no value per kill, here or anywhere. */
 import { D, $, esc, card, openDetail, priceOf, hrefOf, moneyHTML, change, spark, ago, params, onType, leadFirst } from './app.js';
 
+/* ---------- the page contract ----------
+   What every tab module says about itself (docs/framework.md, "Pages"): the route it answers, what it needs before
+   it is mounted, and the state its address carries. The router (assets/app.js show) decides on its own until
+   docs/migration.md stage 10 lands; until then `needs` states what the router awaits for this tab today, and
+   `state` is the one place this tab reads its address. */
+export const route = 'bosses';
+export const needs = ['index', 'hist'];   // the whole index and the price history, as the router awaits them before every tab that draws cards
+export function state(p){ return {q: p.get('q') || ''}; }
+
 const SHOW = [['all', 'All'], ['pin', 'Pinnacle'], ['drops', 'With drops']];
 const SORTS = [['name', 'Name'], ['way', 'Way in']];
 const S = {q: '', show: 'drops', sort: 'name'};   // opens on the bosses with drops: most of the rest have none listed yet
@@ -241,7 +250,7 @@ const tellHTML = t => '<span class="bo-tell">' + esc(t.tell) + (t.cd ? ' Cooldow
 function hitsHTML(r){
   const h = HITS && (HITS.bosses || []).find(x => x.name === r.b.name);
   if(!h || !(h.hits || []).length) return '';
-  const est = '<span class="card-pxa" title="Worked out from the game files, not shown by the game">Estimate</span>';
+  const est = '<span class="pill" title="Worked out from the game files, not shown by the game">Estimate</span>';
   const res = Object.entries(h.res || {}).map(([t, v]) => t.toLowerCase() + ' ' + v + '%').join(', ');
   const stats = ['level ' + h.lv, h.life ? 'life ' + fmt(h.life) : '', h.armour ? 'armour ' + fmt(h.armour) : '',
     h.evasion ? 'evasion ' + fmt(h.evasion) : '', res ? 'resistances: ' + res : ''].filter(Boolean).join(' · ');
@@ -404,7 +413,7 @@ function sync(){
 }
 function update(){
   if(!ROWS.length) return;
-  S.q = params().get('q') || '';
+  S.q = state(params()).q;
   $('#boq', EL).value = S.q;
   if(S.q){   // a boss asked for by name is shown, drops or not
     S.show = 'all';

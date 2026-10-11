@@ -21,7 +21,7 @@
     "CullingStrikeRareThreshold": 10,
     "CullingStrikeUniqueThreshold": 5
    },
-   "src": "Source: GameConstants, game files 0.5.5",
+   "src": "Source: game files 0.5.5",
    "said": true,
    "check": "poe2db"
   },
@@ -35,7 +35,7 @@
     "PartyUniqueBonusPerAdditionalPlayer": 0.3,
     "PartyRarityBonusPerAdditionalPlayer": 0.0
    },
-   "src": "Source: GameConstants, game files 0.5.5",
+   "src": "Source: game files 0.5.5",
    "check": "poe2db"
   },
   {
@@ -46,7 +46,7 @@
    "from": {
     "SellPriceMultiplier": 0.11
    },
-   "src": "Source: GameConstants, game files 0.5.5",
+   "src": "Source: game files 0.5.5",
    "check": "poe2db"
   },
   {
@@ -60,7 +60,7 @@
     "IdentifiedRareMultiplier": 2.0,
     "UnidentifiedRareMultiplier": 6.0
    },
-   "src": "Source: GameConstants, game files 0.5.5",
+   "src": "Source: game files 0.5.5",
    "check": "poe2db"
   },
   {
@@ -94,7 +94,7 @@
      -60
     ]
    ],
-   "src": "Source: ResistancePenaltyPerAreaLevel, game files 0.5.5"
+   "src": "Source: game files 0.5.5"
   },
   {
    "card": "Resistances",
@@ -127,7 +127,7 @@
      -60
     ]
    ],
-   "src": "Source: ResistancePenaltyPerAreaLevel, game files 0.5.5"
+   "src": "Source: game files 0.5.5"
   },
   {
    "card": "Waystones",
@@ -137,7 +137,7 @@
    "from": {
     "EndgameStartLevel": 65
    },
-   "src": "Source: GameConstants, game files 0.5.5",
+   "src": "Source: game files 0.5.5",
    "check": "poe2db"
   },
   {
@@ -148,7 +148,7 @@
    "from": {
     "DefaultMaxEvadeChancePercent": 95
    },
-   "src": "Source: GameConstants, game files 0.5.5",
+   "src": "Source: game files 0.5.5",
    "check": "poe2db"
   },
   {
@@ -159,7 +159,7 @@
    "from": {
     "BasePercentDamageDeflected": 40
    },
-   "src": "Source: GameConstants, game files 0.5.5",
+   "src": "Source: game files 0.5.5",
    "said": true,
    "check": "poe2db"
   },
@@ -171,7 +171,7 @@
    "from": {
     "BaseShieldRegenCooldownTimeMs": 4000
    },
-   "src": "Source: GameConstants, game files 0.5.5",
+   "src": "Source: game files 0.5.5",
    "said": true,
    "check": "poe2db"
   },
@@ -183,7 +183,7 @@
    "from": {
     "PlayerAilmentThresholdLifeFactor": 0.5
    },
-   "src": "Source: GameConstants, game files 0.5.5",
+   "src": "Source: game files 0.5.5",
    "check": "poe2db"
   },
   {
@@ -194,7 +194,7 @@
    "from": {
     "DefaultLowStatusThresholdPercent": 35
    },
-   "src": "Source: GameConstants, game files 0.5.5",
+   "src": "Source: game files 0.5.5",
    "said": true,
    "check": "poe2db"
   },
@@ -206,7 +206,7 @@
    "from": {
     "DefaultLowStatusThresholdPercent": 35
    },
-   "src": "Source: GameConstants, game files 0.5.5",
+   "src": "Source: game files 0.5.5",
    "said": true,
    "check": "poe2db"
   },
@@ -218,7 +218,7 @@
    "from": {
     "DefaultLowStatusThresholdPercent": 35
    },
-   "src": "Source: GameConstants, game files 0.5.5",
+   "src": "Source: game files 0.5.5",
    "said": true,
    "check": "poe2db"
   },
@@ -230,7 +230,7 @@
    "from": {
     "BaseRequiredEnemiesToBeConsideredSurrounded": 5
    },
-   "src": "Source: GameConstants, game files 0.5.5",
+   "src": "Source: game files 0.5.5",
    "said": true,
    "check": "poe2db"
   },
@@ -242,7 +242,7 @@
    "from": {
     "EffectiveMaxDamageForLeech": 40000
    },
-   "src": "Source: GameConstants, game files 0.5.5",
+   "src": "Source: game files 0.5.5",
    "said": true,
    "check": "poe2db"
   },
@@ -254,7 +254,7 @@
    "from": {
     "LightStunMinimumChance": 15
    },
-   "src": "Source: GameConstants, game files 0.5.5",
+   "src": "Source: game files 0.5.5",
    "said": true,
    "check": "poe2db"
   },
@@ -267,7 +267,7 @@
     "BleedingHitDamagePercentPerMinute": 900,
     "BaseBleedingDuration": 5
    },
-   "src": "Source: GameConstants, game files 0.5.5",
+   "src": "Source: game files 0.5.5",
    "said": true,
    "check": "poe2db"
   },
@@ -280,7 +280,7 @@
     "BaseBloodstainedAfterBleedingDuration": 6.0,
     "BloodstainedMultiplierWhenMovingOrBleedingAggravated": 2
    },
-   "src": "Source: GameConstants, game files 0.5.5",
+   "src": "Source: game files 0.5.5",
    "check": "poe2db"
   },
   {
@@ -292,7 +292,7 @@
     "IgniteHitDamagePercentPerMinute": 1200,
     "BaseIgniteDuration": 4
    },
-   "src": "Source: GameConstants, game files 0.5.5",
+   "src": "Source: game files 0.5.5",
    "said": true,
    "check": "poe2db"
   },
@@ -305,7 +305,7 @@
     "BaseFlammabilityDuration": 8,
     "BaseFlammabilityDurationPlayer": 4
    },
-   "src": "Source: GameConstants, game files 0.5.5",
+   "src": "Source: game files 0.5.5",
    "check": "poe2db"
   },
   {
@@ -317,7 +317,7 @@
     "PoisonHitDamagePercentPerMinute": 1200,
     "BasePoisonDuration": 2
    },
-   "src": "Source: GameConstants, game files 0.5.5",
+   "src": "Source: game files 0.5.5",
    "said": true,
    "check": "poe2db"
   },
@@ -331,7 +331,7 @@
     "BaseChillDuration": 8,
     "BaseChillDurationPlayer": 2
    },
-   "src": "Source: GameConstants, game files 0.5.5",
+   "src": "Source: game files 0.5.5",
    "said": true,
    "check": "poe2db"
   },
@@ -344,7 +344,7 @@
     "FreezeDuration": 4.0,
     "FreezeDurationPlayer": 2.0
    },
-   "src": "Source: GameConstants, game files 0.5.5",
+   "src": "Source: game files 0.5.5",
    "check": "poe2db"
   },
   {
@@ -357,7 +357,7 @@
     "BaseShockDuration": 8,
     "BaseShockDurationPlayer": 4
    },
-   "src": "Source: GameConstants, game files 0.5.5",
+   "src": "Source: game files 0.5.5",
    "said": true,
    "check": "poe2db"
   },
@@ -370,7 +370,7 @@
     "ElectrocuteDuration": 5000,
     "ElectrocuteDurationPlayer": 2000
    },
-   "src": "Source: GameConstants, game files 0.5.5",
+   "src": "Source: game files 0.5.5",
    "check": "poe2db"
   },
   {
@@ -382,7 +382,7 @@
     "PinDuration": 3.0,
     "PinDurationPlayer": 2.0
    },
-   "src": "Source: GameConstants, game files 0.5.5",
+   "src": "Source: game files 0.5.5",
    "check": "poe2db"
   },
   {
@@ -394,7 +394,7 @@
     "ImpalePercentage": 0.3,
     "ImpaleMaximumStacks": 60
    },
-   "src": "Source: GameConstants, game files 0.5.5",
+   "src": "Source: game files 0.5.5",
    "said": true,
    "check": "poe2db"
   },
@@ -406,7 +406,7 @@
    "from": {
     "JaggedGroundMagnitude": -20
    },
-   "src": "Source: GameConstants, game files 0.5.5",
+   "src": "Source: game files 0.5.5",
    "said": true,
    "check": "poe2db"
   },
@@ -418,7 +418,7 @@
    "from": {
     "UnholyMightBaseMagnitude": 30
    },
-   "src": "Source: GameConstants, game files 0.5.5",
+   "src": "Source: game files 0.5.5",
    "said": true,
    "check": "poe2db"
   },
@@ -432,7 +432,7 @@
     "BaseRageLossPerMinute": 300,
     "BaseRageLossDelayMs": 4000
    },
-   "src": "Source: GameConstants, game files 0.5.5",
+   "src": "Source: game files 0.5.5",
    "check": "poe2db"
   },
   {
@@ -445,7 +445,7 @@
     "BaseInfusionDurationMs": 20000,
     "InfusionRemnantBaseDuration": 12000
    },
-   "src": "Source: GameConstants, game files 0.5.5",
+   "src": "Source: game files 0.5.5",
    "check": "poe2db"
   },
   {
@@ -456,7 +456,7 @@
    "from": {
     "DivinityInherentRegenPercentPerMinute": 1500
    },
-   "src": "Source: GameConstants, game files 0.5.5",
+   "src": "Source: game files 0.5.5",
    "said": true,
    "check": "poe2db"
   },
@@ -468,7 +468,7 @@
    "from": {
     "MaxHideoutDoodads": 750
    },
-   "src": "Source: GameConstants, game files 0.5.5",
+   "src": "Source: game files 0.5.5",
    "check": "poe2db"
   },
   {
@@ -479,7 +479,7 @@
    "from": {
     "SimulacrumWaves": 7
    },
-   "src": "Source: AfflictionConstants, game files 0.5.5"
+   "src": "Source: game files 0.5.5"
   },
   {
    "card": "Delirious Players",
@@ -491,7 +491,7 @@
     "DeliriousnessPerUniquePercent": 3,
     "DeliriousnessOnMapCompletePercent": 10
    },
-   "src": "Source: AfflictionConstants, game files 0.5.5"
+   "src": "Source: game files 0.5.5"
   },
   {
    "card": "Ritual",
@@ -504,7 +504,7 @@
     "MonsterRepeatReviveLessXP": 20,
     "MonsterRepeatReviveLessIIQ": 20
    },
-   "src": "Source: RitualConstants, game files 0.5.5",
+   "src": "Source: game files 0.5.5",
    "check": "poe2db"
   }
  ],

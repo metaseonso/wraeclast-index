@@ -16,7 +16,7 @@ worktree (the static files plus `worker/seo.js`, same process, no wrangler) and 
   and the map keep to the frame · **dash** the owner's dashboard opens and all eight tabs fill · **phone**
   375x812 with touch: a card and a boss card stay open through a tap, a drag and a selection, the Bosses
   table fits, no sideways scroll, no console errors · **budget** dist/ against the free plan (`budget.mjs`,
-  below)
+  below) · **arch** the shape of the code holds where it is (`arch.mjs`, below)
 - `--live` check wraeclastindex.fyi instead (or pass any `http://...`) · `--no-phone` skip both Chrome
   checks · `--offline` the budget's first-paint line from the shipped copy · `CHROME=<path to chrome.exe>` if
   Chrome is somewhere odd
@@ -119,6 +119,20 @@ Exaltation only adds a modifier sharing a tag; and no omen grants its currency a
 `node tools/dev/simcheck.mjs` (about 10 seconds); `--rolls`, `--seed`, `--quiet` for the verdicts alone and
 `--craft` for one craft printed step by step. Seeded, so the same seed prints the same table. Reads the data
 files and nothing else, writes nothing, no network. Not part of `guard.mjs`: it is the bench's own check.
+
+`arch.mjs`: the shape of the code, measured: the module graph (static, dynamic and Worker edges, the router's read off
+`ROUTES`), its cycles, every module's size and gzip, functions over 80 lines, `window` globals and storage keys, DOM ids
+reached from two modules, per-kind code outside the table, and per stylesheet the `html:not(#_)` rules, raw colours,
+tokens defined, used, undefined and defined twice, every `@media` query, and the motion durations and easings.
+`node tools/dev/arch.mjs` prints it; `--json` for a before and an after; `--graph` for one edge a line; `--check` exits
+non-zero where a number is past its line (`LINES` at the top, set at today's numbers: a ratchet, so nothing gets worse
+by accident). It is the guard's **arch** line. `docs/architecture.md` is written from it and `docs/migration.md`
+tightens one line per stage. Under a second, no network, writes nothing.
+
+`serve.mjs`: this worktree in a browser, `node tools/dev/serve.mjs` at http://127.0.0.1:8788. The same files the guard
+serves its checks from, with the worker's own paths (`/data/market.json`, `/data/market/*`, the price files, `/api/*`)
+passed through from the live site so cards carry today's prices; `--no-live` for none. `sw.js` is served unstamped and
+switches itself off, so the page is always this worktree's files. `speed.mjs` takes the address.
 
 `speed.mjs`: how the site runs on a slow machine. Headless Chrome with the CPU slowed 4x and a fresh profile per
 page, so no cache or service worker helps. It reads home at rest (JSON parsed before anyone types, elements, heap,

@@ -53,6 +53,8 @@ jobs:
           restore-keys: tools-cache-
       - name: The game's bundle reader (pathofexile-dat, optional in package.json; tools/datpull.mjs, gamepull dat())
         run: npm ci
+      - name: The picture reader the card art is cut with (tools/cardart.py)
+        run: python -m pip install --quiet pillow
       - name: Every patch stage, built aside in build/ and swapped into data/ only if all of them hold up
         env:
           GH_TOKEN: ${{ github.token }}
