@@ -30,9 +30,25 @@ export async function written(file, base, blocks){
   }
   return {s: was, out: s, missing};
 }
+/* The home page's other two copies of the route list, both needed before the first paint and so written as plain
+   HTML: the <section class="view" id="view-<route>"> a tab draws into, and the inline list that gives <body> its
+   data-route before assets/app.js runs (index.html). Each must be exactly the open routes of the table. */
+export async function routeDrift(){
+  const K = await table(), bad = [];
+  const want = Object.keys(K.ROUTES).filter(r => r !== 'home').sort();
+  let s;
+  try { s = await readFile(join(ROOT, 'index.html'), 'utf8'); } catch { return bad; }
+  const views = [...s.matchAll(/<section class="view" id="view-(\w+)" data-view="\1"/g)].map(m => m[1]).filter(r => r !== 'home').sort();
+  const m = s.match(/document\.body\.dataset\.route = [^\n]*?\[([^\]]*)\]\.indexOf\(r\)/);
+  const inline = m ? [...m[1].matchAll(/'(\w+)'/g)].map(x => x[1]).sort() : null;
+  if(views.join() !== want.join()) bad.push('index.html’s view sections are not the table’s routes: ' + views.join(' ') + ' vs ' + want.join(' '));
+  if(!inline) bad.push('index.html has no pre-paint route list (document.body.dataset.route)');
+  else if(inline.join() !== want.join()) bad.push('index.html’s pre-paint route list is not the table’s routes: ' + inline.join(' ') + ' vs ' + want.join(' '));
+  return bad;
+}
 /* the pages whose blocks are not the table's */
 export async function drift(){
-  const bad = [];
+  const bad = await routeDrift();
   for(const [file, base, blocks] of PAGES){
     const r = await written(file, base, blocks).catch(() => null);
     if(!r) continue;
