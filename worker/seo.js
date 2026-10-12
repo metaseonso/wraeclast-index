@@ -1044,6 +1044,7 @@ ${art ? '' : '<meta property="og:image:width" content="1200">\n<meta property="o
 <meta name="twitter:card" content="${art ? 'summary' : 'summary_large_image'}">
 <link rel="preload" href="/assets/fonts/ibmplexsans-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/assets/fonts/cinzel-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/assets/css/tokens.css">
 <link rel="stylesheet" href="/assets/app.css">
 <link rel="stylesheet" href="/assets/cards.css">
 <link rel="stylesheet" href="/assets/theme.css">

@@ -466,7 +466,7 @@ async function checkFrame(index, run){
   }
   const table = checkTable(seen, cards && cards.types);
   const pages = await checkOneTable();
-  const map = checkMap(await readFile(join(ROOT, 'assets', 'theme.css'), 'utf8').catch(() => null),
+  const map = checkMap(await readFile(join(ROOT, 'assets', 'css', 'tokens.css'), 'utf8').catch(() => null),
     await getJSON('/' + FRAME.map.key).catch(() => null));
   const rows = await checkSchema();   // this worktree's own data/, whichever site the rest was read from
   const bad = [...table.bad, ...pages.bad, ...map.bad, ...rows.bad, ...(cards ? cards.bad : [])];

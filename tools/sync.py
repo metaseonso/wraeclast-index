@@ -64,7 +64,7 @@ TITLE = '<title>Wraeclast Index</title>\n'   # the artifact's own title, in <bod
 # In <head>, so the drill-down never paints in its old look first: the icon, the fonts (the site's own copies in
 # assets/fonts, @font-face in theme.css; the two that paint first are preloaded), the shared card and theme styles,
 # the drill-down's own additions and the forged-bronze look.
-CSS = ('<link rel="stylesheet" href="assets/cards.css"><link rel="stylesheet" href="assets/theme.css">'
+CSS = ('<link rel="stylesheet" href="assets/css/tokens.css"><link rel="stylesheet" href="assets/cards.css"><link rel="stylesheet" href="assets/theme.css">'
        '<link rel="stylesheet" href="assets/bridge.css"><link rel="stylesheet" href="assets/look.css">')
 ICON = '<link rel="icon" type="image/png" sizes="64x64" href="assets/brand/favicon-64.png">'
 FONTS = ('<link rel="preload" href="assets/fonts/ibmplexsans-latin.woff2" as="font" type="font/woff2" crossorigin>'
@@ -1131,10 +1131,36 @@ def main():
     return lastgood.report()
 
 
+# the artifact's own palette (a light :root, a dark one under prefers-color-scheme and one under data-theme="dark"):
+# the site has one palette, assets/css/tokens.css, and these three blocks would outrank it by their selectors
+PAGE_TOKENS = re.compile(r'^:root\{\n(?:  --[^\n]*\n)+\}\n'
+                         r'|^@media \(prefers-color-scheme: dark\)\{\n  :root:not\(\[data-theme="light"\]\)\{\n(?:    --[^\n]*\n)+  \}\n\}\n'
+                         r'|^:root\[data-theme="dark"\]\{\n(?:  --[^\n]*\n)+\}\n', re.M)
+
+
+# the page's own stylesheet (the artifact's, at the top of <body>) goes into <head> before the site's sheets, so the
+# site's sheets come later and win by order at their own specificity, as they do on every other page
+BODY_STYLE = re.compile(r'(<body>\n*)(<style>\n.*?</style>\n)', re.S)
+SITE_CSS = '<link rel="stylesheet" href="assets/css/tokens.css">'
+
+
+def own_style_first(html):
+    m = BODY_STYLE.search(html)
+    if not m or html.count(SITE_CSS) != 1 or m.start() < html.index(SITE_CSS):
+        return html
+    html = html[:m.start()] + m.group(1) + html[m.end():]
+    i = html.index(SITE_CSS)
+    return html[:i] + m.group(2) + html[i:]
+
+
 def explore_page(html):
     """The artifact's page as the site serves it (explore.html): head, header, live prices, its data in files."""
     if BRIDGE not in html:
         html = html.replace('</body>', BRIDGE + '\n</body>', 1)
+    html, n = PAGE_TOKENS.subn('', html)   # its palette is the site's (assets/css/tokens.css)
+    html = own_style_first(html)
+    if n and '/* the palette: assets/css/tokens.css */' not in html:
+        html = html.replace('<style>\n', '<style>\n/* the palette: assets/css/tokens.css */\n', 1)
     html = GOOGLE_FONTS.sub('', html)   # the fonts are the site's own (assets/fonts)
     if VIEWPORT_NEW not in html:
         html = html.replace(VIEWPORT_OLD, VIEWPORT_NEW, 1)

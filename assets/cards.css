@@ -269,7 +269,7 @@ a.pill.pill-src:hover{color:var(--text); border-color:var(--accent)}
 /* the bench's own search, over every shelf at once (assets/craftsim.js) */
 .bn-find{padding:0 0 6px}
 .bn-q{width:100%; box-sizing:border-box; padding:6px 9px; font:13px var(--sans); color:var(--text);
-  background:var(--sunk, rgba(0,0,0,.25)); border:1px solid var(--line); border-radius:5px}
+  background:rgba(0,0,0,.25); border:1px solid var(--line); border-radius:5px}
 .bn-q:focus-visible{border-color:var(--accent); outline:none}
 .bn-from{color:var(--faint); font:500 10px var(--sans); letter-spacing:.04em; text-transform:uppercase}
 /* an orb's upgrade ladder: what each step asks today, and the modifier level it guarantees */
@@ -277,7 +277,7 @@ a.pill.pill-src:hover{color:var(--text); border-color:var(--accent)}
 .card-lad ul{list-style:none; margin:4px 0 0; padding:0; display:grid; gap:3px}
 .card-lad li{display:grid; grid-template-columns:1fr auto; gap:4px 10px; align-items:baseline;
   font-size:12px; padding:3px 6px; border:1px solid transparent; border-radius:4px}
-.card-lad .lad-on{border-color:var(--line); background:var(--sunk, rgba(255,255,255,.03))}
+.card-lad .lad-on{border-color:var(--line); background:rgba(255,255,255,.03)}
 .card-lad .lad-n{color:var(--text)}
 .card-lad .lad-p{color:var(--text); font-variant-numeric:tabular-nums; white-space:nowrap}
 .card-lad .lad-p em{font-style:normal; color:var(--faint); margin-left:5px; font-size:11px}
@@ -474,9 +474,9 @@ header.top .top-in > .suggestbtn{order:0; margin:0}
   .tabs.topnav{flex-direction:column; align-items:stretch; padding:4px}
   .tabs.topnav > a, .tabs.topnav .navdrop-b{padding:10px 12px; font-size:14px}
   .navdrop{flex-direction:column}
-  .navdrop-m, html:not(#_) .topmenu .navdrop-m{position:static; min-width:0; padding:0 0 4px 22px; background:none; border:0; box-shadow:none}
+  .navdrop-m, .topmenu .navdrop-m{position:static; min-width:0; padding:0 0 4px 22px; background:none; border:0; box-shadow:none}
   .tabs.topnav .navdrop-m a{padding:9px 12px; font-size:14px}
-  .topmore, html:not(#_) .topmenu .topmore{position:static; display:flex; flex-direction:row; flex-wrap:wrap; gap:8px; margin-top:12px; padding:0;
+  .topmore, .topmenu .topmore{position:static; display:flex; flex-direction:row; flex-wrap:wrap; gap:8px; margin-top:12px; padding:0;
     min-width:0; background:none; border:0; box-shadow:none}
   header.top .topmore > button{width:auto}
 }

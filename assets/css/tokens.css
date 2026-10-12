@@ -1,0 +1,52 @@
+/* Wraeclast Index: every design token, in one file, in three blocks that read in this order (docs/framework.md
+   "Design tokens"). Loaded first on every page: index.html, explore.html (tools/sync.py), privacy.html, admin.html
+   and the crawler pages (worker/seo.js). No other sheet defines a token, and no sheet writes a colour that is not one
+   of these (tools/dev/arch.mjs holds both).
+
+   1. base   the scales: space, type, radii, the font stacks. The same on every page and in every theme.
+   2. theme  the Poison palette: black stone, forged metal, poison green as the light, blood red sparingly, and the
+             game's own item colours for names. One theme; there is no light one (the site has never shown one).
+   3. look   the Forged Bronze finish the components are drawn with (assets/look.css): rims, wells, plates, lips. */
+
+/* ---------- 1. base ---------- */
+:root{
+  --s1:4px; --s2:8px; --s3:12px; --s4:16px; --s5:24px; --s6:32px;          /* space */
+  --t1:12.5px; --t2:13px; --t3:14px; --t4:15px; --t5:17px; --t6:20px; --t7:26px;   /* type */
+  --r:10px; --r-sm:6px;                                                    /* radii */
+  --mono:'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  --sans:'IBM Plex Sans', 'Plex fallback', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --disp:'Title digits', 'Cinzel', 'Cinzel fallback', Georgia, serif;
+}
+
+/* ---------- 2. theme: Poison ---------- */
+:root{
+  color-scheme:dark;
+  --ground:#070807; --surface:#0D0F0D; --raised:#141614; --sunken:#050605;
+  --line:#243022; --line-soft:#182017;
+  --text:#DCE3D2; --muted:#98A48E; --faint:#7D8A73;   /* faint: 4.98:1 on --raised, 5.11:1 on the card face */
+  --accent:#8CCB3F;            /* poison green: links, focus, active state */
+  --accent-soft:#11160E;
+  --blood:#B3261E;             /* red accent: warnings, falls, the rank badge */
+  --blood-soft:#2A0F0C;
+  --bronze:#A8844A;            /* forged-metal hairlines */
+  --str:#C9463B; --str-text:#D65A4E; --dex:#79B94A; --int:#5B8FD1; --any:#A89F8C;
+  --pos:#16C784; --neg:#EA3943;   /* market green and red: price moves read as market data, not as the poison theme */
+  /* the game's item colours, for names */
+  --c-unique:#C06A2B; --c-gem:#2BB5AA; --c-currency:#B8AC8C; --c-keystone:#D9B566; --c-rare:#E3D36B;
+  --shadow:0 1px 2px rgba(0,0,0,.6), 0 8px 24px rgba(0,0,0,.5);
+  --shadow-hi:0 0 0 1px rgba(140,203,63,.28), 0 10px 34px rgba(0,0,0,.6), 0 0 28px rgba(140,203,63,.03);
+}
+
+/* ---------- 3. look: Forged Bronze ---------- */
+:root{
+  --fa-rim:linear-gradient(160deg, #C9A86A 0%, #8C6E40 20%, #3E3427 48%, #2B251C 62%, #6B5636 84%, #AD8C52 100%);
+  --fa-rim-dim:linear-gradient(165deg, #8E7247 0%, #54452F 30%, #2C261D 62%, #4A3D2A 85%, #7A6240 100%);
+  --fa-well:linear-gradient(180deg, #221D16 0%, #3A3124 45%, #7D6443 100%);   /* sunken: the lower lip catches the light */
+  --fa-poison:linear-gradient(180deg, #B4E07A 0%, #7DB23C 45%, #4A7526 100%);
+  --fa-face:linear-gradient(180deg, #121310 0%, #0C0D0B 55%, #090A08 100%);
+  --fa-plate:linear-gradient(180deg, #1C1D19 0%, #121310 100%);
+  --fa-plate-hi:linear-gradient(180deg, #262620 0%, #171814 100%);
+  --fa-sunk:linear-gradient(180deg, #050605 0%, #0A0B09 100%);
+  --fa-lip:inset 0 0 0 1px rgba(0,0,0,.9), inset 0 2px 0 1px rgba(214,178,110,.06);
+  --fa-drop:0 2px 3px rgba(0,0,0,.7), 0 10px 24px rgba(0,0,0,.5);
+}

@@ -66,7 +66,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 DATA = ROOT / 'data'
 KINDS_JS = ROOT / 'assets' / 'kinds.js'
-THEME_CSS = ROOT / 'assets' / 'theme.css'
+THEME_CSS = ROOT / 'assets' / 'css' / 'tokens.css'   # the palette tokens (--tone names) live here
 
 WIDE = 1600              # the picture, across
 TALL = 800               # and down: the web settles about twice as long as it is deep, so the frame is too
