@@ -206,12 +206,12 @@ export async function checkOneTable(){
   // the first paint's play mode: the modes with no prices, under the key the app keeps the pick in
   const m3 = idx && idx.match(/\/\^\(([\w|]+)\)\$\/\.test\(localStorage\.getItem\('([\w.]+)'\)\)/);
   const nopx = Object.keys(FRAME.modes).filter(k => !FRAME.modes[k].px).sort();
-  const app = await text('assets/app.js');
+  const app = await text('assets/core/store.js');   // the play mode's key lives in the store since stage 9
   if(idx && !m3) bad.push('index.html: could not find the play mode it sets on the first paint');
   else if(m3){
     if(m3[1].split('|').sort().join() !== nopx.join()) bad.push('index.html paints no prices in ' + m3[1].split('|').join(', ') +
       ', and the table says ' + nopx.join(', '));
-    if(app && !app.includes("MODE_KEY = '" + m3[2] + "'")) bad.push('index.html reads the play mode from "' + m3[2] + '", and assets/app.js keeps it elsewhere');
+    if(app && !app.includes("MODE_KEY = '" + m3[2] + "'")) bad.push('index.html reads the play mode from "' + m3[2] + '", and assets/core/store.js keeps it elsewhere');
   }
 
   // the drill-down's own sections and the header the sync tool writes: the same sections, in the same order,

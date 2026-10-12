@@ -4,7 +4,7 @@
      node tools/dev/protocol.mjs --check    the same, one line
 
    Read out of the code, never run:
-     the page      every ask('<op>', {...}) in assets/app.js: the op must be in the table, and every field in the
+     the page      every ask('<op>', {...}) in the shell and the frame (assets/core/data.js and what asks through it): the op must be in the table, and every field in the
                    object it sends must be one the op asks for. Where the answer is read on the spot,
                    (await ask('<op>', ...)).<field>, the field must be one the op answers
      the worker    every op in the table has a handler in assets/searchworker.js OPS, keyed by OP.<op>, the worker
@@ -33,7 +33,9 @@ function fields(body){
 
 export async function checkProtocol(){
   const { PROTOCOL } = await import(pathToFileURL(join(ROOT, 'assets', 'search', 'protocol.js')).href);
-  const page = await readFile(join(ROOT, 'assets', 'app.js'), 'utf8');
+  // the page's side of the seam lives in the shell and the frame since stage 9 (docs/migration.md); app.js is the door
+  const page = (await Promise.all(['core/data.js', 'frame/popup.js', 'frame/related.js', 'pages/home.js', 'ui/topsearch.js', 'app.js']
+    .map(f => readFile(join(ROOT, 'assets', f), 'utf8').catch(() => '')))).join('\n');
   const worker = await readFile(join(ROOT, 'assets', 'searchworker.js'), 'utf8');
   const bad = [], sent = {};
   // the page: ask('<op>', {k: v, ...}) and ask('<op>'), the object literal read to its own closing brace

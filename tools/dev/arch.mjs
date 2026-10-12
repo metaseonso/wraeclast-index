@@ -43,17 +43,19 @@ const AS_JSON = args.includes('--json'), CHECK = args.includes('--check'), GRAPH
    docs/migration.md tightens one line at a time. A line is a ceiling, never a target. */
 export const LINES = {
   staticCycles: 1,       // the worker's dash <-> files <-> health ring (worker/); the site's modules have none
-  fileKB: 223,           // the biggest module today is assets/app.js at 222.6 KiB (main, 12 Oct 2026, the sweeps in)
+  fileKB: 90,            // the biggest module since stage 9 is assets/pages/craft.js at 87.4 KiB; app.js was 222.6 before the split
   fn: 80,                // lines a function may run to
   longFns: 13,           // functions over LINES.fn across every module (13 today)
-  appExports: 74,        // what assets/app.js exports (74 today: it is the hub)
+  appExports: 75,        // what assets/app.js, the door, re-exports since stage 9 (75: the 73 it had, the search's hits, and $);
+                         // stage 10 rewrites every import to the files and the door shrinks to the boot line
   htmlNot: 0,            // `html:not(#_)` selectors across the stylesheets: none since stage 8 (assets/css/tokens.css is the one :root)
   tokensUndefined: 0,    // a var(--x) no stylesheet or page defines
   tokensMultiFile: 0,    // a token defined in more than one stylesheet: assets/css/tokens.css defines every one
   rawColours: 240,       // hex, rgb() and hsl() colours written outside a token definition (240 today)
-  firstPaintKB: 248,     // index.html + its stylesheets + the preloaded modules and their imports + two fonts, gzip of the
-                         // source (247.5 with stage 6's motion.css and core/screen.js; the wire carries them minified and
-                         // brotli: about 166 KiB, docs/architecture.md)
+  firstPaintKB: 265,     // index.html + its stylesheets + the preloaded modules and their imports + two fonts, gzip of the
+                         // source. 263 since stage 9 split app.js into 21 modules (each gzips on its own: about 15 KiB more
+                         // than one file; the wire carries them minified and brotli). Stage 10 takes the popup, Connections
+                         // and the own-module types out of the first paint, which is where this line comes back down.
 };
 
 const rel = p => relative(ROOT, p).replace(/\\/g, '/');
