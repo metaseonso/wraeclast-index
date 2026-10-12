@@ -5,7 +5,7 @@
  ],
  "source": "game files, patch 0.5.5",
  "patch": "0.5.5",
- "cdn": "4.5.5.4",
+ "cdn": "0.5.5.4.2",
  "reader": "pathofexile-dat 15.2.0",
  "schema": {
   "commit": "36ab7bee1b4eacc197e401383ff76d6e57de0b46",
@@ -155,7 +155,7 @@
     "MonsterResistances"
    ],
    "rows": 1207,
-   "bytes": 376054
+   "bytes": 376108
   },
   "quest_rewards": {
    "patch": "0.5.5",
