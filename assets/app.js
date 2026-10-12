@@ -1451,7 +1451,7 @@ function diffHTML(it, groups, f){
   const quiet = '<span class="pill warn dif-q">' + esc(say.quiet) + '</span>';
   const group = ([s, list]) => {
     const all = list.every(e => e.q), word = list.length === 1 && list[0].st ? say[list[0].st] : say.changed;
-    return '<div class="chg-p"><p class="chg-hd"><a href="./#/patches?d=' + encodeURIComponent(s.to) + '">' + esc(word + s.to) +
+    return '<div class="chg-p"><p class="chg-hd"><a href="./#/patches?d=' + encodeURIComponent(s.key || s.to) + '">' + esc(word + s.to) +
       '</a>' + (all ? quiet : '') + '</p>' + list.map(e =>
         (list.length > 1 || e.n !== it.n ? '<p class="chg-sec">' + esc(e.n) + (e.q && !all ? ' ' + quiet : '') + '</p>' : '') +
         (e.st ? diffLinesHTML(e.ls) : diffRowsHTML(e.r, say))).join('') + '</div>';
