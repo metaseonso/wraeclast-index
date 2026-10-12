@@ -129,6 +129,15 @@ non-zero where a number is past its line (`LINES` at the top, set at today's num
 by accident). It is the guard's **arch** line. `docs/architecture.md` is written from it and `docs/migration.md`
 tightens one line per stage. Under a second, no network, writes nothing.
 
+`stylediff.mjs`: does a stylesheet change draw the same page? `node tools/dev/stylediff.mjs <before origin> <after origin>`
+opens the same pages on both (every tab, the drill-down's three sections, privacy) at 1440 and 375, reads every element's
+computed paint and layout properties (not its size), and prints every difference as selector · property · before → after,
+most repeated first; exit 1 on any. `--pages a,b`, `--width N`, `--card` (opens the first card too), `--json file`. Both
+sides should be served the same way (a `serve.mjs` of main's worktree beside this one's: a minified sheet serialises a
+gradient differently from its source). An element mid-animation is read without what moves; a URL without its origin.
+Stage 8 of docs/migration.md was held to 0 differences over 66,000 elements with it. Under Git Bash, pass the pages with
+`MSYS_NO_PATHCONV=1` so a leading slash is not read as a path.
+
 `serve.mjs`: this worktree in a browser, `node tools/dev/serve.mjs` at http://127.0.0.1:8788. The same files the guard
 serves its checks from, with the worker's own paths (`/data/market.json`, `/data/market/*`, the price files, `/api/*`)
 passed through from the live site so cards carry today's prices; `--no-live` for none. `sw.js` is served unstamped and

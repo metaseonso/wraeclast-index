@@ -47,9 +47,9 @@ export const LINES = {
   fn: 80,                // lines a function may run to
   longFns: 13,           // functions over LINES.fn across every module (13 today)
   appExports: 74,        // what assets/app.js exports (74 today: it is the hub)
-  htmlNot: 112,          // `html:not(#_)` selectors across the stylesheets (112 today, most of them in look.css)
-  tokensUndefined: 1,    // a var(--x) no stylesheet or page defines (--sunk, cards.css: falls back to its rgba)
-  tokensMultiFile: 21,   // a token defined in more than one stylesheet (the colour layers: app.css, theme.css, the page)
+  htmlNot: 0,            // `html:not(#_)` selectors across the stylesheets: none since stage 8 (assets/css/tokens.css is the one :root)
+  tokensUndefined: 0,    // a var(--x) no stylesheet or page defines
+  tokensMultiFile: 0,    // a token defined in more than one stylesheet: assets/css/tokens.css defines every one
   rawColours: 240,       // hex, rgb() and hsl() colours written outside a token definition (240 today)
   firstPaintKB: 248,     // index.html + its stylesheets + the preloaded modules and their imports + two fonts, gzip of the
                          // source (247.5 with stage 6's motion.css and core/screen.js; the wire carries them minified and

@@ -43,13 +43,20 @@ async function file(path){
   try { return {status: 404, body: await readFile(join(DIST, '404.html')), type: TYPES.html}; } catch {}
   return {status: 404, body: 'Not found', type: TYPES.txt};
 }
+/* A good answer is kept 5 minutes, as the worker's own data centres keep it: a check that opens forty pages asks the live
+   worker once per path, not forty times, and never runs it into its cap per address (120 a minute, docs/budget.md). */
+const KEPT = new Map(), KEEP = 300000;
 async function live(url, req){
   if(!LIVE) return {status: 404, body: '{"error":"no worker here (serve.mjs --no-live)"}', type: TYPES.json};
+  const key = req.method + ' ' + url.pathname + url.search, had = KEPT.get(key);
+  if(had && Date.now() - had.at < KEEP) return had.r;
   try {
     const r = await fetch(LIVE + url.pathname + url.search, {method: req.method, headers: {'User-Agent': 'wraeclast-index serve.mjs'}});
     const headers = {};
     for(const h of ['content-type', 'cache-control', 'x-wi-last']) if(r.headers.get(h)) headers[h] = r.headers.get(h);
-    return {status: r.status, body: Buffer.from(await r.arrayBuffer()), headers};
+    const out = {status: r.status, body: Buffer.from(await r.arrayBuffer()), headers};
+    if(req.method === 'GET' && r.status === 200) KEPT.set(key, {at: Date.now(), r: out});
+    return out;
   } catch(e){ return {status: 502, body: 'live site: ' + (e && e.message), type: TYPES.txt}; }
 }
 const srv = createServer(async (req, res) => {

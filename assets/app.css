@@ -1,41 +1,5 @@
-/* Wraeclast Index — shared tokens match the drill-down page (explore.html) */
-:root{
-  --ground:#F4F1E9; --surface:#FFFFFF; --raised:#EDE8DC; --sunken:#E4DED0;
-  --line:#D6CFBE; --line-soft:#E6E0D2;
-  --text:#22201B; --muted:#6B655A; --faint:#918A7C;
-  --accent:#8A5E12; --accent-soft:#F0E3C6;
-  --str:#A8362C; --dex:#3F7A3C; --int:#2F5FA0; --any:#7A7266;
-  --pos:#2F6B34; --neg:#A8362C;
-  --shadow:0 1px 2px rgba(34,32,27,.07), 0 6px 18px rgba(34,32,27,.06);
-  --shadow-hi:0 2px 4px rgba(34,32,27,.08), 0 14px 32px rgba(34,32,27,.10);
-  --mono:'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
-  --sans:'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
-  --disp:'Fraunces', Georgia, 'Times New Roman', serif;
-  --r:10px;
-}
-@media (prefers-color-scheme: dark){
-  :root:not([data-theme="light"]){
-    --ground:#14120F; --surface:#1B1915; --raised:#232019; --sunken:#100E0B;
-    --line:#332E24; --line-soft:#272319;
-    --text:#E9E3D4; --muted:#9E9686; --faint:#7A7364;
-    --accent:#CFA75E; --accent-soft:#2B2213;
-    --str:#D2584C; --dex:#6EAE68; --int:#6C9AD6; --any:#B6AE9D;
-    --pos:#77BB6E; --neg:#D2584C;
-    --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px rgba(0,0,0,.35);
-    --shadow-hi:0 2px 4px rgba(0,0,0,.45), 0 16px 36px rgba(0,0,0,.45);
-  }
-}
-:root[data-theme="dark"]{
-  --ground:#14120F; --surface:#1B1915; --raised:#232019; --sunken:#100E0B;
-  --line:#332E24; --line-soft:#272319;
-  --text:#E9E3D4; --muted:#9E9686; --faint:#7A7364;
-  --accent:#CFA75E; --accent-soft:#2B2213;
-  --str:#D2584C; --dex:#6EAE68; --int:#6C9AD6; --any:#B6AE9D;
-  --pos:#77BB6E; --neg:#D2584C;
-  --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px rgba(0,0,0,.35);
-  --shadow-hi:0 2px 4px rgba(0,0,0,.45), 0 16px 36px rgba(0,0,0,.45);
-}
-
+/* Wraeclast Index — the app's own layout: the home page, the tabs, the boxes. Every token is in assets/css/tokens.css,
+   the motion scale and the one reduced-motion switch in assets/css/motion.css. */
 *{box-sizing:border-box}
 html{scroll-padding-top:64px}
 body{margin:0; background:var(--ground); color:var(--text); font:14px/1.45 var(--sans);
@@ -46,7 +10,6 @@ button,input,select,textarea{font:inherit; color:inherit}
 h1,h2,h3{margin:0; text-wrap:balance}
 :focus-visible{outline:2px solid var(--accent); outline-offset:2px; border-radius:4px}
 [hidden]{display:none!important}
-@media (prefers-reduced-motion: reduce){*{animation:none!important; transition:none!important}}
 
 /* ---------- top bar: assets/cards.css, which every page loads ---------- */
 
@@ -166,7 +129,6 @@ label.note{display:inline-flex; gap:6px; align-items:center; cursor:pointer}
 /* the language switch (#121): a word in the footer's own line, not a control that stands out */
 .foot .langpick{background:transparent; color:var(--muted); border:1px solid var(--line); border-radius:4px;
   padding:0 2px; font-size:11.5px; line-height:1.4; cursor:pointer}
-.foot .langpick option{background:var(--surface); color:var(--text)}
 @media (pointer:coarse){ .foot .langpick{min-height:44px; padding:0 8px; font-size:13px} }   /* a thumb's size on touch */
 
 @media (max-width:640px){

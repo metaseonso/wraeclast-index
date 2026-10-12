@@ -19,7 +19,7 @@
      * a card a field offers, or a switch a card carries, whose kind the table does not have
 
    The map, against the declarations it was drawn from (tools/map.py names no kind of its own):
-     * a kind drawn in a palette token assets/theme.css does not have
+     * a kind drawn in a palette token assets/css/tokens.css does not have
      * a kind that is in neither the map's key nor what the picture says it left out
 
    The rows, against the declarations (tools/dev/schema.mjs, data/schema.json): every row the data ships
@@ -50,7 +50,7 @@ export function checkMap(theme, map){
   if(theme){
     const tokens = new Set([...theme.matchAll(/--([\w-]+)\s*:/g)].map(m => m[1]));
     for(const d of KINDS) if(d.tone && !tokens.has(d.tone))
-      bad.push(d.many + ' is drawn in "' + d.tone + '", which is no token in assets/theme.css');
+      bad.push(d.many + ' is drawn in "' + d.tone + '", which is no token in assets/css/tokens.css');
   }
   if(!map) return {bad, said: 'the table only: no picture to hold it to'};
   const drawn = new Set((map.kinds || []).map(k => k.k));
@@ -375,7 +375,7 @@ if(import.meta.url === 'file:///' + (process.argv[1] || '').replace(/\\/g, '/').
   if(boss && (boss.bosses || []).length) for(const d of KINDS) if(d.own && !seen.includes(d.k)) seen.push(d.k);
   const r = checkTable(seen, null);
   const p = await checkOneTable();
-  const m = checkMap(await readFile(join(ROOT, 'assets', 'theme.css'), 'utf8').catch(() => null),
+  const m = checkMap(await readFile(join(ROOT, 'assets', 'css', 'tokens.css'), 'utf8').catch(() => null),
     await readFile(join(ROOT, FRAME.map.key), 'utf8').then(JSON.parse).catch(() => null));
   const s = await checkSchema();
   const bad = [...r.bad, ...p.bad, ...m.bad, ...s.bad];

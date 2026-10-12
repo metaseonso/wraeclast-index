@@ -3,39 +3,28 @@
    dark in the middle, lit again bottom-right) around a darker face, with a black lip between the two.
    A small bronze clasp with a blood-red gem holds each card at the top. Poison green only appears
    when something is hovered, focused or switched on: it lights the inner lip or takes over the rim.
-   Loaded after theme.css. Every rule starts with html:not(#_), an id-level boost, so it outranks the
-   theme and the drill-down page's own inline styles without !important. Text colours are not touched.
+   Loaded last, after theme.css and the drill-down page's own inline styles, so each rule here wins by order at
+   its own specificity (tools/dev/stylediff.mjs holds every page to the same paint). Text colours are not touched.
    Frames are painted as two backgrounds (face in the padding box, metal in the border box) under a
    transparent border, so a hover can fade a green border-color in over the bronze.
    Every duration is the site's scale (assets/css/motion.css); the value beside each token is the same number, for the
    drill-down page until it loads that sheet (docs/migration.md stage 12). */
 
-html:not(#_){
-  --fa-rim:linear-gradient(160deg, #C9A86A 0%, #8C6E40 20%, #3E3427 48%, #2B251C 62%, #6B5636 84%, #AD8C52 100%);
-  --fa-rim-dim:linear-gradient(165deg, #8E7247 0%, #54452F 30%, #2C261D 62%, #4A3D2A 85%, #7A6240 100%);
-  --fa-well:linear-gradient(180deg, #221D16 0%, #3A3124 45%, #7D6443 100%);   /* sunken: the lower lip catches the light */
-  --fa-poison:linear-gradient(180deg, #B4E07A 0%, #7DB23C 45%, #4A7526 100%);
-  --fa-face:linear-gradient(180deg, #121310 0%, #0C0D0B 55%, #090A08 100%);
-  --fa-plate:linear-gradient(180deg, #1C1D19 0%, #121310 100%);
-  --fa-plate-hi:linear-gradient(180deg, #262620 0%, #171814 100%);
-  --fa-sunk:linear-gradient(180deg, #050605 0%, #0A0B09 100%);
-  --fa-lip:inset 0 0 0 1px rgba(0,0,0,.9), inset 0 2px 0 1px rgba(214,178,110,.06);
-  --fa-drop:0 2px 3px rgba(0,0,0,.7), 0 10px 24px rgba(0,0,0,.5);
-}
+/* the finish's tokens (--fa-*): assets/css/tokens.css */
 
 /* ---------- the card ---------- */
-html:not(#_) .card{
+.card{
   border:3px solid transparent;   /* a heavier rim than the theme's 2px: the frame is the point */
   background:var(--fa-face) padding-box, var(--fa-rim) border-box;
   box-shadow:var(--fa-lip), inset 0 0 26px rgba(0,0,0,.55), var(--fa-drop);
 }
-html:not(#_) .card:hover{
+.card:hover{
   border-color:transparent;
   box-shadow:inset 0 0 0 2px rgba(140,203,63,.42), inset 0 2px 0 1px rgba(214,178,110,.06), inset 0 0 26px rgba(140,203,63,.045),
     0 2px 3px rgba(0,0,0,.7), 0 14px 30px rgba(0,0,0,.6);
 }
 /* the clasp: a bronze stud with a red gem, like the badge's gems */
-html:not(#_) .card::before{
+.card::before{
   left:calc(50% - 5px); right:auto; top:-7px; width:10px; height:10px; opacity:1; rotate:45deg; border-radius:2px;
   background:radial-gradient(circle, #E0443A 0 1.3px, #7A1812 2.1px, rgba(40,8,6,.9) 2.8px, transparent 3.3px),
     linear-gradient(135deg, #EACD92 0%, #A8844A 40%, #4A3B26 100%);
@@ -52,157 +41,161 @@ html:not(#_) .card::before{
    fade (transition-behavior) keeps the moving box-shadow above. tools/dev/speed.mjs: 4 hovers at 4x slower went
    from about 1 s of main-thread work to 0.35 s; scrolling a long list costs what it did. */
 @supports (overflow-clip-margin:1px) and (transition-behavior:allow-discrete){
-  html:not(#_) .cards > .card:has(> .card-hd){transition:border-color var(--dur-2, 200ms), translate var(--dur-2, 200ms), background-image 0s var(--dur-2, 200ms) allow-discrete, box-shadow 0s var(--dur-2, 200ms)}
-  html:not(#_) .cards > .card:hover:has(> .card-hd){background-image:none; box-shadow:none; transition:border-color var(--dur-2, 200ms), translate var(--dur-2, 200ms)}
-  html:not(#_) .cards > .card > .card-hd::before, html:not(#_) .cards > .card:has(> .card-hd)::after{
+  .cards > .card:has(> .card-hd){transition:border-color var(--dur-2, 200ms), translate var(--dur-2, 200ms), background-image 0s var(--dur-2, 200ms) allow-discrete, box-shadow 0s var(--dur-2, 200ms)}
+  .cards > .card:hover:has(> .card-hd){background-image:none; box-shadow:none; transition:border-color var(--dur-2, 200ms), translate var(--dur-2, 200ms)}
+  .cards > .card > .card-hd::before, .cards > .card:has(> .card-hd)::after{
     content:''; display:none; position:absolute; inset:-3px; z-index:-1; border:3px solid transparent; border-radius:var(--r);
     background:var(--fa-face) padding-box, var(--fa-rim) border-box; pointer-events:none; transition:opacity var(--dur-2, 200ms), display 0s var(--dur-2, 200ms) allow-discrete}
-  html:not(#_) .cards > .card > .card-hd::before{box-shadow:var(--fa-lip), inset 0 0 26px rgba(0,0,0,.55), var(--fa-drop)}
-  html:not(#_) .cards > .card:has(> .card-hd)::after{opacity:0;
+  .cards > .card > .card-hd::before{box-shadow:var(--fa-lip), inset 0 0 26px rgba(0,0,0,.55), var(--fa-drop)}
+  .cards > .card:has(> .card-hd)::after{opacity:0;
     box-shadow:inset 0 0 0 2px rgba(140,203,63,.42), inset 0 2px 0 1px rgba(214,178,110,.06), inset 0 0 26px rgba(140,203,63,.045),
       0 2px 3px rgba(0,0,0,.7), 0 14px 30px rgba(0,0,0,.6)}
-  html:not(#_) .cards > .card:hover > .card-hd::before{display:block; opacity:0; transition:opacity var(--dur-2, 200ms)}
-  html:not(#_) .cards > .card:hover:has(> .card-hd)::after{display:block; opacity:1; transition:opacity var(--dur-2, 200ms)}
+  .cards > .card:hover > .card-hd::before{display:block; opacity:0; transition:opacity var(--dur-2, 200ms)}
+  .cards > .card:hover:has(> .card-hd)::after{display:block; opacity:1; transition:opacity var(--dur-2, 200ms)}
   @starting-style{
-    html:not(#_) .cards > .card:hover > .card-hd::before{opacity:1}
-    html:not(#_) .cards > .card:hover:has(> .card-hd)::after{opacity:0}
+    .cards > .card:hover > .card-hd::before{opacity:1}
+    .cards > .card:hover:has(> .card-hd)::after{opacity:0}
   }
 }
-html:not(#_) .card-ic{
+.card-ic, .card .card-ic{   /* the second: a kind's own tint in cards.css (.k-g .card-ic) is two classes deep */
   background:radial-gradient(circle at 50% 38%, #1A1B17, #060706);
   box-shadow:0 0 0 2px #4A3B26, 0 0 0 3px #0A0806, inset 0 0 12px rgba(0,0,0,.85);
 }
-html:not(#_) .card-rank{box-shadow:0 0 0 2px #2A2016, 0 0 0 3px #8C6E40, 0 0 10px rgba(179,38,30,.35)}
-html:not(#_) .pill{border-color:#3E3427; background:#080907}
-html:not(#_) .pill.a-r{border-color:color-mix(in srgb, var(--str) 45%, #3E3427)}
-html:not(#_) .pill.a-g{border-color:color-mix(in srgb, var(--dex) 45%, #3E3427)}
-html:not(#_) .pill.a-b{border-color:color-mix(in srgb, var(--int) 45%, #3E3427)}
-html:not(#_) .pill.warn{border-color:rgba(179,38,30,.6); background:var(--blood-soft)}
-html:not(#_) .card-ft .kind{border-color:#3E3427; background:#080907}
-html:not(#_) .card-inv{border-top-color:#2E271C}
-html:not(#_) .chart svg{box-shadow:inset 0 0 0 1px #2B251C, inset 0 2px 8px rgba(0,0,0,.7)}
+.card-rank{box-shadow:0 0 0 2px #2A2016, 0 0 0 3px #8C6E40, 0 0 10px rgba(179,38,30,.35)}
+.pill{border-color:#3E3427; background:#080907}
+.pill.a-r{border-color:color-mix(in srgb, var(--str) 45%, #3E3427)}
+.pill.a-g{border-color:color-mix(in srgb, var(--dex) 45%, #3E3427)}
+.pill.a-b{border-color:color-mix(in srgb, var(--int) 45%, #3E3427)}
+.pill.warn{border-color:rgba(179,38,30,.6); background:var(--blood-soft)}
+.card-ft .kind{border-color:#3E3427; background:#080907}
+.card-inv{border-top-color:#2E271C}
+.chart svg{box-shadow:inset 0 0 0 1px #2B251C, inset 0 2px 8px rgba(0,0,0,.7)}
 
 /* ---------- the popup: a heavier frame with a second rim ---------- */
-html:not(#_) .ov-box{padding:12px 6px}   /* room for the outer rim and clasp inside the scroll box */
+.ov-box{padding:12px 6px}   /* room for the outer rim and clasp inside the scroll box */
 /* ...which a sticky bar would leave as a strip of the card showing past it: the bars sit on the box's own edge */
-@media (min-width:641px){ html:not(#_) .ov-box .ov-go{bottom:-12px; margin-bottom:-12px}
-  html:not(#_) .ov-box .ov-nav{top:-12px} }
-@media (max-width:640px){   /* assets/core/screen.js SCREEN.phone */ html:not(#_) .ov:has(.card.detail) .ov-nav{bottom:-12px; margin-bottom:-12px} }
-html:not(#_) .card.detail, html:not(#_) .card.detail:hover{
+@media (min-width:641px){ .ov-box .ov-go{bottom:-12px; margin-bottom:-12px}
+  .ov-box .ov-nav{top:-12px} }
+@media (max-width:640px){   /* assets/core/screen.js SCREEN.phone */ .ov:has(.card.detail) .ov-nav{bottom:-12px; margin-bottom:-12px} }
+.card.detail, .card.detail:hover{
   box-shadow:var(--fa-lip), inset 0 0 40px rgba(0,0,0,.5), 0 0 0 2px #050505, 0 0 0 4px #5C4A2E, 0 20px 50px rgba(0,0,0,.6);
 }
-html:not(#_) .card.detail::before{left:calc(50% - 7px); top:-9px; width:14px; height:14px;
+/* the phone's sheet (cards.css: the opened card fills the screen) kept the card's 3px rim under the old id-level boost;
+   it keeps it here, by name, until stage 11 of docs/migration.md settles whether a sheet has a rim at all */
+@media (max-width:640px){ .ov:has(.card.detail) .ov-body > .card.detail{border-width:3px} }
+.card.detail::before{left:calc(50% - 7px); top:-9px; width:14px; height:14px;
   background:radial-gradient(circle, #E0443A 0 2px, #7A1812 3px, rgba(40,8,6,.9) 3.8px, transparent 4.4px),
     linear-gradient(135deg, #EACD92 0%, #A8844A 40%, #4A3B26 100%)}
 
 /* ---------- buttons: bronze-rimmed plates ---------- */
-html:not(#_) .btn, html:not(#_) .clbtn, html:not(#_) .lvlquick button, html:not(#_) .closebtn, html:not(#_) .more button{
+.btn, .clbtn, .lvlquick button, .closebtn, .more button{
   border:2px solid transparent;
   background:var(--fa-plate) padding-box, var(--fa-rim-dim) border-box;
   box-shadow:inset 0 1px 0 rgba(230,200,140,.08), 0 1px 2px rgba(0,0,0,.7);
   transition:border-color var(--dur-1, 120ms), box-shadow var(--dur-1, 120ms);
 }
-html:not(#_) .btn:hover, html:not(#_) .clbtn:hover, html:not(#_) .lvlquick button:hover, html:not(#_) .closebtn:hover, html:not(#_) .more button:hover{
+.btn:hover, .clbtn:hover, .lvlquick button:hover, .closebtn:hover, .more button:hover{
   border-color:rgba(140,203,63,.7); filter:none;
   box-shadow:inset 0 1px 0 rgba(230,200,140,.08), 0 0 14px rgba(140,203,63,.07), 0 1px 2px rgba(0,0,0,.7);
 }
-html:not(#_) .btn.primary, html:not(#_) .btn.ttoggle[aria-expanded="true"], html:not(#_) .filtbtn{
+.btn.primary, .btn.ttoggle[aria-expanded="true"], .filtbtn{
   border:2px solid transparent;
   background:linear-gradient(180deg, rgba(140,203,63,.05), transparent 70%) padding-box, var(--fa-plate) padding-box, var(--fa-poison) border-box;
 }
-html:not(#_) .btn.primary:hover, html:not(#_) .filtbtn:hover{border-color:transparent; color:var(--accent);
+.btn.primary:hover, .filtbtn:hover{border-color:transparent; color:var(--accent);
   box-shadow:inset 0 1px 0 rgba(230,200,140,.08), 0 0 16px rgba(140,203,63,.1), 0 1px 2px rgba(0,0,0,.7)}
-html:not(#_) .filtbtn{color:var(--text)}
-html:not(#_) .btn.gold{
+.filtbtn{color:var(--text)}
+.btn.gold{
   border:2px solid transparent;
+  transition:border-color var(--dur-1, 120ms), box-shadow var(--dur-1, 120ms);   /* as every button here; cards.css's .btn.gold names its own */
   background:linear-gradient(180deg, #15120C, #0A0907) padding-box, linear-gradient(170deg, #E6C46C 0%, #9C7A2C 40%, #4A3A16 75%, #8A6A28 100%) border-box;
 }
-html:not(#_) .btn.gold:hover, html:not(#_) .btn.gold:focus-visible{border-color:rgba(245,207,102,.55);
+.btn.gold:hover, .btn.gold:focus-visible{border-color:rgba(245,207,102,.55);
   box-shadow:0 0 0 1px rgba(217,176,74,.25), 0 0 16px rgba(217,176,74,.28)}
 
 /* ---------- chips: bronze-rimmed; switched on = poison rim ---------- */
-html:not(#_) .chip{
+.chip{
   border:2px solid transparent;
   background:linear-gradient(180deg, #151612, #0C0D0B) padding-box, var(--fa-rim-dim) border-box;
   box-shadow:inset 0 1px 0 rgba(230,200,140,.06), 0 1px 2px rgba(0,0,0,.6);
 }
-html:not(#_) .chip:hover{border-color:rgba(140,203,63,.6)}
+.chip:hover{border-color:rgba(140,203,63,.6)}
 /* the play mode's plate (assets/app.js): the chips' bronze rim, the poison rim once prices are off */
-html:not(#_) .modesw{border-color:transparent;
+.modesw{border-color:transparent;
   background:linear-gradient(180deg, #151612, #0C0D0B) padding-box, var(--fa-rim-dim) border-box;
   box-shadow:inset 0 1px 0 rgba(230,200,140,.06), 0 1px 2px rgba(0,0,0,.6)}
-html:not(#_) .modesw:hover, html:not(#_) .modesw:focus-within{border-color:rgba(140,203,63,.6)}
-html:not(#_) .modesw:not([data-mode="trade"]){border-color:transparent;
+.modesw:hover, .modesw:focus-within{border-color:rgba(140,203,63,.6)}
+.modesw:not([data-mode="trade"]){border-color:transparent;
   background:linear-gradient(180deg, rgba(140,203,63,.06), transparent) padding-box, linear-gradient(180deg, #151612, #0C0D0B) padding-box, var(--fa-poison) border-box}
-html:not(#_) .chip[aria-pressed="true"]{
+.chip[aria-pressed="true"]{
   border-color:transparent; color:var(--accent);
   background:linear-gradient(180deg, rgba(140,203,63,.06), transparent) padding-box, linear-gradient(180deg, #151612, #0C0D0B) padding-box, var(--fa-poison) border-box;
   box-shadow:inset 0 1px 0 rgba(230,200,140,.06), 0 0 12px rgba(140,203,63,.06);
 }
-html:not(#_) .chip.c-r[aria-pressed="true"]{color:var(--str); background:linear-gradient(180deg, #151612, #0C0D0B) padding-box, linear-gradient(var(--str), var(--str)) border-box; box-shadow:none}
-html:not(#_) .chip.c-g[aria-pressed="true"]{color:var(--dex); background:linear-gradient(180deg, #151612, #0C0D0B) padding-box, linear-gradient(var(--dex), var(--dex)) border-box; box-shadow:none}
-html:not(#_) .chip.c-b[aria-pressed="true"]{color:var(--int); background:linear-gradient(180deg, #151612, #0C0D0B) padding-box, linear-gradient(var(--int), var(--int)) border-box; box-shadow:none}
-html:not(#_) .chip.c-w[aria-pressed="true"]{color:var(--any); background:linear-gradient(180deg, #151612, #0C0D0B) padding-box, linear-gradient(var(--any), var(--any)) border-box; box-shadow:none}
+.chip.c-r[aria-pressed="true"]{color:var(--str); background:linear-gradient(180deg, #151612, #0C0D0B) padding-box, linear-gradient(var(--str), var(--str)) border-box; box-shadow:none}
+.chip.c-g[aria-pressed="true"]{color:var(--dex); background:linear-gradient(180deg, #151612, #0C0D0B) padding-box, linear-gradient(var(--dex), var(--dex)) border-box; box-shadow:none}
+.chip.c-b[aria-pressed="true"]{color:var(--int); background:linear-gradient(180deg, #151612, #0C0D0B) padding-box, linear-gradient(var(--int), var(--int)) border-box; box-shadow:none}
+.chip.c-w[aria-pressed="true"]{color:var(--any); background:linear-gradient(180deg, #151612, #0C0D0B) padding-box, linear-gradient(var(--any), var(--any)) border-box; box-shadow:none}
 
 /* ---------- trays: nav tabs, segmented toggles — an iron channel, the active one a raised plate ---------- */
-html:not(#_) .tabs, html:not(#_) .seg, html:not(#_) .nav, html:not(#_) .applinks, html:not(#_) .navgrp{
+.tabs, .seg, .nav, .applinks, .navgrp{
   border:2px solid transparent;
   background:var(--fa-sunk) padding-box, var(--fa-rim-dim) border-box;
   box-shadow:inset 0 2px 6px rgba(0,0,0,.75), 0 1px 2px rgba(0,0,0,.6);
 }
-html:not(#_) .tabs a[aria-current="page"], html:not(#_) .tabs .navdrop-b[aria-current="true"], html:not(#_) .seg button[aria-pressed="true"], html:not(#_) .nav button[aria-pressed="true"]{
+.tabs a[aria-current="page"], .tabs .navdrop-b[aria-current="true"], .seg button[aria-pressed="true"], .nav button[aria-pressed="true"]{
   background:var(--fa-plate-hi);
   box-shadow:inset 0 1px 0 rgba(230,200,140,.14), inset 0 -2px 0 var(--accent), 0 1px 3px rgba(0,0,0,.85);
 }
-html:not(#_) .applinks a:hover{background:var(--fa-plate)}
-html:not(#_) .tabs-sep{background:linear-gradient(180deg, transparent, #6B5636, transparent)}
+.applinks a:hover{background:var(--fa-plate)}
+.tabs-sep{background:linear-gradient(180deg, transparent, #6B5636, transparent)}
 
 /* ---------- inputs: sunken wells, the rim lights green on focus ---------- */
-html:not(#_) .searchbox input, html:not(#_) .tsearch input, html:not(#_) .field, html:not(#_) .search, html:not(#_) .kwq, html:not(#_) .lvlbox{
+.searchbox input, .tsearch input, .field, .field.sm, .search, .kwq, .lvlbox{   /* .field.sm: the drill-down's own small field is two classes deep */
   border:2px solid transparent;
   background:var(--fa-sunk) padding-box, var(--fa-well) border-box;
   box-shadow:inset 0 2px 8px rgba(0,0,0,.75);
   transition:border-color var(--dur-2, 200ms), box-shadow var(--dur-2, 200ms);
 }
-html:not(#_) .searchbox input{box-shadow:inset 0 2px 10px rgba(0,0,0,.8), var(--fa-drop)}
-html:not(#_) .searchbox input:focus, html:not(#_) .tsearch input:focus, html:not(#_) .field:focus, html:not(#_) .search:focus,
-html:not(#_) .kwq:focus, html:not(#_) .lvlbox:focus-within{
+.searchbox input{box-shadow:inset 0 2px 10px rgba(0,0,0,.8), var(--fa-drop)}
+.searchbox input:focus, .tsearch input:focus, .field:focus, .field.sm:focus, .search:focus,
+.kwq:focus, .lvlbox:focus-within{
   border-color:transparent; background:var(--fa-sunk) padding-box, var(--fa-poison) border-box;
   box-shadow:inset 0 2px 8px rgba(0,0,0,.75), 0 0 0 3px rgba(140,203,63,.06), 0 0 30px rgba(140,203,63,.04);
 }
-html:not(#_) .searchbox-kbd, html:not(#_) .tsearch kbd, html:not(#_) .hint kbd{border-color:#4A3D2A; background:#12130F}
+.searchbox-kbd, .tsearch kbd, .hint kbd{border-color:#4A3D2A; background:#12130F}
 
 /* ---------- panels and boxes: the card's frame, larger ---------- */
-html:not(#_) .view .panel, html:not(#_) .trade, html:not(#_) .tablewrap, html:not(#_) .tsearch-drop,
-html:not(#_) .navdrop-m, html:not(#_) .topmore{
+.view .panel, .trade, .tablewrap, .tsearch-drop,
+.navdrop-m, .topmore{
   border:2px solid transparent;
   background:var(--fa-face) padding-box, var(--fa-rim) border-box;
   box-shadow:var(--fa-lip), inset 0 0 40px rgba(0,0,0,.45), var(--fa-drop);
 }
-html:not(#_) .view .panel.tp-out{box-shadow:var(--fa-lip), 0 10px 30px rgba(0,0,0,.6)}
-html:not(#_) .tp-group{
+.view .panel.tp-out{box-shadow:var(--fa-lip), 0 10px 30px rgba(0,0,0,.6)}
+.tp-group{
   border:2px solid transparent;
   background:var(--fa-sunk) padding-box, var(--fa-rim-dim) border-box;
   box-shadow:inset 0 2px 8px rgba(0,0,0,.6);
 }
-html:not(#_) .tp-mod{background:linear-gradient(180deg, #141511, #0E0F0C); box-shadow:inset 0 0 0 1px #221D16}
-html:not(#_) .tmod{border-color:#2A241B}
-html:not(#_) .tmod.on{border-color:color-mix(in srgb, var(--accent) 45%, #3E3427)}
-html:not(#_) .tmod.off{border-color:#1E1A14}
-html:not(#_) thead th{background:linear-gradient(180deg, #1A1B17, #121310); border-bottom:2px solid #3E3427}
+.tp-mod{background:linear-gradient(180deg, #141511, #0E0F0C); box-shadow:inset 0 0 0 1px #221D16}
+.tmod{border-color:#2A241B}
+.tmod.on{border-color:color-mix(in srgb, var(--accent) 45%, #3E3427)}
+.tmod.off{border-color:#1E1A14}
+thead th, .view thead th{background:linear-gradient(180deg, #1A1B17, #121310); border-bottom:2px solid #3E3427}   /* the second outranks a table's own th rule (.dt-jobs th) */
 /* the drill-down's side panel */
-html:not(#_) aside.panel{border-left:2px solid #6B5636; background:#0C0D0B; box-shadow:inset 2px 0 0 #050505, -12px 0 34px rgba(0,0,0,.6)}
-html:not(#_) aside.panel .panel-hd{background:#0C0D0B; border-bottom:2px solid #3E3427}
+aside.panel{border-left:2px solid #6B5636; background:#0C0D0B; box-shadow:inset 2px 0 0 #050505, -12px 0 34px rgba(0,0,0,.6)}
+aside.panel .panel-hd{background:#0C0D0B; border-bottom:2px solid #3E3427}
 
 /* ---------- header rail: a forged bar under the top bar ---------- */
-html:not(#_) .top, html:not(#_) .mast, html:not(#_) .topmenu{
+.top, .mast, .topmenu{
   border-bottom:2px solid transparent;
   border-image:linear-gradient(90deg, rgba(107,86,54,0), #6B5636 14%, #C3A266 50%, #6B5636 86%, rgba(107,86,54,0)) 1;
   box-shadow:0 4px 14px rgba(0,0,0,.55);
 }
-html:not(#_) footer.foot{border-top:2px solid transparent;
+footer.foot{border-top:2px solid transparent;
   border-image:linear-gradient(90deg, rgba(62,52,39,0), #3E3427 20%, #6B5636 50%, #3E3427 80%, rgba(62,52,39,0)) 1}
 
 @media (max-width:640px){   /* assets/core/screen.js SCREEN.phone */
-  html:not(#_) aside.panel{border-left:0}
+  aside.panel{border-left:0}
 }

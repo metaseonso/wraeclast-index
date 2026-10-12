@@ -35,6 +35,7 @@ if(navigator.deviceMemory<4||navigator.hardwareConcurrency<4||matchMedia("(prefe
    which names every other file (assets/app.js takes both; the index follows once the page needs it) */
 window.WI_FIRST = {now: fetch('data/market.json?part=live'), man: fetch('data/manifest.json', {cache: 'no-cache'})};
 for(var k in WI_FIRST) WI_FIRST[k].catch(function(){});</script>
+<link rel="stylesheet" href="assets/css/tokens.css">
 <link rel="stylesheet" href="assets/css/motion.css">
 <link rel="stylesheet" href="assets/app.css">
 <link rel="stylesheet" href="assets/cards.css">

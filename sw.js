@@ -51,7 +51,7 @@ const PAGE_KEYS = ['./', 'explore', 'privacy'];
 // without sw-files.json: what a visit needs, fetched when a deploy's worker installs, and the drill-down page's data
 // files read from that page (tools/sync.py names them)
 const SHELL = ['./', 'explore', 'privacy',
-  'assets/css/motion.css', 'assets/app.css', 'assets/cards.css', 'assets/theme.css', 'assets/look.css', 'assets/bridge.css',
+  'assets/css/tokens.css', 'assets/css/motion.css', 'assets/app.css', 'assets/cards.css', 'assets/theme.css', 'assets/look.css', 'assets/bridge.css',
   'assets/core/screen.js', 'assets/core/motion.js',
   'assets/app.js', 'assets/kinds.js', 'assets/edges.js', 'assets/graph.js', 'assets/rank.js', 'assets/cut.js',
   'assets/searchworker.js', 'assets/marks.js', 'assets/keys.js', 'assets/suggest.js', 'assets/notes.js',
