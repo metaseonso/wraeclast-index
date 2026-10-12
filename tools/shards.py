@@ -14,10 +14,14 @@ for a year and a new index is new names:
   data/cards/meta.<h>.json    what every card is drawn with and no card carries: the sprite sheets, the image
                               servers, the orb ladders, the keyword names, the table the line marks point into,
                               the names the market must not repeat and the text a lineage gem lends its price row
-  data/search/<k>.<h>.json    one kind's search rows, in the index's order: what the search, a result's first
-                              paint, a Connections row and a pin need, and every other word the card carries,
-                              said once each ("h"). The search worker reads these (assets/searchworker.js); the
-                              page never holds them all
+  data/search/heads.<h>.json  every card's head, per kind, in the index's order: its key, name, sub line and art
+                              (the HEAD a result, a Connections row or a pin is first drawn with, assets/cut.js).
+                              The search worker reads this first (assets/searchworker.js): a card asked for by
+                              key or by name is answered from it before any kind's rows are in
+  data/search/<k>.<h>.json    one kind's search rows, in the index's order, less what the heads file carries:
+                              every other word the card carries, said once each ("h"), and what the ranking and
+                              the Connections groups read. The search worker reads these (assets/searchworker.js)
+                              and folds each row into its head by position; the page never holds them all
   data/cards/<k>/<nn>.<h>.json  one kind's cards whole, in the index's order, about 200 KB a file: fetched when a
                               card is opened or drawn, never all at once unless a tab needs the whole index
   data/seo/...                the crawler pages' own cut (worker/seo.js cut(), run by tools/seoshards.mjs):
@@ -62,6 +66,10 @@ HAY = ('t', 'q', 'asc', 'reg', 'qt', 'src', 'ls', 'pr', 'tags', 'o', 'rec', 'f')
 # are keyed by, the words a keyword or mechanics card is marked by)
 # (the act a card is in, the lists of keys the page turns round, and the words it groups by: assets/kinds.js MAPS)
 HEAD = ('ic', 'img', 'lo', 'li', 'cr', 'at', 'f', 'fg', 'act', 'go', 'bx', 'wx', 'ox', 'mx', 'rw', 'ro', 'mk', 'ax', 'rb', 'kx', 'dg')
+# the head alone, for data/search/heads.<h>.json: what a card is first drawn with (assets/cut.js HEAD, less the
+# name, sub line and id a row always carries)
+HEAD_ONLY = ('ic', 'img', 'lo', 'li', 'cr', 'at', 'f', 'fg')
+HEAD_IN_HEADS = frozenset(('n', 'id', 's') + HEAD_ONLY)   # what the heads file carries, so a kind's file does not
 # JavaScript's \s: a typed word is split on these, so a word never holds one
 SPACE = re.compile('[\t\n\x0b\x0c\r    -     　﻿]+')
 # the kinds whose names the market must not repeat: an index card of that name is the card (worker/seo.js does
@@ -138,6 +146,15 @@ def search_row(it, card, keys):
     return row
 
 
+def head_row(row):
+    """A search row cut down to its head: the name, sub line and id, and the fields a card is first drawn with."""
+    out = {'n': row['n']}
+    for f in ('id', 's') + HEAD_ONLY:
+        if f in row:
+            out[f] = row[f]
+    return out
+
+
 def packed(k, rows, more=None):
     """One file of one kind's rows, every word said many times said once ("dict", tools/appdata.py pack; the page
     and the search worker put the words back as they read it)."""
@@ -204,12 +221,16 @@ def build(index_file=DATA / 'index.json'):
         'lt': {it['n']: it['t'] for it in items if it['k'] == 'g' and it.get('li') and it.get('t')},
     }
     kinds = {}
+    heads = {}   # every kind's heads, for the one file the search worker reads first
     for k, _ in order:
         if k in kinds:
             continue
         mine = [it for it in items if it['k'] == k]
         cards = [card_of(it) for it in mine]
         rows = [search_row(it, c, keys) for it, c in zip(mine, cards)]
+        heads[k] = [head_row(r) for r in rows]
+        # the kind's own file carries the rest: a row's words and what the ranking and the groups read, by position
+        rows = [{f: v for f, v in r.items() if f not in HEAD_IN_HEADS} for r in rows]
         chunks, cur, size = [], [], 0
         for c in cards:
             n = len(body(c).encode('utf-8')) + 1
@@ -228,6 +249,10 @@ def build(index_file=DATA / 'index.json'):
             entry['cards'].append(f)
             at += len(ch)
         kinds[k] = entry
+    # the heads of every kind in one file, {<k>: [heads...], dict}: every kind's list under its letter, packed over one
+    # dict the way a kind's own rows are (assets/cut.js unpack reads every list in the file)
+    heads_file = {k: list(v) for k, v in heads.items()}
+    pack(heads_file, list(heads))
 
     total = len(raw)
     buckets = max(1, round(total / SEO_BYTES))
@@ -252,6 +277,7 @@ def build(index_file=DATA / 'index.json'):
         'patch': re.sub(r'^4\.(\d+)\.(\d+).*$', r'0.\1.\2', index.get('v') or ''),
         'source': 'data/index.json: the game files (tools/sync.py and the pipeline stages after it), cut by tools/shards.py',
         'order': order, 'meta': put('meta.json', body(meta), 'data/cards'), 'kinds': kinds, 'seo': seo,
+        'heads': put('heads.json', body(heads_file), 'data/search'),
     }
     langs = languages()
     if langs:
@@ -326,9 +352,9 @@ def write():
     search = sum(k['search']['bytes'] for k in man['kinds'].values())
     cards = sum(c['bytes'] for k in man['kinds'].values() for c in k['cards'])
     seo = sum(len(b) for p, b in files.items() if p.startswith('data/seo/'))
-    print('data/manifest.json %d kinds, %d cards: search rows %s in %d files, cards %s in %d files, meta %s, '
+    print('data/manifest.json %d kinds, %d cards: heads %s, search rows %s in %d files, cards %s in %d files, meta %s, '
           'crawler %s in %d files%s' % (
-              len(man['kinds']), sum(k['n'] for k in man['kinds'].values()), kb(search), len(man['kinds']), kb(cards),
+              len(man['kinds']), sum(k['n'] for k in man['kinds'].values()), kb(man['heads']['bytes']), kb(search), len(man['kinds']), kb(cards),
               sum(len(k['cards']) for k in man['kinds'].values()), kb(man['meta']['bytes']), kb(seo),
               sum(1 for p in files if p.startswith('data/seo/')), (', %d old files removed' % gone) if gone else ''))
 

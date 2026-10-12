@@ -28,7 +28,7 @@
    The hourly jobs on GitHub Actions (.github/workflows/pages.yml) send their files in with GitHub's own
    short-lived token, the same way the price job does (worker/prices.js): until 27 Sep they sent nothing, which
    is why every file read "from: backup". */
-import { same } from './dash.js';
+import { same } from './util.js';
 
 const NAMES = new Set(['exchange.json', 'market.json', 'leagues.json', 'faults.json']);
 // the market products (design/market-products.md), one file each, the currency cards' parts in up to 16 bundles, and

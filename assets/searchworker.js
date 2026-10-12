@@ -27,8 +27,10 @@ import {KIND, MAKE, MAPS, KW, holds} from './kinds.js';
 import {ranker} from './rank.js';
 import * as graph from './graph.js';
 import {unpack, inOrder, HEAD} from './cut.js';
+import {OP} from './search/protocol.js';   // the questions by name: the one table the page reads too
 
-const S = {man: null, base: '', index: [], runtime: [], items: [], byKey: new Map(), market: new Set(), seen: [], v: 0, ready: null};
+const S = {man: null, base: '', index: [], runtime: [], items: [], byKey: new Map(), market: new Set(), seen: [], v: 0, ready: null,
+  fullOf: {}, full: null};   // per kind, its rows folded in; and all of them
 const has = key => S.byKey.has(key);
 let IX = null, IXV = -1;
 const ix = () => (IXV === S.v ? IX : (IXV = S.v, IX = graph.turn(S.items, has)));
@@ -78,33 +80,57 @@ function rebuild(){
   S.v++;
   R.vocabLater();
 }
-/* The search rows asked for as soon as the manifest is in (fetch), while the page still waits for its prices and
-   the card meta; init takes them from here. A file that failed is asked for again by init. */
+/* The heads first, then the rows. The manifest names one file with every card's head (data/search/heads.<h>.json:
+   its key, name, sub line and art, tools/shards.py) and one file of rows per kind. fetch asks for all of them at
+   once, as soon as the manifest is in, while the page still waits for its prices and the card meta. init builds
+   the index from the heads and answers; each kind's rows are folded into those same rows as they land (fold), so
+   a question that needs only a head (heads, find, words, bodies) is answered as soon as init has, and one that
+   reads the words on the cards waits for the rows it searches (handle: a kind's list for that kind, a search with
+   words for all of them). A file that failed is asked for again when it is taken. A manifest with no heads file
+   (an older cut) takes the old road: init waits for every kind's rows. */
 const EARLY = new Map();
+const early = f => { if(!EARLY.has(f)) EARLY.set(f, getJSON(f).catch(() => { EARLY.delete(f); return null; })); };
 function fetchRows(m){
   if(!S.base) S.base = m.base;
-  for(const K of Object.values(m.man.kinds)){
-    const f = K.search.file;
-    if(!EARLY.has(f)) EARLY.set(f, getJSON(f).catch(() => { EARLY.delete(f); return null; }));
-  }
+  if(m.man.heads) early(m.man.heads.file);
+  for(const K of Object.values(m.man.kinds)) early(K.search.file);
   return {};
 }
 const rowsOf = async f => (EARLY.has(f) && await EARLY.get(f)) || getJSON(f);
+// where each card's whole card is: its file, and its place in that file
+function place(K, rows){
+  let c = 0, left = K.cards.length ? K.cards[0].n : 0, i = 0;
+  for(const r of rows){
+    while(left === 0 && c < K.cards.length - 1){ c++; left = K.cards[c].n; i = 0; }
+    r._c = c; r._i = i++; left--;
+  }
+  return rows;
+}
+// a kind's rows (its words, and what the ranking and the groups read: everything the heads file does not carry),
+// folded into the heads already standing for its cards by position: the same objects, so every key, place and
+// head the page was given stays good; then the words are indexed and the groups worked out again
+async function fold(k, K, rows){
+  const part = unpack(await rowsOf(K.search.file));
+  part.rows.forEach((r, i) => { if(rows[i]) take(k, Object.assign(rows[i], r)); });
+  S.v++;           // the same cards, new words: what was worked out from them (the groups, a search's last answer) is stale
+  R.vocabLater();  // ...and the list of words a near miss is matched against reads them again
+}
 async function init(m){
   S.man = m.man; S.base = m.base; S.market = new Set(m.market || []); S.seen = m.seen || [];
   S.runtime = m.runtime || [];
   const byKind = {};
+  const heads = S.man.heads ? await rowsOf(S.man.heads.file).then(unpack, () => null) : null;
   await Promise.all(Object.entries(S.man.kinds).map(async ([k, K]) => {
-    const part = unpack(await rowsOf(K.search.file));
-    const rows = part.rows.map(r => take(k, r));
-    // where each card's whole card is: its file, and its place in that file
-    let c = 0, left = K.cards.length ? K.cards[0].n : 0, i = 0;
-    for(const r of rows){
-      while(left === 0 && c < K.cards.length - 1){ c++; left = K.cards[c].n; i = 0; }
-      r._c = c; r._i = i++; left--;
+    if(heads && Array.isArray(heads[k]) && heads[k].length === K.n){
+      byKind[k] = place(K, heads[k].map(r => take(k, r)));
+      S.fullOf[k] = fold(k, K, byKind[k]);
+    } else {
+      const part = unpack(await rowsOf(K.search.file));
+      byKind[k] = place(K, part.rows.map(r => take(k, r)));
+      S.fullOf[k] = Promise.resolve();
     }
-    byKind[k] = rows;
   }));
+  S.full = Promise.all(Object.values(S.fullOf));
   S.index = inOrder(S.man.order, byKind);
   // the player's language (#121): every card's name and sub line in it, so a search in it and a search in English
   // both find the card. Asked for only when a language is on (the manifest names its file)
@@ -168,33 +194,39 @@ function answer(m, S){
   const from = m.from || 0, take = m.take === undefined ? keys.length : m.take;
   return {keys: keys.slice(from, take), total: keys.length, counts: L.counts, heads: heads(keys.slice(0, m.n || 0))};
 }
+/* one handler per question, keyed by the protocol's names (assets/search/protocol.js): what each asks and answers
+   is written there, once, and tools/dev/protocol.mjs holds both sides to it */
 const OPS = {
-  init,
-  fetch: fetchRows,
-  async runtime(m){ S.runtime = m.runtime || []; rebuild(); return {}; },
-  async market(m){ S.market = new Set(m.market || []); S.v++; return {}; },
-  async search(m){
+  [OP.init]: init,
+  [OP.fetch]: fetchRows,
+  [OP.runtime]: async m => { S.runtime = m.runtime || []; rebuild(); return {}; },
+  [OP.market]: async m => { S.market = new Set(m.market || []); S.v++; return {}; },
+  [OP.search]: async m => {
     if(m.seen) S.seen = m.seen;
     return answer(m, S);
   },
-  async heads(m){ return {heads: heads(m.keys || [])}; },
-  async bodies(m){ return {bodies: await bodies(m.keys || [])}; },
-  async rel(m){
+  [OP.heads]: async m => ({heads: heads(m.keys || [])}),
+  [OP.bodies]: async m => ({bodies: await bodies(m.keys || [])}),
+  [OP.rel]: async m => {
     const it = S.byKey.get(m.key);
     return {lists: it ? graph.lists(ix(), it, has) : null};
   },
-  async find(m){ return {keys: S.items.filter(it => it.k === m.k && it.n === m.n).map(it => it.k + ':' + it.id)}; },
-  async words(m){
+  [OP.find]: async m => ({keys: S.items.filter(it => it.k === m.k && it.n === m.n).map(it => it.k + ':' + it.id)}),
+  [OP.words]: async m => {
     const names = new Set(m.names || []);
     const list = S.index.filter(it => (KIND[it.k] || {}).words || (KW.named.includes(it.k) && names.has(it.n)));
     return {heads: list.map(headOf)};
   },
 };
 export async function handle(m){
-  if(m.op === 'fetch') return OPS.fetch(m);
-  if(m.op !== 'init' && m.op !== 'runtime' && m.op !== 'market') await S.ready;
-  if(m.op === 'init') return S.ready = OPS.init(m);
-  if(m.op === 'runtime' || m.op === 'market') await S.ready;
+  if(m.op === OP.fetch) return OPS[OP.fetch](m);
+  if(m.op !== OP.init && m.op !== OP.runtime && m.op !== OP.market) await S.ready;
+  if(m.op === OP.init) return S.ready = OPS[OP.init](m);
+  if(m.op === OP.runtime || m.op === OP.market) await S.ready;
+  // the words on the cards: a kind's own list (no words, one kind) waits for that kind's rows; a search with words
+  // ranks and counts every kind, so it waits for all of them, and so do the groups a card's Connections are read from
+  if(m.op === OP.search) await (!(m.q || '').trim() && m.kind && m.kind !== 'all' && S.fullOf[m.kind] ? S.fullOf[m.kind] : S.full);
+  if(m.op === OP.rel) await S.full;
   const f = OPS[m.op];
   if(!f) throw new Error('no such question: ' + m.op);
   return f(m);
