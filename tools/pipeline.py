@@ -274,7 +274,7 @@ STAGES = [
     dict(name='patchdiff', run=['tools/patchdiff.py'], cadence='patch', source="game files, GGG's tree export",
          reads=['data/index.json', 'explore.html', 'data/explore/gems.*.json', 'data/explore/gemtext.*.json',
                 'data/explore/tree.*.json', 'data/craft/*.json', 'data/treechanges/*.json', 'data/patches.json',
-                'data/patchnotes.json', 'tools/dev/patchgaps.txt', 'data/snapshots/*.json.gz'],
+                'data/patchnotes.json', 'tools/dev/patchgaps.txt', 'data/game/_meta.json', 'data/snapshots/*.json.gz'],
          writes=['data/snapshots/*.json.gz', 'data/patchdiff/*.json'], count={'data/patchdiff/index.json': 'steps'}),
     dict(name='map', run=['tools/map.py'], cadence='patch', source='files, and the live market list',
          reads=['data/index.json', 'data/kwuse.json', 'data/grants.json', 'data/gamedata.json', 'assets/kinds.js',
@@ -401,6 +401,21 @@ def args_of(stage, artifact):
     return [str(artifact) if a == '@artifact' else a for a in stage['run'][1:]]
 
 
+_LIVE_CDN = []
+def live_cdn():
+    """The CDN folder GGG serves now (tools/datpull.mjs --find-patch, which asks the patch server), asked once a
+    run. A hotfix moves the folder without moving the export's build name (RePoE sat on 4.5.5.2 through two
+    hotfixes, Oct 2026), so a stage that reads the CDN keys its stamp on the folder as well. Unreachable: ''."""
+    if not _LIVE_CDN:
+        try:
+            out = subprocess.run([shutil.which('node') or 'node', str(ROOT / 'tools' / 'datpull.mjs'), '--find-patch'],
+                                 cwd=str(ROOT), capture_output=True, text=True, timeout=120).stdout.strip()
+        except Exception:
+            out = ''
+        _LIVE_CDN.append(out if re.fullmatch(r'\d+(?:\.\d+)+', out or '') else '')
+    return _LIVE_CDN[0]
+
+
 def stamp(stage, root, artifact):
     """What a stage's inputs hash to now: its code, the files it reads as they are in root, and for an outside
     source the patch, the day or the hour, since what an address answers cannot be hashed without asking it.
@@ -430,6 +445,8 @@ def stamp(stage, root, artifact):
         if c == 'patch':
             game = json_at(root / 'data' / 'gamedata.json') or {}
             h.update(('patch %s of %s' % (game.get('patch'), game.get('dated'))).encode())
+            if CDN in stage['reads']:
+                h.update(('cdn %s' % live_cdn()).encode())
         else:
             h.update(now.strftime('%Y-%m-%d' + (' %H' if c == 'hourly' else '')).encode())
     return h.hexdigest()

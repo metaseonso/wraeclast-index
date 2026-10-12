@@ -162,6 +162,13 @@ async function asked(files){
     for(const e of Object.values(man.lang || {}))
       for(const f of manifestFiles(JSON.parse(await readFile(join(ROOT, e.file), 'utf8')))) cut.add(f);
   } catch {}
+  // a folder's own index the site reads (data/<folder>/index.json) names the files the page fetches from it by
+  // their "file": data/patchdiff/index.json names each step's file, which a page builds no name for (they went
+  // unshipped, 12 Oct)
+  for(const f of files){
+    if(!/^data\/[^/]+\/index\.json$/.test(f) || !text.includes(f)) continue;
+    try { for(const g of manifestFiles(JSON.parse(await readFile(join(ROOT, f), 'utf8')))) cut.add(g); } catch {}
+  }
   const keep = files.filter(f => {
     if(!f.startsWith('data/') || PUBLIC.some(([re]) => re.test(f)) || cut.has(f)) return true;
     const name = f.slice(f.lastIndexOf('/') + 1), dir = f.slice(0, f.lastIndexOf('/') + 1);
