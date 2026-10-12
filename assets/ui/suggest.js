@@ -4,6 +4,7 @@
    thing it is about. Nothing else goes with it: no words typed elsewhere on the page, nothing about the
    person. Notes go to the site's database (worker/community.js) and show on the owner's dashboard only. */
 import { openBox, esc, markHTML, D } from '../app.js';
+import { still } from '../core/motion.js';   // less motion asked for: asked once, in one place
 
 export function mountSuggest(){
   let b = document.getElementById('suggestbtn');   // the pages write it in their top bar (no jump on first paint)
@@ -163,11 +164,10 @@ function cheat(){
   const box = document.createElement('div');
   box.className = 'cheat';
   box.setAttribute('role', 'status');
-  const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
   box.innerHTML = '<img class="cheat-said" src="assets/brand/cheat-words.webp" alt="Cheat Code Activated" decoding="async">';
   document.body.appendChild(box);
   const quiet = drums();
-  setTimeout(() => { box.remove(); quiet(); }, still ? 2800 : 4200);
+  setTimeout(() => { box.remove(); quiet(); }, still.matches ? 2800 : 4200);
 }
 
 function open(card){

@@ -51,8 +51,9 @@ export const LINES = {
   tokensUndefined: 1,    // a var(--x) no stylesheet or page defines (--sunk, cards.css: falls back to its rgba)
   tokensMultiFile: 21,   // a token defined in more than one stylesheet (the colour layers: app.css, theme.css, the page)
   rawColours: 240,       // hex, rgb() and hsl() colours written outside a token definition (240 today)
-  firstPaintKB: 246,     // index.html + its stylesheets + the preloaded modules and their imports + two fonts, gzip of the
-                         // source (245.8 today; the wire carries them minified and brotli: about 166 KiB, docs/architecture.md)
+  firstPaintKB: 248,     // index.html + its stylesheets + the preloaded modules and their imports + two fonts, gzip of the
+                         // source (247.5 with stage 6's motion.css and core/screen.js; the wire carries them minified and
+                         // brotli: about 166 KiB, docs/architecture.md)
 };
 
 const rel = p => relative(ROOT, p).replace(/\\/g, '/');

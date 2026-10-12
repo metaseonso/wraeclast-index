@@ -140,7 +140,7 @@
 .bd-spare b{flex:1; min-width:0; font-weight:500; color:var(--muted); overflow-wrap:anywhere}
 .bd-spare span{flex:none; font:11px var(--mono); color:var(--faint)}
 
-@media (max-width: 560px){
+@media (max-width:640px){   /* assets/core/screen.js SCREEN.phone */
   .bd-rows li{grid-template-columns:minmax(0, 1fr) auto}
   .bd-opt .bn-ctl .btn{flex:1 1 auto}
 }

@@ -9,9 +9,9 @@ html.wi-wait body > .wrap{visibility:hidden; min-height:100vh}
 /* flying rows (bridge.js): a row that leaves fades out over the list, clipped to it */
 .tablewrap{position:relative; overflow-y:hidden}
 .flyghost{position:absolute; min-width:0; margin:0; table-layout:fixed; pointer-events:none; z-index:0}
-/* phones: the drill-down's category tabs and filter rows wrap, and the two strips of app links slide
-   sideways inside themselves, so the page itself never runs off the side */
-@media (max-width:760px){
+/* phones (assets/core/screen.js SCREEN.phone): the drill-down's category tabs and filter rows wrap, and the two strips
+   of app links slide sideways inside themselves, so the page itself never runs off the side */
+@media (max-width:640px){
   .seg, .row, .tagwrap{flex-wrap:wrap}
   .controls > *, .row > *, .kwwrap > *, .tagwrap > *{min-width:0}
   .applinks, .navgrp{overflow-x:auto; max-width:100%; min-width:0; scrollbar-width:none; flex-wrap:nowrap}
@@ -31,7 +31,7 @@ html:not(#_) .navgrp > .applinks, html:not(#_) .navgrp > .nav{border:0; backgrou
 .respec h3{display:inline; font-family:var(--disp); font-size:15px; margin:0}
 .respec summary{cursor:pointer; display:flex; align-items:center; gap:10px; list-style:none}
 .respec summary::-webkit-details-marker{display:none}
-.respec summary::before{content:"\25B8"; color:var(--accent); font-size:12px; transition:transform .15s}
+.respec summary::before{content:"\25B8"; color:var(--accent); font-size:12px; transition:transform var(--dur-1, 120ms)}
 .respec[open] summary::before{transform:rotate(90deg)}
 .respec[open] summary{margin-bottom:10px}
 .respec-in{display:flex; flex-wrap:wrap; gap:10px 18px; font-size:13px; color:var(--muted)}
