@@ -4,8 +4,8 @@
    assets/kinds.js), read off data/patchnotes.json, so a patch that counts 12 cards here is on those 12 cards'
    "Changed in". The page is its own tab: nothing of it is fetched until somebody opens it.
 
-   Above the list, what the game data changed from one patch to the next (tools/patchdiff.py, data/patchdiff/):
-   one step at a time, every change grouped by kind, a chip per kind and one for what the patch notes never
+   Above the list, what the game data changed from one game build to the next, a patch or a hotfix of one
+   (tools/patchdiff.py, data/patchdiff/): one step at a time, newest first, every change grouped by kind, a chip per kind and one for what the patch notes never
    name. A step's file is fetched when it is picked. The rows and the words are the card's own (FIELDS.patchdiff,
    diffRowsHTML), so a change reads the same here as on the card it is on. */
 import { esc, patchName, params, named, openDetail, hrefOf, diffRowsHTML, diffLinesHTML } from '../app.js';
@@ -91,14 +91,16 @@ const QUIET = 'quiet';
 function data(el, ix){
   const say = FIELDS.patchdiff.say, names = ix.names || {};
   const steps = ix.steps, want = state(params()).d;
-  const st = {step: steps.find(s => s.to === want) || steps[0], kind: 'all', body: null};
+  // a step is found by its key (the newer copy's file name); an older link that named the patch still lands
+  const find = v => steps.find(s => s.key === v) || steps.find(s => s.to === v);
+  const st = {step: find(want) || steps[0], kind: 'all', body: null};
   const $ = s => el.querySelector(s);
   const chip = (v, label, n, on) => '<button type="button" class="chip" data-v="' + esc(v) + '" aria-pressed="' + on + '">' +
     esc(label) + (n === undefined ? '' : '<span class="ct">' + n.toLocaleString('en') + '</span>') + '</button>';
   const total = s => Object.values(s.n || {}).reduce((a, b) => a + b, 0);
 
   function paintSteps(){
-    $('.pd-steps').innerHTML = steps.map(s => chip(s.to, s.to, total(s), s === st.step)).join('');
+    $('.pd-steps').innerHTML = steps.map(s => chip(s.key || s.to, s.to, total(s), s === st.step)).join('');
     const s = st.step;
     $('.pd-sub').textContent = s.from + ' → ' + s.to + ' · ' + s.has.map(p => names[p] || p).join(', ') +
       (s.src ? ' · Source: ' + s.src : '');
@@ -128,15 +130,15 @@ function data(el, ix){
     paintList();
   }
   const pick = (v, write) => {
-    const s = steps.find(x => x.to === v);
+    const s = find(v);
     if(!s || s === st.step) return;
     st.step = s;
     st.kind = 'all';
-    if(write) history.replaceState(history.state, '', '#/patches?d=' + encodeURIComponent(s.to));
+    if(write) history.replaceState(history.state, '', '#/patches?d=' + encodeURIComponent(s.key || s.to));
     load();
   };
   // a card's "Changed in" opens this page on its patch: the same page, another patch, when it is already open
-  const heard = () => { if(EL === el && location.hash.startsWith('#/patches')) pick(state(params()).d || steps[0].to, false); };
+  const heard = () => { if(EL === el && location.hash.startsWith('#/patches')) pick(state(params()).d || steps[0].key || steps[0].to, false); };
   window.addEventListener('hashchange', heard);
   OFF = () => window.removeEventListener('hashchange', heard);
   el.querySelector('.pd').addEventListener('click', async e => {

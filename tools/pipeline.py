@@ -274,7 +274,7 @@ STAGES = [
     dict(name='patchdiff', run=['tools/patchdiff.py'], cadence='patch', source="game files, GGG's tree export",
          reads=['data/index.json', 'explore.html', 'data/explore/gems.*.json', 'data/explore/gemtext.*.json',
                 'data/explore/tree.*.json', 'data/craft/*.json', 'data/treechanges/*.json', 'data/patches.json',
-                'data/patchnotes.json', 'tools/dev/patchgaps.txt', 'data/snapshots/*.json.gz'],
+                'data/patchnotes.json', 'tools/dev/patchgaps.txt', 'data/game/_meta.json', 'data/snapshots/*.json.gz'],
          writes=['data/snapshots/*.json.gz', 'data/patchdiff/*.json'], count={'data/patchdiff/index.json': 'steps'}),
     dict(name='map', run=['tools/map.py'], cadence='patch', source='files, and the live market list',
          reads=['data/index.json', 'data/kwuse.json', 'data/grants.json', 'data/gamedata.json', 'assets/kinds.js',

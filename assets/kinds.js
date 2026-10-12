@@ -623,8 +623,8 @@ export const FIELDS = {
   /* GGG's own patch-note lines that name this card, newest patch first, each patch its thread's link and the
      hour it went up (tools/patchnotes.py writes data/patchnotes.json, keyed "kind:name"). The popup only, the
      file fetched the first time one asks; FRAME.changed says how many patches draw and which lines count. */
-  /* What the game data itself changed on this card from one patch to the next (tools/patchdiff.py, #73): per
-     patch, newest first, each change old → new in the game's words, and "Not in the patch notes" where GGG's
+  /* What the game data itself changed on this card from one game build to the next (tools/patchdiff.py, #73):
+     per patch or hotfix, newest first, each change old → new in the game's words, and "Not in the patch notes" where GGG's
      notes for that patch never name it. data/patchdiff/index.json says which patches touched which cards; a
      patch's own file is fetched only for a card it touched, and only when the card is opened. The popup only;
      FRAME.changed says how many patches draw. `say` is the words the card and the Patches page both use. */

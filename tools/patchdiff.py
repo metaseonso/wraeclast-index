@@ -1,12 +1,24 @@
-"""What the data changed from one patch to the next (#73): one frozen copy of the numbers per patch, and the
-diff between each two, card by card, old value -> new value in the game's own words.
+"""What the data changed from one game build to the next (#73): one frozen copy of the numbers per build, and
+the diff between each two, card by card, old value -> new value in the game's own words.
 
-    python tools/patchdiff.py            freeze the current patch if it has no copy yet, then every diff again
+    python tools/patchdiff.py            freeze the current build if it has no copy yet, then every diff again
     python tools/patchdiff.py --check    the copies read, and the diff files are what they give; writes nothing
 
-data/snapshots/<patch>.json.gz: the numbers that matter at one patch. Written once, the first run that sees the
-patch, and never again: a copy is a record of that patch, not of the site. Not part of the website
-(.assetsignore). What one holds, per part (`has` lists the parts it has):
+data/snapshots/: the numbers that matter at one game build. Each copy is written once and never again: it is a
+record of that build, not of the site. Not part of the website (.assetsignore).
+  <patch>.json.gz           the first build of a patch, whole (about 360 kB)
+  <patch>@<folder>.json.gz  a later build of the same patch (a hotfix): only what differs from the first one
+                            (`base`, and `delta`: per part the entries set and the ones gone). The same folder
+                            read again with other numbers adds -<yyyymmdd>
+A copy carries where it was read from: `cdn`, the folder on GGG's patch CDN the game tables were read from
+(data/game/_meta.json), `build`, the client build the export the cards are built from names (data/index.json
+"v"), and `read`, when. A build is new when either name moves, and it is kept only when its numbers differ from
+the newest copy of its patch: the same numbers under a new folder name are no hotfix, and numbers that move with
+neither name moved are the site's own rebuild, never a game change. Neither is kept.
+Its label is the patch notes row data/patches.json dates nearest before it was read, where that row is newer
+than the copy before it ("0.5.5e"). Where the registry cannot tell (no row between the two reads) the label is
+the patch and the day it was read ("0.5.5, 11 Oct"). A letter is never guessed. The first copy of a patch is
+labelled with the patch. What a copy holds, per part (`has` lists the parts it has):
   g    every gem card: its words, use time, cost, Spirit, critical hit chance, requirements, quality, tags,
        and its lines at every level ("lv": a line whose wording holds from level to level is kept once, as
        the words with # for each number and the numbers per level)
@@ -20,17 +32,18 @@ hand: GGG's passive tree export steps (data/treechanges/, tools/treeexport.py) h
 removed or reworded, so the passives of each older patch are the newer copy with its step undone. Those copies
 hold `p` only. Nothing is guessed: a part a copy does not hold is not compared.
 
-data/patchdiff/index.json: the copies, and per step (two copies in patch order, newest first) the file that
-holds it, the parts compared, how many things changed per part, how many of them the patch notes never name,
+data/patchdiff/index.json: the copies, and per step (two copies in build order, newest first) its key (the
+newer copy's file name, the address the Patches page takes), the two labels, the file that holds it, the parts compared, how many things changed per part, how many of them the patch notes never name,
 and the cards they are on ("kind:name", the key the cards already carry; never a game id, #12).
-data/patchdiff/<patch>.json: one step, per part, every thing that changed:
+data/patchdiff/<key>.json: one step, per part, every thing that changed:
   n   its name (the new one where it was renamed)       s   its sub line, where two share one name
   c   the cards it is on, where they are cards now      on  the item classes a modifier rolls on
   st  "new" or "gone", with its lines in ls              r   [label, old, new] per change; old or new is null
   q   1: the patch notes of the step never name it      m   how many nodes of the tree share this one change
-"Not in the patch notes" (q): no line of the step's notes names it. The step's notes are every thread
-data/patches.json ties to a version after the old patch up to the new one, and the fixes to the old patch
-posted after it (a later letter or hotfix), read from data/patchnotes.json (the lines that name a card) and
+"Not in the patch notes" (q): no line of the step's notes names it. Between two patches, the step's notes are
+every thread data/patches.json ties to a version after the old patch up to the new one, and the fixes to the old
+patch posted after it (a later letter or hotfix); between two builds of one patch, the threads posted after the
+older copy was read and up to the newer one (the hotfix's own notes). Both read from data/patchnotes.json (the lines that name a card) and
 tools/dev/patchgaps.txt (the rest). A name is found the way tools/patchnotes.py finds one: case and whole words,
 a trailing s or 's allowed; a renamed thing by either name. A modifier has no name the notes use, so it counts
 as named where a line of the step carries its own words (the line without its numbers, "increased Armour and
@@ -40,6 +53,7 @@ Files the site reads: data/patchdiff/index.json the first time a card is opened 
 step's file only when the card is on it or the page shows it. Never in first paint.
 """
 import argparse
+import datetime as dt
 import glob
 import gzip
 import json
@@ -52,7 +66,7 @@ import snapshot
 
 ROOT = Path(__file__).resolve().parent.parent
 DATA = ROOT / 'data'
-HOME = 'data/snapshots/'           # the copies, one per patch (never part of the website)
+HOME = 'data/snapshots/'           # the copies, one per game build (never part of the website)
 SITE = 'data/patchdiff/'           # what the cards and the Patches page read
 SNAPS = ROOT / HOME
 OUT = ROOT / SITE
@@ -64,8 +78,12 @@ NUM = re.compile(r'\d+(?:\.\d+)?')
 TOP = 20                                     # the gem level a change is shown at, where it moved there
 GEM_LEVELS = [0, 3, 6, 10, 14, 18, 22, 26, 31, 36, 41, 46, 52, 58, 64, 66, 72, 78, 84, 90]   # assets/app.js gemReq
 ATTR = ['Str', 'Dex', 'Int']
-NOTE = ('What the game data changed from one patch to the next, per card, old to new in the game\'s words. '
+NOTE = ('What the game data changed from one game build to the next, per card, old to new in the game\'s words. '
         'Written by tools/patchdiff.py from the copies in data/snapshots/.')
+MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+# The copy taken before a copy carried its folder: data/game/_meta.json named this one the day it was taken
+# (commit 0f776d1, 29 Sep 2026). Read here, never written into the copy, which stays as it was taken.
+FOLDER = {'0.5.5': '4.5.5.4'}
 
 
 def plain(t):
@@ -124,22 +142,28 @@ def node_lines(node):
 
 
 def current():
-    """The client build the index is from, and its patch (data/patches.json builds, else the family rule
-    tools/gamepull.py uses: 4.5.5.2 is 0.5.5)."""
+    """Where the data here was read from: the client build the index names, the CDN folder of the game tables,
+    and the patch (data/patches.json builds, else the build as players know the patch: 4.5.5.2 is 0.5.5, the
+    rule tools/gamepull.py and tools/datpull.mjs use)."""
     build = load('index.json').get('v')
     if not re.fullmatch(r'\d+(\.\d+){3}', build or ''):
         raise SystemExit('data/index.json carries no client build ("v"): %r' % build)
+    try:
+        cdn = load('game/_meta.json').get('cdn')
+    except FileNotFoundError:
+        cdn = None
     patch = next((b['patch'] for b in load('patches.json').get('builds', []) if b.get('build') == build),
-                 re.sub(r'^4\.(\d+)\.(\d+).*$', r'0.\1.\2', build))
-    return build, patch
+                 re.sub(r'^[04]\.(\d+)\.(\d+).*$', r'0.\1.\2', build))
+    return build, cdn, patch
 
 
 def take():
-    """The current patch's copy, from the finished index and the files beside it."""
+    """A copy of the current build, from the finished index and the files beside it."""
     index = load('index.json')
-    build, patch = current()
+    build, cdn, patch = current()
     extras, _ = snapshot.gem_extras(build)
-    body = {'patch': patch, 'build': build, 'taken': index.get('gen'), 'from': 'index', 'has': PARTS,
+    body = {'patch': patch, 'build': build, 'cdn': cdn, 'taken': index.get('gen'), 'from': 'index', 'has': PARTS,
+            'read': dt.datetime.now(dt.timezone.utc).strftime('%Y-%m-%dT%H:%MZ'),
             'g': {}, 'u': {}, 'b': {}, 'mod': {}, 'p': {}}
     keep = {'g': ('n', 's', 't', 'ct', 'cost', 'sp', 'w', 'gq', 'tags'), 'u': ('n', 's', 'ls', 'pr', 'rq', 'lim'),
             'b': ('n', 's', 'ls', 'pr', 'rq')}
@@ -179,8 +203,8 @@ def take():
     return body
 
 
-def write_once(body):
-    p = SNAPS / ('%s.json.gz' % body['patch'])
+def write_once(body, key=None):
+    p = SNAPS / ('%s.json.gz' % (key or body['patch']))
     if p.exists():
         return False
     p.parent.mkdir(parents=True, exist_ok=True)
@@ -193,10 +217,84 @@ def read(p):
     return json.loads(gzip.decompress(Path(p).read_bytes()))
 
 
-def copies():
-    """Every copy in data/snapshots/, oldest patch first."""
-    out = [read(p) for p in glob.glob(str(SNAPS / '*.json.gz'))]
-    return sorted(out, key=lambda s: vkey(s['patch']))
+def when(s):
+    """When a copy was read, for order: its own time, else the day it was taken."""
+    return s.get('read') or s.get('taken') or ''
+
+
+def copies(folder=None):
+    """Every copy in data/snapshots/, oldest first: by patch, then by when it was read. A later build is put
+    back together from the first copy of its patch and what differs."""
+    raw = {Path(p).name[:-len('.json.gz')]: read(p) for p in glob.glob(str((folder or SNAPS) / '*.json.gz'))}
+    out = []
+    for key, s in raw.items():
+        s['key'] = key
+        s.setdefault('label', s['patch'])
+        if not s.get('cdn') and s.get('from') == 'index':
+            s['cdn'] = FOLDER.get(s['patch'])
+        if s.get('base'):
+            base = raw[s['base']]
+            for part, d in (s.pop('delta') or {}).items():
+                whole = dict(base.get(part) or {})
+                whole.update(d.get('set') or {})
+                for k in d.get('gone') or []:
+                    whole.pop(k, None)
+                s[part] = whole
+            for part in s.get('has', []):
+                s.setdefault(part, base.get(part) or {})
+        out.append(s)
+    return sorted(out, key=lambda s: (vkey(s['patch']), when(s)))
+
+
+def delta(first, body):
+    """What a later build of a patch holds that its first copy does not, per part."""
+    out = {}
+    for part in body.get('has', []):
+        a, b = first.get(part) or {}, body.get(part) or {}
+        d = {'set': {k: v for k, v in b.items() if a.get(k) != v}, 'gone': sorted(k for k in a if k not in b)}
+        if d['set'] or d['gone']:
+            out[part] = d
+    return out
+
+
+def label_for(patch, read_at, before):
+    """A later build's label: the patch notes row data/patches.json dates nearest before it was read, where
+    that row is newer than the copy before it; else the patch and the day (see the top). Never a guessed letter."""
+    rows = [r for r in load('patches.json').get('patches', [])
+            if family(r.get('v') or r['id']) == family(patch) and r.get('posted') and r['posted'] <= read_at]
+    near = max(rows, key=lambda r: r['posted'], default=None)
+    if near and near['posted'] > before:
+        t = near.get('title') or ''
+        cu = re.match(r'Content Update (\S+)', t)   # the thread's title as the site names a patch (patchName)
+        return cu.group(1) if cu else re.sub(r'\s+Patch ?notes\b.*$', '', t, flags=re.I) or near['id']
+    d = dt.datetime.strptime(read_at[:10], '%Y-%m-%d')
+    return '%s, %d %s' % (patch, d.day, MON[d.month - 1])
+
+
+def keep_build(have):
+    """The current build, kept once: a whole copy for the first build of a patch, else what differs from it."""
+    build, cdn, patch = current()
+    mine = [s for s in have if s['patch'] == patch and s.get('from') == 'index']
+    if not mine:
+        if write_once(take()):
+            print('copy of %s taken (folder %s, build %s)' % (patch, cdn, build))
+        return
+    last = mine[-1]
+    if (last.get('cdn'), last.get('build')) == (cdn, build):
+        print('copy of %s (folder %s, build %s) already kept: not taken again' % (last['label'], cdn, build))
+        return
+    body = take()
+    if not delta(last, body):
+        print('folder %s, build %s reads the same as %s: no copy' % (cdn, build, last['label']))
+        return
+    key = '%s@%s' % (patch, cdn or build)
+    if (SNAPS / ('%s.json.gz' % key)).exists():
+        key += '-' + body['read'][:10].replace('-', '')
+    first = mine[0]
+    kept = {f: body[f] for f in ('patch', 'build', 'cdn', 'taken', 'read', 'from', 'has')}
+    kept.update(label=label_for(patch, body['read'], when(last)), base=first['key'], delta=delta(first, body))
+    if write_once(kept, key):
+        print('copy of %s taken (folder %s, build %s): what differs from %s' % (kept['label'], cdn, build, first['label']))
 
 
 def undo_tree(newer, step):
@@ -231,7 +329,9 @@ def older_tree_copies(have):
     copy of the patch after it with that step undone. Written once, like any copy."""
     ix = load('treechanges/index.json')
     steps = sorted(ix.get('steps') or [], key=lambda s: vkey(s['to']), reverse=True)
-    by = {s['patch']: s for s in have}
+    by = {}
+    for s in have:            # a tree step reaches the first copy of its patch
+        by.setdefault(s['patch'], s)
     made = []
     for st in steps:
         if st['from'] in by:
@@ -369,15 +469,18 @@ def rows_of(part, o, n, names):
 
 # ---------------------------------------------------------------- the patch notes of a step
 def note_lines(a, b):
-    """Every line of GGG's notes for the step from patch a to patch b (see the top)."""
+    """Every line of GGG's notes for the step from copy a to copy b (see the top)."""
     reg = {r['id']: r for r in load('patches.json').get('patches', [])}
     notes = load('patchnotes.json')
     ids = [p['id'] for p in notes.get('patches', [])]
+    pa, pb = a['patch'], b['patch']
 
     def inside(rid):
         r = reg.get(rid) or {}
+        if pa == pb:          # two builds of one patch: the threads posted between the two reads
+            return when(a) < (r.get('posted') or '') <= when(b)
         f = family(r.get('v') or rid)
-        return family(a) < f <= family(b) or (f == family(a) and rid != a)
+        return family(pa) < f <= family(pb) or (f == family(pa) and rid != pa)
     keep = {i for i, rid in enumerate(ids) if inside(rid)}
     out = [l[2] for l in notes.get('lines', []) if l[0] in keep]
     titles = {}
@@ -433,7 +536,7 @@ def cards_now():
 def step(a, b, now):
     keys, node, cls = now
     parts = [p for p in PARTS if p in a.get('has', []) and p in b.get('has', [])]
-    text = note_lines(a['patch'], b['patch'])
+    text = note_lines(a, b)
     out = {}
     for part in parts:
         old, new = a.get(part) or {}, b.get(part) or {}
@@ -498,32 +601,35 @@ def step(a, b, now):
 
 # ---------------------------------------------------------------- the run
 def build():
-    build_, patch = current()
-    if (SNAPS / ('%s.json.gz' % patch)).exists():
-        print('copy of %s already kept: not taken again' % patch)
-    elif write_once(take()):
-        print('copy of %s (build %s) taken' % (patch, build_))
+    keep_build(copies())
     have = copies()
     made = older_tree_copies(have)
     if made:
         print('copies of %s made from the passive tree export' % ', '.join(made))
     have = copies()
+    return index_of(have)
+
+
+def index_of(have):
+    """data/patchdiff/: the index and one file per step, from the copies (oldest first)."""
     now_cards = cards_now()
     steps, files = [], {}
     for a, b in zip(have, have[1:]):
         parts, body = step(a, b, now_cards)
         if not parts:
             continue
-        name = 'patchdiff/%s.json' % b['patch']
-        files[name] = {'from': a['patch'], 'to': b['patch'], 'has': parts, 'src': SRC[a['from']], 'parts': body}
+        name = 'patchdiff/%s.json' % b['key']
+        files[name] = {'key': b['key'], 'from': a['label'], 'to': b['label'], 'has': parts, 'src': SRC[a['from']],
+                       'parts': body}
         cards = sorted({c for rows in body.values() for e in rows for c in e.get('c') or []})
-        steps.append({'from': a['patch'], 'to': b['patch'], 'file': SITE + b['patch'] + '.json', 'has': parts, 'src': SRC[a['from']],
-                      'n': {p: len(body[p]) for p in PARTS if p in body},
+        steps.append({'key': b['key'], 'from': a['label'], 'to': b['label'], 'file': SITE + b['key'] + '.json',
+                      'has': parts, 'src': SRC[a['from']], 'n': {p: len(body[p]) for p in PARTS if p in body},
                       'q': sum(1 for rows in body.values() for e in rows if e.get('q')), 'cards': cards})
     steps.reverse()
-    ix = {'note': NOTE, 'latest': have[-1]['patch'] if have else None, 'names': NAMES,
-          'copies': [{'patch': s['patch'], 'build': s.get('build'), 'has': s['has'], 'src': SRC[s['from']],
-                      'taken': s.get('taken')} for s in reversed(have)],
+    ix = {'note': NOTE, 'latest': have[-1]['label'] if have else None, 'names': NAMES,
+          'copies': [{'key': s['key'], 'label': s['label'], 'patch': s['patch'], 'build': s.get('build'),
+                      'cdn': s.get('cdn'), 'has': s['has'], 'src': SRC[s['from']], 'taken': s.get('taken'),
+                      'read': s.get('read')} for s in reversed(have)],
           'steps': steps}
     return ix, files
 
@@ -543,9 +649,9 @@ def main():
         now_cards = cards_now()
         for a, b in zip(have, have[1:]):
             parts, body = step(a, b, now_cards)
-            f = OUT / ('%s.json' % b['patch'])
+            f = OUT / ('%s.json' % b['key'])
             if parts and (not f.exists() or json.loads(f.read_text(encoding='utf-8'))['parts'] != body):
-                bad.append('%s is not what the copies of %s and %s give' % (f.name, a['patch'], b['patch']))
+                bad.append('%s is not what the copies of %s and %s give' % (f.name, a['label'], b['label']))
         for b in bad:
             print('  ' + b)
         print('patchdiff: %d copies, %d steps, %s' % (len(have), len(ix.get('steps', [])), 'ok' if not bad else 'FAIL'))
