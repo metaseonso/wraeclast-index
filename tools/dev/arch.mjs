@@ -52,7 +52,8 @@ export const LINES = {
   layersUp: 6,           // a static import of a higher layer (docs/framework.md §1): engines/builder.js and engines/craftsim.js
                          // draw their own panels (frame/popup.js, frame/href.js, frame/types/damage.js) and the popup reads the
                          // card keys out of assets/keys.js
-  dynamicOff: 27,        // a dynamic import whose path is written in the code, not read off the table or made by the router
+  dynamicOff: 30,        // a dynamic import whose path is written in the code, not read off the table or made by the router
+                         // (30 since stage 11 reads assets/frame/types/ too: its three, basepool, clarify, drops, were unseen)
   hubMax: 51,            // the most names one module exports (assets/engines/engine.js, the crafting rules); the table aside
   pagesOff: 0,           // an open route with no assets/pages/<route>.js, or a page without route, needs, state, mount, unmount
   wiOutside: 1,          // a module outside core/ that reads a page global (window.WI_*): assets/bridge.js, the drill-down page
@@ -64,17 +65,17 @@ export const LINES = {
   tokensUndefined: 0,    // a var(--x) no stylesheet or page defines
   tokensMultiFile: 0,    // a token defined in more than one stylesheet: assets/css/tokens.css defines every one
   rawColours: 240,       // hex, rgb() and hsl() colours written outside a token definition (240 today)
-  firstPaintKB: 253,     // index.html + its stylesheets + the preloaded modules and their imports + two fonts, gzip of the
-                         // source: 253 since stage 10 took the popup out of the first paint (263.1 at stage 9, 247.9 before
-                         // the split; each module gzips on its own, and the wire carries them minified and brotli)
+  firstPaintKB: 249,     // index.html + its stylesheets + the preloaded modules and their imports + two fonts, gzip of the
+                         // source: 248.6 since stage 11 moved each tab's own rules into its own sheet (253 at stage 10, 263.1
+                         // at stage 9; each file gzips on its own, and the wire carries them minified and brotli)
 };
 
 const rel = p => relative(ROOT, p).replace(/\\/g, '/');
 const KB = n => Math.round(n / 1024 * 10) / 10;
-async function files(dir, re){   // the folder and its folders (assets/core, ui, engines, pages, search)
+async function files(dir, re){   // the folder and every folder under it (assets/core, frame/types, css/components, ...)
   const out = [];
   for(const d of await readdir(join(ROOT, dir), {withFileTypes: true})){
-    if(d.isDirectory()){ for(const f of await readdir(join(ROOT, dir, d.name))) if(re.test(f)) out.push(join(ROOT, dir, d.name, f)); }
+    if(d.isDirectory()){ if(!/^(v|words|brand|fonts|node_modules)$/.test(d.name)) out.push(...await files(join(dir, d.name), re)); }
     else if(re.test(d.name)) out.push(join(ROOT, dir, d.name));
   }
   return out.sort();
@@ -148,6 +149,7 @@ function edgesOf(file, src, plain){
   for(const m of src.matchAll(/\bimport\(\s*['"]([^'"]+)['"]\s*\)/g)) add(m[1], 'dynamic');
   for(const m of src.matchAll(/\blazy\(\s*['"]([^'"]+)['"]/g)) add(m[1], 'dynamic', true);
   for(const m of src.matchAll(/new Worker\(\s*new URL\(\s*['"]([^'"]+)['"]/g)) add(m[1], 'worker');
+  for(const m of src.matchAll(/import\.meta\.resolve\(\s*['"]([^'"]+\.js)['"]/g)) add(m[1], 'worker');   // the worker as the import map names it (core/data.js)
   return out;
 }
 function htmlEdges(file, src){

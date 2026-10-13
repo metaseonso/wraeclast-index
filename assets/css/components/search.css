@@ -1,0 +1,78 @@
+/* The the search: the top search, the home page's box, the hero and its fog (from assets/css/components/ and assets/css/components/, docs/migration.md stage 11). */
+/* Both marks sit above the card's own stretched link (.card-link::after), so a tap on a marked word opens
+   the word's card and not the card the word is on. */
+/* A word that opens a card of ours holding the question open rather than answering it (kind "q",
+   tools/interactions.py). The same hairline as the footnote above, with a question behind the word instead
+   of a star, so a player can tell an answer from an open question before pressing either. */
+.qlink::after{content:'?'}
+.tsearch{position:relative}
+.tsearch input{width:100%; height:34px; border-radius:8px; border:1px solid var(--line); background:var(--surface);
+  padding:0 34px 0 32px; font-size:13px; color:var(--text)}
+.tsearch input:focus{outline:none; border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-soft)}
+.tsearch input::-webkit-search-cancel-button{-webkit-appearance:none}
+.tsearch svg{position:absolute; left:10px; top:50%; width:14px; height:14px; translate:0 -50%; color:var(--faint); pointer-events:none}
+.tsearch kbd{position:absolute; right:9px; top:50%; translate:0 -50%; font:500 11px var(--mono); color:var(--faint);
+  border:1px solid var(--line); border-radius:4px; padding:0 5px; background:var(--raised)}
+.tsearch input:focus ~ kbd{opacity:0}
+.tsearch-drop{position:absolute; left:0; right:0; top:calc(100% + 6px); z-index:90; background:var(--surface); border:1px solid var(--line);
+  border-radius:10px; box-shadow:0 18px 50px rgba(0,0,0,.35); overflow:hidden; min-width:320px}
+.tsearch-row{display:flex; align-items:center; gap:10px; padding:7px 10px; cursor:pointer; border:0; background:none; width:100%; text-align:left; color:inherit}
+.tsearch-row[aria-selected="true"], .tsearch-row:hover{background:var(--raised)}
+.tsearch-row .card-ic{width:30px; height:30px; border-radius:6px}
+.tsearch-row .card-ic img{width:26px; height:26px}
+.tsearch-row .card-ic .ic{zoom:.75}
+.tsearch-row .t{min-width:0; flex:1}
+.tsearch-row .t b{display:block; font-size:13px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.tsearch-row .t span{display:block; font-size:11px; color:var(--faint); white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.tsearch-row .p{font:600 12px var(--mono); white-space:nowrap}
+.tsearch-row .p small{font-weight:500; color:var(--faint); margin-left:2px}
+.tsearch-all{display:block; padding:8px 12px; font-size:12px; color:var(--accent); text-decoration:none; border-top:1px solid var(--line-soft)}
+.tsearch-all:hover{background:var(--raised)}
+.tsearch-none{padding:12px; font-size:12.5px; color:var(--faint)} @media (max-width:640px){.tsearch-drop{min-width:0}
+}
+.tslide{position:relative; display:inline-block; flex:1 1 170px; min-width:150px; max-width:340px; height:34px}
+.tslide input[type=range]{position:absolute; inset:0 0 auto 0; width:100%; height:28px; margin:0; background:transparent; -webkit-appearance:none; appearance:none; cursor:pointer}
+.tslide input[type=range]:focus-visible{outline:2px solid var(--accent); outline-offset:2px; border-radius:4px}
+.tslide input[type=range]::-webkit-slider-runnable-track{height:28px; background:transparent}
+.tslide input[type=range]::-moz-range-track{height:28px; background:transparent}
+.tslide input[type=range]::-webkit-slider-thumb{-webkit-appearance:none; width:16px; height:16px; margin-top:6px; border-radius:50%; background:#E8DDBE; border:2px solid var(--ground); box-shadow:0 0 0 1px var(--bronze), 0 1px 4px rgba(0,0,0,.6)}
+.tslide input[type=range]::-moz-range-thumb{width:12px; height:12px; border-radius:50%; background:#E8DDBE; border:2px solid var(--ground); box-shadow:0 0 0 1px var(--bronze), 0 1px 4px rgba(0,0,0,.6)}
+.tslide.unset input[type=range]::-webkit-slider-thumb{opacity:.45}
+.tslide.unset input[type=range]::-moz-range-thumb{opacity:.45}
+.tslide.unset .ttrack{opacity:.7}
+ @media (max-width:520px){.tslide{flex-basis:100%; max-width:none}
+}
+
+/* controls */
+.searchbox input{background:#0B0F0B; border-color:#2C3A29}
+.searchbox input:focus{border-color:var(--accent); box-shadow:0 0 0 3px rgba(140,203,63,.06), 0 0 34px rgba(140,203,63,.04)}
+.fog{position:absolute; inset:0; pointer-events:none}
+.fog.back, .fog.front{z-index:3}   /* all fog drifts in front of the crest */
+.fog{transition:opacity 1.2s ease}
+.fog:not(.on){opacity:0}   /* each layer fades in once its images are in (they load after the first cards: assets/app.js later()) */
+.fog img{position:absolute; left:50%; height:auto; mix-blend-mode:screen; opacity:0; will-change:transform, opacity}
+/* The fog only moves while it can be seen. Docked under a search it is not drawn at all, which frees its layers; under
+   a card's popup and once the crest is scrolled off (.hero.away, assets/app.js later()) it holds still. A weak machine
+   (html.lite) never draws it. */
+.hero.docked .fog, .lite .fog{display:none}
+
+/* Horizontal fog only, centred on the crest: every layer has a mirrored twin (.m) that drifts
+   the other way, so the fog mass stays balanced left and right.
+   Each picture comes in two sizes (index.html srcset): a 1x screen gets one cut to the most it is ever drawn at
+   (640px x 1.06 for the haze, 560px x 1.3 for the bank), so it decodes and holds under half the pixels; a sharper
+   screen gets the full one. The box keeps the full picture's shape (aspect-ratio) whichever size comes. */
+.fog .haze{top:14%; width:640px; aspect-ratio:1000/468; translate:-50% 0; animation:wi-haze 23s ease-in-out infinite}
+.fog .haze.m{animation-name:wi-haze-m; animation-delay:-11.5s}
+/* the bank: pools at the base, spreads outward, hangs, fades */
+.fog .bank{bottom:-2%; width:560px; aspect-ratio:1200/307; translate:-50% 0}
+.fog .b1{animation:wi-spill 17s ease-in-out infinite}
+.fog .b1.m{animation-name:wi-spill-m; animation-delay:-8.5s}
+.fog .b2{animation:wi-front 19.5s ease-in-out infinite; animation-delay:-4.5s}
+.fog .b2.m{animation-name:wi-front-m; animation-delay:-14.5s}
+.hero-title{font-size:clamp(28px, 4.6vw, 42px)}
+.hero.docked .emblem{height:0; opacity:0; margin:0; transition:none}   /* at once: app.css .hero.docked */
+
+  @media (prefers-reduced-motion: reduce){.fog img{animation:none !important; opacity:.25}
+}
+  @media (max-width:640px){.fog .bank{width:420px} .fog .haze{width:460px}
+}

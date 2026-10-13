@@ -6,7 +6,7 @@ import { hrefOf, isItem } from '../frame/href.js';
 import { keywordCard } from '../frame/keywords.js';
 import { setOV, TRACKER } from '../frame/seam.js';
 import { flipSwap } from '../frame/swap.js';
-import { lazy } from '../core/lazy.js';
+import { lazy, lazyOwn } from '../core/lazy.js';
 import { openMech } from '../frame/types/reqs.js';
 import { OWN } from '../frame/types/own.js';
 import { KIND, FIELDS, holds, ACTS, SHUT } from '../kinds.js';
@@ -375,7 +375,7 @@ export function openDetail(it, opts = {}, href){
   }
   PEND = null;
   const own = (KIND[it.k] || {}).own;   // a boss: its tab has the way in and the drops, so it draws the card and calls back
-  if(own && !opts.drawn) return void lazy(own, 'This card').then(m => { OWN[own] = m; m.openCard(it); }, () => {});
+  if(own && !opts.drawn) return void lazyOwn(own, 'This card').then(m => { OWN[own] = m; m.openCard(it); }, () => {});
   sawCard(it);   // the trail the search ranks by: one card, once, where every card is opened
   ensureOV();
   const cur = CUR();
@@ -454,7 +454,7 @@ export function actHTML(name, it){
 export function runAct(name, it){
   const a = ACTS[name];
   if(!a || !a.go || !it) return;
-  lazy(a.own, 'The ' + (a.label || 'button').toLowerCase()).then(m => m[a.go] && m[a.go](it), () => {});
+  lazyOwn(a.own, 'The ' + (a.label || 'button').toLowerCase()).then(m => m[a.go] && m[a.go](it), () => {});
 }
 
 function actsHTML(it, opts, href){

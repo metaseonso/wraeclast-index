@@ -1,0 +1,62 @@
+/* The currency tab's own rules, linked when the tab mounts (assets/core/router.js; docs/migration.md stage 11). */
+/* the Currency tab's filters: one row that wraps. The question chips sit in it as items of their own, each with
+   how many rows its press would show, then the group, the search, and the cut and sort */
+.cx-row{gap:6px 8px}
+.cx-row .cx-ask{display:contents}
+.cx-row #cxq{flex:1 1 120px; max-width:260px}
+.cx-liq{display:inline-flex; gap:6px; align-items:center; white-space:nowrap; margin-left:auto}
+.cx-ask .chip-n{color:var(--faint); font-size:10px; margin-left:4px; font-variant-numeric:tabular-nums}
+.cx-ask .chip[aria-pressed="true"] .chip-n{color:inherit; opacity:.7}
+/* end Admin */
+/* Currency tab: busiest Currency Exchange markets */
+/* a tile holds the longest name on two lines beside its rate; narrower, the rate drops under the name */
+.cxm{display:grid; grid-template-columns:repeat(auto-fill, minmax(min(100%, 320px), 1fr)); gap:6px; margin-bottom:18px}
+.cxm-row{display:grid; grid-template-columns:auto 1fr; gap:2px 10px; align-items:center; text-align:left; padding:8px 10px; font:inherit; color:var(--text);
+  background:var(--surface); border:2px solid var(--line); border-radius:8px; cursor:pointer}
+.cxm-row:hover, .cxm-row:focus-visible{border-color:var(--accent); outline:none}
+.cxm-row b{font-weight:600; font-size:13px}
+.cxm-top{display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:2px 10px; min-width:0}
+.cxm-top > b{flex:1 1 150px}
+.cxm-for{font-family:var(--mono); font-size:12px; color:var(--muted); white-space:nowrap}
+/* what it is priced in: one currency has two markets, and this is what tells them apart */
+.cxm-for b{font-weight:600; color:var(--text)}
+.cxm-vol{grid-column:2/-1; font-size:11.5px; color:var(--muted)}
+/* the art both ends of a market wear: the row's own, and the currency it is priced in */
+.cxm-ic{flex:none; display:inline-flex; align-items:center; justify-content:center; width:30px; height:30px}
+.cxm-ic img, .cxm-ic .ic{max-width:30px; max-height:30px; object-fit:contain}
+.cxm-ic.sm{width:17px; height:17px; margin:0 3px; vertical-align:-4px}
+.cxm-ic.sm img, .cxm-ic.sm .ic{max-width:17px; max-height:17px}
+.cx-more{display:flex; justify-content:center; gap:8px; flex-wrap:wrap}
+.cxpick h3{font-family:var(--disp); font-size:19px; margin:0 0 4px}
+.cxpick .cxp-q{width:100%; margin:10px 0 8px}
+.cxp-chips{display:flex; flex-wrap:wrap; gap:5px; margin-bottom:8px}
+.cxp-chips:empty{display:none}
+.cxp-fams{padding-top:8px; border-top:1px solid var(--line-soft)}
+.cxp-list{display:grid; gap:4px; max-height:46vh; overflow:auto; overscroll-behavior:contain}
+.cxp-row{display:grid; grid-template-columns:auto minmax(0,1fr) auto; grid-template-rows:auto auto; gap:0 10px; width:100%; text-align:left;
+  font:inherit; color:var(--text); background:var(--surface); border:2px solid var(--line); border-radius:8px; padding:6px 10px; cursor:pointer}
+.cxp-row:hover, .cxp-row:focus-visible{border-color:var(--accent); outline:none}
+.cxp-row[aria-checked="true"]{border-color:var(--accent); background:var(--accent-soft)}
+.cxp-row[aria-checked="true"] .star{color:var(--accent)}
+.cxp-nm{grid-area:1/2/2/3; font-weight:600; font-size:13px; overflow-wrap:anywhere}
+.cxp-cat{grid-area:2/2/3/3; font-size:11px; color:var(--faint)}
+.cxp-px{grid-area:1/3/3/4; align-self:center; font-family:var(--mono); font-size:13px; white-space:nowrap}
+.cxp-px small{font-size:11px; color:var(--faint); margin-left:2px}
+.cxp-ft{display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-top:10px}
+/* a phone: the chips run in one swipeable line each, so the currencies start above the fold, and the
+   list scrolls with the popup rather than inside it — one finger, one surface */
+
+  @media (max-width:640px){.cxp-chips{flex-wrap:nowrap; overflow-x:auto; overscroll-behavior-x:contain; scrollbar-width:none; padding-bottom:2px}
+  .cxp-chips::-webkit-scrollbar{display:none}
+  .cxp-list{max-height:none; overflow:visible}
+}
+/* Currency tab: the loot filter block (assets/currency.js). The rules keep their own lines and scroll inside
+   their box sideways, so a long BaseType line never widens the page */
+.sect-btns{display:flex; flex-wrap:wrap; gap:6px; align-self:center}
+.cxfilt h3{font-family:var(--disp); font-size:19px; margin:0 0 10px}
+.cxf-mode{display:flex; flex-wrap:wrap; align-items:center; gap:6px; margin-bottom:10px}
+.cxf-over{display:inline-flex; align-items:center; gap:5px; font-size:12px; color:var(--muted); margin-right:6px}
+.cxf-out{margin:0; max-height:46vh; overflow:auto; overscroll-behavior:contain; padding:10px 12px; border:1px solid var(--line);
+  border-radius:8px; background:var(--sunken, var(--surface)); font:12px/1.5 var(--mono); color:var(--text); white-space:pre; tab-size:4}
+.cxf-out:focus-visible{outline:none; border-color:var(--accent)}
+.cxf-ft{display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap; margin-top:10px}

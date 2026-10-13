@@ -40,7 +40,7 @@ from uniques import clean_lines  # noqa: E402
 ROOT = Path(__file__).resolve().parent.parent
 BRIDGE = '<script src="assets/bridge.js" type="module"></script>'   # it reads the kind table (assets/kinds.js)
 # On a phone the keyboard shrinks the page instead of covering it, so a card's own boxes stay in view
-# (the card sheet is sized in dvh, assets/cards.css).
+# (the card sheet is sized in dvh, assets/css/components/).
 VIEWPORT_OLD = '<meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover">'
 VIEWPORT_NEW = '<meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover,interactive-widget=resizes-content">'
 # For search engines and link previews: the page's own title (the artifact's sits in <body>, see TITLE),
@@ -64,8 +64,9 @@ TITLE = '<title>Wraeclast Index</title>\n'   # the artifact's own title, in <bod
 # In <head>, so the drill-down never paints in its old look first: the icon, the fonts (the site's own copies in
 # assets/fonts, @font-face in theme.css; the two that paint first are preloaded), the shared card and theme styles,
 # the drill-down's own additions and the forged-bronze look.
-CSS = ('<link rel="stylesheet" href="assets/css/tokens.css"><link rel="stylesheet" href="assets/cards.css"><link rel="stylesheet" href="assets/theme.css">'
-       '<link rel="stylesheet" href="assets/bridge.css"><link rel="stylesheet" href="assets/look.css">')
+CSS = ('<link rel="stylesheet" href="assets/css/tokens.css">' +
+       ''.join('<link rel="stylesheet" href="assets/css/components/' + c + '.css">' for c in ('common', 'icons', 'chips', 'topbar', 'search', 'card', 'popup', 'panels')) +
+       '<link rel="stylesheet" href="assets/bridge.css"><link rel="stylesheet" href="assets/css/look.css">')
 ICON = '<link rel="icon" type="image/png" sizes="64x64" href="assets/brand/favicon-64.png">'
 FONTS = ('<link rel="preload" href="assets/fonts/ibmplexsans-latin.woff2" as="font" type="font/woff2" crossorigin>'
          '<link rel="preload" href="assets/fonts/cinzel-latin.woff2" as="font" type="font/woff2" crossorigin>')

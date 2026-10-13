@@ -74,7 +74,7 @@ function page(reg, cards, diff){
     return '<tr class="pt-' + esc(p.kind) + '"><td>' + (p.notes ? '<a href="' + esc(p.notes) + '" target="_blank" rel="noopener"' +
       (p.title ? ' title="' + esc(p.title) + '"' : '') + '>' + esc(name) + '</a>' : esc(name)) +
       (flags.length ? ' <span class="pt-f">' + esc(flags.join(' · ')) + '</span>' : '') + '</td>' +
-      // a phone has no room for the league's own column: it goes under the date there (assets/app.css)
+      // a phone has no room for the league's own column: it goes under the date there (assets/css/base.css)
       '<td class="pt-t">' + esc(when(p)) + '<span class="pt-lg">' + esc(p.league || '') + '</span></td><td class="pt-lc">' +
       esc(p.league || '') + '</td>' +
       '<td class="pt-n">' + (n === undefined ? '' : n.toLocaleString('en')) + '</td></tr>';

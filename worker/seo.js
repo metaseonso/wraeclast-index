@@ -1045,9 +1045,15 @@ ${art ? '' : '<meta property="og:image:width" content="1200">\n<meta property="o
 <link rel="preload" href="/assets/fonts/ibmplexsans-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/assets/fonts/cinzel-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="/assets/css/tokens.css">
-<link rel="stylesheet" href="/assets/app.css">
-<link rel="stylesheet" href="/assets/cards.css">
-<link rel="stylesheet" href="/assets/theme.css">
+<link rel="stylesheet" href="/assets/css/base.css">
+<link rel="stylesheet" href="/assets/css/components/common.css">
+<link rel="stylesheet" href="/assets/css/components/icons.css">
+<link rel="stylesheet" href="/assets/css/components/chips.css">
+<link rel="stylesheet" href="/assets/css/components/topbar.css">
+<link rel="stylesheet" href="/assets/css/components/search.css">
+<link rel="stylesheet" href="/assets/css/components/card.css">
+<link rel="stylesheet" href="/assets/css/components/popup.css">
+<link rel="stylesheet" href="/assets/css/components/panels.css">
 <link rel="icon" type="image/png" sizes="64x64" href="/assets/brand/favicon-64.png">
 <link rel="icon" type="image/png" sizes="32x32" href="/assets/brand/favicon-32.png">
 <style>${CSS}</style>

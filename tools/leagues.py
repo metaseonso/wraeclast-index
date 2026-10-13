@@ -37,7 +37,7 @@ FORUM = 'https://www.pathofexile.com/forum/view-forum/2211'
 THREAD = 'https://www.pathofexile.com/forum/view-thread/'
 PAGES = 12          # listing pages walked back: about two years of announcements
 PACE = 1.5          # seconds between requests to pathofexile.com
-GROUND = (5, 6, 5)  # --sunken, the ground a card's price chart is drawn on (assets/theme.css)
+GROUND = (5, 6, 5)  # --sunken, the ground a card's price chart is drawn on (assets/css/components/)
 CLEARS = 3.0        # the contrast a league's colour has to hold against it
 ROW = re.compile(r'<div class="title">\s*<a href="/forum/view-thread/(\d+)">\s*(.*?)\s*</a>', re.S)
 ART = re.compile(r'<img[^>]+src="(https://web\.poecdn\.com/public/news/[^"]+)"')

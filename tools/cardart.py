@@ -45,7 +45,7 @@ import sprites
 
 ROOT = Path(__file__).resolve().parent.parent
 DATA = ROOT / 'data'
-CELL = (68, 68)        # two pixels per point of the 34 by 34 an <img> takes in the art box (assets/cards.css .card-ic img),
+CELL = (68, 68)        # two pixels per point of the 34 by 34 an <img> takes in the art box (assets/css/components/ .card-ic img),
                        # so a row with a sheet's picture stands exactly as tall as a row with an item's
 COLS = 16
 QUALITY = 88

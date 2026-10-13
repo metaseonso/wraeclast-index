@@ -34,7 +34,7 @@ marks.setup({D, keywordIdOf, kindOf: k => KIND[k], kwKey: id => KW.own + ':' + i
    the keywords worked out as the card is drawn (assets/marks.js), which never land on ground the build already
    took. A mechanics card is ours, not the game's, so its mark is the word with a footnote; a keyword is the
    game's own word, so its mark is the word underlined. Neither is a keyword chip: the chips under the card are
-   the summary, these are the detail. See .hlink and .kwmark in assets/cards.css. */
+   the summary, these are the detail. See .hlink and .kwmark in assets/css/components/. */
 /* the two shapes a mark takes, by whose words they are (KINDS words.mark): one entry each, so a third kind
    of card whose words are doors is a declaration and not a branch */
 const MARK = {

@@ -1,0 +1,437 @@
+/* What every page of the app shares: the layout, the home page, what the tabs have in common (was assets/css/base.css; a
+   tab's own rules are in css/pages/, linked when it mounts: assets/core/router.js). docs/migration.md stage 11. */
+/* Wraeclast Index — the app's own layout: the home page, the tabs, the boxes. Every token is in assets/css/tokens.css,
+   the motion scale and the one reduced-motion switch in assets/css/motion.css. */
+*{box-sizing:border-box}
+html{scroll-padding-top:64px}
+body{margin:0; background:var(--ground); color:var(--text); font:14px/1.45 var(--sans);
+  -webkit-font-smoothing:antialiased; min-height:100vh; display:flex; flex-direction:column}
+main{flex:1}
+a{color:inherit}
+button,input,select,textarea{font:inherit; color:inherit}
+h1,h2,h3{margin:0; text-wrap:balance}
+:focus-visible{outline:2px solid var(--accent); outline-offset:2px; border-radius:4px}
+[hidden]{display:none!important}
+
+/* ---------- top bar: assets/css/components/, which every page loads ---------- */
+
+/* ---------- home ---------- */
+.view{max-width:1400px; margin:0 auto; padding:0 16px 40px}
+.hero{display:flex; flex-direction:column; align-items:center; text-align:center;
+  padding-top:clamp(20px, 5vh, 56px); padding-bottom:18px}   /* the crest near the top: the contents sit under the box */
+.hero.docked{padding-top:22px}
+.hero-title{font-family:var(--disp); font-weight:600; font-size:clamp(34px, 6vw, 54px); letter-spacing:-.02em;
+  transition:opacity .3s, transform .45s cubic-bezier(.2,.8,.2,1); max-height:80px; overflow:hidden}
+.hero-title em{font-style:normal; color:var(--accent)}
+.hero-sub{color:var(--muted); margin:6px 0 22px; font-size:14px; transition:opacity .3s; max-height:90px; overflow:hidden}
+.hero-tag{display:block; font-family:var(--disp); font-size:17px; color:var(--text); letter-spacing:.02em}
+.hero-more{display:block; margin-top:4px; font-size:13px}
+/* Docking under a search moves the layout at once, and only a transform and an opacity are animated: an animated
+   height or padding lays the whole page out again on every frame. The crest and its words go at once and the bar
+   settles into its place; clearing the search fades them back in (the crest: theme.css .emblem). */
+.hero.docked .hero-title,.hero.docked .hero-sub,.hero.docked .guide{opacity:0; max-height:0; margin:0; transform:translateY(-8px); overflow:hidden;
+  transition:none}
+.hero.docked .searchbox, .hero.docked .kinds{animation:hero-dock .3s cubic-bezier(.2,.8,.2,1)}
+@keyframes hero-dock{from{transform:translateY(14px)}}
+
+.searchbox{position:relative; width:min(720px, 100%)}
+.searchbox input{width:100%; height:56px; border-radius:14px; border:1px solid var(--line); background:var(--surface);
+  padding:0 52px 0 50px; font-size:17px; box-shadow:var(--shadow); transition:border-color .2s, box-shadow .2s}
+.searchbox input::placeholder{color:var(--faint)}
+.searchbox input:focus{outline:none; border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-soft), var(--shadow)}
+.searchbox input::-webkit-search-cancel-button{-webkit-appearance:none}
+.searchbox-ic{position:absolute; left:18px; top:50%; width:19px; height:19px; translate:0 -50%; color:var(--faint); pointer-events:none}
+.searchbox-kbd{position:absolute; right:16px; top:50%; translate:0 -50%; font:500 12px var(--mono); color:var(--faint);
+  border:1px solid var(--line); border-radius:5px; padding:1px 7px; background:var(--raised)}
+.searchbox input:focus ~ .searchbox-kbd{opacity:0}
+
+.kinds{display:flex; gap:6px; flex-wrap:wrap; justify-content:center; margin-top:14px}
+.chip{border:1px solid var(--line); background:var(--surface); color:var(--muted); border-radius:20px;
+  padding:4px 12px; font-size:12.5px; cursor:pointer; white-space:nowrap; transition:background .15s, color .15s, border-color .15s}
+.chip:hover{border-color:var(--accent); color:var(--text)}
+.chip[aria-pressed="true"]{background:var(--accent); border-color:var(--accent); color:var(--ground); font-weight:500}
+.chip .ct{font-family:var(--mono); font-size:11px; opacity:.75; margin-left:5px}
+.chip.zero:not([aria-pressed="true"]){opacity:.42}   /* a kind the words found nothing in */
+.kinds .chip[hidden]{display:none}   /* ...is not offered at all while there are words in the box */
+ @media (pointer:coarse){.kinds .chip{min-height:44px}
+}
+
+.quote{margin:4px auto 2px; text-align:center; font-family:var(--disp, serif); color:var(--muted)}
+.quote blockquote{margin:0; font-style:italic; font-size:15px; letter-spacing:.02em}
+.quote blockquote::before{content:'\201C'} .quote blockquote::after{content:'\201D'}
+.quote figcaption{font-size:12px; color:var(--faint); margin-top:2px}
+.quote figcaption::before{content:'\2014\00a0'}
+.quote[hidden]{display:none}
+.status{text-align:center; color:var(--faint); font-size:12.5px; min-height:18px; margin:6px 0 14px}
+.cards.wait{min-height:100vh}   /* until the first cards are in (assets/app.js homeRender): the footer stays out of the way */
+.status b{color:var(--muted); font-weight:500}
+
+
+.more{text-align:center; margin-top:18px}
+.btn{border:1px solid var(--line); background:var(--surface); color:var(--text); border-radius:8px; padding:7px 16px; cursor:pointer; font-size:13px; font-weight:500}
+.btn:hover{border-color:var(--accent)}
+.btn.primary{background:var(--accent); border-color:var(--accent); color:var(--ground)}
+.btn.primary:hover{filter:brightness(1.08)}
+.empty{text-align:center; padding:40px 16px; color:var(--muted)}
+.empty h3{font-family:var(--disp); font-size:19px; color:var(--text); margin-bottom:6px}
+
+/* ---------- shared page chrome for Build / Currency ---------- */
+.pagehd{padding:28px 0 16px; display:flex; flex-direction:column; gap:6px}
+.pagehd h2{font-family:var(--disp); font-size:28px; font-weight:600; letter-spacing:-.01em}
+.pagehd p{margin:0; color:var(--muted); max-width:72ch}
+.panel{background:var(--surface); border:1px solid var(--line); border-radius:var(--r); box-shadow:var(--shadow); padding:16px}
+.row{display:flex; gap:10px; flex-wrap:wrap; align-items:center}
+.lbl{font-size:10.5px; text-transform:uppercase; letter-spacing:.09em; color:var(--faint)}
+.field{background:var(--surface); border:1px solid var(--line); border-radius:8px; padding:8px 11px; font-size:13px; min-width:0}
+.field:focus{outline:none; border-color:var(--accent)}
+textarea.field{width:100%; min-height:92px; resize:vertical; font:12px/1.4 var(--mono)}
+.seg{display:flex; background:var(--sunken); border:1px solid var(--line); border-radius:8px; padding:2px; gap:2px; flex-wrap:wrap}
+.seg button{border:0; background:transparent; color:var(--muted); cursor:pointer; padding:5px 11px; border-radius:6px; font-size:12.5px; font-weight:500; white-space:nowrap}
+.seg button[aria-pressed="true"]{background:var(--surface); color:var(--text); box-shadow:var(--shadow)}
+.note{font-size:12px; color:var(--faint); line-height:1.5}
+.note b{color:var(--muted)}
+.sect{margin:26px 0 12px; display:flex; align-items:baseline; gap:10px; flex-wrap:wrap}
+.sect h3{font-family:var(--disp); font-size:19px; font-weight:600}
+.sect p{margin:0; font-size:12.5px; color:var(--faint)}
+.err{color:var(--neg); font-size:13px}
+/* one line when something would not open (app.js stuck): over everything, out of the way, gone in a moment */
+.stuck{position:fixed; left:50%; bottom:16px; transform:translateX(-50%); z-index:200; margin:0; text-align:center;
+  max-width:min(92vw, 380px); padding:9px 14px; border-radius:8px; font-size:13px;
+  background:var(--raised); border:1px solid var(--line); box-shadow:var(--shadow); color:var(--text)}
+.controls{display:grid; gap:10px; margin-bottom:14px}
+.controls .field{min-width:180px}
+.cx-row .field{min-width:0}
+.star{position:relative; z-index:1; background:none; border:0; color:var(--faint); font-size:17px; line-height:1; cursor:pointer; padding:0 2px}
+.star:hover{color:var(--text)}
+.star[aria-pressed="true"]{color:var(--accent)}
+label.note{display:inline-flex; gap:6px; align-items:center; cursor:pointer}
+.verdict{margin:0; font-size:15px; line-height:1.5; padding:10px 12px; border-radius:8px; background:var(--raised); border-left:3px solid var(--accent)}
+.verdict.def{border-left-color:var(--neg)}
+/* a guide somebody else wrote, linked from the Build tab (assets/build.js) */
+.guide{margin:10px 2px 0}
+.guide a{color:var(--accent); text-underline-offset:2px}
+
+.foot{border-top:1px solid var(--line); margin-top:30px}
+.foot p{max-width:1400px; margin:0 auto; padding:18px 16px 30px; color:var(--faint); font-size:11.5px; line-height:1.6}
+.foot a{color:var(--muted)}
+/* the language switch (#121): a word in the footer's own line, not a control that stands out */
+.foot .langpick{background:transparent; color:var(--muted); border:1px solid var(--line); border-radius:4px;
+  padding:0 2px; font-size:11.5px; line-height:1.4; cursor:pointer}
+ @media (pointer:coarse){.foot .langpick{min-height:44px; padding:0 8px; font-size:13px}
+}   /* a thumb's size on touch */
+
+
+  @media (max-width:640px){.searchbox input{height:50px; font-size:16px}
+  .searchbox-kbd{display:none}
+  .hero{padding-top:36px}
+}
+.fm-chips{margin:0; justify-content:flex-start}
+.fm-ctl .field{min-width:0}
+.card.fm{--fm-t:var(--muted)}
+.card.fm.t-s{--fm-t:var(--accent)}
+.card.fm.t-a{--fm-t:var(--c-rare, #D9B566)}
+.card.fm.t-b{--fm-t:var(--c-unique, #C06A2B)}
+.card.fm.t-c{--fm-t:var(--str)}
+.card.fm.t-f{--fm-t:var(--faint)}
+.card.fm > .card-hd .card-ic{box-shadow:inset 0 0 0 2px color-mix(in srgb, var(--fm-t) 60%, transparent)}
+.card.fm > .card-ft .kind{color:var(--fm-t)}
+.fm-miss{margin:0; font-size:11.5px; line-height:1.45; color:var(--faint)}
+.fm-out .lbl, .fm-sec .lbl{margin:0}
+.fm-row{position:relative; z-index:1; display:flex; align-items:center; gap:8px; width:100%; min-width:0; padding:4px 7px 4px 4px;
+  border:0; border-radius:6px; background:var(--sunken); color:inherit; cursor:pointer; text-align:left; font-size:12.5px}
+.fm-row:hover, .fm-row:focus-visible{background:var(--raised)}
+.fm-row .card-ic{width:24px; height:24px; border-radius:5px}
+.fm-row .card-ic img{width:22px; height:22px}
+.fm-row .card-ic .ic{zoom:.6}
+.fm-row .card-ic .glyph{font-size:12px}
+.fm-row .spark{flex:none; width:44px; height:16px}
+.fm-p{font:600 12px var(--mono); font-variant-numeric:tabular-nums; white-space:nowrap}
+.fm-p small{margin-left:2px; font-size:10.5px; font-weight:500; color:var(--faint)}
+.fm-p.none{font:11px var(--sans); color:var(--faint)}
+.fm-row .chg{font:500 11px var(--mono); white-space:nowrap}
+a.pill.fm-tq{color:var(--text); text-decoration:none; border-color:color-mix(in srgb, var(--accent) 45%, var(--line))}
+a.pill.fm-tq:hover{border-color:var(--accent)}
+ @container (max-width:300px){.fm-row .spark{display:none}
+}
+/* end Farms tab */
+
+/* ---------- trade page ---------- */
+.linkbtn{background:none; border:0; color:var(--accent); cursor:pointer; font-size:12.5px; text-decoration:underline; text-underline-offset:2px; padding:3px 0}
+.tp{display:grid; gap:12px}
+.tp-addg .btn{font-size:12.5px}
+.at-bar .field{flex:1 1 240px; max-width:440px}
+.dot.t-c{background:var(--accent)} .dot.t-n{background:var(--text)} .dot.t-s{background:var(--faint)}
+.bo-ctl .field{flex:1 1 240px; max-width:440px}
+.bo-row .spark{flex:none; width:44px; height:16px}
+.bo-row .chg{font:500 11px var(--mono); white-space:nowrap}
+.bo-sec .lbl, .bo-sec .note{margin:0}
+.bo-r.none{font-size:11px; color:var(--faint)}
+/* the league clock just below the header on home (assets/league.js) */
+.leagueclock{margin:10px auto 0; text-align:center; font-size:12px; color:var(--faint); font-variant-numeric:tabular-nums}
+.leagueclock:empty::before{content:'\00a0'}   /* its line is kept while it loads, so the crest and search box never jump */
+.leagueclock b{color:var(--muted); font-weight:600}
+.leagueclock .lc-up, .leagueclock .lc-down{font-family:var(--mono); color:var(--text)}
+.leagueclock .lc-down{color:var(--accent)}
+.leagueclock .lc-sep{margin:0 8px; color:var(--line)}
+/* phones: the fog drifts past the crest but never makes the page wider than the screen */
+ @media (max-width:760px){.hero{overflow-x:clip}
+}
+.cr-fam.bare{border:0; background:none; padding:8px 0 0}
+.cr-bar .field{flex:1 1 220px; max-width:360px}
+.cr-row .btn, .cr-fam .btn{flex:none; padding:4px 12px; font-size:12px}
+.btn.cr-use[aria-pressed="true"]{color:var(--accent); border-color:var(--accent)}
+.cr-vers .chip{font-size:11.5px; padding:3px 10px; display:inline-flex; gap:6px; align-items:baseline}
+.cr-fnote{margin:0 0 8px; display:flex; flex-wrap:wrap; gap:6px 10px; align-items:center; font-size:12.5px; color:var(--accent);
+  background:var(--accent-soft); border-left:3px solid var(--accent); border-radius:0 6px 6px 0; padding:6px 10px;
+  position:sticky; top:var(--crtop, 56px); z-index:5}
+.cr-flab{font-size:11px; text-transform:uppercase; letter-spacing:.09em; color:var(--faint)}
+.cr-foff{display:inline-flex; gap:7px; align-items:center; border:1px solid var(--accent); border-radius:20px;
+  background:var(--surface); color:var(--accent); font-size:12px; padding:3px 10px; cursor:pointer}
+.cr-foff i{font-style:normal; font-size:11px; color:var(--faint)}
+.cr-foff:hover{background:var(--accent); border-color:var(--accent); color:var(--ground)}
+.cr-foff:hover i{color:var(--ground)}
+.cr-fams{display:grid; gap:6px}
+.cr-fam{display:grid; gap:4px; padding:8px 10px; border-radius:8px; background:var(--sunken); border:2px solid var(--line-soft); min-width:0}
+.cr-fam.on{border-color:color-mix(in srgb, var(--accent) 50%, var(--line))}
+.cr-fam.off{opacity:.5}
+.cr-fhd{display:flex; gap:8px; align-items:baseline; min-width:0}
+.cr-ft{flex:1; min-width:0; font-size:13px; line-height:1.4; overflow-wrap:anywhere}
+.cr-tn{flex:none; font:500 10.5px var(--mono); color:var(--faint); white-space:nowrap}
+.cr-tn b{font-weight:600; color:var(--text)}
+.cr-fctl{display:flex; flex-wrap:wrap; gap:6px 10px; align-items:center; min-width:0}
+.cr-fctl .tval{flex:1 1 240px}
+.cr-fctl .ttier{white-space:normal}
+.cr-lock{position:absolute; top:-1px; bottom:-1px; pointer-events:none; border-radius:2px;
+  background:repeating-linear-gradient(135deg, rgba(5,6,5,.82) 0 3px, rgba(5,6,5,.55) 3px 6px)}
+.btn:disabled{opacity:.45; cursor:not-allowed}
+.btn:disabled:hover{border-color:transparent}
+.card.cr-item{cursor:default}
+.card.cr-item:hover{translate:none}
+.cr-base-ls{color:var(--muted)}
+  /* ...and every control on this tab is a target, so none of them is under 44px — the bench's own rule
+     (assets/css/pages/bench.css), kept by the tab that opens it */
+  @media (max-width:760px){[data-view="craft"] .chip, [data-view="craft"] .btn, [data-view="craft"] .field,
+  [data-view="craft"] .seg button, [data-view="craft"] .linkbtn, [data-view="craft"] .cr-tr,
+  [data-view="craft"] .cr-open, [data-view="craft"] .cr-card, [data-view="craft"] .cr-foff,
+  [data-view="craft"] .cr-tag, [data-view="craft"] .tsearch-row, [data-view="craft"] .cr-mrow,
+  [data-view="craft"] .cr-basecard, [data-view="craft"] .cr-wrow, [data-view="craft"] .cr-mall,
+  [data-view="craft"] input[type=range]{min-height:44px}
+  [data-view="craft"] .chip, [data-view="craft"] .cr-foff, [data-view="craft"] .cr-tag,
+  [data-view="craft"] .linkbtn{display:inline-flex; align-items:center}
+  [data-view="craft"] .chip{min-width:44px; justify-content:center}
+}
+/* end Craft tab */
+/* Admin: the owner's dashboard (admin.html, assets/admin.js) */
+.dv-tag{font:600 10px var(--sans); text-transform:uppercase; letter-spacing:.14em; color:var(--faint); border:2px solid var(--line); border-radius:5px; padding:2px 7px}
+.dv-range{display:flex; gap:6px; flex-wrap:wrap}
+.dv-out{padding:5px 12px; font-size:12px}
+.ad{padding-top:18px; display:grid; gap:14px; grid-template-columns:minmax(0, 1fr)}
+/* the loading screen: a poison cloud creeps across a sunken well while the numbers come in */
+.dv-load{width:min(420px, 100%); margin:12vh auto 0; display:grid; gap:12px; justify-items:center; text-align:center}
+.dv-load h2{font-family:var(--disp); font-size:15px; letter-spacing:.14em; text-transform:uppercase; color:var(--muted)}
+.dv-load-mark{position:relative; display:grid; place-items:center; width:128px; height:112px}
+.dv-load-logo{height:92px; width:auto; filter:drop-shadow(0 0 22px rgba(140,203,63,.16)) drop-shadow(0 10px 30px rgba(0,0,0,.8))}
+.dv-load-wisp{position:absolute; left:50%; bottom:4px; width:110px; height:auto; translate:-50% 0; opacity:0;
+  mix-blend-mode:screen; pointer-events:none; animation:wi-mark 6.5s ease-in-out infinite}
+.dv-bar{position:relative; width:100%; height:14px; border-radius:8px; overflow:hidden;
+  background:var(--fa-sunk, var(--sunken)); box-shadow:inset 0 1px 3px rgba(0,0,0,.85), 0 0 0 1px var(--line-soft)}
+/* the fill is full width and slides in from the left (a transform, not a width: no layout on each step). Not scaleX:
+   that would stretch the fog at its front and flatten its rounded end. assets/admin.js sets --p. */
+.dv-bar i{position:absolute; left:0; top:0; bottom:0; width:100%; display:block; border-radius:8px;
+  transform:translateX(calc(var(--p, 0%) - 100%));
+  background:var(--fa-poison, var(--accent)); box-shadow:0 0 14px rgba(140,203,63,.45); transition:transform .55s cubic-bezier(.2,.8,.2,1)}
+.dv-bar i img{position:absolute; right:-46px; bottom:-16px; width:190px; height:auto; mix-blend-mode:screen; opacity:.45;
+  animation:wi-creep 4.5s ease-in-out infinite}
+@keyframes wi-creep{
+  0%,100%{transform:translateX(-10px) scaleX(.94); opacity:.3}
+  50%{transform:translateX(8px) scaleX(1.12); opacity:.6}
+}
+.dv-load-say{margin:0; min-height:18px}
+
+  @media (prefers-reduced-motion: reduce){.dv-bar i{transition:none}
+  .dv-bar i img{animation:none}
+  .dv-load-wisp{display:none}
+}
+/* one line at the top for anything that breaks, and the state of a block that could not draw */
+.dv-err{margin:0; padding:9px 12px; border-radius:8px; font-size:13px; color:var(--text);
+  background:var(--raised); border-left:3px solid var(--blood, var(--neg))}
+.dv-err .linkbtn{margin-left:8px}
+.dv-bad{margin:0; color:var(--blood, var(--neg))}
+.dv-bad .btn{margin-left:8px; padding:3px 10px; font-size:12px}
+.dv-wait{margin:0; min-height:46px; color:var(--faint)}
+.dv-tabs{width:max-content; max-width:100%}
+.dv-tabs .ct{font-family:var(--mono); font-size:11px; opacity:.8; margin-left:5px}
+.dv-pane{display:grid; gap:14px; grid-template-columns:minmax(0, 1fr)}
+.dv-signin{width:min(360px, 100%); margin:12vh auto 0; display:grid; gap:12px}
+.dv-signin h2{font-family:var(--disp); font-size:19px; letter-spacing:.03em}
+.dv-signin .btn{justify-self:start}
+.dv-msg{margin:0; min-height:18px; color:var(--muted)}
+.dv-tiles{display:grid; grid-template-columns:repeat(auto-fit, minmax(150px, 1fr)); gap:12px}
+.dv-tile{display:grid; gap:1px; padding:14px 16px}
+.dv-tile b{font:600 26px/1.15 var(--mono); font-variant-numeric:tabular-nums}
+.dv-tile span{font-size:10.5px; text-transform:uppercase; letter-spacing:.09em; color:var(--muted)}
+.dv-tile small{font-size:11.5px; color:var(--faint)}
+.dv-box{display:grid; gap:10px; min-width:0; grid-template-columns:minmax(0, 1fr); align-content:start}
+.view.ad > .panel{scroll-margin-top:84px}
+.dv-hd{display:flex; align-items:baseline; gap:4px 10px; flex-wrap:wrap}
+.dv-hd h3{font-family:var(--disp); font-size:16px; letter-spacing:.03em}
+.dv-hd p{margin:0; font-size:12px; color:var(--faint)}
+.dv-h4{margin:6px 0 0; font-size:10.5px; font-weight:500; text-transform:uppercase; letter-spacing:.09em; color:var(--faint)}
+.dv-grid{display:grid; grid-template-columns:repeat(auto-fit, minmax(min(100%, 400px), 1fr)); gap:14px}
+.dv-chips{display:flex; flex-wrap:wrap; gap:6px}
+.dv-row{display:flex; flex-wrap:wrap; gap:8px 16px; align-items:center}
+.dv-none{margin:0}
+.dv-tw{overflow-x:auto}
+.dv-t{width:100%; border-collapse:collapse; font-size:13px}
+.dv-t th{text-align:left; padding:7px 10px; font-size:10.5px; font-weight:500; text-transform:uppercase; letter-spacing:.08em; color:var(--faint)}
+.dv-t td{padding:6px 10px; border-top:1px solid var(--line-soft); vertical-align:top; overflow-wrap:anywhere}
+.dv-t .n{text-align:right; width:1%; white-space:nowrap}
+.dv-t td.n{position:relative; min-width:92px; font:500 12.5px var(--mono); font-variant-numeric:tabular-nums}
+.dv-t td.n b{position:relative; font-weight:500}
+.dv-share{position:absolute; right:0; top:4px; bottom:4px; background:linear-gradient(90deg, rgba(140,203,63,.05), rgba(140,203,63,.2)); border-radius:3px 0 0 3px}
+.dv-sub{display:block; font-size:11px; color:var(--faint)}
+.dv-link{cursor:pointer}
+.dv-link:hover td, .dv-link:focus-visible td{background:var(--raised)}
+.dv-bars{display:block; max-width:100%; overflow:visible}
+.dv-bars rect{fill:var(--accent); opacity:.85}
+.dv-bars rect.over{fill:var(--blood, var(--neg))}
+.dv-bars rect:hover{opacity:1}
+.dv-bars text{fill:var(--faint); font:10px var(--mono)}
+.dv-bars .dv-grid-l{stroke:var(--line-soft); stroke-width:1}
+.dv-bars .dv-limit{stroke:var(--blood, var(--neg)); stroke-width:1.5; stroke-dasharray:5 4}
+.dv-bars .dv-limit-t{fill:var(--blood, var(--neg))}
+.dv-heat{max-height:78vh; overflow:auto; border-radius:8px; padding:1px; background:var(--sunken); box-shadow:inset 0 2px 8px rgba(0,0,0,.7)}
+.dv-heat-sz{position:relative; margin:0 auto; overflow:hidden}
+.dv-heat-in{position:absolute; left:0; top:0; transform-origin:0 0}
+.dv-heat iframe{display:block; border:0; pointer-events:none; background:var(--ground)}
+.dv-heat canvas{position:absolute; left:0; top:0; width:100%; height:100%; pointer-events:none}
+.dv-legend{display:inline-flex; align-items:center; gap:6px; font-size:11px; color:var(--faint)}
+.dv-legend i{width:110px; height:8px; border-radius:4px; background:linear-gradient(90deg, rgb(40,90,255), rgb(0,200,220) 35%, rgb(140,203,63) 60%, rgb(245,207,102) 80%, rgb(234,57,67))}
+.dv-notes{list-style:none; margin:0; padding:0; display:grid; gap:8px}
+.dv-note{display:grid; gap:6px; padding:10px 12px; border-radius:8px; background:var(--sunken); box-shadow:inset 0 0 0 1px var(--line-soft)}
+.dv-note.s-new{box-shadow:inset 3px 0 0 var(--accent), inset 0 0 0 1px var(--line-soft)}
+.dv-note.s-done .dv-note-t{color:var(--muted)}
+/* an answer to an interaction (worker/community.js): which way it works, who said so and where from */
+.dv-note-l{margin:0; font:11px/1.45 var(--mono); color:var(--accent); overflow-wrap:anywhere}
+.dv-note-t{margin:0; font-size:13.5px; line-height:1.5; cursor:pointer; white-space:pre-wrap; overflow-wrap:anywhere;
+  display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:4; overflow:hidden}
+.dv-note-ft{display:flex; flex-wrap:wrap; gap:6px; align-items:center}
+/* what the note is about: the card it was sent from (worker/community.js) */
+.dv-note-c{font-size:11px; padding:1px 7px; border:1px solid var(--line); border-radius:4px; color:var(--text);
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:100%}
+.dv-note-ft .btn, .dv-pop .ov-go .btn:not(.gold){padding:3px 10px; font-size:12px}
+.dv-pop{display:grid; gap:10px; padding:18px; border:2px solid transparent; border-radius:var(--r);
+  background:var(--fa-face, var(--surface)) padding-box, var(--fa-rim, var(--line)) border-box; box-shadow:var(--fa-lip, none), var(--fa-drop, var(--shadow))}
+.dv-pop h3{font-family:var(--disp); font-size:17px; letter-spacing:.03em}
+.dv-pop .note{margin:0}
+.dv-pop .ov-go{gap:8px}
+.dv-note-full{margin:0; font-size:14px; line-height:1.55; white-space:pre-wrap; overflow-wrap:anywhere}
+.dv-verdict{margin:0; font-size:14px; padding:8px 12px; border-radius:8px; background:var(--raised); border-left:3px solid var(--accent)}
+.dv-verdict.v-watch,.dv-verdict.v-late{border-left-color:#D9B04A}
+.dv-verdict.v-upgrade,.dv-verdict.v-stopped{border-left-color:var(--blood, var(--neg)); color:var(--text)}
+#plan{display:grid; gap:12px}
+.dv-meter-row{display:grid; gap:5px}
+.dv-meter-row .note{margin:0}
+.dv-meter-hd{display:flex; flex-wrap:wrap; justify-content:space-between; gap:4px 12px; font-size:12.5px; color:var(--muted)}
+.dv-meter-hd b{font:500 12.5px var(--mono); color:var(--text)}
+.dv-meter-hd small{color:var(--faint); margin-left:4px}
+.dv-meter{height:10px; border-radius:6px; overflow:hidden; background:var(--sunken); box-shadow:inset 0 1px 3px rgba(0,0,0,.8), 0 0 0 1px var(--line-soft)}
+.dv-meter i{display:block; height:100%; background:var(--fa-poison, var(--accent))}
+.dv-meter.warn i{background:#D9B04A}
+.dv-meter.bad i{background:var(--blood, var(--neg))}
+.dv-links a{color:var(--accent)}
+.dv-foot{margin:0}
+.dv-foot input{accent-color:var(--accent)}
+
+  @media (max-width:640px){.dv-page .top .grow{flex-basis:100%; height:0}   /* range and Sign out drop to a second row */
+  .dv-range{order:5}
+  .dv-out{order:6; margin-left:auto}
+  .view.ad > .panel{scroll-margin-top:124px}
+  .dv-tile b{font-size:22px}
+  .view.ad .panel{padding:12px}
+}
+.cxm-ic .glyph{color:var(--faint); font:600 13px var(--disp)}
+/* Currency tab: the watch list picker (assets/currency.js) */
+.sect .btn{align-self:center}
+.cxp-chips .chip{padding:3px 10px; font-size:12px}
+.cxp-row .star{grid-area:1/1/3/2; align-self:center; font-size:16px; color:var(--faint)}
+.cxf-mode .chip{padding:3px 10px; font-size:12px}
+.cxf-over .field{width:84px; padding:4px 8px}
+/* Admin: Cloudflare section */
+.dv-sect{margin:26px 0 6px; font-family:var(--disp); font-size:20px}
+.dv-g{display:inline-block; padding:1px 7px; border-radius:6px; font-family:var(--mono); font-size:12px; border:1px solid var(--line)}
+.dv-g.g-good{color:#16C784; border-color:rgba(22,199,132,.45)}
+.dv-g.g-ok{color:#E0B84A; border-color:rgba(224,184,74,.45)}
+.dv-g.g-poor{color:#EA3943; border-color:rgba(234,57,67,.45)}
+/* a breakdown table: how many rows, and the long ones folded until "Show all" */
+.dv-cap{margin:2px 0 0; display:flex; gap:10px; align-items:baseline; flex-wrap:wrap}
+.dv-cap .linkbtn{font-size:11.5px}
+.dv-tbl .dv-more{display:none}
+.dv-tbl.open .dv-more{display:table-row}
+/* page speed: the good / needs work / poor split */
+.dv-cwv{display:grid; gap:10px}
+.dv-cwv-hd{display:flex; flex-wrap:wrap; justify-content:space-between; gap:4px 12px; font-size:12.5px; color:var(--muted)}
+.dv-cwv-hd b{font:500 12.5px var(--mono); color:var(--text)}
+.dv-cwv-bar{display:flex; height:10px; border-radius:6px; overflow:hidden; background:var(--sunken); box-shadow:0 0 0 1px var(--line-soft)}
+.dv-cwv-bar i{height:100%}
+.dv-cwv-bar i.g{background:#16C784}
+.dv-cwv-bar i.o{background:#E0B84A}
+.dv-cwv-bar i.p{background:#EA3943}
+@keyframes mp-drift{from{transform:translate3d(-.34%,.5%,0)} to{transform:translate3d(.34%,-.5%,0)}}
+@keyframes mp-haze{from{opacity:.4} to{opacity:1}}
+.mp-key .ct{font:500 11.5px var(--mono); color:var(--faint)}
+.view[data-view="map"] .note{max-width:1180px}
+
+/* the word that says a flag landed: bottom of the screen, gone in a moment, nowhere in the layout */
+.cda-said{position:fixed; left:50%; bottom:18px; transform:translateX(-50%); z-index:60; margin:0;
+  padding:5px 12px; border:1px solid var(--line); border-radius:8px; background:var(--sunken);
+  color:var(--muted); font-size:12px; pointer-events:none}
+
+/* The cheat code: the crest's own badge, and war drums a long way off (assets/suggest.js). The badge is a
+   forged plate, not a typeface, so it is drawn the way the crest is and not set in the site's heading face. */
+.cheat{position:fixed; inset:0; z-index:300; display:grid; place-items:center; pointer-events:none;   /* over everything the site draws, which tops out at 200 */
+  animation:cheat-out .55s ease-in 3.65s both}
+/* the words are the crest's own badge, forged the same way (tools/art.py cheat-words), not a typeface */
+.cheat-said{position:relative; z-index:2;
+  width:min(560px, 82vw); height:auto; margin:0;
+  filter:drop-shadow(0 0 30px rgba(140,203,63,.3)) drop-shadow(0 10px 34px rgba(0,0,0,.9));
+  animation:cheat-in .7s cubic-bezier(.2,.8,.2,1) .75s both}   /* the drums are heard first */
+@keyframes cheat-in{from{opacity:0; transform:translateY(10px) scale(.96)} to{opacity:1; transform:none}}
+@keyframes cheat-out{to{opacity:0}}
+
+  @media (prefers-reduced-motion: reduce){.cheat{animation-duration:.4s; animation-delay:1.7s}
+  .cheat-said{animation:none}
+}
+/* Build: the numbers worked out on this page, as a range, with what widened it underneath
+   (assets/build.js, assets/maths.js) */
+.mx{border-left:3px solid var(--accent)}
+.mx-lvl .lbl{margin:0}
+.field.sm{width:84px; padding:5px 8px; font-size:13px}
+.btn.sm{padding:4px 12px; font-size:12px}
+
+/* ---------- the Data page (assets/data.js) ---------- */
+.dt-sub{color:var(--faint); font-size:12.5px}
+.dt-block{margin:0 0 8px}
+/* the index's contents (assets/kinds.js contentsHTML): under the home page's search box, and on the Data page */
+.toc{display:grid; grid-template-columns:repeat(auto-fill, minmax(168px, 1fr)); gap:14px 22px; text-align:left}
+.toc-sec :is(h2, h4){font-family:var(--disp); font-size:15px; font-weight:600; margin:0 0 6px; color:var(--bronze)}
+.toc-sec ul{list-style:none; margin:0; padding:0}
+.toc-sec li{border-bottom:1px solid var(--line)}
+.toc-sec a{display:flex; align-items:center; gap:0; padding:4px 0; color:var(--text); text-decoration:none; font-size:13.5px}
+.toc-sec a span:first-of-type{flex:1}
+.toc-sec a:hover, .toc-sec a:focus-visible{color:var(--accent)}
+.toc-n{font-family:var(--mono); font-size:12px; color:var(--faint); min-width:3.5em; text-align:right}
+/* home: the contents until a search or a list is on; the kind chips after */
+.hero .toc{width:min(980px, 100%); margin:22px auto 0}
+.hero.docked .toc{display:none}
+.hero:not(.docked) .kinds{display:none}
+ @media (max-width:640px){.toc{grid-template-columns:1fr 1fr; gap:12px 14px} .toc-sec a{font-size:13px} .toc-n{min-width:3em}
+}
+.cp-list{list-style:none; margin:0; padding:0}
+.cp-list li{display:flex; gap:10px; align-items:flex-start; padding:7px 0; border-bottom:1px solid var(--line); line-height:1.5}
+.cp-list li > span{flex:1; min-width:0}
+.cp-list small{display:block}
+.dt-scroll{overflow-x:auto}
+.dt-jobs{border-collapse:collapse; font-size:13px; min-width:420px}
+.dt-jobs th{text-align:left; font-weight:600; color:var(--faint); font-size:11.5px; text-transform:uppercase; letter-spacing:.04em}
+.dt-jobs th, .dt-jobs td{padding:5px 14px 5px 0; border-bottom:1px solid var(--line); white-space:nowrap}

@@ -13,7 +13,7 @@
    KINDS, per kind:
      k        the letter the index marks it with
      one/many what one of it and a list of it are called
-     tone     the palette token it is drawn in where kinds are told apart by colour (assets/theme.css; the
+     tone     the palette token it is drawn in where kinds are told apart by colour (assets/css/components/; the
               map of the whole index, tools/map.py). A kind with none gets a colour of its own worked out
               from its letter, so a new kind lands with a colour, a key entry and a count and no one edits it
      place    the tab the gold button opens, if it has one      sec    its section on the drill-down page
@@ -108,7 +108,7 @@ export const SHUT = {
      sec      a section of the drill-down page      explore#gems
      list     every card of one kind (KINDS)        #/?k=w — the search page, with the kind picked and no words
    `about` says what it holds, in a line (llms.txt, and the Data page). `k` names the kind whose count the page shows, where a page is one kind's (a route or a section); a list is
-   its kind's. `icon` names the mask in assets/cards.css (.ti-<icon>). tools/dev/frame.mjs holds the three
+   its kind's. `icon` names the mask in assets/css/components/ (.ti-<icon>). tools/dev/frame.mjs holds the three
    pages whose top bar is written out (index.html, explore.html, privacy.html) to navHTML(). */
 export const INDEX = [
   {id: 'search', pages: [{route: 'home', name: 'Search', icon: 'search', about: 'search everything at once, with live prices'}]},

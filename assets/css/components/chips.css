@@ -1,0 +1,15 @@
+/* The chips and buttons (from assets/css/components/ and assets/css/components/, docs/migration.md stage 11). */
+.btn.gold{display:inline-flex; align-items:center; gap:6px; padding:6px 13px; border-radius:8px; text-decoration:none;
+  background:#0A0907; color:#D9B04A; border:1px solid #6E5520; font-weight:500; font-size:12.5px; letter-spacing:.02em;
+  transition:color .15s, border-color .15s, box-shadow .15s}
+.btn.gold:hover, .btn.gold:focus-visible{color:#F5CF66; border-color:#D9B04A; box-shadow:0 0 0 1px rgba(217,176,74,.25), 0 0 16px rgba(217,176,74,.28)}
+.btn.ttoggle[aria-expanded="true"]{border-color:var(--accent); color:var(--accent)}
+.ct.wait{visibility:hidden}
+.chip[aria-pressed="true"], .btn.primary{background:var(--accent-soft); border-color:var(--accent); color:var(--accent)}
+.btn.primary:hover{background:#161D12; filter:none}
+.chip.c-r[aria-pressed="true"], .chip.c-g[aria-pressed="true"], .chip.c-b[aria-pressed="true"], .chip.c-w[aria-pressed="true"]{
+  background:var(--raised); font-weight:500}
+.chip.c-r[aria-pressed="true"]{color:var(--str-text); border-color:var(--str)}   /* text red: 4.70:1 on --raised */
+.chip.c-g[aria-pressed="true"]{color:var(--dex); border-color:var(--dex)}
+.chip.c-b[aria-pressed="true"]{color:var(--int); border-color:var(--int)}
+.chip.c-w[aria-pressed="true"]{color:var(--any); border-color:var(--any)}

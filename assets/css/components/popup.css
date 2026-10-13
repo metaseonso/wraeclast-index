@@ -1,0 +1,182 @@
+/* The the popup: the overlay, Connections, the keyword peek, the trade listings (from assets/css/components/ and assets/css/components/, docs/migration.md stage 11). */
+.pool-ml{font-size:12.5px; line-height:1.45; color:var(--text); overflow-wrap:anywhere}
+.pool-rs{font:11px/1.45 var(--mono); color:var(--faint)}
+.pool-ml .pool-tx{display:block; color:var(--muted); font-size:12px}
+.tk-lead{font:11px/1.45 var(--mono); color:var(--faint)}
+.tr-at{grid-row:1; grid-column:1; font:11px/1.45 var(--mono); color:var(--faint)}
+.tr-n{grid-row:1; grid-column:2; font:11px/1.45 var(--mono); color:var(--faint); text-align:right; white-space:nowrap}
+.tr-ls{grid-column:1 / -1; overflow-wrap:anywhere; min-width:0}
+.tk-o{border:1px solid var(--line); background:var(--raised); border-radius:5px; padding:1px 7px; overflow-wrap:anywhere; min-width:0; max-width:100%; box-sizing:border-box}
+
+/* ---------- popup ---------- */
+.ov{position:fixed; inset:0; z-index:100; display:grid; place-items:start center; padding:max(16px, 5vh) 16px 16px}   /* the top edge stays put from card to card */
+.ov-scrim{position:absolute; inset:0; background:rgba(0,0,0,.75)}   /* darker instead of a blur: a full-screen blur is redrawn on every frame */
+.ov-box{position:relative; width:min(640px, 100%); max-height:calc(100vh - max(16px, 5vh) - 16px); overflow:auto; border-radius:14px; outline:none;
+  animation:ovpop .24s cubic-bezier(.2,.8,.2,1); overscroll-behavior:contain}
+body.ov-open{overflow:hidden}
+/* phone: the card is a sheet over the whole screen — edge to edge, as tall as the browser really gives us
+   (100dvh, so the keyboard shrinks it instead of covering it), clear of the notch and the home bar, with
+   tighter padding and the bar at the foot of the sheet, where a thumb reaches it */
+
+  @media (max-width:640px){.ov:has(.card.detail){display:flex; align-items:stretch; height:100dvh;
+    padding:env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px) env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px)}
+  .ov:has(.card.detail) .ov-box{flex:1; width:100%; min-width:0; max-height:none; border-radius:0; display:flex; flex-direction:column;
+    background:var(--ground)}   /* a sheet: the page never shows through between the card, Connections and the buttons */
+  .ov:has(.card.detail) .ov-body{order:1; flex:1 0 auto; display:flex; flex-direction:column}
+  .ov:has(.card.detail) .ov-body > .card.detail{flex:1 0 auto; border-radius:0; border-width:0; padding:14px 15px 12px; gap:10px}
+  .ov:has(.card.detail) .ov-nav{order:2; flex:none; top:auto; bottom:0; margin:10px 0 0}
+  /* the buttons stay at the very bottom, where the thumb is; the line sits above them */
+  .ov-nav .ov-tip{order:-1; margin:0; padding:1px 3px 6px; border-top:0; border-bottom:1px solid var(--line-soft)}
+}
+/* the card's own buttons (Trade, Pin, Open): the foot of the box, always in reach however long the card is */
+.ov-go{display:flex; justify-content:flex-end; gap:8px; flex-wrap:wrap; margin-top:10px}
+.ov-fresh{margin-right:auto; align-self:center; font-size:11.5px; color:var(--faint)}   /* the card's patch, left of its buttons */
+ @media (min-width:641px){.ov-box .ov-go{position:sticky; bottom:0; z-index:2; margin:0; padding:10px 14px;
+  background:var(--surface); border-top:1px solid var(--line); border-radius:0 0 14px 14px}
+}
+ @media (pointer:coarse){.ov-go .btn, .ov-box .ov-nav button{min-height:44px} .ov-nav .ov-fwd, .ov-nav .ov-x{min-width:44px}
+}
+
+/* ---------- trade panel, inside the popup ---------- */
+.ov-go{gap:8px}
+.trade{margin-top:10px; padding:14px 16px; background:var(--surface); border:1.5px solid var(--line); border-radius:var(--r); display:grid; gap:10px}
+.trade h4{margin:0; font-family:var(--disp); font-size:15px; display:flex; gap:10px; align-items:baseline}
+.trade .note{margin:0}
+.tcheck{display:flex; gap:9px; align-items:flex-start; cursor:pointer; font-size:13px; line-height:1.4}
+.tcheck input{margin-top:3px; accent-color:var(--accent)}
+.tctl{display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin:8px 0 2px 24px}
+.tctl input[type=range]{flex:1 1 160px; accent-color:var(--accent)}
+.tnum{width:82px; padding:4px 8px; font:500 13px var(--mono)}
+.tctl .seg button, .tstates .seg button, .tpay button{padding:3px 9px; font-size:12px}
+.trow{display:flex; justify-content:space-between; align-items:center; gap:10px; font-size:12.5px; color:var(--muted)}
+.tonline{display:inline-flex; gap:6px; align-items:center; cursor:pointer}
+.tgo{display:flex; justify-content:flex-end; gap:8px}   /* no keyboard, no shortcuts */
+
+/* sliders with tiers: number box + slider; the track shows each tier as a band (T1 = best), shaded cool to hot as prices climb */
+.tval{display:inline-flex; align-items:center; gap:8px; flex-wrap:wrap; min-width:0}
+.ttrack{position:absolute; left:8px; right:8px; top:9px; height:10px; border-radius:3px; border:1px solid var(--line); box-shadow:inset 0 1px 2px rgba(0,0,0,.45)}
+.tdiv{position:absolute; top:-3px; bottom:-3px; width:2px; margin-left:-1px; background:var(--ground); opacity:.9}
+.ttag{position:absolute; top:13px; transform:translateX(-50%); font:500 9px/1 var(--mono); color:var(--faint); pointer-events:none; white-space:nowrap}
+.ttier{font:500 11px/1.2 var(--mono); color:var(--muted); white-space:nowrap}
+.tall{margin:2px 0 8px; font-weight:600}
+/* popup: the card's bar, its keywords, and a keyword's Connections lists (app.js) */
+/* the bar holds the trail: Back names the card behind you, then where you are, Forward and Close.
+   It sticks to the scroll box, so it is there wherever you have scrolled the card. */
+.ov-nav{position:sticky; top:0; z-index:3; display:flex; flex-wrap:wrap; align-items:center; gap:6px; margin:0 0 10px; padding:5px;
+  background:var(--surface); border:2px solid var(--line); border-radius:var(--r, 10px)}
+.ov-nav[hidden]{display:none}
+.ov-nav button{display:flex; align-items:center; gap:6px; min-height:40px; padding:0 10px; cursor:pointer;
+  font:inherit; font-size:12.5px; color:var(--text); background:var(--raised); border:1px solid var(--line);
+  border-radius:8px; transition:color .15s, border-color .15s}
+.ov-nav button:hover:not(:disabled){border-color:var(--accent)}
+.ov-nav button:focus-visible{outline:2px solid var(--accent); outline-offset:2px}
+.ov-nav button:disabled{opacity:.35; cursor:default}
+.ov-back{flex:0 1 auto; min-width:0; margin-right:auto}   /* it hugs the name, and the rest sit at the far end */
+.ov-nm{overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.ov-fwd, .ov-x{flex:none; justify-content:center; min-width:40px; padding:0}
+.ov-x{color:var(--muted); font-size:14px}
+.ov-x:hover{color:#F08A82; border-color:#F08A82}
+.ov-at{flex:none; font:500 11px/1 var(--mono); color:var(--faint)}
+/* the one line that says the cards remember: its own row of the bar, so it never covers a control */
+.ov-tip{flex-basis:100%; display:flex; align-items:center; gap:8px; margin:0; padding:6px 3px 1px;
+  font-size:12px; line-height:1.45; color:var(--muted); border-top:1px solid var(--line-soft)}
+.ov-tip[hidden]{display:none}
+.ov-tipt{flex:1; min-width:0}
+.ov-nav .ov-tipx{flex:none; min-height:34px; font-size:12px; color:var(--muted)}
+/* a keyword's own words, opened in place under the chips: one at a time, and the way on to its card */
+.kwpeek{display:grid; gap:6px; margin:0 2px; padding:10px 12px; background:var(--sunken);
+  border-top:1px solid color-mix(in srgb, var(--bronze) 45%, transparent); border-radius:0 0 8px 8px}
+.kwpeek[hidden]{display:none}
+.kwpeek-tx{margin:0; font-size:13px; line-height:1.5; color:var(--text); max-width:72ch}
+.kwpeek-go{justify-self:start; font:inherit; font-size:12.5px; font-weight:500; color:var(--accent); background:none;
+  border:0; padding:4px 0; cursor:pointer}
+.kwpeek-go:hover, .kwpeek-go:focus-visible{text-decoration:underline}
+.kwpeek-go:focus-visible{outline:2px solid var(--accent); outline-offset:2px; border-radius:2px}
+ @media (pointer:coarse){.kwpeek-go{min-height:44px}
+}
+.uses{margin-top:14px; padding:14px; background:var(--surface); border:2px solid var(--line); border-radius:var(--r, 10px)}
+.uses h4{margin:0 0 8px}
+/* one block per category, each capped and each saying how many there really are (assets/edges.js) */
+.uses-cat[hidden]{display:none}
+.uses-hd{display:flex; align-items:baseline; gap:8px; margin:0 2px 2px}
+.uses-hd b{font-size:12px; text-transform:uppercase; letter-spacing:.06em; color:var(--muted); font-weight:600}
+.uses-hd .ct{font:500 11.5px var(--mono); color:var(--faint)}
+.uses-cat .fold-in{gap:4px}
+.ov-box .fold{scroll-margin-top:76px}
+.uses-more{display:flex; flex-wrap:wrap; align-items:center; gap:8px; margin:4px 2px 0}
+.uses-all{font:inherit; font-size:12px; color:var(--accent); background:none; border:0; padding:2px 0; cursor:pointer}
+.uses-all:hover, .uses-all:focus-visible{text-decoration:underline}
+.uses-more .btn.gold{font-size:12px; padding:4px 10px}
+.uses-list{display:grid; gap:0}
+.uses-row{display:flex; align-items:center; gap:10px; width:100%; text-align:left; padding:6px 8px; background:var(--raised);
+  border:1px solid var(--line); border-radius:8px; color:var(--text); font:inherit; cursor:pointer; text-decoration:none}
+.uses-row:hover, .uses-row:focus-visible{border-color:var(--accent); outline:none}
+.uses-ic{flex:none; width:34px; display:grid; place-items:center}
+.uses-ic img{max-width:34px; max-height:38px}
+.uses-t{display:grid; min-width:0; flex:1}
+.uses-t b{font-weight:600; font-size:13px}
+.uses-t span{font-size:11.5px; color:var(--muted); overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.uses-px{flex:none; font-size:12px}
+.uses-all{margin-top:10px}
+/* ---- keyword Connections lists: every row, a filter box on long lists (data/kwuse.json, usesSection in app.js) ---- */
+.uses-list > [hidden]{display:none}
+.uses-q{display:block; width:100%; box-sizing:border-box; margin:0 0 8px; padding:7px 10px; font:inherit; font-size:13px;
+  color:var(--text); background:var(--raised); border:1px solid var(--line); border-radius:8px}
+.uses-q:focus{outline:none; border-color:var(--accent)}
+.uses-q[hidden]{display:none}
+.uses-plain{cursor:default}
+.uses-plain:hover{border-color:var(--line)}
+.uses-t .uses-x{display:inline; font:500 11px var(--mono, ui-monospace, monospace); color:var(--accent); overflow:visible}
+.uses-t .uses-kinds{white-space:normal; overflow:visible; line-height:1.5}
+.uses-wrap .uses-t span{white-space:normal; overflow:visible}   /* an essence's mod line: shown whole */
+.uses-kinds a{color:var(--accent); text-decoration:none}
+.uses-kinds a:hover, .uses-kinds a:focus-visible{text-decoration:underline}
+.uses-none{margin:6px 2px 0}
+.clar-none{margin:0; font-size:12px; color:var(--faint)}
+.clar-lean{margin:0; padding:0; list-style:none; display:flex; flex-direction:column; gap:3px}
+.clar-lean li{position:relative; display:flex; align-items:center; gap:7px; padding:3px 7px; border-radius:5px;
+  background:var(--sunken); overflow:hidden; font-size:12px; color:var(--text)}
+.clar-bar{position:absolute; inset:0 auto 0 0; width:var(--w, 0%); background:var(--line); opacity:.9}
+.clar-lean .cl-works .clar-bar{background:color-mix(in srgb, var(--pos) 34%, var(--sunken))}
+.clar-lean .cl-no .clar-bar{background:color-mix(in srgb, var(--neg) 34%, var(--sunken))}
+.clar-lean .cl-unclear .clar-bar{background:color-mix(in srgb, var(--muted) 26%, var(--sunken))}
+.clar-w{position:relative; flex:1; min-width:0}
+.clar-lean b{position:relative; font:600 12px var(--mono); font-variant-numeric:tabular-nums}
+.clar-who{margin:0; padding:0; list-style:none; display:flex; flex-direction:column; gap:2px;
+  font-size:11.5px; line-height:1.45}
+.clar-who li{display:flex; flex-wrap:wrap; align-items:baseline; gap:6px; min-width:0}
+.clar-who b{color:var(--text); font-weight:600; overflow-wrap:anywhere}
+.clar-said{color:var(--faint); min-width:0; overflow-wrap:anywhere}
+.clar-ours{font:500 10.5px var(--mono); color:var(--accent); border:1px solid var(--line);
+  border-radius:4px; padding:0 5px}
+.clar-mine{margin:0; font-size:10.5px; color:var(--faint)}
+.clar-go{display:flex; flex-wrap:wrap; align-items:center; gap:8px}
+.clar-go .btn{font-size:12.5px; padding:5px 12px}
+.clar-msg{font-size:11.5px; color:var(--faint)}
+.clar-as{margin:0; display:flex; flex-wrap:wrap; align-items:center; gap:6px; font-size:11.5px; color:var(--faint)}
+.clar-as .chip{font-size:11.5px; padding:2px 10px}
+.clar-form{display:flex; flex-direction:column; gap:6px}
+.clar-q{margin:0; font:11.5px/1.45 var(--mono); color:var(--muted)}
+.clar-pick{display:flex; flex-wrap:wrap; gap:6px}
+.clar-form .field{width:100%; font-size:12.5px}
+.clar-form textarea.field{min-height:60px}
+/* how often each open interaction is answered: one cell each, the busiest first, every cell the card it
+   counts. The light on a cell is its own share of the busiest one, so a quiet field reads as a quiet field */
+.clar-heat{margin:0; padding:0; list-style:none; display:flex; flex-wrap:wrap; gap:4px}
+.clar-cell{display:flex; align-items:center; gap:6px; max-width:100%; cursor:pointer; text-align:left;
+  font:11.5px/1.35 var(--sans); color:var(--text); border:1px solid var(--line); border-radius:6px;
+  padding:3px 8px; background:color-mix(in srgb, var(--accent) calc(var(--lit, 0) * 26%), var(--sunken))}
+.clar-cell:hover, .clar-cell:focus-visible{border-color:var(--accent)}
+.clar-cell.here{border-color:var(--accent); box-shadow:inset 0 0 0 1px var(--accent)}
+.clar-cell span{min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.clar-cell b{flex:none; font:600 11px var(--mono); color:var(--muted); font-variant-numeric:tabular-nums}
+.got-line .field{flex:1; min-width:0; font-size:12.5px}
+.got-two .field{width:100%; font-size:12.5px}
+.filtbtn:hover{background:var(--raised); color:var(--accent); border-color:var(--accent)}
+
+/* ---------- borders: thick enough not to break or clip at any screen scaling ---------- */
+/* whole pixels: 1.5px rounds down to 1px on a normal screen, which is what looked clipped */
+.card, .searchbox input, .tsearch input, .field, .tabs, .seg, .nav, .applinks, .chip, .btn, .panel,
+.tablewrap, .lvlbox, .search, .clbtn, .kwq, .trade, .tmod{border-width:2px}
+.ov-box{border-radius:var(--r)}
+.ov-open .fog img, .hero.away .fog img{animation-play-state:paused}

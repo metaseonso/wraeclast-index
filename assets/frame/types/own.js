@@ -2,7 +2,7 @@ import { holds, FRAME, KIND } from '../../kinds.js';
 import { D } from '../../core/data.js';
 import { esc } from '../../core/html.js';
 import { iconHTML, moneyHTML } from '../../core/format.js';
-import { lazy } from '../../core/lazy.js';
+import { lazy, lazyOwn } from '../../core/lazy.js';
 import { late } from '../../frame/seam.js';
 import { SWAPPED } from '../../frame/swap.js';
 
@@ -140,7 +140,7 @@ function ownFill(host, it, f, o){
   if(!host || !url) return;
   const had = OWN[url];
   if(had) return void (had.fill && had.fill(host, it, f, o));
-  lazy(url).then(m => { OWN[url] = m; if(host.isConnected && m.fill) m.fill(host, it, f, o); }, () => {});
+  lazyOwn(url).then(m => { OWN[url] = m; if(host.isConnected && m.fill) m.fill(host, it, f, o); }, () => {});
 }
 
 /* ---------- the builder's own fields ----------

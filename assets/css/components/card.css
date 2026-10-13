@@ -1,0 +1,446 @@
+/* The the card: its frame, slots, pills, marks, charts and folds (from assets/css/components/ and assets/css/components/, docs/migration.md stage 11). */
+/* Wraeclast Index — the live card, its popup and the top search.
+   Shared by the app (index.html) and the drill-down page (explore.html, via bridge.css). */
+/* ---------- the live card: one style for every object ---------- */
+.cards{display:grid; grid-template-columns:repeat(auto-fill, minmax(min(100%, 280px), 1fr)); gap:12px; position:relative}
+.card{position:relative; display:flex; flex-direction:column; gap:8px; background:var(--surface); border:1px solid var(--line);
+  border-radius:var(--r); padding:13px 14px 11px; box-shadow:var(--shadow); cursor:pointer; text-align:left;
+  color:inherit; text-decoration:none; min-width:0; transition:box-shadow .2s, border-color .2s, translate .2s}
+.card:hover{box-shadow:var(--shadow-hi); border-color:color-mix(in srgb, var(--accent) 45%, var(--line)); translate:0 -1px}
+.card:focus-visible,.card:has(.card-link:focus-visible){outline:2px solid var(--accent); outline-offset:2px}
+/* A long list paints only the cards near the screen. One not yet seen holds a typical card's height (most grid cards
+   measure 190 to 225px), then its own once it has been drawn. What a card paints is clipped to it, so the clip is let
+   out far enough for the clasp and the rank badge over its top rim (look.css), and a card under the pointer or
+   holding focus is drawn whole, for the tip under a mark (.card-offer). Where the clip cannot be let out, every card
+   is drawn. */
+
+  @supports (overflow-clip-margin:1px){.cards > .card{content-visibility:auto; contain-intrinsic-size:auto 215px; overflow-clip-margin:24px}
+  .cards > .card:hover, .cards > .card:focus-within{content-visibility:visible}
+}
+.card-link{color:inherit; text-decoration:none}
+.card-link:focus-visible{outline:none}
+.card-link::after{content:''; position:absolute; inset:0; border-radius:inherit; z-index:0}
+.card-ext{position:relative; z-index:1; color:var(--accent); text-decoration:none; white-space:nowrap; font-weight:500}
+.card-ext:hover{text-decoration:underline}
+.card-why{margin:0; font-size:12.5px; line-height:1.45; color:var(--text); background:var(--accent-soft); border-radius:6px; padding:6px 9px}
+.card-hd{display:flex; gap:11px; align-items:flex-start; min-width:0}
+.card-ic{flex:none; width:40px; height:40px; display:grid; place-items:center; border-radius:8px; background:var(--sunken); overflow:hidden}
+.card-ic img{width:34px; height:34px; object-fit:contain}
+.card-ic .glyph{font:600 15px var(--disp); color:var(--muted)}   /* a kind's mark where a card has no art */
+.card-id{min-width:0; flex:1}
+.card-id h3{font-size:14.5px; font-weight:600; line-height:1.25; overflow-wrap:anywhere}
+.card-sub{margin:2px 0 0; font-size:11.5px; color:var(--faint); line-height:1.3}
+.card-px{flex:none; text-align:right; line-height:1.2}
+.card-px b{display:block; font:600 15px var(--mono); font-variant-numeric:tabular-nums}
+.card-px b small{font-size:11px; font-weight:500; color:var(--faint); margin-left:3px}
+.card-px .chg{font:500 11.5px var(--mono)}
+/* what was really priced, where the card's own name is not it: a base item is priced white */
+.card-pxa{display:block; font-size:11px; color:var(--faint)}
+/* the price's age, on its own line under it (assets/app.js pxAge): a reading says when it was taken */
+.card-pxage{display:block; font:500 10.5px var(--mono); color:var(--muted); white-space:nowrap}
+.card-tx{margin:0; font-size:12.5px; color:var(--muted); line-height:1.45;
+  display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden}
+/* unclamped, the line is a plain block: a -webkit-box with no clamp lays its children out as boxes and drops
+   the space between two marked words ("Fire damage" read as "Firedamage") */
+.card.open .card-tx{-webkit-line-clamp:unset; display:block}
+.card-req{display:flex; flex-wrap:wrap; gap:4px; align-items:center}
+.pill{font:500 11.5px var(--sans); font-variant-numeric:tabular-nums; border:1px solid var(--line); background:var(--raised); color:var(--muted);
+  border-radius:5px; padding:1px 6px; white-space:nowrap}
+.pill.a-r{color:var(--str); border-color:color-mix(in srgb, var(--str) 40%, var(--line))}
+.pill.a-g{color:var(--dex); border-color:color-mix(in srgb, var(--dex) 40%, var(--line))}
+.pill.a-b{color:var(--int); border-color:color-mix(in srgb, var(--int) 40%, var(--line))}
+.pill.warn{color:var(--neg)}
+.pill.lin{color:var(--c-keystone, #D9B566)}   /* a lineage support gem */
+.pill-note{font-size:10.5px; color:var(--faint); margin-left:2px}
+.pill-note span{cursor:help; border-bottom:1px dotted var(--faint)}
+.card-facts{margin:0; font:11.5px/1.45 var(--mono); color:var(--muted)}
+.card-ls{margin:0; padding:0; list-style:none; font-size:12.5px; line-height:1.45; color:var(--text)}
+.card-ls li{padding-left:10px; position:relative}
+.card-ls li::before{content:''; position:absolute; left:0; top:.62em; width:4px; height:4px; border-radius:50%; background:var(--accent); opacity:.7}
+.card-ls li.more-n{color:var(--faint); font-size:11.5px}
+.card-ls li.more-n::before{display:none}
+/* What a thing adds to an item, per kind of item (the "adds" field in assets/kinds.js, data/essences.json):
+   one modifier a row, the kinds of item that get it above it and which side it lands on below. The box is
+   empty until its file lands, and an empty box draws nothing. */
+/* the box a field leaves for a table of its own and fills once the file lands: any such field uses it */
+.card-addsbox{display:grid; gap:6px}
+.card-addsbox[hidden]{display:none}
+/* a label is a pill as wide as its word, never a bar across the box */
+.card-addsbox > .pill{justify-self:start}
+.card-flags{margin:0; display:flex; flex-wrap:wrap; gap:4px}
+.card-tags .pill, .card-src .pill{margin-left:4px}
+/* the market files on an opened currency card (assets/app.js MKT): a pill that fills when its file lands, the
+   week's hours as a grid (7 days by 24 hours, UTC) */
+.pill.mk-pill[hidden]{display:none}
+/* a word off a table that is not the game's (assets/app.js keyed): a pill that links to whose word it is */
+.pill.pill-src[hidden]{display:none}
+a.pill.pill-src{text-decoration:none}
+a.pill.pill-src:hover{color:var(--text); border-color:var(--accent)}
+.mk-heat{display:grid; grid-template-columns:30px repeat(24, minmax(0, 1fr)); gap:1px; align-items:center;
+  font:10px/1 var(--mono); color:var(--faint)}
+.mk-heat b{font-weight:400}
+.mk-heat i{display:block; height:11px; border-radius:1px; background:var(--accent)}
+.mk-heat span{white-space:nowrap; padding-top:2px}
+.mk-chart svg{height:90px}
+.card-adds{margin:0; padding:0; list-style:none; display:grid; gap:9px}
+.card-adds li{display:grid; gap:2px; padding-left:10px; position:relative}
+.card-adds li::before{content:''; position:absolute; left:0; top:.62em; width:4px; height:4px; border-radius:50%; background:var(--accent); opacity:.7}
+.adds-on{font-size:11.5px; line-height:1.5; color:var(--muted)}
+.adds-on a{color:var(--accent); text-decoration:none}
+.adds-on a:hover, .adds-on a:focus-visible{text-decoration:underline}
+.adds-ml{font-size:13px; line-height:1.45; color:var(--text); overflow-wrap:anywhere}
+.adds-rs{font:11px/1.45 var(--mono); color:var(--faint)}
+/* What a base item can already have (the "pool" fields, assets/kinds.js): one row per modifier, in the
+   order the game data ships them. It is a long list on a big item class, so it scrolls in place rather
+   than pushing the rest of the card off the screen. */
+.card-pool{margin:0; padding:0 2px 0 0; list-style:none; display:grid; gap:7px}
+.card-pool li{display:grid; gap:1px; padding-left:10px; position:relative}
+.card-pool li::before{content:''; position:absolute; left:0; top:.62em; width:4px; height:4px; border-radius:50%; background:var(--accent); opacity:.7}
+/* a table of numbers by a place in it (a gem's gold price by level): the place over its number, as many a row as fit */
+.card-gold{margin:0; padding:0; list-style:none; display:grid; gap:4px 10px; grid-template-columns:repeat(auto-fill, minmax(62px, 1fr))}
+.card-gold li{display:grid; font:11px/1.35 var(--mono)}
+.card-gold span{color:var(--faint)}
+.card-gold b{color:var(--text); font-weight:600}
+/* A block with a label over it (a `rich` field's `label`, the choice rows): the label, then its lines. */
+.card-blk{display:grid; gap:3px}
+.pill[title]{cursor:help}
+/* Rows of options (the "choice" type): a row a choice of one where it offers several, each option a box, side
+   by side where there is room and wrapping where there is not. */
+.card-take{margin:0; padding:0; list-style:none; display:grid; gap:5px}
+.card-take li{display:flex; flex-wrap:wrap; align-items:baseline; gap:4px 6px; font-size:12.5px; line-height:1.4; color:var(--text)}
+.card-take li.more-n{color:var(--faint); font-size:11.5px}
+/* Rows of tiers (the "tiers" type): which tier and the number beside it on one line, its lines under them at the
+   card's full width. */
+.card-tiers{margin:0; padding:0; list-style:none; display:grid; gap:5px}
+.card-tiers li{display:grid; grid-template-columns:minmax(0, 1fr) auto; gap:0 8px; font-size:12.5px; line-height:1.4; color:var(--text)}
+.card-tiers li.more-n{display:block; color:var(--faint); font-size:11.5px}
+/* A switch on the card for something that changes the item while it is worn (the "swaps" field): off until
+   it is pressed, and what it does is the card it comes from, named under it. */
+.card-swaps{display:grid; gap:8px}
+.card-swap{display:grid; gap:7px; justify-items:start}
+.card-swap .swap{display:inline-flex; align-items:center; gap:7px; border:1px solid var(--line); background:var(--surface);
+  color:var(--muted); border-radius:20px; padding:4px 12px; font:inherit; font-size:12.5px; cursor:pointer;
+  transition:background .15s, color .15s, border-color .15s}
+.card-swap .swap:hover{border-color:var(--accent); color:var(--text)}
+.card-swap .swap i{width:22px; height:12px; border-radius:8px; border:1px solid currentColor; position:relative; opacity:.8}
+.card-swap .swap i::after{content:''; position:absolute; top:1px; left:1px; width:8px; height:8px; border-radius:50%;
+  background:currentColor; transition:left .15s}
+.card-swap .swap[aria-pressed="true"]{background:var(--accent); border-color:var(--accent); color:var(--ground); font-weight:500}
+.card-swap .swap[aria-pressed="true"] i::after{left:11px}
+.card-swap .swap-ls{width:100%}
+.card-swap .swap-src{width:100%}
+/* A word in a line that leads to a mechanics card (tools/mechanics.py): the game never marks these words, so
+   neither do we — no chip, no accent, just the line's own word with a footnote mark. The note itself is the
+   source line on the card it opens (.card-src). */
+.hlink{display:inline; font:inherit; color:inherit; background:none; border:0; padding:0; margin:0; cursor:pointer;
+  text-decoration:underline dotted; text-underline-offset:2px; text-decoration-color:var(--faint)}
+.hlink::after{content:'*'; font-size:.8em; vertical-align:super; line-height:0; margin-left:1px; opacity:.75}
+.hlink:hover, .hlink:focus-visible{text-decoration-style:solid; text-decoration-color:var(--muted)}
+.hlink:focus-visible{outline:2px solid var(--accent); outline-offset:2px; border-radius:2px}
+/* A word in a line the game itself marks as a keyword (assets/marks.js): the door to that keyword's card,
+   on the word where it is read. The word keeps the line's own colour and takes a hairline in the accent, so
+   it is neither the mechanics footnote above nor a keyword chip — the chips under the card are the summary,
+   these are the detail. */
+.kwmark{display:inline; font:inherit; color:inherit; background:none; border:0; padding:0; margin:0; cursor:pointer;
+  text-decoration:underline; text-decoration-thickness:1px; text-underline-offset:2px;
+  text-decoration-color:var(--accent); text-decoration-skip-ink:auto}
+.kwmark:hover, .kwmark:focus-visible{color:var(--accent)}
+.kwmark:focus-visible{outline:2px solid var(--accent); outline-offset:2px; border-radius:2px}
+.hlink, .kwmark{position:relative; z-index:1}
+.mk-w{white-space:nowrap}   /* a mark and the punctuation touching it break as one word (assets/app.js spansHTML) */
+/* where a mechanics card's maths was read off. It is not game text, and the card says so where it is read. */
+/* the game's own flavour line on a unique or a keystone ("qt", tools/carddata.py): the game prints it apart
+   from the modifiers, and so do we */
+.card-fl{margin:0; font-size:12.5px; line-height:1.45; font-style:italic; color:var(--faint)}
+.card.detail .card-fl{font-size:13px}
+.card-src{margin:0; font-size:11px; line-height:1.45; color:var(--faint); border-left:2px solid var(--line); padding-left:8px}
+/* GGG's patch notes on a card (the "changed" field, data/patchnotes.json): one group per patch, newest first, its
+   name as the link to the thread and the hour it went up, then GGG's section and lines. The rest of a long list
+   sits behind "See all N", which opens in place and goes once it is open. */
+.card-chg{gap:8px}
+.chg-p{display:grid; gap:3px}
+.chg-hd{margin:0; display:flex; flex-wrap:wrap; align-items:baseline; gap:2px 10px; font:12px/1.4 var(--mono)}
+.chg-hd a{color:var(--accent); text-decoration:none; font-weight:600}
+.chg-hd a:hover, .chg-hd a:focus-visible{text-decoration:underline}
+.chg-hd span{color:var(--faint); font-size:11px}
+.chg-sec{margin:2px 0 0; font-size:11px; line-height:1.4; color:var(--muted); text-transform:uppercase; letter-spacing:.04em}
+.chg-l{margin:0; padding-left:10px; position:relative; font-size:12.5px; line-height:1.45; color:var(--text); overflow-wrap:anywhere}
+.chg-l::before{content:''; position:absolute; left:0; top:.62em; width:4px; height:4px; border-radius:50%; background:var(--accent); opacity:.7}
+.chg-more{display:grid; gap:8px}
+.chg-more > summary{cursor:pointer; list-style:none; width:max-content; font-size:12px; color:var(--accent); padding:2px 0}
+.chg-more > summary::-webkit-details-marker{display:none}
+.chg-more > summary:hover, .chg-more > summary:focus-visible{text-decoration:underline}
+.chg-more[open]{display:grid}
+.chg-more[open] > summary{display:none}
+/* What the data changed ("patchdiff", data/patchdiff/): a change a row, the old value faint and the new one in
+   full, an arrow between. A long line wraps under its label; nothing is cut. */
+.dif{margin:0; padding:0; list-style:none; display:grid; gap:3px}
+.dif li{padding-left:10px; position:relative; font-size:12.5px; line-height:1.45; overflow-wrap:anywhere}
+.dif li::before{content:''; position:absolute; left:0; top:.62em; width:4px; height:4px; border-radius:50%; background:var(--accent); opacity:.7}
+.dif-l{color:var(--muted); font:11.5px var(--mono); margin-right:6px}
+.dif-o{color:var(--faint)}
+.dif-a{color:var(--accent); margin:0 6px}
+.dif-n{color:var(--text)}
+.dif-q{font-size:10.5px; padding:1px 6px; margin-left:4px}
+.chg-sec .dif-q{text-transform:none; letter-spacing:0}
+/* The flowchart on the damage card ("fl", tools/mechanics.py; flowHTML in assets/app.js): one box a step,
+   an arrow drawn in the gap between them, two runs. No fixed widths and no SVG text, so a long step wraps
+   and still reads at 375px, and every colour is a theme token, so it draws in either theme. */
+.flow{display:flex; flex-direction:column; gap:10px}
+.flow-hd{margin:0; font:11px/1.3 var(--mono); text-transform:uppercase; letter-spacing:.08em; color:var(--faint)}
+.flow-run{margin:0; padding:0; list-style:none; display:flex; flex-direction:column; gap:19px; counter-reset:flow}
+.flow-st{position:relative; counter-increment:flow; border:1px solid var(--line); border-radius:6px;
+  padding:6px 9px 7px; background:var(--sunken)}
+.flow-st b{display:flex; align-items:center; gap:6px; font-size:12.5px; font-weight:600; color:var(--text)}
+.flow-st b::before{content:counter(flow) '.'; font-weight:500; color:var(--faint)}
+/* the step's own mark, in the accent, so a chart reads as shapes before it reads as words */
+.flow-st b .mk{flex:none; width:15px; height:15px; color:var(--accent)}
+.flow-st span{display:block; margin-top:2px; font-size:11.5px; line-height:1.45; color:var(--muted)}
+/* the arrow into a step: a hairline up into the gap, with a head on it */
+.flow-st + .flow-st::before{content:''; position:absolute; left:50%; top:-19px; width:1px; height:12px;
+  background:var(--line)}
+.flow-st + .flow-st::after{content:''; position:absolute; left:50%; top:-8px; transform:translateX(-50%);
+  border-left:4px solid transparent; border-right:4px solid transparent; border-top:6px solid var(--line)}
+/* conversion against extra damage: two columns where there is room, stacked on a phone. auto-fit at 210px
+   means a 375px card gets one column and a wide popup gets two, with no media query to keep in step. */
+.flow-cols{display:grid; grid-template-columns:repeat(auto-fit, minmax(210px, 1fr)); gap:10px}
+.flow-col{border:1px solid var(--line); border-radius:6px; padding:6px 9px 7px; background:var(--sunken)}
+.flow-col > b{display:block; font-size:12.5px; font-weight:600; color:var(--text)}
+.flow-col ul{margin:3px 0 0; padding:0; list-style:none}
+.flow-col li{position:relative; padding-left:10px; margin-top:4px; font-size:11.5px; line-height:1.45; color:var(--muted)}
+.flow-col li::before{content:''; position:absolute; left:0; top:.6em; width:4px; height:4px; border-radius:50%;
+  background:var(--line-soft); border:1px solid var(--line)}
+/* Every mark on the site is one shape off the same table (MARKS in assets/app.js), drawn at one size in
+   the colour of whatever carries it. ".mk" is that size, wherever a mark lands; an empty one holds the
+   place a page keeps for it, so a top bar never jumps on first paint. */
+.mk{display:inline-block; width:15px; height:15px; flex:none; fill:none; stroke:currentColor;
+  stroke-width:1.5; stroke-linecap:round; stroke-linejoin:round}
+/* a flowchart card, offered beside the name of a card whose text is about what it lays out (offerHTML in
+   assets/app.js): a small mark, because it is a way out and not what the card came to say. The mark in the
+   card's own corner is a note about the card (askHTML): the same control, alone, out of the way of the words. */
+.card-marks{display:inline-flex; gap:5px; margin-left:6px; vertical-align:-7px; white-space:nowrap}
+.card-offer, .card-ask{display:inline-flex; align-items:center; justify-content:center; width:26px; height:26px;
+  margin:0; padding:0; background:transparent; border:1px solid var(--line);
+  border-radius:7px; color:var(--faint); cursor:pointer}
+.card-offer{position:relative}
+.card-ask{position:absolute; top:11px; right:12px; z-index:2; background:var(--surface)}
+.card.detail .card-ask{top:16px; right:16px}
+/* it is drawn the size of every other mark and it stands alone, so a finger gets the full 44px around it */
+.card-ask::after{content:''; position:absolute; inset:-6px}
+/* the corner keeps its own room, so a price never runs under the mark */
+.card-hd:has(.card-ask){padding-right:34px}
+@media (pointer:coarse){.card-hd:has(.card-ask){padding-right:42px}
+}
+.card-offer:hover, .card-offer:focus-visible, .card-ask:hover, .card-ask:focus-visible{border-color:var(--accent); color:var(--accent)}
+.card-offer:focus-visible, .card-ask:focus-visible{outline:2px solid var(--accent); outline-offset:2px}
+/* a mark that opens a card of ours carries a question mark in its corner, so a card says there is something
+   behind it before anyone hovers, and the words it opens come up on hover and on focus. A finger gets no
+   hover, which is what the question mark is there for. */
+.card-offer::before{content:'?'; position:absolute; top:-4px; right:-4px; width:11px; height:11px;
+  border-radius:50%; background:var(--sunken); border:1px solid var(--line); color:var(--faint);
+  font-size:8px; line-height:9px; text-align:center; font-weight:600}
+.card-offer:hover::before, .card-offer:focus-visible::before{border-color:var(--accent); color:var(--accent)}
+.card-offer::after{content:attr(data-tip); position:absolute; top:calc(100% + 7px); left:50%;
+  transform:translateX(-50%); z-index:3; white-space:nowrap; font-size:11.5px; padding:3px 8px;
+  background:var(--sunken); border:1px solid var(--line); border-radius:6px; color:var(--text);
+  opacity:0; pointer-events:none; transition:opacity .12s}
+.card-offer:hover::after, .card-offer:focus-visible::after{opacity:1}
+@media (pointer:coarse){.card-offer, .card-ask{width:34px; height:34px}
+  .card-marks{vertical-align:-11px}
+  .mk{width:17px; height:17px}
+}
+.card-tags{margin:0; font-size:11px; color:var(--faint); letter-spacing:.02em}
+.card-ft{margin-top:auto; display:flex; align-items:center; gap:10px; min-height:22px; font-size:11px; color:var(--faint)}
+.card-ft .spark{width:84px; height:22px; flex:none}
+.card-ft .use{white-space:nowrap}
+/* an act in a card's own corner, beside the star: a word, not a phrase (assets/app.js actHTML) */
+/* the bench's own search, over every shelf at once (assets/craftsim.js) */
+.bn-find{padding:0 0 6px}
+.bn-q{width:100%; box-sizing:border-box; padding:6px 9px; font:13px var(--sans); color:var(--text);
+  background:rgba(0,0,0,.25); border:1px solid var(--line); border-radius:5px}
+.bn-q:focus-visible{border-color:var(--accent); outline:none}
+.bn-from{color:var(--faint); font:500 10px var(--sans); letter-spacing:.04em; text-transform:uppercase}
+/* an orb's upgrade ladder: what each step asks today, and the modifier level it guarantees */
+.card-lad{margin-top:8px}
+.card-lad ul{list-style:none; margin:4px 0 0; padding:0; display:grid; gap:3px}
+.card-lad li{display:grid; grid-template-columns:1fr auto; gap:4px 10px; align-items:baseline;
+  font-size:12px; padding:3px 6px; border:1px solid transparent; border-radius:4px}
+.card-lad .lad-on{border-color:var(--line); background:rgba(255,255,255,.03)}
+.card-lad .lad-n{color:var(--text)}
+.card-lad .lad-p{color:var(--text); font-variant-numeric:tabular-nums; white-space:nowrap}
+.card-lad .lad-p em{font-style:normal; color:var(--faint); margin-left:5px; font-size:11px}
+.card-lad .lad-no{color:var(--faint); font-size:11px}
+.card-lad .lad-f{grid-column:1/-1; color:var(--faint); font-size:11px}
+/* a use line the game wrote as a table: the slot, and what it gives there (assets/app.js perslot) */
+.card-slots{list-style:none; margin:6px 0 0; padding:0; display:grid; gap:3px}
+.card-slots li{display:grid; grid-template-columns:minmax(58px,auto) 1fr; gap:8px; align-items:baseline;
+  font-size:12px; line-height:1.4}
+.card-slots .cs-at{color:var(--faint); font:500 10px var(--sans); letter-spacing:.04em;
+  text-transform:uppercase; padding-top:1px}
+.card-slots .cs-is{color:var(--text)}
+.card-slots .more-n{display:block; color:var(--faint); font-size:11px}
+.card-do{position:relative; z-index:1; background:none; border:1px solid var(--line); border-radius:4px;
+  color:var(--faint); font:500 10px var(--sans); letter-spacing:.04em; text-transform:uppercase;
+  padding:2px 6px; cursor:pointer; white-space:nowrap}
+.card-do:hover{color:var(--text); border-color:var(--accent)}
+.card-ft .kind{margin-left:auto; text-transform:uppercase; letter-spacing:.08em; font-size:11px; border:1px solid var(--line);
+  border-radius:4px; padding:1px 5px; white-space:nowrap}
+.card-inv{display:flex; justify-content:space-between; gap:8px; font-size:12px; border-top:1px dashed var(--line); padding-top:7px}
+.card-inv b{font-family:var(--mono); font-weight:600}
+.card-inv b small{margin-left:3px; font-weight:500; color:var(--faint)}
+.card-rank{position:absolute; top:-9px; left:12px; font:600 10.5px var(--mono); background:var(--accent); color:var(--ground);
+  border-radius:10px; padding:1px 7px}
+.up{color:var(--pos)} .down{color:var(--neg)}
+.k-g .card-ic{background:color-mix(in srgb, var(--int) 10%, var(--sunken))}
+.k-u .card-ic{background:color-mix(in srgb, var(--accent) 14%, var(--sunken))}
+.k-p .card-ic{background:color-mix(in srgb, var(--dex) 10%, var(--sunken))}
+.k-c .card-ic{background:color-mix(in srgb, var(--accent) 10%, var(--sunken))}
+.k-h .card-ic{background:color-mix(in srgb, var(--muted) 8%, var(--sunken))}
+.dot{width:8px; height:8px; border-radius:50%; display:inline-block; flex:none}
+.dot.r{background:var(--str)} .dot.g{background:var(--dex)} .dot.b{background:var(--int)} .dot.w{background:var(--any)}
+
+/* the drill-down page has its own .spark and .kind rules; keep the card's own sizes */
+.card .card-ft .spark{display:inline-block; width:84px; height:22px; margin:0}
+.card .card-ft .kind{font-size:11px; color:var(--faint)}
+.card.detail{cursor:default; padding:22px 24px 18px; gap:12px; box-shadow:0 20px 60px rgba(0,0,0,.5)}
+.card.detail:hover{translate:none}
+.card.detail h3{font-size:20px}
+.card.detail .card-ic{width:56px; height:56px}
+.card.detail .card-tx{-webkit-line-clamp:unset; display:block; font-size:13.5px}
+.card.detail .card-ls{font-size:13.5px}
+.chart{margin:4px 0 0}
+.chart figcaption{font-size:11px; color:var(--faint); margin-bottom:4px}
+.chart svg{display:block; width:100%; height:64px; background:var(--sunken); border-radius:6px}
+/* Which line is which league. The shades match the lines on the chart, newest first; it wraps down the card
+   instead of pushing it sideways, so it holds at a phone's width. */
+.chart-key{display:flex; flex-wrap:wrap; gap:1px 12px; list-style:none; margin:5px 0 0; padding:0; min-width:0}
+.chart-key:empty{display:none}
+.chart-key li{display:flex; align-items:center; gap:5px; min-width:0; max-width:100%;
+  font-size:10.5px; line-height:1.6; color:var(--muted); white-space:nowrap}
+/* whose number a league's line is, where it is not ours: their own mark, at the size of the words beside it */
+.chart-src{flex:none; width:11px; height:11px; object-fit:contain; opacity:.85; margin-left:-1px}
+.chart-key li > i{flex:none; width:15px; border-top:2px solid var(--text); border-radius:2px}
+.chart-key li > span{color:var(--faint)}
+.chart-key li:first-child{color:var(--text)}
+/* what the chart is, and where it is thin: said plainly under the key (and on its own when there is too
+   little to draw a line from at all) */
+.chart-said, .chart .chart-said{margin:4px 0 0; font-size:10.5px; line-height:1.45; color:var(--faint)}
+  @media (max-width:640px){.card.detail h3{font-size:18px}
+  /* the name comes first: it keeps its room and wraps between words, and the price drops to its own line */
+  .card.detail .card-hd{flex-wrap:wrap}
+  .card.detail .card-id{min-width:min(100%, 190px)}
+  .card.detail .card-id h3{overflow-wrap:break-word}
+  .card.detail .card-px{margin-left:auto}
+}
+/* No prices (SSF, Hardcore, HC SSF): a card already draws none (assets/app.js slotHTML); this is the rest of the
+   site. A cell in a grid keeps its place, so the columns beside it stay where they are. */
+body.nopx :is(.stamp, .card-inv, .uses-px, .tsearch-row .p, .cr-px, .bn-px, .bn-spend, .cxp-px, .spark, .chg, .lad-p,
+  .cxm, .cxm-hd, .fm-p){display:none}
+.tmods{display:grid; gap:6px}
+.tmod{border:1px solid var(--line-soft); border-radius:8px; padding:7px 10px; background:var(--sunken)}
+.tmod.on{border-color:color-mix(in srgb, var(--accent) 45%, var(--line))}
+.tmod.off{color:var(--faint); font-size:12.5px; background:transparent}
+/* Any / Yes / No stays on one line: the name beside it wraps instead */
+.tstates{display:grid; grid-template-columns:repeat(auto-fill, minmax(min(100%, 280px), 1fr)); gap:6px 14px}
+.tstates .seg{flex:none; flex-wrap:nowrap}
+.theat{display:flex; align-items:center; gap:8px; margin:4px 0 8px}
+.theat-bar{display:inline-block; width:64px; height:8px; border-radius:2px; border:1px solid var(--line);
+  background:linear-gradient(90deg, rgb(28,38,26), rgb(74,72,34) 40%, rgb(168,132,74) 72%, rgb(179,38,30))}
+.kwchips{display:flex; flex-wrap:wrap; align-items:center; gap:6px; margin:12px 2px 0}
+.card .kwchips{margin:2px 2px 0}
+.kwchips .lbl{font-size:11px; text-transform:uppercase; letter-spacing:.08em; color:var(--faint); margin-right:4px}
+.kwchips .kwlink[aria-expanded="true"]{color:var(--accent); border-color:var(--accent)}
+/* A fold (assets/app.js foldHTML): a long block of the popup behind one full-width row — a bronze hairline over
+   it, the label in the group style, the count in mono, what is inside in a few words, and a chevron at the far
+   end that turns as it opens. Native <details>: it opens by click, Enter or Space. */
+.fold{display:grid; min-width:0}
+.fold[hidden]{display:none}
+/* label and count never break; what is inside takes the rest of the row and wraps there */
+.fold > .fold-hd{list-style:none; display:grid; grid-template-columns:auto auto minmax(0, 1fr) auto; align-items:center;
+  gap:8px; min-height:36px; margin:0; padding:6px 2px;
+  border-top:1px solid color-mix(in srgb, var(--bronze) 45%, transparent); cursor:pointer; user-select:none}
+.fold > .fold-hd::-webkit-details-marker{display:none}
+.fold-hd > b{grid-column:1; white-space:nowrap} .fold-hd > .ct{grid-column:2; white-space:nowrap}
+.fold-hd > .fold-said{grid-column:3} .fold-hd > .fold-ch{grid-column:4}
+.fold > .fold-hd:hover b{color:var(--text)}
+.fold > .fold-hd:focus-visible{outline:2px solid var(--accent); outline-offset:-2px; border-radius:4px}
+.fold-said{min-width:0; font:500 11.5px/1.35 var(--mono); color:var(--muted); overflow-wrap:anywhere}
+.fold-said::before, .fold-hd .ct:has(+ .fold-said)::before{content:"· "}
+.fold-ch{width:14px; height:14px; fill:none; stroke:var(--bronze); stroke-width:1.6;
+  stroke-linecap:round; stroke-linejoin:round; transition:rotate .2s cubic-bezier(.2,.8,.2,1)}
+.fold[open] > .fold-hd .fold-ch{rotate:180deg}
+.fold-in{display:grid; gap:6px; padding:4px 0 10px; min-width:0}   /* clear of the sticky bar when a door scrolls to it */
+ @media (pointer:coarse){.fold > .fold-hd{min-height:44px}
+}
+ @media (prefers-reduced-motion:reduce){.fold-ch{transition:none}
+}
+/* a count on the card that is a door to its own Connections group */
+.fold-go{color:inherit; text-decoration:underline; text-decoration-color:var(--accent); text-underline-offset:2px}
+.fold-go:hover, .fold-go:focus-visible{color:var(--accent)}
+.fold-go:focus-visible{outline:2px solid var(--accent); outline-offset:2px; border-radius:2px}
+/* the same line more than once in a row: drawn once, with how many times (assets/app.js richHTML) */
+.ln-x{font:500 11px var(--mono); color:var(--accent); white-space:nowrap}
+/* the same box over a card's own lines, put there by the card's search key (app.js lineFilter) */
+.card-q{margin:0}
+.card .uses-none{margin:0}
+
+/* ---------- what players report about an open interaction ----------
+   The two live fields on an interaction card (assets/clarify.js, the "players" and "heat" fields in
+   assets/kinds.js). Which way the community leans is a tally with every side drawn, never one answer on its
+   own; each name sits beside what that player said and where it came from; a row we have checked ourselves
+   wears our mark. Everything a player wrote is under its own heading and in its own colour, so it never
+   reads as the game's word. Every colour is a theme token, and the whole block wraps at 375px. */
+.card-clar, .card-heat{display:flex; flex-direction:column; gap:6px}
+/* ---------- player drop reports (assets/drops.js, the "gotfrom" and "gothere" fields) ----------
+   A count per row, each end a way to its own card, the source line under them; the form is two lines of
+   "I got ... from ...", then the area level and the day side by side. Theme tokens only, wraps at 375px. */
+.card-got{display:flex; flex-direction:column; gap:6px}
+.got-rows{margin:0; padding:0; list-style:none; display:flex; flex-direction:column; gap:2px; font-size:12.5px;
+  line-height:1.45; color:var(--muted)}
+.got-rows li{min-width:0; overflow-wrap:anywhere}
+.got-rows b{font:600 12px var(--mono); color:var(--text); font-variant-numeric:tabular-nums}
+.got-open{font:inherit; color:var(--accent); background:none; border:0; padding:0; cursor:pointer; text-align:left}
+.got-open:hover, .got-open:focus-visible{text-decoration:underline}
+.got-n{margin-left:6px}
+.card-got .card-src{margin:0}
+.got-form{display:flex; flex-direction:column; gap:6px}
+.got-line{margin:0; display:flex; align-items:center; gap:8px; font-size:12.5px; color:var(--text)}
+.got-line > span{flex:none; min-width:40px; font:11.5px var(--mono); color:var(--muted)}
+.got-line b{min-width:0; overflow-wrap:anywhere}
+.got-two{display:flex; flex-wrap:wrap; gap:8px}
+.got-two label{flex:1 1 130px; display:flex; flex-direction:column; gap:2px; min-width:0}
+.got-two label span{font:11.5px var(--mono); color:var(--muted)}
+/* the game's own numbers on a card (assets/app.js rulesHTML) */
+.card-rules{margin:4px 0 0; padding-left:18px; font-size:13px; line-height:1.5}
+.card-rules li{margin:2px 0}
+.card-rules .card-src{display:block}
+.card-id h3{font-weight:700; font-size:14px}
+
+/* item names in the game's colours */
+.card.k-u h3{color:var(--c-unique)}
+.card.k-g h3{color:var(--c-gem)}
+.card.k-c h3{color:var(--c-currency)}
+.card.k-p h3{color:var(--c-keystone)}
+.card.k-w h3{color:var(--text)}
+
+/* the card as a tooltip: dark glass, a bronze hairline, a lit header */
+.card{
+  background:linear-gradient(180deg, rgba(140,203,63,.018), transparent 64px), var(--surface);
+  border-color:var(--line);
+}
+.card::before{   /* forged edge along the top */
+  content:''; position:absolute; left:12px; right:12px; top:0; height:1px;
+  background:linear-gradient(90deg, transparent, var(--bronze) 20%, var(--bronze) 80%, transparent); opacity:.45;
+}
+.card:hover{border-color:rgba(140,203,63,.45)}
+.card-ic{background:radial-gradient(circle at 50% 40%, #181A17, #080908); box-shadow:inset 0 0 0 2px var(--line)}
+.card-rank{background:var(--blood); color:#F3E6E4; box-shadow:0 0 12px rgba(179,38,30,.5)}
+.card-why{background:var(--accent-soft); border-left:3px solid var(--accent); border-radius:0 6px 6px 0}
+.pill{background:#0A0E0A}
+.pill.warn{color:#F08A82; border-color:rgba(179,38,30,.6); background:var(--blood-soft)}
+.card-ls li::before{background:var(--accent); box-shadow:none; opacity:.45}
+.up, .pos{color:var(--pos)}
+.down, .neg{color:var(--neg)}
+.pill{border-width:1px}
+.card-ft .kind{border-width:1px}
+.verdict{border-radius:0 8px 8px 0}
