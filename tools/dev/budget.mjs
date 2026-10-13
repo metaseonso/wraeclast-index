@@ -264,14 +264,21 @@ export async function checkBudget({offline = false} = {}){
   const paintSum = rows.paint.reduce((a, r) => a + r.n, 0);
   rows.paintSum = note(judge('paint', paintSum, 'home, before a search', LIMITS.paint));
 
-  // css: index.html's stylesheets, each compressed on its own as it is served
+  // css: index.html's stylesheets, each minified and compressed on its own as Cloudflare serves it. A dist/ built
+  // without esbuild (it is optional: the Checks workflow has none) ships them as written, so they are minified here,
+  // by esbuild where it is installed and otherwise by dropping comments and the space around punctuation
   rows.css = [];
   {
-    let html = '';
+    let html = '', esbuild = null;
     try { html = await readFile(join(DIST, 'index.html'), 'utf8'); } catch {}
+    try { esbuild = await import('esbuild'); } catch {}
+    const small = async src => {
+      if(esbuild) try { return (await esbuild.transform(src, {loader: 'css', minify: true, legalComments: 'none'})).code; } catch {}
+      return src.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\s+/g, ' ').replace(/\s*([{};:,>])\s*/g, '$1').replace(/;}/g, '}').trim();
+    };
     for(const m of html.matchAll(/<link rel="stylesheet" href="([^"]+)"/g)){
       let n = 0;
-      try { n = brotliCompressSync(await readFile(join(DIST, m[1])), {params: {[Z.BROTLI_PARAM_QUALITY]: 11}}).length; } catch {}
+      try { n = brotliCompressSync(Buffer.from(await small(await readFile(join(DIST, m[1]), 'utf8'))), {params: {[Z.BROTLI_PARAM_QUALITY]: 11}}).length; } catch {}
       rows.css.push({line: 'css', what: m[1], n, state: 'ok'});
     }
   }
