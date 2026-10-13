@@ -44,23 +44,43 @@ for(var k in WI_FIRST) WI_FIRST[k].catch(function(){});</script>
 <!-- the two fonts the first paint uses (the site's own copies: assets/fonts, theme.css) -->
 <link rel="preload" href="assets/fonts/cinzel-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="assets/fonts/ibmplexsans-latin.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="modulepreload" href="assets/app.js"><link rel="modulepreload" href="assets/keys.js">
-<link rel="modulepreload" href="assets/kinds.js"><link rel="modulepreload" href="assets/edges.js">
-<link rel="modulepreload" href="assets/marks.js"><link rel="modulepreload" href="assets/rank.js">
-<link rel="modulepreload" href="assets/cut.js"><link rel="modulepreload" href="assets/graph.js">
-<link rel="modulepreload" href="assets/core/screen.js">
-<!-- the shell and the frame: what assets/app.js is made of since stage 9 (docs/migration.md), fetched in one wave -->
+<!-- the first paint's modules: assets/app.js and all it imports, fetched in one wave (tools/dev/nav.mjs writes these) -->
+<link rel="modulepreload" href="assets/app.js">
+<link rel="modulepreload" href="assets/core/data.js">
+<link rel="modulepreload" href="assets/core/format.js">
 <link rel="modulepreload" href="assets/core/html.js">
-<link rel="modulepreload" href="assets/core/store.js"><link rel="modulepreload" href="assets/core/lazy.js">
-<link rel="modulepreload" href="assets/core/data.js"><link rel="modulepreload" href="assets/core/format.js">
-<link rel="modulepreload" href="assets/core/seen.js"><link rel="modulepreload" href="assets/core/router.js">
-<link rel="modulepreload" href="assets/core/boot.js"><link rel="modulepreload" href="assets/frame/card.js">
-<link rel="modulepreload" href="assets/frame/popup.js"><link rel="modulepreload" href="assets/frame/related.js">
-<link rel="modulepreload" href="assets/frame/types/index.js"><link rel="modulepreload" href="assets/frame/types/reqs.js">
-<link rel="modulepreload" href="assets/frame/types/damage.js"><link rel="modulepreload" href="assets/frame/types/item.js">
-<link rel="modulepreload" href="assets/frame/types/game.js"><link rel="modulepreload" href="assets/frame/types/market.js">
-<link rel="modulepreload" href="assets/frame/types/patches.js"><link rel="modulepreload" href="assets/frame/types/own.js">
-<link rel="modulepreload" href="assets/pages/home.js"><link rel="modulepreload" href="assets/ui/topsearch.js">
+<link rel="modulepreload" href="assets/core/lazy.js">
+<link rel="modulepreload" href="assets/core/router.js">
+<link rel="modulepreload" href="assets/core/screen.js">
+<link rel="modulepreload" href="assets/core/seen.js">
+<link rel="modulepreload" href="assets/core/store.js">
+<link rel="modulepreload" href="assets/core/sw.js">
+<link rel="modulepreload" href="assets/cut.js">
+<link rel="modulepreload" href="assets/edges.js">
+<link rel="modulepreload" href="assets/frame/card.js">
+<link rel="modulepreload" href="assets/frame/href.js">
+<link rel="modulepreload" href="assets/frame/keywords.js">
+<link rel="modulepreload" href="assets/frame/related.js">
+<link rel="modulepreload" href="assets/frame/seam.js">
+<link rel="modulepreload" href="assets/frame/swap.js">
+<link rel="modulepreload" href="assets/frame/types/damage.js">
+<link rel="modulepreload" href="assets/frame/types/game.js">
+<link rel="modulepreload" href="assets/frame/types/index.js">
+<link rel="modulepreload" href="assets/frame/types/item.js">
+<link rel="modulepreload" href="assets/frame/types/market.js">
+<link rel="modulepreload" href="assets/frame/types/own.js">
+<link rel="modulepreload" href="assets/frame/types/patches.js">
+<link rel="modulepreload" href="assets/frame/types/reqs.js">
+<link rel="modulepreload" href="assets/graph.js">
+<link rel="modulepreload" href="assets/keys.js">
+<link rel="modulepreload" href="assets/kinds.js">
+<link rel="modulepreload" href="assets/marks.js">
+<link rel="modulepreload" href="assets/pages/home.js">
+<link rel="modulepreload" href="assets/rank.js">
+<link rel="modulepreload" href="assets/search/protocol.js">
+<link rel="modulepreload" href="assets/ui/crest.js">
+<link rel="modulepreload" href="assets/ui/stamp.js">
+<link rel="modulepreload" href="assets/ui/topsearch.js">
 <link rel="icon" type="image/png" sizes="64x64" href="assets/brand/favicon-64.png">
 <link rel="icon" type="image/png" sizes="32x32" href="assets/brand/favicon-32.png">
 </head>

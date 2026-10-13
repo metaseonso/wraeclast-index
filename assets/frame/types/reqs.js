@@ -1,10 +1,10 @@
 import { esc } from '../../core/html.js';
 import * as marks from '../../marks.js';
 import { D, TR, whole } from '../../core/data.js';
-import { keywordIdOf, keywordCard } from '../../frame/related.js';
+import { keywordIdOf, keywordCard } from '../../frame/keywords.js';
 import { KIND, KW, markOf, ours, FIELDS, FRAME } from '../../kinds.js';
-import { openDetail } from '../../frame/popup.js';
-import { hrefOf } from '../../frame/types/index.js';
+import { openDetail } from '../../frame/seam.js';
+import { hrefOf } from '../../frame/href.js';
 
 /* ---------- requirements ----------
    Gem level -> character level, and the attribute formula, from the official game data.

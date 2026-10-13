@@ -2,7 +2,9 @@
    The Trade button in a card's popup opens this panel. Each mod gets "at least / at most / exactly"
    and a slider; item states (corrupted, cultivated Vaal, sanctified, ...) are yes / no / any.
    Data: data/trade.json, the trade site's own lists (tools/tradedata.py). */
-import { D, esc, money, ago } from '../app.js';
+import { D } from '../core/data.js';
+import { esc } from '../core/html.js';
+import { money, ago } from '../core/format.js';
 
 const SITE = 'https://www.pathofexile.com/trade2';
 let T = null;

@@ -3,15 +3,14 @@ import { D } from '../../core/data.js';
 import { esc } from '../../core/html.js';
 import { iconHTML, moneyHTML } from '../../core/format.js';
 import { lazy } from '../../core/lazy.js';
-import { card } from '../../frame/card.js';
+import { late } from '../../frame/seam.js';
+import { SWAPPED } from '../../frame/swap.js';
 
 /* ---------- a switch on the card ----------
    Something outside the item changes what the item is while it is worn. The switch sits on the card the
    player is already reading, off until it is pressed, and what it does is the granting card's own lines —
    the declaration names that card and nothing of the game's wording is written down twice (assets/kinds.js,
    the "swaps" field). It is on for the visit, so it stays on as you walk from card to card. */
-const SWAPPED = new Set();
-const flipSwap = name => { SWAPPED.has(name) ? SWAPPED.delete(name) : SWAPPED.add(name); };
 const swapsOf = (it, f) => (f.of || []).filter(s => holds(it, s.on) && D.byKey.get(s.card));
 function swapHTML(it, f, full){
   if(!full) return '';
@@ -119,7 +118,7 @@ function picksHTML(p){
    own. In the popup only: the grid is for reading, and a card nobody opens asks for nothing. */
 function clarifyFill(host, it, f, o){
   if(!host) return;
-  lazy('./clarify.js', 'What players report').then(m => { if(host.isConnected) m.fill(host, it, f, o); }, () => {});
+  lazy('./ui/clarify.js', 'What players report').then(m => { if(host.isConnected) m.fill(host, it, f, o); }, () => {});
 }
 
 /* ---------- player drop reports ----------
@@ -127,7 +126,7 @@ function clarifyFill(host, it, f, o){
    so the box is left and assets/drops.js fills it when the answer lands. In the popup only. */
 function reportsFill(host, it, f, o){
   if(!host) return;
-  lazy('./drops.js', 'Player reports').then(m => { if(host.isConnected) m.fill(host, it, f, o); }, () => {});
+  lazy('./ui/drops.js', 'Player reports').then(m => { if(host.isConnected) m.fill(host, it, f, o); }, () => {});
 }
 
 /* ---------- a field the kind's own module fills ----------
@@ -244,7 +243,7 @@ function gearHTML(b){
     return '<span class="bd-tile' + (it ? ' on' : '') + '">' +
       '<button type="button" class="bd-slot" data-do="' + (it ? 'see:' + esc(it.k + ':' + it.id) : 'chip:' + esc(t.id)) +
       '" aria-label="' + esc(it ? it.n : t.n) + '">' + inner + '<span class="bd-sn">' + esc(t.n) + '</span></button>' +
-      (it ? '<span class="bd-tip">' + card(it, {detail: true, href: null}).outerHTML +
+      (it ? '<span class="bd-tip">' + late.card(it, {detail: true, href: null}).outerHTML +
         '</span><button type="button" class="bn-x" data-do="' + esc(drop) + '" aria-label="Out of the slot">Remove</button>' : '') +
       '</span>';
   };
@@ -267,4 +266,4 @@ function treeHTML(b){
     '<p class="card-facts">' + esc(said) + '</p></figure>';
 }
 
-export { flipSwap, swapHTML, benchItemHTML, picksHTML, clarifyFill, reportsFill, OWN, ownFill, budgetHTML, gearHTML, treeHTML };
+export { swapHTML, benchItemHTML, picksHTML, clarifyFill, reportsFill, OWN, ownFill, budgetHTML, gearHTML, treeHTML };

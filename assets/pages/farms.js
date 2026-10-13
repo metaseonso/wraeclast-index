@@ -17,16 +17,22 @@
      price    a rolled input unpriced for 7 days  no price is drawn for it and it is named
               over half an entry's inputs unpriced  the entry cannot answer for a run, so it says Not priced
      source   the sheet unread for 60 days   said once, on the version bar above the entries */
-import { D, $, esc, card, flow, openDetail, priceOf, hrefOf, moneyHTML, change, spark, ago } from '../app.js';
+import { D, priceOf } from '../core/data.js';
+import { $, esc } from '../core/html.js';
+import { card } from '../frame/card.js';
+import { flow } from '../frame/related.js';
+import { openDetail } from '../frame/popup.js';
+import { hrefOf } from '../frame/href.js';
+import { moneyHTML, change, spark, ago } from '../core/format.js';
 import { searchURL } from '../engines/trade.js';
 
 /* ---------- the page contract ----------
    What every tab module says about itself (docs/framework.md, "Pages"): the route it answers, what it needs before
-   it is mounted, and the state its address carries. The router (assets/app.js show) decides on its own until
-   docs/migration.md stage 10 lands; until then `needs` states what the router awaits for this tab today, and
-   `state` is the one place this tab reads its address. */
+   it is mounted, and the state its address carries. The router (assets/core/router.js) reads them: it
+   fetches this file, waits for what `needs` names, and mounts it with `state(params())`; `state` is the one place
+   this tab reads its address. */
 export const route = 'farms';
-export const needs = ['index', 'hist'];   // the whole index and the price history, as the router awaits them before every tab that draws cards
+export const needs = ['index', 'hist'];   // the whole index and the price history: the router waits for both before it mounts this tab
 export function state(p){ return {}; }
 
 const TIER_ORDER = ['S', 'A', 'B', 'C', 'D', 'F'];

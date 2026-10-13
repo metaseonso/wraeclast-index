@@ -1,6 +1,7 @@
 /* Support: a small "Support the site" link (footer, Patch notes and Suggest popups) that opens a popup with
    the Ko-fi page and crypto addresses from data/support.json. Nothing shows until that file has something. */
-import { openBox, esc } from '../app.js';
+import { openBox } from '../frame/popup.js';
+import { esc } from '../core/html.js';
 
 let CFG;
 export async function support(){

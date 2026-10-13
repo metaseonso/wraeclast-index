@@ -5,7 +5,7 @@ import { find, whole, D, wake } from '../core/data.js';
 import { card } from '../frame/card.js';
 import { calm, flow } from '../frame/related.js';
 import { seenKeys } from '../core/seen.js';
-import { TRACKER } from '../frame/popup.js';
+import { TRACKER } from '../frame/seam.js';
 
 /* ---------- home view ----------
    The search bar and nothing under it until something is typed. */
@@ -179,4 +179,17 @@ function fill(host){
   }
 }
 
-export { PAGE, H, pickKind, homeInit, homeRender };
+/* The router's turn (core/router.js start): the address names a search and a kind chip, and the page follows it. */
+function homeShow(p){
+  const q = p.get('q') || '', k = p.get('k') || 'all';
+  if(q || k !== 'all') wake();   // a search or a list in the address (the search waits for its worker itself)
+  if(q !== H.q){ H.q = q; $('#q').value = q; }
+  if(k !== H.kind){ H.kind = k in KIND || k === 'all' ? k : 'all'; H.shown = PAGE; }
+  pickKind();
+  homeRender();
+  if(!matchMedia('(pointer:coarse)').matches) $('#q').focus({preventScroll:true});
+}
+// nothing typed: a shut page's one line may stand in the status row
+const homeQuiet = () => !H.q;
+
+export { PAGE, H, pickKind, homeInit, homeRender, homeShow, homeQuiet };

@@ -1,7 +1,13 @@
 /* Build tab: paste a Path of Building code, get offense-or-defense priority and a ranked list of
    investments priced with live poe.ninja data. Runs in the browser.
    PoB is used only to READ the code. Item data and prices come from the game files and poe.ninja. */
-import { D, $, esc, card, flow, ago, moneyHTML, priceOf, hrefOf, openDetail, detailExtras } from '../app.js';
+import { D, priceOf } from '../core/data.js';
+import { $, esc } from '../core/html.js';
+import { card } from '../frame/card.js';
+import { flow } from '../frame/related.js';
+import { ago, moneyHTML } from '../core/format.js';
+import { hrefOf } from '../frame/href.js';
+import { openDetail, detailExtras } from '../frame/popup.js';
 import { classFor } from '../engines/basepool.js';
 /* The rules: assets/maths.js, the one file tools/dev/buildcheck.mjs holds against Path of Building's own
    numbers. Nothing on this page works a stat out for itself. */
@@ -9,11 +15,11 @@ import * as M from '../engines/maths.js';
 
 /* ---------- the page contract ----------
    What every tab module says about itself (docs/framework.md, "Pages"): the route it answers, what it needs before
-   it is mounted, and the state its address carries. The router (assets/app.js show) decides on its own until
-   docs/migration.md stage 10 lands; until then `needs` states what the router awaits for this tab today, and
-   `state` is the one place this tab reads its address. */
+   it is mounted, and the state its address carries. The router (assets/core/router.js) reads them: it
+   fetches this file, waits for what `needs` names, and mounts it with `state(params())`; `state` is the one place
+   this tab reads its address. */
 export const route = 'build';
-export const needs = ['index', 'hist'];   // the whole index and the price history, as the router awaits them before every tab that draws cards
+export const needs = ['index', 'hist'];   // the whole index and the price history: the router waits for both before it mounts this tab
 export function state(p){ return {}; }
 
 /* ---------- 1. code -> XML ----------

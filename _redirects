@@ -7,3 +7,41 @@
 # took the keyword word to share its name with the Magma Barrier gem.
 /item/magma-barrier-keyword /item/magma-barrier-monster 301
 /md/item/magma-barrier-keyword.md /md/item/magma-barrier-monster.md 301
+
+# The modules' old paths (the one-line doors of docs/migration.md stage 7, deleted in stage 10). A tab still running an
+# older deploy asks for a module by its old path; it lands on the file itself, which links against the shell that tab
+# already runs. One line a path, so nothing on the site asks for these: only a page from before.
+/assets/atlas.js /assets/pages/atlas.js 301
+/assets/basepool.js /assets/engines/basepool.js 301
+/assets/bosses.js /assets/pages/bosses.js 301
+/assets/build.js /assets/pages/build.js 301
+/assets/builder.js /assets/engines/builder.js 301
+/assets/campaign.js /assets/pages/campaign.js 301
+/assets/clarify.js /assets/ui/clarify.js 301
+/assets/craft.js /assets/pages/craft.js 301
+/assets/craftsim.js /assets/engines/craftsim.js 301
+/assets/currency.js /assets/pages/currency.js 301
+/assets/data.js /assets/pages/data.js 301
+/assets/drops.js /assets/ui/drops.js 301
+/assets/engine.js /assets/engines/engine.js 301
+/assets/farms.js /assets/pages/farms.js 301
+/assets/itemtext.js /assets/engines/itemtext.js 301
+/assets/lang.js /assets/ui/lang.js 301
+/assets/league.js /assets/ui/league.js 301
+/assets/map.js /assets/pages/map.js 301
+/assets/market.js /assets/pages/market.js 301
+/assets/maths.js /assets/engines/maths.js 301
+/assets/notes.js /assets/ui/notes.js 301
+/assets/optimise.js /assets/engines/optimise.js 301
+/assets/paste.js /assets/ui/paste.js 301
+/assets/patches.js /assets/pages/patches.js 301
+/assets/pins.js /assets/ui/pins.js 301
+/assets/runes.js /assets/pages/runes.js 301
+/assets/runs.js /assets/ui/runs.js 301
+/assets/start.js /assets/pages/start.js 301
+/assets/suggest.js /assets/ui/suggest.js 301
+/assets/support.js /assets/ui/support.js 301
+/assets/track.js /assets/ui/track.js 301
+/assets/trade.js /assets/engines/trade.js 301
+/assets/tradepage.js /assets/pages/trade.js 301
+/assets/pages/tradepage.js /assets/pages/trade.js 301

@@ -35,7 +35,7 @@ KINDS = ('explicit', 'implicit', 'rune', 'desecrated', 'fractured', 'enchant', '
 # ---- leftover game markers ----
 # The site's own lists still carry a few game-file placeholders whose NAME opens with [DNT] ("do not translate"):
 # rows the game never shows a player. Every list below is printed straight back at the player (the base search in
-# assets/tradepage.js walks every name in "bases"), so a marked row is never shipped, the same way a [DNT] gem name
+# assets/pages/trade.js walks every name in "bases"), so a marked row is never shipped, the same way a [DNT] gem name
 # is never a card in tools/sync.py. Here the marker is in the name itself, so the whole row goes.
 def dnt(*names):
     return any((n or '').startswith('[DNT') for n in names)

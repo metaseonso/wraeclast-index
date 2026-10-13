@@ -1,16 +1,24 @@
 /* Currency tab: every currency-type item, what it does, how its price moves, trading routes,
    and a watch list. Prices: data/market.json: what each currency traded for on the in-game Currency Exchange
    (GGG's public hourly feed, tools/exchange.py). */
-import { D, $, esc, card, flow, money, moneyHTML, params, openDetail, openBox, actHTML, runAct, iconHTML, words, hits, onType, noPrice } from '../app.js';
+import { D, words } from '../core/data.js';
+import { $, esc, onType } from '../core/html.js';
+import { card } from '../frame/card.js';
+import { flow } from '../frame/related.js';
+import { money, moneyHTML, iconHTML } from '../core/format.js';
+import { params } from '../core/router.js';
+import { openDetail, openBox, actHTML, runAct } from '../frame/popup.js';
+import { hits } from '../rank.js';
+import { noPrice } from '../core/store.js';
 import { ASKS, ASK } from '../kinds.js';   // the questions the page is asked, and which group answers which
 
 /* ---------- the page contract ----------
    What every tab module says about itself (docs/framework.md, "Pages"): the route it answers, what it needs before
-   it is mounted, and the state its address carries. The router (assets/app.js show) decides on its own until
-   docs/migration.md stage 10 lands; until then `needs` states what the router awaits for this tab today, and
-   `state` is the one place this tab reads its address. */
+   it is mounted, and the state its address carries. The router (assets/core/router.js) reads them: it
+   fetches this file, waits for what `needs` names, and mounts it with `state(params())`; `state` is the one place
+   this tab reads its address. */
 export const route = 'currency';
-export const needs = ['index', 'hist'];   // the whole index and the price history, as the router awaits them before every tab that draws cards
+export const needs = ['index', 'hist'];   // the whole index and the price history: the router waits for both before it mounts this tab
 export function state(p){ return {c: p.get('c') || ''}; }
 
 const WATCH_KEY = 'wi.watch';

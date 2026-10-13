@@ -1,6 +1,7 @@
 /* Patch notes: one button in the top bar of every page, one list (data/changelog.json: newest first),
    plus a link to the official game patch notes. The drill-down page's own button opens the same list. */
-import { openBox, esc } from '../app.js';
+import { openBox } from '../frame/popup.js';
+import { esc } from '../core/html.js';
 
 const GAME = 'https://www.pathofexile.com/forum/view-forum/2212';
 let LOG = null;

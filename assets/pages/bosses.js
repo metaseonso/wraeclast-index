@@ -7,15 +7,22 @@
    Prices: data/bossprices.json (worker/prices.js) resolves every name at once from the unique checks, the
    in-game Currency Exchange and the trade searches in data/bossqueries.json; a name it does not carry falls back to
    the card's own market price. Real prices only, and a rate never meets one: no value per kill, here or anywhere. */
-import { D, $, esc, card, openDetail, priceOf, hrefOf, moneyHTML, change, spark, ago, params, onType, leadFirst } from '../app.js';
+import { D, priceOf } from '../core/data.js';
+import { $, esc, onType } from '../core/html.js';
+import { card } from '../frame/card.js';
+import { openDetail } from '../frame/popup.js';
+import { hrefOf } from '../frame/href.js';
+import { moneyHTML, change, spark, ago } from '../core/format.js';
+import { params } from '../core/router.js';
+import { leadFirst } from '../core/store.js';
 
 /* ---------- the page contract ----------
    What every tab module says about itself (docs/framework.md, "Pages"): the route it answers, what it needs before
-   it is mounted, and the state its address carries. The router (assets/app.js show) decides on its own until
-   docs/migration.md stage 10 lands; until then `needs` states what the router awaits for this tab today, and
-   `state` is the one place this tab reads its address. */
+   it is mounted, and the state its address carries. The router (assets/core/router.js) reads them: it
+   fetches this file, waits for what `needs` names, and mounts it with `state(params())`; `state` is the one place
+   this tab reads its address. */
 export const route = 'bosses';
-export const needs = ['index', 'hist'];   // the whole index and the price history, as the router awaits them before every tab that draws cards
+export const needs = ['index', 'hist'];   // the whole index and the price history: the router waits for both before it mounts this tab
 export function state(p){ return {q: p.get('q') || ''}; }
 
 const SHOW = [['all', 'All'], ['pin', 'Pinnacle'], ['drops', 'With drops']];

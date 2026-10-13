@@ -16,7 +16,7 @@
                pages ("seo", tools/shards.py) when the worker reads the manifest, and the files the jobs send in,
                which it parses out of the database (worker/files.js NAMES). Found in the worker's code and the
                manifest, not listed here
-     paint     the JSON the home page asks for before a search: index.html's own fetches and assets/app.js's reads
+     paint     the JSON the home page asks for before a search: index.html's own fetches and assets/core/data.js's reads
                that do not wait for need(). A file the worker builds (wrangler.jsonc run_worker_first) is measured
                on the live site, since only the worker can make it; --offline measures the shipped copy instead
      search    what the search reads before its first answer, off data/manifest.json: the manifest, the card meta
@@ -143,8 +143,8 @@ async function paintFiles(){
   const html = await read('index.html');
   for(const s of html.matchAll(/<script(?![^>]*\bsrc=)[^>]*>([\s\S]*?)<\/script>/gi))
     for(const m of s[1].matchAll(/\bfetch\(\s*'([^']+\.json[^']*)'/g)) urls.add(m[1]);
-  // top-level reads in app.js; the index and the rest start behind need() (GO.then) and are not first paint
-  const app = await read('assets/app.js');
+  // top-level reads in the store (assets/core/data.js); the index and the rest start behind need() (GO.then) and are not first paint
+  const app = await read('assets/core/data.js');
   for(const m of app.matchAll(/^(?:export\s+)?const\s+\w+\s*=\s*getJSON\(\s*'([^']+\.json[^']*)'/gm)) urls.add(m[1]);
   return [...urls];
 }

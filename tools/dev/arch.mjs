@@ -14,8 +14,11 @@
    How it measures:
      edges     `import ... from './x.js'` and `export ... from` are static; `import('./x.js')` and
                lazy('./x.js') are dynamic; `new Worker(new URL('./x.js'` is a worker; a page's <script src> and
-               <link rel=modulepreload> are html. The router's lazy('./' + route + '.js') (assets/app.js modOf)
-               is read off the ROUTES table in assets/kinds.js: one dynamic edge per open route, trade -> tradepage.
+               <link rel=modulepreload> are html. lazy() resolves its path from assets/, wherever the caller sits.
+               The router's lazy('./pages/' + route + '.js') (assets/core/router.js modOf) is read off the ROUTES
+               table in assets/kinds.js, one dynamic edge per open route, and a kind's or an act's own module
+               (KINDS own, ACTS own) off the same table: these are the table's edges ("via"), and a cycle through
+               one of them is the table's, not the code's.
      cycles    strongly connected components over the static edges, then over static plus dynamic
      first paint  index.html, its stylesheets, the modules it preloads and everything they import statically,
                and the two fonts it preloads: raw bytes and gzip, which is what the wire carries
@@ -42,20 +45,28 @@ const AS_JSON = args.includes('--json'), CHECK = args.includes('--check'), GRAPH
 /* The lines (--check). Set at today's numbers, so the check holds the shape where it is and a stage of
    docs/migration.md tightens one line at a time. A line is a ceiling, never a target. */
 export const LINES = {
-  staticCycles: 1,       // the worker's dash <-> files <-> health ring (worker/); the site's modules have none
-  fileKB: 90,            // the biggest module since stage 9 is assets/pages/craft.js at 87.4 KiB; app.js was 222.6 before the split
+  staticCycles: 0,       // no module imports one that imports it back, at any distance: stage 2 cut the worker's ring,
+                         // stage 10 the shell's (core/ and frame/ import down, and the frame's late names go through frame/seam.js)
+  allCycles: 1,          // the same with dynamic imports counted, the table's and the seam's aside: 1, the popup's ask button
+                         // fetching assets/ui/suggest.js, whose box opens through the popup
+  layersUp: 6,           // a static import of a higher layer (docs/framework.md §1): engines/builder.js and engines/craftsim.js
+                         // draw their own panels (frame/popup.js, frame/href.js, frame/types/damage.js) and the popup reads the
+                         // card keys out of assets/keys.js
+  dynamicOff: 27,        // a dynamic import whose path is written in the code, not read off the table or made by the router
+  hubMax: 51,            // the most names one module exports (assets/engines/engine.js, the crafting rules); the table aside
+  pagesOff: 0,           // an open route with no assets/pages/<route>.js, or a page without route, needs, state, mount, unmount
+  wiOutside: 1,          // a module outside core/ that reads a page global (window.WI_*): assets/bridge.js, the drill-down page
+  fileKB: 90,            // the biggest module is assets/kinds.js at 88.4 KiB (the table), then assets/pages/craft.js at 87.4
   fn: 80,                // lines a function may run to
   longFns: 13,           // functions over LINES.fn across every module (13 today)
-  appExports: 75,        // what assets/app.js, the door, re-exports since stage 9 (75: the 73 it had, the search's hits, and $);
-                         // stage 10 rewrites every import to the files and the door shrinks to the boot line
+  appExports: 0,         // assets/app.js is the boot and exports nothing: every module imports from where a name lives (stage 10)
   htmlNot: 0,            // `html:not(#_)` selectors across the stylesheets: none since stage 8 (assets/css/tokens.css is the one :root)
   tokensUndefined: 0,    // a var(--x) no stylesheet or page defines
   tokensMultiFile: 0,    // a token defined in more than one stylesheet: assets/css/tokens.css defines every one
   rawColours: 240,       // hex, rgb() and hsl() colours written outside a token definition (240 today)
-  firstPaintKB: 265,     // index.html + its stylesheets + the preloaded modules and their imports + two fonts, gzip of the
-                         // source. 263 since stage 9 split app.js into 21 modules (each gzips on its own: about 15 KiB more
-                         // than one file; the wire carries them minified and brotli). Stage 10 takes the popup, Connections
-                         // and the own-module types out of the first paint, which is where this line comes back down.
+  firstPaintKB: 253,     // index.html + its stylesheets + the preloaded modules and their imports + two fonts, gzip of the
+                         // source: 253 since stage 10 took the popup out of the first paint (263.1 at stage 9, 247.9 before
+                         // the split; each module gzips on its own, and the wire carries them minified and brotli)
 };
 
 const rel = p => relative(ROOT, p).replace(/\\/g, '/');
@@ -128,14 +139,14 @@ function blank(src){
 function edgesOf(file, src, plain){
   const out = [];
   const here = dirname(file);
-  const add = (spec, how) => {
-    if(!/^\.\.?\/.*\.js$/.test(spec)) return;   // a path built at run time ('./' + route + '.js') is read off the table below
-    out.push({to: rel(join(here, spec)), how});
+  const add = (spec, how, fromAssets) => {
+    if(!/^\.\.?\/.*\.js$/.test(spec)) return;   // a path built at run time ('./pages/' + route + '.js') is read off the table below
+    out.push({to: rel(join(fromAssets ? join(ROOT, 'assets') : here, spec)), how});
   };
   for(const m of src.matchAll(/^\s*import\s+(?:[^'"]*?\s+from\s+)?['"]([^'"]+)['"]/gm)) add(m[1], 'static');
   for(const m of src.matchAll(/^\s*export\s+(?:\*|\{[^}]*\})\s+from\s+['"]([^'"]+)['"]/gm)) add(m[1], 'static');
   for(const m of src.matchAll(/\bimport\(\s*['"]([^'"]+)['"]\s*\)/g)) add(m[1], 'dynamic');
-  for(const m of src.matchAll(/\blazy\(\s*['"]([^'"]+)['"]/g)) add(m[1], 'dynamic');
+  for(const m of src.matchAll(/\blazy\(\s*['"]([^'"]+)['"]/g)) add(m[1], 'dynamic', true);
   for(const m of src.matchAll(/new Worker\(\s*new URL\(\s*['"]([^'"]+)['"]/g)) add(m[1], 'worker');
   return out;
 }
@@ -324,11 +335,20 @@ for(const f of modules){
     globals: [...globals].sort(), storage: [...storage].sort(), ids: [...ids].sort(), kindCode};
   for(const e of edgesOf(f, src, plain)) edges.push({from: name, ...e});
 }
-// the router: one dynamic edge per open route (assets/app.js modOf)
+// the router: one dynamic edge per open route (assets/core/router.js modOf)
 for(const r of Object.keys(kinds.ROUTES)){
   if(r === 'home' || r in kinds.SHUT) continue;
-  edges.push({from: 'assets/app.js', to: 'assets/' + ({trade: 'tradepage'}[r] || r) + '.js', how: 'dynamic', via: 'route ' + r});
+  edges.push({from: 'assets/core/router.js', to: 'assets/pages/' + r + '.js', how: 'dynamic', via: 'route ' + r});
 }
+// a kind's own module and an act's (KINDS own, ACTS own): the popup and a card's own field import them by the table
+const ownOf = p => rel(join(ROOT, 'assets', p));
+for(const d of kinds.KINDS) if(d.own){
+  edges.push({from: 'assets/frame/popup.js', to: ownOf(d.own), how: 'dynamic', via: 'kind ' + d.k});
+  edges.push({from: 'assets/frame/types/own.js', to: ownOf(d.own), how: 'dynamic', via: 'kind ' + d.k});
+}
+for(const [a, d] of Object.entries(kinds.ACTS)) if(d.own) edges.push({from: 'assets/frame/popup.js', to: ownOf(d.own), how: 'dynamic', via: 'act ' + a});
+// the seam (assets/frame/seam.js): the one module that fetches the popup for the frame below it, by design late
+for(const e of edges) if(e.from === 'assets/frame/seam.js' && e.how === 'dynamic') e.via = 'seam';
 const page = {};
 for(const f of pages){
   const src = await text(f), name = rel(f);
@@ -348,7 +368,34 @@ for(const e of uniqueEdges){
   fanIn[e.to] = (fanIn[e.to] || 0) + 1;
 }
 const staticCycles = cycles(names, uniqueEdges, e => e.how === 'static');
-const allCycles = cycles(names, uniqueEdges, e => e.how !== 'html');
+const allCycles = cycles(names, uniqueEdges, e => (e.how === 'static' || e.how === 'dynamic' || e.how === 'worker') && !e.via);
+
+/* The layers (docs/framework.md §1), by folder: the table and the pure libraries beside it (kinds, rank, graph, cut,
+   edges, marks: they import nothing but the table and each other), core, frame, ui (with keys.js and topnav.js, which
+   stay beside app.js because the first paint reads them), pages. A module imports its own layer or a lower one,
+   statically. Engines import core and each other, and anything above core may import them. The search worker
+   imports the table, core and frame. The boot (app.js) imports anything. */
+const LIB = /^assets\/(kinds|rank|graph|cut|edges|marks|search\/protocol)\.js$/;   // search/protocol.js is a table too: it imports nothing
+const layerOf = f => LIB.test(f) ? 0 : /^assets\/core\//.test(f) ? 1 : /^assets\/frame\//.test(f) ? 2 :
+  /^assets\/(ui\/|keys\.js$|topnav\.js$)/.test(f) ? 3 : /^assets\/pages\//.test(f) ? 4 : /^assets\/engines\//.test(f) ? 'engine' :
+  /^assets\/search\//.test(f) || f === 'assets/searchworker.js' ? 'search' : null;
+const layersUp = uniqueEdges.filter(e => {
+  if(e.how !== 'static' || e.from === 'assets/app.js') return false;
+  const a = layerOf(e.from), b = layerOf(e.to);
+  if(a === null || b === null) return e.to === 'assets/app.js' && a !== null;
+  if(a === 'engine') return !(b === 0 || b === 1 || b === 'engine');
+  if(a === 'search') return !(b === 0 || b === 1 || b === 2 || b === 'search');
+  if(b === 'engine') return a < 2;
+  if(b === 'search') return true;
+  return b > a;
+}).map(e => e.from + ' -> ' + e.to);
+// a dynamic import whose path is written in the code, not read off the table or made by the router
+const dynamicOff = uniqueEdges.filter(e => e.how === 'dynamic' && !e.via && /^assets\//.test(e.from)).map(e => e.from + ' -> ' + e.to);
+// the module with the most names (the table is the table: it is left out)
+const hubMax = Object.entries(mod).filter(([k]) => /^assets\//.test(k) && k !== 'assets/kinds.js')
+  .map(([k, m]) => [k, new Set(m.exports).size]).sort((a, b) => b[1] - a[1])[0] || ['', 0];
+// the page globals (window.WI_*) read outside core/: framework §4 puts them in one module
+const wiOutside = Object.entries(mod).filter(([k, m]) => /^assets\//.test(k) && !/^assets\/core\//.test(k) && m.globals.some(g => /^WI_/.test(g))).map(([k]) => k);
 
 // what each export of the hub is used by
 const hubUse = {};
@@ -418,9 +465,12 @@ const table = {kinds: Object.keys(kinds.KINDS || {}).length, fields: Object.keys
 const routes = {};
 for(const r of Object.keys(kinds.ROUTES)){
   if(r === 'home') continue;
-  const file = 'assets/' + ({trade: 'tradepage'}[r] || r) + '.js', m = mod[file];
-  routes[r] = {file, shut: r in kinds.SHUT, kb: m ? KB(m.bytes) : null, lifecycle: m ? m.exports.filter(x => /^(mount|unmount|update)$/.test(x)) : []};
+  const file = 'assets/pages/' + r + '.js', m = mod[file];
+  routes[r] = {file, shut: r in kinds.SHUT, kb: m ? KB(m.bytes) : null, lifecycle: m ? m.exports.filter(x => /^(mount|unmount|update)$/.test(x)) : [],
+    missing: m ? ['route', 'needs', 'state', 'mount', 'unmount'].filter(x => !m.exports.includes(x)) : ['the file']};
 }
+// an open route whose page is not there, or does not say what the router reads
+const pagesOff = Object.entries(routes).filter(([, x]) => !x.shut && x.missing.length).map(([r, x]) => r + ' (' + x.missing.join(', ') + ')');
 
 const longAll = Object.entries(mod).flatMap(([f, m]) => m.long.map(x => ({file: f, ...x}))).sort((a, b) => b.lines - a.lines);
 const out = {
@@ -449,15 +499,22 @@ line('staticCycles', staticCycles.length, LINES.staticCycles);
 for(const [k, m] of Object.entries(mod)) line('fileKB ' + k, KB(m.bytes), LINES.fileKB);
 line('longFns', longAll.length, LINES.longFns);
 line('appExports', mod['assets/app.js'].exports.length, LINES.appExports);
+line('allCycles', allCycles.length, LINES.allCycles);
+line('layersUp', layersUp.length, LINES.layersUp);
+line('dynamicOff', dynamicOff.length, LINES.dynamicOff);
+line('hubMax ' + hubMax[0], hubMax[1], LINES.hubMax);
+line('pagesOff', pagesOff.length, LINES.pagesOff);
+line('wiOutside', wiOutside.length, LINES.wiOutside);
 line('htmlNot', css.reduce((a, c) => a + c.htmlNot, 0), LINES.htmlNot);
 line('tokensUndefined', undefinedTokens.length, LINES.tokensUndefined);
 line('tokensMultiFile', multiFile.length, LINES.tokensMultiFile);
 line('rawColours', css.reduce((a, c) => a + c.raw, 0), LINES.rawColours);
 line('firstPaintKB', KB(fpGz), LINES.firstPaintKB);
 out.over = over;
+out.layers = {up: layersUp, dynamicOff, hubMax, pagesOff, wiOutside};
 out.said = names.length + ' modules, ' + uniqueEdges.length + ' edges, ' + staticCycles.length + ' static cycle' + (staticCycles.length === 1 ? '' : 's') +
   ', ' + longAll.length + ' long functions, ' + css.reduce((a, c) => a + c.htmlNot, 0) + ' html:not(#_), ' + undefinedTokens.length + ' undefined token' + (undefinedTokens.length === 1 ? '' : 's') +
-  ', first paint ' + KB(fpGz) + ' KiB gzip';
+  ', ' + layersUp.length + ' upward, ' + allCycles.length + ' cycle' + (allCycles.length === 1 ? '' : 's') + ' with dynamic, first paint ' + KB(fpGz) + ' KiB gzip';
 out._print = {names, uniqueEdges, staticCycles, allCycles, mod, fpList, longAll, globalsAll, storageAll, seams, css, undefinedTokens, unusedTokens, multiFile, table, routes, unusedHub};
 return out;
 }

@@ -70,6 +70,15 @@ page reads it or not: the index is open for builders.
 `node tools/dev/budget.mjs` prints the table: the ten biggest files and the headroom on every line. About 3
 seconds with a built `dist/`. Writes nothing but `dist/`. It is the guard's ninth check too.
 
+`nav.mjs`: the index out of the table into `index.html`, `explore.html` and `privacy.html` (the bar, the home page's
+contents), and `index.html`'s `<link rel="modulepreload">` lines: every module `assets/app.js` and `assets/topnav.js`
+import statically, at any depth, and nothing else, so the first paint fetches its module graph in one wave and the popup
+and every tab come later. `node tools/dev/nav.mjs` writes them; `--check` (the guard's **frame** line) fails a page that
+differs.
+
+`protocol.mjs`: the page and the search worker against `assets/search/protocol.js`: the page sends `ask(OP.<op>, …)`
+with the fields the table asks for (a string op fails), the worker answers every op under `OP.<op>`.
+
 `dumpreport.mjs`: what a data rebuild changed, before anyone reads the diff. `node tools/dev/dumpreport.mjs`
 compares `origin/main` with this working tree; pass any ref, or `a..b` for two commits. Per file under `data/`,
 the bytes before and after. Per kind in `data/index.json`, the cards before and after and the first few added,
@@ -121,7 +130,11 @@ Exaltation only adds a modifier sharing a tag; and no omen grants its currency a
 files and nothing else, writes nothing, no network. Not part of `guard.mjs`: it is the bench's own check.
 
 `arch.mjs`: the shape of the code, measured: the module graph (static, dynamic and Worker edges, the router's read off
-`ROUTES`), its cycles, every module's size and gzip, functions over 80 lines, `window` globals and storage keys, DOM ids
+`ROUTES`, a kind's and an act's own module off `KINDS` and `ACTS`), its cycles (static, and with dynamic edges counted
+except the table's and `frame/seam.js`'s), the layers (table and pure libraries, `core/`, `frame/`, `ui/`, `pages/`; engines
+under everything but core: an import of a higher layer is counted), dynamic imports whose path is written in the code,
+the most names one module exports, every route's page and its contract (`route`, `needs`, `state`, `mount`, `unmount`),
+`window.WI_*` read outside `core/`, every module's size and gzip, functions over 80 lines, `window` globals and storage keys, DOM ids
 reached from two modules, per-kind code outside the table, and per stylesheet the `html:not(#_)` rules, raw colours,
 tokens defined, used, undefined and defined twice, every `@media` query, and the motion durations and easings.
 `node tools/dev/arch.mjs` prints it; `--json` for a before and an after; `--graph` for one edge a line; `--check` exits

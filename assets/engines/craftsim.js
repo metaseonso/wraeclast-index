@@ -14,7 +14,12 @@
 
    Nothing here prints a chance per hit, a "1 in N" or a cost to hit, in any form. A pool nobody has measured
    rolls evenly, says so in one line, and prints no share on any row. */
-import { D, esc, moneyHTML, openDetail, hrefOf, repaint, markHTML } from '../app.js';
+import { D } from '../core/data.js';
+import { esc } from '../core/html.js';
+import { moneyHTML } from '../core/format.js';
+import { openDetail, repaint } from '../frame/popup.js';
+import { hrefOf } from '../frame/href.js';
+import { markHTML } from '../frame/types/damage.js';
 import * as E from './engine.js';
 
 const HOURS = 12;                 // a craft older than this is dropped on read, tab or no tab

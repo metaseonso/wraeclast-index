@@ -17,18 +17,22 @@
    it. Ask for less motion and none of it runs: app.css turns every animation off, and the loop is never
    started. A weak machine (html.lite, set in index.html's <head>) gets the lights at half the frames and one
    canvas pixel per pixel on screen. */
-import { $, esc, first, D, words, hits, openDetail, hrefOf } from '../app.js';
+import { $, esc } from '../core/html.js';
+import { first, D, words, need } from '../core/data.js';
+import { hits } from '../rank.js';
+import { openDetail } from '../frame/popup.js';
+import { hrefOf } from '../frame/href.js';
 import { KIND } from '../kinds.js';
 import { still, lite as LITE } from '../core/motion.js';   // less motion asked for, or a weak machine: asked once, in one place
-import { onType } from '../app.js';   // the search box waits out a burst of keys, like every box on the site
+import { onType } from '../core/html.js';   // the search box waits out a burst of keys, like every box on the site
 
 /* ---------- the page contract ----------
    What every tab module says about itself (docs/framework.md, "Pages"): the route it answers, what it needs before
-   it is mounted, and the state its address carries. The router (assets/app.js show) decides on its own until
-   docs/migration.md stage 10 lands; until then `needs` states what the router awaits for this tab today, and
-   `state` is the one place this tab reads its address. */
+   it is mounted, and the state its address carries. The router (assets/core/router.js) reads them: it
+   fetches this file, waits for what `needs` names, and mounts it with `state(params())`; `state` is the one place
+   this tab reads its address. */
 export const route = 'map';
-export const needs = [];   // a finished picture and its seats: the router starts the index for it and awaits nothing
+export const needs = [];   // a finished picture and its seats: mount starts the index for its find and popups, and waits for nothing
 export function state(p){ return {}; }
 
 const TRIP = 11;         // seconds for a light to travel the length of its edge
@@ -51,6 +55,7 @@ let OVER = -1;            // the seat the pointer is on, or -1
 let FOUND = null;         // the seats a search matched, or null for no search
 
 export async function mount(el){
+  need();   // the cards behind the dots, for its find and its popups: started now, never waited for
   el.innerHTML = head() + '<p class="note">Loading the map…</p>';
   try {
     const r = await fetch('data/map.json');

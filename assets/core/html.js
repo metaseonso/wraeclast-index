@@ -34,4 +34,9 @@ export function onType(box, run, wait = TYPE_WAIT){
   return () => { if(t) now(); };
 }
 
+/* Work that can wait: run it when the page is idle, and at the latest after 4 seconds. */
+export function idle(f){ (window.requestIdleCallback || (g => setTimeout(g, 1200)))(f, {timeout: 4000}); }
+// the app (index.html) or a page that borrows its search and popup (the drill-down page)
+export const IS_APP = !!document.getElementById('view-home');
+
 export { reduceMotion };

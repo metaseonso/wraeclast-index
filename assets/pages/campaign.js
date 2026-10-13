@@ -3,15 +3,18 @@
    data/quests.json (tools/quests.py: the acts' totals, where each kept reward is, the choices), data/areas.json
    (tools/areas.py) and the base cards' own drop levels, all from the game files. A name opens its
    card. The ticks are kept in this browser only (wi-campaign), one set for every act. */
-import { D, esc, openDetail, hrefOf } from '../app.js';
+import { D } from '../core/data.js';
+import { esc } from '../core/html.js';
+import { openDetail } from '../frame/popup.js';
+import { hrefOf } from '../frame/href.js';
 
 /* ---------- the page contract ----------
    What every tab module says about itself (docs/framework.md, "Pages"): the route it answers, what it needs before
-   it is mounted, and the state its address carries. The router (assets/app.js show) decides on its own until
-   docs/migration.md stage 10 lands; until then `needs` states what the router awaits for this tab today, and
-   `state` is the one place this tab reads its address. */
+   it is mounted, and the state its address carries. The router (assets/core/router.js) reads them: it
+   fetches this file, waits for what `needs` names, and mounts it with `state(params())`; `state` is the one place
+   this tab reads its address. */
 export const route = 'campaign';
-export const needs = ['index', 'hist'];   // the whole index and the price history, as the router awaits them before every tab that draws cards
+export const needs = ['index', 'hist'];   // the whole index and the price history: the router waits for both before it mounts this tab
 export function state(p){ return {}; }
 
 const KEEP = 'wi-campaign';

@@ -3,18 +3,41 @@
    page's search box (contentsHTML) on index.html. The crawler pages draw the bar themselves (worker/seo.js).
      node tools/dev/nav.mjs            write them
      node tools/dev/nav.mjs --check    say which page differs from the table, write nothing (tools/dev/frame.mjs)
-     node tools/dev/nav.mjs --print ./ print the bar for a page at that base (tools/sync.py, explore.html's header) */
+     node tools/dev/nav.mjs --print ./ print the bar for a page at that base (tools/sync.py, explore.html's header)
+   It also writes index.html's <link rel="modulepreload"> lines: every module assets/app.js and assets/topnav.js import statically, at any
+   depth, so the first paint fetches its whole module graph in one wave and nothing else (the popup and every tab come
+   later, by lazy()). A module added to or taken out of that graph changes the list; --check fails until it is written. */
 import { readFile, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
-export const PAGES = [['index.html', '', ['nav', 'toc']], ['explore.html', './', ['nav']], ['privacy.html', './', ['nav']]];
+export const PAGES = [['index.html', '', ['nav', 'toc', 'pre']], ['explore.html', './', ['nav']], ['privacy.html', './', ['nav']]];
 const BLOCKS = {
   nav: {re: /([ \t]*)<nav class="tabs topnav" aria-label="Index">[\s\S]*?<\/nav>/, html: (K, base) => K.navHTML(base), what: 'top bar'},
+  pre: {re: /([ \t]*)<!-- the first paint's modules[^\n]*-->\n(?:[ \t]*<link rel="modulepreload"[^\n]*\n)*/, html: () => preloadHTML(), what: 'module preloads', lines: true},
   toc: {re: /([ \t]*)<div class="toc" id="toc">[\s\S]*?\n\1<\/div>|([ \t]*)<div class="toc" id="toc"><\/div>/, html: (K, base) => K.contentsHTML(null, base), what: 'contents'},
 };
 
+/* assets/app.js and every module it imports statically, at any depth (static imports only: import ... from './x.js',
+   import './x.js', export ... from './x.js'), as paths from the repo root */
+export async function bootGraph(){
+  const seen = new Set(), todo = ['assets/app.js', 'assets/topnav.js'];   // the page's two module scripts
+  while(todo.length){
+    const f = todo.pop();
+    if(seen.has(f)) continue;
+    seen.add(f);
+    const src = await readFile(join(ROOT, f), 'utf8');
+    for(const m of src.matchAll(/(?:^|[;}\s])(?:import|export)\s*(?:[\w$*{},\s]+?\s*from\s*)?["'](\.{1,2}\/[^"']+)["']/g))
+      todo.push(new URL(m[1], 'https://x/' + f).pathname.slice(1));
+  }
+  seen.delete('assets/topnav.js');   // a <script> of its own, found by the browser as soon as app.js
+  return [...seen].sort((a, b) => (a === 'assets/app.js' ? -1 : b === 'assets/app.js' ? 1 : a.localeCompare(b)));
+}
+async function preloadHTML(){
+  return "<!-- the first paint's modules: assets/app.js and all it imports, fetched in one wave (tools/dev/nav.mjs writes these) -->\n" +
+    (await bootGraph()).map(f => '<link rel="modulepreload" href="' + f + '">').join('\n') + '\n';
+}
 async function table(){ return import(pathToFileURL(join(ROOT, 'assets', 'kinds.js')).href); }
 /* the page with its blocks as the table writes them; missing names the blocks the page has no place for */
 export async function written(file, base, blocks){
@@ -25,7 +48,8 @@ export async function written(file, base, blocks){
     const B = BLOCKS[b], m = s.match(B.re);
     if(!m){ missing.push(B.what); continue; }
     const pad = m[1] ?? m[2] ?? '';
-    const html = B.html(K, base).split('\n').map(l => pad + l).join('\n');
+    let html = await B.html(K, base);
+    if(!B.lines) html = html.split('\n').map(l => pad + l).join('\n');
     s = s.slice(0, m.index) + html + s.slice(m.index + m[0].length);
   }
   return {s: was, out: s, missing};

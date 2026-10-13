@@ -13,18 +13,23 @@
    The plan (base, item level, mods) and the question live in the address, in the page's own words, so it can be shared.
    Every name on this tab — orbs, essences, bones, catalysts, omens, runes, soul cores — opens the card the
    site already has for it (assets/kinds.js says what a card carries; nothing here draws one). */
-import { D, esc, moneyHTML, params, openDetail, hrefOf, craftHref } from '../app.js';
+import { D } from '../core/data.js';
+import { esc } from '../core/html.js';
+import { moneyHTML } from '../core/format.js';
+import { params } from '../core/router.js';
+import { openDetail } from '../frame/popup.js';
+import { hrefOf, craftHref } from '../frame/href.js';
 import { tradeData, key, searchURL, valHTML, syncVal } from '../engines/trade.js';
 import { table } from '../engines/basepool.js';
 import * as marks from '../marks.js';
 
 /* ---------- the page contract ----------
    What every tab module says about itself (docs/framework.md, "Pages"): the route it answers, what it needs before
-   it is mounted, and the state its address carries. The router (assets/app.js show) decides on its own until
-   docs/migration.md stage 10 lands; until then `needs` states what the router awaits for this tab today, and
-   `state` is the one place this tab reads its address. */
+   it is mounted, and the state its address carries. The router (assets/core/router.js) reads them: it
+   fetches this file, waits for what `needs` names, and mounts it with `state(params())`; `state` is the one place
+   this tab reads its address. */
 export const route = 'craft';
-export const needs = ['index', 'hist'];   // the whole index and the price history, as the router awaits them before every tab that draws cards
+export const needs = ['index', 'hist'];   // the whole index and the price history: the router waits for both before it mounts this tab
 export function state(p){ return {base: p.get('base') || '', kind: (p.get('kind') || '').toLowerCase(), ilvl: p.get('ilvl') || '',
     mods: p.get('mods') || '', ask: p.get('ask') || '', mod: p.get('mod') || '', find: p.get('find') || ''}; }
 
