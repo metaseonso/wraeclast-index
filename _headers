@@ -1,12 +1,14 @@
 # How long browsers keep each file (Cloudflare reads this on deploy; it is not served).
-# Code and data change on deploy: keep 2 minutes, then use the kept copy while fetching the new one.
+# Code is checked with the server every time (a 304 when unchanged): a kept module from the last deploy beside a new
+# one breaks the page (13 Oct: stage 10 renamed modules and returning browsers stuck on Loading prices). Data
+# changes on deploy: keep 2 minutes, then use the kept copy while fetching the new one.
 # Art never changes under the same name: keep it a month ("! Cache-Control" drops the general rule first).
 # Fonts never change, and the drill-down page's data files are named by their content (tools/sync.py): keep a year.
 # The drill-down page itself is small and names those files, so it is always checked (never an old page with new files).
 # Repeat visits mostly skip all of this: the service worker (sw.js, stamped by tools/build.mjs, always checked) keeps
 # each deploy's files together in the browser.
 /assets/*
-  Cache-Control: public, max-age=120, stale-while-revalidate=600
+  Cache-Control: public, max-age=0, must-revalidate
 /data/*
   Cache-Control: public, max-age=120, stale-while-revalidate=3600
 /explore
