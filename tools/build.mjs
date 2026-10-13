@@ -11,6 +11,18 @@
    2. Smaller. The .js and .css files, and the inline <script>/<style> of the pages, through esbuild: one file at a
       time, no bundling, every import path and export name kept, whitespace and comments gone. sw.js keeps its
       '__WI_BUILD__' exactly (step 6 writes over it) or ships as it is. A file esbuild throws on ships as it is.
+   2b. One generation of modules. Every module also ships as a copy named by its bytes under assets/v/
+      (assets/v/core/data.<the short hash of its bytes, the one sw-files.json holds>.js), which _headers keeps a year.
+      Each page that runs modules (index.html, explore.html, privacy.html, admin.html) gets an import map, just before
+      the first module it asks for, from every module's path, plain or under v/, to its copy; its <link rel="modulepreload"> lines name
+      the copies, and its module scripts become one line of import by the plain path, which the map turns into the
+      copy (a browser without import maps runs the plain files, as before). A page then only ever runs the modules of
+      its own deploy: a changed file is a new name, nothing can answer it with another deploy's bytes, an unchanged
+      one stays in the browser's cache for a year, and 4b carries the last deploy's copies one deploy on, so a tab left
+      open across a deploy still finds its own. Paths a module builds at run time (the router's pages, the table's own
+      modules, lazy()) go through the same map. A Worker has no import map, so the search worker's copy and its
+      modules' copies name their copies in their imports. The plain files are untouched and revalidated on every use
+      (_headers): the crawler pages' topnav.js, and any page from before the map.
    3. The last good prices: data/market-last.json, today's prices as the live site answers them at build time
       (market.json?part=live: every price with the time it was checked), and data/facts/<v>.json, the catalogue's
       words that go with them. A page whose live prices fail or take over 4 seconds reads these instead and says
@@ -263,6 +275,78 @@ async function inline(esbuild, html, f){
   return parts.join('');
 }
 
+/* ---------- 2b. one generation of modules ---------- */
+const MAPPED_PAGES = ['index.html', 'explore.html', 'privacy.html', 'admin.html'];
+const NO_MAP = ['assets/searchworker.js'];   // a Worker: no import map reaches it
+const STATIC_SPEC = /((?:^|[;}\s])(?:import|export)\s*(?:[\w$*{},\s]+?\s*from\s*)?)(["'])(\.{1,2}\/[^"'?]+\.js)\2/g;
+const posixJoin = (from, spec) => new URL(spec, 'https://x/' + from).pathname.slice(1);
+const named = (f, h) => f.replace(/^assets\//, 'assets/v/').replace(/\.js$/, '.' + h + '.js');   // assets/core/data.js -> assets/v/core/data.<h>.js
+const NAMED_COPY = {};   // '/assets/core/data.js' and '/assets/v/core/data.js' -> '/assets/v/core/data.<hash>.js', for homeShell
+async function versions(files){
+  const mods = files.filter(f => /^assets\/.+\.js$/.test(f) && !/^assets\/v\//.test(f));
+  const text = {};
+  for(const f of mods) text[f] = await readFile(join(OUT, f), 'utf8');
+  const V = {};
+  // the Worker's realm: each copy's imports name the copies (its own folder's: copies sit side by side under v/)
+  const done = new Set();
+  const visit = f => {
+    if(done.has(f) || !(f in text)) return;
+    done.add(f);
+    for(const m of text[f].matchAll(STATIC_SPEC)) visit(posixJoin(f, m[3]));
+    text[f] = text[f].replace(STATIC_SPEC, (all, head, q, spec) => {
+      const to = posixJoin(f, spec);
+      return to in V ? head + q + spec.replace(/\.js$/, '.' + V[to] + '.js') + q : all;
+    });
+    V[f] = hash(Buffer.from(text[f]));
+  };
+  for(const root of NO_MAP) visit(root);
+  for(const f of mods) if(!(f in V)) V[f] = hash(Buffer.from(text[f]));
+  const added = [];
+  for(const f of mods){
+    const to = named(f, V[f]);
+    await mkdir(dirname(join(OUT, to)), {recursive: true});
+    await writeFile(join(OUT, to), text[f]);   // the plain file stays as it was built
+    added.push(to);
+    NAMED_COPY['/' + f] = NAMED_COPY['/' + f.replace(/^assets\//, 'assets/v/')] = '/' + to;
+  }
+  // the map: every module by its plain path and by its path under v/ (a copy's relative imports land there)
+  const imports = {};
+  for(const f of Object.keys(V).sort()){
+    imports['./' + f] = './' + named(f, V[f]);
+    imports['./' + f.replace(/^assets\//, 'assets/v/')] = './' + named(f, V[f]);
+  }
+  const tag = '<script type="importmap">' + JSON.stringify({imports}) + '</script>';
+  const copyOf = u => { const p = u.replace(/^\.?\//, ''); return p in V ? named(p, V[p]) : u; };
+  let pages = 0;
+  for(const page of MAPPED_PAGES){
+    if(!files.includes(page)) continue;
+    let html = await readFile(join(OUT, page), 'utf8');
+    // the map goes just before the first module the page asks for: it must come before any, and nothing ahead of it
+    // (the stylesheets, the fonts, the first fetches) waits for it to be read
+    const first = html.search(/<link\s+rel="modulepreload"|<script\b[^>]*type="module"/i);
+    if(first < 0) throw new Error(page + ' asks for no module to put the import map before');
+    // a module script: one line importing the plain path, which the map turns into the copy. The browser's look-ahead
+    // does not see inside an inline script, so each such entry is also preloaded, right after the map, as early as a
+    // <script src> was found
+    const entries = [];
+    html = html.replace(/<script\b([^>]*)\bsrc="([^"?]+\.js)"([^>]*)><\/script>/gi, (all, a, u, b) => {
+      const p = u.replace(/^\.?\//, '');
+      if(!/type="module"/i.test(a + b) || !(p in V)) return all;
+      entries.push(p);
+      return '<script type="module">import"./' + p + '"</script>';
+    });
+    const pre = entries.filter(p => !html.includes('href="' + p + '"')).map(p => '<link rel="modulepreload" href="' + named(p, V[p]) + '">').join('');
+    html = html.slice(0, first) + tag + pre + html.slice(first);
+    html = html
+      .replace(/(<link\s+rel="modulepreload"\s+href=")([^"?]+\.js)(")/gi, (all, a, u, b) => a + copyOf(u) + b);
+    await writeFile(join(OUT, page), html);
+    pages++;
+  }
+  console.log('build: ' + added.length + ' modules with a copy named by their bytes under assets/v/, ' + done.size + ' of them naming the copies in their own imports (no import map: ' +
+    NO_MAP.join(', ') + '); the import map in ' + pages + ' pages');
+  return added;
+}
+
 /* ---------- 3. the last good prices ---------- */
 const PRICES = (process.env.WI_PRICES_FROM || 'https://wraeclastindex.fyi').replace(/\/$/, '');
 const UA = 'wraeclast-index-build/1.0 (contact: https://wraeclastindex.fyi/)';
@@ -333,6 +417,7 @@ async function homeShell(have){
     if(href && /\b(stylesheet|modulepreload|icon)\b/i.test(rel) || href && /\bpreload\b/i.test(rel) && /\bas\s*=\s*["']?(font|style|script|image)/i.test(tag)) want.add(href);
   }
   for(const m of html.matchAll(/<script\b[^>]*\bsrc\s*=\s*["']?([^"'\s>]+)/gi)) want.add(m[1]);
+  for(const m of html.matchAll(/<script type="module">import"([^"]+)"<\/script>/g)) want.add(NAMED_COPY[new URL(m[1], 'https://x/').pathname] || m[1]);
   for(const m of html.matchAll(/<img\b[^>]*>/gi)) for(const s of m[0].matchAll(/\b(?:data-)?src\s*=\s*["']?([^"'\s>]+)/gi)) want.add(s[1]);
   const shell = new Set(), todo = [...want].map(u => new URL(u, 'https://x/').pathname);
   while(todo.length){
@@ -343,7 +428,7 @@ async function homeShell(have){
     // static imports only: import ... from './x.js', import './x.js', export ... from './x.js'
     const src = await readFile(join(OUT, p.slice(1)), 'utf8');
     for(const m of src.matchAll(/(?:^|[;}\s])(?:import|export)\s*(?:[\w$*{},\s]+?\s*from\s*)?["'](\.{1,2}\/[^"']+)["']/g))
-      todo.push(new URL(m[1], 'https://x' + p).pathname);
+      { const t = new URL(m[1], 'https://x' + p).pathname; todo.push(NAMED_COPY[t] || t); }   // what the page's import map makes of it
   }
   return [...shell].sort().map(p => p.slice(1));
 }
@@ -363,8 +448,8 @@ async function manifest(files, have, prev = {}){
 /* ---------- 4b. the previous generation ---------- */
 const PREV_FROM = (process.env.WI_PREV_FROM || 'https://wraeclastindex.fyi').replace(/\/$/, '');
 // the files a page reads by name out of a manifest or its own page: what an older page still asks for
-const CARRY = /^\/data\/(cards|search|explore)\/.+\.[0-9a-f]{8,}\.json$/;
-const folder = p => p.split('/')[2];
+const CARRY = /^\/data\/(cards|search|explore)\/.+\.[0-9a-f]{8,}\.json$|^\/assets\/v\/.+\.[0-9a-f]{16}\.js$/;
+const folder = p => p.startsWith('/assets/') ? 'modules' : p.split('/')[2];
 async function getBytes(url){
   const r = await fetch(url, {headers: {'User-Agent': UA}, signal: AbortSignal.timeout(30000)});
   if(!r.ok) throw new Error(url + ' answered ' + r.status);
@@ -504,6 +589,11 @@ if(!PLAIN){
     warn('minify stopped (' + (e && e.message || e) + '): the files ship as they are');
     try { await copyAll(files); } catch(e2){ console.error('build: the copy failed: ' + (e2 && e2.stack || e2)); process.exit(1); }
   }
+}
+try { files = [...files, ...await versions(files)].sort(); }
+catch(e){
+  console.error('build: the modules could not be versioned, so nothing ships (the live deploy stays): ' + (e && e.stack || e));
+  process.exit(1);
 }
 try { files = [...files, ...await lastPrices()].sort(); }
 catch(e){ warn('NO data/market-last.json (' + (e && e.message || e) + '): a page whose live prices fail says prices are not loaded'); }

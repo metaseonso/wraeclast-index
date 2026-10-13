@@ -163,6 +163,18 @@ hero docks), every tab and back home (elements and heap left behind) and /explor
 row). `node tools/dev/speed.mjs` against the live site, or pass any `http://...`; `--json` for a before and an after,
 `--budget` to fail when a number is over `BUDGET`. About two minutes. Writes nothing.
 
+`swap.mjs`: a deploy swapped under a returning visitor. One local server answers dist A, then dist B on the same
+origin, with each build's own `_headers` and `_redirects`, ETags and 304s; four Chrome profiles visit it: a clean one
+(B only), one that held A in its browser cache, one that held A with its service worker, and a tab left open on A
+that opens Bosses, Currency and a card after B is deployed. Every load must draw the search's priced card within one
+reload, with no module answered 404 and no uncaught error; exit 1 otherwise. `node tools/dev/swap.mjs <dist A>
+<dist B>` (two `node tools/build.mjs --out <dir>` folders), or `--refs <ref A>,<ref B>` to build both from git refs
+in temporary worktrees; `--age=<s>` the wait before the deploy (125: past `max-age=120`, inside
+`stale-while-revalidate`, where the 13 Oct break happened), `--only=held,open` some visitors. Run it on any change
+to how modules are named, loaded or cached: `tools/build.mjs` (step 2b names every module by its bytes and writes the
+import map), `sw.js`, `_headers`, `_redirects`, `assets/core/lazy.js`. Built against 760c444 (stage 9) and ebfee21
+(stage 10) it fails as the live site did; against this naming it passes. About six minutes, four with `--age=5`.
+
 `faults.mjs`: the last-good rule (`tools/lastgood.py`) without the network. It runs a fake builder four
 ways — a source that gives nothing, one that gives 60% of its rows, one that throws, and a builder that dies
 before its pull is even checked — and each time checks that the committed file is untouched, the loud line was

@@ -43,9 +43,10 @@ function lazy(url, what){
     });
   });
 }
-// the module's path answers 404 past every cache: the server has a newer deploy than this page
+// the path the import map made of it answers 404 past every cache: the server has a newer deploy than this page
 function gone(url){
-  return fetch(new URL(url, new URL('../', import.meta.url)).href, {method: 'HEAD', cache: 'no-store'})
+  const plain = new URL(url, new URL('../', import.meta.url)).href;
+  return fetch(import.meta.resolve ? import.meta.resolve(plain) : plain, {method: 'HEAD', cache: 'no-store'})
     .then(r => r.status === 404, () => false);
 }
 /* One line when something would not open: bottom of the screen, gone in a moment. It is only ever drawn after a
