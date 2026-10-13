@@ -1,0 +1,18 @@
+/* The one touch rule (docs/framework.md "Responsive"): on a touch screen, everything a thumb presses is at least 44px
+   tall, whatever the width. Linked last on every page, so no rule in another sheet can make a control smaller again.
+   tools/dev/guard.mjs measures it on a phone (the kind chips, a card's own buttons). */
+@media (pointer:coarse){
+  .chip, .kinds .chip, .pill[role], .btn, .ov-go .btn, .tsearch input, .card-ft .use, .foot .langpick, .fold > .fold-hd,
+  .ov-box .ov-nav button, .kwpeek-go{min-height:44px}
+  .ov-nav .ov-fwd, .ov-nav .ov-x{min-width:44px}
+  /* the Craft tab: its rows and pickers, which were a thumb's size only on a narrow screen */
+  [data-view="craft"] .chip, [data-view="craft"] .btn, [data-view="craft"] .field,
+  [data-view="craft"] .seg button, [data-view="craft"] .linkbtn, [data-view="craft"] .cr-tr,
+  [data-view="craft"] .cr-open, [data-view="craft"] .cr-card, [data-view="craft"] .cr-foff,
+  [data-view="craft"] .cr-tag, [data-view="craft"] .tsearch-row, [data-view="craft"] .cr-mrow,
+  [data-view="craft"] .cr-basecard, [data-view="craft"] .cr-wrow, [data-view="craft"] .cr-mall,
+  [data-view="craft"] input[type=range]{min-height:44px}
+  [data-view="craft"] .chip, [data-view="craft"] .cr-foff, [data-view="craft"] .cr-tag,
+  [data-view="craft"] .linkbtn{display:inline-flex; align-items:center}
+  [data-view="craft"] .chip{min-width:44px; justify-content:center}
+}

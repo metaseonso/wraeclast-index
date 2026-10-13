@@ -11,7 +11,7 @@
 /* a phone: one slim bar that scrolls away with the page, so the screen is the page's (the menu opens from it) */
  @media (max-width:640px){.top{position:relative}
 }
-.top-in{position:relative; max-width:1400px; margin:0 auto; padding:10px 16px; display:flex; align-items:center; gap:14px; flex-wrap:wrap}
+.top-in{position:relative; container:bar / inline-size; max-width:1400px; margin:0 auto; padding:10px 16px; display:flex; align-items:center; gap:14px; flex-wrap:wrap}
 .brand{font-family:var(--disp); font-size:19px; font-weight:600; text-decoration:none; letter-spacing:-.01em; white-space:nowrap}
 .brand em{font-style:normal; color:var(--accent)}
 header.top .brand{font-size:19px; letter-spacing:.03em; color:inherit}   /* the same crest on the drill-down page, whose own .brand is bigger */
@@ -86,7 +86,7 @@ header.top .top-in > .suggestbtn{order:0; margin:0}
   .tabs.topnav > a, .tabs.topnav .navdrop-b{padding-left:8px; padding-right:8px} .top .brand{font-size:17px}
   .top .stamp{flex:0 0.01 auto; min-width:0; overflow:hidden; text-overflow:ellipsis}
 }   /* the search box gives way first */
- @media (max-width:899px){.stamp{display:none}
+ @container bar (width < 860px){.stamp{display:none}
 }
 /* narrower than the row: the index goes into ☰ too, as a sheet under the bar */
 

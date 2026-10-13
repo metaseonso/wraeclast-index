@@ -3,6 +3,7 @@ import { MON, NOW } from '../core/data.js';
 import { esc } from '../core/html.js';
 import { ago } from '../core/format.js';
 import { MODE, PLAY, MODE_KEY } from '../core/store.js';
+import { narrow } from '../core/screen.js';
 
 /* ---------- the stamp and the play mode in the top bar ----------
    Mounted once by assets/app.js on every page with the bar: the app and the drill-down page. */
@@ -54,14 +55,19 @@ if(STAMP){
     try { localStorage.setItem(MODE_KEY, pick.value); } catch {}
     location.reload();
   });
-  // under ☰ where the bar has no room for it: the stamp is gone (under 900px), or the index's whole row has just come
-  // into the bar and the stamp is already down to nothing (1280 to 1379px, assets/css/components/)
-  const tight = matchMedia('(max-width:899px), (min-width:1280px) and (max-width:1379px)');
+  // under ☰ where the bar has no room for it, read off the bar's own width as the stamp's own rule is (the container
+  // "bar", css/components/topbar.css): the stamp is gone (under 860px of bar), or the index's whole row has just come
+  // into the bar and the stamp is already down to nothing (under 1340px of bar, when the row is not folded)
+  const bar = STAMP.closest('.top-in'), folded = narrow();
   const place = () => {
     const more = document.getElementById('topmore');
-    if(tight.matches && more) more.appendChild(sw); else STAMP.before(sw);
+    const cs = bar && getComputedStyle(bar), w = bar ? bar.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight) : innerWidth;
+    const tight = w < 860 || (!folded.matches && w < 1340);
+    if(tight && more){ if(sw.parentNode !== more) more.appendChild(sw); }
+    else if(sw.nextSibling !== STAMP) STAMP.before(sw);
   };
   place();
-  tight.addEventListener('change', place);
+  if(bar && window.ResizeObserver) new ResizeObserver(place).observe(bar); else addEventListener('resize', place);
+  folded.addEventListener('change', place);
 }
 }

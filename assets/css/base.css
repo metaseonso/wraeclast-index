@@ -16,7 +16,7 @@ h1,h2,h3{margin:0; text-wrap:balance}
 /* ---------- top bar: assets/css/components/, which every page loads ---------- */
 
 /* ---------- home ---------- */
-.view{max-width:1400px; margin:0 auto; padding:0 16px 40px}
+.view{max-width:1400px; margin:0 auto; padding:0 16px 40px; container:view / inline-size}   /* a tab lays itself out by its own width */
 .hero{display:flex; flex-direction:column; align-items:center; text-align:center;
   padding-top:clamp(20px, 5vh, 56px); padding-bottom:18px}   /* the crest near the top: the contents sit under the box */
 .hero.docked{padding-top:22px}
@@ -53,8 +53,7 @@ h1,h2,h3{margin:0; text-wrap:balance}
 .chip .ct{font-family:var(--mono); font-size:11px; opacity:.75; margin-left:5px}
 .chip.zero:not([aria-pressed="true"]){opacity:.42}   /* a kind the words found nothing in */
 .kinds .chip[hidden]{display:none}   /* ...is not offered at all while there are words in the box */
- @media (pointer:coarse){.kinds .chip{min-height:44px}
-}
+
 
 .quote{margin:4px auto 2px; text-align:center; font-family:var(--disp, serif); color:var(--muted)}
 .quote blockquote{margin:0; font-style:italic; font-size:15px; letter-spacing:.02em}
@@ -117,7 +116,7 @@ label.note{display:inline-flex; gap:6px; align-items:center; cursor:pointer}
 /* the language switch (#121): a word in the footer's own line, not a control that stands out */
 .foot .langpick{background:transparent; color:var(--muted); border:1px solid var(--line); border-radius:4px;
   padding:0 2px; font-size:11.5px; line-height:1.4; cursor:pointer}
- @media (pointer:coarse){.foot .langpick{min-height:44px; padding:0 8px; font-size:13px}
+ @media (pointer:coarse){.foot .langpick{padding:0 8px; font-size:13px}
 }   /* a thumb's size on touch */
 
 
@@ -174,7 +173,7 @@ a.pill.fm-tq:hover{border-color:var(--accent)}
 .leagueclock .lc-down{color:var(--accent)}
 .leagueclock .lc-sep{margin:0 8px; color:var(--line)}
 /* phones: the fog drifts past the crest but never makes the page wider than the screen */
- @media (max-width:760px){.hero{overflow-x:clip}
+ @container view (width <= 720px){.hero{overflow-x:clip}
 }
 .cr-fam.bare{border:0; background:none; padding:8px 0 0}
 .cr-bar .field{flex:1 1 220px; max-width:360px}
@@ -210,16 +209,7 @@ a.pill.fm-tq:hover{border-color:var(--accent)}
 .cr-base-ls{color:var(--muted)}
   /* ...and every control on this tab is a target, so none of them is under 44px — the bench's own rule
      (assets/css/pages/bench.css), kept by the tab that opens it */
-  @media (max-width:760px){[data-view="craft"] .chip, [data-view="craft"] .btn, [data-view="craft"] .field,
-  [data-view="craft"] .seg button, [data-view="craft"] .linkbtn, [data-view="craft"] .cr-tr,
-  [data-view="craft"] .cr-open, [data-view="craft"] .cr-card, [data-view="craft"] .cr-foff,
-  [data-view="craft"] .cr-tag, [data-view="craft"] .tsearch-row, [data-view="craft"] .cr-mrow,
-  [data-view="craft"] .cr-basecard, [data-view="craft"] .cr-wrow, [data-view="craft"] .cr-mall,
-  [data-view="craft"] input[type=range]{min-height:44px}
-  [data-view="craft"] .chip, [data-view="craft"] .cr-foff, [data-view="craft"] .cr-tag,
-  [data-view="craft"] .linkbtn{display:inline-flex; align-items:center}
-  [data-view="craft"] .chip{min-width:44px; justify-content:center}
-}
+  
 /* end Craft tab */
 /* Admin: the owner's dashboard (admin.html, assets/admin.js) */
 .dv-tag{font:600 10px var(--sans); text-transform:uppercase; letter-spacing:.14em; color:var(--faint); border:2px solid var(--line); border-radius:5px; padding:2px 7px}

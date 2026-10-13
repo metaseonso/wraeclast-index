@@ -1054,6 +1054,7 @@ ${art ? '' : '<meta property="og:image:width" content="1200">\n<meta property="o
 <link rel="stylesheet" href="/assets/css/components/card.css">
 <link rel="stylesheet" href="/assets/css/components/popup.css">
 <link rel="stylesheet" href="/assets/css/components/panels.css">
+<link rel="stylesheet" href="/assets/css/touch.css">
 <link rel="icon" type="image/png" sizes="64x64" href="/assets/brand/favicon-64.png">
 <link rel="icon" type="image/png" sizes="32x32" href="/assets/brand/favicon-32.png">
 <style>${CSS}</style>

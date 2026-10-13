@@ -168,7 +168,7 @@
 .cr-rail .cr-go{margin-bottom:4px}
 
   /* one column: the item and the level it is read at first, then the way to another base, then its pool */
-  @media (max-width:1000px){.cr-craft{grid-template-columns:minmax(0, 1fr); grid-template-areas:"item" "side" "pool" "rail"}
+  @container view (width <= 960px){.cr-craft{grid-template-columns:minmax(0, 1fr); grid-template-areas:"item" "side" "pool" "rail"}
   .cr-mid{display:contents}
   .cr-craft .cr-itemhd{grid-area:item}
   .cr-craft .cr-pool{grid-area:pool}
@@ -177,7 +177,7 @@
   .cr-rail{position:static; max-height:none; overflow:visible}
 }
 
-  @media (max-width:760px){.cr-cols{grid-template-columns:minmax(0, 1fr)}
+  @container view (width <= 720px){.cr-cols{grid-template-columns:minmax(0, 1fr)}
   .cr-vers{padding-left:0}
   /* the ranked table drops the one column a phone can do without: the class, the best tier, the share */
   .cr-whd, .cr-wrow{grid-template-columns:minmax(0, 1fr) minmax(0, 92px) 62px}

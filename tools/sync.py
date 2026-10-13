@@ -66,7 +66,8 @@ TITLE = '<title>Wraeclast Index</title>\n'   # the artifact's own title, in <bod
 # the drill-down's own additions and the forged-bronze look.
 CSS = ('<link rel="stylesheet" href="assets/css/tokens.css">' +
        ''.join('<link rel="stylesheet" href="assets/css/components/' + c + '.css">' for c in ('common', 'icons', 'chips', 'topbar', 'search', 'card', 'popup', 'panels')) +
-       '<link rel="stylesheet" href="assets/bridge.css"><link rel="stylesheet" href="assets/css/look.css">')
+       '<link rel="stylesheet" href="assets/bridge.css"><link rel="stylesheet" href="assets/css/look.css">'
+       '<link rel="stylesheet" href="assets/css/touch.css">')
 ICON = '<link rel="icon" type="image/png" sizes="64x64" href="assets/brand/favicon-64.png">'
 FONTS = ('<link rel="preload" href="assets/fonts/ibmplexsans-latin.woff2" as="font" type="font/woff2" crossorigin>'
          '<link rel="preload" href="assets/fonts/cinzel-latin.woff2" as="font" type="font/woff2" crossorigin>')

@@ -608,6 +608,13 @@ async function checkPhone(bigKeyword, want, index){
       if(!await until(page, OPEN, 8000)) bad.push('a tap on a card did not open it');
       else {
         const b = await evalJS(page, BOX);
+        // the one touch rule (assets/css/touch.css): a thumb's 44px on the kind chips and on the card's own buttons
+        const small = await evalJS(page, '(() => { if(!matchMedia("(pointer:coarse)").matches) return ["the phone here is not a touch screen"];' +
+          ' const els = [...document.querySelectorAll(".kinds .chip, .ov-box .card-ft .btn, .ov-box .card-ft .use")].filter(e => e.getClientRects().length);' +
+          ' if(!els.length) return ["no chip or card button to measure"];' +
+          ' return els.map(e => [(e.textContent || "").trim().slice(0, 20) || e.className, Math.round(e.getBoundingClientRect().height)])' +
+          '   .filter(([, h]) => h < 44).map(([n, h]) => n + " " + h + "px"); })()');
+        if(small.length) bad.push('under a thumb\'s 44px: ' + small.slice(0, 4).join(', '));
         const inx = b.x + b.w / 2, iny = b.y + Math.min(80, b.h / 3);
         await tap(page, inx, iny);
         if(!await evalJS(page, OPEN)) bad.push('a tap inside the card closed it');

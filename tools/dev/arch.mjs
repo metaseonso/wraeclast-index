@@ -65,8 +65,11 @@ export const LINES = {
   tokensUndefined: 0,    // a var(--x) no stylesheet or page defines
   tokensMultiFile: 0,    // a token defined in more than one stylesheet: assets/css/tokens.css defines every one
   rawColours: 240,       // hex, rgb() and hsl() colours written outside a token definition (240 today)
-  firstPaintKB: 249,     // index.html + its stylesheets + the preloaded modules and their imports + two fonts, gzip of the
-                         // source: 248.6 since stage 11 moved each tab's own rules into its own sheet (253 at stage 10, 263.1
+  oddWidths: 0,          // an @media width that is not one of the two (core/screen.js: 640 and 1279) or the pixel past it:
+                         // none since stage 11b (480, 520, 760, 899, 1000 folded in, or a container query)
+  firstPaintKB: 250,     // index.html + its stylesheets + the preloaded modules and their imports + two fonts, gzip of the
+                         // source: 249.3 since stage 11b added the one touch rule's sheet (css/touch.css); 248.6 at 11a, which
+                         // moved each tab's own rules into its own sheet (253 at stage 10, 263.1
                          // at stage 9; each file gzips on its own, and the wire carries them minified and brotli)
 };
 
@@ -449,6 +452,12 @@ const unusedTokens = Object.keys(definedIn).filter(t => !usedAll.has(t) && !defi
 const multiFile = Object.entries(definedIn).filter(([, fs]) => new Set(fs.filter(x => x !== '(page)')).size > 1).map(([t, fs]) => t + ' (' + [...new Set(fs)].map(x => basename(x)).join(', ') + ')').sort();
 const mediaAll = {};
 for(const c of css) for(const [q, n] of Object.entries(c.media)) mediaAll[q] = (mediaAll[q] || 0) + n;
+/* the two widths (assets/core/screen.js SCREEN: 640 and 1279, and the first pixel past each): an @media width that is
+   neither is a one-off; a component lays itself out by its own box (@container) instead */
+const screenSrc = await text(join(ROOT, 'assets', 'core', 'screen.js'));
+const W = [+(screenSrc.match(/phone:\s*(\d+)/) || [])[1], +(screenSrc.match(/bar:\s*(\d+)/) || [])[1]].filter(Boolean);
+const allowed = new Set(W.flatMap(w => [w, w + 1]));
+const oddWidths = Object.keys(mediaAll).flatMap(q => [...q.matchAll(/(?:min|max)-width\s*:\s*(\d+)px/g)].map(m => +m[1]).filter(w => !allowed.has(w)).map(w => q));
 
 const sharedIds = {};
 for(const [name, m] of Object.entries(mod)) for(const id of m.ids) (sharedIds[id] = sharedIds[id] || []).push(name);
@@ -511,9 +520,10 @@ line('htmlNot', css.reduce((a, c) => a + c.htmlNot, 0), LINES.htmlNot);
 line('tokensUndefined', undefinedTokens.length, LINES.tokensUndefined);
 line('tokensMultiFile', multiFile.length, LINES.tokensMultiFile);
 line('rawColours', css.reduce((a, c) => a + c.raw, 0), LINES.rawColours);
+line('oddWidths', oddWidths.length, LINES.oddWidths);
 line('firstPaintKB', KB(fpGz), LINES.firstPaintKB);
 out.over = over;
-out.layers = {up: layersUp, dynamicOff, hubMax, pagesOff, wiOutside};
+out.layers = {up: layersUp, dynamicOff, hubMax, pagesOff, wiOutside, oddWidths};
 out.said = names.length + ' modules, ' + uniqueEdges.length + ' edges, ' + staticCycles.length + ' static cycle' + (staticCycles.length === 1 ? '' : 's') +
   ', ' + longAll.length + ' long functions, ' + css.reduce((a, c) => a + c.htmlNot, 0) + ' html:not(#_), ' + undefinedTokens.length + ' undefined token' + (undefinedTokens.length === 1 ? '' : 's') +
   ', ' + layersUp.length + ' upward, ' + allCycles.length + ' cycle' + (allCycles.length === 1 ? '' : 's') + ' with dynamic, first paint ' + KB(fpGz) + ' KiB gzip';

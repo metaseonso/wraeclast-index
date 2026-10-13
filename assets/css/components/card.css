@@ -2,7 +2,7 @@
 /* Wraeclast Index — the live card, its popup and the top search.
    Shared by the app (index.html) and the drill-down page (explore.html, via bridge.css). */
 /* ---------- the live card: one style for every object ---------- */
-.cards{display:grid; grid-template-columns:repeat(auto-fill, minmax(min(100%, 280px), 1fr)); gap:12px; position:relative}
+.cards{display:grid; grid-template-columns:repeat(auto-fill, minmax(min(100%, 280px), 1fr)); gap:12px; position:relative; container:cards / inline-size}
 .card{position:relative; display:flex; flex-direction:column; gap:8px; background:var(--surface); border:1px solid var(--line);
   border-radius:var(--r); padding:13px 14px 11px; box-shadow:var(--shadow); cursor:pointer; text-align:left;
   color:inherit; text-decoration:none; min-width:0; transition:box-shadow .2s, border-color .2s, translate .2s}
@@ -325,7 +325,7 @@ a.pill.pill-src:hover{color:var(--text); border-color:var(--accent)}
 /* what the chart is, and where it is thin: said plainly under the key (and on its own when there is too
    little to draw a line from at all) */
 .chart-said, .chart .chart-said{margin:4px 0 0; font-size:10.5px; line-height:1.45; color:var(--faint)}
-  @media (max-width:640px){.card.detail h3{font-size:18px}
+  @container ov (width < 640px){.card.detail h3{font-size:18px}
   /* the name comes first: it keeps its room and wraps between words, and the price drops to its own line */
   .card.detail .card-hd{flex-wrap:wrap}
   .card.detail .card-id{min-width:min(100%, 190px)}
@@ -370,8 +370,7 @@ body.nopx :is(.stamp, .card-inv, .uses-px, .tsearch-row .p, .cr-px, .bn-px, .bn-
   stroke-linecap:round; stroke-linejoin:round; transition:rotate .2s cubic-bezier(.2,.8,.2,1)}
 .fold[open] > .fold-hd .fold-ch{rotate:180deg}
 .fold-in{display:grid; gap:6px; padding:4px 0 10px; min-width:0}   /* clear of the sticky bar when a door scrolls to it */
- @media (pointer:coarse){.fold > .fold-hd{min-height:44px}
-}
+
  @media (prefers-reduced-motion:reduce){.fold-ch{transition:none}
 }
 /* a count on the card that is a door to its own Connections group */
