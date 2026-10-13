@@ -257,7 +257,11 @@ function checkMods(){
 async function checkLinks(index, market){
   const miss = [], forms = new Set();
   const src = {
-    app: await readFile(join(ROOT, 'assets', 'app.js'), 'utf8'),
+    // the app's shell and frame, one text (stage 9 of docs/migration.md split assets/app.js into these)
+    app: (await Promise.all(['app.js', 'core/html.js', 'core/store.js', 'core/lazy.js', 'core/data.js', 'core/format.js', 'core/seen.js', 'core/router.js',
+      'core/boot.js', 'frame/card.js', 'frame/popup.js', 'frame/related.js', 'frame/types/index.js', 'frame/types/reqs.js', 'frame/types/damage.js',
+      'frame/types/item.js', 'frame/types/game.js', 'frame/types/market.js', 'frame/types/patches.js', 'frame/types/own.js', 'pages/home.js',
+      'ui/topsearch.js'].map(f => readFile(join(ROOT, 'assets', f), 'utf8').catch(() => '')))).join('\n'),
     kinds: await readFile(join(ROOT, 'assets', 'kinds.js'), 'utf8'),
     edges: await readFile(join(ROOT, 'assets', 'edges.js'), 'utf8'),
     keys: await readFile(join(ROOT, 'assets', 'keys.js'), 'utf8'),

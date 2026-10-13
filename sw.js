@@ -53,6 +53,14 @@ const PAGE_KEYS = ['./', 'explore', 'privacy'];
 const SHELL = ['./', 'explore', 'privacy',
   'assets/css/tokens.css', 'assets/css/motion.css', 'assets/app.css', 'assets/cards.css', 'assets/theme.css', 'assets/look.css', 'assets/bridge.css',
   'assets/core/screen.js', 'assets/core/motion.js',
+  // the shell and the frame (stage 9 of docs/migration.md): what assets/app.js, the door, is made of
+  'assets/core/html.js',   'assets/core/store.js',   'assets/core/lazy.js',   'assets/core/data.js',
+  'assets/core/format.js',   'assets/core/seen.js',   'assets/core/router.js',   'assets/core/boot.js',
+  'assets/frame/card.js',   'assets/frame/popup.js',   'assets/frame/related.js',   'assets/frame/types/index.js',
+  'assets/frame/types/reqs.js',   'assets/frame/types/damage.js',   'assets/frame/types/item.js',   'assets/frame/types/game.js',
+  'assets/frame/types/market.js',   'assets/frame/types/patches.js',   'assets/frame/types/own.js',   'assets/pages/home.js',
+  'assets/ui/topsearch.js',
+
   'assets/app.js', 'assets/kinds.js', 'assets/edges.js', 'assets/graph.js', 'assets/rank.js', 'assets/cut.js',
   'assets/searchworker.js', 'assets/marks.js', 'assets/keys.js', 'assets/suggest.js', 'assets/notes.js',
   'assets/pins.js', 'assets/runs.js', 'assets/support.js', 'assets/track.js', 'assets/topnav.js',
