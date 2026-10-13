@@ -71,7 +71,7 @@ function classData(id){
 /* the bench's own styles and this card's, fetched the first time a build card or a pool row opens and never
    before: none of it is in the first paint, and the service worker keeps it with the rest of a deploy */
 function styles(){
-  return CSS || (CSS = Promise.all(['assets/bench.css', 'assets/builder.css'].map(href => new Promise(ok => {
+  return CSS || (CSS = Promise.all(['assets/css/pages/bench.css', 'assets/css/pages/builder.css'].map(href => new Promise(ok => {
     const l = document.createElement('link');
     l.rel = 'stylesheet';
     l.href = href;

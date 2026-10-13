@@ -1,0 +1,2 @@
+/* The start tab's own rules, linked when the tab mounts (assets/core/router.js; docs/migration.md stage 11). */
+.st-words{justify-content:flex-start; margin:0 0 8px}

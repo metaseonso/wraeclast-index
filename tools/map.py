@@ -24,7 +24,7 @@ What it writes:
 
 Nothing about a kind is written into this file. The kinds, their names, their colours and their counts come
 from the declarations the cards themselves live by (assets/kinds.js, and the palette tokens in
-assets/theme.css), so a new kind — a new league's items, a new list — appears here, in the key and in the
+assets/css/components/), so a new kind — a new league's items, a new list — appears here, in the key and in the
 count with nobody editing this tool. A kind the table does not name yet still lands: it gets a colour of its
 own worked out from its letter and is named by that letter until it has an entry.
 

@@ -278,7 +278,7 @@ STAGES = [
          writes=['data/snapshots/*.json.gz', 'data/patchdiff/*.json'], count={'data/patchdiff/index.json': 'steps'}),
     dict(name='map', run=['tools/map.py'], cadence='patch', source='files, and the live market list',
          reads=['data/index.json', 'data/kwuse.json', 'data/grants.json', 'data/gamedata.json', 'assets/kinds.js',
-                'assets/theme.css', 'data/bosses.json', 'data/dropsfrom.json', 'data/market.json',
+                'assets/css/tokens.css', 'data/bosses.json', 'data/dropsfrom.json', 'data/market.json',
                 'https://wraeclastindex.fyi/data/market.json?part=now'],
          writes=['data/map.png', 'data/map.json', 'data/map-nodes.json'], minutes=15),
     dict(name='guides', run=['tools/guides.py'], cadence='daily', source='the community guides',

@@ -2,8 +2,8 @@
 
    Its own file, fetched the first time a build card or a pool row opens and never before, so none of it is
    in the first paint. The bench's own file comes with it, because the budget rows are the bench's item
-   panel: .bn-side, .bn-h4 and .bn-mods are its, the family rows are the Craft tab's (.cr-fam, assets/app.css)
-   and the sliders are the Trade panel's (.tval, assets/cards.css). What is here is only what none of them
+   panel: .bn-side, .bn-h4 and .bn-mods are its, the family rows are the Craft tab's (.cr-fam, assets/css/base.css)
+   and the sliders are the Trade panel's (.tval, assets/css/components/). What is here is only what none of them
    has: the file tabs, the gear tiles with the card that floats beside one, the tree picture, and the rows a
    cluster's own nodes sit in.
 
@@ -107,7 +107,7 @@
 .bd-jewel .bd-nm:hover{color:var(--accent)}
 
 /* ---------- the optimise button, its answers and what it filled ----------
-   The rows are the bench's log (.bn-log, assets/bench.css) with a put-back on each, because the bench's log
+   The rows are the bench's log (.bn-log, assets/css/pages/bench.css) with a put-back on each, because the bench's log
    is already the shape a list of what a machine did takes here. The answers sit three across where there is
    room and stack on a phone. Nothing below is a control the site does not have: the chips are .chip, the
    buttons are .btn, the headings are .bn-h4. */

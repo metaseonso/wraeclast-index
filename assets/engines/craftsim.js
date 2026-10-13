@@ -54,7 +54,7 @@ function styles(){
   return CSS || (CSS = new Promise(ok => {
     const l = document.createElement('link');
     l.rel = 'stylesheet';
-    l.href = 'assets/bench.css';
+    l.href = 'assets/css/pages/bench.css';
     l.addEventListener('load', ok, {once: true});
     l.addEventListener('error', ok, {once: true});
     document.head.appendChild(l);

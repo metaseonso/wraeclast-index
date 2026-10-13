@@ -95,7 +95,7 @@ export function mountFlag(){
    ever plays off the keys that were just typed, so the browser has its gesture, and it is stopped the moment
    the words go.
    The sound goes first: the drums have LEAD seconds on their own before the words come up, so it is heard
-   coming before it is read (the badge's own delay, assets/app.css .cheat-said).
+   coming before it is read (the badge's own delay, assets/css/base.css .cheat-said).
 
    Where the reader has asked for less motion, the words come up without their entrance. */
 const BEATS = [0, .52, 1.16, 1.68, 2.32, 2.84];   // two, rest, two, rest, two: a march, not a roll

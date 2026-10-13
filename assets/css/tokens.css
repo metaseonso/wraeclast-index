@@ -6,7 +6,7 @@
    1. base   the scales: space, type, radii, the font stacks. The same on every page and in every theme.
    2. theme  the Poison palette: black stone, forged metal, poison green as the light, blood red sparingly, and the
              game's own item colours for names. One theme; there is no light one (the site has never shown one).
-   3. look   the Forged Bronze finish the components are drawn with (assets/look.css): rims, wells, plates, lips. */
+   3. look   the Forged Bronze finish the components are drawn with (assets/css/look.css): rims, wells, plates, lips. */
 
 /* ---------- 1. base ---------- */
 :root{

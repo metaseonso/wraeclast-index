@@ -1,4 +1,4 @@
-import { lazy } from '../core/lazy.js';
+import { lazy, sheet } from '../core/lazy.js';
 import { $ } from '../core/html.js';
 import { SHUT, ROUTES } from '../kinds.js';
 import { wake, need, ready, hist, manifest, prices, searching } from '../core/data.js';
@@ -71,10 +71,11 @@ async function show(e){
   if(r !== 'home') document.querySelectorAll('a[data-list]').forEach(a => a.removeAttribute('aria-current'));
   if(r === 'home') HOME.homeShow(params());
   else {
-    // the page's module first, then what it says it needs; a page that reads files of its own waits for nothing
+    // the page's module and its own sheet (assets/css/pages/<route>.css) together, then what the page says it needs
+    const css = sheet('css/pages/' + r + '.css');
     const mod = await modOf(r);
     if(ON !== r) return;
-    await waitFor(mod.needs);
+    await Promise.all([waitFor(mod.needs), css]);
     if(ON !== r) return;           // left again while the index came in: nothing to draw
     const view = $('#view-' + r);
     if(!LIVE[r]) LIVE[r] = Promise.resolve().then(() => mod.mount(view, mod.state(params())));

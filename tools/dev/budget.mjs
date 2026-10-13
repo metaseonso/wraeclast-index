@@ -34,6 +34,7 @@ import { readFile, readdir, stat } from 'node:fs/promises';
 import { spawnSync } from 'node:child_process';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { brotliCompressSync, constants as Z } from 'node:zlib';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(HERE, '..', '..');
@@ -55,6 +56,9 @@ export const LIMITS = {
   parse: {warn: 512 * KiB, fail: 1 * MiB},
   // the owner's line, not Cloudflare's: what a phone downloads and parses before the search bar answers
   paint: {fail: 700 * KiB},
+  // the home page's stylesheets as the wire carries them (minified in dist/, brotli): the first paint waits for every one
+  // (docs/framework.md §9; 26.5 KiB before docs/migration.md stage 11 moved each tab's own rules into its own sheet)
+  css: {fail: 25 * KiB},
   // what the search worker holds to answer: every kind's search rows. Past the warn, the rows want to load per
   // kind on need rather than all at once (issue #96)
   search: {warn: 2 * MiB, fail: 4 * MiB},
@@ -177,22 +181,24 @@ async function orphans(){
 
 // dist/: files named by their content that neither this deploy nor the previous generation names, and a previous
 // generation that is more than one ({what, note} each)
-const CARRY = /^\/data\/(cards|search|explore)\/.+\.[0-9a-f]{8,}\.json$/;   // tools/build.mjs CARRY
+// tools/build.mjs CARRY: the index's files a page reads by name, and the modules' copies named by their bytes (2b)
+const CARRY = /^\/data\/(cards|search|explore)\/.+\.[0-9a-f]{8,}\.json$|^\/assets\/v\/.+\.[0-9a-f]{16}\.js$/;
+const NAMED_JS = /\.[0-9a-f]{16}\.js$/;
 async function distOrphans(){
   let list = null;
   try { list = JSON.parse(await readFile(join(DIST, 'sw-files.json'), 'utf8')); } catch { return []; }
   const own = list.files || {}, prev = list.prev || {}, out = [], slots = new Set();
   for(const p of Object.keys(prev).sort()){
-    const slot = p.replace(HASHED, '');
+    const slot = p.replace(HASHED, '').replace(NAMED_JS, '.js');
     if(!CARRY.test(p)) out.push({what: p.slice(1), note: 'in the previous generation, but not a file of the index a page reads by name'});
     else if(own[p]) out.push({what: p.slice(1), note: 'in the previous generation and in this deploy both'});
     else if(slots.has(slot)) out.push({what: p.slice(1), note: 'a second older ' + slot.slice(1) + ': the previous generation is one generation'});
     else if(!(await stat(join(DIST, p.slice(1))).catch(() => null))) out.push({what: p.slice(1), note: 'in the previous generation, not in dist/'});
     slots.add(slot);
   }
-  for(const {p, dir} of await walk(join(DIST, 'data'))){
+  for(const {p, dir} of [...await walk(join(DIST, 'data')), ...await walk(join(DIST, 'assets', 'v')).catch(() => [])]){
     const f = '/' + p.slice(DIST.length + 1).split(/[\\/]/).join('/');
-    if(!dir && HASHED.test(f) && !own[f] && !prev[f]) out.push({what: f.slice(1), note: 'in dist/, and neither this deploy nor the previous generation names it'});
+    if(!dir && (HASHED.test(f) || NAMED_JS.test(f)) && !own[f] && !prev[f]) out.push({what: f.slice(1), note: 'in dist/, and neither this deploy nor the previous generation names it'});
   }
   return out;
 }
@@ -258,6 +264,19 @@ export async function checkBudget({offline = false} = {}){
   const paintSum = rows.paint.reduce((a, r) => a + r.n, 0);
   rows.paintSum = note(judge('paint', paintSum, 'home, before a search', LIMITS.paint));
 
+  // css: index.html's stylesheets, each compressed on its own as it is served
+  rows.css = [];
+  {
+    let html = '';
+    try { html = await readFile(join(DIST, 'index.html'), 'utf8'); } catch {}
+    for(const m of html.matchAll(/<link rel="stylesheet" href="([^"]+)"/g)){
+      let n = 0;
+      try { n = brotliCompressSync(await readFile(join(DIST, m[1])), {params: {[Z.BROTLI_PARAM_QUALITY]: 11}}).length; } catch {}
+      rows.css.push({line: 'css', what: m[1], n, state: 'ok'});
+    }
+  }
+  rows.cssSum = note(judge('css', rows.css.reduce((a, r) => a + r.n, 0), 'the first paint\'s stylesheets, brotli', LIMITS.css));
+
   // search: the manifest, the card meta, the heads file and every kind's search rows
   const man = await readJSON('data/manifest.json');
   rows.search = [];
@@ -304,6 +323,7 @@ export function budgetLine(r){
     fmt(r.rows.count[0].n) + '/' + fmt(LIMITS.count.fail) + ' files',
     'parse ' + (parse ? parse.what.replace(/^data\//, '') + ' ' + size(parse.n) + (parse.state === 'held' ? ' (held)' : '/' + size(LIMITS.parse.fail)) : '-'),
     'paint ' + size(r.rows.paintSum.n) + '/' + size(LIMITS.paint.fail),
+    'css ' + size(r.rows.cssSum.n) + '/' + size(LIMITS.css.fail),
     'search ' + size(r.rows.searchSum.n) + '/' + size(LIMITS.search.fail),
     'd1 ' + (d1 ? mb(d1.n) + '/' + mb(LIMITS.d1.fail) : '-'),
     r.rows.orphan.length + ' orphans',
@@ -332,6 +352,10 @@ function table(r){
   out.push('JSON the home page reads before a search (fail over ' + size(LIMITS.paint.fail) + ')');
   for(const x of r.rows.paint) row(x.what, size(x.n), '', x.note);
   row('together', size(r.rows.paintSum.n), r.rows.paintSum.state, size(LIMITS.paint.fail - r.rows.paintSum.n) + ' to the line');
+  out.push('');
+  out.push('the home page\'s stylesheets as the wire carries them, brotli (fail over ' + size(LIMITS.css.fail) + ')');
+  for(const x of r.rows.css) row(x.what, size(x.n), '', '');
+  row('together', size(r.rows.cssSum.n), r.rows.cssSum.state, size(LIMITS.css.fail - r.rows.cssSum.n) + ' to the line');
   out.push('');
   out.push('what the search reads before its first answer (warn ' + size(LIMITS.search.warn) + ', fail ' + size(LIMITS.search.fail) + ')');
   for(const x of r.rows.search) row(x.what, size(x.n), '', '');

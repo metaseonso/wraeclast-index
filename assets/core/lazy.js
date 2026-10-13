@@ -64,4 +64,24 @@ function stuck(what){
   box._go = setTimeout(() => box.remove(), 6000);
 }
 
+/* A stylesheet fetched when it is needed (a tab's own: assets/css/pages/, docs/migration.md stage 11), once a page:
+   resolves when it has loaded, or failed, so a tab is never held back by its styles. */
+const SHEETS = new Map();
+export function sheet(path){
+  const href = new URL('assets/' + path, document.baseURI).href;
+  if(!SHEETS.has(href)) SHEETS.set(href, new Promise(ok => {
+    const el = document.createElement('link');
+    el.rel = 'stylesheet'; el.href = href;
+    el.addEventListener('load', ok, {once: true}); el.addEventListener('error', ok, {once: true});
+    document.head.appendChild(el);
+  }));
+  return SHEETS.get(href);
+}
+/* A module the table names as a kind's own (KINDS own: a boss card is drawn by pages/bosses.js): a page module brings its
+   tab's sheet, since the card can open where the tab never mounted. */
+export function lazyOwn(url, what){
+  const page = url.match(/^\.\/pages\/(\w+)\.js$/);
+  return Promise.all([lazy(url, what), page ? sheet('css/pages/' + page[1] + '.css') : null]).then(([m]) => m);
+}
+
 export { lazy, stuck };

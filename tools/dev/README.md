@@ -29,7 +29,7 @@ worktree (the static files plus `worker/seo.js`, same process, no wrangler) and 
   declaration the frame does not know, a field whose slot, box or type the frame does not have, a field type
   with no renderer or a renderer no field asks for, a field every card carries that one kind drops, a slot
   with no cap, a box no field fills, an edge whose map or kind is not declared.
-- **the map**: a kind drawn in a palette token `assets/theme.css` does not have, and a kind that is in
+- **the map**: a kind drawn in a palette token `assets/css/components/` does not have, and a kind that is in
   neither the map's key nor what `data/map.json` says the picture left out.
 - **the cards**, drawn in headless Chrome over the whole index: a slot over its cap, a slot or a list that
   cut something and did not say how many, and a card that is its own connection or carries a mark that opens
@@ -51,6 +51,7 @@ Every number is in `LIMITS` at the top, each with where it comes from. A warn pa
 | home's JSON before a search | | 700 KiB | the owner's line, for a phone |
 | what the search reads before its first answer | 2 MiB | 4 MiB | past the warn, search rows load per kind on need |
 | a file a job sends the database | | 1.2 MB | a D1 row holds 2 MB; `worker/files.js` takes 1.5 MB |
+| the home page's stylesheets, brotli | | 25 KiB | the first paint waits for every one (26.5 before each tab's own rules got its own sheet) |
 
 What the worker parses is read out of `worker/`: the shipped files it fetches through `env.ASSETS`, every file
 `data/manifest.json` names for the crawler pages (`tools/shards.py`), and the files the jobs send in

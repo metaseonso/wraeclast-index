@@ -9,7 +9,7 @@
    - the group holding the page on show wears the tab's own "here" look: the app marks its links (app.js show()),
      the drill-down page its section buttons (#nav, kept out of sight), and this follows either */
 import { narrow } from './core/screen.js';   // the one place the site's widths are written
-const NARROW = narrow();   // the same width as the sheet in assets/cards.css (SCREEN.bar)
+const NARROW = narrow();   // the same width as the sheet in assets/css/components/ (SCREEN.bar)
 
 const bar = document.querySelector('header.top');
 if(bar && !bar.dataset.nav){

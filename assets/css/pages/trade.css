@@ -1,0 +1,46 @@
+/* The trade tab's own rules, linked when the tab mounts (assets/core/router.js; docs/migration.md stage 11). */
+.tp-ex{display:flex; gap:6px; flex-wrap:wrap; align-items:center; margin-bottom:12px}
+.tp-h{font-family:var(--disp); font-size:16px; margin-top:6px}
+.tp-pick, .tp-add{position:relative; flex:1 1 320px; max-width:560px}
+.tp-pick input, .tp-add input{width:100%}
+.tp-item{display:inline-flex; gap:8px; align-items:center}
+.tp-group{border:2px solid var(--line); border-radius:var(--r); padding:10px 12px; display:grid; gap:8px; background:var(--sunken)}
+.tp-ghd{display:flex; gap:10px; align-items:baseline; flex-wrap:wrap}
+.tp-ghd h4{margin:0; font-size:14px}
+.tp-ghd .tp-del{margin-left:auto; padding:3px 10px; font-size:12px}
+.tp-mod{display:flex; gap:8px; align-items:center; flex-wrap:wrap; padding:6px 8px; border-radius:8px; background:var(--surface)}
+.tp-mtext{flex:1 1 260px; font-size:13px}
+.tp-mod .seg button{padding:3px 9px; font-size:12px}
+.tp-num{width:90px; padding:5px 8px; font:500 13px var(--mono)}
+.tp-x{padding:3px 10px; font-size:12px}
+.tp-grid{display:grid; grid-template-columns:repeat(auto-fill, minmax(200px, 1fr)); gap:8px 14px}
+.tp-grid label{display:flex; flex-direction:column; gap:4px; font-size:12px; color:var(--muted)}
+.tp-grid .tp-num{width:100%}
+.tp-out{position:sticky; bottom:10px; margin-top:12px; display:flex; gap:12px; align-items:center; flex-wrap:wrap; z-index:5; box-shadow:0 10px 30px rgba(0,0,0,.45)}
+.tp-sum{margin:0; flex:1 1 320px; font-size:13px; line-height:1.5}
+/* what the chosen base is narrowing: the Craft tab's own note, drawn beside each list it narrows rather
+   than pinned over the page */
+.tp-fnote{position:static; margin:0}
+.tp-off{font:11px var(--mono); color:var(--neg); margin-left:8px}
+/* a line of the search the item cannot carry: the fact, and the one tap that settles it, on their own row
+   under the line so a phone reads both */
+.tp-why{flex-basis:100%; display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin:0}
+.tp-why:empty{display:none}
+.tp-why .tp-off{margin:0}
+.tp-why .cr-foff{font-size:11px; padding:2px 9px}
+.tp-none{flex-basis:100%; margin:0; font:11px var(--mono); color:var(--neg)}
+.tp-none:empty{display:none}
+/* end Bosses tab */
+/* Trade page: popular searches from everyone */
+.tp-pop{display:flex; flex-wrap:wrap; align-items:center; gap:6px; margin:0 0 10px}
+.tp-pop:empty{display:none}
+.tp-pop .chip{max-width:340px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.tp-types{display:flex; flex-wrap:wrap; align-items:center; gap:6px 14px; margin:10px 0 4px}
+.tp-type{display:inline-flex; align-items:center; gap:6px; font-size:13px; color:var(--text); cursor:pointer}
+.view .panel.tp-out{box-shadow:var(--fa-lip), 0 10px 30px rgba(0,0,0,.6)}
+.tp-group{
+  border:2px solid transparent;
+  background:var(--fa-sunk) padding-box, var(--fa-rim-dim) border-box;
+  box-shadow:inset 0 2px 8px rgba(0,0,0,.6);
+}
+.tp-mod{background:linear-gradient(180deg, #141511, #0E0F0C); box-shadow:inset 0 0 0 1px #221D16}

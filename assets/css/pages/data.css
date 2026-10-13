@@ -1,0 +1,2 @@
+/* The data tab's own rules, linked when the tab mounts (assets/core/router.js; docs/migration.md stage 11). */
+.dt-list{margin:0; padding-left:18px; line-height:1.7}

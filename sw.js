@@ -51,8 +51,8 @@ const PAGE_KEYS = ['./', 'explore', 'privacy'];
 // without sw-files.json: what a visit needs, fetched when a deploy's worker installs, and the drill-down page's data
 // files read from that page (tools/sync.py names them)
 const SHELL = ['./', 'explore', 'privacy',
-  'assets/css/tokens.css', 'assets/css/motion.css', 'assets/app.css', 'assets/cards.css', 'assets/theme.css', 'assets/look.css', 'assets/bridge.css',
-  'assets/bench.css', 'assets/builder.css',
+  'assets/css/tokens.css', 'assets/css/motion.css', 'assets/css/base.css', 'assets/css/components/common.css', 'assets/css/components/icons.css', 'assets/css/components/chips.css', 'assets/css/components/topbar.css', 'assets/css/components/search.css', 'assets/css/components/card.css', 'assets/css/components/popup.css', 'assets/css/components/panels.css',
+  'assets/css/look.css', 'assets/bridge.css', 'assets/css/pages/bench.css', 'assets/css/pages/builder.css',
   // every module, where it lives (docs/framework.md §10)
   'assets/app.js', 'assets/bridge.js', 'assets/core/data.js', 'assets/core/format.js', 'assets/core/html.js',
   'assets/core/lazy.js', 'assets/core/motion.js', 'assets/core/router.js', 'assets/core/screen.js', 'assets/core/seen.js',

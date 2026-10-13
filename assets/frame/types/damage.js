@@ -32,7 +32,7 @@ function flowHTML(it, full){
    declaration and no code. */
 /* Every mark the site wears, drawn once here and nowhere else: a sword for what a hit does, a shield for
    what a hit runs into, a bubble for a note about this card, a question mark for "what is this". A new mark
-   is one line in this table, and whatever carries it draws it at the one size (.mk, assets/cards.css) in
+   is one line in this table, and whatever carries it draws it at the one size (.mk, assets/css/components/) in
    its own colour. */
 export const MARKS = {
   sword:  '<path d="M10 2.2l1.5 2.4v7.2h-3V4.6zM6.6 11.8h6.8M10 11.8v3.5M8.5 17.3h3"/>',

@@ -1,0 +1,203 @@
+/* The the top bar: the index, its menu, the stamp and the mode switch, its buttons, the crest (from assets/css/components/ and assets/css/components/, docs/migration.md stage 11). */
+.glyph .ti{width:20px; height:20px; margin:0; opacity:.7; vertical-align:middle}
+
+/* ---------- top bar: every page (index.html, explore.html via tools/sync.py, privacy.html, worker/seo.js) ----------
+   One row: the crest, the index in its groups, the top search, the price stamp and ☰ (Patch notes, Suggest, Runs,
+   Pins, keybindings). Narrower, the groups go into ☰ as well; on a phone the bar is the crest, search and ☰.
+   The groups and ☰ open on a click or a key (assets/topnav.js).
+   Solid ground, not a blur of the page under it: a blur is redrawn on every frame of a scroll, and at 92% it only ever
+   showed as the ground anyway */
+.top{position:sticky; top:0; z-index:40; background:var(--ground); border-bottom:1px solid var(--line)}
+/* a phone: one slim bar that scrolls away with the page, so the screen is the page's (the menu opens from it) */
+ @media (max-width:640px){.top{position:relative}
+}
+.top-in{position:relative; max-width:1400px; margin:0 auto; padding:10px 16px; display:flex; align-items:center; gap:14px; flex-wrap:wrap}
+.brand{font-family:var(--disp); font-size:19px; font-weight:600; text-decoration:none; letter-spacing:-.01em; white-space:nowrap}
+.brand em{font-style:normal; color:var(--accent)}
+header.top .brand{font-size:19px; letter-spacing:.03em; color:inherit}   /* the same crest on the drill-down page, whose own .brand is bigger */
+.top h1{display:contents}   /* the drill-down page's brand is its h1 */
+.tabs{display:flex; gap:2px; background:var(--sunken); border:1px solid var(--line); border-radius:8px; padding:2px;
+  overflow-x:auto; scrollbar-width:none; max-width:100%}
+.tabs::-webkit-scrollbar{display:none}
+.tabs a{padding:5px 12px; border-radius:6px; font-size:13px; font-weight:500; color:var(--muted); text-decoration:none; white-space:nowrap}
+.tabs a:hover{color:var(--text)}
+.tabs a[aria-current="page"], .tabs .navdrop-b[aria-current="true"]{background:var(--surface); color:var(--text); box-shadow:var(--shadow)}
+.tabs-sep{width:1px; background:var(--line); margin:4px 4px}
+.stamp{font-size:11.5px; color:var(--faint); white-space:nowrap}
+.stamp b{color:var(--muted); font-weight:500}
+.stamp.wait{min-width:190px}   /* about the width of "Prices: <league> · 1 h ago", so the top bar keeps its shape while it loads */
+/* the play mode's switch (assets/app.js, FRAME.modes): a chip that is the stamp's first word, as wide as its word
+   where the browser can size it so; under ☰ with the rest where the bar has no room */
+.modesw{position:relative; flex:none; display:inline-flex; align-items:center; gap:7px; height:34px; padding:0 10px 0 9px;
+  border:2px solid var(--line); border-radius:8px; background:var(--surface); color:var(--muted); cursor:pointer;
+  transition:color .15s, border-color .15s, box-shadow .15s}
+.modesw-ic{width:16px; height:16px; flex:none; fill:none; stroke:currentColor; stroke-width:1.5; stroke-linecap:round; stroke-linejoin:round}
+.modesw-is{font:600 12.5px/1 var(--disp); letter-spacing:.03em; color:var(--text); white-space:nowrap}
+.modesw-c{width:9px; height:9px; flex:none; margin-left:1px; fill:none; stroke:currentColor; stroke-width:1.6; stroke-linecap:round; stroke-linejoin:round}
+.modesw select{position:absolute; inset:0; width:100%; height:100%; opacity:0; cursor:pointer; font-size:16px; border:0; margin:0}
+.modesw:hover{color:var(--text); border-color:var(--accent)}
+.modesw:focus-within{color:var(--text); border-color:var(--accent); box-shadow:0 0 0 3px rgba(140,203,63,.18)}
+.modesw[data-mode]:not([data-mode="trade"]){color:var(--accent)}   /* prices off: the mark in the poison green */
+.topmore .modesw{width:100%; margin:0}   /* the Market tab is prices and nothing else: its blocks never load */
+/* a group of the index: its name, and the pages under it in a box that drops from it */
+.tabs.topnav{overflow:visible; flex:none}
+.navdrop{position:relative; display:flex}
+.navdrop-b{display:inline-flex; align-items:center; padding:5px 12px; border:0; border-radius:6px; background:none; cursor:pointer;
+  font-size:13px; font-weight:500; color:var(--muted); white-space:nowrap}
+.navdrop-b:hover, .navdrop-b[aria-expanded="true"]{color:var(--text)}
+.caret{width:10px; height:10px; margin-left:6px; transition:rotate .15s}
+[aria-expanded="true"] > .caret{rotate:180deg}
+.navdrop-m, .topmore{display:none; position:absolute; z-index:90; flex-direction:column; gap:2px; padding:5px;
+  background:var(--surface); border:1px solid var(--line); border-radius:10px; box-shadow:0 18px 50px rgba(0,0,0,.35)}
+.navdrop-m{left:-4px; top:calc(100% + 8px); min-width:170px}
+.navdrop.open .navdrop-m{display:flex}
+.tabs .navdrop-m a{padding:7px 12px}
+/* ☰ and the search button a phone has in place of the top search */
+.topbtn{flex:none; display:grid; place-items:center; width:34px; height:34px; padding:0; cursor:pointer; color:var(--faint);
+  border:2px solid var(--line); border-radius:8px; background:var(--surface); transition:color .15s, border-color .15s}
+.topbtn:hover, .topbtn[aria-expanded="true"]{color:var(--text); border-color:var(--accent)}
+.topbtn svg{width:18px; height:18px}
+.topfind{display:none}
+.topmenu{display:contents}
+.topmore{right:16px; top:calc(100% + 6px); gap:6px; padding:8px; min-width:190px}
+.top.menu .topmore{display:flex}
+header.top .topmore > button{order:0; margin:0; width:100%; justify-content:flex-start; text-align:left}
+header.top .topmore .keysbtn{display:flex; align-items:center; gap:8px; padding:0 10px; font:500 12px/1 var(--sans); color:var(--muted)}
+.topmore .keys-lbl{display:inline}
+.keysbtn svg{flex:none}
+ @media (max-width:640px), (hover:none) and (pointer:coarse){header.top .topmore .keysbtn{display:none}
+}   /* no keyboard, no shortcuts */
+/* one row: the top search gives up its width; a page without the app has nothing else for ☰ to hold */
+ @media (min-width:641px){.top-in{flex-wrap:nowrap} .top .stamp{flex:none}
+}
+ @media (min-width:1280px){.topbtn.narrow{display:none}
+}
+/* Suggest: in the bar beside ☰ while the index is in the bar, under ☰ with it otherwise (assets/topnav.js moves it) */
+header.top .top-in > .suggestbtn{order:0; margin:0}
+ @media (max-width:1279px){.top-in > .suggestbtn{display:none}
+}
+/* the row is tight until 1420px: the stamp keeps its age and lets the league go (it is in the stamp's tooltip) */
+ @media (min-width:1280px){.stamp-lg{display:none} .stamp.wait{min-width:110px}
+}
+/* the index's eight sections in one row from 1280 up (the row stops growing at the page's own width): the row's
+   own icons go (each page keeps its icon in its group's menu), the price stamp keeps the league for its tooltip,
+   and the search box takes what is left */
+ @media (min-width:1280px){.topnav > a > .ti{display:none} .top .topsearch{min-width:120px}
+  .tabs.topnav > a, .tabs.topnav .navdrop-b{padding-left:8px; padding-right:8px} .top .brand{font-size:17px}
+  .top .stamp{flex:0 0.01 auto; min-width:0; overflow:hidden; text-overflow:ellipsis}
+}   /* the search box gives way first */
+ @media (max-width:899px){.stamp{display:none}
+}
+/* narrower than the row: the index goes into ☰ too, as a sheet under the bar */
+
+  @media (max-width:1279px){.topmenu{display:none; position:absolute; left:0; right:0; top:calc(100% + 1px); z-index:90; max-height:calc(100dvh - 64px); overflow:auto;
+    overscroll-behavior:contain; padding:12px 16px 16px; background:var(--ground); border-bottom:1px solid var(--line); box-shadow:0 14px 30px rgba(0,0,0,.55)}
+  .top.menu .topmenu{display:block}
+  .tabs.topnav{flex-direction:column; align-items:stretch; padding:4px}
+  .tabs.topnav > a, .tabs.topnav .navdrop-b{padding:10px 12px; font-size:14px}
+  .navdrop{flex-direction:column}
+  .navdrop-m, .topmenu .navdrop-m{position:static; min-width:0; padding:0 0 4px 22px; background:none; border:0; box-shadow:none}
+  .tabs.topnav .navdrop-m a{padding:9px 12px; font-size:14px}
+  .topmore, .topmenu .topmore{position:static; display:flex; flex-direction:row; flex-wrap:wrap; gap:8px; margin-top:12px; padding:0;
+    min-width:0; background:none; border:0; box-shadow:none}
+  header.top .topmore > button{width:auto}
+}
+ @media (min-width:641px) and (max-width:1279px){.topmenu{left:auto; right:0; width:360px}
+}   /* under ☰, not across the page */
+
+  @media (max-width:640px){.top-in{gap:8px; padding-block:8px}
+  .topfind{display:grid}
+  .top .topsearch{display:none}
+  .top.find .topsearch{display:block}
+  body[data-route="home"] .top.find .topsearch{display:none}
+}
+
+/* ---------- top search: on every page but home; / jumps into it ---------- */
+.topsearch{position:relative; flex:0 1 340px; min-width:180px}
+body[data-route="home"] .top .topsearch{display:none}
+ @media (max-width:640px){.topsearch{flex:1 1 100%; order:5}
+}
+
+/* ---------- keybindings: the keyboard button in the top bar and its popup (assets/keys.js) ---------- */
+.keysbtn{order:99; flex:none; align-self:center; display:grid; place-items:center; width:34px; height:34px; padding:0; cursor:pointer;
+  border:2px solid var(--line); border-radius:8px; background:var(--surface); color:var(--faint); transition:color .15s, border-color .15s}
+.keysbtn:hover{color:var(--text); border-color:var(--accent)}
+header.top .keysbtn{margin-left:auto}   /* far right, even when the header wraps */
+.keysbtn svg{width:18px; height:18px}
+ @media (max-width:640px), (hover:none) and (pointer:coarse){.keysbtn{display:none}
+}
+/* the Suggest button (assets/suggest.js): top bar, left of the keybind button */
+.suggestbtn{order:98; flex:none; align-self:center; display:inline-flex; align-items:center; gap:7px;
+  height:34px; padding:0 12px; font:500 12px/1 var(--sans); letter-spacing:.03em;
+  color:#E8C77A; background:#0B0B09; border:2px solid #7A5F2C; border-radius:8px; cursor:pointer;
+  transition:box-shadow .15s, border-color .15s, color .15s}
+.suggestbtn:hover, .suggestbtn:focus-visible{border-color:#C9A24E; color:#F6DC9A; box-shadow:0 0 12px rgba(201,162,78,.35); outline:none}
+body > .suggestbtn{position:fixed; left:14px; bottom:14px; z-index:90}   /* a page with no top bar */
+header.top .suggestbtn{margin-left:auto}
+header.top .suggestbtn ~ .keysbtn{margin-left:0}
+/* Patch notes (assets/notes.js): top bar button and its popup */
+.notesbtn{order:97; flex:none; align-self:center; height:34px; padding:0 10px; cursor:pointer; font:500 12px/1 var(--sans);
+  color:var(--muted); background:var(--surface); border:2px solid var(--line); border-radius:8px; transition:color .15s, border-color .15s}
+.notesbtn:hover, .notesbtn:focus-visible{color:var(--text); border-color:var(--accent); outline:none}
+.notesbtn .ct{font-family:var(--mono); font-size:10.5px; color:var(--faint); margin-left:4px}
+header.top .notesbtn{margin-left:auto}
+header.top .notesbtn ~ .suggestbtn{margin-left:0}
+ @media (max-width:640px){.notesbtn .ct{display:none}
+}
+/* Pins (assets/pins.js): top bar button, between Suggest and the keybind button, and the box it opens */
+.pinsbtn{order:98; flex:none; align-self:center; height:34px; padding:0 10px; cursor:pointer; font:500 12px/1 var(--sans);
+  color:var(--muted); background:var(--surface); border:2px solid var(--line); border-radius:8px; transition:color .15s, border-color .15s}
+.pinsbtn:hover, .pinsbtn:focus-visible{color:var(--text); border-color:var(--accent); outline:none}
+.pinsbtn .ct{font-family:var(--mono); font-size:10.5px; color:var(--faint); margin-left:4px}
+ @media (max-width:640px){.pinsbtn .ct{display:none}
+}
+
+/* Runs (assets/runs.js): the same button as Pins, one place to its left, and the box it opens */
+.runsbtn{order:97; flex:none; align-self:center; height:34px; padding:0 10px; cursor:pointer; font:500 12px/1 var(--sans);
+  color:var(--muted); background:var(--surface); border:2px solid var(--line); border-radius:8px; transition:color .15s, border-color .15s}
+.runsbtn:hover, .runsbtn:focus-visible{color:var(--text); border-color:var(--accent); outline:none}
+.runsbtn .ct{font-family:var(--mono); font-size:10.5px; color:var(--accent); margin-left:4px}
+/* a press is felt without looking at the number: the button takes the accent for a moment */
+.runsbtn.hit{animation:runhit .45s ease-out}
+ @media (prefers-reduced-motion:reduce){.runsbtn.hit{animation:none}
+}
+#nav button::before{content:""}
+.tabs a, .applinks a, #nav button{display:inline-flex; align-items:center}
+.tabs + .tabs{margin-left:8px}
+
+/* engraved capitals for names and titles, like the game's UI */
+.brand, .hero-title, .pagehd h2, .sect h3, .card-id h3, .panel h2, .secttl, .empty h3{
+  font-family:var(--disp); letter-spacing:.03em;
+}
+.brand em, .hero-title em{color:var(--accent); text-shadow:0 0 18px rgba(140,203,63,.35)}
+.tabs a[aria-current="page"], .tabs .navdrop-b[aria-current="true"], .seg button[aria-pressed="true"], .nav button[aria-pressed="true"]{
+  background:var(--raised); color:var(--text); box-shadow:inset 0 -2px 0 var(--accent)}
+.top, .mast{border-bottom-color:#1E281C; box-shadow:0 1px 0 rgba(168,132,74,.12)}   /* same rounding as the card inside, so its corners are not cut */
+
+/* ---------- the W.I. crest and its miasma ----------
+   Crest and fog textures come from the image API (OpenRouter). The motion is CSS only: each layer
+   drifts, spills and fades on its own slow loop, so the fog moves smoothly and never flips frames.
+   Three depths: haze behind, wisps rising off the badge, and a bank that pools and spills in front
+   of its base, the way fog rolls out of a chemist's cellar. */
+.mark{position:relative; display:inline-grid; place-items:center; width:28px; height:34px; margin-right:9px; vertical-align:middle; translate:0 -2px}
+.mark-logo{position:relative; z-index:1; height:34px; width:auto; filter:drop-shadow(0 0 6px rgba(140,203,63,.14))}
+/* The wisp rises off the crest three times, then a last one rises halfway and stays. A weak machine (html.lite) gets
+   only the last one, and no blend. */
+.mark-wisp{position:absolute; left:50%; bottom:2px; width:44px; height:auto; translate:-50% 0; opacity:0;
+  mix-blend-mode:screen; pointer-events:none; animation:wi-mark-3 22.5s ease-in-out forwards}
+.mark-wisp:not(.on){animation-play-state:paused}
+
+.emblem{position:relative; width:260px; height:230px; margin:0 auto 4px; transition:opacity .3s}
+.emblem-logo{position:absolute; left:50%; top:50%; translate:-50% -50%; z-index:2; height:200px; width:auto; pointer-events:none;
+  filter:drop-shadow(0 0 24px rgba(140,203,63,.09)) drop-shadow(0 10px 30px rgba(0,0,0,.8))}
+  @media (prefers-reduced-motion: reduce){.mark-wisp{display:none}
+}
+
+  @media (max-width:640px){.emblem{width:200px; height:170px} .emblem-logo{height:150px}
+}   /* the fog may drift past the edge */
+/* the price stamp keeps its age whole in the one-row top bar (1280 up, where the row is always full): the search box
+   gives way first, and its "/" hint goes (the Keybindings list has it). The stamp was cut to "2…" on /currency and
+   /explore. */
+ @media (min-width:1280px){.top .stamp{min-width:min-content} .top .topsearch{min-width:76px}
+  .top .tsearch kbd{display:none} .top .tsearch input{padding-right:8px}
+}

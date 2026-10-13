@@ -20,7 +20,7 @@ if(STAMP) NOW.then(M => {
     STAMP.innerHTML = 'Prices from ' + esc(stampTime(M.updated)) + ' · <span class="err">live prices paused</span>';
     return;
   }
-  // the league and its dot are the part a tight row drops (assets/cards.css .stamp-lg); the mode's switch in front
+  // the league and its dot are the part a tight row drops (assets/css/components/ .stamp-lg); the mode's switch in front
   // of it is the stamp's word for what the prices are (below)
   if(M && M.updated) STAMP.title = 'Prices: ' + M.league + ' · ' + ago(M.updated);
   if(M && M.updated) STAMP.innerHTML = '<b class="stamp-lg">' + esc(M.league) + '</b><span class="stamp-lg"> · </span>' + ago(M.updated) +
@@ -55,7 +55,7 @@ if(STAMP){
     location.reload();
   });
   // under ☰ where the bar has no room for it: the stamp is gone (under 900px), or the index's whole row has just come
-  // into the bar and the stamp is already down to nothing (1280 to 1379px, assets/cards.css)
+  // into the bar and the stamp is already down to nothing (1280 to 1379px, assets/css/components/)
   const tight = matchMedia('(max-width:899px), (min-width:1280px) and (max-width:1379px)');
   const place = () => {
     const more = document.getElementById('topmore');
