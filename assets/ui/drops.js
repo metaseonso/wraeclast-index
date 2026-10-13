@@ -9,7 +9,11 @@
    The field says everything that differs between the two ends: which end the card is (`side`), the cards the
    other end may be and the file each is already drawn from (`ends`), and the label. Nothing here names a kind.
    The card asks once a visit, when it is opened; the lists behind the form are read when the form is opened. */
-import { D, esc, openDetail, hrefOf, table, named } from '../app.js';
+import { D, named } from '../core/data.js';
+import { esc } from '../core/html.js';
+import { openDetail } from '../frame/popup.js';
+import { hrefOf } from '../frame/href.js';
+import { table } from '../frame/types/market.js';
 
 const HAD = new Map();      // card key -> the last answer the site gave for it
 const ASKED = new Map();    // ...and the call that is fetching it, so one visit asks once

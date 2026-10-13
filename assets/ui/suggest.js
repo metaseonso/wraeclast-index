@@ -3,7 +3,10 @@
    the card it was sent from where it was sent from one — so the owner's dashboard shows it against the
    thing it is about. Nothing else goes with it: no words typed elsewhere on the page, nothing about the
    person. Notes go to the site's database (worker/community.js) and show on the owner's dashboard only. */
-import { openBox, esc, markHTML, D } from '../app.js';
+import { openBox } from '../frame/popup.js';
+import { esc } from '../core/html.js';
+import { markHTML } from '../frame/types/damage.js';
+import { D } from '../core/data.js';
 import { still } from '../core/motion.js';   // less motion asked for: asked once, in one place
 
 export function mountSuggest(){

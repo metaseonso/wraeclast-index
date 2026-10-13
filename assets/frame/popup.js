@@ -1,11 +1,14 @@
 import { D, LEAGUE_COLOUR, wake, hist, whole, priceOf } from '../core/data.js';
 import { esc } from '../core/html.js';
 import { isUnit, money, ago } from '../core/format.js';
-import { openFold, peekKw, keywordCard, REL_STEP, paintRel, relSection, holdFiles, releaseFiles } from '../frame/related.js';
-import { hrefOf, isItem } from '../frame/types/index.js';
+import { openFold, peekKw, REL_STEP, paintRel, relSection, holdFiles, releaseFiles } from '../frame/related.js';
+import { hrefOf, isItem } from '../frame/href.js';
+import { keywordCard } from '../frame/keywords.js';
+import { setOV, TRACKER } from '../frame/seam.js';
+import { flipSwap } from '../frame/swap.js';
 import { lazy } from '../core/lazy.js';
 import { openMech } from '../frame/types/reqs.js';
-import { flipSwap, OWN } from '../frame/types/own.js';
+import { OWN } from '../frame/types/own.js';
 import { KIND, FIELDS, holds, ACTS, SHUT } from '../kinds.js';
 import { sawCard } from '../core/seen.js';
 import { PLAY } from '../core/store.js';
@@ -199,6 +202,7 @@ function ensureOV(){
   if(!OV){
     OV = document.createElement('div');
     OV.className = 'ov'; OV.hidden = true;
+    setOV(OV);   // what Connections reads to know a card is open (frame/seam.js)
     // the bar sits inside the scroll box, so Back, Forward and Close never scroll away. The tip is a row of
     // the bar, so it sits beside the arrows it is talking about and never covers anything.
     OV.innerHTML = '<div class="ov-scrim"></div><div class="ov-box" role="dialog" aria-modal="true" aria-label="Details" tabindex="-1">' +
@@ -230,7 +234,7 @@ function ensureOV(){
       const kw = t.closest('.kwpeek-go, .kwmark');   // the way on from those words, or a marked word in a line
       if(kw){ const c = keywordCard(kw.dataset.kw); if(c) openDetail(c, {nested: true}, hrefOf(c)); return; }
       const ask = t.closest('.card-ask');   // the mark in the corner: a note about the card you are on
-      if(ask){ lazy('./suggest.js').then(m => m.openSuggest(ask.dataset.ask), () => {}); return; }
+      if(ask){ lazy('./ui/suggest.js').then(m => m.openSuggest(ask.dataset.ask), () => {}); return; }
       const hl = t.closest('.hlink, .card-offer');   // a word in a line, or the offer: a mechanics card (tools/mechanics.py)
       if(hl){ openMech(hl.dataset.h, {nested: true}); return; }
       const sw = t.closest('[data-swap]');   // a switch on the card: the same card again, with it on
@@ -357,8 +361,6 @@ export function openBox(node, label = 'Details'){
 }
 /* opts.nested: opened from inside the popup (a keyword, or something that uses it).
    opts.onFull: the drill-down page's own full-stats panel, offered as a button. */
-let TRACKER = null;   // assets/track.js once it is in: the owner's counts
-function setTracker(m){ TRACKER = m; }
 export function openDetail(it, opts = {}, href){
   if(TRACKER && it && it.k && it.n) TRACKER.note('opened:' + it.k + ':' + it.n);
   const key = it.k + ':' + it.id;
@@ -504,7 +506,7 @@ function paintStep(){
       if(open){ open.remove(); tb.setAttribute('aria-expanded', 'false'); return; }
       tb.disabled = true;
       try {
-        const {tradePanel} = await lazy('./trade.js', 'The trade listings');
+        const {tradePanel} = await lazy('./engines/trade.js', 'The trade listings');
         body.appendChild(await tradePanel(it));
         tb.setAttribute('aria-expanded', 'true');
         row.scrollIntoView({block: 'start'});   // the panel opens below the fold: show it, with the button above it
@@ -637,4 +639,4 @@ setCardKeys(id => {
   return false;
 });
 
-export { OV, TRACKER, setTracker };
+

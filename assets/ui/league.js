@@ -1,7 +1,8 @@
 /* The league clock in the top bar of the home page: the current league and how long it has run, and a live
    countdown to the next one (data/leagues.json, from poe2db's league list, refreshed hourly by
    tools/leagues.py). poe2db gives dates only, so both clocks count from the start of that day (UTC). */
-import { D, esc, leagues } from '../app.js';
+import { D, leagues } from '../core/data.js';
+import { esc } from '../core/html.js';
 
 const when = iso => Date.parse(iso + 'T00:00:00Z');
 const nice = iso => new Date(when(iso)).toLocaleDateString('en-GB', {day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC'});

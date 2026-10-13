@@ -5,16 +5,18 @@
    data job's cycle and last run from the worker's own health answer (/api/health, worker/health.js). A job the
    site does not run is not on the page, and one that has stopped says so in the same words the owner's
    dashboard uses. The page is its own tab, so none of it is fetched until somebody opens it. */
-import { esc, ago, manifest, prices } from '../app.js';
+import { esc } from '../core/html.js';
+import { ago } from '../core/format.js';
+import { manifest, prices } from '../core/data.js';
 import { contentsHTML } from '../kinds.js';
 
 /* ---------- the page contract ----------
    What every tab module says about itself (docs/framework.md, "Pages"): the route it answers, what it needs before
-   it is mounted, and the state its address carries. The router (assets/app.js show) decides on its own until
-   docs/migration.md stage 10 lands; until then `needs` states what the router awaits for this tab today, and
-   `state` is the one place this tab reads its address. */
+   it is mounted, and the state its address carries. The router (assets/core/router.js) reads them: it
+   fetches this file, waits for what `needs` names, and mounts it with `state(params())`; `state` is the one place
+   this tab reads its address. */
 export const route = 'data';
-export const needs = ['manifest', 'prices'];   // the manifest and today's prices, which it awaits itself
+export const needs = ['manifest', 'prices'];   // the manifest and today's prices
 export function state(p){ return {}; }
 
 let EL = null;

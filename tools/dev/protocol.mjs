@@ -4,7 +4,7 @@
      node tools/dev/protocol.mjs --check    the same, one line
 
    Read out of the code, never run:
-     the page      every ask('<op>', {...}) in the shell and the frame (assets/core/data.js and what asks through it): the op must be in the table, and every field in the
+     the page      every ask(OP.<op>, {...}) in the shell and the frame (a string op fails) (assets/core/data.js and what asks through it): the op must be in the table, and every field in the
                    object it sends must be one the op asks for. Where the answer is read on the spot,
                    (await ask('<op>', ...)).<field>, the field must be one the op answers
      the worker    every op in the table has a handler in assets/searchworker.js OPS, keyed by OP.<op>, the worker
@@ -33,13 +33,13 @@ function fields(body){
 
 export async function checkProtocol(){
   const { PROTOCOL } = await import(pathToFileURL(join(ROOT, 'assets', 'search', 'protocol.js')).href);
-  // the page's side of the seam lives in the shell and the frame since stage 9 (docs/migration.md); app.js is the door
+  // the page's side of the seam: the shell and the frame (assets/core/data.js asks, and what asks through it)
   const page = (await Promise.all(['core/data.js', 'frame/popup.js', 'frame/related.js', 'pages/home.js', 'ui/topsearch.js', 'app.js']
     .map(f => readFile(join(ROOT, 'assets', f), 'utf8').catch(() => '')))).join('\n');
   const worker = await readFile(join(ROOT, 'assets', 'searchworker.js'), 'utf8');
   const bad = [], sent = {};
-  // the page: ask('<op>', {k: v, ...}) and ask('<op>'), the object literal read to its own closing brace
-  for(const m of page.matchAll(/(?<![.\w])ask\(\s*'(\w+)'/g)){
+  // the page: ask(OP.<op>, {k: v, ...}) and ask(OP.<op>), the object literal read to its own closing brace
+  for(const m of page.matchAll(/(?<![.\w])ask\(\s*OP\.(\w+)/g)){
     const op = m[1], spec = PROTOCOL[op];
     sent[op] = (sent[op] || 0) + 1;
     if(!spec){ bad.push('the page asks "' + op + '", which the table does not have'); continue; }
@@ -61,8 +61,8 @@ export async function checkProtocol(){
     if(after && page.slice(m.index - 7, m.index) === '(await ' && !spec.answer.includes(after[1]))
       bad.push('the page reads "' + after[1] + '" off the answer to ' + op + ', which the table does not answer with');
   }
-  // an ask whose op is not a name from the table (the helper's own definition aside)
-  for(const m of page.matchAll(/(?<![.\w])ask\(\s*([^'\s)][^,)]*)/g))
+  // an ask whose op is not a name from the table: a string of its own, or anything else (the helper's own definition aside)
+  for(const m of page.matchAll(/(?<![.\w])ask\(\s*(?!OP\.)([^\s)][^,)]*)/g))
     if(!/function ask\($/.test(page.slice(Math.max(0, m.index - 9), m.index + 4)))
       bad.push('the page asks with something that is not a name from the table: ask(' + m[1].trim() + ')');
   // the worker: const OPS = { [OP.x]: ..., } and nothing keyed by a bare word

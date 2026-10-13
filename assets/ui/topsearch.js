@@ -1,12 +1,26 @@
-import { openDetail, setTracker } from '../frame/popup.js';
-import { hrefOf } from '../frame/types/index.js';
-import { priceOf, find, D, searching } from '../core/data.js';
+import { openDetail, setTracker } from '../frame/seam.js';
+import { hrefOf } from '../frame/href.js';
+import { priceOf, find, D, searching, wake } from '../core/data.js';
 import { iconHTML, moneyHTML } from '../core/format.js';
 import { esc, onType, $ } from '../core/html.js';
 import { initKeys } from '../keys.js';
-import { IS_APP } from '../core/boot.js';
+import { IS_APP } from '../core/html.js';
 import { route } from '../core/router.js';
 import { lazy } from '../core/lazy.js';
+
+/* An item copied in game (Ctrl+C) and pasted into either search box opens its card (assets/ui/paste.js). Only the
+   game's own item text: a first line naming the class or the rarity, a rarity line and a line of dashes. Any
+   other paste, and all typing, goes into the box as ever. The reader is fetched on the first such paste. */
+const ITEM_PASTE = t => /^\s*(?:Item Class|Rarity): \S/.test(t) && /^Rarity: \S/m.test(t) && /^-{8,}\s*$/m.test(t);
+const BOX = '#view-home #q, .tsearch input';   // the home page's box and the top search
+addEventListener('paste', e => {
+  const box = e.target && e.target.closest && e.target.closest(BOX);
+  const t = box && e.clipboardData && e.clipboardData.getData('text/plain');
+  if(!t || !ITEM_PASTE(t)) return;
+  e.preventDefault();
+  wake();
+  lazy('./ui/paste.js', 'The item').then(m => m.pasted(t, box), () => {});
+}, true);
 
 /* ---------- top search ----------
    On every page but home. Results drop down under the bar; each opens the popup. */
@@ -59,12 +73,12 @@ initKeys(() => (IS_APP && route() === 'home' && document.getElementById('q')) ||
    few files share the line with the search rows, so they wait until the search has answered (tools/dev/speed.mjs
    phone, #117). Any other page loads them at once. */
 function extras(){
-  lazy('./suggest.js').then(m => { m.mountSuggest(); m.mountFlag(); }).catch(() => {});   // the Suggest button, and the owner's own flag
-  lazy('./notes.js').then(m => m.mountNotes()).catch(() => {});       // Patch notes, on every page
-  lazy('./pins.js').then(m => m.mountPins()).catch(() => {});         // the Pins button, and the list it opens
-  lazy('./runs.js').then(m => m.mountRuns()).catch(() => {});         // the run counter, and the key that counts one
-  lazy('./support.js').then(m => m.mountSupport()).catch(() => {});   // Support link, once data/support.json is filled in
-  lazy('./track.js').then(m => { setTracker(m); m.mountTrack(); }).catch(() => {});       // page views and clicks for the owner's dashboard
+  lazy('./ui/suggest.js').then(m => { m.mountSuggest(); m.mountFlag(); }).catch(() => {});   // the Suggest button, and the owner's own flag
+  lazy('./ui/notes.js').then(m => m.mountNotes()).catch(() => {});       // Patch notes, on every page
+  lazy('./ui/pins.js').then(m => m.mountPins()).catch(() => {});         // the Pins button, and the list it opens
+  lazy('./ui/runs.js').then(m => m.mountRuns()).catch(() => {});         // the run counter, and the key that counts one
+  lazy('./ui/support.js').then(m => m.mountSupport()).catch(() => {});   // Support link, once data/support.json is filled in
+  lazy('./ui/track.js').then(m => { setTracker(m); m.mountTrack(); }).catch(() => {});       // page views and clicks for the owner's dashboard
   mountGuide();                                                       // the community guide under the hero
 }
 if(document.getElementById('view-home') && /^#\/\?(.*&)?q=[^&]/.test(location.hash))

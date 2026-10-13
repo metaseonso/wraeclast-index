@@ -8,14 +8,19 @@
    (tools/patchdiff.py, data/patchdiff/): one step at a time, newest first, every change grouped by kind, a chip per kind and one for what the patch notes never
    name. A step's file is fetched when it is picked. The rows and the words are the card's own (FIELDS.patchdiff,
    diffRowsHTML), so a change reads the same here as on the card it is on. */
-import { esc, patchName, params, named, openDetail, hrefOf, diffRowsHTML, diffLinesHTML } from '../app.js';
+import { esc } from '../core/html.js';
+import { patchName, diffRowsHTML, diffLinesHTML } from '../frame/types/patches.js';
+import { params } from '../core/router.js';
+import { named } from '../core/data.js';
+import { openDetail } from '../frame/popup.js';
+import { hrefOf } from '../frame/href.js';
 import { namedIn, FIELDS } from '../kinds.js';
 
 /* ---------- the page contract ----------
    What every tab module says about itself (docs/framework.md, "Pages"): the route it answers, what it needs before
-   it is mounted, and the state its address carries. The router (assets/app.js show) decides on its own until
-   docs/migration.md stage 10 lands; until then `needs` states what the router awaits for this tab today, and
-   `state` is the one place this tab reads its address. */
+   it is mounted, and the state its address carries. The router (assets/core/router.js) reads them: it
+   fetches this file, waits for what `needs` names, and mounts it with `state(params())`; `state` is the one place
+   this tab reads its address. */
 export const route = 'patches';
 export const needs = [];   // the patch registry and the data diff are its own files; it never waits for the index
 export function state(p){ return {d: p.get('d') || ''}; }

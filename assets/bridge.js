@@ -30,7 +30,7 @@ import {SECTIONS} from './kinds.js';   // what each section is called: the one t
     });
   }
   const host = document.getElementById('topsearch');   // the same top search as the app, with the same popups
-  let M = null;   // the app module, once loaded: its cards and popup
+  let M = null;   // the app's pieces, once loaded: its cards and popup
   const idle = f => (window.requestIdleCallback || (g => setTimeout(g, 1200)))(f, {timeout: 4000});
   // the page's data comes in files (tools/sync.py DATA_JS); WI_DATA.q is done when its scripts have drawn the tab in the address
   const drawn = window.WI_DATA && WI_DATA.q ? WI_DATA.q : null;
@@ -46,8 +46,10 @@ import {SECTIONS} from './kinds.js';   // what each section is called: the one t
   let app = null;
   function loadApp(){
     if(app) return app;
-    app = import('./app.js').then(m => {
-      M = m;
+    // the boot (the bar's stamp), then what this page borrows, each from where it lives
+    app = Promise.all([import('./app.js'), import('./core/data.js'), import('./ui/topsearch.js'), import('./ui/crest.js'),
+      import('./core/sw.js'), import('./frame/keywords.js'), import('./frame/popup.js')]).then(([, data, top, crest, sw, kw, pop]) => {
+      const m = M = {...data, ...top, ...crest, ...sw, ...kw, openDetail: pop.openDetail};
       if(host){
         m.mountTopSearch(host);
         const q = host.querySelector('input');   // typed while the app was on its way

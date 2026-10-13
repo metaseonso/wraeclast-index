@@ -26,7 +26,11 @@
      assumption(key)    what this card is being carried on as, '' where the player has said nothing
      assumptions()      all of them at once, for a set of numbers to be worked out against
      reported(key)      what players have said about one, asked for once a visit */
-import { D, esc, openDetail, hrefOf, ago, openBox } from '../app.js';
+import { D } from '../core/data.js';
+import { esc } from '../core/html.js';
+import { openDetail, openBox } from '../frame/popup.js';
+import { hrefOf } from '../frame/href.js';
+import { ago } from '../core/format.js';
 import * as marks from '../marks.js';
 
 const KIND = 'q';                    // an interaction card (assets/kinds.js, tools/interactions.py)

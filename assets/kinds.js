@@ -768,7 +768,7 @@ export const ACTS = {
      item as it stands and says so in a line. `short` is the same act in a card's own corner, where there is
      room for a word and not a phrase; the act, the test and what it opens are the one declaration either way.
      docs/craft-sim.md, "The bench card". */
-  bench: {label: 'Crafting bench', short: 'Bench', own: './craftsim.js', go: 'openBench',
+  bench: {label: 'Crafting bench', short: 'Bench', own: './engines/craftsim.js', go: 'openBench',
           only: {c: {at: 's', of: ['Currency', 'Essences', 'Omens', 'Runes', 'Soul Cores', 'Idols',
                                    'Catalysts', 'Abyssal Bones', 'Verisium']}}},
   /* Every card a build can hold travels to a build file, the same way a base travels to the bench: a gem, a
@@ -777,7 +777,7 @@ export const ACTS = {
      nothing is chosen by ticking. A currency that is not a gem has nothing to hand a build, so it has no
      pool act. An act with a `page` is drawn only while that page is open (SHUT), because a button into a
      closed room is worse than no button. docs/proposal-builder.md, "How a card gets to a build file". */
-  pool:  {label: 'Add to a build', own: './builder.js', go: 'openPool', page: 'build',
+  pool:  {label: 'Add to a build', own: './engines/builder.js', go: 'openPool', page: 'build',
           only: {c: {at: 's', of: ['Uncut Gems', 'Lineage Supports']}}},
   open:  {label: 'Open in '},
 };
@@ -1005,7 +1005,7 @@ export const KINDS = [
    acts: ['pin'],
    rel: ['namedby', 'cat']},
 
-  {k: 'x', one: 'Boss', tone: 'str', many: 'Bosses', place: 'Bosses', link: './#/bosses?q=@n', own: './bosses.js',
+  {k: 'x', one: 'Boss', tone: 'str', many: 'Bosses', place: 'Bosses', link: './#/bosses?q=@n', own: './pages/bosses.js',
    search: true, sprite: 'bosses',
    fields: [...HEAD, ...BODY, 'gothere', ...FOOT],
    acts: ['pin', 'open'],
@@ -1076,7 +1076,7 @@ export const KINDS = [
      has no rows in the index — you reach it from a base, from the currency it crafts with, or from the Craft
      tab — so the search does not carry it and the map names it among what it left out. Its own module draws
      the currency tab in the box `benchtab` leaves and answers the card's controls (docs/craft-sim.md). */
-  {k: 'n', one: 'Bench', many: 'Bench', place: 'Craft', own: './craftsim.js',
+  {k: 'n', one: 'Bench', many: 'Bench', place: 'Craft', own: './engines/craftsim.js',
    fields: [...HEAD, ...SAYS, 'benchitem', 'benchtab', 'benchpicks', 'benchnote', 'launch', ...REST, ...FOOT],
    acts: [],
    rel: []},
@@ -1085,7 +1085,7 @@ export const KINDS = [
      has no rows in the index — you reach it from the pool row under any card a build can hold — so the
      search does not carry it and the map names it among what it left out. Its own module keeps the files
      (three open at once, a guest's in the session) and answers every control on it. */
-  {k: 'f', one: 'Build', many: 'Builds', own: './builder.js',
+  {k: 'f', one: 'Build', many: 'Builds', own: './engines/builder.js',
    fields: [...HEAD, ...SAYS, 'buildfiles', 'budgets', 'optimise', 'geartiles', 'treemap', 'buildtab', ...REST, ...FOOT],
    acts: [],
    rel: []},

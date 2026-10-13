@@ -10,7 +10,8 @@
 
    Kept for the tab (sessionStorage), the way pins are, with the same seam for an account later (#7): load and
    save are the two functions below and nothing else touches the store. */
-import { esc, openBox } from '../app.js';
+import { esc } from '../core/html.js';
+import { openBox } from '../frame/popup.js';
 import { setKey, keyLabel } from '../keys.js';
 
 const STORE = 'wi.runs';

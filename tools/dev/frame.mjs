@@ -66,7 +66,7 @@ export function checkMap(theme, map){
 }
 
 /* ---------- the table ----------
-   `seen` is every kind letter the shipped data really carries; `types` the renderers assets/app.js has, when
+   `seen` is every kind letter the shipped data really carries; `types` the renderers assets/frame/types/ has, when
    a browser was there to ask (the card half passes them in). */
 export function checkTable(seen = [], types = null){
   const bad = [];
@@ -114,8 +114,8 @@ export function checkTable(seen = [], types = null){
 
   // a field type with no renderer, and a renderer no field asks for
   if(types){
-    for(const t of usedTypes) if(!types.includes(t)) bad.push('field type "' + t + '" has no renderer in assets/app.js');
-    for(const t of types) if(!usedTypes.has(t)) bad.push('assets/app.js draws type "' + t + '" and no field is of it');
+    for(const t of usedTypes) if(!types.includes(t)) bad.push('field type "' + t + '" has no renderer in assets/frame/types/');
+    for(const t of types) if(!usedTypes.has(t)) bad.push('assets/frame/types/ draws type "' + t + '" and no field is of it');
   }
 
   /* one rule, every kind: a field the frame marks `every` is on every card, and the kinds that keep their
@@ -284,9 +284,9 @@ export async function checkOneTable(){
 
 /* ---------- the cards ----------
    What runs in the page: every card in the index, drawn in the grid, against the frame's own accounting of
-   what its slots came to (assets/app.js slotsOf). */
+   what its slots came to (assets/frame/card.js slotsOf). */
 export const CARD_PROBE = `(async () => {
-  const m = await import('/assets/app.js');
+  const m = {...await import('/assets/core/data.js'), ...await import('/assets/frame/card.js'), ...await import('/assets/frame/types/index.js')};   // the store, the card, its types
   const k = await import('/assets/kinds.js');
   await m.need();   // the whole index: the page otherwise holds only the cards it shows
   const bad = [], fill = {}, widest = {};
@@ -332,7 +332,7 @@ export const CARD_PROBE = `(async () => {
 
 /* the Connections half: every card's own lists, with both of the files they can read */
 export const REL_PROBE = `(async () => {
-  const m = await import('/assets/app.js');
+  const m = {...await import('/assets/core/data.js'), ...await import('/assets/frame/card.js'), ...await import('/assets/frame/types/index.js')};   // the store, the card, its types
   const e = await import('/assets/edges.js');
   await m.need();   // the whole index: the page otherwise holds only the cards it shows
   const F = {};

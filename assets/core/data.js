@@ -1,6 +1,10 @@
-import { lazy, stuck } from '../core/lazy.js';
+import { OP } from '../search/protocol.js';   // the ops the search worker answers, by name
+import { lazy, stuck, spend } from '../core/lazy.js';
 import { ours, KIND, MAKE, slotList, jobOf, holds, NAMES } from '../kinds.js';
-import { seenKeys, PR } from '../core/seen.js';
+import { seenKeys } from '../core/seen.js';
+import { ranker } from '../rank.js';
+import * as edges from '../edges.js';
+import { idle, IS_APP } from '../core/html.js';
 import { unpack, inOrder } from '../cut.js';
 
 /* ---------- data ----------
@@ -34,6 +38,12 @@ import { unpack, inOrder } from '../cut.js';
      have(keys), whole(keys)   the head, or the whole card, of each key the page is about to draw
      need()   the whole index, for a tab that works over all of it (and the Map): `ready`. A page holding the
               whole index answers its searches itself, by the same rules (assets/rank.js). */
+/* A second copy of the shell. On the app, this file runs before the page has finished loading, every time. Running
+   after it means an older app already on this page (a tab left open across a deploy) has just fetched a module of a
+   newer deploy, and that module asked for the store by a path the older app never loaded: two stores on one page,
+   one of them empty. The page reloads once into the deploy the server has now (the same one reload lazy() takes). */
+if(IS_APP && document.readyState === 'complete' && spend('core/data.js')) location.reload();
+
 export const D = { index: null, market: null, usage: null, byKey: new Map(), full: false };   // usage stays empty: see buildsHref
 async function getJSON(url, opt, early){
   const r = await (early || fetch(url, opt));   // the browser keeps it for 2 minutes (_headers), then checks for a new one
@@ -81,7 +91,7 @@ const LANG = (() => { try { return localStorage.getItem(LANG_KEY) || ''; } catch
 let TR = null;   // the language, once it is in
 const LANGUP = !LANG || !document.getElementById('view-home') ? null : MAN.then(man => {
   const e = man.lang && man.lang[LANG];
-  return e ? lazy('./lang.js').then(m => m.start(LANG, e)).then(t => (TR = t)) : null;
+  return e ? lazy('./ui/lang.js').then(m => m.start(LANG, e)).then(t => (TR = t)) : null;
 }).catch(() => null);
 const inLang = kinds => LANGUP ? LANGUP.then(t => t && t.need(kinds)) : null;
 /* for the tabs that say what the index holds and how fresh it is (assets/data.js) */
@@ -131,18 +141,6 @@ const touched = e => { const t = e.target; if(t && t.closest && t.closest(BOX)) 
 addEventListener('pointerdown', touched, {capture: true, passive: true});
 addEventListener('keydown', e => { if(e.key === '/') wake(); else touched(e); }, {capture: true, passive: true});
 addEventListener('focusin', e => { const u = navigator.userActivation; if(!u || u.hasBeenActive) touched(e); }, true);
-/* An item copied in game (Ctrl+C) and pasted into either search box opens its card (assets/paste.js). Only the
-   game's own item text: a first line naming the class or the rarity, a rarity line and a line of dashes. Any
-   other paste, and all typing, goes into the box as ever. The reader is fetched on the first such paste. */
-const ITEM_PASTE = t => /^\s*(?:Item Class|Rarity): \S/.test(t) && /^Rarity: \S/m.test(t) && /^-{8,}\s*$/m.test(t);
-addEventListener('paste', e => {
-  const box = e.target && e.target.closest && e.target.closest(BOX);
-  const t = box && e.clipboardData && e.clipboardData.getData('text/plain');
-  if(!t || !ITEM_PASTE(t)) return;
-  e.preventDefault();
-  wake();
-  lazy('./paste.js', 'The item').then(m => m.pasted(t, box), () => {});
-}, true);
 
 /* ---------- the short files, read back ----------
    Every file above that is written short is put back into the shape the rest of the page reads here, as it
@@ -425,15 +423,15 @@ export const first = (async () => {
 /* The search: the worker has every kind's rows, the bosses have joined, and the cards whose words mark other
    cards' lines are held (keywords, mechanics, interactions, and the keystones a keyword stands for). */
 // the search rows start downloading in the worker the moment the manifest is in, not after the prices and the meta
-SEEK.then(() => MAN).then(man => ask('fetch', {man, base: new URL('.', document.baseURI).href})).catch(() => {});
+SEEK.then(() => MAN).then(man => ask(OP.fetch, {man, base: new URL('.', document.baseURI).href})).catch(() => {});
 export const searching = SEEK.then(() => first).then(async () => {
-  await ask('init', {man: D.man, base: new URL('.', document.baseURI).href, lang: TR ? TR.names : '',
+  await ask(OP.init, {man: D.man, base: new URL('.', document.baseURI).href, lang: TR ? TR.names : '',
     market: Object.keys((D.market && D.market.items) || {}), runtime: D.rt.map(rtRow), seen: seenKeys()});
-  const w = await ask('words', {names: Object.values(D.index.kwx || {})});
+  const w = await ask(OP.words, {names: Object.values(D.index.kwx || {})});
   for(const h of w.heads) hold(h);
   D.bosses = await BOSS;
   runtime();
-  await ask('runtime', {runtime: D.rt.map(rtRow)});
+  await ask(OP.runtime, {runtime: D.rt.map(rtRow)});
   D.index = {...D.index};   // a new index: what was worked out from the old one (the marks) is worked out again
   D.search = true;
   return D;
@@ -458,14 +456,14 @@ export const ready = ALL.then(() => first).then(async () => {
   return D;
 });
 ready.catch(err => { D.failed = true; if(err && err.gone) moved(); });
-ready.then(() => PR.vocabLater(), () => {});   // the page's own search words, once the whole index is in (assets/core/seen.js)
+ready.then(() => PR.vocabLater(), () => {});   // the page's own search words, once the whole index is in
 
 /* The heads of these keys, where there is a card for them: enough to draw a row, a pin or a result. */
 export async function have(keys){
   const want = keys.filter(k => !D.byKey.has(k));
   if(want.length && !D.full){
     await wake();
-    for(const h of (await ask('heads', {keys: want})).heads) hold(h);
+    for(const h of (await ask(OP.heads, {keys: want})).heads) hold(h);
   }
   return keys.map(k => D.byKey.get(k)).filter(Boolean);
 }
@@ -474,7 +472,7 @@ export async function whole(keys){
   const want = keys.filter(k => { const it = D.byKey.get(k); return !it || it._head; });
   if(want.length && !D.full){
     await wake();
-    const got = (await ask('bodies', {keys: want})).bodies;
+    const got = (await ask(OP.bodies, {keys: want})).bodies;
     // in the player's language a card is whole only once its kind's lines are in too: a card the page holds whole
     // is drawn at once, by any path, so it must never be whole a moment before its words are
     await inLang(got.map(b => b.k));
@@ -489,7 +487,7 @@ export async function whole(keys){
 export async function named(k, n){
   if(D.full) return D.index.items.filter(it => it.k === k && it.n === n);
   await wake();
-  return whole((await ask('find', {k, n})).keys);
+  return whole((await ask(OP.find, {k, n})).keys);
 }
 
 /* ---------- market lookups ---------- */
@@ -527,10 +525,25 @@ export async function find(q, {kind = 'all', n = 0, take, from = 0, seen = seenK
     return {keys: keys.slice(from, take === undefined ? keys.length : take), total: keys.length, counts: LAST.counts};
   }
   await wake();
-  const r = await ask('search', {q, kind, seen, n, take, from});
+  const r = await ask(OP.search, {q, kind, seen, n, take, from});
   for(const h of r.heads) hold(h);
   return r;
 }
 let LAST = null, TRAIL_NOW = null;   // TRAIL_NOW: the trail a page-side search is asked against
 
 export { getJSON, NOW, MAN, LANG_KEY, LANG, TR, LEAGUE_COLOUR, MON, ask, TRAIL_NOW };
+
+/* The search's rules (assets/rank.js), over the cards the page holds. A page holding the whole index (a tab that
+   works over all of it) answers its own searches with them, and the Currency tab's box and the map's find match
+   their words against the cards. The worker holds the same rules over every kind's search rows. */
+const PR = ranker({items: () => (D.index && D.index.items) || [], get: key => D.byKey.get(key), groupsOf: it => edges.groupsOf(it),
+  priced: it => !!priceOf(it), usage: usageOf, seen: () => TRAIL_NOW || seenKeys(), version: () => D.index, idle: f => idle(f)});
+export const words = qs => PR.words(qs);
+
+/* A search in the address of the search page (#/?q=… or a kind's list, #/?k=…): the search starts the moment this file
+   has run, before the rest of the shell, so the worker leaves as soon as the manifest is in. The router asks again
+   when it draws the page; a second wake() changes nothing. */
+{
+  const h = location.hash, p = new URLSearchParams(h.includes('?') ? h.slice(h.indexOf('?') + 1) : '');
+  if(IS_APP && !/^#\/\w/.test(h) && (p.get('q') || (p.get('k') || 'all') !== 'all')) wake();
+}

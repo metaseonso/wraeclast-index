@@ -1,32 +1,18 @@
+import { OP } from '../search/protocol.js';
 import { D, TR, whole, getJSON, priceOf, wake, ask, have } from '../core/data.js';
 import { KW, KIND, SAYS, FIELDS, FRAME } from '../kinds.js';
 import { esc, reduceMotion } from '../core/html.js';
-import { OV } from '../frame/popup.js';
+import { OV } from '../frame/seam.js';
+import { keywordCard, keywordIdOf } from '../frame/keywords.js';
 import { tableOf } from '../frame/types/item.js';
 import * as edges from '../edges.js';
-import { craftHref } from '../frame/types/index.js';
+import { craftHref } from '../frame/href.js';
 import { iconHTML, moneyHTML } from '../core/format.js';
 import { foldHTML } from '../frame/types/patches.js';
 
 /* ---------- keywords: the chips on a card ----------
    Every gem, unique, passive and keyword lists the keywords its game text marks (the index's "kw"). The chips
    are the way to them; which cards a keyword is itself found on is the related section below. */
-export function keywordCard(id){
-  const name = D.index.kwx && D.index.kwx[id];   // a keystone stands for its own keyword (KINDS kw)
-  return D.byKey.get(KW.own + ':' + id) ||
-    (name && D.index.items.find(x => KW.named.includes(x.k) && x.n === name)) || null;
-}
-/* Kept on the card: every line of it asks, and the answer is a walk over the keystones (assets/marks.js).
-   Where a kind's keyword id is, is the kind's own "kw": its own id, or the keyword that goes by its name. */
-const KWID = {
-  id:   it => it.id,
-  name: it => { for(const [k, n] of Object.entries(D.index.kwx || {})) if(n === it.n) return k; return null; },
-};
-export function keywordIdOf(it){
-  if(it._kwid !== undefined) return it._kwid;
-  const how = KWID[(KIND[it.k] || {}).kw];
-  return it._kwid = (how ? how(it) : null) || null;
-}
 function kwChips(it){
   const own = keywordIdOf(it);
   const ids = (it.kw || []).filter(k => k !== own && keywordCard(k));
@@ -207,7 +193,7 @@ async function relHeads(it){
   const key = it.k + ':' + it.id;
   if(!it._g && D.byKey.has(key) && !D.full){
     await wake();
-    const r = await ask('rel', {key});
+    const r = await ask(OP.rel, {key});
     if(r.lists) it._g = r.lists;
   }
   const need = edges.categories(it, HAVE).need;

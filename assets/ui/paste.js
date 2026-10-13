@@ -6,7 +6,10 @@
    trade site in the browser: nothing here asks the trade site anything.
    Prices stay the card's own: a unique or a currency keeps its price and its age, and a rare, a magic item or an
    unidentified unique shows none, because the price on its base's card is for another item. */
-import { D, esc, named, openDetail, hrefOf } from '../app.js';
+import { D, named } from '../core/data.js';
+import { esc } from '../core/html.js';
+import { openDetail } from '../frame/popup.js';
+import { hrefOf } from '../frame/href.js';
 import { KIND, holds } from '../kinds.js';
 import { parse, resolve, shown, ownPrice } from '../engines/itemtext.js';
 
@@ -35,7 +38,7 @@ const ORDER = {
   crafted: ['crafted', 'explicit'],
 };
 const FROM = ['explicit', 'fractured', 'desecrated', 'crafted', 'implicit', 'rune', 'enchant'];
-// the trade site lists "reduced" and "less" as "increased" and "more" with a negative number (assets/tradepage.js)
+// the trade site lists "reduced" and "less" as "increased" and "more" with a negative number (assets/pages/trade.js)
 const flip = line => /\b(reduced|less)\b/.test(line) ? line.replace(/\breduced\b/, 'increased').replace(/\bless\b/, 'more') : null;
 async function tradeLink(it){
   const tr = await import('../engines/trade.js');

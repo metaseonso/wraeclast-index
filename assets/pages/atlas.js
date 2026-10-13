@@ -3,15 +3,21 @@
    Every item is a live card: price and 7-day trend where poe.ninja has one, the popup, and the Trade button
    (the bulk exchange for exchange items, a trade search by base type with mod rows for tablets).
    Bosses sit under this tab: the link at the top of the page opens #/bosses (assets/bosses.js). */
-import { D, $, esc, card, flow, params, onType, openDetail, hrefOf } from '../app.js';
+import { D } from '../core/data.js';
+import { $, esc, onType } from '../core/html.js';
+import { card } from '../frame/card.js';
+import { flow } from '../frame/related.js';
+import { params } from '../core/router.js';
+import { openDetail } from '../frame/popup.js';
+import { hrefOf } from '../frame/href.js';
 
 /* ---------- the page contract ----------
    What every tab module says about itself (docs/framework.md, "Pages"): the route it answers, what it needs before
-   it is mounted, and the state its address carries. The router (assets/app.js show) decides on its own until
-   docs/migration.md stage 10 lands; until then `needs` states what the router awaits for this tab today, and
-   `state` is the one place this tab reads its address. */
+   it is mounted, and the state its address carries. The router (assets/core/router.js) reads them: it
+   fetches this file, waits for what `needs` names, and mounts it with `state(params())`; `state` is the one place
+   this tab reads its address. */
 export const route = 'atlas';
-export const needs = ['index', 'hist'];   // the whole index and the price history, as the router awaits them before every tab that draws cards
+export const needs = ['index', 'hist'];   // the whole index and the price history: the router waits for both before it mounts this tab
 export function state(p){ return {s: p.get('s') || '', q: p.get('q') || ''}; }
 
 const SECTS = [['ways', 'Waystones'], ['tabs', 'Tablets'], ['keys', 'Keys & invitations'], ['items', 'Atlas items'], ['tree', 'Atlas tree']];

@@ -2,15 +2,18 @@
    opens the game's own card for it, each line leads to the page that holds the answer, and the counts are the
    manifest's. The words picked (WORDS) are the keyword cards a new character meets first; the "How it works"
    cards are all of them. */
-import { D, esc, openDetail, hrefOf, manifest } from '../app.js';
+import { D, manifest } from '../core/data.js';
+import { esc } from '../core/html.js';
+import { openDetail } from '../frame/popup.js';
+import { hrefOf } from '../frame/href.js';
 
 /* ---------- the page contract ----------
    What every tab module says about itself (docs/framework.md, "Pages"): the route it answers, what it needs before
-   it is mounted, and the state its address carries. The router (assets/app.js show) decides on its own until
-   docs/migration.md stage 10 lands; until then `needs` states what the router awaits for this tab today, and
-   `state` is the one place this tab reads its address. */
+   it is mounted, and the state its address carries. The router (assets/core/router.js) reads them: it
+   fetches this file, waits for what `needs` names, and mounts it with `state(params())`; `state` is the one place
+   this tab reads its address. */
 export const route = 'start';
-export const needs = ['index', 'hist'];   // the whole index and the price history, as the router awaits them before every tab that draws cards
+export const needs = ['index', 'hist'];   // the whole index and the price history: the router waits for both before it mounts this tab
 export function state(p){ return {}; }
 
 const WORDS = ['Spirit', 'Energy Shield', 'Armour', 'Evasion', 'Resistances', 'Block', 'Stun', 'Heavy Stun',

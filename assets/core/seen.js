@@ -1,7 +1,4 @@
-import { SEEN_MAX, ranker } from '../rank.js';
-import { D, priceOf, usageOf, TRAIL_NOW } from '../core/data.js';
-import * as edges from '../edges.js';
-import { idle } from '../core/boot.js';
+import { SEEN_MAX } from '../rank.js';
 
 /* ---------- where you have been ----------
    The cards opened in this tab, newest first, so the search can put what sits nearest them first. A card is
@@ -33,13 +30,5 @@ function sawCard(it){
   SEEN_LIST = [key, ...tabSeen().filter(k => k !== key)].slice(0, SEEN_MAX);   // opened again, it goes to the front
   try { sessionStorage.setItem(SEEN, JSON.stringify(SEEN_LIST)); } catch {}   // a browser that will not keep it searches as a guest
 }
-/* The search's rules (assets/rank.js), over the cards the page holds. A page holding the whole index (a tab that
-   works over all of it) answers its own searches with them, and the Currency tab's box and the map's find match
-   their words against the cards. The worker holds the same rules over every kind's search rows. */
-const PR = ranker({items: () => (D.index && D.index.items) || [], get: key => D.byKey.get(key), groupsOf: it => edges.groupsOf(it),
-  priced: it => !!priceOf(it), usage: usageOf, seen: () => TRAIL_NOW || seenKeys(), version: () => D.index, idle: f => idle(f)});
-export const words = qs => PR.words(qs);
-// the vocabulary is worked out once the whole index is in: assets/core/data.js hooks it on `ready`, since this module
-// is evaluated before that promise exists (data.js imports this one)
 
-export { seenKeys, sawCard, PR };
+export { seenKeys, sawCard };

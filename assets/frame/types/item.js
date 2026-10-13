@@ -1,6 +1,6 @@
 import { getJSON } from '../../core/data.js';
 import { drawLine, mechSpans } from '../../frame/types/reqs.js';
-import { craftHref } from '../../frame/types/index.js';
+import { craftHref } from '../../frame/href.js';
 import { esc } from '../../core/html.js';
 import { lazy } from '../../core/lazy.js';
 
@@ -89,7 +89,7 @@ function poolHTML(rows, f){
 function poolFill(host, it, f){
   const url = host && fileOf(f, it);
   if(!url) return;
-  Promise.all([lazy('./basepool.js'), tableOf(url)]).then(([bp, P]) => {
+  Promise.all([lazy('./engines/basepool.js'), tableOf(url)]).then(([bp, P]) => {
     const rows = bp.famsOf(P, bp.baseOf(P, it[f.at]), f.of);
     if(!rows.length || !host.isConnected) return;
     host.innerHTML = poolHTML(rows, f);

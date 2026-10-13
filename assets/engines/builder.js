@@ -24,7 +24,11 @@
    No budget here is ever counted in currency: the market prices no rare, so a total would be right for part
    of a build and wrong for the rest. The counts are the budget, and the price rides along where there is
    one. */
-import { D, esc, moneyHTML, openDetail, hrefOf, repaint, actPanel } from '../app.js';
+import { D } from '../core/data.js';
+import { esc } from '../core/html.js';
+import { moneyHTML } from '../core/format.js';
+import { openDetail, repaint, actPanel } from '../frame/popup.js';
+import { hrefOf } from '../frame/href.js';
 import { valHTML, syncVal } from './trade.js';
 import * as E from './engine.js';
 /* The rules, and the search that runs over them. Nothing on this card works a stat out for itself, and the

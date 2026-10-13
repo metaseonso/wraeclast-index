@@ -3,7 +3,10 @@
    app.js answers that click and keeps the list (isPinned, togglePin, pinnedKeys, onPinChange), the same way
    it already answers Trade and Full stats. Nothing here touches sessionStorage: this file is only the other
    half, reading the list back — the top-bar button, and the box it opens. */
-import { D, esc, hrefOf, openDetail, openBox, togglePin, pinnedKeys, onPinChange, have } from '../app.js';
+import { D, have } from '../core/data.js';
+import { esc } from '../core/html.js';
+import { hrefOf } from '../frame/href.js';
+import { openDetail, openBox, togglePin, pinnedKeys, onPinChange } from '../frame/popup.js';
 import { KIND } from '../kinds.js';
 
 const label = n => 'Pins' + (n ? ' <span class="ct">' + n + '</span>' : '');

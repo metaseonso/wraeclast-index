@@ -1,12 +1,13 @@
 import { leadFirst, PLAY } from '../core/store.js';
 import { fieldsOf, FIELDS, FRAME, SLOTS, BOXES, KIND, DEFAULT } from '../kinds.js';
-import { TYPE, hrefOf } from '../frame/types/index.js';
+import { TYPE } from '../frame/types/index.js';
+import { hrefOf } from '../frame/href.js';
 import { esc } from '../core/html.js';
 import { priceOf, D } from '../core/data.js';
 import { pill, openMark } from '../frame/types/reqs.js';
 import { moneyHTML } from '../core/format.js';
-import { flipSwap } from '../frame/types/own.js';
-import { openDetail } from '../frame/popup.js';
+import { flipSwap } from '../frame/swap.js';
+import { openDetail, late } from '../frame/seam.js';
 
 /* ---------- the slot rule ----------
    The fields of one slot, drawn in the order the kind declares them. A field that drew nothing is not in the
@@ -135,3 +136,4 @@ export function card(it, opts = {}){
   });
   return el;
 }
+late.card = card;   // a field type draws a card inside a card through this (frame/seam.js)

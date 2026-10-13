@@ -9,15 +9,19 @@
    The page is its own tab: nothing of it is fetched until it is opened. What it is showing lives in the
    address (#/runes?rune=Tempest Rune,Fire Rune&make=Orb&tab=Currency), so a rune card's gold button opens it
    on that rune, and Back brings the last picks back. */
-import { D, $, esc, openDetail, hrefOf, params, onType } from '../app.js';
+import { D } from '../core/data.js';
+import { $, esc, onType } from '../core/html.js';
+import { openDetail } from '../frame/popup.js';
+import { hrefOf } from '../frame/href.js';
+import { params } from '../core/router.js';
 
 /* ---------- the page contract ----------
    What every tab module says about itself (docs/framework.md, "Pages"): the route it answers, what it needs before
-   it is mounted, and the state its address carries. The router (assets/app.js show) decides on its own until
-   docs/migration.md stage 10 lands; until then `needs` states what the router awaits for this tab today, and
-   `state` is the one place this tab reads its address. */
+   it is mounted, and the state its address carries. The router (assets/core/router.js) reads them: it
+   fetches this file, waits for what `needs` names, and mounts it with `state(params())`; `state` is the one place
+   this tab reads its address. */
 export const route = 'runes';
-export const needs = ['index', 'hist'];   // the whole index and the price history, as the router awaits them before every tab that draws cards
+export const needs = ['index', 'hist'];   // the whole index and the price history: the router waits for both before it mounts this tab
 export function state(p){ return {rune: p.get('rune') || '', make: p.get('make') || '', tab: p.get('tab') || 'all'}; }
 
 const S = {runes: [], make: '', tab: 'all', len: 2};

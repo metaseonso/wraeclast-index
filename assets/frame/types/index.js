@@ -11,6 +11,7 @@ import { changedFill, diffFill } from '../../frame/types/patches.js';
 import { clarifyFill, reportsFill, swapHTML, ownFill, benchItemHTML, budgetHTML, gearHTML, treeHTML, picksHTML } from '../../frame/types/own.js';
 import { flowHTML, offerHTML, askHTML, anointHTML, buildsHref } from '../../frame/types/damage.js';
 import { kwChips } from '../../frame/related.js';
+import { craftHref, hrefOf, isItem } from '../../frame/href.js';
 
 /* ---------- the live card ----------
    One layout for everything on the site. The kind says which fields its cards carry, which buttons they
@@ -22,36 +23,6 @@ import { kwChips } from '../../frame/related.js';
    cards · opts.rank: the order badge · opts.why: why this card is on screen · opts.without: fields this
    caller leaves off, because the page the card sits on already draws them in full */
 
-/* the Craft tab, opened on this base — or, with no base, on this kind of item. The plan lives in the address
-   in words (assets/craft.js): a base belongs to one kind, so a base link needs nothing else. */
-const crEnc = s => encodeURIComponent(s).replace(/%20/g, '+');
-export const craftHref = (c, b = '', kind = '') => './#/craft?' + (b ? 'base=' + crEnc(b) : 'kind=' + crEnc(kind || c));
-/* The forms a gold button can take that a template cannot write: one entry each, named by a kind's "link".
-   A whole craft plan is one of them, so a second thing that carries a plan is a second entry and no code. */
-const LINKS = {
-  /* A card that names an item class: the class itself opens the Craft tab on the whole class, a base item on
-     that base. An item class is its own class (KINDS make), which is what tells the two apart. */
-  craft: it => !it.cr ? null : it.cr === it.id ? craftHref(it.cr, '', it.n)
-    : D.byKey.get('b:' + it.id) === it ? craftHref(it.cr, it.n) : null,
-};
-/* Where a card's gold button goes: the kind's own "link", with @field filled in from the entry, or one of the
-   forms above. A field the entry has nothing for means no link at all, and so does an entry its kind calls
-   gone — one with nowhere to go yet (KINDS gone: a currency the catalogue does not list). */
-export function hrefOf(it){
-  const d = KIND[it.k];
-  if(!d || !d.link) return null;
-  if(d.gone && holds(it, d.gone)) return null;
-  if(LINKS[d.link]) return LINKS[d.link](it);
-  let have = true;
-  const href = d.link.replace(/@(\w+)/g, (_, f) => {
-    if(it[f] === undefined || it[f] === '') have = false;
-    return encodeURIComponent(it[f]);
-  });
-  return have ? href : null;
-}
-/* an item is something that can be traded, unless its kind says this entry is not one (KINDS notitem: an
-   Atlas passive is on the Atlas but is not an item) */
-const isItem = it => { const d = KIND[it.k]; return !!(d && d.item) && !(d.notitem && holds(it, d.notitem)); };
 
 /* ---------- one function per field type ----------
    Each answers with the words to draw, or with markup where a field is more than words ("raw"): the slot it
@@ -311,4 +282,3 @@ export const TYPE = {
   }},
 };
 
-export { isItem };
