@@ -198,13 +198,20 @@ async function page(e, key){
   e.waitUntil(save());
   return hit;
 }
+/* A page of this deploy asks for its modules by the copies named by their bytes (assets/v/core/data.<hash>.js, its
+   import map: tools/build.mjs 2b), so the copy and the network can only ever answer them with those bytes. A module
+   asked for by its plain path (a page from before the import map, a browser without import maps, a crawler page's
+   topnav.js) is fetched past the browser's own cache (no-cache: a 304 when it is unchanged): another deploy's file
+   kept there must never stand in for this one's. */
+const MODULE = /^\/assets\/(?!v\/).+\.js$/;   // a plain module path; a copy under assets/v/ is its bytes by name
 async function file(e, path){
-  if(!(await ours(e.clientId))) return fetch(e.request);   // a page from another deploy: as if there were no worker
+  const net = MODULE.test(path) ? {cache: 'no-cache'} : {};
+  if(!(await ours(e.clientId))) return fetch(e.request, net);   // a page from another deploy: as if there were no worker
   const kept = await copy();
   const hit = await kept.match(e.request, {ignoreVary: true});
   if(hit) return hit;
-  const res = await fetch(e.request);
-  // a file asked for with a query (the page checking the site past this copy, assets/app.js moved) is never kept
+  const res = await fetch(e.request, net);
+  // a file asked for with a query (the page checking the site past this copy, assets/core/data.js moved) is never kept
   if(res.ok && res.status === 200 && res.type === 'basic' && !new URL(e.request.url).search){
     const mine = res.clone();
     e.waitUntil(files().then(f => keepIf(kept, e.request, mine, wanted(f, path))).catch(() => {}));

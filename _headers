@@ -9,6 +9,11 @@
 # each deploy's files together in the browser.
 /assets/*
   Cache-Control: public, max-age=0, must-revalidate
+# Every module's copy named by its bytes (tools/build.mjs 2b): a new deploy that changes it is a new name, so the
+# browser keeps each one a year and a returning visit asks the server nothing for them.
+/assets/v/*
+  ! Cache-Control
+  Cache-Control: public, max-age=31536000, immutable
 /data/*
   Cache-Control: public, max-age=120, stale-while-revalidate=3600
 /explore

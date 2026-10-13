@@ -38,10 +38,8 @@ import { unpack, inOrder } from '../cut.js';
      have(keys), whole(keys)   the head, or the whole card, of each key the page is about to draw
      need()   the whole index, for a tab that works over all of it (and the Map): `ready`. A page holding the
               whole index answers its searches itself, by the same rules (assets/rank.js). */
-/* A second copy of the shell. On the app, this file runs before the page has finished loading, every time. Running
-   after it means an older app already on this page (a tab left open across a deploy) has just fetched a module of a
-   newer deploy, and that module asked for the store by a path the older app never loaded: two stores on one page,
-   one of them empty. The page reloads once into the deploy the server has now (the same one reload lazy() takes). */
+/* On the app this file always runs before the page has loaded. Running after it means an older app on this page
+   fetched a newer module that brought a second, empty store: reload once (the one reload lazy() takes). */
 if(IS_APP && document.readyState === 'complete' && spend('core/data.js')) location.reload();
 
 export const D = { index: null, market: null, usage: null, byKey: new Map(), full: false };   // usage stays empty: see buildsHref
@@ -349,7 +347,9 @@ const WAITS = new Map();
 function worker(){
   if(WK) return WK;
   try {
-    const w = new Worker(new URL('../searchworker.js', import.meta.url), {type: 'module'});
+    // the worker as the import map names it (tools/build.mjs 2b)
+    const url = import.meta.resolve ? import.meta.resolve('../searchworker.js') : new URL('assets/searchworker.js', document.baseURI);
+    const w = new Worker(url, {type: 'module'});
     w.onmessage = e => { const m = e.data, x = WAITS.get(m.id); if(!x) return; WAITS.delete(m.id); m.error ? x.bad(m.error) : x.ok(m); };
     w.onerror = () => { for(const x of WAITS.values()) x.bad('the search did not start'); WAITS.clear(); };
     WK = {ask: m => new Promise((ok, bad) => { const id = ++WN; WAITS.set(id, {ok, bad}); w.postMessage({...m, id}); })};
