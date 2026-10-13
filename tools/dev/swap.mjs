@@ -49,7 +49,12 @@ if(refsAt >= 0){
   const build = async ref => {
     const tree = await mkdtemp(join(tmpdir(), 'wi-swap-tree-')), out = await mkdtemp(join(tmpdir(), 'wi-swap-dist-'));
     execFileSync('git', ['-C', ROOT, 'worktree', 'add', '--detach', tree, ref], {stdio: 'ignore'});
-    made.push(() => execFileSync('git', ['-C', ROOT, 'worktree', 'remove', '--force', tree], {stdio: 'ignore'}));
+    made.push(() => {
+      // the borrowed node_modules is a link: unlink it first, so removing the tree never reaches into this checkout's own
+      try { execFileSync(process.platform === 'win32' ? 'cmd' : 'rm', process.platform === 'win32'
+        ? ['/c', 'rmdir', join(tree, 'node_modules')] : [join(tree, 'node_modules')], {stdio: 'ignore'}); } catch {}
+      execFileSync('git', ['-C', ROOT, 'worktree', 'remove', '--force', tree], {stdio: 'ignore'});
+    });
     // the tree borrows this checkout's node_modules (esbuild) through NODE_PATH-free resolution: a link
     try { execFileSync(process.platform === 'win32' ? 'cmd' : 'ln', process.platform === 'win32'
       ? ['/c', 'mklink', '/J', join(tree, 'node_modules'), join(ROOT, 'node_modules')] : ['-s', join(ROOT, 'node_modules'), join(tree, 'node_modules')], {stdio: 'ignore'}); } catch {}
