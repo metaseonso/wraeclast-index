@@ -1,8 +1,8 @@
 /* Check every Cloudflare query the owner's dashboard uses, against the real API, one block at a time.
    The blocks come from worker/cfstats.js itself, so this checks what the dashboard really asks for.
 
-     PowerShell:  $env:CF_ANALYTICS_TOKEN = '<read-only stats key>'; node tools/dev/cfcheck.mjs 7
-     bash:        CF_ANALYTICS_TOKEN=... node tools/dev/cfcheck.mjs 7
+     python C:\Users\Seonso\Desktop\vault\vault.py run WI_CF_ANALYTICS_TOKEN -- node tools/dev/cfcheck.mjs 7
+     (the vault's WI_CF_ANALYTICS_TOKEN arrives as CF_ANALYTICS_TOKEN; setting the variable by hand still works)
 
    One line per block: rows back and the fields they carry, or Cloudflare's own error.
    Nothing is written and no key is kept here. */

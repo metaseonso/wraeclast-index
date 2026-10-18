@@ -22,8 +22,10 @@ Nothing is traced by hand afterwards.
     python tools/art.py --all           make every plate again, over the top of what is there
     python tools/art.py --list          say what the plates are and which are made
 
-The key is the last line of wi-secrets/WI_OPENROUTER_KEY.txt, or WI_OPENROUTER_KEY in the environment. It is
-never printed and never passed on a command line.
+The key is WI_OPENROUTER_KEY in the environment, which the vault sets:
+    python C:/Users/Seonso/Desktop/vault/vault.py run WI_OPENROUTER_KEY -- python tools/art.py
+A plain wi-secrets/WI_OPENROUTER_KEY.txt (its last line) is read only when the variable is not set; that file
+moved into the vault on 2026-10-19. The key is never printed and never passed on a command line.
 """
 import base64
 import io
@@ -73,7 +75,8 @@ def key():
     except OSError:
         lines = []
     if not lines:
-        print('no key: put it in %s, or set WI_OPENROUTER_KEY' % f, file=sys.stderr)
+        print('no key: run under the vault (vault.py run WI_OPENROUTER_KEY -- ...) or set WI_OPENROUTER_KEY; '
+              'the file %s is the old fallback' % f, file=sys.stderr)
         sys.exit(1)
     return lines[-1]
 
