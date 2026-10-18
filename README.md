@@ -162,7 +162,7 @@ Two things to do by hand, once:
 
 ## Owner dashboard
 
-`/admin` (`admin.html`, `assets/admin.js`; not linked anywhere, kept out of search engines). Sign in with the dashboard password: the worker checks it against the `DASH_HASH` secret and sets a 12-hour cookie. The page holds no data; everything comes from `/api/admin/*` behind that cookie (`worker/dash.js`). The same numbers can be read without a password with the owner's key (`Authorization: Bearer <key>`, only its SHA-256 in the `OWNER_HASH` secret): the four reading GETs only, never a write or a sign-in (`tools/dev/dash.mjs`).
+`/admin` (`admin.html`, `assets/admin.js`; not linked anywhere, kept out of search engines). Sign in with the dashboard password: the worker checks it against the `DASH_HASH` secret and sets a 12-hour cookie. The page holds no data; everything comes from `/api/admin/*` behind that cookie (`worker/dash.js`). The same numbers can be read without a password with the owner's key (`Authorization: Bearer <key>`, only its SHA-256 in the `OWNER_HASH` secret): the four reading GETs only, never a write or a sign-in (`tools/dev/dash.mjs`). Every key of this site lives in the vault (`C:\Users\Seonso\Desktop\vault`, names `WI_*` in its `registry.yaml`) and reaches a tool as `python C:\Users\Seonso\Desktop\vault\vault.py run <NAME> -- <command>`; no plain key file sits beside the repository since 2026-10-19.
 
 It shows page views per day, pages, how visitors arrive (direct, search engines, AI search, social, other sites), countries, devices, top clicks, a heatmap per page and device, notes from the Suggest button (mark read or done), the trade site load per hour, and how close the site is to the Cloudflare free plan.
 

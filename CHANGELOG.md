@@ -3,6 +3,14 @@
 The full list of changes. The public patch notes (data/changelog.json, shown on the site) stay short.
 Add the details here first, then a short public line there.
 
+## Unreleased
+
+- **Keys in the vault** (19 Oct): the six plain files of `wi-secrets/` moved into `Desktop\vault` (`WI_OPENROUTER_KEY`,
+  `WI_OWNER_KEY`, `WI_INGEST_KEY`, `WI_CF_ANALYTICS_TOKEN`, `WI_CLOUDFLARE_TOKEN`, `WI_ORACLE_SSH_KEY`); every tool already
+  read its key from the environment, and `vault.py run <NAME> -- <command>` is what sets it now (`tools/art.py`,
+  `tools/dev/dash.mjs`, `tools/dev/cfcheck.mjs`, `tools/dev/README.md`). The file fallback in `art.py` stays, for a
+  machine that still has one.
+
 ## 0.48 — 12 Oct 2026: cleaner cards, the latest hotfix
 
 - **Design sweep** (impeccable critique + audit, 11 Oct: 25/40 and 13/20).

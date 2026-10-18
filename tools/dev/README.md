@@ -192,8 +192,9 @@ corrupted, twice corrupted, mirrored and fractured; quality, sockets, runes, sta
 must find and the card it must open, looked up in `data/index.json` and `data/market.json` the way the page does.
 `node --test tools/dev/itemtext.test.mjs`, under a second, no network. Not part of `guard.mjs`.
 
-`cfcheck.mjs`: every Cloudflare query the owner's dashboard makes, against the real API. Needs `CF_ANALYTICS_TOKEN`.
+`cfcheck.mjs`: every Cloudflare query the owner's dashboard makes, against the real API. Needs `CF_ANALYTICS_TOKEN`:
+`python C:\Users\Seonso\Desktop\vault\vault.py run WI_CF_ANALYTICS_TOKEN -- node tools/dev/cfcheck.mjs 7`.
 
-`dash.mjs`: set `WI_OWNER_KEY` to the owner key (only its SHA-256 lives in the `OWNER_HASH` secret), then
-`node tools/dev/dash.mjs` (add `http://127.0.0.1:8787` for a local worker, `--raw stats` to dump one answer).
+`dash.mjs`: the owner key (only its SHA-256 lives in the `OWNER_HASH` secret) arrives as `WI_OWNER_KEY` from the vault:
+`python C:\Users\Seonso\Desktop\vault\vault.py run WI_OWNER_KEY -- node tools/dev/dash.mjs` (add `http://127.0.0.1:8787` for a local worker, `--raw stats` to dump one answer).
 It prints per read endpoint: status, bytes, top-level keys and what came back empty or null. The key only reads.

@@ -1,7 +1,7 @@
 /* Read the owner's dashboard data with the owner's key, so its shape can be looked at without signing in.
 
-     PowerShell:  $env:WI_OWNER_KEY = '<owner key>'; node tools/dev/dash.mjs
-     bash:        WI_OWNER_KEY=... node tools/dev/dash.mjs
+     python C:\Users\Seonso\Desktop\vault\vault.py run WI_OWNER_KEY -- node tools/dev/dash.mjs
+     (the key lives in the vault since 2026-10-19 and arrives as WI_OWNER_KEY; setting the variable by hand still works)
      node tools/dev/dash.mjs http://127.0.0.1:8787      another address (default https://wraeclastindex.fyi)
      node tools/dev/dash.mjs --raw stats                dump that one answer as JSON
      node tools/dev/dash.mjs --cda                     only the pages and cards flagged as CDA
